@@ -1,5 +1,6 @@
 import { Box, IconButton, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FC, JSX } from "react";
 
@@ -18,13 +19,12 @@ import { formatDuration } from "~community/attendance/utils/TimeUtils";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
 import Table from "~community/common/components/molecules/Table/Table";
 import ROUTES from "~community/common/constants/routes";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -364,21 +364,17 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
         isLoading={isRequestLoading}
       />
       {!hasFullList && (
-        <Button
-          buttonStyle={ButtonStyle.TERTIARY}
-          label={translateText(["viewFullBtnTxt"])}
-          endIcon={<RightArrowIcon />}
-          isFullWidth={false}
-          styles={{
-            fontSize: "0.75rem",
-            fontWeight: 400,
-            mt: "1rem"
-          }}
+        <ButtonV2
+          variant={"tertiary"}
           onClick={async () => {
             resetTimesheetRequestParams();
             await router.push(ROUTES.TIMESHEET.TIMESHEET_REQUESTS);
           }}
-        />
+          icon={<RightArrowIcon />}
+          iconPosition="end"
+        >
+          {translateText(["viewFullBtnTxt"])}
+        </ButtonV2>
       )}
     </>
   );

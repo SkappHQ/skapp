@@ -5,7 +5,6 @@ import NoDataIcon from "~community/common/assets/Icons/NoDataIcon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import AnalyticCardSkeleton from "~community/common/components/molecules/AnalyticCardSkeleton/AnalyticCardSkeleton";
 import TableEmptyScreen from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetEmployeeEntitlements } from "~community/leave/api/LeaveAnalyticsApi";
 import useResponsiveCardSize from "~community/leave/hooks/useResponsiveCardSize";
@@ -14,6 +13,7 @@ import { getPercentage } from "~community/leave/utils/LeavePreprocessors";
 import entitlementMockData from "~enterprise/leave/data/entitlementMockData.json";
 
 import AnalyticCard from "../AnalyticCard/AnalyticCard";
+import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number;
@@ -23,7 +23,7 @@ interface Props {
 const UserAssignedLeaveTypes: FC<Props> = ({ employeeId, pageSize }) => {
   const theme: Theme = useTheme();
 
-  const { isProTier } = useSessionData();
+  const { isCoreTier } = useTier();
 
   const translateText = useTranslator(
     "peopleModule",
@@ -39,12 +39,12 @@ const UserAssignedLeaveTypes: FC<Props> = ({ employeeId, pageSize }) => {
 
   const { data: entitlementData, isLoading } = useGetEmployeeEntitlements(
     employeeId,
-    isProTier
+    isCoreTier
   );
 
   const entitlement = useMemo(() => {
-    return isProTier ? entitlementData : entitlementMockData;
-  }, [isProTier, entitlementData]);
+    return isCoreTier ? entitlementData : entitlementMockData;
+  }, [isCoreTier, entitlementData]);
 
   useEffect(() => {
     if (entitlement) {

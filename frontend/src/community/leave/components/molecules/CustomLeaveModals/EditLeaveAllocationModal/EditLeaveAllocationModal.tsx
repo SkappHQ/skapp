@@ -1,11 +1,10 @@
 import { Box } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { LEAVE_ERROR_NUMBER_OF_DAYS_CANNOT_BE_LESS_THAN_USED_DAYS } from "~community/common/constants/errorMessageKeys";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -153,22 +152,24 @@ const EditLeaveAllocationModal: React.FC<Props> = ({
         datesDisabled={isDeleteDisabled}
       />
       <Box sx={{ mt: "1rem" }}>
-        <Button
-          label={translateText(["saveChangesBtn"])}
-          styles={{ mt: "1rem" }}
-          buttonStyle={ButtonStyle.PRIMARY}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        <ButtonV2
+          variant={"primary"}
           onClick={() => onSubmit(values)}
           disabled={isSaveDisabled}
-        />
-        <Button
-          label={translateText(["deleteBtnText"])}
-          styles={{ mt: "1rem" }}
-          buttonStyle={ButtonStyle.ERROR}
-          endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["saveChangesBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"error"}
           onClick={onDelete}
           disabled={isDeleteDisabled}
-        />
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["deleteBtnText"])}
+        </ButtonV2>
       </Box>
     </>
   );

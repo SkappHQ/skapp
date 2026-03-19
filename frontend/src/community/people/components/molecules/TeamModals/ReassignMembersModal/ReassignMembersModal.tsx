@@ -1,9 +1,8 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -103,30 +102,22 @@ const ReassignMembersModal = () => {
         ))}
       </Stack>
       <Box>
-        <Button
-          label={translateText(["reassignAndDeleteBtnText"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.ERROR}
-          endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+        <ButtonV2
+          variant={"error"}
           onClick={reassignAndDeleteClick}
-          accessibility={{
-            ariaHidden: true
-          }}
-        />
-        <Button
-          label={translateText(["cancelBtnText"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={<Icon name={IconName.CLOSE_ICON} />}
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["reassignAndDeleteBtnText"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
           onClick={cancelClick}
-          accessibility={{
-            ariaHidden: true
-          }}
-        />
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnText"])}
+        </ButtonV2>
       </Box>
     </Box>
   );

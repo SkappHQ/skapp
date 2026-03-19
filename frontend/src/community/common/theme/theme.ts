@@ -209,6 +209,7 @@ declare module "@mui/material/styles" {
     tableHeader: React.CSSProperties;
     label: React.CSSProperties;
     placeholder: React.CSSProperties;
+    subtitle3: React.CSSProperties;
     smallTitle: React.CSSProperties;
     allVariants: React.CSSProperties;
     kpiValue: React.CSSProperties;
@@ -219,6 +220,7 @@ declare module "@mui/material/styles" {
     tableHeader?: React.CSSProperties;
     label?: React.CSSProperties;
     placeholder?: React.CSSProperties;
+    subtitle3?: React.CSSProperties;
     smallTitle?: React.CSSProperties;
     allVariants: React.CSSProperties;
     kpiValue?: React.CSSProperties;
@@ -252,6 +254,7 @@ declare module "@mui/material/Typography" {
   interface TypographyPropsVariantOverrides {
     onboardingHeader: true;
     tableHeader: true;
+    subtitle3: true;
     smallTitle: true;
     label: true;
     placeholder: true;
@@ -476,6 +479,11 @@ export const theme = createTheme({
     },
     subtitle1: undefined,
     subtitle2: undefined,
+    // Subtitle 3
+    subtitle3: {
+      fontWeight: 500,
+      fontSize: "0.875rem" // 14px
+    },
     // Nav heading, Table filter chip, Modal content, Button large, Paragraph, Toggle label
     body1: {
       fontWeight: 400,

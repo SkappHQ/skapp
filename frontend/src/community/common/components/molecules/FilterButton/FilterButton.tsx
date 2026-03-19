@@ -7,11 +7,11 @@ import {
   useTheme
 } from "@mui/material";
 import { BasicFilterStructure, Popper } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
-import Button from "~community/common/components/atoms/Button/Button";
 import styles from "~community/common/components/molecules/FilterButton/styles";
 import {
   ButtonSizes,
@@ -107,17 +107,19 @@ const FilterButton = ({
         {overflowFilters.length > 0 && (
           <Chip label={`+${overflowFilters.length}`} sx={classes.filterItem} />
         )}
-        <Button
-          buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-          label={translateText(["placeholder"])}
-          ariaLabel={translateAria(["label"])}
-          endIcon={<FilterIcon />}
+        <ButtonV2
+          variant={"tertiary"}
+          aria-label={translateAria(["label"])}
           onClick={(event: MouseEvent<HTMLElement>) =>
             handleFilterBtnClick(event)
           }
-          size={ButtonSizes.MEDIUM}
+          size={"md"}
           id="filter-button"
-        />
+          icon={<FilterIcon />}
+          iconPosition="end"
+        >
+          {translateText(["placeholder"])}
+        </ButtonV2>
       </Stack>
       <Popper
         anchorEl={anchorEl}

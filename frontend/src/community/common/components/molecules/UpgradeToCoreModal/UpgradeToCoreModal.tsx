@@ -1,5 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import Image from "next/image";
 import React from "react";
 
@@ -121,18 +122,9 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
 
           {/* Action Button */}
           {button && (
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={button.onClick}
-              sx={{
-                mt: 4,
-                borderRadius: 8,
-                padding: "10px 4px"
-              }}
-            >
+            <ButtonV2 variant="primary" onClick={button.onClick}>
               {button.children}
-            </Button>
+            </ButtonV2>
           )}
         </Box>
       </Box>

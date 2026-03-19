@@ -10,6 +10,7 @@ import {
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import React, {
   ChangeEvent,
   Dispatch,
@@ -26,11 +27,9 @@ import React, {
 import AnalyticsTeamIcon from "~community/common/assets/Icons/AnalyticsTeamIcon";
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
-import Button from "~community/common/components/atoms/Button/Button";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Popper from "~community/common/components/molecules/Popper/Popper";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   EmployeeSearchResultType,
@@ -145,6 +144,7 @@ const Search: FC<Props> = ({
   selectedIndex = -1
 }) => {
   const translateAria = useTranslator("commonAria", "components", "search");
+  const translateText = useTranslator("commonComponents", "search");
   const theme: Theme = useTheme();
   const ref = useRef<HTMLHeadingElement | null>(null);
   const [tabValue, setTabValue] = useState(0);
@@ -212,39 +212,20 @@ const Search: FC<Props> = ({
             paddingBottom: isManagerSearch ? "1.25rem" : ""
           }}
         >
-          <Button
-            buttonStyle={
-              selectedTab === "Individual"
-                ? ButtonStyle.SECONDARY
-                : ButtonStyle.TERTIARY
-            }
-            label={"Individual"}
+          <ButtonV2
+            variant={selectedTab === "Individual" ? "secondary" : "tertiary"}
             isFullWidth={false}
-            styles={{
-              px: "2.125rem",
-              py: "0.625rem",
-              fontSize: "1rem",
-              fontWeight: 400
-            }}
             onClick={() => searchButtonHandler("Individual")}
-          />
-          <Button
-            buttonStyle={
-              selectedTab === "Team"
-                ? ButtonStyle.SECONDARY
-                : ButtonStyle.TERTIARY
-            }
-            label={"Team"}
+          >
+            {translateText(["individual"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={selectedTab === "Team" ? "secondary" : "tertiary"}
             isFullWidth={false}
-            styles={{
-              px: "2.125rem",
-              py: "0.625rem",
-              fontSize: "1rem",
-              fontWeight: 400,
-              marginLeft: "1.125rem"
-            }}
             onClick={() => searchButtonHandler("Team")}
-          />
+          >
+            {translateText(["team"])}
+          </ButtonV2>
         </Stack>
       )}
       {label && (
@@ -579,24 +560,13 @@ const Search: FC<Props> = ({
               </Box>
             )}
             {isInviteMember && isCompanyEmail && (
-              <Button
-                label={"Invite to myLeave and add"}
-                endIcon={<PlusIcon />}
-                styles={{
-                  backgroundColor: "common.white",
-                  margin: "0.75rem",
-                  fontSize: "0.9375rem",
-                  lineHeight: "1.5625rem",
-                  width: "96%",
-                  height: "2.5rem",
-                  fontWeight: 400,
-                  "&:hover": {
-                    backgroundColor: "common.white",
-                    boxShadow: "none"
-                  }
-                }}
+              <ButtonV2
                 onClick={inviteClickHandler}
-              />
+                icon={<PlusIcon />}
+                iconPosition="end"
+              >
+                {"Invite to myLeave and add"}
+              </ButtonV2>
             )}
           </Box>
         </Popper>

@@ -1,7 +1,6 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
 import UserAssignedLeaveTypes from "~community/leave/components/molecules/UserAssignedLeaveTypes/UserAssignedLeaveTypes";
@@ -13,6 +12,7 @@ import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverl
 import leaveTypesMockData from "~enterprise/leave/data/leaveTypesMockData.json";
 
 import styles from "./styles";
+import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   selectedUser: number;
@@ -32,18 +32,18 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
     "individualLeaveAnalytics"
   );
 
-  const { isProTier } = useSessionData();
+  const { isCoreTier } = useTier();
 
   const { resetLeaveRequestParams } = useLeaveStore((state) => state);
 
   const [leaveTypesList, setLeaveTypesList] = useState<LeaveType[]>([]);
 
   const { data: leaveTypesData, isLoading: leaveTypeIsLoading } =
-    useGetLeaveTypes(isProTier);
+    useGetLeaveTypes(isCoreTier);
 
   const leaveTypes = useMemo(() => {
-    return isProTier ? leaveTypesData : leaveTypesMockData;
-  }, [isProTier, leaveTypesData]);
+    return isCoreTier ? leaveTypesData : leaveTypesMockData;
+  }, [isCoreTier, leaveTypesData]);
 
   useEffect(() => {
     if (leaveTypes && !leaveTypeIsLoading) setLeaveTypesList(leaveTypes);

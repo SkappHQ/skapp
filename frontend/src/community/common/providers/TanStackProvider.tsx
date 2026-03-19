@@ -13,7 +13,7 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import { useAuth } from "../../auth/providers/AuthProvider";
 
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, checkAuth } = useAuth();
 
   const [queryClient] = useState(() => {
     return new QueryClient({
@@ -32,9 +32,10 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const handleTokenRefresh = async () => {
       await getNewAccessToken();
+      await checkAuth();
       queryClient.invalidateQueries();
     };
-    
+
     const interceptor = authFetch.interceptors.response.use(
       (response) => response,
       async (error) => {
@@ -66,7 +67,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       authFetch.interceptors.response.eject(interceptor);
     };
-  }, [user]);
+  }, [user, checkAuth]);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

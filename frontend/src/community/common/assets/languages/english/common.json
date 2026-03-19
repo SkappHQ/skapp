@@ -86,6 +86,10 @@
     "drawer": {
       "getHelp": "Get Help",
       "applyLeaveBtn": "Apply Leave"
+    },
+    "search": {
+      "individual": "Individual",
+      "team": "Team"
     }
   },
   "durations": {

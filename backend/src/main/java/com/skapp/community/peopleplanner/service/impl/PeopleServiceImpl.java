@@ -106,7 +106,6 @@ import com.skapp.community.peopleplanner.util.Validations;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -194,9 +193,6 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeValidationService employeeValidationService;
 
 	private final EmployeeExportMapperService employeeExportMapperService;
-
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
 
 	@Override
 	@Transactional
@@ -438,7 +434,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (loginMethod == LoginMethod.CREDENTIALS) {
 			String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-			CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword, encryptSecret),
+			CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword),
 					user::setTempPassword);
 			CommonModuleUtils.setIfExists(() -> passwordEncoder.encode(tempPassword), user::setPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
@@ -461,8 +457,7 @@ public class PeopleServiceImpl implements PeopleService {
 				user::setEmail);
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-		CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword, encryptSecret),
-				user::setTempPassword);
+		CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword), user::setTempPassword);
 		CommonModuleUtils.setIfExists(() -> passwordEncoder.encode(tempPassword), user::setPassword);
 
 		peopleEmailService.sendUserInvitationEmail(user);
@@ -1013,7 +1008,7 @@ public class PeopleServiceImpl implements PeopleService {
 		if (user.getLoginMethod() == LoginMethod.CREDENTIALS) {
 			EmployeeCredentialsResponseDto credentials = new EmployeeCredentialsResponseDto();
 			credentials.setEmail(employee.getUser() != null ? employee.getUser().getEmail() : null);
-			credentials.setTempPassword(encryptionDecryptionService.decrypt(user.getTempPassword(), encryptSecret));
+			credentials.setTempPassword(encryptionDecryptionService.decrypt(user.getTempPassword()));
 			responseDto.setEmployeeCredentials(credentials);
 		}
 
@@ -1842,7 +1837,7 @@ public class PeopleServiceImpl implements PeopleService {
 		else {
 			String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 
-			user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword, encryptSecret));
+			user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
 			user.setPassword(passwordEncoder.encode(tempPassword));
 			user.setIsPasswordChangedForTheFirstTime(false);
 

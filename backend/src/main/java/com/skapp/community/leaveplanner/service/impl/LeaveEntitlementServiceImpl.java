@@ -75,6 +75,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -85,6 +86,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -908,15 +910,25 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		List<CustomEntitlementDto> entitlementDtos = entitlements.stream()
 			.filter(entitlement -> entitlement.isActive() && !entitlement.isManual()
 					&& isDateInRange(entitlement.getValidFrom(), entitlement.getValidTo(), validFrom, validTo))
-			.map(entitlement -> {
-				CustomEntitlementDto entitlementDto = new CustomEntitlementDto();
-				entitlementDto.setLeaveTypeId(entitlement.getLeaveType().getTypeId());
-				entitlementDto.setTotalDaysAllocated(entitlement.getTotalDaysAllocated().toString());
-				entitlementDto.setName(entitlement.getLeaveType().getName());
-				entitlementDto.setValidFrom(entitlement.getValidFrom());
-				entitlementDto.setValidTo(entitlement.getValidTo());
-				return entitlementDto;
-			})
+			.collect(Collectors.toMap(entitlement -> entitlement.getLeaveType().getTypeId(), entitlement -> {
+				CustomEntitlementDto customEntitlementDto = new CustomEntitlementDto();
+				customEntitlementDto.setLeaveTypeId(entitlement.getLeaveType().getTypeId());
+				customEntitlementDto.setName(entitlement.getLeaveType().getName());
+				customEntitlementDto.setValidFrom(entitlement.getValidFrom());
+				customEntitlementDto.setValidTo(entitlement.getValidTo());
+				customEntitlementDto.setTotalDaysAllocated(entitlement.getTotalDaysAllocated() != null
+						? String.valueOf(entitlement.getTotalDaysAllocated()) : "0.0");
+				return customEntitlementDto;
+			}, (existingEntitlement, incomingEntitlement) -> {
+				// Merge duplicate leave types by summing allocated days
+				float merged = Float.parseFloat(existingEntitlement.getTotalDaysAllocated())
+						+ Float.parseFloat(incomingEntitlement.getTotalDaysAllocated());
+				existingEntitlement.setTotalDaysAllocated(String.valueOf(merged));
+				return existingEntitlement;
+			}))
+			.values()
+			.stream()
+			.sorted(Comparator.comparing(CustomEntitlementDto::getName))
 			.toList();
 
 		dto.setEntitlements(entitlementDtos);

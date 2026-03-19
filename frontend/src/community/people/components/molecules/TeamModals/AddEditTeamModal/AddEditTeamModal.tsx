@@ -1,19 +1,19 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import TeamMemberAutocompleteSearch from "~community/common/components/molecules/AutocompleteSearch/TeamMemberAutocompleteSearch";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { hasSpecialCharacter } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import { useGetSearchedEmployees } from "~community/people/api/PeopleApi";
 import { useCreateTeam, useUpdateTeam } from "~community/people/api/TeamApi";
 import AddTeamMemberRow from "~community/people/components/molecules/AddTeamMemberRow/AddTeamMemberRow";
@@ -448,41 +448,38 @@ const AddEditTeamModal = ({
       )}
       {!isSelectingMembers && isPeopleAdmin && (
         <Box>
-          <Button
-            label={translateText(["saveBtnText"])}
-            styles={{
-              mt: "1rem"
-            }}
-            buttonStyle={ButtonStyle.PRIMARY}
-            endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          <ButtonV2
+            variant={"primary"}
             onClick={() => handleSubmit()}
-            shouldBlink={
+            className={getBlinkClass(
               values.teamName && values.teamSupervisors?.length > 0
                 ? ongoingQuickSetup.DEFINE_TEAMS
                 : false
-            }
-          />
-          <Button
-            label={translateText(["cancelBtnText"])}
-            styles={{
-              mt: "1rem"
-            }}
-            buttonStyle={ButtonStyle.TERTIARY}
-            endIcon={<Icon name={IconName.CLOSE_ICON} />}
+            )}
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["saveBtnText"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"tertiary"}
             onClick={handleCancel}
-          />
+            icon={<Icon name={IconName.CLOSE_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["cancelBtnText"])}
+          </ButtonV2>
         </Box>
       )}
       {!isPeopleAdmin && (
-        <Button
-          label={translateText(["goBackBtnText"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.TERTIARY}
-          startIcon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+        <ButtonV2
+          variant={"tertiary"}
           onClick={handleCancel}
-        />
+          icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+          iconPosition="start"
+        >
+          {translateText(["goBackBtnText"])}
+        </ButtonV2>
       )}
     </Box>
   );

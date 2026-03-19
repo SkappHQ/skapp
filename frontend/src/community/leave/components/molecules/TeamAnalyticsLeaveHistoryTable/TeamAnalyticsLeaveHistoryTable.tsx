@@ -4,6 +4,7 @@ import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";

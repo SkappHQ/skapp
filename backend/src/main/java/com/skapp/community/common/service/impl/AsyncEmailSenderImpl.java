@@ -12,7 +12,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -34,9 +33,6 @@ public class AsyncEmailSenderImpl implements AsyncEmailSender {
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
 	private final JsonMapper objectMapper;
-
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
 
 	@Override
 	public void sendMail(String to, String subject, String htmlBody, Map<String, String> placeholders) {
@@ -82,7 +78,7 @@ public class AsyncEmailSenderImpl implements AsyncEmailSender {
 			mailSender.setHost(emailConfigDto.getEmailServiceProvider());
 			mailSender.setPort(emailConfigDto.getPortNumber());
 			mailSender.setUsername(emailConfigDto.getUsername());
-			mailSender.setPassword(encryptionDecryptionService.decrypt(emailConfigDto.getAppPassword(), encryptSecret));
+			mailSender.setPassword(encryptionDecryptionService.decrypt(emailConfigDto.getAppPassword()));
 
 			Properties props = mailSender.getJavaMailProperties();
 			props.put("mail.smtp.auth", "true");
