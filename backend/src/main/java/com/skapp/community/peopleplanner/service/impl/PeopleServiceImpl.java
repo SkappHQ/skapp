@@ -1156,6 +1156,8 @@ public class PeopleServiceImpl implements PeopleService {
 		List<EmployeeDetailedResponseDto> employeeResponseDtos = peopleMapper
 			.employeeListToEmployeeDetailedResponseDtoList(employees);
 
+		employeeResponseDtos.forEach(this::stripSensitiveFieldsForDirectoryListing);
+
 		log.info("searchEmployeesByNameOrEmail: execution ended");
 		return new ResponseEntityDto(false, employeeResponseDtos);
 	}
