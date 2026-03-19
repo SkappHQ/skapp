@@ -15,9 +15,28 @@ import { tenantID } from "../utils/axiosInterceptor";
 const useSessionData = () => {
   const { user, isLoading, isAuthenticated } = useAuth();
 
-  const isFreeTier = useMemo(() => user?.tier === TierEnum.FREE, [user?.tier]);
+  const isFreeTier = useMemo(() => {
+    if (user?.tier !== undefined) {
+      return user.tier === TierEnum.FREE;
+    }
+    return (
+      (user?.tiers?.includes(TierEnum.FREE) &&
+        !user?.tiers?.includes(TierEnum.CORE) &&
+        !user?.tiers?.includes(TierEnum.PRO)) ??
+      false
+    );
+  }, [user?.tier, user?.tiers]);
 
-  const isProTier = useMemo(() => user?.tier === TierEnum.PRO, [user?.tier]);
+  const isProTier = useMemo(() => {
+    if (user?.tier !== undefined) {
+      return user.tier === TierEnum.PRO || user.tier === TierEnum.CORE;
+    }
+    return (
+      (user?.tiers?.includes(TierEnum.PRO) ||
+        user?.tiers?.includes(TierEnum.CORE)) ??
+      false
+    );
+  }, [user?.tier, user?.tiers]);
 
   const isLeaveModuleEnabled = useMemo(
     () => user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE),

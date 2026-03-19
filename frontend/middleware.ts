@@ -16,6 +16,7 @@ import {
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
+import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
 const commonRoutes = [
@@ -253,7 +254,7 @@ export function middleware(request: NextRequest) {
 
     if (
       request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
-      claims?.tier !== "PRO"
+      !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
     ) {
       return NextResponse.redirect(
         new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
