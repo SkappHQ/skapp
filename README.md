@@ -21,3 +21,5 @@ The official [Skapp](https://skapp.com/) community project.
 ### Logo and Trademark Policy
 
 - Please read our [Trademark Policy](https://github.com/SkappHQ/skapp-fe/blob/main/TRADEMARK_POLICY.md).
+
+
