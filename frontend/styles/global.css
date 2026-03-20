@@ -259,7 +259,7 @@ input[type="number"] {
 
 .driver-popover .driver-popover-title {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 700;
   line-height: 140%;
   font-family: var(--app-font-family);
 }
