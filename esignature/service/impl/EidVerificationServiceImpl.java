@@ -337,7 +337,7 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		recipientDao.save(recipient);
 
 		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(recipient.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_IDENTITY_VERIFIED, null, null, null);
+				AuditAction.ENVELOPE_IDENTITY_VERIFIED, null, session.getEndUserIp(), null);
 		auditTrailDao.save(auditTrail);
 
 		log.info("updateRecipientVerificationStatus: Recipient eID {} status updated to VERIFIED for recipient={}",
