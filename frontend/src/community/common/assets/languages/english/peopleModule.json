@@ -190,7 +190,8 @@
   },
 
   "editAllInfo": {
-    "tabTitle": "View Profile | Skapp",
+    "tabTitle": "Edit Profile | Skapp",
+    "title": "Edit Profile",
     "personal": "Personal",
     "emergency": "Emergency",
     "employment": "Employment",

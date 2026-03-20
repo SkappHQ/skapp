@@ -506,7 +506,6 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
                 <BasicChip
                   label={getTimeElapsedSinceDate(cardData?.joinedDate)}
                   tabIndex={-1}
-                  ariaHidden={true}
                   chipStyles={{
                     color: "common.black",
                     fontWeight: 400,
@@ -589,14 +588,10 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
                     </Box>
                   )}
               </Stack>
-              <Box
-                tabIndex={0}
-                aria-label={`${translateTerminationText(["status"])} : ${toPascalCase(employmentStatus)}`}
-              >
+              <Box>
                 <BasicChip
                   label={toPascalCase(employmentStatus)}
                   tabIndex={-1}
-                  ariaHidden={true}
                   chipStyles={{
                     color: statusStyle?.color || "common.black",
                     fontWeight: 400,
