@@ -4,7 +4,8 @@ import { ChangeEvent, useState } from "react";
 import { useGetNotifications } from "~community/common/api/notificationsApi";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import Notifications from "~community/common/components/organisms/Notifications/Notifications";
-import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import FullWidthContentLayout from "~community/common/components/templates/FullWidthContentLayout/FullWidthContentLayout";
+import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   SortKeyTypes,
@@ -24,29 +25,24 @@ const NotificationsPage: NextPage = () => {
   const notifications = data?.results?.[0];
 
   return (
-    <>
-      <ContentLayout
-        pageHead={translateText(["pageHead"])}
-        title={translateText(["title"])}
-        isDividerVisible={false}
-      >
-        <>
-          <Notifications
-            data={notifications}
-            isLoading={isLoading}
-            refetch={refetch}
-          />
-          <Pagination
-            totalPages={data?.results?.[0].totalPages || 1}
-            currentPage={currentPage}
-            onChange={(_event: ChangeEvent<unknown>, value: number) =>
-              // back-end pagination is starting from 0, so we need to subtract 1 from the value
-              setCurrentPage(value - 1)
-            }
-          />
-        </>
-      </ContentLayout>
-    </>
+    <FullWidthContentLayout title={translateText(["title"])} primaryButtonProps={{la}}>
+      <>
+        <Notifications
+          data={notifications}
+          isLoading={isLoading}
+          refetch={refetch}
+        />
+        {/* <Pagination
+          tableName={TableNames.NOTIFICATIONS}
+          totalPages={data?.results?.[0].totalPages || 1}
+          currentPage={currentPage}
+          onChange={(_event: ChangeEvent<unknown>, value: number) =>
+            // back-end pagination is starting from 0, so we need to subtract 1 from the value
+            setCurrentPage(value - 1)
+          }
+        /> */}
+      </>
+    </FullWidthContentLayout>
   );
 };
 export default NotificationsPage;
