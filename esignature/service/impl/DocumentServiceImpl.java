@@ -622,7 +622,8 @@ public class DocumentServiceImpl implements DocumentService {
 		byte[] updatedDocumentBytes = mergeFieldsToLatestDocument(fieldVersionList, documentBytes, keyPairSign,
 				advanceFields);
 
-		documentBytes = null; // Help GC
+		// Null out to allow GC to reclaim the pre-certificate document copy
+		documentBytes = null;
 
 		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
 
@@ -630,7 +631,8 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
 				keyPairSign.getPrivate(), currentAddressBookUser, updatedDocumentBytes);
 
-		updatedDocumentBytes = null; // Help GC
+		// Null out to allow GC to reclaim the pre-certificate document copy
+		updatedDocumentBytes = null;
 
 		documentVersionDao.save(newVersion);
 
