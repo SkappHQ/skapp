@@ -159,7 +159,7 @@ const DropdownAutocomplete: FC<Props> = ({
                   "&.Mui-disabled": {
                     WebkitTextFillColor: theme.palette.grey[700]
                   },
-                  color: theme.palette.grey[700],
+                  color: theme.palette.text.secondary,
                   fontSize: "1rem",
                   fontWeight: 400
                 }

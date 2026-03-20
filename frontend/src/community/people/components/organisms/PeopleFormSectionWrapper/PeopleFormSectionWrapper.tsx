@@ -67,7 +67,7 @@ const PeopleFormSectionWrapper = ({
                 width="100%"
                 gap={3}
               >
-                <Typography variant="h2">{title}</Typography>
+                {title && <Typography variant="h2">{title}</Typography>}
               </Stack>
             </Stack>
           </Box>

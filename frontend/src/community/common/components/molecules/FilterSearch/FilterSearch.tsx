@@ -151,7 +151,9 @@ const FilterSearch: FC<Props> = ({
               sx={{
                 flex: 1,
                 "& input::placeholder": {
-                  fontSize: "1rem"
+                  fontSize: "1rem",
+                  color: theme.palette.text.secondary,
+                  opacity: 1
                 },
                 ...inputStyles
               }}
