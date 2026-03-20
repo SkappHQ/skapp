@@ -36,6 +36,7 @@ const ChartNavigationArrows = ({
 }: Props) => {
   const classes = styles();
 
+  
   if (!hasData) {
     return null;
   }
