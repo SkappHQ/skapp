@@ -4,6 +4,7 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import {
   FC,
+  KeyboardEvent,
   MouseEvent,
   useCallback,
   useEffect,
@@ -248,8 +249,10 @@ const PeopleTable: FC<Props> = ({
     setSelectedEmployees(selectedPeople);
   }, [selectedPeople]);
 
-  const handleFilterClick = (event: MouseEvent<HTMLElement>): void => {
-    setFilterEl(event.currentTarget);
+  const handleFilterClick = (
+    event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLButtonElement>
+  ): void => {
+    setFilterEl(event.currentTarget as HTMLElement);
     setFilterOpen((previousOpen) => !previousOpen);
   };
 

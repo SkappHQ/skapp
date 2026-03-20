@@ -1,8 +1,9 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Stack, useTheme } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC, MouseEvent } from "react";
+import { FC, KeyboardEvent, MouseEvent } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import { peopleDirectoryTestId } from "~community/common/constants/testIds";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -12,7 +13,9 @@ import { usePeopleStore } from "~community/people/store/store";
 import ShowSelectedFilters from "../ShowSelectedFilters/ShowSelectedFilters";
 
 interface Props {
-  handleFilterClick?: (event: MouseEvent<HTMLElement>) => void;
+  handleFilterClick?: (
+    event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLButtonElement>
+  ) => void;
   filterId: string | undefined;
   disabled: boolean;
 }
@@ -26,6 +29,7 @@ const EmployeeTableFilterButton: FC<Props> = ({
   const { appliedEmployeeDataFilter, removeEmployeeFilter } = usePeopleStore(
     (state) => state
   );
+  const theme = useTheme();
 
   const removeFilters = (label?: string) => {
     removeEmployeeFilter(label);
@@ -35,36 +39,39 @@ const EmployeeTableFilterButton: FC<Props> = ({
 
   return (
     <Stack direction="row">
-      <Box
-        sx={{
-          alignItems: "center",
-          padding: "0.5rem 1rem",
-          height: "2.3125rem"
-        }}
-      >
-        {flatListValues(appliedEmployeeDataFilter).length !== 0 && (
-          <Typography variant={"body1"}>{translateText(["filter"])}</Typography>
-        )}
-      </Box>
       <Stack direction="row" spacing={"0.25rem"} alignItems="center">
         <ShowSelectedFilters
           filterOptions={flatListValues(appliedEmployeeDataFilter)}
           onDeleteIcon={removeFilters}
         />
-        <ButtonV2
-          variant={"tertiary"}
-          size={"md"}
-          onClick={handleFilterClick}
-          disabled={disabled}
-          aria-describedby={filterId}
-          data-testid={peopleDirectoryTestId.buttons.filterBtn}
-          icon={<Icon name={IconName.FILTER_ICON} />}
-          iconPosition="end"
-        >
-          {flatListValues(appliedEmployeeDataFilter).length === 0
-            ? translateText(["filter"])
-            : ""}
-        </ButtonV2>
+        {flatListValues(appliedEmployeeDataFilter).length === 0 ? (
+          <ButtonV2
+            variant={"tertiary"}
+            size={"md"}
+            onClick={handleFilterClick}
+            disabled={disabled}
+            aria-describedby={filterId}
+            data-testid={peopleDirectoryTestId.buttons.filterBtn}
+            icon={<Icon name={IconName.FILTER_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["filter"])}
+          </ButtonV2>
+        ) : (
+          <IconButton
+            onClick={handleFilterClick}
+            disabled={disabled}
+            aria-describedby={filterId}
+            data-testid={peopleDirectoryTestId.buttons.filterBtn}
+            icon={<Icon name={IconName.FILTER_ICON} />}
+            buttonStyles={{
+              width: "3.25rem",
+              height: "3rem",
+              backgroundColor: theme.palette.grey[100],
+              border: `0.0625rem solid ${theme.palette.grey[500]}`
+            }}
+          />
+        )}
       </Stack>
     </Stack>
   );

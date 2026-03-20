@@ -82,6 +82,7 @@ const DemographicsSection = ({
               }}
               chipStyles={{
                 display: "flex",
+                alignItems: "center",
                 textAlign: "left",
                 backgroundColor:
                   employeeDataFilter.gender === genderItem.value
@@ -91,10 +92,11 @@ const DemographicsSection = ({
                   employeeDataFilter.gender === genderItem.value
                     ? theme.palette.primary.dark
                     : "black",
+                height: "32px",
                 padding: "8px 12px",
                 borderRadius: 5,
                 marginBottom: 2,
-                fontSize: isSmallScreen ? "0.75rem" : "0.875rem",
+                fontSize: "0.75rem",
                 border:
                   employeeDataFilter.gender === genderItem.value
                     ? `1px solid ${theme.palette.secondary.dark}`
