@@ -113,6 +113,7 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
       <ButtonV2
         variant={"tertiary"}
         onClick={handleSignOut}
+        isFullWidth
         icon={<Icon name={IconName.SIGNOUT_ICON} />}
         iconPosition="start"
         className="mt-3"
