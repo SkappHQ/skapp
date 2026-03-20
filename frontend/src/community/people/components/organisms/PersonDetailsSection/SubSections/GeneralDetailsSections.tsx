@@ -421,7 +421,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                       mt: "0rem"
                     }}
                     labelStyles={{
-                      color: theme.palette.grey.A100
+                      color: theme.palette.text.blackText
                     }}
                   />
                 </div>

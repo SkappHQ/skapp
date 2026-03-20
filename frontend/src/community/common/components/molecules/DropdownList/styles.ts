@@ -61,7 +61,7 @@ export const styles = (theme: Theme) => ({
       cursor: isDisabled || readOnly ? "default" : "pointer"
     },
     "&& .MuiInputBase-input::placeholder": {
-      color: theme.palette.grey[700],
+      color: theme.palette.text.secondary,
       opacity: 1
     },
     "& .MuiSelect-icon": {
@@ -75,7 +75,7 @@ export const styles = (theme: Theme) => ({
   }),
 
   placeholderStyle: {
-    color: theme.palette.grey[600],
+    color: theme.palette.text.secondary,
     fontWeight: 400,
     opacity: 1,
     font: "inherit"

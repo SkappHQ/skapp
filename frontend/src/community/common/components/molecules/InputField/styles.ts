@@ -77,7 +77,7 @@ const styles = (theme: Theme): StyleProps => ({
       borderRadius: "0.5rem"
     },
     "&& .MuiInputBase-input::placeholder": {
-      color: theme.palette.grey[600],
+      color: theme.palette.text.secondary,
       opacity: 1
     }
   },

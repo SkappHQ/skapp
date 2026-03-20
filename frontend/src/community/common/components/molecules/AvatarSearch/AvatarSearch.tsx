@@ -188,7 +188,7 @@ const AvatarSearch = ({
               (errors ?? "")
                 ? theme.palette.error.contrastText
                 : isDisabledLabel
-                  ? theme.palette.text.disabled
+                  ? theme.palette.text.secondary
                   : "common.black"
           }}
         >
@@ -289,7 +289,7 @@ const AvatarSearch = ({
               placeHolder={isPlaceholderAvailable() ? "" : placeholder}
               inputStyles={{
                 "& input::placeholder": {
-                  color: theme.palette.grey[600],
+                  color: theme.palette.text.secondary,
                   opacity: 1,
                   fontSize: "1rem",
                   fontWeight: 400
