@@ -15,7 +15,8 @@ public enum AuditAction {
 	ENVELOPE_EXPIRED, // Envelope expired
 	ENVELOPE_DOWNLOADED, // Envelope downloaded by recipient
 	ENVELOPE_COMPLETED, // Full envelope completion (all recipients finished)
-	ENVELOPE_CUSTODY_TRANSFERRED; // Envelope ownership/custody transferred
+	ENVELOPE_CUSTODY_TRANSFERRED, // Envelope ownership/custody transferred
+	ENVELOPE_IDENTITY_VERIFIED; // Identity verification successful (e.g., eID)
 
 	public static boolean isWebAllowedAction(AuditAction action) {
 		return List.of(ENVELOPE_VIEWED, ENVELOPE_DOWNLOADED).contains(action);
