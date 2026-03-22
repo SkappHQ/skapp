@@ -297,7 +297,7 @@ const AddNewResourceModal = () => {
               values.firstName !== "" &&
               values.lastName !== ""
           )}
-          icon={<Icon name={IconName.FORWARD_ARROW} />}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
           iconPosition="end"
         >
           {generalTexts(["save"])}
