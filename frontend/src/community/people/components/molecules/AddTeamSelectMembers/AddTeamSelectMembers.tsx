@@ -1,5 +1,4 @@
-import { Box, Checkbox, Stack, Typography } from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
+import { Checkbox } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
@@ -11,8 +10,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
 import { TeamMemberTypes } from "~community/people/types/TeamTypes";
-
-import styles from "./styles";
 
 interface Props {
   allUsers: EmployeeDataType[];
@@ -27,8 +24,6 @@ const AddTeamSelectMembers: FC<Props> = ({
   setTeamMembers,
   setIsSelectMembersOpen
 }) => {
-  const theme: Theme = useTheme();
-  const classes = styles(theme);
   const translateText = useTranslator("peopleModule", "teams");
 
   const [usersChecked, setUsersChecked] = useState<readonly EmployeeDataType[]>(
@@ -90,49 +85,33 @@ const AddTeamSelectMembers: FC<Props> = ({
 
   return (
     <>
-      <Box>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          sx={{ mr: "1.25rem" }}
-        >
-          <Typography variant="body1" fontWeight={500} lineHeight="1.5rem">
+      <div>
+        <div className="flex flex-row justify-between mr-5 mt-2">
+          <p className="text-base font-medium leading-6">
             {translateText(["memberListTitle"])}
-          </Typography>
-          <Box>
-            <KebabMenu
-              id="add-team-kebab-menu"
-              menuItems={kebabMenuOptions}
-              icon={<Icon name={IconName.MORE_ICON} />}
-              customStyles={{ menu: { zIndex: ZIndexEnums.MODAL } }}
-            />
-          </Box>
-        </Stack>
+          </p>
+          <KebabMenu
+            id="add-team-kebab-menu"
+            menuItems={kebabMenuOptions}
+            icon={<Icon name={IconName.MORE_ICON} />}
+            customStyles={{ menu: { zIndex: ZIndexEnums.NEWMODAL } }}
+          />
+        </div>
 
         {allUsers?.length && (
-          <Stack
-            direction="column"
-            sx={classes.userList}
-            spacing={".75rem"}
-            alignItems={"flex-start"}
-            maxHeight={"20vh"}
-            overflow="auto"
-          >
+          <div className="mr-5 mt-3 flex flex-col gap-3 max-h-[20vh] overflow-auto items-start">
             {allUsers?.map((user: EmployeeDataType) => {
               return (
-                <Stack
+                <div
                   key={user?.employeeId}
-                  width={"100%"}
-                  flexDirection="row"
-                  alignItems="center"
-                  sx={{ py: ".125rem" }}
+                  className="w-full flex flex-row items-center py-0.5"
                 >
                   <Checkbox
                     checked={usersChecked?.includes(user)}
                     inputProps={{
                       "aria-label": `${user?.firstName ?? ""} ${user?.lastName ?? ""} ${user?.jobLevel ?? ""} ${user?.jobRole ?? ""}`
                     }}
-                    sx={classes.checkBox}
+                    sx={{ p: 0, color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
                     onClick={handelToggle(user)}
                   />
                   <AvatarChip
@@ -140,31 +119,20 @@ const AddTeamSelectMembers: FC<Props> = ({
                     lastName={user?.lastName}
                     avatarUrl={user?.avatarUrl}
                     isResponsiveLayout={false}
-                    chipStyles={classes.avatarChip}
+                    chipStyles={{ color: "common.black", p: 0, ml: ".875rem" }}
                   />
-                  <Typography sx={classes.jobTitle}>
+                  <p className="ml-3 text-xs font-normal" style={{ color: "var(--palette-primary-dark)" }}>
                     {`${user?.jobLevel ?? ""} ${user?.jobRole ?? ""}`}
-                  </Typography>
-                </Stack>
+                  </p>
+                </div>
               );
             })}
-          </Stack>
+          </div>
         )}
-      </Box>
-      <Box sx={{ mr: "1.25rem" }}>
-        <ButtonV2
-          variant={"error"}
-          isFullWidth={true}
-          disabled={!(usersChecked?.length > 0)}
-          onClick={handleRemove}
-          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["removeFromTeam"])}
-        </ButtonV2>
+      </div>
+      <div className="flex flex-row justify-end gap-3 mt-4">
         <ButtonV2
           variant={"tertiary"}
-          isFullWidth={true}
           onClick={() => {
             setIsSelectMembersOpen(false);
           }}
@@ -173,7 +141,16 @@ const AddTeamSelectMembers: FC<Props> = ({
         >
           {translateText(["cancelBtnText"])}
         </ButtonV2>
-      </Box>
+        <ButtonV2
+          variant={"error"}
+          disabled={!(usersChecked?.length > 0)}
+          onClick={handleRemove}
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} fill={(usersChecked?.length > 0) ? "var(--color-semantic-red-text)" : undefined} />}
+          iconPosition="end"
+        >
+          {translateText(["removeFromTeam"])}
+        </ButtonV2>
+      </div>
     </>
   );
 };

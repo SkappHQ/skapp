@@ -1,4 +1,3 @@
-import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
@@ -330,7 +329,7 @@ const AddEditTeamModal = ({
   ]);
 
   return (
-    <Box component="div" aria-hidden="true">
+    <div aria-hidden="true">
       <InputField
         id="team-name-input"
         inputName={"teamName"}
@@ -353,7 +352,7 @@ const AddEditTeamModal = ({
         isDisabled={!isPeopleAdmin}
       />
       {isPeopleAdmin && (
-        <Box sx={{ mt: "0.5rem" }}>
+        <div className="mt-2">
           <TeamMemberAutocompleteSearch
             isDisabled={false}
             name="searchTeamMemberInput"
@@ -372,57 +371,33 @@ const AddEditTeamModal = ({
             onChange={(value) => onSelectUser(value)}
             error={searchErrors}
           />
-        </Box>
+        </div>
       )}
       {!isSelectingMembers && allSelectedUsers?.length > 0 && (
-        <Box>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            sx={{ mr: "1.25rem", mt: "0.5rem" }}
-          >
-            <Typography variant="body1" fontWeight={500} lineHeight="1.5rem">
+        <div>
+          <div className="flex flex-row justify-between mr-5 mt-2">
+            <p className="text-base font-medium leading-6">
               {translateText(["memberListTitle"])}
-            </Typography>
+            </p>
             {isPeopleAdmin && (
-              <Box>
-                <KebabMenu
-                  id="add-team-kebab-menu"
-                  menuItems={kebabMenuOptions}
-                  icon={<Icon name={IconName.MORE_ICON} />}
-                  customStyles={{ menu: { zIndex: ZIndexEnums.MODAL } }}
-                />
-              </Box>
+              <KebabMenu
+                id="add-team-kebab-menu"
+                menuItems={kebabMenuOptions}
+                icon={<Icon name={IconName.MORE_ICON} />}
+                customStyles={{ menu: { zIndex: ZIndexEnums.NEWMODAL } }}
+              />
             )}
-          </Stack>
-          <Stack
-            sx={{ pr: "0.125rem", mt: "0.75rem" }}
-            maxHeight={"20vh"}
-            overflow="auto"
-            spacing="0.75rem"
+          </div>
+          <div
+            className="pr-0.5 mt-3 max-h-[20vh] overflow-auto flex flex-col gap-3"
             id={values.teamMembers?.length > 0 ? "team-members-list" : ""}
           >
-            <>
-              {values?.teamSupervisors?.map(
-                (employee: EmployeeDataType, index) => (
-                  <AddTeamMemberRow
-                    id={"supervisor-".concat(index.toString())}
-                    key={employee?.employeeId}
-                    userType={MemberTypes.SUPERVISOR}
-                    employeeData={employee}
-                    teamMembers={{
-                      supervisor: values.teamSupervisors,
-                      members: values.teamMembers
-                    }}
-                    setTeamMembers={setTeamMembers}
-                  />
-                )
-              )}
-              {values.teamMembers.map((employee: EmployeeDataType, index) => (
+            {values?.teamSupervisors?.map(
+              (employee: EmployeeDataType, index) => (
                 <AddTeamMemberRow
-                  id={"member-".concat(index.toString())}
+                  id={"supervisor-".concat(index.toString())}
                   key={employee?.employeeId}
-                  userType={MemberTypes.MEMBER}
+                  userType={MemberTypes.SUPERVISOR}
                   employeeData={employee}
                   teamMembers={{
                     supervisor: values.teamSupervisors,
@@ -430,10 +405,23 @@ const AddEditTeamModal = ({
                   }}
                   setTeamMembers={setTeamMembers}
                 />
-              ))}
-            </>
-          </Stack>
-        </Box>
+              )
+            )}
+            {values.teamMembers.map((employee: EmployeeDataType, index) => (
+              <AddTeamMemberRow
+                id={"member-".concat(index.toString())}
+                key={employee?.employeeId}
+                userType={MemberTypes.MEMBER}
+                employeeData={employee}
+                teamMembers={{
+                  supervisor: values.teamSupervisors,
+                  members: values.teamMembers
+                }}
+                setTeamMembers={setTeamMembers}
+              />
+            ))}
+          </div>
+        </div>
       )}
       {isSelectingMembers && (
         <AddTeamSelectMembers
@@ -447,7 +435,15 @@ const AddEditTeamModal = ({
         />
       )}
       {!isSelectingMembers && isPeopleAdmin && (
-        <Box>
+        <div className="flex flex-row justify-end gap-3 mt-4">
+          <ButtonV2
+            variant={"tertiary"}
+            onClick={handleCancel}
+            icon={<Icon name={IconName.CLOSE_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["cancelBtnText"])}
+          </ButtonV2>
           <ButtonV2
             variant={"primary"}
             onClick={() => handleSubmit()}
@@ -461,27 +457,21 @@ const AddEditTeamModal = ({
           >
             {translateText(["saveBtnText"])}
           </ButtonV2>
+        </div>
+      )}
+      {!isPeopleAdmin && (
+        <div className="flex flex-row justify-end gap-3 mt-4">
           <ButtonV2
             variant={"tertiary"}
             onClick={handleCancel}
-            icon={<Icon name={IconName.CLOSE_ICON} />}
-            iconPosition="end"
+            icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+            iconPosition="start"
           >
-            {translateText(["cancelBtnText"])}
+            {translateText(["goBackBtnText"])}
           </ButtonV2>
-        </Box>
+        </div>
       )}
-      {!isPeopleAdmin && (
-        <ButtonV2
-          variant={"tertiary"}
-          onClick={handleCancel}
-          icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
-          iconPosition="start"
-        >
-          {translateText(["goBackBtnText"])}
-        </ButtonV2>
-      )}
-    </Box>
+    </div>
   );
 };
 
