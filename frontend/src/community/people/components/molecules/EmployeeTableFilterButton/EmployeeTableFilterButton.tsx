@@ -64,6 +64,8 @@ const EmployeeTableFilterButton: FC<Props> = ({
             aria-describedby={filterId}
             data-testid={peopleDirectoryTestId.buttons.filterBtn}
             icon={<Icon name={IconName.FILTER_ICON} />}
+            ariaLabel={translateText(["filter"])}
+            title={translateText(["filter"])}
             buttonStyles={{
               width: "3.25rem",
               height: "3rem",

@@ -5,7 +5,6 @@ import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicC
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DropdownAutocomplete from "~community/common/components/molecules/DropdownAutocomplete/DropdownAutocomplete";
-import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -22,9 +21,6 @@ const DemographicsSection = ({
   basicChipRef: RefObject<{ [key: string]: HTMLDivElement | null }>;
 }) => {
   const theme = useTheme();
-
-  const queryMatches = useMediaQuery();
-  const isSmallScreen = queryMatches(`(max-width: 1150px)`);
 
   const translateText = useTranslator(
     "peopleModule",
