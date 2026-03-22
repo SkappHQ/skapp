@@ -29,6 +29,7 @@ import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EidFlowType;
+import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
 import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
 import com.skapp.enterprise.esignature.util.EsignUtil;
@@ -336,8 +337,9 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		recipientDao.save(recipient);
 
-		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(recipient.getEnvelope(), recipient,
-				AuditAction.ENVELOPE_IDENTITY_VERIFIED, null, session.getEndUserIp(), null);
+		AuditAction auditAction = resolveIdentityVerifiedAuditAction(session.getProviderType());
+		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(recipient.getEnvelope(), recipient, auditAction,
+				recipient.getAddressBook(), session.getEndUserIp(), null);
 		auditTrailDao.save(auditTrail);
 
 		log.info("updateRecipientVerificationStatus: Recipient eID {} status updated to VERIFIED for recipient={}",
@@ -363,6 +365,13 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		}
 
 		return endUserIp;
+	}
+
+	private AuditAction resolveIdentityVerifiedAuditAction(EidProviderType providerType) {
+		return switch (providerType) {
+			case SWEDISH_BANKID -> AuditAction.ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID;
+			default -> throw new IllegalArgumentException("Unsupported eID provider type: " + providerType);
+		};
 	}
 
 	private String generateUserVisibleData(Document document) {

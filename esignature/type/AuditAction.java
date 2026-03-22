@@ -16,7 +16,7 @@ public enum AuditAction {
 	ENVELOPE_DOWNLOADED, // Envelope downloaded by recipient
 	ENVELOPE_COMPLETED, // Full envelope completion (all recipients finished)
 	ENVELOPE_CUSTODY_TRANSFERRED, // Envelope ownership/custody transferred
-	ENVELOPE_IDENTITY_VERIFIED; // Identity verification successful (e.g., eID)
+	ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID; // Identity verified via Swedish BankID
 
 	public static boolean isWebAllowedAction(AuditAction action) {
 		return List.of(ENVELOPE_VIEWED, ENVELOPE_DOWNLOADED).contains(action);
