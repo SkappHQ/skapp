@@ -1,5 +1,3 @@
-import { Box, Divider, Typography } from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { parse } from "papaparse";
 import { Dispatch, FC, SetStateAction, useState } from "react";
@@ -39,7 +37,6 @@ const UserBulkCsvUpload: FC<Props> = ({
   setBulkUploadData,
   setPopupType
 }) => {
-  const theme: Theme = useTheme();
   const { setToastMessage, toastMessage } = useToast();
   const { bulkUploadUsers, setBulkUploadUsers } = usePeopleStore(
     (state) => state
@@ -147,16 +144,10 @@ const UserBulkCsvUpload: FC<Props> = ({
   };
 
   return (
-    <Box
-      sx={{
-        borderRadius: "0.75rem",
-        height: "100%",
-        pt: "1rem"
-      }}
-    >
-      <Typography sx={{ fontSize: "1rem", fontWeight: 400, mb: "0.5rem" }}>
+    <div>
+      <p className="text-sm font-normal pb-4">
         {translateText(["uploadCsvDes"])}
-      </Typography>
+      </p>
       <DragAndDropField
         setAttachmentErrors={(errors: FileRejectionType[]) => {
           setAttachmentError(!!errors?.length);
@@ -177,17 +168,20 @@ const UserBulkCsvUpload: FC<Props> = ({
         }}
       />
       {bulkUserAttachment?.[0]?.file && !!fileError && (
-        <Box role="alert">
-          <Typography
-            variant="body2"
-            sx={{ color: theme.palette.error.contrastText, mt: 1 }}
-          >
-            {fileError}
-          </Typography>
-        </Box>
+        <div role="alert">
+          <p className="text-sm text-red-500 mt-1">{fileError}</p>
+        </div>
       )}
-      <Divider sx={{ mt: "1.5rem", mb: "1.5rem" }} />
+    <div className="flex flex-row justify-end gap-3 mt-4">
       <ButtonV2
+        variant={"tertiary"}
+        onClick={() => handleCancelBtn()}
+        icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+        iconPosition="start"
+      >
+        {translateText(["backButton"])}
+      </ButtonV2>
+        <ButtonV2
         variant={"primary"}
         onClick={() => handleUploadBtn()}
         isLoading={isPending}
@@ -199,16 +193,7 @@ const UserBulkCsvUpload: FC<Props> = ({
       >
         {translateText(["uploadButton"])}
       </ButtonV2>
-
-      <ButtonV2
-        variant={"tertiary"}
-        onClick={() => handleCancelBtn()}
-        icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
-        iconPosition="start"
-      >
-        {translateText(["backButton"])}
-      </ButtonV2>
-
+      </div>
       <ToastMessage
         open={toastMessage.open}
         onClose={toastMessage.onClose}
@@ -217,7 +202,7 @@ const UserBulkCsvUpload: FC<Props> = ({
         toastType={toastMessage.toastType}
         autoHideDuration={toastMessage.autoHideDuration}
       />
-    </Box>
+    </div>
   );
 };
 

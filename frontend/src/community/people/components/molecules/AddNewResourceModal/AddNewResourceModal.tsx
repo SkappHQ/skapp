@@ -271,36 +271,38 @@ const AddNewResourceModal = () => {
       >
         {generalTexts(["addFullProfile"])}
       </Link>
-      <ButtonV2
-        variant={"primary"}
-        onClick={handleRefetch}
-        disabled={
-          values.email === "" ||
-          values.firstName === "" ||
-          values.lastName === ""
-        }
-        data-testid={peopleDirectoryTestId.buttons.quickAddSaveBtn}
-        isLoading={isCheckingEmailLoading || isPending}
-        className={getBlinkClass(
-          ongoingQuickSetup.INVITE_EMPLOYEES &&
-            values.email !== "" &&
-            values.firstName !== "" &&
-            values.lastName !== ""
-        )}
-        icon={<Icon name={IconName.FORWARD_ARROW} />}
-        iconPosition="end"
-      >
-        {generalTexts(["save"])}
-      </ButtonV2>
-      <ButtonV2
-        variant={"tertiary"}
-        onClick={closeModal}
-        data-testid={peopleDirectoryTestId.buttons.quickAddCancelBtn}
-        icon={<Icon name={IconName.CLOSE_ICON} />}
-        iconPosition="end"
-      >
-        {generalTexts(["cancel"])}
-      </ButtonV2>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={closeModal}
+          data-testid={peopleDirectoryTestId.buttons.quickAddCancelBtn}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {generalTexts(["cancel"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleRefetch}
+          disabled={
+            values.email === "" ||
+            values.firstName === "" ||
+            values.lastName === ""
+          }
+          data-testid={peopleDirectoryTestId.buttons.quickAddSaveBtn}
+          isLoading={isCheckingEmailLoading || isPending}
+          className={getBlinkClass(
+            ongoingQuickSetup.INVITE_EMPLOYEES &&
+              values.email !== "" &&
+              values.firstName !== "" &&
+              values.lastName !== ""
+          )}
+          icon={<Icon name={IconName.FORWARD_ARROW} />}
+          iconPosition="end"
+        >
+          {generalTexts(["save"])}
+        </ButtonV2>
+      </div>
     </Stack>
   );
 };
