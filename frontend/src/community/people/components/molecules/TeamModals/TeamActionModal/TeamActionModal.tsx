@@ -1,9 +1,7 @@
-import { Box, Stack, Typography } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import Modal from "~community/common/components/organisms/Modal/Modal";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -50,15 +48,11 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
 
   const { mutate } = useTransferTeamMembers(handleSuccess, handleError);
 
-  const handleClose = () => {
+  const handleAddNewTeam = () => {
     onClose();
     setCurrentEditingTeam(undefined);
     setTeamModalType(TeamModelTypes.ADD_TEAM);
     setIsTeamModalOpen(true);
-  };
-
-  const handleAddNewTeam = () => {
-    handleClose();
   };
 
   const handleDeleteTeam = async () => {
@@ -78,34 +72,30 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
   };
 
   return (
-    <Modal
-      isModalOpen={isOpen}
-      onCloseModal={onClose}
-      title={translateText(["teamActionModalTitle"])}
-    >
-      <Box>
-        <Typography>{translateText(["teamActionModalDes"])}</Typography>
-        <Stack spacing={2} mt={4}>
-          <ButtonV2
-            variant={"primary"}
-            onClick={handleAddNewTeam}
-            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            iconPosition="end"
-          >
-            {translateText(["teamActionModalBtnText"])}
-          </ButtonV2>
-
-          <ButtonV2
-            variant={"error"}
-            onClick={handleDeleteTeam}
-            icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-            iconPosition="end"
-          >
-            {translateText(["teamDeleteConfirmBtnText"])}
-          </ButtonV2>
-        </Stack>
-      </Box>
-    </Modal>
+    <SmallModal
+      isOpen={isOpen}
+      onClose={onClose}
+      modalHeader={translateText(["teamActionModalTitle"])}
+      content={
+        <p>{translateText(["teamActionModalDes"])}</p>
+      }
+      buttons={{
+        buttonLeft: {
+          variant: "primary",
+          children: translateText(["teamActionModalBtnText"]),
+          onClick: handleAddNewTeam,
+          icon: <Icon name={IconName.RIGHT_ARROW_ICON} />,
+          iconPosition: "end"
+        },
+        buttonRight: {
+          variant: "error",
+          children: translateText(["teamDeleteConfirmBtnText"]),
+          onClick: handleDeleteTeam,
+          icon: <Icon name={IconName.DELETE_BUTTON_ICON} fill="var(--color-semantic-red-text)"/>,
+          iconPosition: "end"
+        }
+      }}
+    />
   );
 };
 

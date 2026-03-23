@@ -58,6 +58,7 @@ interface Props {
   primaryButtonText?: string | boolean;
   primaryBtnIconName?: IconName;
   secondaryBtnIconName?: IconName;
+  secondaryBtnIconFill?: string;
   isBackButtonVisible?: boolean;
   isDividerVisible?: boolean;
   onPrimaryButtonClick?: () => void;
@@ -99,6 +100,7 @@ const ContentLayout = ({
   secondaryBtnText,
   primaryBtnIconName = IconName.ADD_ICON,
   secondaryBtnIconName = IconName.ADD_ICON,
+  secondaryBtnIconFill,
   isBackButtonVisible = false,
   isDividerVisible = true,
   onPrimaryButtonClick,
@@ -327,7 +329,7 @@ const ContentLayout = ({
                 className={getBlinkClass(shouldBlink?.secondaryBtn ?? false)}
                 icon={
                   secondaryBtnIconName ? (
-                    <Icon name={secondaryBtnIconName} />
+                    <Icon name={secondaryBtnIconName} fill={secondaryBtnIconFill} />
                   ) : undefined
                 }
                 iconPosition="end"

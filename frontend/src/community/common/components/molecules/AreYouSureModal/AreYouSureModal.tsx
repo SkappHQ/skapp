@@ -27,7 +27,6 @@ const AreYouSureModal = ({ onPrimaryBtnClick, onSecondaryBtnClick }: Props) => {
         label: translateText(["leaveAnywayBtn"]),
         onClick: onSecondaryBtnClick,
         endIcon: IconName.CLOSE_ICON,
-        buttonStyle: "error"
       }}
     />
   );

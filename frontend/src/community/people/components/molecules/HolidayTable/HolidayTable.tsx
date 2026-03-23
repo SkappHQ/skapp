@@ -223,7 +223,9 @@ const HolidayTable: FC<Props> = ({
                         )
                       }
                       disabled={deleteButtonDisabled}
-                      icon={<DeleteButtonIcon />}
+                      icon={
+                        <DeleteButtonIcon fill="var(--color-primary-text)" />
+                      }
                       iconPosition="start"
                     >
                       {selectedHolidays.length
