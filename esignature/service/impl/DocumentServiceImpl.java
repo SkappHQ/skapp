@@ -331,6 +331,9 @@ public class DocumentServiceImpl implements DocumentService {
 
 		byte[] updatedDocumentBytes = mergeAllFieldsToDocument(currentVersion, documentBytes, advanceFields);
 
+		// Set to null to help GC
+		documentBytes = null;
+
 		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
 
 		// Create new version with signature
@@ -346,8 +349,17 @@ public class DocumentServiceImpl implements DocumentService {
 			.getNextSignRecipientData(Optional.ofNullable(recipient.getId()), document.getEnvelope().getId());
 
 		if (isDocumentComplete(nextSignRecipientList)) {
-			return completeDocument(document, newVersion, updatedDocumentBytes, recipient, ipAddress, isDocAccess);
+
+			ResponseEntityDto responseEntityDto = completeDocument(document, newVersion, updatedDocumentBytes,
+					recipient, ipAddress, isDocAccess);
+
+			// Set to null to help GC
+			updatedDocumentBytes = null;
+			return responseEntityDto;
 		}
+
+		// Set to null to help GC
+		updatedDocumentBytes = null;
 
 		// Prepare document links and recipient metadata (no emails sent yet)
 		RecipientService.DocumentLinksAndRecipientsData nextRecipientsData = recipientService
@@ -436,9 +448,16 @@ public class DocumentServiceImpl implements DocumentService {
 		byte[] processedDocumentBytes = appendCertificateToBytes(envelope, documentVersion, latestDocumentBytes,
 				isDocAccess);
 
+		// Null out to allow GC to reclaim the pre-certificate document copy
+		latestDocumentBytes = null;
+
 		// Sign the processed PDF (if signing is enabled via feature flag)
 		// This will sign the document WITH the appended certificate
 		UploadedDocument uploadedDocument = signAndUploadDocument(documentVersion, processedDocumentBytes);
+
+		// Null out to allow GC to reclaim the post-certificate document copy
+		processedDocumentBytes = null;
+
 		String finalDocumentPath = uploadedDocument.path();
 
 		// Update document version with final file path
@@ -603,11 +622,17 @@ public class DocumentServiceImpl implements DocumentService {
 		byte[] updatedDocumentBytes = mergeFieldsToLatestDocument(fieldVersionList, documentBytes, keyPairSign,
 				advanceFields);
 
+		// Null out to allow GC to reclaim the pre-certificate document copy
+		documentBytes = null;
+
 		String fileUrl = uploadProcessedDocumentVersion(updatedDocumentBytes);
 
 		// Create new version with signature
 		DocumentVersion newVersion = createNewDocumentVersion(documentSignDto, currentVersion, fileUrl,
 				keyPairSign.getPrivate(), currentAddressBookUser, updatedDocumentBytes);
+
+		// Null out to allow GC to reclaim the pre-certificate document copy
+		updatedDocumentBytes = null;
 
 		documentVersionDao.save(newVersion);
 
@@ -645,6 +670,9 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] fullDocumentBytes = mergeAllFieldsToFinalDocument(document, initialDocumentBytes,
 					allRecipientsAdvanceFields);
 
+			// Null out to allow GC to reclaim the initial download
+			initialDocumentBytes = null;
+
 			// Create final version with all signatures
 			String completeFileUrl = uploadProcessedDocumentVersion(fullDocumentBytes);
 
@@ -675,9 +703,15 @@ public class DocumentServiceImpl implements DocumentService {
 			byte[] processedDocumentBytes = appendCertificateToBytes(envelope, finalVersion, fullDocumentBytes,
 					isDocAccess);
 
+			// Null out to allow GC to reclaim the pre-certificate document copy
+			fullDocumentBytes = null;
+
 			// Sign the processed PDF (if signing is enabled via feature flag)
 			// This will sign the document WITH the appended certificate
 			UploadedDocument uploadedFinalDocument = signAndUploadDocument(finalVersion, processedDocumentBytes);
+
+			// Null out to allow GC to reclaim the post-certificate document copy
+			processedDocumentBytes = null;
 
 			// Create a new document version for the final signed PDF (after signing with
 			// the owner's key) with certificate along with the audit trail (if signing
@@ -740,7 +774,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private void saveAuditTrailAppendedVersion(Document document, DocumentVersion baseVersion,
 			UploadedDocument uploadedDocument, PrivateKey signerPrivateKey) {
-		String newHash = hashDocument(new ByteArrayInputStream(uploadedDocument.uploadedBytes()));
+		String newHash = uploadedDocument.documentHash();
 		String signature = signDocument(Base64.getDecoder().decode(newHash), signerPrivateKey);
 		DocumentVersion auditTrailVersion = buildNewDocumentVersion(baseVersion, uploadedDocument.path(), newHash,
 				signature, document.getEnvelope().getOwner());
@@ -761,14 +795,17 @@ public class DocumentServiceImpl implements DocumentService {
 		Optional<SignedPdfResult> signedResult = signCompletedPdf(documentVersion, documentBytes);
 
 		return signedResult.map(result -> {
-			String path = uploadProcessedDocumentVersion(result.getSignedPdfBytes());
+			byte[] signedBytes = result.getSignedPdfBytes();
+			String path = uploadProcessedDocumentVersion(signedBytes);
+			String hash = hashDocument(new ByteArrayInputStream(signedBytes));
 			log.info("PDF signed successfully for document version: {}", documentVersion.getId());
-			return UploadedDocument.signed(path, result.getSignedPdfBytes(), result.getCertificateSerialNumber(),
+			return UploadedDocument.signed(path, hash, result.getCertificateSerialNumber(),
 					result.getSignatureAlgorithm());
 		}).orElseGet(() -> {
 			String path = uploadProcessedDocumentVersion(documentBytes);
+			String hash = hashDocument(new ByteArrayInputStream(documentBytes));
 			log.info("Uploading unsigned document for document version: {}", documentVersion.getId());
-			return UploadedDocument.unsigned(path, documentBytes);
+			return UploadedDocument.unsigned(path, hash);
 		});
 	}
 
@@ -842,6 +879,9 @@ public class DocumentServiceImpl implements DocumentService {
 					imageCache);
 		}
 
+		// Release cached S3 image downloads to allow GC to reclaim memory
+		imageCache.clear();
+
 		// Merge Advanced Fields (if any) - these fields are not stored in
 		// DocumentVersionField and thus not part of the normal merge process above
 		if (advanceFields != null && !advanceFields.isEmpty()) {
@@ -864,6 +904,9 @@ public class DocumentServiceImpl implements DocumentService {
 			updatedBytes = updateDocumentAfterFieldVerification(documentVersionField, keyPair, fieldSignDto,
 					updatedBytes, imageCache);
 		}
+
+		// Release cached S3 image downloads to allow GC to reclaim memory
+		imageCache.clear();
 
 		// Merge Advanced Fields (if any) - these fields are not stored in
 		// DocumentVersionField and thus not part of the normal merge process above
@@ -899,6 +942,10 @@ public class DocumentServiceImpl implements DocumentService {
 					fullDocumentBytes = updateDocumentAfterFieldVerification(documentVersionField, keyPair,
 							fieldSignDto, fullDocumentBytes, imageCache);
 				}
+
+				// Release cached S3 image downloads per version to allow GC to reclaim
+				// memory
+				imageCache.clear();
 			}
 		}
 
@@ -1731,15 +1778,15 @@ public class DocumentServiceImpl implements DocumentService {
 		documentVersionField.setDocumentVersion(version);
 	}
 
-	private record UploadedDocument(String path, byte[] uploadedBytes, boolean isPdfSigned, LocalDateTime pdfSignedAt,
+	private record UploadedDocument(String path, String documentHash, boolean isPdfSigned, LocalDateTime pdfSignedAt,
 			String certificateSerialNumber, String signatureAlgorithm) {
 
-		static UploadedDocument signed(String path, byte[] bytes, String certSerial, String sigAlgorithm) {
-			return new UploadedDocument(path, bytes, true, getCurrentUtcDateTime(), certSerial, sigAlgorithm);
+		static UploadedDocument signed(String path, String documentHash, String certSerial, String sigAlgorithm) {
+			return new UploadedDocument(path, documentHash, true, getCurrentUtcDateTime(), certSerial, sigAlgorithm);
 		}
 
-		static UploadedDocument unsigned(String path, byte[] bytes) {
-			return new UploadedDocument(path, bytes, false, null, null, null);
+		static UploadedDocument unsigned(String path, String documentHash) {
+			return new UploadedDocument(path, documentHash, false, null, null, null);
 		}
 	}
 
