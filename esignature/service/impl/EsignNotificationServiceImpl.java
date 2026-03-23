@@ -36,7 +36,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 		esignEmailDynamicFields.setRecipientName(recipient.getAddressBook().getName());
 
 		notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-				String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_COMPLETED,
+				String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_COMPLETED_OWNER,
 				EmailBodyTemplates.ESIGN_DOCUMENT_COMPLETED, esignEmailDynamicFields, NotificationCategory.ESIGN);
 
 		log.info(
@@ -140,7 +140,7 @@ public class EsignNotificationServiceImpl implements EsignNotificationService {
 		esignEmailDynamicFields.setRecipientName(decliningRecipient.getAddressBook().getName());
 
 		notificationService.createNotification(envelope.getOwner().getInternalUser().getEmployee(),
-				String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_DECLINED,
+				String.valueOf(envelope.getId()), NotificationType.ESIGN_DOCUMENT_DECLINED_OWNER,
 				EmailBodyTemplates.ESIGN_DOCUMENT_DECLINED, esignEmailDynamicFields, NotificationCategory.ESIGN);
 
 		log.info("Created decline notification for envelope owner. Envelope ID: {}", envelope.getId());
