@@ -71,6 +71,7 @@ import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIco
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
 import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
+import IdentityVerifiedIcon from "~community/common/assets/Icons/IdentityVerifiedIcon";
 import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
@@ -295,6 +296,7 @@ export const IconMapping: Partial<
   [IconName.CREATE_DOCUMENT_ICON]: CreateDocumentIcon,
   [IconName.CLOCK_DENY_ICON]: ClockDenyIcon,
   [IconName.EYE_ICON]: EyeIcon,
+  [IconName.IDENTITY_VERIFIED_ICON]: IdentityVerifiedIcon,
   [IconName.SEND_ICON]: SendIcon,
   [IconName.SUCCESS_TICK_ICON]: SuccessIcon,
   [IconName.CROSSED_CIRCLE_ICON]: CrossedCircleIcon,
