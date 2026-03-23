@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.util.Validation;
 import com.skapp.enterprise.esignature.constant.EidMessageConstant;
+import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.EidProviderRegistry;
@@ -286,7 +287,8 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		documentLinkService.validateTokenFlows(isDocAccess, oldSession.getRecipient(), documentId);
 
 		if (oldSession.getOverallExpiresAt() != null && Instant.now().isAfter(oldSession.getOverallExpiresAt())) {
-			throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_OVERALL_EXPIRED);
+			throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_OVERALL_EXPIRED,
+					new String[] { String.valueOf(EsignConstants.EID_MAX_SESSION_DURATION_SECONDS / 60) });
 		}
 
 		EidProvider provider = providerRegistry.getProvider(oldSession.getProviderType())

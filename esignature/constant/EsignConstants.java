@@ -103,6 +103,8 @@ public class EsignConstants {
 
 	public static final String SUCCESSFUL = "successful";
 
+	public static final int EID_MAX_SESSION_DURATION_SECONDS = 300;
+
 	public static final int MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH = 100;
 
 	public static final int ADVANCED_FIELD_TEXT_VALUE_MAX_LENGTH = 255;

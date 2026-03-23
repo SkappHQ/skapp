@@ -3,6 +3,7 @@ package com.skapp.enterprise.esignature.eid.bankid;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.util.HashUtil;
 import com.skapp.enterprise.esignature.constant.EidMessageConstant;
+import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdAuthRequest;
 import com.skapp.enterprise.esignature.eid.bankid.dto.BankIdCancelRequest;
@@ -60,7 +61,7 @@ public class BankIdProvider implements EidProvider {
 
 	private static final int SESSION_TIMEOUT_SECONDS = 30;
 
-	private static final int MAX_SESSION_DURATION_SECONDS = 300;
+	private static final int MAX_SESSION_DURATION_SECONDS = EsignConstants.EID_MAX_SESSION_DURATION_SECONDS;
 
 	private final BankIdClient bankIdClient;
 
