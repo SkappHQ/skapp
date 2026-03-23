@@ -184,7 +184,6 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
               setTeamModalType(TeamModelTypes.NONE);
             }}
             teamId={currentDeletingTeam?.teamId}
-            teamName={currentDeletingTeam?.teamName}
           />
         )}
       </>
