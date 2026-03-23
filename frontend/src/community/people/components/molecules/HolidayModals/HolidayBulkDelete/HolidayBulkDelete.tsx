@@ -149,26 +149,17 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
     <>
       <div>
         {type === HolidayDeleteType.ALL && (
-          <p
-            id="delete-all-holidays"
-            className="my-2"
-          >
+          <p id="delete-all-holidays" className="my-2">
             {translateText(["allHolidayDeleteModalDes"])}
           </p>
         )}
         {type === HolidayDeleteType.SELECTED && (
-          <p
-            id="delete-selected-holidays"
-            className="my-2"
-          >
+          <p id="delete-selected-holidays" className="my-2">
             {translateText(["selectedHolidayDeleteModalDes"])}
           </p>
         )}
         {type === HolidayDeleteType.INDIVIDUAL && (
-          <p
-            id="delete-individual-holiday"
-            className="my-2"
-          >
+          <p id="delete-individual-holiday" className="my-2">
             {translateText(["singleHolidayDeleteModalDes"])}
           </p>
         )}
@@ -184,7 +175,12 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
           <ButtonV2
             variant={"error"}
             onClick={() => handleBulkDelete()}
-            icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+            icon={
+              <Icon
+                name={IconName.DELETE_BUTTON_ICON}
+                fill="var(--color-primary-text)"
+              />
+            }
             iconPosition="end"
           >
             {type !== HolidayDeleteType.INDIVIDUAL
