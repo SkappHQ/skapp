@@ -21,10 +21,7 @@ function setTailwindPrimary(
   main: string,
   accent?: string,
   text?: string,
-  background?: string,
-  secondaryBackground?: string,
-  secondaryAccent?: string,
-  secondaryText?: string
+  background?: string
 ) {
   if (typeof window !== "undefined") {
     document.documentElement.style.setProperty("--color-primary", main);
@@ -50,21 +47,15 @@ export const themeSelector = (color: string): Theme => {
     accent: (theme.secondary as SimplePaletteColorOptions)?.dark || "#408ce4",
     text: (theme.primary as SimplePaletteColorOptions)?.dark || "#2a61a0",
     background:
-      (theme.secondary as SimplePaletteColorOptions)?.main || "#dbeafe",
-    secondaryBackground:
-      (theme.secondary as SimplePaletteColorOptions)?.main || "#dbeafe",
-    secondaryAccent:
-      (theme.secondary as SimplePaletteColorOptions)?.dark || "#408ce4",
-    secondaryText:
-      (theme.primary as SimplePaletteColorOptions)?.dark || "#2a61a0"
+      (theme.secondary as SimplePaletteColorOptions)?.main || "#dbeafe"
   });
   if (
     !Object.values(ThemeTypes)
       .map((type) => type.toUpperCase())
       .includes(color?.toUpperCase())
   ) {
-    const { main, accent, text, background, secondaryBackground, secondaryAccent, secondaryText } = getPalette(selectedTheme);
-    setTailwindPrimary(main, accent, text, background, secondaryBackground, secondaryAccent, secondaryText);
+    const { main, accent, text, background } = getPalette(selectedTheme);
+    setTailwindPrimary(main, accent, text, background);
     return muiThemeOverride(selectedTheme);
   }
   for (const key in ThemeTypes) {
@@ -93,15 +84,15 @@ export const themeSelector = (color: string): Theme => {
           default:
             selectedTheme = BLUE_THEME;
         }
-        const { main, accent, text, background, secondaryBackground, secondaryAccent, secondaryText } = getPalette(selectedTheme);
-        setTailwindPrimary(main, accent, text, background, secondaryBackground, secondaryAccent, secondaryText);
+        const { main, accent, text, background } = getPalette(selectedTheme);
+        setTailwindPrimary(main, accent, text, background);
         return muiThemeOverride(selectedTheme);
       }
     }
   }
   selectedTheme = PURPLE_THEME;
-  const { main, accent, text, background, secondaryBackground, secondaryAccent, secondaryText } = getPalette(selectedTheme);
-  setTailwindPrimary(main, accent, text, background, secondaryBackground, secondaryAccent, secondaryText);
+  const { main, accent, text, background } = getPalette(selectedTheme);
+  setTailwindPrimary(main, accent, text, background);
   return muiThemeOverride(selectedTheme);
 };
 
