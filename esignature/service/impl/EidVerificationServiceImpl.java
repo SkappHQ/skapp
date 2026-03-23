@@ -8,6 +8,7 @@ import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.EidProviderRegistry;
 import com.skapp.enterprise.esignature.mapper.EidMapper;
+import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
@@ -21,11 +22,16 @@ import com.skapp.enterprise.esignature.payload.response.eid.VerificationStatusRe
 import com.skapp.enterprise.esignature.repository.DocumentRepository;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.repository.EidVerificationSessionRepository;
+import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
+import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EidFlowType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
+import com.skapp.enterprise.esignature.type.EidProviderType;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,6 +60,10 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 	private final EidMapper eidMapper;
 
 	private final RecipientDao recipientDao;
+
+	private final AuditTrailService auditTrailService;
+
+	private final AuditTrailDao auditTrailDao;
 
 	private final DocumentLinkService documentLinkService;
 
@@ -327,6 +337,14 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		}
 
 		recipientDao.save(recipient);
+
+		if (recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
+			AuditAction auditAction = resolveIdentityVerifiedAuditAction(session.getProviderType());
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(recipient.getEnvelope(), recipient,
+					auditAction, recipient.getAddressBook(), session.getEndUserIp(), null);
+			auditTrailDao.save(auditTrail);
+		}
+
 		log.info("updateRecipientVerificationStatus: Recipient eID {} status updated to VERIFIED for recipient={}",
 				session.getFlowType(), recipient.getId());
 	}
@@ -350,6 +368,13 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		}
 
 		return endUserIp;
+	}
+
+	private AuditAction resolveIdentityVerifiedAuditAction(EidProviderType providerType) {
+		return switch (providerType) {
+			case SWEDISH_BANKID -> AuditAction.ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID;
+			default -> throw new IllegalArgumentException("Unsupported eID provider type: " + providerType);
+		};
 	}
 
 	private String generateUserVisibleData(Document document) {

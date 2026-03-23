@@ -238,6 +238,8 @@ public class EsignUtil {
 				return EsignConstants.AUDIT_ACTION_DOCUMENT_EXPIRED;
 			case ENVELOPE_DOWNLOADED:
 				return actionBy + EsignConstants.AUDIT_ACTION_DOWNLOADED_DOCUMENT;
+			case ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID:
+				return actionBy + EsignConstants.AUDIT_ACTION_SWEDISH_BANKID_IDENTITY_VERIFIED_DOCUMENT;
 			case ENVELOPE_CUSTODY_TRANSFERRED:
 				String newOwner = "";
 				if (audit.getMetadata() != null && !audit.getMetadata().isEmpty()) {
