@@ -57,7 +57,9 @@ const UserPromptModal = ({
       <div className="flex flex-row justify-end gap-3 mt-6">
         {secondaryBtn && (
           <ButtonV2
-            variant={getVariant(secondaryBtn.buttonStyle ?? ButtonStyle.TERTIARY)}
+            variant={getVariant(
+              secondaryBtn.buttonStyle ?? ButtonStyle.TERTIARY
+            )}
             onClick={secondaryBtn.onClick}
             disabled={secondaryBtn.isDisabled ?? false}
             className={secondaryBtn.className}
@@ -65,10 +67,11 @@ const UserPromptModal = ({
               icon: <Icon name={secondaryBtn.startIcon} />,
               iconPosition: "start"
             })}
-            {...(secondaryBtn.endIcon && !secondaryBtn.startIcon && {
-              icon: <Icon name={secondaryBtn.endIcon} />,
-              iconPosition: "end"
-            })}
+            {...(secondaryBtn.endIcon &&
+              !secondaryBtn.startIcon && {
+                icon: <Icon name={secondaryBtn.endIcon} />,
+                iconPosition: "end"
+              })}
           >
             {secondaryBtn.label}
           </ButtonV2>
@@ -82,10 +85,11 @@ const UserPromptModal = ({
             icon: <Icon name={primaryBtn.startIcon} />,
             iconPosition: "start"
           })}
-          {...(primaryBtn.endIcon && !primaryBtn.startIcon && {
-            icon: <Icon name={primaryBtn.endIcon} />,
-            iconPosition: "end"
-          })}
+          {...(primaryBtn.endIcon &&
+            !primaryBtn.startIcon && {
+              icon: <Icon name={primaryBtn.endIcon} />,
+              iconPosition: "end"
+            })}
         >
           {primaryBtn.label}
         </ButtonV2>

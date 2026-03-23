@@ -12,7 +12,7 @@ export enum ZIndexEnums {
   MIN = 0,
   LEVEL_2 = 2,
   MODAL = 1300,
-  NEWMODAL = 1401
+  NEWMODAL = 1500
 }
 
 export enum GlobalLoginMethod {
