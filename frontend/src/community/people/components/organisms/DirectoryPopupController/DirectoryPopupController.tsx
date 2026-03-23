@@ -1,6 +1,5 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
-
-import { ButtonV2Props, SmallModal } from "@rootcodelabs/skapp-ui";
 
 import { BulkSummaryFlows } from "~community/common/constants/stringConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -16,11 +15,6 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
-
-export type ModalButtons = {
-  buttonLeft?: ButtonV2Props;
-  buttonRight?: ButtonV2Props;
-};
 
 const DirectoryPopupController = () => {
   const translatedTexts = useTranslator("peopleModule", "peoples");
@@ -45,7 +39,6 @@ const DirectoryPopupController = () => {
 
   const { data: jobFamilies } = useGetAllJobFamilies();
   const [bulkUploadData, setBulkUploadData] = useState<BulkUploadResponse>();
-  const [modalButtons, setModalButtons] = useState<ModalButtons>({});
 
   const getModalTitle = (): string => {
     switch (directoryModalType) {
@@ -90,14 +83,13 @@ const DirectoryPopupController = () => {
   const modalContent = (
     <>
       {directoryModalType === DirectoryModalTypes.DOWNLOAD_CSV && (
-        <UserBulkCsvDownload onRegisterButtons={setModalButtons} />
+        <UserBulkCsvDownload />
       )}
       {directoryModalType === DirectoryModalTypes.UPLOAD_CSV && (
         <UserBulkCsvUpload
           jobRoleList={jobFamilies}
           setBulkUploadData={setBulkUploadData}
           setPopupType={setDirectoryModalType}
-          onRegisterButtons={setModalButtons}
         />
       )}
       {bulkUploadData &&
@@ -107,17 +99,16 @@ const DirectoryPopupController = () => {
             setPopupType={setDirectoryModalType}
             data={bulkUploadData}
             flow={BulkSummaryFlows.USER_BULK_UPLOAD}
-            onRegisterButtons={setModalButtons}
           />
         )}
       {directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE && (
-        <AddNewResourceModal onRegisterButtons={setModalButtons} />
+        <AddNewResourceModal />
       )}
       {directoryModalType === DirectoryModalTypes.UNSAVED_CHANGES && (
-        <AddResourceUnsavedChangesModal onRegisterButtons={setModalButtons} />
+        <AddResourceUnsavedChangesModal />
       )}
       {directoryModalType === DirectoryModalTypes.USER_CREDENTIALS && (
-        <LoginCredentialsModal onRegisterButtons={setModalButtons} />
+        <LoginCredentialsModal />
       )}
     </>
   );
@@ -128,7 +119,6 @@ const DirectoryPopupController = () => {
       onClose={onClose}
       modalHeader={getModalTitle()}
       content={modalContent}
-      buttons={modalButtons}
     />
   );
 };
