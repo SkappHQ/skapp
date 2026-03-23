@@ -47,30 +47,34 @@ const AddCalendar: FC = () => {
   return (
     <div>
       <div>
-        <p id="download-csv-description">{translateText(["downloadCsvDes"])}</p>
-        <div className="flex flex-row justify-end gap-3 mt-4">
-          <ButtonV2
-            variant={"secondary"}
-            onClick={downloadTemplateHandler}
-            className={getBlinkClass(isButtonBlinking.download)}
-            icon={<DownSideArrow fill="var(--color-primary-text)" />}
-            iconPosition="end"
-          >
-            {translateText(["downloadCsvTitle"])}
-          </ButtonV2>
-
-          <ButtonV2
-            variant={"primary"}
-            onClick={() =>
-              setHolidayModalType(holidayModalTypes.UPLOAD_HOLIDAY_BULK)
-            }
-            className={getBlinkClass(isButtonBlinking.next)}
-            icon={<RightArrowIcon />}
-            iconPosition="end"
-          >
-            {translateText(["nextBtn"])}
-          </ButtonV2>
-        </div>
+        <p
+          id="download-csv-description"
+        >
+          {translateText(["downloadCsvDes"])}
+        </p>
+        <ButtonV2
+          variant={"secondary"}
+          onClick={downloadTemplateHandler}
+          className={getBlinkClass(isButtonBlinking.download)}
+          icon={<DownSideArrow />}
+          iconPosition="end"
+        >
+          {translateText(["downloadCsvTitle"])}
+        </ButtonV2>
+      </div>
+      <hr />
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"primary"}
+          onClick={() =>
+            setHolidayModalType(holidayModalTypes.UPLOAD_HOLIDAY_BULK)
+          }
+          className={getBlinkClass(isButtonBlinking.next)}
+          icon={<RightArrowIcon />}
+          iconPosition="end"
+        >
+          {translateText(["nextBtn"])}
+        </ButtonV2>
       </div>
     </div>
   );
