@@ -20,6 +20,7 @@ import { TeamMemberTypes } from "~community/people/types/TeamTypes";
 
 import styles from "./styles";
 import { useAuth } from "~community/auth/providers/AuthProvider";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 
 interface Props {
   id: string;
@@ -154,6 +155,9 @@ const AddTeamMemberRow: FC<Props> = ({
             "&.MuiInputBase-root": {
               marginLeft: "0rem"
             }
+          },
+          menuProps: {
+            sx: { zIndex: ZIndexEnums.NEWMODAL }
           }
         }}
       />

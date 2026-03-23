@@ -1,9 +1,9 @@
 import { Box, Divider, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useMemo } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { AccountSignIn } from "~community/common/constants/stringConstants";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
@@ -57,29 +57,25 @@ const DownloadCsv = () => {
       >
         {translateText(["downloadCsvModalDes"])}
       </Typography>
-      <Button
-        accessibility={{
-          ariaHidden: true
-        }}
-        label={translateText(["downloadCsvButton"])}
-        buttonStyle={ButtonStyle.SECONDARY}
-        styles={classes.downloadBtn}
-        endIcon={IconName.DOWNLOAD_ICON}
+      <ButtonV2
+        variant={"secondary"}
         onClick={handleDownloadBtnClick}
-      />
+        icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["downloadCsvButton"])}
+      </ButtonV2>
       <Divider sx={classes.divider} aria-hidden={true} />
-      <Button
-        accessibility={{
-          ariaHidden: true
-        }}
-        label={translateText(["nextButton"])}
-        endIcon={IconName.RIGHT_ARROW_ICON}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={classes.nextBtn}
+      <ButtonV2
+        variant={"primary"}
         onClick={() =>
           setLeaveEntitlementModalType(LeaveEntitlementModelTypes.UPLOAD_CSV)
         }
-      />
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["nextButton"])}
+      </ButtonV2>
     </Box>
   );
 };

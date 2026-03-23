@@ -1,19 +1,15 @@
-import { Stack, debounce } from "@mui/material";
+import { debounce } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
-import {
-  ButtonStyle,
-  ButtonTypes,
-  ToastType
-} from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { theme } from "~community/common/theme/theme";
@@ -284,7 +280,7 @@ const AddEditHolidayModal = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <Stack>
+      <div className="flex flex-col">
         <InputField
           inputName="holidayReason"
           inputType="text"
@@ -369,22 +365,26 @@ const AddEditHolidayModal = ({
           isRequired={true}
         />
 
-        <Button
-          label={translateText(["saveBtnText"])}
-          buttonStyle={ButtonStyle.PRIMARY}
-          type={ButtonTypes.SUBMIT}
-          styles={{ marginTop: ".75rem" }}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-        />
-        <Button
-          label={translateText(["cancelBtnText"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          type={ButtonTypes.BUTTON}
-          onClick={onCloseClick}
-          styles={{ marginTop: ".75rem" }}
-          endIcon={<Icon name={IconName.CLOSE_ICON} />}
-        />
-      </Stack>
+        <div className="flex flex-row justify-end gap-3 mt-4">
+          <ButtonV2
+            variant={"tertiary"}
+            type={"button"}
+            onClick={onCloseClick}
+            icon={<Icon name={IconName.CLOSE_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["cancelBtnText"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"primary"}
+            type={"submit"}
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["saveBtnText"])}
+          </ButtonV2>
+        </div>
+      </div>
     </form>
   );
 };

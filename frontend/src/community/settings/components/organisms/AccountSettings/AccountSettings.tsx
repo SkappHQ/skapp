@@ -5,19 +5,14 @@ import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIco
 import OutlookIcon from "~community/common/assets/Icons/OutlookIcon";
 import SettingsSection from "~community/common/components/organisms/Settings/Settings";
 import SettingsModalController from "~community/common/components/organisms/SettingsModalController/SettingsModalController";
-import { OBOARDING_LOGOCOLORLOADER_DURATION } from "~community/common/constants/commonConstants";
-import { SUCCESS } from "~community/common/constants/stringConstants";
 import {
   CalendarType,
   GlobalLoginMethod
 } from "~community/common/enums/CommonEnums";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import CalendarDisconnectModal from "~community/people/components/molecules/CalendarDisconnectModal/CalendarDisconnectModal";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
-import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
 import IntegrationSettings from "~enterprise/common/components/organisms/IntegrationSettings/IntegrationSettings";
 import { useCalendarIntegrations } from "~enterprise/common/hooks/useCalendarIntegrations";
 import { useCalendarNotifications } from "~enterprise/common/hooks/useCalendarNotifications";
@@ -40,8 +35,6 @@ const INTEGRATION_METADATA = {
 
 const AccountSettings = (): JSX.Element => {
   const translateText = useTranslator("settings");
-  const billingTranslateText = useTranslator("settingEnterprise", "billing");
-  const { setToastMessage } = useToast();
   const { isEmployee } = useSessionData();
 
   const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
@@ -49,13 +42,6 @@ const AccountSettings = (): JSX.Element => {
   }));
 
   const [frontendRedirectUrl, setFrontendRedirectUrl] = useState<string>("");
-  const [showLoader, setShowLoader] = useState(() => {
-    if (typeof globalThis !== "undefined" && globalThis.location) {
-      const params = new URLSearchParams(globalThis.location.search);
-      return params.get("status") === SUCCESS;
-    }
-    return false;
-  });
 
   const { data: organizationCalendarStatusData } =
     useGetOrganizationCalendarStatus();
@@ -88,64 +74,20 @@ const AccountSettings = (): JSX.Element => {
     }
   }, []);
 
-  // Handle URL parameters and notifications
+  // Handle calendar URL parameters and notifications
   useEffect(() => {
     if (typeof globalThis !== "undefined" && globalThis.location) {
       const params = new URLSearchParams(globalThis.location.search);
 
-      // Handle calendar notifications first
       const success = params.get("success") ?? undefined;
       const error = params.get("error") ?? undefined;
       const type = params.get("type") ?? undefined;
-      const status = params.get("status") ?? undefined;
 
       if (success || error) {
         showNotification({ success, error, type });
       }
-
-      // Handle billing notifications
-      if (status === "cancel") {
-        setToastMessage({
-          toastType: ToastType.ERROR,
-          title: billingTranslateText(["subscriptionErrorToastTitle"]),
-          description: billingTranslateText([
-            "subscriptionErrorToastDescription"
-          ]),
-          open: true
-        });
-      }
     }
-  }, [showNotification, setToastMessage, billingTranslateText]);
-
-  // Handle loader for billing success
-  useEffect(() => {
-    if (showLoader) {
-      const params = new URLSearchParams(globalThis.location?.search || "");
-      const status = params.get("status");
-
-      if (status === SUCCESS) {
-        const timer = setTimeout(() => {
-          setShowLoader(false);
-          setToastMessage({
-            toastType: ToastType.SUCCESS,
-            title: billingTranslateText(["subscriptionSuccessToastTitle"]),
-            description: billingTranslateText([
-              "subscriptionSuccessToastDescription"
-            ]),
-            open: true
-          });
-        }, OBOARDING_LOGOCOLORLOADER_DURATION);
-
-        return () => clearTimeout(timer);
-      } else {
-        setShowLoader(false);
-      }
-    }
-  }, [showLoader, billingTranslateText, setToastMessage]);
-
-  if (showLoader) {
-    return <LogoColorLoader />;
-  }
+  }, [showNotification]);
 
   return (
     <>

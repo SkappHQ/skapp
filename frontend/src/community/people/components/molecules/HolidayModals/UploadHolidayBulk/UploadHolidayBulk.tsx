@@ -1,14 +1,14 @@
-import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
-import Button from "~community/common/components/atoms/Button/Button";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { type FileUploadType } from "~community/common/types/CommonTypes";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import { useAddBulkHolidays } from "~community/people/api/HolidayApi";
 import { usePeopleStore } from "~community/people/store/store";
 import {
@@ -159,16 +159,10 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
   };
 
   return (
-    <Box>
-      <Typography
-        sx={{
-          fontWeight: 400,
-          fontSize: "1rem",
-          marginBottom: "0.5rem"
-        }}
-      >
+    <div>
+      <p className="font-normal mb-2">
         {translateText(["addCsvTitle"])}
-      </Typography>
+      </p>
       <DragAndDropField
         setAttachments={async (acceptedFiles: FileUploadType[]) =>
           await setAttachment({
@@ -192,27 +186,30 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
           componentName: translateAria(["holidays"])
         }}
       />
-
-      <Button
-        disabled={!isNewCalendarDetailsValid}
-        shouldBlink={
-          isNewCalendarDetailsValid &&
-          newCalenderDetails.acceptedFile?.length > 0
-        }
-        label={translateText(["UploadHolidays"])}
-        endIcon={<RightArrowIcon />}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={{ mt: "1rem" }}
-        onClick={() => handleSaveCalendarBtn()}
-      />
-      <Button
-        label={translateText(["cancelBtnText"])}
-        endIcon={<CloseIcon />}
-        buttonStyle={ButtonStyle.TERTIARY}
-        styles={{ mt: "1rem" }}
-        onClick={onCloseClick}
-      />
-    </Box>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={onCloseClick}
+          icon={<CloseIcon />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnText"])}
+        </ButtonV2>
+        <ButtonV2
+          disabled={!isNewCalendarDetailsValid}
+          variant={"primary"}
+          onClick={() => handleSaveCalendarBtn()}
+          className={getBlinkClass(
+            isNewCalendarDetailsValid &&
+              newCalenderDetails.acceptedFile?.length > 0
+          )}
+          icon={<RightArrowIcon />}
+          iconPosition="end"
+        >
+          {translateText(["UploadHolidays"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

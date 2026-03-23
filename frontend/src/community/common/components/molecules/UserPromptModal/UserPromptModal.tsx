@@ -1,11 +1,9 @@
-import { Box, SxProps, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, ReactNode } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { IconName } from "~community/common/types/IconTypes";
-
-import styles from "./styles";
 
 interface Props {
   customComponent?: ReactNode;
@@ -22,7 +20,7 @@ interface Props {
     buttonStyle?: ButtonStyle;
     startIcon?: IconName;
     endIcon?: IconName;
-    styles?: SxProps;
+    className?: string;
   };
   secondaryBtn?: {
     label: string;
@@ -31,9 +29,17 @@ interface Props {
     buttonStyle?: ButtonStyle;
     startIcon?: IconName;
     endIcon?: IconName;
-    styles?: SxProps;
+    className?: string;
   };
 }
+
+const getVariant = (
+  style?: ButtonStyle
+): "primary" | "secondary" | "tertiary" => {
+  if (style === ButtonStyle.TERTIARY) return "tertiary";
+  if (style === ButtonStyle.SECONDARY) return "secondary";
+  return "primary";
+};
 
 const UserPromptModal = ({
   customComponent,
@@ -42,41 +48,53 @@ const UserPromptModal = ({
   primaryBtn,
   secondaryBtn
 }: Props) => {
-  const classes = styles();
-
   return (
-    <Box component="div">
+    <div>
       {customComponent}
-      <Typography id={ids?.description ?? "user-prompt-modal-description"}>
+      <p id={ids?.description ?? "user-prompt-modal-description"}>
         {description}
-      </Typography>
-      <Button
-        accessibility={{
-          ariaHidden: true
-        }}
-        label={primaryBtn.label}
-        styles={{ ...classes.btn, ...primaryBtn.styles } as SxProps}
-        buttonStyle={primaryBtn.buttonStyle ?? ButtonStyle.PRIMARY}
-        startIcon={primaryBtn?.startIcon}
-        endIcon={primaryBtn.endIcon}
-        disabled={primaryBtn.isDisabled ?? false}
-        onClick={primaryBtn.onClick}
-      />
-      {secondaryBtn && (
-        <Button
-          accessibility={{
-            ariaHidden: true
-          }}
-          label={secondaryBtn?.label}
-          styles={{ ...classes.btn, ...secondaryBtn?.styles } as SxProps}
-          buttonStyle={secondaryBtn?.buttonStyle ?? ButtonStyle.TERTIARY}
-          startIcon={secondaryBtn?.startIcon}
-          endIcon={secondaryBtn?.endIcon}
-          disabled={secondaryBtn?.isDisabled ?? false}
-          onClick={secondaryBtn?.onClick}
-        />
-      )}
-    </Box>
+      </p>
+      <div className="flex flex-row justify-end gap-3 mt-6">
+        {secondaryBtn && (
+          <ButtonV2
+            variant={getVariant(
+              secondaryBtn.buttonStyle ?? ButtonStyle.TERTIARY
+            )}
+            onClick={secondaryBtn.onClick}
+            disabled={secondaryBtn.isDisabled ?? false}
+            className={secondaryBtn.className}
+            {...(secondaryBtn.startIcon && {
+              icon: <Icon name={secondaryBtn.startIcon} />,
+              iconPosition: "start"
+            })}
+            {...(secondaryBtn.endIcon &&
+              !secondaryBtn.startIcon && {
+                icon: <Icon name={secondaryBtn.endIcon} />,
+                iconPosition: "end"
+              })}
+          >
+            {secondaryBtn.label}
+          </ButtonV2>
+        )}
+        <ButtonV2
+          variant={getVariant(primaryBtn.buttonStyle ?? ButtonStyle.PRIMARY)}
+          onClick={primaryBtn.onClick}
+          disabled={primaryBtn.isDisabled ?? false}
+          className={primaryBtn.className}
+          {...(primaryBtn.startIcon && {
+            icon: <Icon name={primaryBtn.startIcon} />,
+            iconPosition: "start"
+          })}
+          {...(primaryBtn.endIcon &&
+            !primaryBtn.startIcon && {
+              icon: <Icon name={primaryBtn.endIcon} />,
+              iconPosition: "end"
+            })}
+        >
+          {primaryBtn.label}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

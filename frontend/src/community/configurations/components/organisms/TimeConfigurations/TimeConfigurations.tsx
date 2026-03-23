@@ -7,12 +7,13 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { JSX, useCallback, useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
@@ -21,7 +22,7 @@ import {
   DEFAULT_START_TIME,
   daysOfWeek
 } from "~community/common/constants/timeConstants";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { DropdownListType } from "~community/common/types/CommonTypes";
@@ -448,24 +449,26 @@ const TimeConfigurations = (): JSX.Element => {
         </Stack>
 
         <Stack sx={classes.buttonContainer}>
-          <Button
+          <ButtonV2
             id="resetButton"
-            label={translateText(["resetButtonText"]) ?? ""}
-            buttonStyle={ButtonStyle.TERTIARY}
-            isFullWidth={false}
+            variant={"tertiary"}
             onClick={handleReset}
-            endIcon={<Close />}
             disabled={!formChanged}
-          />
-          <Button
+            icon={<Close />}
+            iconPosition="end"
+          >
+            {translateText(["resetButtonText"]) ?? ""}
+          </ButtonV2>
+          <ButtonV2
             id="saveChangesButton"
-            label={translateText(["saveButtonText"]) ?? ""}
-            buttonStyle={ButtonStyle.PRIMARY}
-            isFullWidth={false}
+            variant={"primary"}
             onClick={handleSave}
             disabled={!formChanged}
-            endIcon={IconName.RIGHT_ARROW_ICON}
-          />
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["saveButtonText"]) ?? ""}
+          </ButtonV2>
         </Stack>
 
         <ToastMessage

@@ -1,6 +1,6 @@
-import { Fragment, useState } from "react";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { useState } from "react";
 
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { BulkSummaryFlows } from "~community/common/constants/stringConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
@@ -61,7 +61,7 @@ const DirectoryPopupController = () => {
     }
   };
 
-  const handleCloseModal = (): void => {
+  const onClose = (): void => {
     if (
       directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE &&
       pendingAddResourceData
@@ -77,50 +77,49 @@ const DirectoryPopupController = () => {
         setQuickSetupModalType(QuickSetupModalTypeEnums.IN_PROGRESS_START_UP);
       }
     }
+    setDirectoryModalType(DirectoryModalTypes.NONE);
   };
 
-  return (
-    <ModalController
-      isModalOpen={isDirectoryModalOpen}
-      handleCloseModal={handleCloseModal}
-      modalTitle={getModalTitle()}
-      setModalType={setDirectoryModalType}
-      isClosable={directoryModalType !== DirectoryModalTypes.UNSAVED_CHANGES}
-      {...(directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE
-        ? { role: "dialog" }
-        : {})}
-    >
-      <Fragment>
-        {directoryModalType === DirectoryModalTypes.DOWNLOAD_CSV && (
-          <UserBulkCsvDownload />
-        )}
-        {directoryModalType === DirectoryModalTypes.UPLOAD_CSV && (
-          <UserBulkCsvUpload
-            jobRoleList={jobFamilies}
-            setBulkUploadData={setBulkUploadData}
+  const modalContent = (
+    <>
+      {directoryModalType === DirectoryModalTypes.DOWNLOAD_CSV && (
+        <UserBulkCsvDownload />
+      )}
+      {directoryModalType === DirectoryModalTypes.UPLOAD_CSV && (
+        <UserBulkCsvUpload
+          jobRoleList={jobFamilies}
+          setBulkUploadData={setBulkUploadData}
+          setPopupType={setDirectoryModalType}
+        />
+      )}
+      {bulkUploadData &&
+        directoryModalType === DirectoryModalTypes.UPLOAD_SUMMARY &&
+        bulkUploadData?.bulkStatusSummary?.failedCount > 0 && (
+          <BulkUploadSummary
             setPopupType={setDirectoryModalType}
+            data={bulkUploadData}
+            flow={BulkSummaryFlows.USER_BULK_UPLOAD}
           />
         )}
-        {bulkUploadData &&
-          directoryModalType === DirectoryModalTypes.UPLOAD_SUMMARY &&
-          bulkUploadData?.bulkStatusSummary?.failedCount > 0 && (
-            <BulkUploadSummary
-              setPopupType={setDirectoryModalType}
-              data={bulkUploadData}
-              flow={BulkSummaryFlows.USER_BULK_UPLOAD}
-            />
-          )}
-        {directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE && (
-          <AddNewResourceModal />
-        )}
-        {directoryModalType === DirectoryModalTypes.UNSAVED_CHANGES && (
-          <AddResourceUnsavedChangesModal />
-        )}
-        {directoryModalType === DirectoryModalTypes.USER_CREDENTIALS && (
-          <LoginCredentialsModal />
-        )}
-      </Fragment>
-    </ModalController>
+      {directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE && (
+        <AddNewResourceModal />
+      )}
+      {directoryModalType === DirectoryModalTypes.UNSAVED_CHANGES && (
+        <AddResourceUnsavedChangesModal />
+      )}
+      {directoryModalType === DirectoryModalTypes.USER_CREDENTIALS && (
+        <LoginCredentialsModal />
+      )}
+    </>
+  );
+
+  return (
+    <SmallModal
+      isOpen={isDirectoryModalOpen}
+      onClose={onClose}
+      modalHeader={getModalTitle()}
+      content={modalContent}
+    />
   );
 };
 

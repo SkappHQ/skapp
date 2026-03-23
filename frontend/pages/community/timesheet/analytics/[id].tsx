@@ -2,6 +2,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
@@ -20,12 +21,10 @@ import {
   lateArrivalsGraphTypes
 } from "~community/attendance/utils/echartOptions/constants";
 import { useAuth } from "~community/auth/providers/AuthProvider";
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { AnalyticsTypes } from "~community/common/types/CommonTypes";
@@ -206,15 +205,17 @@ const TeamTimeSheetAnalytics: NextPage = () => {
       isDividerVisible={false}
       customRightContent={
         activeStep === AnalyticsTypes.LEAVE ? (
-          <Button
-            buttonStyle={ButtonStyle.TERTIARY}
-            label={translateText(["viewFullReport"])}
-            endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          <ButtonV2
+            variant="tertiary"
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
             onClick={() => {
               setReportsParams("teamId", teamId);
               router.push("/leave/analytics/reports");
             }}
-          />
+          >
+            {translateText(["viewFullReport"])}
+          </ButtonV2>
         ) : undefined
       }
     >

@@ -1,15 +1,11 @@
 import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode } from "react";
 
-
-
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Modal from "~community/common/components/organisms/Modal/Modal";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -22,8 +18,6 @@ interface ConfirmationModalProps {
   cancelLabel?: string;
   confirmIcon?: IconName;
   cancelIcon?: IconName;
-  confirmButtonStyle?: ButtonStyle;
-  cancelButtonStyle?: ButtonStyle;
   isClosable?: boolean;
   isIconVisible?: boolean;
 }
@@ -39,8 +33,6 @@ const ConfirmationModal: FC<ConfirmationModalProps> = ({
   cancelLabel,
   confirmIcon = IconName.RIGHT_ARROW_ICON,
   cancelIcon = IconName.CLOSE_ICON,
-  confirmButtonStyle = ButtonStyle.PRIMARY,
-  cancelButtonStyle = ButtonStyle.TERTIARY,
   isClosable = false,
   isIconVisible = false
 }) => {
@@ -62,22 +54,26 @@ const ConfirmationModal: FC<ConfirmationModalProps> = ({
         </Typography>
 
         <Stack direction="column" spacing={2}>
-          <Button
-            label={confirmText}
-            buttonStyle={confirmButtonStyle}
-            endIcon={<Icon name={confirmIcon} />}
+          <ButtonV2
+            variant="primary"
             onClick={onConfirm}
             isLoading={isLoading}
             disabled={isLoading}
-          />
+            icon={<Icon name={confirmIcon} />}
+            iconPosition="end"
+          >
+            {confirmText}
+          </ButtonV2>
 
-          <Button
-            label={cancelText}
-            buttonStyle={cancelButtonStyle}
-            endIcon={<Icon name={cancelIcon} />}
+          <ButtonV2
+            variant="tertiary"
             onClick={onClose}
             disabled={isLoading}
-          />
+            icon={<Icon name={cancelIcon} />}
+            iconPosition="end"
+          >
+            {cancelText}
+          </ButtonV2>
         </Stack>
       </Stack>
     </Modal>
