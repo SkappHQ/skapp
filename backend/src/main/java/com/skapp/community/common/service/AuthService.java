@@ -8,6 +8,7 @@ import com.skapp.community.common.payload.request.ResetPasswordRequestDto;
 import com.skapp.community.common.payload.request.SignInRequestDto;
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
@@ -21,6 +22,8 @@ public interface AuthService {
 	ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto);
 
 	ResponseEntityDto refreshAccessToken(RefreshTokenRequestDto refreshTokenRequestDto);
+
+	ResponseEntityDto refreshAccessTokenFromCookie(HttpServletRequest request);
 
 	ResponseEntityDto employeeResetPassword(ResetPasswordRequestDto resetPasswordRequestDto);
 

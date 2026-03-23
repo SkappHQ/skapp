@@ -1,6 +1,7 @@
 package com.skapp.community.common.util;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -8,6 +9,18 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CookieUtil {
+
+	private static final String REFRESH_TOKEN_COOKIE_SUFFIX = "_refreshToken";
+
+	private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+
+	private static final String TENANT_COOKIE_NAME = "tenant";
+
+	private static final String COOKIE_PATH = "/";
+
+	private static final String SAME_SITE_VALUE = "Lax";
+
+	private static final String SAME_SITE_ATTRIBUTE = "SameSite";
 
 	@Value("${domain.base}")
 	private String baseDomain;
@@ -21,14 +34,15 @@ public class CookieUtil {
 	 * @return A configured Cookie object
 	 */
 	public Cookie createRefreshTokenCookie(String tenantId, String refreshToken, long cookieMaxAge) {
-		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + "_refreshToken" : "refreshToken";
+		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + REFRESH_TOKEN_COOKIE_SUFFIX
+				: REFRESH_TOKEN_COOKIE_NAME;
 		Cookie cookie = new Cookie(cookieName, refreshToken);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
-		cookie.setPath("/");
+		cookie.setPath(COOKIE_PATH);
 		cookie.setMaxAge((int) (cookieMaxAge / 1000));
 		cookie.setDomain(baseDomain);
-		cookie.setAttribute("SameSite", "Lax");
+		cookie.setAttribute(SAME_SITE_ATTRIBUTE, SAME_SITE_VALUE);
 		return cookie;
 	}
 
@@ -38,14 +52,15 @@ public class CookieUtil {
 	 * @return A configured Cookie object with max age set to 0 to delete the cookie
 	 */
 	public Cookie clearRefreshTokenCookie(String tenantId) {
-		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + "_refreshToken" : "refreshToken";
+		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + REFRESH_TOKEN_COOKIE_SUFFIX
+				: REFRESH_TOKEN_COOKIE_NAME;
 		Cookie cookie = new Cookie(cookieName, null);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
-		cookie.setPath("/");
+		cookie.setPath(COOKIE_PATH);
 		cookie.setMaxAge(0);
 		cookie.setDomain(baseDomain);
-		cookie.setAttribute("SameSite", "Lax");
+		cookie.setAttribute(SAME_SITE_ATTRIBUTE, SAME_SITE_VALUE);
 		return cookie;
 	}
 
@@ -56,13 +71,13 @@ public class CookieUtil {
 	 * @return A configured Cookie object
 	 */
 	public Cookie createTenantCookie(String tenantId, long cookieMaxAge) {
-		Cookie cookie = new Cookie("tenant", tenantId);
+		Cookie cookie = new Cookie(TENANT_COOKIE_NAME, tenantId);
 		cookie.setHttpOnly(false);
 		cookie.setSecure(true);
-		cookie.setPath("/");
+		cookie.setPath(COOKIE_PATH);
 		cookie.setMaxAge((int) (cookieMaxAge / 1000));
 		cookie.setDomain(baseDomain);
-		cookie.setAttribute("SameSite", "Lax");
+		cookie.setAttribute(SAME_SITE_ATTRIBUTE, SAME_SITE_VALUE);
 		return cookie;
 	}
 
@@ -71,14 +86,33 @@ public class CookieUtil {
 	 * @return A configured Cookie object with max age set to 0 to delete the cookie
 	 */
 	public Cookie clearTenantCookie() {
-		Cookie cookie = new Cookie("tenant", null);
+		Cookie cookie = new Cookie(TENANT_COOKIE_NAME, null);
 		cookie.setHttpOnly(false);
 		cookie.setSecure(true);
-		cookie.setPath("/");
+		cookie.setPath(COOKIE_PATH);
 		cookie.setMaxAge(0);
 		cookie.setDomain(baseDomain);
-		cookie.setAttribute("SameSite", "Lax");
+		cookie.setAttribute(SAME_SITE_ATTRIBUTE, SAME_SITE_VALUE);
 		return cookie;
+	}
+
+	/**
+	 * Extracts the refresh token value from the incoming request cookies.
+	 * @param request The HTTP servlet request
+	 * @param tenantId The tenant ID used to namespace the cookie (null for community)
+	 * @return The refresh token value, or null if not found
+	 */
+	public String getRefreshTokenFromCookies(HttpServletRequest request, String tenantId) {
+		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + REFRESH_TOKEN_COOKIE_SUFFIX
+				: REFRESH_TOKEN_COOKIE_NAME;
+		if (request.getCookies() != null) {
+			for (Cookie cookie : request.getCookies()) {
+				if (cookieName.equals(cookie.getName())) {
+					return cookie.getValue();
+				}
+			}
+		}
+		return null;
 	}
 
 }

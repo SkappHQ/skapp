@@ -51,6 +51,7 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.util.Validations;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -310,6 +311,17 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("superAdminSignUp: execution ended for userEmail{}", user.getEmail());
 		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto refreshAccessTokenFromCookie(HttpServletRequest request) {
+		String refreshToken = cookieUtil.getRefreshTokenFromCookies(request, getTenantId());
+		if (refreshToken == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_REFRESH_TOKEN);
+		}
+		RefreshTokenRequestDto refreshTokenRequestDto = new RefreshTokenRequestDto();
+		refreshTokenRequestDto.setRefreshToken(refreshToken);
+		return refreshAccessToken(refreshTokenRequestDto);
 	}
 
 	@Override
