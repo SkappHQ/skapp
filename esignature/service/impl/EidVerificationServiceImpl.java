@@ -27,10 +27,7 @@ import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.EidVerificationService;
-import com.skapp.enterprise.esignature.type.AuditAction;
-import com.skapp.enterprise.esignature.type.EidFlowType;
-import com.skapp.enterprise.esignature.type.EidProviderType;
-import com.skapp.enterprise.esignature.type.EidVerificationStatus;
+import com.skapp.enterprise.esignature.type.*;
 import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -337,10 +334,12 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		recipientDao.save(recipient);
 
-		AuditAction auditAction = resolveIdentityVerifiedAuditAction(session.getProviderType());
-		AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(recipient.getEnvelope(), recipient, auditAction,
-				recipient.getAddressBook(), session.getEndUserIp(), null);
-		auditTrailDao.save(auditTrail);
+		if (recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
+			AuditAction auditAction = resolveIdentityVerifiedAuditAction(session.getProviderType());
+			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(recipient.getEnvelope(), recipient,
+					auditAction, recipient.getAddressBook(), session.getEndUserIp(), null);
+			auditTrailDao.save(auditTrail);
+		}
 
 		log.info("updateRecipientVerificationStatus: Recipient eID {} status updated to VERIFIED for recipient={}",
 				session.getFlowType(), recipient.getId());
