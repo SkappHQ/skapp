@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import { Popper } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
@@ -44,23 +43,21 @@ const EmployeeDataMenu = ({
       position={position}
       id={id}
       handleClose={handleClose}
-      containerClassName={`rounded-4 overflow-y-auto shadow-lg max-h-[calc(100vh-2rem)] ${menuType === MenuTypes.SORT ? "w-[248px]" : "max-w-[832px] w-[calc(100vw-2rem)]"}`}
+      containerClassName={`rounded-4 shadow-lg ${menuType === MenuTypes.SORT ? "w-[248px]" : "max-w-[832px] w-[calc(100vw-2rem)]"}`}
     >
-      <Box>
-        {menuType === MenuTypes.SORT ? (
-          <EmployeeDataSortMenuItems
-            handleClose={handleClose}
-            scrollToTop={scrollToTop}
-          />
-        ) : (
-          <EmployeeDataFIlterMenuItems
-            handleClose={handleClose}
-            scrollToTop={scrollToTop}
-            teams={teams}
-            jobFamilies={jobFamilies}
-          />
-        )}
-      </Box>
+      {menuType === MenuTypes.SORT ? (
+        <EmployeeDataSortMenuItems
+          handleClose={handleClose}
+          scrollToTop={scrollToTop}
+        />
+      ) : (
+        <EmployeeDataFIlterMenuItems
+          handleClose={handleClose}
+          scrollToTop={scrollToTop}
+          teams={teams}
+          jobFamilies={jobFamilies}
+        />
+      )}
     </Popper>
   );
 };
