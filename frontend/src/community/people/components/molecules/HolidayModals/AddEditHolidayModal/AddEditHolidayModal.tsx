@@ -1,4 +1,4 @@
-import { Stack, debounce } from "@mui/material";
+import { debounce } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
@@ -280,7 +280,7 @@ const AddEditHolidayModal = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <Stack>
+      <div className="flex flex-col">
         <InputField
           inputName="holidayReason"
           inputType="text"
@@ -365,24 +365,26 @@ const AddEditHolidayModal = ({
           isRequired={true}
         />
 
-        <ButtonV2
-          variant={"primary"}
-          type={"submit"}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["saveBtnText"])}
-        </ButtonV2>
-        <ButtonV2
-          variant={"tertiary"}
-          type={"button"}
-          onClick={onCloseClick}
-          icon={<Icon name={IconName.CLOSE_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["cancelBtnText"])}
-        </ButtonV2>
-      </Stack>
+        <div className="flex flex-row justify-end gap-3 mt-4">
+          <ButtonV2
+            variant={"tertiary"}
+            type={"button"}
+            onClick={onCloseClick}
+            icon={<Icon name={IconName.CLOSE_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["cancelBtnText"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"primary"}
+            type={"submit"}
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["saveBtnText"])}
+          </ButtonV2>
+        </div>
+      </div>
     </form>
   );
 };

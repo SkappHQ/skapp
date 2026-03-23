@@ -1,4 +1,3 @@
-import { Box, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useCallback } from "react";
 
@@ -148,53 +147,52 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
 
   return (
     <>
-      <Box>
+      <div>
         {type === HolidayDeleteType.ALL && (
-          <Typography
+          <p
             id="delete-all-holidays"
-            variant="body2"
-            sx={{ mt: 1, mb: 1, lineHeight: "1.6rem", fontSize: "1rem" }}
+            className="my-2"
           >
             {translateText(["allHolidayDeleteModalDes"])}
-          </Typography>
+          </p>
         )}
         {type === HolidayDeleteType.SELECTED && (
-          <Typography
+          <p
             id="delete-selected-holidays"
-            variant="body2"
-            sx={{ mt: 1, mb: 1, lineHeight: "1.6rem", fontSize: "1rem" }}
+            className="my-2"
           >
             {translateText(["selectedHolidayDeleteModalDes"])}
-          </Typography>
+          </p>
         )}
         {type === HolidayDeleteType.INDIVIDUAL && (
-          <Typography
+          <p
             id="delete-individual-holiday"
-            variant="body2"
-            sx={{ mt: 1, mb: 1, lineHeight: "1.6rem", fontSize: "1rem" }}
+            className="my-2"
           >
             {translateText(["singleHolidayDeleteModalDes"])}
-          </Typography>
+          </p>
         )}
-        <ButtonV2
-          variant={"error"}
-          onClick={() => handleBulkDelete()}
-          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-          iconPosition="end"
-        >
-          {type !== HolidayDeleteType.INDIVIDUAL
-            ? translateText(["deleteHolidays"])
-            : translateText(["deleteHoliday"])}
-        </ButtonV2>
-        <ButtonV2
-          variant={"tertiary"}
-          onClick={() => setIsPopupOpen(false)}
-          icon={<Icon name={IconName.CLOSE_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["cancelBtnText"])}
-        </ButtonV2>
-      </Box>
+        <div className="flex flex-row justify-end gap-3 mt-4">
+          <ButtonV2
+            variant={"tertiary"}
+            onClick={() => setIsPopupOpen(false)}
+            icon={<Icon name={IconName.CLOSE_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["cancelBtnText"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"error"}
+            onClick={() => handleBulkDelete()}
+            icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+            iconPosition="end"
+          >
+            {type !== HolidayDeleteType.INDIVIDUAL
+              ? translateText(["deleteHolidays"])
+              : translateText(["deleteHoliday"])}
+          </ButtonV2>
+        </div>
+      </div>
     </>
   );
 };
