@@ -1,4 +1,3 @@
-import { Box, Divider, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
@@ -46,41 +45,34 @@ const AddCalendar: FC = () => {
   };
 
   return (
-    <Box>
-      <Box>
-        <Typography
-          id="download-csv-description"
-          variant="body1"
-          sx={{
-            py: "1rem",
-            borderRadius: "0.75rem"
-          }}
-        >
-          {translateText(["downloadCsvDes"])}
-        </Typography>
-        <ButtonV2
-          variant={"secondary"}
-          onClick={downloadTemplateHandler}
-          className={getBlinkClass(isButtonBlinking.download)}
-          icon={<DownSideArrow />}
-          iconPosition="end"
-        >
-          {translateText(["downloadCsvTitle"])}
-        </ButtonV2>
-      </Box>
-      <Divider aria-hidden={true} />
-      <ButtonV2
-        variant={"primary"}
-        onClick={() =>
-          setHolidayModalType(holidayModalTypes.UPLOAD_HOLIDAY_BULK)
-        }
-        className={getBlinkClass(isButtonBlinking.next)}
-        icon={<RightArrowIcon />}
-        iconPosition="end"
-      >
-        {translateText(["nextBtn"])}
-      </ButtonV2>
-    </Box>
+    <div>
+      <div>
+        <p id="download-csv-description">{translateText(["downloadCsvDes"])}</p>
+        <div className="flex flex-row justify-end gap-3 mt-4">
+          <ButtonV2
+            variant={"secondary"}
+            onClick={downloadTemplateHandler}
+            className={getBlinkClass(isButtonBlinking.download)}
+            icon={<DownSideArrow fill="var(--color-primary-text)" />}
+            iconPosition="end"
+          >
+            {translateText(["downloadCsvTitle"])}
+          </ButtonV2>
+
+          <ButtonV2
+            variant={"primary"}
+            onClick={() =>
+              setHolidayModalType(holidayModalTypes.UPLOAD_HOLIDAY_BULK)
+            }
+            className={getBlinkClass(isButtonBlinking.next)}
+            icon={<RightArrowIcon />}
+            iconPosition="end"
+          >
+            {translateText(["nextBtn"])}
+          </ButtonV2>
+        </div>
+      </div>
+    </div>
   );
 };
 
