@@ -286,7 +286,8 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(TenantContext.getCurrentTenant(), refreshToken,
+					cookieMaxAge);
 			response.addCookie(cookie);
 			log.info("performGoogleSignIn: Added refresh token cookie for userEmail: {}", user.getEmail());
 
@@ -611,7 +612,8 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(TenantContext.getCurrentTenant(), refreshToken,
+					cookieMaxAge);
 			response.addCookie(cookie);
 			log.info("performMicrosoftSignIn: Added refresh token cookie for userEmail: {}", user.getEmail());
 
