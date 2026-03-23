@@ -291,6 +291,10 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 					new String[] { String.valueOf(EsignConstants.EID_MAX_SESSION_DURATION_SECONDS / 60) });
 		}
 
+		if (!isSessionRenewable(oldSession)) {
+			throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_NOT_ACTIVE);
+		}
+
 		EidProvider provider = providerRegistry.getProvider(oldSession.getProviderType())
 			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_NOT_FOUND));
 
@@ -364,6 +368,11 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 	private boolean isSessionActive(EidVerificationSession session) {
 		EidVerificationStatus status = session.getStatus();
 		return status == EidVerificationStatus.PENDING || status == EidVerificationStatus.USER_ACTION_REQUIRED;
+	}
+
+	private boolean isSessionRenewable(EidVerificationSession session) {
+		EidVerificationStatus status = session.getStatus();
+		return isSessionActive(session) || status == EidVerificationStatus.EXPIRED;
 	}
 
 	private void updateRecipientVerificationStatus(EidVerificationSession session) {
