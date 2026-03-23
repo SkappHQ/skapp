@@ -143,4 +143,6 @@ public class EpCommonConstants {
 
 	public static final String HTTPS_PROTOCOL = "https://";
 
+	public static final String AI_INSIGHTS_SCHEDULER_PATH = "/v1/scheduler/ai-insights";
+
 }
