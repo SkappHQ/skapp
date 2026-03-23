@@ -34,7 +34,6 @@ import com.skapp.enterprise.leaveplanner.type.EpMicrosoftCalendarAutoDeclineMode
 import com.skapp.enterprise.leaveplanner.util.Validation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -71,9 +70,6 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 	private final EpMicrosoftCalendarService epMicrosoftCalendarService;
 
 	private final EmployeeCalendarDao employeeCalendarDao;
-
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
 
 	@Override
 	public ResponseEntityDto getDateRangeAndWorkingHoursForLeave(Long id) {
@@ -169,8 +165,7 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 						.generateGoogleAccessToken(leaveRequest.getEmployee().getUser());
 					for (CalendarEvent calendarEvent : calendarEvents) {
 						epGoogleCalenderService.deleteOutOfOfficeEvent(
-								encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret),
-								accessToken);
+								encryptionDecryptionService.decrypt(calendarEvent.getEventId()), accessToken);
 					}
 				}
 				else if (employeeCalendar.getCalendarType() == EpCalendarType.OUTLOOK) {
@@ -178,8 +173,7 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 						.generateMicrosoftAccessToken(leaveRequest.getEmployee().getUser());
 					for (CalendarEvent calendarEvent : calendarEvents) {
 						epMicrosoftCalendarService.deleteOutOfOfficeEvent(
-								encryptionDecryptionService.decrypt(calendarEvent.getEventId(), encryptSecret),
-								accessToken);
+								encryptionDecryptionService.decrypt(calendarEvent.getEventId()), accessToken);
 					}
 				}
 				else {
@@ -336,8 +330,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 			String accessToken, String autoDeclineMode, String declineMessage) {
 		CalendarEvent calendarEvent = new CalendarEvent();
 
-		String eventId = encryptionDecryptionService.encrypt(epGoogleCalenderService.createOutOfOfficeEvent(
-				startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage), encryptSecret);
+		String eventId = encryptionDecryptionService.encrypt(epGoogleCalenderService
+			.createOutOfOfficeEvent(startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage));
 
 		if (eventId != null) {
 			calendarEvent.setEventId(eventId);
@@ -352,8 +346,8 @@ public class EpLeaveCalendarServiceImpl implements EpLeaveCalendarService {
 			String accessToken, String autoDeclineMode, String declineMessage) {
 		CalendarEvent calendarEvent = new CalendarEvent();
 
-		String eventId = encryptionDecryptionService.encrypt(epMicrosoftCalendarService.createOutOfOfficeEvent(
-				startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage), encryptSecret);
+		String eventId = encryptionDecryptionService.encrypt(epMicrosoftCalendarService
+			.createOutOfOfficeEvent(startDateTime, endDateTime, accessToken, autoDeclineMode, declineMessage));
 
 		if (eventId != null) {
 			calendarEvent.setEventId(eventId);

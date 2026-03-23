@@ -12,6 +12,7 @@ import com.skapp.enterprise.esignature.payload.request.FieldSignDto;
 import com.skapp.enterprise.esignature.payload.request.FieldStyleDto;
 import com.skapp.enterprise.esignature.payload.request.eid.EsignPdfRenderCssDto;
 import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto;
+import com.skapp.enterprise.esignature.payload.response.ProcessedDocumentResult;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
 import com.skapp.enterprise.esignature.type.EsignImageType;
@@ -134,8 +135,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	@Override
-	public byte[] updateEnvelopeUuidToEachPage(String value, byte[] inputBytes, int numOfPages) {
+	private byte[] updateEnvelopeUuidToEachPage(String value, byte[] inputBytes, int numOfPages) {
 
 		if (inputBytes == null || inputBytes.length == 0) {
 			throw new IllegalArgumentException(
@@ -144,7 +144,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 		if (value == null) {
 			throw new IllegalArgumentException(
-					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_LIST_CANNOT_BE_EMPTY));
+					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_ENVELOPE_UUID_CANNOT_BE_NULL));
 		}
 
 		try (RandomAccessReadBuffer randomAccessRead = new RandomAccessReadBuffer(inputBytes);
@@ -204,6 +204,26 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 		catch (IOException e) {
 			log.error("Error processing envelop Uuid PDF document: {}", e.getMessage());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
+		}
+	}
+
+	@Override
+	public ProcessedDocumentResult downloadAndUpdateEnvelopeUuid(String value, String bucketName, String filePath) {
+		try (InputStream inputStream = amazonS3Service.downloadFile(bucketName, filePath);
+				ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+
+			inputStream.transferTo(buffer);
+			byte[] inputBytes = buffer.toByteArray();
+
+			int numberOfPages = getNumberOfPages(inputBytes);
+			byte[] updatedBytes = updateEnvelopeUuidToEachPage(value, inputBytes, numberOfPages);
+
+			return new ProcessedDocumentResult(updatedBytes, numberOfPages);
+
+		}
+		catch (IOException e) {
+			log.error("Error in downloadAndUpdateEnvelopeUuid: {}", e.getMessage());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_PROCESS_PDF_DOCUMENT);
 		}
 	}
@@ -311,10 +331,10 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		FieldType fieldType = field.getType();
 
 		if (FieldType.CHECKBOX.equals(fieldType)) {
-			addCheckbox(field, contentStream, pageHeight, pageWidth, document);
+			addCheckbox(field, contentStream, pageHeight, document);
 		}
 		else if (FieldType.RADIO_BUTTON.equals(fieldType)) {
-			addRadioButton(field, contentStream, pageHeight, pageWidth, document);
+			addRadioButton(field, contentStream, pageHeight, document);
 		}
 		else if (FieldType.DROPDOWN.equals(fieldType)) {
 			addAdvanceTextField(field, contentStream, pageHeight, pageWidth, document);
@@ -327,11 +347,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			try {
 				// Adjust baseline offset for Y position
 				float yOffset = DEFAULT_FONT_SIZE * Y_OFFSET_VALUE;
-				float adjustedY = pageHeight - field.getYPosition() - yOffset;
+				float adjustedY = pageHeight - field.getYposition() - yOffset;
 
 				// Adjust baseline offset for x position
 				float xOffset = DEFAULT_FONT_SIZE * X_OFFSET_VALUE;
-				float adjustedX = field.getXPosition() + xOffset;
+				float adjustedX = field.getXposition() + xOffset;
 
 				contentStream.beginText();
 				PDType0Font font = loadFont(document);
@@ -371,7 +391,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_FIELD_VALUE_CANNOT_BE_EMPTY));
 		}
 
-		if (field.getXPosition() < 0 || field.getYPosition() < 0) {
+		if (field.getXposition() < 0 || field.getYposition() < 0) {
 			throw new IllegalArgumentException(
 					messageUtil.getMessage(EsignMessageConstant.ESIGN_VALIDATION_COORDINATES_MUST_BE_NOT_NEGATIVE));
 		}
@@ -381,8 +401,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		Objects.requireNonNull(inputBytes, "Input PDF bytes cannot be null");
 
 		int pageNumber = field.getPageNumber();
-		float x = field.getXPosition();
-		float y = field.getYPosition();
+		float x = field.getXposition();
+		float y = field.getYposition();
 		float width = field.getWidth();
 		float height = field.getHeight();
 
@@ -674,32 +694,32 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight, float pageWidth,
+	private void addCheckbox(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
 			PDDocument document) {
 
 		EsignImageType type = field.isSigned() ? EsignImageType.CHECKBOX_CHECKED : EsignImageType.CHECKBOX_UNCHECKED;
 
-		addImage(field, contentStream, document, pageHeight, pageWidth, type);
+		addImage(field, contentStream, document, pageHeight, type);
 	}
 
 	private void addRadioButton(FieldSignDto field, PDPageContentStream contentStream, float pageHeight,
-			float pageWidth, PDDocument document) {
+			PDDocument document) {
 
 		EsignImageType type = field.isSigned() ? EsignImageType.RADIO_BUTTON_CHECKED
 				: EsignImageType.RADIO_BUTTON_UNCHECKED;
 
-		addImage(field, contentStream, document, pageHeight, pageWidth, type);
+		addImage(field, contentStream, document, pageHeight, type);
 	}
 
 	private void addImage(FieldSignDto field, PDPageContentStream contentStream, PDDocument document, float pageHeight,
-			float pageWidth, EsignImageType imageType) {
+			EsignImageType imageType) {
 
 		float adjustedWidth = field.getWidth();
 		float adjustedHeight = field.getHeight();
 
 		// PDF Y-axis starts from bottom-left; convert from top-left origin
-		float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
-		float adjustedX = field.getXPosition();
+		float adjustedY = pageHeight - field.getYposition() - adjustedHeight;
+		float adjustedX = field.getXposition();
 
 		// Load SVG bytes from S3
 		try (InputStream svgStream = amazonS3Service.downloadSvgImageAsStream(imageType.getFilename());
@@ -758,20 +778,19 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
 			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
 
+			// Final placement dimensions in PDF point space
 			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
 			float adjustedHeight = (field.getHeightPercentage() / 100f) * pageHeight;
 
 			// PDF Y-axis starts from bottom-left; convert from top-left origin
-			float adjustedY = pageHeight - field.getYPosition() - adjustedHeight;
-			float adjustedX = field.getXPosition();
+			float adjustedY = pageHeight - field.getYposition() - adjustedHeight;
+			float adjustedX = field.getXposition();
 
 			// Calculate original page dimensions in pixels based on field's percentage
 			// and actual PDF page size
 			float originalPageWidthInPixels = field.getWidth() / (field.getWidthPercentage() / 100f);
 			float originalPageHeightInPixels = field.getHeight() / (field.getHeightPercentage() / 100f);
 
-			float adjustedFontSize = (float) (Math.ceil((fontSize / originalPageWidthInPixels) * pageWidth * 100f)
-					/ 100f);
 			float adjustedHorizontalPadding = (float) (Math
 				.ceil((horizontalPadding / originalPageWidthInPixels) * pageWidth * 100f) / 100f);
 			float adjustedVerticalPadding = (float) (Math
@@ -781,8 +800,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
 			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
 			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
-			cssDto.setFontFamilyCss(fontFamily);
-			cssDto.setFontSize(String.valueOf(adjustedFontSize));
+			cssDto.setFontFamilyCss(fontFamilyCss);
+			cssDto.setFontSize(String.valueOf(fontSize));
 			cssDto.setFontWeight(EsignUtil.resolveFontWeight(isBold));
 			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
 			cssDto.setTextDecoration(EsignUtil.resolveTextDecoration(isUnderline));
@@ -794,22 +813,35 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
-			// Render HTML → PDF bytes; font loaded from S3 via pdfResourceService
 			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
 					fontFamilyCss);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
-			// Calculate how much to stretch/shrink the form to fit the target field size
-			// Ensures the rendered HTML content exactly fills the intended field
-			// rectangle on the PDF
 			PDRectangle bbox = formXObject.getBBox();
+
+			// scaleX / scaleY are the ratios that shrink or stretch the form XObject
+			// so it fits exactly into the target field rectangle.
+			// scaleX = target width / original form width (horizontal stretch factor)
+			// scaleY = target height / original form height (vertical stretch factor)
+			// The XObject's internal BBox might not perfectly match the target
+			// dimensions, therefore we need to scale factors normalize it
 			float scaleX = adjustedWidth / bbox.getWidth();
 			float scaleY = adjustedHeight / bbox.getHeight();
 
-			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
-
 			contentStream.saveGraphicsState();
+
+			contentStream.addRect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
+			contentStream.clip();
+
+			// The affine transformation matrix maps the form XObject into the target
+			// position and size on the page. The 2×3 matrix parameters are:
+			// (scaleX, 0, 0, scaleY, translateX, translateY)
+			// - scaleX, scaleY: scale the form to the target field dimensions
+			// - translateX (adjustedX): horizontal position on the page
+			// - translateY: vertical position computed above to top-align the form
+			// Without this matrix the form would draw at (0,0) at its original size.
+			Matrix matrix = new Matrix(scaleX, 0, 0, scaleY, adjustedX, adjustedY);
 			contentStream.transform(matrix);
 			contentStream.drawForm(formXObject);
 			contentStream.restoreGraphicsState();

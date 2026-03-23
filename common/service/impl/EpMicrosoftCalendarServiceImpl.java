@@ -98,9 +98,6 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 
 	private final OrganizationDao organizationDao;
 
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
-
 	@Value("${microsoft.calendar.client-id}")
 	private String clientId;
 
@@ -167,7 +164,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		String decryptedState;
 		byte[] decodedBytes = Base64.getUrlDecoder().decode(encodedState);
 		String encryptedState = new String(decodedBytes, StandardCharsets.UTF_8);
-		decryptedState = encryptionDecryptionService.decrypt(encryptedState, encryptSecret);
+		decryptedState = encryptionDecryptionService.decrypt(encryptedState);
 
 		String[] state = decryptedState.split(EpCommonConstants.ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE);
 
@@ -208,7 +205,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 		}
 
 		if (result.getRefreshToken() != null) {
-			String encryptedRefreshToken = encryptionDecryptionService.encrypt(result.getRefreshToken(), encryptSecret);
+			String encryptedRefreshToken = encryptionDecryptionService.encrypt(result.getRefreshToken());
 			if (encryptedRefreshToken == null) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ENCRYPTION_FAILED);
 			}
@@ -287,7 +284,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 				+ frontendRedirectUri + EpCommonConstants.ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE
 				+ TenantContext.getCurrentTenant();
 
-		String encryptedState = encryptionDecryptionService.encrypt(state, encryptSecret);
+		String encryptedState = encryptionDecryptionService.encrypt(state);
 		String encodedState = Base64.getUrlEncoder()
 			.withoutPadding()
 			.encodeToString(encryptedState.getBytes(StandardCharsets.UTF_8));
@@ -340,7 +337,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 
 		String refreshToken = employeeCalendar.getCalendarToken();
 
-		String decryptedRefreshToken = encryptionDecryptionService.decrypt(refreshToken, encryptSecret);
+		String decryptedRefreshToken = encryptionDecryptionService.decrypt(refreshToken);
 		if (decryptedRefreshToken == null || decryptedRefreshToken.isEmpty()) {
 			log.error("MicrosoftCalendar: generateAccessToken");
 			employeeCalendar.setCalendarToken(null);
@@ -578,7 +575,7 @@ public class EpMicrosoftCalendarServiceImpl implements EpMicrosoftCalendarServic
 			}
 			graphClient.me().events().byEventId(eventId).delete();
 			log.info("MicrosoftCalendar: deleted Event: {}", eventId);
-			String encryptedEventId = encryptionDecryptionService.encrypt(eventId, encryptSecret);
+			String encryptedEventId = encryptionDecryptionService.encrypt(eventId);
 			calendarEventDao.deleteByEventId(encryptedEventId);
 		}
 		catch (Exception ex) {

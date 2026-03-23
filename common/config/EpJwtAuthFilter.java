@@ -35,6 +35,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -50,7 +51,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/swagger-ui/favicon-32x32.png", "/v1/auth", "/v1/app-setup-status", "/ws",
 			"/v1/ep/auth/signup/super-admin", "/v1/ep/auth/domain/verify", "/v1/ep/auth/signup/super-admin/sso/google",
 			"/v1/auth/sign-in", "/v1/ep/auth/signin/sso/google", "/v1/ep/tenant/create", "/v1/ep/reset-database",
-			"/robots.txt", "/v1/ep/auth/recaptcha", "/health", "/v1/ep/organization/login-method",
+			"/robots.txt", "/v1/ep/auth/recaptcha", "/health", "/deployment", "/v1/ep/organization/login-method",
 			"/v1/ep/auth/password-reset", "/v1/ep/auth/password-reset/verify-otp",
 			"/v1/ep/auth/password-reset/send-otp", "/v1/ep/auth/password-reset/resend-otp", "/v1/auth/refresh-token",
 			"/v1/ep/auth/tenant/availability", "/v1/google-calendar/redirect", "/v1/validate/email",
@@ -155,11 +156,14 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_TOKEN);
 		}
 
-		List<String> rawTiers = jwtService.extractClaim(accessToken,
-				claims -> claims.get(EpAuthConstants.TIERS, List.class));
-
-		List<Tier> tiers = rawTiers != null
-				? rawTiers.stream().filter(Tier.class::isInstance).map(Tier.class::cast).toList() : List.of();
+		List<Tier> tiers = Optional
+			.ofNullable(jwtService.extractClaim(accessToken, claims -> claims.get(EpAuthConstants.TIERS)))
+			.map(list -> ((List<?>) list).stream()
+				.filter(String.class::isInstance)
+				.map(String.class::cast)
+				.map(Tier::valueOf)
+				.toList())
+			.orElse(List.of());
 
 		String tenantStatus = jwtService.extractClaim(accessToken,
 				claims -> claims.get(EpAuthConstants.TENANT_STATUS, String.class));

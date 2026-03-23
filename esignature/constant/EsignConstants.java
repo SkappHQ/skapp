@@ -70,8 +70,6 @@ public class EsignConstants {
 
 	public static final int MAX_RETRY_LIMIT = 5;
 
-	public static final int DOCUMENT_NAME_TRUNCATE_LENGTH = 25;
-
 	public static final int MIN_OTP_BACKOFF_SECONDS = 30;
 
 	/**
@@ -104,5 +102,7 @@ public class EsignConstants {
 	public static final String SUCCESSFUL = "successful";
 
 	public static final int MAX_ADVANCED_FIELD_OPTION_VALUE_LENGTH = 100;
+
+	public static final int ADVANCED_FIELD_TEXT_VALUE_MAX_LENGTH = 255;
 
 }

@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.type.Tier;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.mapper.EsignMapper;
 import com.skapp.enterprise.esignature.model.EsignConfig;
@@ -11,16 +12,23 @@ import com.skapp.enterprise.esignature.payload.response.EsignExternalConfigRespo
 import com.skapp.enterprise.esignature.repository.EsignConfigRepository;
 import com.skapp.enterprise.esignature.service.EsignConfigService;
 import com.skapp.enterprise.esignature.type.DateFormatType;
+import com.skapp.enterprise.people.service.EpUserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
+@Slf4j
 @AllArgsConstructor
 public class EsignConfigServiceImpl implements EsignConfigService {
 
 	private final EsignConfigRepository esignConfigRepository;
 
 	private final EsignMapper esignMapper;
+
+	private final EpUserService epUserService;
 
 	@Override
 	public void setDefaultEsignConfigs() {
@@ -51,6 +59,13 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 		}
 
 		if (esignConfigDto.getIsMfaEnabled() != null) {
+
+			List<Tier> tierList = epUserService.getCurrentUserTiers();
+
+			if (Boolean.TRUE.equals(esignConfigDto.getIsMfaEnabled()) && !tierList.contains(Tier.PRO)) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER);
+			}
+
 			esignConfig.setIsMfaEnabled(esignConfigDto.getIsMfaEnabled());
 		}
 
@@ -81,6 +96,15 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 		esignConfigResponseDto.setDateFormat(esignConfig.getDateFormat().getValue());
 
 		return new ResponseEntityDto(false, esignConfigResponseDto);
+	}
+
+	@Override
+	public void updateMfaEnabled(boolean enabled) {
+		esignConfigRepository.findFirstBy().ifPresentOrElse(esignConfig -> {
+			log.info("updateMfaEnabled: Setting MFA enabled to {} in esign config", enabled);
+			esignConfig.setIsMfaEnabled(enabled);
+			esignConfigRepository.save(esignConfig);
+		}, () -> log.warn("updateMfaEnabled: Esign config not found, skipping MFA update to {}", enabled));
 	}
 
 }
