@@ -24,9 +24,7 @@ public enum BankIdHintCode {
 
 	START_FAILED("startFailed"),
 
-	USER_DECLINED_CALL("userDeclinedCall"),
-
-	TRANSACTION_EXPIRED("transactionExpired");
+	USER_DECLINED_CALL("userDeclinedCall");
 
 	private final String value;
 

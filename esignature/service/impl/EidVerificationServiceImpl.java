@@ -43,6 +43,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -236,13 +237,10 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(session);
 
-		// Set transient data (hintCode, QR code) from session entity
-		if (isSessionActive(session)) {
-			response.setHintCode(session.getHintCode());
-			if (session.getQrStartToken() != null && session.getQrStartSecret() != null) {
-				response.setQrCode(BankIdQrCodeUtil.computeQrCode(session.getQrStartToken(), session.getQrStartSecret(),
-						session.getInitiatedAt()));
-			}
+		// QR code is only meaningful for active sessions
+		if (isSessionActive(session) && session.getQrStartToken() != null && session.getQrStartSecret() != null) {
+			response.setQrCode(BankIdQrCodeUtil.computeQrCode(session.getQrStartToken(), session.getQrStartSecret(),
+					session.getInitiatedAt()));
 		}
 
 		log.debug("checkVerificationStatus: session={} status={}", sessionId, response.getStatus());
@@ -273,6 +271,59 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		log.info("cancelVerification: session={} cancelled", sessionId);
 		return new ResponseEntityDto(false, EidMessageConstant.EID_SUCCESS_VERIFICATION_CANCELLED);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto renewSession(String sessionId, HttpServletRequest httpRequest) {
+		log.info("renewSession: renewing session={}", sessionId);
+
+		EidVerificationSession oldSession = sessionRepository.findBySessionUuid(sessionId)
+			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_SESSION_NOT_FOUND));
+
+		boolean isDocAccess = isCurrentUserDocAccessRole();
+		Long documentId = oldSession.getDocument() != null ? oldSession.getDocument().getId() : null;
+		documentLinkService.validateTokenFlows(isDocAccess, oldSession.getRecipient(), documentId);
+
+		if (oldSession.getOverallExpiresAt() != null && Instant.now().isAfter(oldSession.getOverallExpiresAt())) {
+			throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_OVERALL_EXPIRED);
+		}
+
+		EidProvider provider = providerRegistry.getProvider(oldSession.getProviderType())
+			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_NOT_FOUND));
+
+		// Cancel the old BankID order gracefully
+		if (isSessionActive(oldSession)) {
+			provider.cancelVerification(oldSession);
+		}
+
+		Long recipientId = oldSession.getRecipient().getId();
+		String endUserIp = extractClientIp(httpRequest);
+		Instant overallExpiresAt = oldSession.getOverallExpiresAt();
+
+		EidVerificationSession newSession;
+		if (oldSession.getFlowType() == EidFlowType.SIGN) {
+			newSession = provider.initiateVerification(recipientId, documentId, endUserIp,
+					oldSession.getUserVisibleData(), oldSession.getDocumentHash());
+		}
+		else {
+			newSession = provider.initiateIdentification(recipientId, documentId, endUserIp,
+					oldSession.getUserVisibleData());
+		}
+
+		// Carry the overall expiry from the original session
+		newSession.setOverallExpiresAt(overallExpiresAt);
+		newSession = sessionRepository.save(newSession);
+
+		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(newSession);
+		response.setAutoStartToken(newSession.getAutoStartToken());
+		if (newSession.getQrStartToken() != null && newSession.getQrStartSecret() != null) {
+			response.setQrCode(BankIdQrCodeUtil.computeQrCode(newSession.getQrStartToken(),
+					newSession.getQrStartSecret(), newSession.getInitiatedAt()));
+		}
+
+		log.info("renewSession: created new session={} from old session={}", newSession.getSessionUuid(), sessionId);
+		return new ResponseEntityDto(false, response);
 	}
 
 	@Override

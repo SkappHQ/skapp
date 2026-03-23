@@ -60,6 +60,8 @@ public class BankIdProvider implements EidProvider {
 
 	private static final int SESSION_TIMEOUT_SECONDS = 30;
 
+	private static final int MAX_SESSION_DURATION_SECONDS = 300;
+
 	private final BankIdClient bankIdClient;
 
 	private final BankIdProperties bankIdProperties;
@@ -112,6 +114,7 @@ public class BankIdProvider implements EidProvider {
 		BankIdSignResponse signResponse = bankIdClient.sign(signRequest);
 
 		// Create and save session with BankID transient data
+		Instant now = Instant.now();
 		EidVerificationSession session = EidVerificationSession.builder()
 			.recipient(recipient)
 			.document(document)
@@ -122,8 +125,9 @@ public class BankIdProvider implements EidProvider {
 			.endUserIp(endUserIp)
 			.documentHash(documentHash)
 			.userVisibleData(userVisibleData)
-			.initiatedAt(Instant.now())
-			.expiresAt(Instant.now().plusSeconds(SESSION_TIMEOUT_SECONDS))
+			.initiatedAt(now)
+			.expiresAt(now.plusSeconds(SESSION_TIMEOUT_SECONDS))
+			.overallExpiresAt(now.plusSeconds(MAX_SESSION_DURATION_SECONDS))
 			.qrStartToken(signResponse.getQrStartToken())
 			.qrStartSecret(signResponse.getQrStartSecret())
 			.autoStartToken(signResponse.getAutoStartToken())
@@ -160,6 +164,7 @@ public class BankIdProvider implements EidProvider {
 
 		BankIdSignResponse authResponse = bankIdClient.auth(requestBuilder.build());
 
+		Instant now = Instant.now();
 		EidVerificationSession session = EidVerificationSession.builder()
 			.recipient(recipient)
 			.document(document)
@@ -169,8 +174,9 @@ public class BankIdProvider implements EidProvider {
 			.providerSessionId(authResponse.getOrderRef())
 			.endUserIp(endUserIp)
 			.userVisibleData(userVisibleData)
-			.initiatedAt(Instant.now())
-			.expiresAt(Instant.now().plusSeconds(SESSION_TIMEOUT_SECONDS))
+			.initiatedAt(now)
+			.expiresAt(now.plusSeconds(SESSION_TIMEOUT_SECONDS))
+			.overallExpiresAt(now.plusSeconds(MAX_SESSION_DURATION_SECONDS))
 			.qrStartToken(authResponse.getQrStartToken())
 			.qrStartSecret(authResponse.getQrStartSecret())
 			.autoStartToken(authResponse.getAutoStartToken())
@@ -192,7 +198,7 @@ public class BankIdProvider implements EidProvider {
 		// Check if session has expired locally
 		if (session.getExpiresAt() != null && Instant.now().isAfter(session.getExpiresAt())) {
 			session.setStatus(EidVerificationStatus.EXPIRED);
-			session.setErrorCode(BankIdHintCode.EXPIRED_TRANSACTION.getValue());
+			session.setHintCode(BankIdHintCode.EXPIRED_TRANSACTION.getValue());
 			session.setErrorMessage("The transaction has expired.");
 			clearTransientData(session);
 			return sessionRepository.save(session);
@@ -225,7 +231,7 @@ public class BankIdProvider implements EidProvider {
 
 		// Update session status regardless of API result
 		session.setStatus(EidVerificationStatus.CANCELLED);
-		session.setErrorCode(BankIdHintCode.USER_CANCEL.getValue());
+		session.setHintCode(BankIdHintCode.USER_CANCEL.getValue());
 		session.setErrorMessage("User cancelled the verification.");
 
 		clearTransientData(session);
@@ -276,8 +282,6 @@ public class BankIdProvider implements EidProvider {
 	}
 
 	private void handleFailedStatus(EidVerificationSession session, String hintCode) {
-		session.setErrorCode(hintCode);
-
 		BankIdHintCode bankIdHintCode = BankIdHintCode.fromValue(hintCode);
 		if (bankIdHintCode == null) {
 			session.setStatus(EidVerificationStatus.FAILED);
@@ -311,6 +315,7 @@ public class BankIdProvider implements EidProvider {
 	private void handleCompleteStatus(EidVerificationSession session, BankIdCompletionData completionData) {
 		session.setStatus(EidVerificationStatus.VERIFIED);
 		session.setCompletedAt(Instant.now());
+		session.setHintCode(null);
 
 		// Create verified identity
 		if (completionData != null) {
@@ -392,7 +397,6 @@ public class BankIdProvider implements EidProvider {
 		session.setQrStartToken(null);
 		session.setQrStartSecret(null);
 		session.setAutoStartToken(null);
-		session.setHintCode(null);
 	}
 
 }

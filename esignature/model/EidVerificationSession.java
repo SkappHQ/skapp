@@ -107,6 +107,9 @@ public class EidVerificationSession extends Auditable<String> {
 	@Column(name = "expires_at")
 	private Instant expiresAt;
 
+	@Column(name = "overall_expires_at")
+	private Instant overallExpiresAt;
+
 	@Column(name = "completed_at")
 	private Instant completedAt;
 

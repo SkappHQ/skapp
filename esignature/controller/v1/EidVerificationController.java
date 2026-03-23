@@ -93,6 +93,18 @@ public class EidVerificationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Renew verification session",
+			description = "Cancels the current BankID order and creates a new one, preserving the overall 5-minute deadline. "
+					+ "Call this when the current 30-second order is about to expire but the user still needs time to scan the QR code. "
+					+ "Returns a fresh qrCode, sessionId and expiresAt for the new order.")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
+	@PostMapping(value = "/renew", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> renewSession(@Valid @RequestBody VerificationSessionRequestDto request,
+			HttpServletRequest httpRequest) {
+		ResponseEntityDto response = eidVerificationService.renewSession(request.getSessionId(), httpRequest);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Get active verification session",
 			description = "Retrieves any active verification session for the specified recipient and document. "
 					+ "This allows the frontend to recover from lost session IDs (e.g., after page refresh). "
