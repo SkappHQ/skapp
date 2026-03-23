@@ -15,12 +15,14 @@ public class CookieUtil {
 	/**
 	 * Creates a secure HTTP-only refresh token cookie with the specified token and max
 	 * age.
+	 * @param tenantId The tenant ID used to namespace the cookie
 	 * @param refreshToken The refresh token value
 	 * @param cookieMaxAge The maximum age of the cookie in milliseconds
 	 * @return A configured Cookie object
 	 */
-	public Cookie createRefreshTokenCookie(String refreshToken, long cookieMaxAge) {
-		Cookie cookie = new Cookie("refreshToken", refreshToken);
+	public Cookie createRefreshTokenCookie(String tenantId, String refreshToken, long cookieMaxAge) {
+		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + "_refreshToken" : "refreshToken";
+		Cookie cookie = new Cookie(cookieName, refreshToken);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
 		cookie.setPath("/");
@@ -32,10 +34,12 @@ public class CookieUtil {
 
 	/**
 	 * Clears the refresh token cookie by setting its max age to 0.
+	 * @param tenantId The tenant ID used to namespace the cookie
 	 * @return A configured Cookie object with max age set to 0 to delete the cookie
 	 */
-	public Cookie clearRefreshTokenCookie() {
-		Cookie cookie = new Cookie("refreshToken", null);
+	public Cookie clearRefreshTokenCookie(String tenantId) {
+		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + "_refreshToken" : "refreshToken";
+		Cookie cookie = new Cookie(cookieName, null);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
 		cookie.setPath("/");

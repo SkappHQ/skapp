@@ -39,7 +39,6 @@ import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
-import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
@@ -156,7 +155,7 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto signOutWithCookie(HttpServletResponse response) {
 		log.info("signOutWithCookie: execution started");
 
-		Cookie refreshCookie = cookieUtil.clearRefreshTokenCookie();
+		Cookie refreshCookie = cookieUtil.clearRefreshTokenCookie(getTenantId());
 		response.addCookie(refreshCookie);
 		log.info("signOutWithCookie: Cleared refresh token cookie");
 
@@ -215,7 +214,7 @@ public class AuthServiceImpl implements AuthService {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(getTenantId(), refreshToken, cookieMaxAge);
 			response.addCookie(refreshCookie);
 			log.info("performSignIn: Added refresh token cookie for userEmail={}", user.getEmail());
 
@@ -691,6 +690,10 @@ public class AuthServiceImpl implements AuthService {
 
 	protected void onSignInSuccess(String email) {
 		// No-op: overridden by enterprise for brute force protection
+	}
+
+	protected String getTenantId() {
+		return null;
 	}
 
 }
