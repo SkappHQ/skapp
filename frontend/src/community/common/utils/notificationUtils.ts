@@ -62,16 +62,19 @@ export const handleNotifyRow = ({
       );
     }
   } else if (
-    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED ||
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED_OWNER ||
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED_OWNER ||
+    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED
+  ) {
+    if (resourceId && !isNaN(Number(resourceId))) {
+      router.push(ROUTES.SIGN.SENT_INFO.ID(Number(resourceId)));
+    }
+  } else if (
     notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED ||
     notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_VOIDED
   ) {
     if (resourceId && !isNaN(Number(resourceId))) {
-      if (isCausedByCurrentUser) {
-        router.push(ROUTES.SIGN.SENT_INFO.ID(Number(resourceId)));
-      } else {
-        router.push(ROUTES.SIGN.INBOX_INFO.ID(Number(resourceId)));
-      }
+      router.push(ROUTES.SIGN.INBOX_INFO.ID(Number(resourceId)));
     }
   }
   mutate(id);
