@@ -1,6 +1,5 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.type.Role;
@@ -27,8 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -43,7 +40,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 	@Override
 	@Transactional
 	public ResponseEntityDto createAnnouncement(FeatureAnnouncementCreateRequestDto requestDto) {
-		log.debug("Creating feature announcement with title: {}", requestDto.getTitle());
+		log.info("createAnnouncement: execution started");
 
 		validateCrossFieldRules(requestDto.getCtaLabel(), requestDto.getCtaLink(), requestDto.getFrequencyType(),
 				requestDto.getCustomFrequencyDays());
@@ -57,13 +54,14 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 			return recipient;
 		}).toList();
 		featureAnnouncementRecipientDao.saveAll(recipients);
+		log.info("createAnnouncement: execution ended");
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getAnnouncements(AnnouncementListRequestFilterDto filterDto) {
-		log.debug("Fetching announcements page={} size={}", filterDto.getPageNumber(), filterDto.getPageSize());
+		log.info("getAnnouncements: execution started");
 
 		Sort sort = Sort.by(filterDto.getSortDirection(), filterDto.getSortBy());
 		Pageable pageable = PageRequest.of(filterDto.getPageNumber(), filterDto.getPageSize(), sort);
@@ -80,20 +78,24 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		pageDto.setTotalItems(page.getTotalElements());
 		pageDto.setTotalPages(page.getTotalPages());
 
+		log.info("getAnnouncements: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getAnnouncementById(Long announcementId) {
+		log.info("getAnnouncementById: execution started");
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
+		log.info("getAnnouncementById: execution ended");
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(entity));
 	}
 
 	@Override
 	@Transactional
 	public ResponseEntityDto updateAnnouncement(Long announcementId, FeatureAnnouncementCreateRequestDto requestDto) {
+		log.info("updateAnnouncement: execution started");
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
 
@@ -116,6 +118,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 			})
 			.toList();
 		featureAnnouncementRecipientDao.saveAll(newRecipients);
+		log.info("updateAnnouncement: execution ended");
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
 
@@ -123,21 +126,17 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 	@Transactional
 	public ResponseEntityDto updateAnnouncementStatus(Long announcementId,
 			AnnouncementStatusUpdateRequestDto requestDto) {
-
+		log.info("updateAnnouncementStatus: execution started");
 		FeatureAnnouncement entity = featureAnnouncementDao.findById(announcementId)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND));
 
 		entity.setStatus(requestDto.getStatus());
 		FeatureAnnouncement saved = featureAnnouncementDao.save(entity);
+		log.info("updateAnnouncementStatus: execution ended");
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
 
 	private void sanitizeAnnouncementRequest(FeatureAnnouncementCreateRequestDto createRequest) {
-		createRequest.setTitle(createRequest.getTitle().trim());
-		createRequest
-			.setCtaLabel(StringUtils.hasText(createRequest.getCtaLabel()) ? createRequest.getCtaLabel().trim() : null);
-		createRequest
-			.setCtaLink(StringUtils.hasText(createRequest.getCtaLink()) ? createRequest.getCtaLink().trim() : null);
 		if (createRequest.getStatus() == null) {
 			createRequest.setStatus(AnnouncementStatus.ACTIVE);
 		}
@@ -172,8 +171,6 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		response.setCustomFrequencyDays(announcement.getCustomFrequencyDays());
 		response.setStatus(announcement.getStatus());
 		response.setImagePath(announcement.getImagePath());
-		response.setCreatedDate(
-				announcement.getCreatedDate() == null ? null : announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
 		List<Role> recipientRoles = featureAnnouncementRecipientDao
 			.findByFeatureAnnouncementAnnouncementId(announcement.getAnnouncementId())
 			.stream()

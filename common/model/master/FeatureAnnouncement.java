@@ -14,14 +14,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "feature_announcement")
 @Getter
 @Setter
-@NoArgsConstructor
 public class FeatureAnnouncement extends Auditable<String> {
 
 	@Id
@@ -32,13 +30,13 @@ public class FeatureAnnouncement extends Auditable<String> {
 	@Column(name = "title", length = 100, nullable = false)
 	private String title;
 
-	@Column(name = "description", columnDefinition = "TEXT", nullable = false)
+	@Column(name = "description", nullable = false)
 	private String description;
 
 	@Column(name = "cta_label", length = 50)
 	private String ctaLabel;
 
-	@Column(name = "cta_link", columnDefinition = "TEXT")
+	@Column(name = "cta_link")
 	private String ctaLink;
 
 	@Enumerated(EnumType.STRING)
@@ -60,7 +58,7 @@ public class FeatureAnnouncement extends Auditable<String> {
 	@Column(name = "status", nullable = false)
 	private AnnouncementStatus status;
 
-	@Column(name = "image_path", columnDefinition = "TEXT")
+	@Column(name = "image_path")
 	private String imagePath;
 
 }

@@ -35,7 +35,7 @@ public class AnnouncementUserInteraction extends Auditable<String> {
 	private Long employeeId;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "interaction_type", nullable = false, length = 30)
+	@Column(name = "interaction_type", nullable = false)
 	private AnnouncementInteractionType interactionType;
 
 	@Column(name = "last_seen_at")
