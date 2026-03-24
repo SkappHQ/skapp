@@ -31,7 +31,6 @@ import com.skapp.enterprise.esignature.service.EidVerificationService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EidFlowType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
-import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
 import com.skapp.enterprise.esignature.util.EsignUtil;
@@ -232,7 +231,7 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 			// Handle verification completion at the service layer
 			if (session.getStatus() == EidVerificationStatus.VERIFIED) {
-				updateRecipientVerificationStatus(session);
+				updateRecipientVerificationStatus(session, provider);
 			}
 		}
 
@@ -375,7 +374,7 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		return isSessionActive(session) || status == EidVerificationStatus.EXPIRED;
 	}
 
-	private void updateRecipientVerificationStatus(EidVerificationSession session) {
+	private void updateRecipientVerificationStatus(EidVerificationSession session, EidProvider provider) {
 		Recipient recipient = session.getRecipient();
 		RecipientEidConfig eidConfig = recipient.getEidConfig();
 
@@ -401,7 +400,7 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		recipientDao.save(recipient);
 
 		if (recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
-			AuditAction auditAction = resolveIdentityVerifiedAuditAction(session.getProviderType());
+			AuditAction auditAction = provider.getIdentityVerifiedAuditAction();
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(recipient.getEnvelope(), recipient,
 					auditAction, recipient.getAddressBook(), session.getEndUserIp(), null);
 			auditTrailDao.save(auditTrail);
@@ -430,13 +429,6 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		}
 
 		return endUserIp;
-	}
-
-	private AuditAction resolveIdentityVerifiedAuditAction(EidProviderType providerType) {
-		return switch (providerType) {
-			case SWEDISH_BANKID -> AuditAction.ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID;
-			default -> throw new IllegalArgumentException("Unsupported eID provider type: " + providerType);
-		};
 	}
 
 	private String generateUserVisibleData(Document document) {

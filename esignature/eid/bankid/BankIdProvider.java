@@ -26,6 +26,7 @@ import com.skapp.enterprise.esignature.repository.RecipientDao;
 import com.skapp.enterprise.esignature.repository.VerifiedIdentityRepository;
 import com.skapp.enterprise.esignature.type.BankIdHintCode;
 import com.skapp.enterprise.esignature.type.BankIdStatus;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EidFlowType;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
@@ -250,6 +251,11 @@ public class BankIdProvider implements EidProvider {
 			.autoStartScheme("bankid://")
 			.mockMode(false)
 			.build();
+	}
+
+	@Override
+	public AuditAction getIdentityVerifiedAuditAction() {
+		return AuditAction.ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID;
 	}
 
 	private void updateSessionFromCollectResponse(EidVerificationSession session,

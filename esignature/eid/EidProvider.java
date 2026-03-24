@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.eid;
 
 import com.skapp.enterprise.esignature.model.EidVerificationSession;
 import com.skapp.enterprise.esignature.payload.response.eid.ProviderFrontendConfigDto;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EidProviderType;
 
 /**
@@ -90,5 +91,11 @@ public interface EidProvider {
 	 * @return Frontend configuration DTO
 	 */
 	ProviderFrontendConfigDto getFrontendConfig();
+
+	/**
+	 * Get the audit action to use when identity verification completes for this provider.
+	 * @return Audit action for identity-verified events
+	 */
+	AuditAction getIdentityVerifiedAuditAction();
 
 }

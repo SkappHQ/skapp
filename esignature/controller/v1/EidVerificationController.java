@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.annotation.CaptureUserAgent;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateIdentificationRequestDto;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.payload.request.eid.VerificationSessionRequestDto;
@@ -74,6 +75,7 @@ public class EidVerificationController {
 					+ "Frontend should call this every 2 seconds until status is terminal "
 					+ "(VERIFIED, FAILED, EXPIRED, CANCELLED). "
 					+ "Uses POST because polling updates session state from the external provider.")
+	@CaptureUserAgent
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
 	@PostMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> checkVerificationStatus(
