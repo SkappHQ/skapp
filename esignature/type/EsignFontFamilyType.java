@@ -59,7 +59,7 @@ public enum EsignFontFamilyType {
 				return fontFamily;
 			}
 		}
-		return null;
+		return INTER;
 	}
 
 	public static String getFamilyName(String enumName) {
@@ -69,7 +69,7 @@ public enum EsignFontFamilyType {
 				return fontFamily.familyName;
 			}
 		}
-		return null;
+		return INTER.familyName;
 	}
 
 }
