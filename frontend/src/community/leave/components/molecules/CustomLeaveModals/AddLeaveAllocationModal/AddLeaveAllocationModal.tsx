@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, {
@@ -137,7 +136,15 @@ const AddLeaveAllocationModal: React.FC<Props> = ({
         translateText={translateText}
         onSubmit={handleSubmit}
       />
-      <Box sx={{ mt: "1rem" }}>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={() => onCancel(values)}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtn"])}
+        </ButtonV2>
         <ButtonV2
           variant={"primary"}
           onClick={() => onSubmit(values, onAddSuccess, onAddError)}
@@ -147,15 +154,7 @@ const AddLeaveAllocationModal: React.FC<Props> = ({
         >
           {translateText(["saveBtn"])}
         </ButtonV2>
-        <ButtonV2
-          variant={"tertiary"}
-          onClick={() => onCancel(values)}
-          icon={<Icon name={IconName.CLOSE_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["cancelBtn"])}
-        </ButtonV2>
-      </Box>
+      </div>
     </>
   );
 };

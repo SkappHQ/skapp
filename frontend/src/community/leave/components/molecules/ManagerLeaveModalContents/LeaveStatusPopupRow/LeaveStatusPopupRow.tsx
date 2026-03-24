@@ -1,5 +1,5 @@
-import { Box, Stack, Theme, Typography, useTheme } from "@mui/material";
-import { FC, JSX } from "react";
+import { Theme, useTheme } from "@mui/material";
+import { CSSProperties, FC, JSX } from "react";
 
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -17,8 +17,8 @@ interface Props {
   durationByDays?: string;
   durationDate?: string;
   isRecipient?: boolean;
-  styles?: Record<string, string>;
-  textStyles?: Record<string, string>;
+  styles?: CSSProperties;
+  textStyles?: CSSProperties;
   role?: string | undefined;
   employee?:
     | { empName: ""; lastName: ""; avatarUrl: "" }
@@ -47,8 +47,8 @@ const LeaveStatusPopupRow: FC<Props> = ({
   const theme: Theme = useTheme();
 
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
@@ -58,22 +58,16 @@ const LeaveStatusPopupRow: FC<Props> = ({
       tabIndex={0}
     >
       {addLabel && (
-        <Typography
-          variant="body1"
-          sx={{
+        <p
+          style={{
             whiteSpace: "nowrap",
             ...textStyles
           }}
         >
           {label} :
-        </Typography>
+        </p>
       )}
-      <Stack
-        spacing={1}
-        direction="row"
-        flexWrap="wrap"
-        alignItems="flex-start"
-      >
+      <div className="flex flex-row flex-wrap items-start gap-2">
         {iconType && (
           <IconChip
             accessibility={{
@@ -135,8 +129,8 @@ const LeaveStatusPopupRow: FC<Props> = ({
             }}
           />
         )}
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 };
 

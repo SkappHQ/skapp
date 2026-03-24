@@ -1,5 +1,3 @@
-import { Typography } from "@mui/material";
-import { Box, Stack } from "@mui/system";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
@@ -15,23 +13,14 @@ const LeaveCarryForwardUnEligible = (): JSX.Element => {
     useLeaveStore((state) => state);
 
   return (
-    <Stack
-      sx={{
-        minWidth: "31.25rem"
-      }}
-    >
-      <Typography
-        sx={{
-          mb: "1rem",
-          color: "grey.900",
-          width: "100%"
-        }}
-        variant="body1"
+    <div>
+      <p
+        className="mb-4 text-gray-900 w-full"
         id="leave-carry-forward-ineligible-modal-description"
       >
         {translateTexts(["leaveCarryForwardUnEligibleModalDescription"]) ?? ""}
-      </Typography>
-      <Box>
+      </p>
+      <div className="flex flex-row justify-end mt-4">
         <ButtonV2
           type={"submit"}
           onClick={() => {
@@ -45,8 +34,8 @@ const LeaveCarryForwardUnEligible = (): JSX.Element => {
         >
           {translateTexts(["leaveCarryForwardUnEligibleModalButton"])}
         </ButtonV2>
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 };
 

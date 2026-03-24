@@ -1,4 +1,3 @@
-import { Box, Stack } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
 
@@ -77,8 +76,8 @@ const ManagerDeclineLeaveModal = ({
   }, [leaveRequestData?.empName, leaveCancelError, isSuccess]);
 
   return (
-    <Box component="div" aria-modal={true}>
-      <Box sx={{ pb: "1rem" }}>
+    <div aria-modal={true}>
+      <div className="pb-4">
         <LeaveStatusPopupColumn
           id="reason"
           label={translateText(["reasonToDecline"])}
@@ -88,16 +87,8 @@ const ManagerDeclineLeaveModal = ({
           errorMessage={translateText(["EnterWhyDecline"])}
           required
         />
-      </Box>
-      <Stack spacing={2}>
-        <ButtonV2
-          variant={"error"}
-          onClick={handelDecline}
-          icon={<CloseIcon />}
-          iconPosition="end"
-        >
-          {translateText(["declineLeave"])}
-        </ButtonV2>
+      </div>
+      <div className="flex flex-row gap-4 justify-end">
         <ButtonV2
           variant={"tertiary"}
           onClick={closeModel}
@@ -106,8 +97,16 @@ const ManagerDeclineLeaveModal = ({
         >
           {translateText(["cancelBtn"])}
         </ButtonV2>
-      </Stack>
-    </Box>
+        <ButtonV2
+          variant={"error"}
+          onClick={handelDecline}
+          icon={<CloseIcon fill="var(--color-primary-text)" />}
+          iconPosition="end"
+        >
+          {translateText(["declineLeave"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 
