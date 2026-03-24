@@ -62,8 +62,6 @@ public class BankIdProvider implements EidProvider {
 
 	private static final int SESSION_TIMEOUT_SECONDS = 30;
 
-	private static final int MAX_SESSION_DURATION_SECONDS = EsignConstants.EID_MAX_SESSION_DURATION_SECONDS;
-
 	private final BankIdClient bankIdClient;
 
 	private final BankIdProperties bankIdProperties;
@@ -129,7 +127,7 @@ public class BankIdProvider implements EidProvider {
 			.userVisibleData(userVisibleData)
 			.initiatedAt(now)
 			.expiresAt(now.plusSeconds(SESSION_TIMEOUT_SECONDS))
-			.overallExpiresAt(now.plusSeconds(MAX_SESSION_DURATION_SECONDS))
+			.overallExpiresAt(now.plusSeconds(EsignConstants.EID_MAX_SESSION_DURATION_SECONDS))
 			.qrStartToken(signResponse.getQrStartToken())
 			.qrStartSecret(signResponse.getQrStartSecret())
 			.autoStartToken(signResponse.getAutoStartToken())
@@ -178,7 +176,7 @@ public class BankIdProvider implements EidProvider {
 			.userVisibleData(userVisibleData)
 			.initiatedAt(now)
 			.expiresAt(now.plusSeconds(SESSION_TIMEOUT_SECONDS))
-			.overallExpiresAt(now.plusSeconds(MAX_SESSION_DURATION_SECONDS))
+			.overallExpiresAt(now.plusSeconds(EsignConstants.EID_MAX_SESSION_DURATION_SECONDS))
 			.qrStartToken(authResponse.getQrStartToken())
 			.qrStartSecret(authResponse.getQrStartSecret())
 			.autoStartToken(authResponse.getAutoStartToken())
