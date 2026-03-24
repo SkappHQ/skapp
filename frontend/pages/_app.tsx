@@ -13,7 +13,6 @@ import FullScreenLoader from "~community/common/components/molecules/FullScreenL
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
-import { AnnouncementProvider } from "~community/common/providers/AnnouncementProvider";
 import TanStackProvider from "~community/common/providers/TanStackProvider";
 import { ToastProvider } from "~community/common/providers/ToastProvider";
 import { WebSocketProvider } from "~community/common/providers/WebSocketProvider";
@@ -33,6 +32,7 @@ import i18n from "~i18n";
 import "../styles/global.css";
 import Error from "./_error";
 import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
+import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 
 // Initialize the font
 const inter = Inter({
