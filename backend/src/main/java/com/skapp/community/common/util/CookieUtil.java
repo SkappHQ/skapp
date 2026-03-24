@@ -25,6 +25,11 @@ public class CookieUtil {
 	@Value("${domain.base}")
 	private String baseDomain;
 
+	private String getRefreshTokenCookieName(String tenantId) {
+		return (tenantId != null && !tenantId.isEmpty()) ? tenantId + REFRESH_TOKEN_COOKIE_SUFFIX
+				: REFRESH_TOKEN_COOKIE_NAME;
+	}
+
 	/**
 	 * Creates a secure HTTP-only refresh token cookie with the specified token and max
 	 * age.
@@ -34,8 +39,7 @@ public class CookieUtil {
 	 * @return A configured Cookie object
 	 */
 	public Cookie createRefreshTokenCookie(String tenantId, String refreshToken, long cookieMaxAge) {
-		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + REFRESH_TOKEN_COOKIE_SUFFIX
-				: REFRESH_TOKEN_COOKIE_NAME;
+		String cookieName = getRefreshTokenCookieName(tenantId);
 		Cookie cookie = new Cookie(cookieName, refreshToken);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
@@ -52,8 +56,7 @@ public class CookieUtil {
 	 * @return A configured Cookie object with max age set to 0 to delete the cookie
 	 */
 	public Cookie clearRefreshTokenCookie(String tenantId) {
-		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + REFRESH_TOKEN_COOKIE_SUFFIX
-				: REFRESH_TOKEN_COOKIE_NAME;
+		String cookieName = getRefreshTokenCookieName(tenantId);
 		Cookie cookie = new Cookie(cookieName, null);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
@@ -103,8 +106,7 @@ public class CookieUtil {
 	 * @return The refresh token value, or null if not found
 	 */
 	public String getRefreshTokenFromCookies(HttpServletRequest request, String tenantId) {
-		String cookieName = (tenantId != null && !tenantId.isEmpty()) ? tenantId + REFRESH_TOKEN_COOKIE_SUFFIX
-				: REFRESH_TOKEN_COOKIE_NAME;
+		String cookieName = getRefreshTokenCookieName(tenantId);
 		if (request.getCookies() != null) {
 			for (Cookie cookie : request.getCookies()) {
 				if (cookieName.equals(cookie.getName())) {
