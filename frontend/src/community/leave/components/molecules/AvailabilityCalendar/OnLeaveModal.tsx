@@ -113,7 +113,7 @@ const OnLeaveModal = () => {
               marginLeft: "2rem"
             }
           }}
-          isTruncated={false}
+          isTruncated={!theme.breakpoints.up("xl")}
         />
       ),
       duration: (
