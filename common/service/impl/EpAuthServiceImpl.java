@@ -668,7 +668,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(getTenantId(), refreshToken, cookieMaxAge);
 			response.addCookie(cookie);
 			log.info("performCodeChallengeValidation: Added refresh token cookie for userId={}", user.getUserId());
 
@@ -815,7 +815,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(getTenantId(), refreshToken, cookieMaxAge);
 			response.addCookie(cookie);
 			log.info("buildSignInResponse: Added refresh token cookie for userId={}", user.getUserId());
 
@@ -889,6 +889,11 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	@Override
 	protected void clearTenantCookie(HttpServletResponse response) {
 		tenantCookieService.clearTenantCookie(response);
+	}
+
+	@Override
+	protected String getTenantId() {
+		return TenantContext.getCurrentTenant();
 	}
 
 	@Override
