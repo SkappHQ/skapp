@@ -1,6 +1,6 @@
 package com.skapp.enterprise.common.service.impl;
 
-import com.skapp.community.common.util.CookieUtil;
+import com.skapp.enterprise.common.util.EpCookieUtil;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.service.TenantCookieService;
 import jakarta.servlet.http.Cookie;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TenantCookieServiceImpl implements TenantCookieService {
 
-	private final CookieUtil cookieUtil;
+	private final EpCookieUtil cookieUtil;
 
 	@Override
 	public void addTenantCookie(HttpServletResponse response, long cookieMaxAge) {
