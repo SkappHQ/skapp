@@ -1,4 +1,3 @@
-import { Box, Theme, useTheme } from "@mui/material";
 import { useEffect } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
@@ -22,7 +21,6 @@ const OnLeaveModal = () => {
     "leaveRequests",
     "leaveRequestTable"
   );
-  const theme: Theme = useTheme();
 
   const {
     setIsManagerModal,
@@ -115,7 +113,7 @@ const OnLeaveModal = () => {
               marginLeft: "2rem"
             }
           }}
-          isTruncated={!theme.breakpoints.up("xl")}
+          isTruncated={false}
         />
       ),
       duration: (
@@ -149,7 +147,7 @@ const OnLeaveModal = () => {
   };
 
   return (
-    <Box sx={{ pt: 1 }}>
+    <div className="pt-2">
       <Table
         tableName={TableNames.ON_LEAVE_MODAL}
         headers={tableHeaders}
@@ -174,7 +172,7 @@ const OnLeaveModal = () => {
           }
         }}
       />
-    </Box>
+    </div>
   );
 };
 

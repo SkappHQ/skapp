@@ -1,4 +1,4 @@
-import { Box, Theme, Typography, useTheme } from "@mui/material";
+import { Theme, useTheme } from "@mui/material";
 import { FC } from "react";
 
 interface Props {
@@ -38,32 +38,17 @@ const LeaveStatusPopupColumn: FC<Props> = ({
 }) => {
   const theme: Theme = useTheme();
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column"
-      }}
-      tabIndex={tabIndex}
-    >
-      <Typography
+    <div className="flex flex-col" tabIndex={tabIndex}>
+      <label
         htmlFor={id}
-        component="label"
-        variant="body1"
-        sx={{
-          marginBottom: "0.75rem",
-          color: error ? theme.palette.error.contrastText : "black"
-        }}
+        className="mb-3"
+        style={{ color: error ? theme.palette.error.contrastText : "black" }}
       >
         {label}
         {required && (
-          <Typography
-            component="span"
-            sx={{ color: theme.palette.error.contrastText }}
-          >
-            *
-          </Typography>
+          <span style={{ color: theme.palette.error.contrastText }}>*</span>
         )}
-      </Typography>
+      </label>
       <textarea
         id={id}
         readOnly={isReadOnly}
@@ -100,18 +85,16 @@ const LeaveStatusPopupColumn: FC<Props> = ({
         aria-readonly={isReadOnly}
       />
       {error && (
-        <Typography
+        <p
           id={`${id ?? ""}-error`}
-          variant="body2"
-          sx={{ color: theme.palette.error.contrastText }}
-          component="p"
+          style={{ color: theme.palette.error.contrastText }}
           aria-atomic={true}
           aria-live="polite"
         >
           {errorMessage}
-        </Typography>
+        </p>
       )}
-    </Box>
+    </div>
   );
 };
 

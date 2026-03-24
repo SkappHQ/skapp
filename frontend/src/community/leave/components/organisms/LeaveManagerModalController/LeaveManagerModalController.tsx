@@ -1,7 +1,6 @@
-import { Box } from "@mui/material";
-import { useEffect, useState } from "react";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { ReactNode, useEffect, useState } from "react";
 
-import Modal from "~community/common/components/organisms/Modal/Modal";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
@@ -106,58 +105,44 @@ const LeaveManagerModalController = () => {
       setModalTitle(onLeaveModalTitle);
   }, [popupType, isManagerModalOpen]);
 
+  const modalContent = (): ReactNode => {
+    if (popupType === LeaveStatusTypes.PENDING)
+      return <ManagerApproveLeaveModal setPopupType={setPopupType} />;
+    if (
+      popupType === LeaveExtraPopupTypes.APPROVED_STATUS ||
+      popupType === LeaveExtraPopupTypes.DECLINE_STATUS ||
+      popupType === LeaveExtraPopupTypes.REVOKE_POPUP ||
+      popupType === LeaveStatusTypes.DENIED ||
+      popupType === LeaveStatusTypes.APPROVED ||
+      popupType === LeaveStatusTypes.CANCELLED ||
+      popupType === LeaveStatusTypes.REVOKED
+    )
+      return (
+        <LeaveManagerSuccessModal
+          closeModel={closeModel}
+          popupType={popupType}
+          setPopupType={setPopupType}
+        />
+      );
+    if (popupType === LeaveExtraPopupTypes.DECLINE)
+      return (
+        <ManagerDeclineLeaveModal
+          closeModel={closeModel}
+          setPopupType={setPopupType}
+        />
+      );
+    if (popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL)
+      return <OnLeaveModal />;
+    return null;
+  };
+
   return (
-    <div>
-      {isManagerModalOpen && popupType && (
-        <Modal
-          isModalOpen={isManagerModalOpen}
-          onCloseModal={handelManagerModal}
-          aria-labelledby="modal-title"
-          title={modalTitle}
-          modalContentStyles={
-            popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL
-              ? { maxWidth: { md: "64rem" } }
-              : undefined
-          }
-        >
-          <Box
-            aria-labelledby="modal-title"
-            sx={{
-              marginTop: "1rem"
-            }}
-          >
-            {popupType === LeaveStatusTypes.PENDING && (
-              <ManagerApproveLeaveModal setPopupType={setPopupType} />
-            )}
-
-            {(popupType === LeaveExtraPopupTypes.APPROVED_STATUS ||
-              popupType === LeaveExtraPopupTypes.DECLINE_STATUS ||
-              popupType === LeaveExtraPopupTypes.REVOKE_POPUP ||
-              popupType === LeaveStatusTypes.DENIED ||
-              popupType === LeaveStatusTypes.APPROVED ||
-              popupType === LeaveStatusTypes.CANCELLED ||
-              popupType === LeaveStatusTypes.REVOKED) && (
-              <LeaveManagerSuccessModal
-                closeModel={closeModel}
-                popupType={popupType}
-                setPopupType={setPopupType}
-              />
-            )}
-
-            {popupType === LeaveExtraPopupTypes.DECLINE && (
-              <ManagerDeclineLeaveModal
-                closeModel={closeModel}
-                setPopupType={setPopupType}
-              />
-            )}
-
-            {popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL && (
-              <OnLeaveModal />
-            )}
-          </Box>
-        </Modal>
-      )}
-    </div>
+    <SmallModal
+      isOpen={isManagerModalOpen && !!popupType}
+      onClose={handelManagerModal}
+      modalHeader={modalTitle}
+      content={modalContent()}
+    />
   );
 };
 

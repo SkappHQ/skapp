@@ -1,5 +1,3 @@
-import { Typography } from "@mui/material";
-import { Box, Stack } from "@mui/system";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
@@ -14,25 +12,16 @@ interface Props {
 const NoCarryForwardLeaveTypes = ({ handleClose }: Props): JSX.Element => {
   const translateTexts = useTranslator("leaveModule", "leaveCarryForward");
   return (
-    <Stack
-      sx={{
-        minWidth: "31.25rem"
-      }}
-    >
-      <Typography
-        sx={{
-          mb: "1rem",
-          color: "grey.900",
-          width: "100%"
-        }}
-        variant="body1"
+    <div>
+      <p
+        className="mb-4 text-gray-900 w-full"
         id="no-carry-forward-leave-types-modal-description"
       >
         {translateTexts([
           "leaveCarryForwardLeaveTypesNotAvailableModalDescription"
         ]) ?? ""}
-      </Typography>
-      <Box>
+      </p>
+      <div className="flex justify-end mt-4">
         <ButtonV2
           type={"submit"}
           onClick={() => {
@@ -43,8 +32,8 @@ const NoCarryForwardLeaveTypes = ({ handleClose }: Props): JSX.Element => {
         >
           {translateTexts(["leaveCarryForwardUnEligibleModalButton"])}
         </ButtonV2>
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 };
 

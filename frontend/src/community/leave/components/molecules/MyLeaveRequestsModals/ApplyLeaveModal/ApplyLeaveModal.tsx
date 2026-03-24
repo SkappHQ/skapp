@@ -1,4 +1,3 @@
-import { Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -61,8 +60,6 @@ import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFuncti
 import styles from "./styles";
 
 const ApplyLeaveModal = () => {
-  const classes = styles();
-
   const { setToastMessage } = useToast();
 
   const translateStorageText = useTranslator("StorageToastMessage");
@@ -363,9 +360,9 @@ const ApplyLeaveModal = () => {
   };
 
   return (
-    <Stack sx={classes.wrapper}>
-      <Stack sx={classes.formWrapper}>
-        <Stack sx={classes.calendarWrapper}>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col md:flex-row gap-3 md:gap-7">
+        <div className="flex flex-col gap-3">
           <CalendarDateRangePicker
             selectedDates={selectedDates}
             setSelectedDates={setSelectedDates}
@@ -380,18 +377,18 @@ const ApplyLeaveModal = () => {
             myLeaveRequests={pendingAndApprovedLeaveRequests}
             error={formErrors?.selectedDates}
           />
-          <Stack sx={classes.textWrapper}>
-            <Typography variant="body1">
+          <div className="hidden md:flex flex-row items-center gap-2">
+            <p>
               {translateText(["myEntitlements"], {
                 leaveType: selectedLeaveAllocationData.leaveType.name
               }) ?? ""}
-            </Typography>
+            </p>
             <LeaveEntitlementBalanceCard
               leaveEntitlementBalance={leaveEntitlementBalance}
             />
-          </Stack>
-        </Stack>
-        <Stack sx={classes.fieldWrapper}>
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 w-full">
           {selectedDates.length && myTeams?.length ? (
             <TeamAvailabilityCard
               teams={myTeams}
@@ -468,9 +465,17 @@ const ApplyLeaveModal = () => {
               workingDays={workingDays}
             />
           )}
-        </Stack>
-      </Stack>
-      <Stack sx={classes.btnWrapper}>
+        </div>
+      </div>
+      <div className="flex flex-row gap-3 mt-4 justify-end">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtn"])}
+        </ButtonV2>
         <ButtonV2
           variant={"primary"}
           onClick={onSubmit}
@@ -482,16 +487,8 @@ const ApplyLeaveModal = () => {
         >
           {translateText(["submitBtn"])}
         </ButtonV2>
-        <ButtonV2
-          variant={"tertiary"}
-          onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
-          icon={<Icon name={IconName.CLOSE_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["cancelBtn"])}
-        </ButtonV2>
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };
 

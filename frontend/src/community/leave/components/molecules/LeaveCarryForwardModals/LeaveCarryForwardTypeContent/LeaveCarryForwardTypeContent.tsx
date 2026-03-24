@@ -1,4 +1,3 @@
-import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
@@ -132,64 +131,28 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
   ]);
 
   return (
-    <Stack
-      sx={{
-        padding: "0rem 0.25rem 1rem 0.25rem",
-        minWidth: "31.25rem"
-      }}
-    >
-      <Typography
-        variant="body1"
-        sx={{
-          color: "grey.900",
-          width: "100%"
-        }}
+    <div className="px-1 pb-4">
+      <p
+        className="text-gray-900 w-full"
         id="leave-carry-forward-modal-description"
       >
         {translateTexts(["leaveCarryForwardTypeSelectionModalDescription"]) ??
           ""}
-      </Typography>
+      </p>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          width: "100%",
-          flexWrap: "wrap",
-          maxHeight: "13.125rem",
-          overflowY: "auto",
-          marginTop: "0.5rem"
-        }}
-      >
+      <div className="grid grid-cols-3 w-full max-h-[13.125rem] overflow-y-auto mt-2">
         {leaveTypess?.length >= 2 && (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              flexBasis: "33.3333%",
-              flexWrap: "wrap",
-              width: "100%"
-            }}
-          >
+          <div>
             <Checkbox
               label={translateTexts(["selectAllText"])}
               name={translateTexts(["selectAllText"])}
               checked={checkedList?.length === leaveTypess?.length}
               onChange={handleCheckAll}
             />
-          </Box>
+          </div>
         )}
         {leaveTypess?.map((leaveType) => (
-          <Box
-            key={leaveType.typeId}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              flexBasis: "33.3333%",
-              flexWrap: "wrap",
-              width: "100%"
-            }}
-          >
+          <div key={leaveType.typeId}>
             <Checkbox
               label={
                 <span aria-label={leaveType.name}>
@@ -203,21 +166,11 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
               checked={checkedList?.includes(leaveType.typeId)}
               onChange={() => handleCheck(leaveType.typeId)}
             />
-          </Box>
+          </div>
         ))}
-      </Box>
+      </div>
 
-      <Box sx={{ mt: "1rem" }}>
-        <ButtonV2
-          type={"submit"}
-          onClick={() => formik.handleSubmit()}
-          isLoading={loading}
-          disabled={checkedList.length === 0}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          iconPosition="end"
-        >
-          {translateTexts(["leaveCarryForwardModalConfirmBtn"])}
-        </ButtonV2>
+      <div className="flex flex-row justify-end gap-3 mt-4">
         <ButtonV2
           variant={"tertiary"}
           disabled={loading}
@@ -234,8 +187,18 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
         >
           {translateTexts(["leaveCarryForwardModalCancelBtn"])}
         </ButtonV2>
-      </Box>
-    </Stack>
+        <ButtonV2
+          type={"submit"}
+          onClick={() => formik.handleSubmit()}
+          isLoading={loading}
+          disabled={checkedList.length === 0}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateTexts(["leaveCarryForwardModalConfirmBtn"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

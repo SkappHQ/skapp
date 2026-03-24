@@ -1,4 +1,3 @@
-import { Chip, Stack, Theme, Typography, useTheme } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -6,16 +5,10 @@ import AvatarGroup from "~community/common/components/molecules/AvatarGroup/Avat
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { removeLetters } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
-import { mergeSx } from "~community/common/utils/commonUtil";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 
-import styles from "./styles";
-
 const TeamAvailabilityModal = () => {
-  const theme: Theme = useTheme();
-  const classes = styles(theme);
-
   const translateText = useTranslator(
     "leaveModule",
     "myRequests",
@@ -25,66 +18,45 @@ const TeamAvailabilityModal = () => {
   const { teamAvailabilityData, setMyLeaveRequestModalType } = useLeaveStore();
 
   return (
-    <Stack sx={classes.wrapper}>
-      <Stack sx={classes.header}>
-        <Typography
-          variant="body1"
-          sx={mergeSx([classes.column, classes.date])}
-        >
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-row gap-5">
+        <p className="text-gray-500 w-[12.5rem] flex flex-row gap-5">
           {translateText(["date"])}
-        </Typography>
-        <Typography
-          variant="body1"
-          sx={mergeSx([classes.column, classes.awayMembers])}
-        >
-          {translateText(["awayMembers"])}
-        </Typography>
-      </Stack>
-      <Stack sx={classes.body}>
+        </p>
+        <p className="text-gray-500 flex-1">{translateText(["awayMembers"])}</p>
+      </div>
+      <div className="flex flex-col gap-4 max-h-[22.75rem] pr-1 overflow-auto">
         {teamAvailabilityData?.map((data) => (
-          <Stack key={data.date} sx={classes.row}>
-            <Stack sx={classes.date}>
-              <Typography variant="body1">
-                {removeLetters(data.date)}
-              </Typography>
-              <Typography variant="body1" color={theme.palette.primary.dark}>
-                {data.dayOfWeek}
-              </Typography>
-            </Stack>
-            <Stack sx={classes.awayMembers}>
+          <div
+            key={data.date}
+            className="flex flex-row justify-start items-center min-h-[3.75rem] gap-5 px-5 py-2 bg-gray-100 rounded-lg"
+          >
+            <div className="flex flex-row w-[12.5rem] gap-5">
+              <p>{removeLetters(data.date)}</p>
+              <p className="text-blue-800">{data.dayOfWeek}</p>
+            </div>
+            <div className="flex flex-row justify-start flex-1">
               {data?.holidays.length > 0 ? (
-                <Chip
-                  label={
-                    data.holidays.length > 1
-                      ? `${data.holidays[0].name} +${data.holidays.length}`
-                      : data.holidays[0].name
-                  }
-                  variant="outlined"
-                  sx={classes.holidayChip}
-                />
+                <span className="inline-flex items-center rounded-full border border-gray-400 text-gray-500 text-xs font-normal px-2 py-0.5">
+                  {data.holidays.length > 1
+                    ? `${data.holidays[0].name} +${data.holidays.length}`
+                    : data.holidays[0].name}
+                </span>
               ) : data.leaveCount === 0 ? (
-                <Chip
-                  label={translateText(["fullTeamAvailable"])}
-                  variant="filled"
-                  sx={classes.availableChip}
-                />
+                <span className="inline-flex items-center rounded-full bg-green-100 text-green-700 px-2 py-0.5">
+                  {translateText(["fullTeamAvailable"])}
+                </span>
               ) : data.availableCount === 0 ? (
-                <Chip
-                  label={translateText(["fullTeamAway"])}
-                  variant="filled"
-                  sx={classes.awayChip}
-                />
+                <span className="inline-flex items-center rounded-full bg-red-500 text-white px-2 py-0.5">
+                  {translateText(["fullTeamAway"])}
+                </span>
               ) : (
-                <AvatarGroup
-                  avatars={data.employees}
-                  componentStyles={classes.componentStyles}
-                  isHoverModal={true}
-                />
+                <AvatarGroup avatars={data.employees} isHoverModal={true} />
               )}
-            </Stack>
-          </Stack>
+            </div>
+          </div>
         ))}
-      </Stack>
+      </div>
       <ButtonV2
         variant={"tertiary"}
         onClick={() =>
@@ -95,7 +67,7 @@ const TeamAvailabilityModal = () => {
       >
         {translateText(["goBackBtn"])}
       </ButtonV2>
-    </Stack>
+    </div>
   );
 };
 

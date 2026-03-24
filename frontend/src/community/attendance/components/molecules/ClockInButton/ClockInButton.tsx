@@ -1,10 +1,13 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useMemo } from "react";
 
 import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
-import Icon from "~community/common/components/atoms/Icon/Icon";
+import Button from "~community/common/components/atoms/Button/Button";
+import {
+  ButtonSizes,
+  ButtonStyle
+} from "~community/common/enums/ComponentEnums";
 import {
   MediaQueries,
   useMediaQuery
@@ -61,21 +64,21 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
   }, [isBelow600, isClockedIn, translateText]);
 
   return (
-    <ButtonV2
-      variant={"primary"}
-      size={"sm"}
+    <Button
+      buttonStyle={ButtonStyle.PRIMARY}
+      size={ButtonSizes.SMALL}
+      label={label}
+      endIcon={IconName.TIMER_ICON}
       isFullWidth={false}
       onClick={onClick}
-      aria-label={
+      ariaLabel={
         isClockedIn ? translateText(["clockIn"]) : translateText(["clockOut"])
       }
       isLoading={isPending}
       disabled={disabled}
-      icon={<Icon name={IconName.TIMER_ICON} />}
-      iconPosition="end"
-    >
-      {label}
-    </ButtonV2>
+      ariaDisabled={disabled}
+      dataTestId={isClockedIn ? "clock-in-button" : "clock-out-button"}
+    />
   );
 };
 

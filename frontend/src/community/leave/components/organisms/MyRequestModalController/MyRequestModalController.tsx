@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { LargeModal, SmallModal } from "@rootcodelabs/skapp-ui";
+import { ReactNode, useMemo } from "react";
 
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import AddAttachmentModal from "~community/leave/components/molecules/MyLeaveRequestsModals/AddAttachmentModal/AddAttachmentModal";
 import ApplyLeaveModal from "~community/leave/components/molecules/MyLeaveRequestsModals/ApplyLeaveModal/ApplyLeaveModal";
@@ -35,26 +35,6 @@ const MyRequestModalController = () => {
     }
   }, [myRequestModalType, translateText]);
 
-  const modalWrapperStyles = useMemo(() => {
-    switch (myRequestModalType) {
-      case MyRequestModalEnums.APPLY_LEAVE:
-      case MyRequestModalEnums.LEAVE_TYPE_SELECTION:
-        return { width: { xs: "100%", sm: "90%" } };
-      default:
-        return {};
-    }
-  }, [myRequestModalType]);
-
-  const modalContentStyles = useMemo(() => {
-    switch (myRequestModalType) {
-      case MyRequestModalEnums.APPLY_LEAVE:
-      case MyRequestModalEnums.LEAVE_TYPE_SELECTION:
-        return { maxWidth: { xs: "100%", sm: "1170px" } };
-      default:
-        return {};
-    }
-  }, [myRequestModalType]);
-
   const handleCloseModal = () => {
     switch (myRequestModalType) {
       case MyRequestModalEnums.APPLY_LEAVE:
@@ -71,33 +51,50 @@ const MyRequestModalController = () => {
     }
   };
 
+  const modalContent = (): ReactNode => {
+    switch (myRequestModalType) {
+      case MyRequestModalEnums.APPLY_LEAVE:
+        return <ApplyLeaveModal />;
+      case MyRequestModalEnums.LEAVE_TYPE_SELECTION:
+        return <LeaveTypeSelectionModal />;
+      case MyRequestModalEnums.TEAM_AVAILABILITY:
+        return <TeamAvailabilityModal />;
+      case MyRequestModalEnums.ADD_ATTACHMENT:
+        return <AddAttachmentModal />;
+      case MyRequestModalEnums.MARK_OUT_OF_OFFICE:
+        return <MarkOutOfOfficeModal />;
+      default:
+        return null;
+    }
+  };
+
+  const isLargeModal =
+    myRequestModalType === MyRequestModalEnums.APPLY_LEAVE ||
+    myRequestModalType === MyRequestModalEnums.LEAVE_TYPE_SELECTION;
+
+  if (isLargeModal) {
+    return (
+      <LargeModal
+        id="apply-leave-modal"
+        isOpen={isMyRequestModalOpen}
+        onClose={handleCloseModal}
+        modalHeader={modalTitle}
+        content={modalContent()}
+        backdropVariant="dark"
+        className=" w-[75vw]"
+      />
+    );
+  }
+
   return (
-    <ModalController
-      isModalOpen={isMyRequestModalOpen}
-      modalTitle={modalTitle}
-      handleCloseModal={handleCloseModal}
-      isClosable={true}
-      modalWrapperStyles={modalWrapperStyles}
-      modalContentStyles={modalContentStyles}
-    >
-      <>
-        {myRequestModalType === MyRequestModalEnums.APPLY_LEAVE && (
-          <ApplyLeaveModal />
-        )}
-        {myRequestModalType === MyRequestModalEnums.LEAVE_TYPE_SELECTION && (
-          <LeaveTypeSelectionModal />
-        )}
-        {myRequestModalType === MyRequestModalEnums.TEAM_AVAILABILITY && (
-          <TeamAvailabilityModal />
-        )}
-        {myRequestModalType === MyRequestModalEnums.ADD_ATTACHMENT && (
-          <AddAttachmentModal />
-        )}
-        {myRequestModalType === MyRequestModalEnums.MARK_OUT_OF_OFFICE && (
-          <MarkOutOfOfficeModal />
-        )}
-      </>
-    </ModalController>
+    <SmallModal
+      isOpen={
+        isMyRequestModalOpen && myRequestModalType !== MyRequestModalEnums.NONE
+      }
+      onClose={handleCloseModal}
+      modalHeader={modalTitle}
+      content={modalContent()}
+    />
   );
 };
 
