@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   reactStrictMode: false,
   async rewrites() {
     const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";

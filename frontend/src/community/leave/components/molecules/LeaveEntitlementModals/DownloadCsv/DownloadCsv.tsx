@@ -1,4 +1,3 @@
-import { Box, Divider, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useMemo } from "react";
 
@@ -14,11 +13,7 @@ import { useGetAllEmployeeData } from "~community/people/api/PeopleApi";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
 
-import styles from "./styles";
-
 const DownloadCsv = () => {
-  const classes = styles();
-
   const translateText = useTranslator("leaveModule", "leaveEntitlements");
 
   const { setLeaveEntitlementModalType } = useLeaveStore((state) => state);
@@ -49,34 +44,37 @@ const DownloadCsv = () => {
   };
 
   return (
-    <Box sx={classes.wrapper}>
-      <Typography
-        variant="body1"
-        sx={classes.description}
-        id="upload-csv-modal-title"
-      >
+    <div className="flex flex-col gap-3">
+      <p className="py-2" id="upload-csv-modal-title">
         {translateText(["downloadCsvModalDes"])}
-      </Typography>
-      <ButtonV2
-        variant={"secondary"}
-        onClick={handleDownloadBtnClick}
-        icon={<Icon name={IconName.DOWNLOAD_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["downloadCsvButton"])}
-      </ButtonV2>
-      <Divider sx={classes.divider} aria-hidden={true} />
-      <ButtonV2
-        variant={"primary"}
-        onClick={() =>
-          setLeaveEntitlementModalType(LeaveEntitlementModelTypes.UPLOAD_CSV)
-        }
-        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["nextButton"])}
-      </ButtonV2>
-    </Box>
+      </p>
+      <div className="flex flex-row gap-4 justify-end">
+        <ButtonV2
+          variant={"secondary"}
+          onClick={handleDownloadBtnClick}
+          icon={
+            <Icon
+              name={IconName.DOWNLOAD_ICON}
+              fill="var(--color-primary-text)"
+            />
+          }
+          iconPosition="end"
+        >
+          {translateText(["downloadCsvButton"])}
+        </ButtonV2>
+
+        <ButtonV2
+          variant={"primary"}
+          onClick={() =>
+            setLeaveEntitlementModalType(LeaveEntitlementModelTypes.UPLOAD_CSV)
+          }
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["nextButton"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

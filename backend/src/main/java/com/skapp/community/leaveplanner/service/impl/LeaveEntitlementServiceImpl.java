@@ -1205,8 +1205,8 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		boolean logicFailed = false;
 
 		List<LeaveEntitlement> existingEntitlements = leaveEntitlementDao
-			.findByEmployeeAndValidFromAndValidToAndLeaveType(entitlement.getEmployee(), validFrom, validTo,
-					entitlement.getLeaveType());
+			.findByEmployeeAndValidFromAndValidToAndLeaveTypeAndIsManualFalse(entitlement.getEmployee(), validFrom,
+					validTo, entitlement.getLeaveType());
 		if (!existingEntitlements.isEmpty()) {
 			isUpdated = true;
 			if (entitlement.getTotalDaysAllocated() > 0) {

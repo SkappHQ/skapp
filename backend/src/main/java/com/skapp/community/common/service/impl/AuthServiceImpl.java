@@ -39,7 +39,6 @@ import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
-import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
@@ -52,6 +51,7 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.util.Validations;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -156,13 +156,11 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto signOutWithCookie(HttpServletResponse response) {
 		log.info("signOutWithCookie: execution started");
 
-		Cookie refreshCookie = cookieUtil.clearRefreshTokenCookie();
+		Cookie refreshCookie = cookieUtil.clearRefreshTokenCookie(getTenantId());
 		response.addCookie(refreshCookie);
 		log.info("signOutWithCookie: Cleared refresh token cookie");
 
-		Cookie tenantCookie = cookieUtil.clearTenantCookie();
-		response.addCookie(tenantCookie);
-		log.info("signOutWithCookie: Cleared tenant cookie");
+		clearTenantCookie(response);
 
 		log.info("signOutWithCookie: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_SIGN_OUT));
@@ -217,17 +215,12 @@ public class AuthServiceImpl implements AuthService {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(getTenantId(), refreshToken, cookieMaxAge);
 			response.addCookie(refreshCookie);
 			log.info("performSignIn: Added refresh token cookie for userEmail={}", user.getEmail());
 
-			String tenantId = TenantContext.getCurrentTenant();
-			if (tenantId != null && !tenantId.isEmpty()) {
-				Cookie tenantCookie = cookieUtil.createTenantCookie(tenantId, cookieMaxAge);
-				response.addCookie(tenantCookie);
-				log.info("performSignIn: Added tenant cookie with tenantId={} for userEmail={}", tenantId,
-						user.getEmail());
-			}
+			addTenantCookie(response, cookieMaxAge, user);
+
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
@@ -243,6 +236,14 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	protected void validateTenantStatus(User user) {
+		// This is only for Pro version
+	}
+
+	protected void addTenantCookie(HttpServletResponse response, long cookieMaxAge, User user) {
+		// This is only for Pro version
+	}
+
+	protected void clearTenantCookie(HttpServletResponse response) {
 		// This is only for Pro version
 	}
 
@@ -310,6 +311,17 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("superAdminSignUp: execution ended for userEmail{}", user.getEmail());
 		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto refreshAccessTokenFromCookie(HttpServletRequest request) {
+		String refreshToken = cookieUtil.getRefreshTokenFromCookies(request, getTenantId());
+		if (refreshToken == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_REFRESH_TOKEN);
+		}
+		RefreshTokenRequestDto refreshTokenRequestDto = new RefreshTokenRequestDto();
+		refreshTokenRequestDto.setRefreshToken(refreshToken);
+		return refreshAccessToken(refreshTokenRequestDto);
 	}
 
 	@Override
@@ -690,6 +702,10 @@ public class AuthServiceImpl implements AuthService {
 
 	protected void onSignInSuccess(String email) {
 		// No-op: overridden by enterprise for brute force protection
+	}
+
+	protected String getTenantId() {
+		return null;
 	}
 
 }

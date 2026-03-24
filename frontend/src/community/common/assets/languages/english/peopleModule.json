@@ -190,7 +190,8 @@
   },
 
   "editAllInfo": {
-    "tabTitle": "View Profile | Skapp",
+    "tabTitle": "Edit Profile | Skapp",
+    "title": "Edit Profile",
     "personal": "Personal",
     "emergency": "Emergency",
     "employment": "Employment",
@@ -370,7 +371,8 @@
       "userRoles": "User roles",
       "filters": "Filters",
       "noFIlters": "No filters selected",
-      "selectedFilters": "{{count}} filter selected",
+      "selectedFilters_one": "{{count}} filter selected",
+      "selectedFilters_other": "{{count}} filters selected",
       "male": "Male",
       "apply": "Apply filters",
       "reset": "Reset filters",

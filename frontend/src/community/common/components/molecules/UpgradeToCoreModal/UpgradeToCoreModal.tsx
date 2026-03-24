@@ -26,6 +26,7 @@ interface UpgradeToCoreModalProps {
     src: string;
     alt: string;
   };
+  imageContent?: React.ReactNode;
   onClose: () => void;
 }
 
@@ -36,6 +37,7 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
   description,
   button,
   image,
+  imageContent,
   onClose
 }) => {
   return (
@@ -68,17 +70,19 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
             overflow: "hidden"
           }}
         >
-          <Image
-            src={image.src}
-            alt={image.alt}
-            width={280}
-            height={350}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover"
-            }}
-          />
+          {imageContent ?? (
+            <Image
+              src={image.src}
+              alt={image.alt}
+              width={280}
+              height={350}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover"
+              }}
+            />
+          )}
         </Box>
 
         {/* Content Section */}

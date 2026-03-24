@@ -119,6 +119,16 @@ export const pascalCaseFormatter = (wordString: string | null | undefined) => {
     .join(" ");
 };
 
+export const pascalCaseFormatterExcludeUnderscore = (
+  label: string | null | undefined
+) => {
+  if (!label) {
+    return "";
+  }
+
+  return pascalCaseFormatter(label.replace(/_/g, " "));
+};
+
 export const arraysEqual = (
   arr1: WorkingDaysTypes[],
   arr2: WorkingDaysTypes[]

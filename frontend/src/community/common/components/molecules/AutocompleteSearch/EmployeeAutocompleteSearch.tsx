@@ -15,7 +15,7 @@ import { useMemo } from "react";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 import { EmployeeType } from "~community/people/types/EmployeeTypes";
-
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import Icon from "../../atoms/Icon/Icon";
 import AvatarChip from "../AvatarChip/AvatarChip";
 import styles from "./styles";
@@ -94,6 +94,7 @@ const EmployeeAutocompleteSearch = ({
       value={value}
       loading={isLoading}
       inputValue={inputValue}
+      slotProps={{ popper: { sx: { zIndex: ZIndexEnums.NEWMODAL } } }}
       onInputChange={(_event, value, reason) => onInputChange(value, reason)}
       onChange={(_event, value: EmployeeOptionType | null) => {
         if (value !== null) {

@@ -236,7 +236,9 @@ const getDrawerRoutes = ({
         if (isSuperAdmin) {
           const subRoutes = route?.subTree?.filter((subRoute) => {
             if (subRoute.name === "Integrations") {
-              return tiers.includes(TierEnum.PRO);
+              return (
+                tiers.includes(TierEnum.PRO) || tiers.includes(TierEnum.CORE)
+              );
             }
 
             return subRoute.requiredAuthLevel?.some((requiredRole) =>

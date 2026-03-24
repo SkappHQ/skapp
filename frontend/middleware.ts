@@ -253,9 +253,7 @@ export function middleware(request: NextRequest) {
 
     if (
       request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
-      isCoreOrProTier(
-        (claims?.tiers ?? (claims?.tier ? [claims.tier] : [])) as TierEnum[]
-      )
+      !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
     ) {
       return NextResponse.redirect(
         new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)

@@ -140,6 +140,7 @@ interface actionsTypes {
   setIsPendingInvitationListOpen: (value: boolean) => void;
   removeEmployeeFilter: (label?: string) => void;
   removeGenderFilter: () => void;
+  setAppliedEmployeeDataFilter: (value: EmployeeDataFilterTypes) => void;
 
   //directoryModalSlice
   setIsDirectoryModalOpen: (value: boolean) => void;
@@ -329,6 +330,7 @@ export interface Store extends actionsTypes {
 
   //employeeDataFiltersSlice
   employeeDataFilter: EmployeeDataFilterTypes;
+  appliedEmployeeDataFilter: EmployeeDataFilterTypes;
   employeeDataFilterOrder: string[];
   employeeDataParams: EmployeeDataParamsTypes;
   menuItems: MenuitemsDataTypes[];

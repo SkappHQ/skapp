@@ -1,6 +1,6 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useState } from "react";
 
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
@@ -52,6 +52,7 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
 
   const [tempTeamDetails, setTempTeamDetails] = useState<AddTeamType>();
   const [currentTeamFormData, setCurrentTeamFormData] = useState<AddTeamType>();
+
 
   const { isLoading: teamsIsLoading, data } = useGetAllTeams();
 
@@ -108,6 +109,12 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
 
   const handleCloseModal = (): void => {
     if (
+      teamModalType === TeamModelTypes.UNSAVED_ADD_TEAM ||
+      teamModalType === TeamModelTypes.UNSAVED_EDIT_TEAM
+    ) {
+      return;
+    }
+    if (
       teamModalType === TeamModelTypes.ADD_TEAM &&
       currentTeamFormData &&
       (currentTeamFormData?.teamMembers?.length > 0 ||
@@ -132,31 +139,19 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
     if (!teamsIsLoading && data) setProjectTeamNames(data as TeamNamesType[]);
   }, [teamsIsLoading, data]);
 
-  return (
-    <ModalController
-      isModalOpen={isTeamModalOpen}
-      handleCloseModal={handleCloseModal}
-      modalTitle={
-        isPeopleAdmin ? getModalTitle() : translateText(["viewTeamModalTitle"])
-      }
-      isClosable={
-        teamModalType !== TeamModelTypes.UNSAVED_ADD_TEAM &&
-        teamModalType !== TeamModelTypes.UNSAVED_EDIT_TEAM
-      }
-    >
-      <>
-        {teamModalType === TeamModelTypes.ADD_TEAM && (
+  const modalContent = (): ReactNode => {
+    switch (teamModalType) {
+      case TeamModelTypes.ADD_TEAM:
+        return (
           <AddEditTeamModal
             tempTeamDetails={tempTeamDetails}
             setTempTeamDetails={setTempTeamDetails}
             setCurrentTeamFormData={setCurrentTeamFormData}
             isEditingTeamChanged={isEditingTeamChanged()}
           />
-        )}
-        {teamModalType === TeamModelTypes.UNSAVED_ADD_TEAM && (
-          <UnsavedAddTeamModal setTempTeamDetails={setTempTeamDetails} />
-        )}
-        {teamModalType === TeamModelTypes.EDIT_TEAM && (
+        );
+      case TeamModelTypes.EDIT_TEAM:
+        return (
           <AddEditTeamModal
             tempTeamDetails={tempTeamDetails}
             setTempTeamDetails={setTempTeamDetails}
@@ -164,30 +159,55 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
             isEditingTeamChanged={isEditingTeamChanged()}
             setLatestTeamId={setLatestTeamId}
           />
-        )}
-        {teamModalType === TeamModelTypes.UNSAVED_EDIT_TEAM && (
+        );
+      case TeamModelTypes.UNSAVED_ADD_TEAM:
+        return (
+          <UnsavedAddTeamModal
+            setTempTeamDetails={setTempTeamDetails}
+          />
+        );
+      case TeamModelTypes.UNSAVED_EDIT_TEAM:
+        return (
           <UnsavedEditTeamModal
             tempTeamDetails={tempTeamDetails}
             setTempTeamDetails={setTempTeamDetails}
           />
-        )}
-        {teamModalType === TeamModelTypes.CONFIRM_DELETE && (
-          <DeleteConfirmModal />
-        )}
-        {teamModalType === TeamModelTypes.REASSIGN_MEMBERS && (
-          <ReassignMembersModal />
-        )}
-        {teamModalType === TeamModelTypes.TEAM_ACTIONS && (
-          <TeamActionModal
-            onClose={() => {
-              setIsTeamModalOpen(false);
-              setTeamModalType(TeamModelTypes.NONE);
-            }}
-            teamId={currentDeletingTeam?.teamId}
-          />
-        )}
-      </>
-    </ModalController>
+        );
+      case TeamModelTypes.CONFIRM_DELETE:
+        return <DeleteConfirmModal />;
+      case TeamModelTypes.REASSIGN_MEMBERS:
+        return <ReassignMembersModal />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <>
+      <SmallModal
+        isOpen={
+          isTeamModalOpen &&
+          teamModalType !== TeamModelTypes.TEAM_ACTIONS &&
+          teamModalType !== TeamModelTypes.NONE
+        }
+        onClose={handleCloseModal}
+        modalHeader={
+          isPeopleAdmin ? getModalTitle() : translateText(["viewTeamModalTitle"])
+        }
+        content={modalContent()}
+      />
+      {teamModalType === TeamModelTypes.TEAM_ACTIONS && (
+        <TeamActionModal
+          isOpen={isTeamModalOpen}
+          onClose={() => {
+            setIsTeamModalOpen(false);
+            setTeamModalType(TeamModelTypes.NONE);
+          }}
+          teamId={currentDeletingTeam?.teamId}
+          teamName={currentDeletingTeam?.teamName}
+        />
+      )}
+    </>
   );
 };
 

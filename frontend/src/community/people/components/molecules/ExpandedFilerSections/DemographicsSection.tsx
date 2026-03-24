@@ -118,9 +118,7 @@ const DemographicsSection = ({
               mt: "0rem",
               width: "100%"
             }}
-            labelStyles={{
-              fontSize: isSmallScreen ? "0.75rem" : "0.875rem"
-            }}
+            labelStyles={theme.typography.subtitle3}
           />
 
           <div className="flex flex-row mt-4 gap-1 flex-wrap max-w-[250px]">

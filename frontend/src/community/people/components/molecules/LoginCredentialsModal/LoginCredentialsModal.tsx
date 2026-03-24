@@ -1,4 +1,3 @@
-import { Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -49,43 +48,44 @@ const LoginCredentialsModal = () => {
   };
 
   return (
-    <Stack gap={3} marginTop={2}>
-      <Typography>{translateText(["sectionOne"])}</Typography>
+    <div className="flex flex-col gap-3 mt-2">
+      <p>{translateText(["sectionOne"])}</p>
 
-      <Typography>
+      <p>
         {translateText(["sectionTwo"], {
           name: userName() ?? ""
         })}
-      </Typography>
+      </p>
 
-      <Typography>{translateText(["sectionThree"])}</Typography>
+      <p>{translateText(["sectionThree"])}</p>
 
-      <Stack>
-        <Typography>
-          {translateText(["loginUrl"], { link: loginUrl })}
-        </Typography>
-        <Typography>
+      <div>
+        <p>{translateText(["loginUrl"], { link: loginUrl })}</p>
+        <p>
           {translateText(["username"], {
             username: employeeCredentials.email
           })}
-        </Typography>
-        <Typography>
+        </p>
+        <p>
           {translateText(["password"], {
             password: employeeCredentials.tempPassword
           })}
-        </Typography>
-      </Stack>
+        </p>
+      </div>
 
-      <Typography>{translateText(["sectionFive"])}</Typography>
+      <p>{translateText(["sectionFive"])}</p>
 
-      <ButtonV2
-        onClick={handleCopyText}
-        icon={<Icon name={IconName.COPY_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["copy"])}
-      </ButtonV2>
-    </Stack>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleCopyText}
+          icon={<Icon name={IconName.COPY_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["copy"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

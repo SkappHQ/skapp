@@ -1,6 +1,6 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { FC, ReactNode, useCallback, useEffect, useState } from "react";
 
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -203,54 +203,58 @@ const CustomLeaveModalController: FC = () => {
     setCustomLeaveAllocationModalType
   ]);
 
+  const modalContent = (): ReactNode => {
+    switch (customLeaveAllocationModalType) {
+      case CustomLeaveAllocationModalTypes.ADD_LEAVE_ALLOCATION:
+        return (
+          <AddLeaveAllocationModal
+            setTempLeaveAllocationDetails={setTempLeaveAllocationDetails}
+            setCurrentLeaveAllocationFormData={
+              setCurrentLeaveAllocationFormData
+            }
+            isEditingLeaveAllocationChanged={hasUnsavedChanges()}
+            initialValues={
+              tempLeaveAllocationDetails || ({} as CustomLeaveAllocationType)
+            }
+            onCancel={handleCancelLeaveAllocation}
+          />
+        );
+      case CustomLeaveAllocationModalTypes.EDIT_LEAVE_ALLOCATION:
+        return (
+          <EditLeaveAllocationModal
+            setCurrentLeaveAllocationFormData={
+              setCurrentLeaveAllocationFormData
+            }
+            onDelete={handleDelete}
+            initialValues={
+              tempLeaveAllocationDetails || ({} as CustomLeaveAllocationType)
+            }
+          />
+        );
+      case CustomLeaveAllocationModalTypes.UNSAVED_ADD_LEAVE_ALLOCATION:
+        return (
+          <UnsavedLeaveAllocationModal
+            setTempLeaveAllocationDetails={setTempLeaveAllocationDetails}
+            onResume={handleResumeEdit}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
-      <ModalController
-        isModalOpen={isLeaveAllocationModalOpen}
-        handleCloseModal={handleCloseModal}
-        modalTitle={getModalTitle()}
-        isClosable={
+      <SmallModal
+        isOpen={
+          isLeaveAllocationModalOpen &&
           customLeaveAllocationModalType !==
-          CustomLeaveAllocationModalTypes.UNSAVED_ADD_LEAVE_ALLOCATION
+            CustomLeaveAllocationModalTypes.NONE
         }
-      >
-        <>
-          {customLeaveAllocationModalType ===
-            CustomLeaveAllocationModalTypes.ADD_LEAVE_ALLOCATION && (
-            <AddLeaveAllocationModal
-              setTempLeaveAllocationDetails={setTempLeaveAllocationDetails}
-              setCurrentLeaveAllocationFormData={
-                setCurrentLeaveAllocationFormData
-              }
-              isEditingLeaveAllocationChanged={hasUnsavedChanges()}
-              initialValues={
-                tempLeaveAllocationDetails || ({} as CustomLeaveAllocationType)
-              }
-              onCancel={handleCancelLeaveAllocation}
-            />
-          )}
-          {customLeaveAllocationModalType ===
-            CustomLeaveAllocationModalTypes.EDIT_LEAVE_ALLOCATION && (
-            <EditLeaveAllocationModal
-              setCurrentLeaveAllocationFormData={
-                setCurrentLeaveAllocationFormData
-              }
-              onDelete={handleDelete}
-              initialValues={
-                tempLeaveAllocationDetails || ({} as CustomLeaveAllocationType)
-              }
-            />
-          )}
-          {customLeaveAllocationModalType ===
-            CustomLeaveAllocationModalTypes.UNSAVED_ADD_LEAVE_ALLOCATION && (
-            <UnsavedLeaveAllocationModal
-              setTempLeaveAllocationDetails={setTempLeaveAllocationDetails}
-              onResume={handleResumeEdit}
-            />
-          )}
-        </>
-      </ModalController>
-
+        onClose={handleCloseModal}
+        modalHeader={getModalTitle()}
+        content={modalContent()}
+      />
       <DeleteConfirmationModal
         open={isDeleteConfirmationOpen}
         onClose={handleDeleteCancel}

@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useEffect, useMemo } from "react";
@@ -103,7 +102,7 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Box component="div" aria-hidden={true}>
+      <div aria-hidden={true}>
         <InputField
           id="job-family-name-input"
           inputName="name"
@@ -120,37 +119,25 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
         />
         <JobTitleField formik={formik} />
         {!isPeopleAdmin ? (
-          <ButtonV2
-            variant={"tertiary"}
-            onClick={() =>
-              handleJobFamilyCloseModal({
-                hasDataChanged,
-                jobFamilyModalType,
-                setJobFamilyModalType,
-                stopAllOngoingQuickSetup
-              })
-            }
-            icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
-            iconPosition="start"
-          >
-            {translateText(["goBackBtnText"])}
-          </ButtonV2>
-        ) : (
-          <>
+          <div className="flex flex-row justify-end gap-3 mt-4">
             <ButtonV2
-              type={"submit"}
-              disabled={isSaveBtnDisabled}
-              variant={"primary"}
-              className={getBlinkClass(
-                values.name && values.jobTitles?.length > 0
-                  ? ongoingQuickSetup.DEFINE_JOB_FAMILIES
-                  : false
-              )}
-              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-              iconPosition="end"
+              variant={"tertiary"}
+              onClick={() =>
+                handleJobFamilyCloseModal({
+                  hasDataChanged,
+                  jobFamilyModalType,
+                  setJobFamilyModalType,
+                  stopAllOngoingQuickSetup
+                })
+              }
+              icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+              iconPosition="start"
             >
-              {translateText(["saveBtnText"])}
+              {translateText(["goBackBtnText"])}
             </ButtonV2>
+          </div>
+        ) : (
+          <div className="flex flex-row justify-end gap-3 mt-4">
             <ButtonV2
               variant={"tertiary"}
               onClick={() =>
@@ -166,9 +153,23 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
             >
               {translateText(["cancelBtnText"])}
             </ButtonV2>
-          </>
+            <ButtonV2
+              type={"submit"}
+              disabled={isSaveBtnDisabled}
+              variant={"primary"}
+              className={getBlinkClass(
+                values.name && values.jobTitles?.length > 0
+                  ? ongoingQuickSetup.DEFINE_JOB_FAMILIES
+                  : false
+              )}
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["saveBtnText"])}
+            </ButtonV2>
+          </div>
         )}
-      </Box>
+      </div>
     </Form>
   );
 };

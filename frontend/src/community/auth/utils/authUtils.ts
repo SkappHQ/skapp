@@ -78,6 +78,7 @@ export interface User {
   tokenDuration?: number;
   isPasswordChangedForTheFirstTime?: boolean;
   employee?: AuthEmployeeType;
+  tier?: TierEnum;
   tiers?: TierEnum[];
   tenantId?: string;
   tenantStatus?: TenantStatusEnums;
@@ -228,8 +229,8 @@ export const extractUserFromToken = (token: string): User | null => {
       isPasswordChangedForTheFirstTime:
         claims?.isPasswordChangedForTheFirstTime ?? true,
       employee: claims?.employee,
-      tiers: (claims?.tiers ??
-        (claims?.tier ? [claims.tier] : [])) as TierEnum[],
+      tier: claims?.tier as TierEnum,
+      tiers: claims?.tiers as TierEnum[],
       tenantId: claims?.tenantId,
       tenantStatus: claims?.tenantStatus
     };

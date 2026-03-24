@@ -1,4 +1,3 @@
-import { Box, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -42,19 +41,19 @@ const HolidayExitConfirmationModal = () => {
   };
 
   return (
-    <Box>
-      <Typography sx={{ mt: "1rem" }}>
+    <div>
+      <p className="mt-4">
         {translateText(["deletionConfirmDescription"])}
-      </Typography>
-      <Box>
+      </p>
+      <div className="flex flex-row justify-end gap-3 mt-4">
         <ButtonV2 variant={"primary"} onClick={resumeTaskHandler}>
           {translateText(["deletionConfirmResumeBtn"])}
         </ButtonV2>
         <ButtonV2 variant={"error"} onClick={leaveBtnOnClick}>
           {translateText(["deletionConfirmLeaveAnywayBtn"])}
         </ButtonV2>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 

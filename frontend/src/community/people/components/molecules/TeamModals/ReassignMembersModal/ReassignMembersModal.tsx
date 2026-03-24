@@ -1,4 +1,3 @@
-import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
 
@@ -77,11 +76,11 @@ const ReassignMembersModal = () => {
   };
 
   return (
-    <Box>
-      <Typography sx={{ my: "1rem" }}>
+    <div>
+      <p className="my-4">
         {translateText(["reassignModalDes"])}
-      </Typography>
-      <Stack gap={"0.5rem"} sx={{ maxHeight: "14.5rem", overflow: "auto" }}>
+      </p>
+      <div className="flex flex-col gap-2 max-h-56 overflow-auto">
         {currentDeletingTeam?.supervisors?.map((supervisor) => (
           <ReassignMemberRow
             key={supervisor.employeeId}
@@ -100,16 +99,8 @@ const ReassignMembersModal = () => {
             }
           />
         ))}
-      </Stack>
-      <Box>
-        <ButtonV2
-          variant={"error"}
-          onClick={reassignAndDeleteClick}
-          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["reassignAndDeleteBtnText"])}
-        </ButtonV2>
+      </div>
+      <div className="flex flex-row justify-end gap-3 mt-4">
         <ButtonV2
           variant={"tertiary"}
           onClick={cancelClick}
@@ -118,8 +109,16 @@ const ReassignMembersModal = () => {
         >
           {translateText(["cancelBtnText"])}
         </ButtonV2>
-      </Box>
-    </Box>
+        <ButtonV2
+          variant={"error"}
+          onClick={reassignAndDeleteClick}
+          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["reassignAndDeleteBtnText"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 
