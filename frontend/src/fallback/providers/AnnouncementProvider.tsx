@@ -5,9 +5,10 @@ import React, {
   useMemo
 } from "react";
 
+import { ActiveAnnouncementType } from "~enterprise/common/types/AnnouncementTypes";
 
 interface AnnouncementContextType {
-  announcements: string[];
+  announcements: ActiveAnnouncementType[];
   shownIds: Set<string>;
   markAsShown: (id: string) => void;
   clearAnnouncements: () => void;
