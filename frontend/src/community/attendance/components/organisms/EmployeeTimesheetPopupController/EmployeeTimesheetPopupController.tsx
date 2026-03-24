@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
 import AddEditTimeEntry from "~community/attendance/components/molecules/AttendanceModals/AddEditTimeEntry/AddEditTimeEntry";
@@ -9,7 +9,6 @@ import TimeEntryExists from "~community/attendance/components/molecules/Attendan
 import TimeEntryRequestExists from "~community/attendance/components/molecules/AttendanceModals/TimeEntryRequestExists/TimeEntryRequestExists";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const EmployeeTimesheetPopupController = (): JSX.Element => {
@@ -65,68 +64,67 @@ const EmployeeTimesheetPopupController = (): JSX.Element => {
     }
   }, [isEmployeeTimesheetModalOpen, setCurrentAddTimeChanges]);
 
+  const modalContent = (): JSX.Element => (
+    <>
+      {(employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
+        employeeTimesheetModalType ===
+          EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
+        employeeTimesheetModalType ===
+          EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY ||
+        employeeTimesheetModalType ===
+          EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
+        employeeTimesheetModalType ===
+          EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE) && (
+        <AddEditTimeEntry
+          setFromDateTime={setFromDateTime}
+          setToDateTime={setToDateTime}
+        />
+      )}
+      {employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY && (
+        <LeaveEntryConfirmation
+          fromDateTime={fromDateTime}
+          toDateTime={toDateTime}
+        />
+      )}
+      {employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS && (
+        <TimeEntryExists fromDateTime={fromDateTime} toDateTime={toDateTime} />
+      )}
+      {employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS && (
+        <TimeEntryRequestExists isEdit={false} />
+      )}
+      {employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY && (
+        <HolidayEntryConfirmation
+          fromDateTime={fromDateTime}
+          toDateTime={toDateTime}
+        />
+      )}
+      {employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY && (
+        <OngoingTimeEntry isEdit={false} />
+      )}
+      {employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS_BY_EDIT && (
+        <TimeEntryRequestExists isEdit={true} />
+      )}
+      {employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY_BY_EDIT && (
+        <OngoingTimeEntry isEdit={true} />
+      )}
+    </>
+  );
+
   return (
-    <ModalController
-      isModalOpen={isEmployeeTimesheetModalOpen}
-      handleCloseModal={handelCloseModal}
-      modalTitle={getModalTitle()}
-      role="dialog"
-    >
-      <Box>
-        {(employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
-          employeeTimesheetModalType ===
-            EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
-          employeeTimesheetModalType ===
-            EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY ||
-          employeeTimesheetModalType ===
-            EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
-          employeeTimesheetModalType ===
-            EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE) && (
-          <AddEditTimeEntry
-            setFromDateTime={setFromDateTime}
-            setToDateTime={setToDateTime}
-          />
-        )}
-        {employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY && (
-          <LeaveEntryConfirmation
-            fromDateTime={fromDateTime}
-            toDateTime={toDateTime}
-          />
-        )}
-        {employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS && (
-          <TimeEntryExists
-            fromDateTime={fromDateTime}
-            toDateTime={toDateTime}
-          />
-        )}
-        {employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS && (
-          <TimeEntryRequestExists isEdit={false} />
-        )}
-        {employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY && (
-          <HolidayEntryConfirmation
-            fromDateTime={fromDateTime}
-            toDateTime={toDateTime}
-          />
-        )}
-        {employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY && (
-          <OngoingTimeEntry isEdit={false} />
-        )}
-        {employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS_BY_EDIT && (
-          <TimeEntryRequestExists isEdit={true} />
-        )}
-        {employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY_BY_EDIT && (
-          <OngoingTimeEntry isEdit={true} />
-        )}
-      </Box>
-    </ModalController>
+    <SmallModal
+      isOpen={isEmployeeTimesheetModalOpen}
+      onClose={handelCloseModal}
+      modalHeader={getModalTitle()}
+      content={modalContent()}
+    />
   );
 };
 
