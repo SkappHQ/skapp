@@ -11,6 +11,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,11 +77,8 @@ public class AuthController {
 	@Operation(summary = "Get Access Token from Session",
 			description = "Obtain a new access token using refresh token from cookie")
 	@PostMapping(value = "/session/refresh-token", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> refreshAccessTokenFromCookie(
-			@CookieValue(value = "refreshToken") String refreshToken) {
-		RefreshTokenRequestDto refreshTokenRequestDto = new RefreshTokenRequestDto();
-		refreshTokenRequestDto.setRefreshToken(refreshToken);
-		ResponseEntityDto response = authService.refreshAccessToken(refreshTokenRequestDto);
+	public ResponseEntity<ResponseEntityDto> refreshAccessTokenFromCookie(HttpServletRequest request) {
+		ResponseEntityDto response = authService.refreshAccessTokenFromCookie(request);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
