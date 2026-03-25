@@ -158,6 +158,8 @@ import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
 import GreyRoundedTickIcon from "~enterprise/settings/assets/Icons/GreyRoundedTickIcon";
 import MasterCardIcon from "~enterprise/settings/assets/Icons/MasterCardIcon";
 import VisaCardIcon from "~enterprise/settings/assets/Icons/VisaCardIcon";
+import BankIdVerifyFailedIcon from "~enterprise/sign/assets/Icons/BankIdVerifyFailedIcon";
+import BankIdVerifySuccessIcon from "~enterprise/sign/assets/Icons/BankIdVerifySuccessIcon";
 
 interface Props extends IconProps {
   name: IconName;
@@ -325,7 +327,9 @@ export const IconMapping: Partial<
   [IconName.PERCENTAGE_ICON]: PercentageIcon,
   [IconName.UPLOAD_DOCUMENT_ICON]: UploadDocumentIcon,
   [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon,
-  [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon
+  [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon,
+  [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
+  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon
   // Add more icons here as needed
 };
 
