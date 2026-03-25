@@ -29,13 +29,20 @@ export default function Document() {
           rel="stylesheet"
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
+        {/*
+          Font mapping:
+          Arial           → Arimo
+          Calibri         → Carlito
+          Times New Roman → Tinos
+          Verdana         → DejaVu Sans
+        */}
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,700;1,400;1,700&family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Carlito:wght@400;700&family=Tinos:wght@400;700&family=Inter:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
         <link
