@@ -10,11 +10,12 @@ import { usePeopleStore } from "~community/people/store/store";
 import { TeamModelTypes } from "~community/people/types/TeamTypes";
 
 interface Props {
+  isOpen: boolean;
   onClose: () => void;
   teamId?: number | string;
 }
 
-const TeamActionModal: React.FC<Props> = ({ onClose, teamId }) => {
+const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
   const translateText = useTranslator("peopleModule", "teams");
   const { setToastMessage } = useToast();
   const {
