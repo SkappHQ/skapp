@@ -370,7 +370,7 @@ public class ReleaseServiceImpl implements ReleaseService {
 			String avatarInitials;
 
 			if (approver.getProfilePicture() != null && !approver.getProfilePicture().trim().isEmpty()) {
-				avatarDataUrl = approver.getProfilePicture();
+				avatarDataUrl = approver.getProfilePicture().replace("&", "&amp;");
 				avatarHtml = "<img src=\"" + avatarDataUrl + "\" class=\"approver-avatar\" alt=\"Profile Picture\" />";
 			}
 			else {
