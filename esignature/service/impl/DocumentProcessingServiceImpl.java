@@ -15,6 +15,7 @@ import com.skapp.enterprise.esignature.payload.response.PageDimensionResponseDto
 import com.skapp.enterprise.esignature.payload.response.ProcessedDocumentResult;
 import com.skapp.enterprise.esignature.service.DocumentProcessingService;
 import com.skapp.enterprise.esignature.type.EsignFontFamilyType;
+import com.skapp.enterprise.esignature.type.EsignFontVariantType;
 import com.skapp.enterprise.esignature.type.EsignImageType;
 import com.skapp.enterprise.esignature.type.FieldType;
 
@@ -91,8 +92,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 	public static final String PNG = "png";
 
 	private static final float POINTS_PER_INCH = 72f;
-
-	private static final String REGULAR_FONT_VARIANT = "-Regular";
 
 	private final MessageUtil messageUtil;
 
@@ -776,7 +775,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			// Resolve display name to enum type
 			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
-			String folderName = EsignFontFamilyType.getFolderByFamily(fontFamilyCss);
+			EsignFontFamilyType fontFamilyType = EsignFontFamilyType.getByFamilyName(fontFamilyCss);
+			EsignFontVariantType fontVariant = EsignFontVariantType.fromStyle(isBold, isItalic);
 
 			// Final placement dimensions in PDF point space
 			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
@@ -802,7 +802,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
 			cssDto.setFontFamilyCss(fontFamilyCss);
 			cssDto.setFontSize(String.valueOf(fontSize));
-			cssDto.setFontWeight(EsignUtil.resolveFontWeight(isBold));
+			cssDto.setFontWeight(String.valueOf(fontVariant.getFontWeight()));
 			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
 			cssDto.setTextDecoration(EsignUtil.resolveTextDecoration(isUnderline));
 			cssDto.setFontColor(fontColor);
@@ -813,8 +813,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
-			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, folderName,
-					fontFamilyCss);
+			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, fontFamilyType,
+					fontFamilyCss, fontVariant);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
@@ -854,8 +854,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt, String folderName,
-			String fontFamilyCss) throws IOException {
+	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt,
+			EsignFontFamilyType fontFamilyType, String fontFamilyCss, EsignFontVariantType fontVariant)
+			throws IOException {
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -865,16 +866,19 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float heightInches = heightPt / POINTS_PER_INCH;
 
 			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
-			if (folderName != null) {
-				// Load Font bytes from S3
-				try (InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, REGULAR_FONT_VARIANT);
+			if (fontFamilyType != null) {
+				String folderName = fontFamilyType.getFolderName();
+				String variantSuffix = fontFamilyType.getVariantSuffix(fontVariant);
+
+				try (InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, variantSuffix);
 						ByteArrayOutputStream fontBuffer = new ByteArrayOutputStream()) {
 
 					fontStream.transferTo(fontBuffer);
 
 					byte[] fontBytes = fontBuffer.toByteArray();
 
-					builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCss);
+					builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCss,
+							fontVariant.getFontWeight(), fontVariant.getFontStyle(), true);
 				}
 				catch (Exception e) {
 					log.warn("Could not register font '{}' for HTML rendering: {}", folderName, e.getMessage());

@@ -109,4 +109,22 @@ public class EsignConstants {
 
 	public static final int ADVANCED_FIELD_TEXT_VALUE_MAX_LENGTH = 255;
 
+	public static final String FONT_SUFFIX_REGULAR = "-Regular";
+
+	public static final String FONT_SUFFIX_ITALIC = "-Italic";
+
+	public static final String FONT_SUFFIX_BOLD = "-Bold";
+
+	public static final String FONT_SUFFIX_BOLD_ITALIC = "-BoldItalic";
+
+	public static final String FONT_SUFFIX_OBLIQUE = "-Oblique";
+
+	public static final String FONT_SUFFIX_BOLD_OBLIQUE = "-BoldOblique";
+
+	public static final String FONT_FOLDER_DEJAVU_SANS = "DejaVuSans";
+
+	public static final int NORMAL_FONT_WEIGHT = 400;
+
+	public static final int BOLD_FONT_WEIGHT = 700;
+
 }
