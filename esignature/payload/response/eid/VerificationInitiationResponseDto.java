@@ -46,9 +46,15 @@ public class VerificationInitiationResponseDto {
 	private String qrCode;
 
 	/**
-	 * When the session will expire.
+	 * When the current 30-second BankID order will expire.
 	 */
 	private Instant expiresAt;
+
+	/**
+	 * The absolute deadline for the overall verification flow (5 minutes from the first
+	 * order). Renewals must not exceed this timestamp.
+	 */
+	private Instant overallExpiresAt;
 
 	/**
 	 * Recipient ID for this verification.

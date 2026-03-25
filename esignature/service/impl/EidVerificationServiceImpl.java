@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.util.Validation;
 import com.skapp.enterprise.esignature.constant.EidMessageConstant;
+import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.eid.EidProvider;
 import com.skapp.enterprise.esignature.eid.EidProviderRegistry;
@@ -30,7 +31,6 @@ import com.skapp.enterprise.esignature.service.EidVerificationService;
 import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EidFlowType;
 import com.skapp.enterprise.esignature.type.EidVerificationStatus;
-import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.util.BankIdQrCodeUtil;
 import com.skapp.enterprise.esignature.util.EsignUtil;
@@ -43,6 +43,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -230,19 +231,16 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 			// Handle verification completion at the service layer
 			if (session.getStatus() == EidVerificationStatus.VERIFIED) {
-				updateRecipientVerificationStatus(session);
+				updateRecipientVerificationStatus(session, provider);
 			}
 		}
 
 		VerificationStatusResponseDto response = eidMapper.sessionToVerificationStatusResponse(session);
 
-		// Set transient data (hintCode, QR code) from session entity
-		if (isSessionActive(session)) {
-			response.setHintCode(session.getHintCode());
-			if (session.getQrStartToken() != null && session.getQrStartSecret() != null) {
-				response.setQrCode(BankIdQrCodeUtil.computeQrCode(session.getQrStartToken(), session.getQrStartSecret(),
-						session.getInitiatedAt()));
-			}
+		// QR code is only meaningful for active sessions
+		if (isSessionActive(session) && session.getQrStartToken() != null && session.getQrStartSecret() != null) {
+			response.setQrCode(BankIdQrCodeUtil.computeQrCode(session.getQrStartToken(), session.getQrStartSecret(),
+					session.getInitiatedAt()));
 		}
 
 		log.debug("checkVerificationStatus: session={} status={}", sessionId, response.getStatus());
@@ -273,6 +271,64 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 		log.info("cancelVerification: session={} cancelled", sessionId);
 		return new ResponseEntityDto(false, EidMessageConstant.EID_SUCCESS_VERIFICATION_CANCELLED);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto renewSession(String sessionId, HttpServletRequest httpRequest) {
+		log.info("renewSession: renewing session={}", sessionId);
+
+		EidVerificationSession oldSession = sessionRepository.findBySessionUuid(sessionId)
+			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_SESSION_NOT_FOUND));
+
+		boolean isDocAccess = isCurrentUserDocAccessRole();
+		Long documentId = oldSession.getDocument() != null ? oldSession.getDocument().getId() : null;
+		documentLinkService.validateTokenFlows(isDocAccess, oldSession.getRecipient(), documentId);
+
+		if (oldSession.getOverallExpiresAt() != null && Instant.now().isAfter(oldSession.getOverallExpiresAt())) {
+			throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_OVERALL_EXPIRED,
+					new String[] { String.valueOf(EsignConstants.EID_MAX_SESSION_DURATION_SECONDS / 60) });
+		}
+
+		if (!isSessionRenewable(oldSession)) {
+			throw new ModuleException(EidMessageConstant.EID_ERROR_SESSION_NOT_ACTIVE);
+		}
+
+		EidProvider provider = providerRegistry.getProvider(oldSession.getProviderType())
+			.orElseThrow(() -> new ModuleException(EidMessageConstant.EID_ERROR_PROVIDER_NOT_FOUND));
+
+		// Cancel the old BankID order gracefully
+		if (isSessionActive(oldSession)) {
+			provider.cancelVerification(oldSession);
+		}
+
+		Long recipientId = oldSession.getRecipient().getId();
+		String endUserIp = extractClientIp(httpRequest);
+		Instant overallExpiresAt = oldSession.getOverallExpiresAt();
+
+		EidVerificationSession newSession;
+		if (oldSession.getFlowType() == EidFlowType.SIGN) {
+			newSession = provider.initiateVerification(recipientId, documentId, endUserIp,
+					oldSession.getUserVisibleData(), oldSession.getDocumentHash());
+		}
+		else {
+			newSession = provider.initiateIdentification(recipientId, documentId, endUserIp,
+					oldSession.getUserVisibleData());
+		}
+
+		// Carry the overall expiry from the original session
+		newSession.setOverallExpiresAt(overallExpiresAt);
+		newSession = sessionRepository.save(newSession);
+
+		VerificationInitiationResponseDto response = eidMapper.sessionToVerificationInitiationResponse(newSession);
+		response.setAutoStartToken(newSession.getAutoStartToken());
+		if (newSession.getQrStartToken() != null && newSession.getQrStartSecret() != null) {
+			response.setQrCode(BankIdQrCodeUtil.computeQrCode(newSession.getQrStartToken(),
+					newSession.getQrStartSecret(), newSession.getInitiatedAt()));
+		}
+
+		log.info("renewSession: created new session={} from old session={}", newSession.getSessionUuid(), sessionId);
+		return new ResponseEntityDto(false, response);
 	}
 
 	@Override
@@ -313,7 +369,12 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		return status == EidVerificationStatus.PENDING || status == EidVerificationStatus.USER_ACTION_REQUIRED;
 	}
 
-	private void updateRecipientVerificationStatus(EidVerificationSession session) {
+	private boolean isSessionRenewable(EidVerificationSession session) {
+		EidVerificationStatus status = session.getStatus();
+		return isSessionActive(session) || status == EidVerificationStatus.EXPIRED;
+	}
+
+	private void updateRecipientVerificationStatus(EidVerificationSession session, EidProvider provider) {
 		Recipient recipient = session.getRecipient();
 		RecipientEidConfig eidConfig = recipient.getEidConfig();
 
@@ -339,7 +400,7 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		recipientDao.save(recipient);
 
 		if (recipient.getStatus().equals(RecipientStatus.NEED_TO_SIGN)) {
-			AuditAction auditAction = resolveIdentityVerifiedAuditAction(session.getProviderType());
+			AuditAction auditAction = provider.getIdentityVerifiedAuditAction();
 			AuditTrail auditTrail = auditTrailService.processAuditTrailInfo(recipient.getEnvelope(), recipient,
 					auditAction, recipient.getAddressBook(), session.getEndUserIp(), null);
 			auditTrailDao.save(auditTrail);
@@ -368,13 +429,6 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 		}
 
 		return endUserIp;
-	}
-
-	private AuditAction resolveIdentityVerifiedAuditAction(EidProviderType providerType) {
-		return switch (providerType) {
-			case SWEDISH_BANKID -> AuditAction.ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID;
-			default -> throw new IllegalArgumentException("Unsupported eID provider type: " + providerType);
-		};
 	}
 
 	private String generateUserVisibleData(Document document) {

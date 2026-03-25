@@ -54,6 +54,7 @@ import com.skapp.enterprise.esignature.service.EsignEmailService;
 import com.skapp.enterprise.esignature.service.EsignMessageService;
 import com.skapp.enterprise.esignature.service.ExternalDocumentJwtService;
 import com.skapp.enterprise.esignature.type.DocumentPermissionType;
+import com.skapp.enterprise.esignature.type.EidProviderType;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import com.skapp.enterprise.esignature.type.EsignVerificationEventType;
 import com.skapp.enterprise.esignature.type.EsignVerificationType;
@@ -116,6 +117,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 	private static final String PHONE_URL_PATH = "&phone=";
 
 	private static final String URL_PATH_MFA = "/mfa-verify";
+
+	private static final String URL_PATH_BANKID = "/bankid-verify";
 
 	private static final String ROLE_DOC_ACCESS = "ROLE_DOC_ACCESS";
 
@@ -508,6 +511,13 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MFA_NOT_VALIDATED);
 		}
 
+		Recipient recipient = recipientDao.findById(documentLink.getRecipientId().getId())
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		if (recipient.requiresEidIdentification() && !recipient.isEidIdentificationComplete()) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_EID_IDENTIFICATION_REQUIRED);
+		}
+
 		DocumentTokenResponseDto documentTokenResponseDto = new DocumentTokenResponseDto();
 		documentTokenResponseDto.setToken(documentLink.getToken());
 
@@ -761,7 +771,16 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 
 		String baseUrlPath = BASE_URL_PATH;
 
-		String mfaRecipientDetails = getMFARecipientDetails(recipientId);
+		Recipient recipient = recipientDao.findById(recipientId)
+			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+
+		if (recipient.requiresEidIdentification()
+				&& recipient.getEidIdentificationMethod() == EidProviderType.SWEDISH_BANKID) {
+			return protocol + "://" + tenantId + "." + parentDomain + baseUrlPath + URL_PATH_BANKID + UUID_URL_PATH
+					+ encodedEncryptedUUID + STATE_STRING + encodedState;
+		}
+
+		String mfaRecipientDetails = getMFARecipientDetails(recipient);
 
 		if (mfaRecipientDetails != null) {
 			// MFA enabled:
@@ -775,11 +794,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 				+ STATE_STRING + encodedState;
 	}
 
-	private String getMFARecipientDetails(Long recipientId) {
-
-		Optional<Recipient> recipientOptional = recipientDao.findById(recipientId);
-		Recipient recipient = recipientOptional
-			.orElseThrow(() -> new ModuleException(EsignMessageConstant.ESIGN_ERROR_RECIPIENT_NOT_FOUND));
+	private String getMFARecipientDetails(Recipient recipient) {
 
 		if (recipient.isMfaVerificationEnabled()) {
 			populateAndSaveVerificationSessionData(recipient);
@@ -788,11 +803,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService {
 		EsignVerificationType verificationMethod = recipient.getMfaVerificationMethod();
 
 		if (verificationMethod.equals(EsignVerificationType.SMS)) {
-			String recipientPhone = recipientDao.findPhoneByRecipientId(recipientId);
+			String recipientPhone = recipientDao.findPhoneByRecipientId(recipient.getId());
 
 			if (recipientPhone == null || recipientPhone.isEmpty()) {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_ADDRESS_BOOK_USER_CONTACT_NO_NOT_FOUND);
-
 			}
 
 			return PhoneNumberMaskUtil.mask(recipientPhone);
