@@ -121,6 +121,4 @@ public class EsignConstants {
 
 	public static final String FONT_FOLDER_DEJAVU_SANS = "DejaVuSans";
 
-	public static final String FONT_FOLDER_NOTO_SANS_JP = "NotoSansJP";
-
 }
