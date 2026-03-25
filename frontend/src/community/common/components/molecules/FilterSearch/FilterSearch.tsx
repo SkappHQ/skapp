@@ -201,6 +201,7 @@ const FilterSearch: FC<Props> = ({
           handleClose={() => {}}
           id={"suggestionPopper"}
           containerStyles={popperStyles}
+          disablePortal
         >
           <Box
             sx={{
