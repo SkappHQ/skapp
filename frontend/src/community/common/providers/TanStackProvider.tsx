@@ -8,12 +8,15 @@ import {
   COMMON_ERROR_TOKEN_EXPIRED,
   COMMON_ERROR_USER_VERSION_MISMATCH
 } from "~community/common/constants/errorMessageKeys";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 import { useAuth } from "../../auth/providers/AuthProvider";
+import { useToast } from "./ToastProvider";
 
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
   const { user, checkAuth } = useAuth();
+  const { setToastMessage } = useToast();
 
   const [queryClient] = useState(() => {
     return new QueryClient({
@@ -39,6 +42,18 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     const interceptor = authFetch.interceptors.response.use(
       (response) => response,
       async (error) => {
+        if (!navigator.onLine) {
+          setToastMessage({
+            open: true,
+            toastType: ToastType.ERROR,
+            title: "Oops! Something went wrong.",
+            description:
+              "No internet connection. Please check your network and try again.",
+            isIcon: true
+          });
+          throw error;
+        }
+
         if (
           error?.response?.data?.results?.[0]?.messageKey ===
             COMMON_ERROR_SYSTEM_VERSION_MISMATCH ||
@@ -67,7 +82,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       authFetch.interceptors.response.eject(interceptor);
     };
-  }, [user, checkAuth]);
+  }, [user, checkAuth, queryClient, setToastMessage]);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

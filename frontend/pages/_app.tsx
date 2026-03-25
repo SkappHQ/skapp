@@ -124,38 +124,41 @@ function MyApp({
       <AuthProvider>
         {shouldUseWebSocketProvider ? (
           <WebSocketProvider>
-            <TanStackProvider>
-              <ThemeProvider theme={newTheme}>
-                <I18nextProvider i18n={i18n}>
-                  <ToastProvider>
+            <ToastProvider>
+              <TanStackProvider>
+                <ThemeProvider theme={newTheme}>
+                  <I18nextProvider i18n={i18n}>
                     <ErrorBoundary FallbackComponent={Error}>
                       <RouteChangeLoader />
                       <BaseLayout>
                         <Component {...pageProps} />
                       </BaseLayout>
                     </ErrorBoundary>
-                  </ToastProvider>
-                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-                </I18nextProvider>
-              </ThemeProvider>
-            </TanStackProvider>
+                    <ReactQueryDevtools
+                      initialIsOpen={false}
+                      position="bottom"
+                    />
+                  </I18nextProvider>
+                </ThemeProvider>
+              </TanStackProvider>
+            </ToastProvider>
           </WebSocketProvider>
         ) : (
-          <TanStackProvider>
-            <ThemeProvider theme={newTheme}>
-              <I18nextProvider i18n={i18n}>
-                <ToastProvider>
+          <ToastProvider>
+            <TanStackProvider>
+              <ThemeProvider theme={newTheme}>
+                <I18nextProvider i18n={i18n}>
                   <ErrorBoundary FallbackComponent={Error}>
                     <RouteChangeLoader />
                     <BaseLayout>
                       <Component {...pageProps} />
                     </BaseLayout>
                   </ErrorBoundary>
-                </ToastProvider>
-                <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-              </I18nextProvider>
-            </ThemeProvider>
-          </TanStackProvider>
+                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+                </I18nextProvider>
+              </ThemeProvider>
+            </TanStackProvider>
+          </ToastProvider>
         )}
       </AuthProvider>
     </div>
