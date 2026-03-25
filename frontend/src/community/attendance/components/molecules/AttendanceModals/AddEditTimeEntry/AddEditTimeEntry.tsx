@@ -492,30 +492,32 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           isDisabled
         />
       )}
-      <ButtonV2
-        variant={"primary"}
-        type={"submit"}
-        disabled={
-          isSubmitDisabled(
-            values,
-            isGetTimeAvailabilityLoading &&
-              getAvailabilityFetchStatus !== "idle"
-          ) || isInvalidTimeForDisableButton()
-        }
-        icon={<Icon name={IconName.CHECK_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["submitRequestBtnTxt"])}
-      </ButtonV2>
-      <ButtonV2
-        variant={"tertiary"}
-        onClick={() => setIsEmployeeTimesheetModalOpen(false)}
-        type={"reset"}
-        icon={<Icon name={IconName.CLOSE_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["cancelBtnTxt"])}
-      </ButtonV2>
+      <div className="flex flex-row gap-3 mt-4 justify-end">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={() => setIsEmployeeTimesheetModalOpen(false)}
+          type={"reset"}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnTxt"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
+          type={"submit"}
+          disabled={
+            isSubmitDisabled(
+              values,
+              isGetTimeAvailabilityLoading &&
+                getAvailabilityFetchStatus !== "idle"
+            ) || isInvalidTimeForDisableButton()
+          }
+          icon={<Icon name={IconName.CHECK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["submitRequestBtnTxt"])}
+        </ButtonV2>
+      </div>
     </Form>
   );
 };

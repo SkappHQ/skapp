@@ -1,3 +1,4 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
 import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
@@ -10,7 +11,6 @@ import {
   AttendancePopupTypes,
   AttendanceSlotType
 } from "~community/attendance/types/attendanceTypes";
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const TimeWidgetPopupController = (): JSX.Element => {
@@ -117,50 +117,50 @@ const TimeWidgetPopupController = (): JSX.Element => {
     return "";
   };
 
+  const handleCloseModal = (): void => {
+    if (isAttendanceModalOpen) {
+      handleCloseAttendanceModal();
+    } else if (isPreMidnightClockOutAlertOpen) {
+      handleClosePreMidnightModal();
+    } else if (isAutoClockOutMidnightModalOpen) {
+      handleCloseMidnightModal();
+    }
+  };
+
+  const modalContent = (): JSX.Element => (
+    <>
+      {isAttendanceModalOpen &&
+        popupType === AttendancePopupTypes.CLOCK_OUT && (
+          <ClockOutModal closeModal={handleCloseAttendanceModal} />
+        )}
+
+      {isAttendanceModalOpen && popupType === AttendancePopupTypes.CLOCK_IN && (
+        <LeaveClockInModal closeModal={handleCloseAttendanceModal} />
+      )}
+
+      {isPreMidnightClockOutAlertOpen && (
+        <PreMidnightClockOutAlertModal
+          closeModal={handleClosePreMidnightModal}
+        />
+      )}
+
+      {isAutoClockOutMidnightModalOpen && (
+        <AutoClockOutMidnightModal closeModal={handleCloseMidnightModal} />
+      )}
+    </>
+  );
+
   return (
-    <ModalController
-      isModalOpen={
+    <SmallModal
+      isOpen={
         isAttendanceModalOpen ||
         isPreMidnightClockOutAlertOpen ||
         isAutoClockOutMidnightModalOpen
       }
-      handleCloseModal={() => {
-        if (isAttendanceModalOpen) {
-          handleCloseAttendanceModal();
-        } else if (isPreMidnightClockOutAlertOpen) {
-          handleClosePreMidnightModal();
-        } else if (isAutoClockOutMidnightModalOpen) {
-          handleCloseMidnightModal();
-        }
-      }}
-      modalTitle={getModalTitle()}
-      isClosable={isAttendanceModalOpen || isAutoClockOutMidnightModalOpen}
-      isDividerVisible={
-        isAttendanceModalOpen || isAutoClockOutMidnightModalOpen
-      }
-    >
-      <>
-        {isAttendanceModalOpen &&
-          popupType === AttendancePopupTypes.CLOCK_OUT && (
-            <ClockOutModal closeModal={handleCloseAttendanceModal} />
-          )}
-
-        {isAttendanceModalOpen &&
-          popupType === AttendancePopupTypes.CLOCK_IN && (
-            <LeaveClockInModal closeModal={handleCloseAttendanceModal} />
-          )}
-
-        {isPreMidnightClockOutAlertOpen && (
-          <PreMidnightClockOutAlertModal
-            closeModal={handleClosePreMidnightModal}
-          />
-        )}
-
-        {isAutoClockOutMidnightModalOpen && (
-          <AutoClockOutMidnightModal closeModal={handleCloseMidnightModal} />
-        )}
-      </>
-    </ModalController>
+      onClose={handleCloseModal}
+      modalHeader={getModalTitle()}
+      content={modalContent()}
+    />
   );
 };
 

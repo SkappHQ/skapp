@@ -1,6 +1,6 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { IconButton, InputAdornment, Stack } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
 import { FormikHelpers, useFormik } from "formik";
 import React, { FocusEvent, useState } from "react";
 
@@ -19,7 +19,6 @@ import { changePasswordValidation } from "~community/common/utils/validation";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 import Icon from "../../atoms/Icon/Icon";
-import Modal from "../../organisms/Modal/Modal";
 import PasswordStrengthMeter from "../PasswordStrengthMeter/PasswordStrengthMeter";
 
 interface Props {
@@ -155,167 +154,177 @@ const ResetPasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <Modal
-      isModalOpen={isOpen}
-      onCloseModal={handleCancel}
-      title={translateText(["resetPasswordModalTitle"])}
-      icon={<Icon name={IconName.CLOSE_STATUS_POPUP_ICON} />}
-    >
-      <Form onSubmit={formik.handleSubmit}>
-        <Stack sx={{ margin: "auto" }}>
-          <InputField
-            label={translateText(["currentPasswordLabel"])}
-            inputName="currentPassword"
-            inputType={passwordVisibility.currentPassword ? "text" : "password"}
-            placeHolder={translateText(["currentPasswordPlaceholder"])}
-            required
-            value={values.currentPassword}
-            onChange={handleChange}
-            onBlur={(e) =>
-              handleBlur(
-                e as FocusEvent<HTMLInputElement | HTMLTextAreaElement>
-              )
-            }
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  sx={{ p: "1rem" }}
-                  onMouseDown={() =>
-                    togglePasswordVisibility("currentPassword", true)
-                  }
-                  onMouseUp={() =>
-                    togglePasswordVisibility("currentPassword", false)
-                  }
-                  onMouseLeave={() =>
-                    togglePasswordVisibility("currentPassword", false)
-                  }
-                  aria-label={
-                    passwordVisibility.currentPassword
-                      ? translateAria(["hidePassword"])
-                      : translateAria(["showPassword"])
-                  }
-                >
-                  {passwordVisibility.currentPassword ? (
-                    <Visibility />
-                  ) : (
-                    <VisibilityOff />
-                  )}
-                </IconButton>
-              </InputAdornment>
-            }
-            error={errors.currentPassword ? errors.currentPassword : ""}
-            componentStyle={{ marginTop: "1.25rem" }}
-          />
-          <InputField
-            label={translateText(["newPasswordLabel"])}
-            inputName="password"
-            inputType={passwordVisibility.password ? "text" : "password"}
-            placeHolder={translateText(["newPasswordPlaceholder"])}
-            required
-            value={values.password}
-            onChange={handleChange}
-            onBlur={(e) =>
-              handleBlur(
-                e as FocusEvent<HTMLInputElement | HTMLTextAreaElement>
-              )
-            }
-            error={touched.password && errors.password ? errors.password : ""}
-            componentStyle={{ marginTop: "1.25rem" }}
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  sx={{ p: "0.75rem", mr: "0.25rem" }}
-                  onMouseDown={() => togglePasswordVisibility("password", true)}
-                  onMouseUp={() => togglePasswordVisibility("password", false)}
-                  onMouseLeave={() =>
-                    togglePasswordVisibility("password", false)
-                  }
-                  aria-label={
-                    passwordVisibility.password
-                      ? translateAria(["hidePassword"])
-                      : translateAria(["showPassword"])
-                  }
-                >
-                  {passwordVisibility.password ? (
-                    <Visibility />
-                  ) : (
-                    <VisibilityOff />
-                  )}
-                </IconButton>
-              </InputAdornment>
-            }
-          />
-          {values.password && (
-            <PasswordStrengthMeter password={values.password} />
-          )}
-          <InputField
-            label={translateText(["confirmPasswordLabel"])}
-            inputName="confirmPassword"
-            inputType={passwordVisibility.confirmPassword ? "text" : "password"}
-            placeHolder={translateText(["confirmPasswordPlaceholder"])}
-            required
-            value={values.confirmPassword}
-            onChange={handleChange}
-            onBlur={(e) =>
-              handleBlur(
-                e as FocusEvent<HTMLInputElement | HTMLTextAreaElement>
-              )
-            }
-            componentStyle={{ marginTop: "1.25rem" }}
-            error={
-              touched.confirmPassword && errors.confirmPassword
-                ? errors.confirmPassword
-                : ""
-            }
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  sx={{ p: "1rem" }}
-                  onMouseDown={() =>
-                    togglePasswordVisibility("confirmPassword", true)
-                  }
-                  onMouseUp={() =>
-                    togglePasswordVisibility("confirmPassword", false)
-                  }
-                  onMouseLeave={() =>
-                    togglePasswordVisibility("confirmPassword", false)
-                  }
-                  aria-label={
-                    passwordVisibility.confirmPassword
-                      ? translateAria(["hidePassword"])
-                      : translateAria(["showPassword"])
-                  }
-                >
-                  {passwordVisibility.confirmPassword ? (
-                    <Visibility />
-                  ) : (
-                    <VisibilityOff />
-                  )}
-                </IconButton>
-              </InputAdornment>
-            }
-          />
-          <ButtonV2
-            variant={"primary"}
-            disabled={!dirty || isSubmitting}
-            type={"submit"}
-            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            iconPosition="end"
-          >
-            {translateText(["saveChangesBtnText"])}
-          </ButtonV2>
-          <ButtonV2
-            variant={"tertiary"}
-            disabled={false}
-            onClick={handleCancel}
-            icon={<Icon name={IconName.CLOSE_ICON} />}
-            iconPosition="end"
-          >
-            {translateText(["cancelBtnText"])}
-          </ButtonV2>
-        </Stack>
-      </Form>
-    </Modal>
+    <SmallModal
+      isOpen={isOpen}
+      onClose={handleCancel}
+      modalHeader={translateText(["resetPasswordModalTitle"])}
+      content={
+        <Form onSubmit={formik.handleSubmit}>
+          <Stack sx={{ margin: "auto" }}>
+            <InputField
+              label={translateText(["currentPasswordLabel"])}
+              inputName="currentPassword"
+              inputType={
+                passwordVisibility.currentPassword ? "text" : "password"
+              }
+              placeHolder={translateText(["currentPasswordPlaceholder"])}
+              required
+              value={values.currentPassword}
+              onChange={handleChange}
+              onBlur={(e) =>
+                handleBlur(
+                  e as FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+                )
+              }
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    sx={{ p: "1rem" }}
+                    onMouseDown={() =>
+                      togglePasswordVisibility("currentPassword", true)
+                    }
+                    onMouseUp={() =>
+                      togglePasswordVisibility("currentPassword", false)
+                    }
+                    onMouseLeave={() =>
+                      togglePasswordVisibility("currentPassword", false)
+                    }
+                    aria-label={
+                      passwordVisibility.currentPassword
+                        ? translateAria(["hidePassword"])
+                        : translateAria(["showPassword"])
+                    }
+                  >
+                    {passwordVisibility.currentPassword ? (
+                      <Visibility />
+                    ) : (
+                      <VisibilityOff />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              }
+              error={errors.currentPassword ? errors.currentPassword : ""}
+              componentStyle={{ marginTop: "1.25rem" }}
+            />
+            <InputField
+              label={translateText(["newPasswordLabel"])}
+              inputName="password"
+              inputType={passwordVisibility.password ? "text" : "password"}
+              placeHolder={translateText(["newPasswordPlaceholder"])}
+              required
+              value={values.password}
+              onChange={handleChange}
+              onBlur={(e) =>
+                handleBlur(
+                  e as FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+                )
+              }
+              error={touched.password && errors.password ? errors.password : ""}
+              componentStyle={{ marginTop: "1.25rem" }}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    sx={{ p: "0.75rem", mr: "0.25rem" }}
+                    onMouseDown={() =>
+                      togglePasswordVisibility("password", true)
+                    }
+                    onMouseUp={() =>
+                      togglePasswordVisibility("password", false)
+                    }
+                    onMouseLeave={() =>
+                      togglePasswordVisibility("password", false)
+                    }
+                    aria-label={
+                      passwordVisibility.password
+                        ? translateAria(["hidePassword"])
+                        : translateAria(["showPassword"])
+                    }
+                  >
+                    {passwordVisibility.password ? (
+                      <Visibility />
+                    ) : (
+                      <VisibilityOff />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+            {values.password && (
+              <PasswordStrengthMeter password={values.password} />
+            )}
+            <InputField
+              label={translateText(["confirmPasswordLabel"])}
+              inputName="confirmPassword"
+              inputType={
+                passwordVisibility.confirmPassword ? "text" : "password"
+              }
+              placeHolder={translateText(["confirmPasswordPlaceholder"])}
+              required
+              value={values.confirmPassword}
+              onChange={handleChange}
+              onBlur={(e) =>
+                handleBlur(
+                  e as FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+                )
+              }
+              componentStyle={{ marginTop: "1.25rem" }}
+              error={
+                touched.confirmPassword && errors.confirmPassword
+                  ? errors.confirmPassword
+                  : ""
+              }
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    sx={{ p: "1rem" }}
+                    onMouseDown={() =>
+                      togglePasswordVisibility("confirmPassword", true)
+                    }
+                    onMouseUp={() =>
+                      togglePasswordVisibility("confirmPassword", false)
+                    }
+                    onMouseLeave={() =>
+                      togglePasswordVisibility("confirmPassword", false)
+                    }
+                    aria-label={
+                      passwordVisibility.confirmPassword
+                        ? translateAria(["hidePassword"])
+                        : translateAria(["showPassword"])
+                    }
+                  >
+                    {passwordVisibility.confirmPassword ? (
+                      <Visibility />
+                    ) : (
+                      <VisibilityOff />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+            <div className="flex flex-row justify-end gap-3 mt-4">
+              <ButtonV2
+                variant={"tertiary"}
+                disabled={false}
+                onClick={handleCancel}
+                icon={<Icon name={IconName.CLOSE_ICON} />}
+                iconPosition="end"
+              >
+                {translateText(["cancelBtnText"])}
+              </ButtonV2>
+              <ButtonV2
+                variant={"primary"}
+                disabled={!dirty || isSubmitting}
+                type={"submit"}
+                icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+                iconPosition="end"
+              >
+                {translateText(["saveChangesBtnText"])}
+              </ButtonV2>
+            </div>
+          </Stack>
+        </Form>
+      }
+    />
   );
 };
 
