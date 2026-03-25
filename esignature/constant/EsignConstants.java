@@ -121,4 +121,8 @@ public class EsignConstants {
 
 	public static final String FONT_FOLDER_DEJAVU_SANS = "DejaVuSans";
 
+	public static final int NORMAL_FONT_WEIGHT = 400;
+
+	public static final int BOLD_FONT_WEIGHT = 700;
+
 }

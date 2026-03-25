@@ -4,12 +4,17 @@ import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import static com.skapp.enterprise.esignature.constant.EsignConstants.NORMAL_FONT_WEIGHT;
+import static com.skapp.enterprise.esignature.constant.EsignConstants.BOLD_FONT_WEIGHT;
+
 @Getter
 @AllArgsConstructor
 public enum EsignFontVariantType {
 
-	REGULAR(400, BaseRendererBuilder.FontStyle.NORMAL), ITALIC(400, BaseRendererBuilder.FontStyle.ITALIC),
-	BOLD(700, BaseRendererBuilder.FontStyle.NORMAL), BOLD_ITALIC(700, BaseRendererBuilder.FontStyle.ITALIC);
+	REGULAR(NORMAL_FONT_WEIGHT, BaseRendererBuilder.FontStyle.NORMAL),
+	ITALIC(NORMAL_FONT_WEIGHT, BaseRendererBuilder.FontStyle.ITALIC),
+	BOLD(BOLD_FONT_WEIGHT, BaseRendererBuilder.FontStyle.NORMAL),
+	BOLD_ITALIC(BOLD_FONT_WEIGHT, BaseRendererBuilder.FontStyle.ITALIC);
 
 	private final int fontWeight;
 
