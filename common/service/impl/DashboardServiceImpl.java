@@ -16,7 +16,6 @@ import com.skapp.enterprise.common.repository.EpOrganizationDao;
 import com.skapp.enterprise.common.service.DashboardService;
 import com.skapp.enterprise.common.util.EpDateTimeUtils;
 import com.skapp.enterprise.common.util.RoleUtil;
-import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,8 +43,6 @@ public class DashboardServiceImpl implements DashboardService {
 	private final TimeRequestDao timeRequestDao;
 
 	private final RecipientDao recipientDao;
-
-	private final AddressBookDao addressBookDao;
 
 	@Override
 	public DashboardEmailOrganizationDetailsDto getDashboardEmailOrganizationDetails(String superAdminEmail) {
@@ -101,10 +98,8 @@ public class DashboardServiceImpl implements DashboardService {
 			notificationCounts.setPendingDocumentsToSignCount(recipientDao.countPendingDocumentsForSendersAndAdmins());
 		}
 		else if (esignRole == Role.ESIGN_EMPLOYEE) {
-			Long pendingDocumentsCount = addressBookDao.findByInternalUserUserId(currentUser.getUserId())
-				.map(addressBook -> recipientDao.countPendingDocumentsForUser(addressBook.getId()))
-				.orElse(0L);
-			notificationCounts.setPendingDocumentsToSignCount(pendingDocumentsCount);
+			notificationCounts
+				.setPendingDocumentsToSignCount(recipientDao.countPendingDocumentsForUser(currentUser.getUserId()));
 		}
 
 		log.info("Dashboard notification counts for user {}: Leave={}, TimeEntry={}, Documents={}", employeeId,
