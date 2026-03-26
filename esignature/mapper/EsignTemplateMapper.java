@@ -64,6 +64,8 @@ public interface EsignTemplateMapper {
 	RecipientTemplateDetailResponseDto templateRecipientToRecipientTemplateDetailResponseDto(
 			TemplateRecipient templateRecipient);
 
+	@Mapping(source = "templateFieldOption", target = "fieldOption")
+	@Mapping(source = "templateDocument.id", target = "documentId")
 	AdvanceFieldTemplateDetailResponseDto templateFieldToAdvanceFieldTemplateDetailResponseDto(
 			TemplateField templateField);
 
