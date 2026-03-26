@@ -23,7 +23,7 @@ interface Props {
 const UserAssignedLeaveTypes: FC<Props> = ({ employeeId, pageSize }) => {
   const theme: Theme = useTheme();
 
-  const { isCoreTier } = useTier();
+  const { isAtLeastCoreTier } = useTier();
 
   const translateText = useTranslator(
     "peopleModule",
@@ -39,12 +39,12 @@ const UserAssignedLeaveTypes: FC<Props> = ({ employeeId, pageSize }) => {
 
   const { data: entitlementData, isLoading } = useGetEmployeeEntitlements(
     employeeId,
-    isCoreTier
+    isAtLeastCoreTier
   );
 
   const entitlement = useMemo(() => {
-    return isCoreTier ? entitlementData : entitlementMockData;
-  }, [isCoreTier, entitlementData]);
+    return isAtLeastCoreTier ? entitlementData : entitlementMockData;
+  }, [isAtLeastCoreTier, entitlementData]);
 
   useEffect(() => {
     if (entitlement) {
