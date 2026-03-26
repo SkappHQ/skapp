@@ -2,7 +2,6 @@ package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.enterprise.esignature.payload.response.RepairJobDto;
 import com.skapp.enterprise.esignature.service.EsMigrationService;
-import com.skapp.enterprise.esignature.service.impl.RepairJobTracker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,16 +28,15 @@ public class EsignMigrationController {
 
 	private final EsMigrationService esMigrationService;
 
-	private final RepairJobTracker repairJobTracker;
-
 	// -------------------------------------------------------------------------
 	// Internal Use Only API
 	// -------------------------------------------------------------------------
 
 	@Operation(summary = "Start async document hash repair",
 			description = "Kicks off an asynchronous repair job that scans completed envelopes for the "
-					+ "given tenant, downloads each document's current version from S3, recomputes the "
-					+ "SHA3-256 hash and ECDSA signature, and updates any mismatches in the database. "
+					+ "given tenant, downloads each document's current version from S3, verifies the "
+					+ "SHA3-256 hash and ECDSA signature against the stored values, and repairs any "
+					+ "mismatches by recomputing and persisting the correct hash and signature. "
 					+ "Returns immediately with a job ID that can be polled via the status endpoint. "
 					+ "Authenticate with 'x-api-key' header.",
 			security = @SecurityRequirement(name = "ClientApiKey"))
@@ -48,25 +46,21 @@ public class EsignMigrationController {
 			description = "Only process envelopes completed on or after this date (ISO format: yyyy-MM-dd)") @RequestParam @DateTimeFormat(
 					iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
 
-		RepairJobDto job = repairJobTracker.createJob();
-		esMigrationService.repairDocumentHashesAsync(startDate, job.getJobId());
+		RepairJobDto job = esMigrationService.startRepairJob(startDate);
 		return new ResponseEntity<>(job, HttpStatus.ACCEPTED);
 	}
 
 	@Operation(summary = "Poll repair job status",
-			description = "Returns the current status and results (if completed) of a previously started "
-					+ "repair job. The migration service should poll this endpoint every 5–10 seconds until "
-					+ "the status is COMPLETED or FAILED before moving to the next tenant.",
+			description = "Returns the current status and results (if completed or failed) of a previously "
+					+ "started repair job. The migration service should poll this endpoint every 5–10 seconds "
+					+ "until the status is COMPLETED or FAILED before moving to the next tenant.",
 			security = @SecurityRequirement(name = "ClientApiKey"))
 	@GetMapping(value = "/repair-document-hashes/status", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<RepairJobDto> getRepairJobStatus(@Parameter(
 			description = "The job ID returned by the repair initiation endpoint") @RequestParam String jobId) {
 
-		RepairJobDto job = repairJobTracker.getJob(jobId);
-		if (job == null) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
+		RepairJobDto job = esMigrationService.getRepairJobStatus(jobId);
 		return new ResponseEntity<>(job, HttpStatus.OK);
 	}
 

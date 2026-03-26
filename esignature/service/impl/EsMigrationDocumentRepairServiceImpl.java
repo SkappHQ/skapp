@@ -8,10 +8,11 @@ import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.payload.response.DocumentHashRepairResponseDto;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
 import com.skapp.enterprise.esignature.service.DocumentService;
+import com.skapp.enterprise.esignature.service.EsMigrationDocumentRepairService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,22 +22,10 @@ import java.io.InputStream;
 import java.security.KeyPair;
 import java.util.Base64;
 
-/**
- * Handles the repair of a single document's hash and signature in its own transaction, so
- * that a failure for one document does not roll back repairs for other documents.
- * <p>
- * Reuses {@link DocumentService#verifyDocumentSignature} to detect mismatches,
- * {@link DocumentService#hashDocument} to recompute the hash,
- * {@link DocumentService#signDocument} to recompute the signature, and
- * {@link DocumentService#loadKeyPair} to load the owner's key pair.
- * <p>
- * Extracted into a separate Spring bean so that {@link Transactional} is honoured when
- * called from {@link EsMigrationServiceImpl} (avoids self-invocation proxy bypass).
- */
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
-public class DocumentHashRepairProcessor {
+public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocumentRepairService {
 
 	private static final String LOG_PREFIX = "[EsMigration]";
 
@@ -48,10 +37,6 @@ public class DocumentHashRepairProcessor {
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
-
-	// -------------------------------------------------------------------------
-	// Main entry point — each document gets its own transaction
-	// -------------------------------------------------------------------------
 
 	/**
 	 * Repair a single document's current-version hash and signature. Runs in its own
@@ -80,9 +65,9 @@ public class DocumentHashRepairProcessor {
 				return;
 			}
 
-			// 4. Verify integrity using the existing service method.
-			// verifyDocumentSignature computes hashDocument internally and calls
-			// verifySignature — throws ModuleException on mismatch.
+			// 4. Verify integrity: checks ECDSA signature (if present) and compares
+			// the stored hash against a freshly computed one. Returns false on any
+			// mismatch, signalling that the document needs repair.
 			boolean integrityOk = checkIntegrity(fileBytes, version, keyPair, docLabel);
 
 			if (integrityOk) {
@@ -222,6 +207,12 @@ public class DocumentHashRepairProcessor {
 		}
 	}
 
+	/**
+	 * Record a document whose integrity is already correct (no repair needed). Counted
+	 * under {@code skipped} alongside genuinely skipped documents (missing version, blank
+	 * path, empty file, etc.) so that
+	 * {@code totalDocuments = repaired + skipped + failed}.
+	 */
 	private void recordOk(String docLabel, DocumentHashRepairResponseDto response) {
 		log.debug("{} Integrity OK for {}", LOG_PREFIX, docLabel);
 		response.setSkipped(response.getSkipped() + 1);
