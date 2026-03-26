@@ -12,11 +12,12 @@ const PeopleDirectoryEdit = () => {
   const translateText = useTranslator("peopleModule", "editAllInfo");
   return (
     <ContentLayout
-      pageHead={""}
-      title={""}
+      pageHead={translateText(["tabTitle"])}
+      title={translateText(["title"])}
       isBackButtonVisible
       onBackClick={() => router.push(ROUTES.PEOPLE.DIRECTORY)}
       isDividerVisible={false}
+      isTitleHidden={true}
     >
       <DirectoryEditSectionWrapper employeeId={Number(id)} />
     </ContentLayout>
