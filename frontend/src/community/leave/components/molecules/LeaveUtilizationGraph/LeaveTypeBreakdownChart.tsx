@@ -127,7 +127,7 @@ const LeaveTypeBreakdownChart = ({
         <Stack sx={classes.container}>
           <Stack sx={classes.innerContainer}>
             <Stack sx={classes.header}>
-              <Typography variant="h2">
+              <Typography variant="h4">
                 {translateTexts(["leaveUtilization"])}
               </Typography>
               <LeaveTypeBreakdownButtons
