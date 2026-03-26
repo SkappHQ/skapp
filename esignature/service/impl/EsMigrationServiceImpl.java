@@ -17,8 +17,8 @@ import java.time.LocalDate;
 public class EsMigrationServiceImpl implements EsMigrationService {
 
 	/**
-	 * Separate Spring bean so that @Transactional(REQUIRES_NEW) is honoured per document
-	 * without self-invocation issues.
+	 * Async orchestrator for document hash repair. Extracted into a separate Spring bean
+	 * so that the @Async proxy is honoured (avoids self-invocation proxy bypass).
 	 */
 	private final EsMigrationDocumentRepairAsyncService esMigrationDocumentRepairAsyncService;
 
