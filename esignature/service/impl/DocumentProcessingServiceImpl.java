@@ -749,10 +749,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			contentStream.restoreGraphicsState();
 
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("Failed to draw image [{}] for field [{}]: {}", imageType, field.getType(), e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD,
-					new String[] { field.getType().toString() });
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_DOWNLOAD_SVG_FILE);
 		}
 	}
 
@@ -847,7 +846,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			contentStream.restoreGraphicsState();
 
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("Error rendering advance input text field to PDF", e);
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD,
 					new String[] { field.getType().toString() });
@@ -882,6 +881,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				}
 				catch (Exception e) {
 					log.warn("Could not register font '{}' for HTML rendering: {}", folderName, e.getMessage());
+					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_DOWNLOAD_FONT_FILE);
 				}
 			}
 			builder.toStream(baos);
