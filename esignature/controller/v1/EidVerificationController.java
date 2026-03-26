@@ -1,6 +1,7 @@
 package com.skapp.enterprise.esignature.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.annotation.CaptureUserAgent;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateIdentificationRequestDto;
 import com.skapp.enterprise.esignature.payload.request.eid.InitiateVerificationRequestDto;
 import com.skapp.enterprise.esignature.payload.request.eid.VerificationSessionRequestDto;
@@ -74,6 +75,7 @@ public class EidVerificationController {
 					+ "Frontend should call this every 2 seconds until status is terminal "
 					+ "(VERIFIED, FAILED, EXPIRED, CANCELLED). "
 					+ "Uses POST because polling updates session state from the external provider.")
+	@CaptureUserAgent
 	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
 	@PostMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> checkVerificationStatus(
@@ -90,6 +92,18 @@ public class EidVerificationController {
 	public ResponseEntity<ResponseEntityDto> cancelVerification(
 			@Valid @RequestBody VerificationSessionRequestDto request) {
 		ResponseEntityDto response = eidVerificationService.cancelVerification(request.getSessionId());
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Renew verification session",
+			description = "Cancels the current BankID order and creates a new one, preserving the overall 5-minute deadline. "
+					+ "Call this when the current 30-second order is about to expire but the user still needs time to scan the QR code. "
+					+ "Returns a fresh qrCode, sessionId and expiresAt for the new order.")
+	@PreAuthorize("hasAnyRole('ROLE_DOC_ACCESS', 'ROLE_ESIGN_EMPLOYEE')")
+	@PostMapping(value = "/renew", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> renewSession(@Valid @RequestBody VerificationSessionRequestDto request,
+			HttpServletRequest httpRequest) {
+		ResponseEntityDto response = eidVerificationService.renewSession(request.getSessionId(), httpRequest);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

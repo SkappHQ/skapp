@@ -87,7 +87,7 @@ public class EPSecurityConfig {
 						"/error", "/v1/app-setup-status", "/robots.txt", "/ws/**", "/v1/ep/auth/signup/super-admin",
 						"/v1/ep/auth/signup/super-admin/sso/google", "/v1/ep/auth/signin/sso/google",
 						"/v1/ep/auth/domain/verify", "/v1/ep/tenant/create", "/v1/ep/auth/recaptcha", "/health",
-						"/v1/ep/organization/login-method", "/v1/ep/auth/password-reset",
+						"/deployment", "/v1/ep/organization/login-method", "/v1/ep/auth/password-reset",
 						"/v1/ep/auth/password-reset/verify-otp", "/v1/ep/auth/password-reset/send-otp",
 						"/v1/ep/auth/password-reset/resend-otp", "/v1/ep/auth/tenant/availability",
 						"/v1/google-calendar/redirect", "/v1/validate/email", "/v1/ep/stripe/webhook",

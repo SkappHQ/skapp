@@ -57,4 +57,14 @@ public interface EidVerificationService {
 	 */
 	ResponseEntityDto getActiveSession(Long recipientId, Long documentId);
 
+	/**
+	 * Renew an existing session by cancelling the current BankID order and creating a new
+	 * one, while preserving the overall 5-minute session deadline.
+	 * @param sessionId The current session UUID
+	 * @param httpRequest The HTTP servlet request (used to extract client IP)
+	 * @return ResponseEntityDto containing VerificationInitiationResponseDto for the new
+	 * order
+	 */
+	ResponseEntityDto renewSession(String sessionId, HttpServletRequest httpRequest);
+
 }

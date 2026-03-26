@@ -53,9 +53,14 @@ public class VerificationStatusResponseDto {
 	private Instant completedAt;
 
 	/**
-	 * When the session expires.
+	 * When the current 30-second BankID order expires.
 	 */
 	private Instant expiresAt;
+
+	/**
+	 * The absolute 5-minute deadline for the overall verification flow.
+	 */
+	private Instant overallExpiresAt;
 
 	/**
 	 * Pre-computed QR code data for cross-device flow. Format:

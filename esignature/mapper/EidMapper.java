@@ -23,7 +23,6 @@ public interface EidMapper {
 
 	@Mapping(source = "sessionUuid", target = "sessionId")
 	@Mapping(source = "verifiedIdentity", target = "verifiedIdentity")
-	@Mapping(target = "hintCode", ignore = true)
 	@Mapping(target = "qrCode", ignore = true)
 	VerificationStatusResponseDto sessionToVerificationStatusResponse(EidVerificationSession session);
 

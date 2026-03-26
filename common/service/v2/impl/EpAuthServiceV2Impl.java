@@ -46,12 +46,13 @@ import com.skapp.enterprise.common.payload.request.EpGoogleAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpGoogleConsentUrlDto;
 import com.skapp.enterprise.common.payload.request.EpMicrosoftAuthRedirectDto;
 import com.skapp.enterprise.common.payload.request.EpMicrosoftConsentUrlDto;
+import com.skapp.enterprise.common.payload.v2.request.EpSignInMicrosoftDataDto;
+import com.skapp.enterprise.common.payload.v2.request.EpSignUpMicrosoftDataDto;
 import com.skapp.enterprise.common.payload.response.EpAuthUrlResponseDto;
 import com.skapp.enterprise.common.payload.v2.AuthUserDetailsDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignInGoogleDataDto;
-import com.skapp.enterprise.common.payload.v2.request.EpSignInMicrosoftDataDto;
 import com.skapp.enterprise.common.payload.v2.request.EpSignUpGoogleDataDto;
-import com.skapp.enterprise.common.payload.v2.request.EpSignUpMicrosoftDataDto;
+import com.skapp.enterprise.common.service.TenantCookieService;
 import com.skapp.enterprise.common.service.ValidationService;
 import com.skapp.enterprise.common.service.v2.EpAuthServiceV2;
 import com.skapp.enterprise.common.util.Validation;
@@ -112,6 +113,8 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 	private final ValidationService validationService;
 
 	private final CookieUtil cookieUtil;
+
+	private final TenantCookieService tenantCookieService;
 
 	@Value("${jwt.refresh-token.long-duration.expiration-time}")
 	private Long jwtLongDurationRefreshTokenExpirationMs;
@@ -283,17 +286,12 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
-			response.addCookie(refreshCookie);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(TenantContext.getCurrentTenant(), refreshToken,
+					cookieMaxAge);
+			response.addCookie(cookie);
 			log.info("performGoogleSignIn: Added refresh token cookie for userEmail: {}", user.getEmail());
 
-			String tenantId = TenantContext.getCurrentTenant();
-			if (tenantId != null && !tenantId.isEmpty()) {
-				Cookie tenantCookie = cookieUtil.createTenantCookie(tenantId, cookieMaxAge);
-				response.addCookie(tenantCookie);
-				log.info("performGoogleSignIn: Added tenant cookie with tenantId={} for userEmail={}", tenantId,
-						user.getEmail());
-			}
+			tenantCookieService.addTenantCookie(response, cookieMaxAge);
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
@@ -614,17 +612,12 @@ public class EpAuthServiceV2Impl implements EpAuthServiceV2 {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
-			response.addCookie(refreshCookie);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(TenantContext.getCurrentTenant(), refreshToken,
+					cookieMaxAge);
+			response.addCookie(cookie);
 			log.info("performMicrosoftSignIn: Added refresh token cookie for userEmail: {}", user.getEmail());
 
-			String tenantId = TenantContext.getCurrentTenant();
-			if (tenantId != null && !tenantId.isEmpty()) {
-				Cookie tenantCookie = cookieUtil.createTenantCookie(tenantId, cookieMaxAge);
-				response.addCookie(tenantCookie);
-				log.info("performMicrosoftSignIn: Added tenant cookie with tenantId={} for userEmail={}", tenantId,
-						user.getEmail());
-			}
+			tenantCookieService.addTenantCookie(response, cookieMaxAge);
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();

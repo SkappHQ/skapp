@@ -14,11 +14,13 @@ import com.skapp.enterprise.esignature.service.EsignConfigService;
 import com.skapp.enterprise.esignature.type.DateFormatType;
 import com.skapp.enterprise.people.service.EpUserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class EsignConfigServiceImpl implements EsignConfigService {
 
@@ -94,6 +96,15 @@ public class EsignConfigServiceImpl implements EsignConfigService {
 		esignConfigResponseDto.setDateFormat(esignConfig.getDateFormat().getValue());
 
 		return new ResponseEntityDto(false, esignConfigResponseDto);
+	}
+
+	@Override
+	public void updateMfaEnabled(boolean enabled) {
+		esignConfigRepository.findFirstBy().ifPresentOrElse(esignConfig -> {
+			log.info("updateMfaEnabled: Setting MFA enabled to {} in esign config", enabled);
+			esignConfig.setIsMfaEnabled(enabled);
+			esignConfigRepository.save(esignConfig);
+		}, () -> log.warn("updateMfaEnabled: Esign config not found, skipping MFA update to {}", enabled));
 	}
 
 }

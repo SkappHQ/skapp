@@ -12,7 +12,6 @@ import com.skapp.community.common.util.Validation;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
@@ -52,8 +51,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private final EmployeeDao employeeDao;
 
 	private final UserDao userDao;
-
-	private final EmployeeRoleDao employeeRoleDao;
 
 	private final EpUserService epUserService;
 
@@ -127,7 +124,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		employee.setEmployeeRole(employeeRole);
 		employeeRole.setPmRole(Role.PM_GUEST_EMPLOYEE);
 		employeeRole.setIsSuperAdmin(false);
-		employeeRoleDao.save(employeeRole);
 
 		employeeDao.save(employee);
 

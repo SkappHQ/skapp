@@ -18,6 +18,7 @@ import com.skapp.enterprise.common.masterrepository.TenantDao;
 import com.skapp.enterprise.common.model.master.StripeSubscription;
 import com.skapp.enterprise.common.model.master.StripeSubscriptionHistory;
 import com.skapp.enterprise.common.model.master.Tenant;
+import com.skapp.enterprise.common.service.AiSchedulerService;
 import com.skapp.enterprise.common.service.DashboardEmailService;
 import com.skapp.enterprise.common.service.StripeEmailService;
 import com.skapp.enterprise.common.service.StripeService;
@@ -28,6 +29,7 @@ import com.skapp.enterprise.common.type.SubscriptionPlan;
 import com.skapp.enterprise.common.type.SubscriptionStatus;
 import com.skapp.enterprise.common.type.TenantStatus;
 import com.skapp.enterprise.common.type.Tier;
+import com.skapp.enterprise.esignature.service.EsignConfigService;
 import com.skapp.enterprise.people.service.EpRolesService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
@@ -70,7 +72,11 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 	private final EpRolesService epRolesService;
 
+	private final EsignConfigService esignConfigService;
+
 	private final StripeSubscriptionHistoryDao stripeSubscriptionHistoryDao;
+
+	private final AiSchedulerService aiSchedulerService;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -223,6 +229,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR,
 					SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
+			aiSchedulerService.triggerAiInsightsSchedule(tenantId);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			String trialEndDate = DateTimeUtils.epochSecondToUtcLocalDate(subscription.getTrialEnd()).toString();
@@ -319,6 +326,7 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 
 				systemVersionService.upgradeSystemVersion(VersionType.MAJOR,
 						SystemVersionTypes.TIER_CHANGE_FROM_FREE_TO_PRO);
+				aiSchedulerService.triggerAiInsightsSchedule(currentTenant.getTenantName());
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 				stripeEmailService.sendCongratulationsOnUpgradingToSkappProMail(userEmail, nextBillDate,
@@ -396,6 +404,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 						DateTimeUtils.epochSecondToInstant(subscription.getCurrentPeriodEnd()));
 				tenantContext.setTenantAndSwitchSchema(tenantName);
 				systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
+				esignConfigService.updateMfaEnabled(false);
+				aiSchedulerService.deleteAiInsightsSchedule(tenantName);
 				tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 				log.info("handleSubscriptionPaymentFail: Updated tenant status to UNPAID for tenant: {}", tenantName);
@@ -471,6 +481,8 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 			tenantContext.setTenantAndSwitchSchema(tenantName);
 
 			systemVersionService.upgradeSystemVersion(VersionType.MAJOR, systemVersionTypes);
+			esignConfigService.updateMfaEnabled(false);
+			aiSchedulerService.deleteAiInsightsSchedule(tenantName);
 			tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 
 			log.info(
@@ -615,6 +627,21 @@ public class StripeWebhookServiceImpl implements StripeWebhookService {
 				: SystemVersionTypes.TIER_CHANGE_FROM_PRO_TO_FREE;
 		tenantContext.setTenantAndSwitchSchema(tenantName);
 		systemVersionService.upgradeSystemVersion(VersionType.MAJOR, svt);
+
+		if (newTier == Tier.PRO) {
+			esignConfigService.updateMfaEnabled(true);
+		}
+		else if (previousTier == Tier.PRO) {
+			esignConfigService.updateMfaEnabled(false);
+		}
+
+		if (newTier == Tier.CORE || newTier == Tier.PRO) {
+			aiSchedulerService.triggerAiInsightsSchedule(tenantName);
+		}
+		else {
+			aiSchedulerService.deleteAiInsightsSchedule(tenantName);
+		}
+
 		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
 	}
 

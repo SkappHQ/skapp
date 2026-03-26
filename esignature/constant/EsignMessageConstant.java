@@ -44,6 +44,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_VALIDATION_VOID_REASON_INVALID_CHARACTERS("validation.void.reason.invalid.characters"),
 	ESIGN_VALIDATION_DECLINE_REASON_TOO_LONG("validation.decline.reason.too.long"),
 	ESIGN_VALIDATION_MY_SIGNATURE_METHOD_EMPTY("validation.my-signature-method.empty"),
+	ESIGN_VALIDATION_ENVELOPE_UUID_CANNOT_BE_NULL("validation.envelope-uuid.null"),
 
 	ESIGN_ERROR_RECIPIENT_ENVELOPE_MISMATCH("ep.esign.error.envelope.recipient.not-found"),
 	ESIGN_ERROR_NOT_VALID_RECIPIENT_FOR_ENVELOPE("ep.esign.error.envelope.recipient.invalid"),
@@ -232,6 +233,7 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_FIELD_OPTION_DISPLAY_ORDER_MUST_BE_UNIQUE("ep.esign.error.field.option.display.order.must.be.unique"),
 	ESIGN_ERROR_FIELD_CONTAINER_DETAILS_REQUIRED("ep.esign.error.field.container.details.required"),
 	ESIGN_ERROR_AT_LEAST_ONE_FIELD_REQUIRED_FOR_CONTAINER("ep.esign.error.at.least.one.field.required.for.container"),
+	ESIGN_ERROR_REQUIRED_ADVANCE_FIELD_CANNOT_BE_EMPTY("ep.esign.error.required.advance.field.cannot.be.empty"),
 	ESIGN_ERROR_MULTISELECTION_NOT_ALLOWED("ep.esign.error.multiselection.not.allowed"),
 	ESIGN_ERROR_DIFFERENT_FIELD_TYPES_CANNOT_CONTAIN_IN_THE_SAME_CONTAINER(
 			"ep.esign.error.different.field.types.cannot.contain.in.the.same.container"),
@@ -261,7 +263,8 @@ public enum EsignMessageConstant implements MessageConstant {
 	ESIGN_ERROR_ADVANCE_FIELDS_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER(
 			"ep.esign.error.advance.fields.feature.not.available.for.current.tier"),
 	ESIGN_ERROR_TEMPLATES_FEATURE_NOT_AVAILABLE_FOR_CURRENT_TIER(
-			"ep.esign.error.templates.feature.not.available.for.current.tier");
+			"ep.esign.error.templates.feature.not.available.for.current.tier"),
+	ESIGN_ERROR_TEXT_FIELD_VALUE_EXCEEDS_MAX_LENGTH("ep.esign.error.text.field.value.exceeds.max.length");
 
 	private final String messageKey;
 
