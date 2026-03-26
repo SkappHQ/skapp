@@ -520,7 +520,7 @@ const UserLeaveHistory: FC<Props> = ({
   return (
     <Box>
       <Typography
-        variant="h4"
+        variant="h2"
         sx={{
           mb: "0.75rem"
         }}

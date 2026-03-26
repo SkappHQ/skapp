@@ -12,8 +12,8 @@ const PeopleDirectoryEdit = () => {
   const translateText = useTranslator("peopleModule", "editAllInfo");
   return (
     <ContentLayout
-      pageHead={translateText(["tabTitle"])}
-      title={translateText(["title"])}
+      pageHead={""}
+      title={""}
       isBackButtonVisible
       onBackClick={() => router.push(ROUTES.PEOPLE.DIRECTORY)}
       isDividerVisible={false}
