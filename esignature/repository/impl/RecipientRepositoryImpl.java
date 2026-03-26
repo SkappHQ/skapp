@@ -8,9 +8,13 @@ import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
 import com.skapp.enterprise.esignature.model.ExternalUser;
 import com.skapp.enterprise.esignature.model.ExternalUser_;
+import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.Envelope_;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.Recipient_;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
+import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.InboxStatus;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -66,11 +70,12 @@ public class RecipientRepositoryImpl implements RecipientRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> query = cb.createQuery(Long.class);
 		Root<Recipient> recipient = query.from(Recipient.class);
+		Join<Recipient, Envelope> envelope = recipient.join(Recipient_.ENVELOPE);
 
 		query.select(cb.countDistinct(recipient))
 			.where(cb.and(cb.equal(recipient.get(Recipient_.ADDRESS_BOOK).get(AddressBook_.ID), addressBookId),
-					cb.equal(recipient.get(Recipient_.INBOX_STATUS),
-							com.skapp.enterprise.esignature.type.InboxStatus.NEED_TO_SIGN)));
+					cb.equal(recipient.get(Recipient_.INBOX_STATUS), InboxStatus.NEED_TO_SIGN),
+					envelope.get(Envelope_.STATUS).in(EnvelopeStatus.NEED_TO_SIGN, EnvelopeStatus.WAITING)));
 
 		return entityManager.createQuery(query).getSingleResult();
 	}
@@ -80,10 +85,11 @@ public class RecipientRepositoryImpl implements RecipientRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> query = cb.createQuery(Long.class);
 		Root<Recipient> recipient = query.from(Recipient.class);
+		Join<Recipient, Envelope> envelope = recipient.join(Recipient_.ENVELOPE);
 
 		query.select(cb.countDistinct(recipient))
-			.where(cb.equal(recipient.get(Recipient_.INBOX_STATUS),
-					com.skapp.enterprise.esignature.type.InboxStatus.NEED_TO_SIGN));
+			.where(cb.and(cb.equal(recipient.get(Recipient_.INBOX_STATUS), InboxStatus.NEED_TO_SIGN),
+					envelope.get(Envelope_.STATUS).in(EnvelopeStatus.NEED_TO_SIGN, EnvelopeStatus.WAITING)));
 
 		return entityManager.createQuery(query).getSingleResult();
 	}
