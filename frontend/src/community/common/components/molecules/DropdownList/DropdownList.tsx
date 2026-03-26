@@ -174,7 +174,7 @@ const DropdownList: FC<Props> = ({
             MenuProps={{
               style: {
                 maxHeight: 300,
-                zIndex: ZIndexEnums.MODAL,
+                zIndex: ZIndexEnums.NEWMODAL,
                 ...(enableTextWrapping ? { width: "max-content" } : {})
               }
             }}
