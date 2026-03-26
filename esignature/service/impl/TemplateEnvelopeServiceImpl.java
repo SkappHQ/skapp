@@ -757,6 +757,11 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 		templateField.setTemplateFieldContainer(templateFieldContainer);
 
 		if (!isAdvanceFieldTypeWithoutOption(advanceFieldDto.getType())) {
+
+			if (advanceFieldDto.getTemplateFieldOption() == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
+			}
+
 			validateOptionValue(advanceFieldDto, existingOptionValue);
 			validateDisplayOrder(advanceFieldDto, existingDisplayOrder);
 
