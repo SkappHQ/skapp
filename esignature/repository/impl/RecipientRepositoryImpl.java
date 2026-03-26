@@ -94,6 +94,7 @@ public class RecipientRepositoryImpl implements RecipientRepository {
 		query.select(cb.count(envelope)).where(statusPredicate);
 
 		return entityManager.createQuery(query).getSingleResult();
+
 	}
 
 }
