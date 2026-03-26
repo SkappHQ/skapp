@@ -69,13 +69,13 @@ public class DocumentHashRepairProcessor {
 			}
 
 			// 2. Download file from S3
-			byte[] fileBytes = downloadFile(document, version, docLabel, response);
+			byte[] fileBytes = downloadFile(version, docLabel, response);
 			if (fileBytes == null) {
 				return;
 			}
 
 			// 3. Load the envelope owner's key pair (needed for both verify and re-sign)
-			KeyPair keyPair = loadKeyPairForEnvelope(envelope, document, docLabel, response);
+			KeyPair keyPair = loadKeyPairForEnvelope(envelope, docLabel, response);
 			if (keyPair == null) {
 				return;
 			}
@@ -86,7 +86,7 @@ public class DocumentHashRepairProcessor {
 			boolean integrityOk = checkIntegrity(fileBytes, version, keyPair, docLabel);
 
 			if (integrityOk) {
-				recordOk(docLabel, response, document);
+				recordOk(docLabel, response);
 				return;
 			}
 
@@ -182,8 +182,7 @@ public class DocumentHashRepairProcessor {
 		return version;
 	}
 
-	private byte[] downloadFile(Document document, DocumentVersion version, String docLabel,
-			DocumentHashRepairResponseDto response) {
+	private byte[] downloadFile(DocumentVersion version, String docLabel, DocumentHashRepairResponseDto response) {
 		try (InputStream inputStream = amazonS3Service.downloadFile(bucketName, version.getFilePath())) {
 			if (inputStream == null) {
 				log.warn("{} Empty S3 file for {}", LOG_PREFIX, docLabel);
@@ -206,8 +205,7 @@ public class DocumentHashRepairProcessor {
 		}
 	}
 
-	private KeyPair loadKeyPairForEnvelope(Envelope envelope, Document document, String docLabel,
-			DocumentHashRepairResponseDto response) {
+	private KeyPair loadKeyPairForEnvelope(Envelope envelope, String docLabel, DocumentHashRepairResponseDto response) {
 		try {
 			if (envelope.getOwner() == null) {
 				log.warn("{} Envelope owner is null for {}", LOG_PREFIX, docLabel);
@@ -224,7 +222,7 @@ public class DocumentHashRepairProcessor {
 		}
 	}
 
-	private void recordOk(String docLabel, DocumentHashRepairResponseDto response, Document document) {
+	private void recordOk(String docLabel, DocumentHashRepairResponseDto response) {
 		log.debug("{} Integrity OK for {}", LOG_PREFIX, docLabel);
 		response.setSkipped(response.getSkipped() + 1);
 	}
