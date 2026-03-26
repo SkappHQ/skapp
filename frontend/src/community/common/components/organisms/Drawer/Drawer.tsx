@@ -302,30 +302,28 @@ const Drawer = (): JSX.Element => {
                               route?.url ?? null
                             )}
                           />
-                          {/* Red dot indicator for Timesheet icon when there are pending requests and submenu is collapsed */}
-                          <NotificationDot
+                          {/* Feature flagged: Notification red dots temporarily disabled */}
+                          {/* <NotificationDot
                             show={
                               route.id === "1" &&
                               pendingTimesheetCount > 0 &&
                               !isExpanded
                             }
-                          />
-                          {/* Red dot indicator for Leave icon when there are pending requests and submenu is collapsed */}
-                          <NotificationDot
+                          /> */}
+                          {/* <NotificationDot
                             show={
                               route.id === "2" &&
                               pendingLeaveCount > 0 &&
                               !isExpanded
                             }
-                          />
-                          {/* Red dot indicator for Sign icon when there are pending documents and submenu is collapsed */}
-                          <NotificationDot
+                          /> */}
+                          {/* <NotificationDot
                             show={
                               route.id === "4" &&
                               pendingSignCount > 0 &&
                               !isExpanded
                             }
-                          />
+                          /> */}
                         </Box>
                       )}
                     </ListItemIcon>
@@ -432,9 +430,10 @@ const Drawer = (): JSX.Element => {
                                     )
                                   )}
                                 />
-                                {subRoute?.badge && (
+                                {/* Feature flagged: Notification badge count temporarily disabled */}
+                                {/* {subRoute?.badge && (
                                   <NotificationBadge count={subRoute.badge} />
-                                )}
+                                )} */}
                               </ListItemButton>
                             </ListItem>
                           );
