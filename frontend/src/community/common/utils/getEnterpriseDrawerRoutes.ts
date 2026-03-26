@@ -62,7 +62,8 @@ const getEnterpriseDrawerRoutes = ({
           url: ROUTES.SETTINGS.BASE,
           icon: IconName.INTEGRATIONS_ICON,
           hasSubTree: false,
-          badge: "New",
+          // Feature flagged: "New" badge temporarily disabled
+          // badge: "New",
           requiredAuthLevel: [
             EmployeeTypes.PEOPLE_EMPLOYEE,
             EmployeeTypes.LEAVE_EMPLOYEE,
