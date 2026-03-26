@@ -41,23 +41,4 @@ public enum EsignFontFamilyType {
 		};
 	}
 
-	// public static EsignFontFamilyType getByFamilyName(String family) {
-	// for (EsignFontFamilyType fontFamily : values()) {
-	// if (fontFamily.familyName.equals(family)) {
-	// return fontFamily;
-	// }
-	// }
-	// return INTER;
-	// }
-	//
-	// public static String getFamilyName(String enumName) {
-	//
-	// for (EsignFontFamilyType fontFamily : values()) {
-	// if (fontFamily.name().equals(enumName)) {
-	// return fontFamily.familyName;
-	// }
-	// }
-	// return INTER.familyName;
-	// }
-
 }
