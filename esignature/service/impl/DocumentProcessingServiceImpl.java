@@ -773,8 +773,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float lineHeight = FontStyleExtractorUtil.extractLineHeight(fieldStyle);
 
 			// Resolve display name to enum type
-			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
-			EsignFontFamilyType fontFamilyType = EsignFontFamilyType.getByFamilyName(fontFamilyCss);
 			EsignFontVariantType fontVariant = EsignFontVariantType.fromStyle(isBold, isItalic);
 
 			// Final placement dimensions in PDF point space
@@ -799,7 +797,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
 			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
 			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
-			cssDto.setFontFamilyCss(fontFamilyCss);
 			cssDto.setFontSize(String.valueOf(fontSize));
 			cssDto.setFontWeight(String.valueOf(fontVariant.getFontWeight()));
 			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
@@ -812,8 +809,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
-			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, fontFamilyType,
-					fontFamilyCss, fontVariant);
+			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, fontFamily, fontVariant);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
@@ -853,9 +849,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt,
-			EsignFontFamilyType fontFamilyType, String fontFamilyCss, EsignFontVariantType fontVariant)
-			throws IOException {
+	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt, String fontFamily,
+			EsignFontVariantType fontVariant) throws IOException {
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -865,7 +860,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float heightInches = heightPt / POINTS_PER_INCH;
 
 			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
-			if (fontFamilyType != null) {
+			if (fontFamily != null) {
+				EsignFontFamilyType fontFamilyType = EsignFontFamilyType.valueOf(fontFamily);
 				String folderName = fontFamilyType.getFolderName();
 				String variantSuffix = fontFamilyType.getVariantSuffix(fontVariant);
 
@@ -876,8 +872,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 					byte[] fontBytes = fontBuffer.toByteArray();
 
-					builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCss,
-							fontVariant.getFontWeight(), fontVariant.getFontStyle(), true);
+					builder.useFont(() -> new ByteArrayInputStream(fontBytes), null, fontVariant.getFontWeight(),
+							fontVariant.getFontStyle(), true);
 				}
 				catch (Exception e) {
 					log.warn("Could not register font '{}' for HTML rendering: {}", folderName, e.getMessage());

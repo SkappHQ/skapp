@@ -15,16 +15,12 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EsignFontFamilyType {
 
-	ARIMO("Arial", "Arimo", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
-	CARLITO("Calibri", "Carlito", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
-	TINOS("Times New Roman", "Tinos", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD,
-			FONT_SUFFIX_BOLD_ITALIC),
-	DEJAVU_SANS("Verdana", FONT_FOLDER_DEJAVU_SANS, "", FONT_SUFFIX_OBLIQUE, FONT_SUFFIX_BOLD,
-			FONT_SUFFIX_BOLD_OBLIQUE),
-	INTER("INTER", "Inter", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
-	POPPINS("POPPINS", "Poppins", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC);
-
-	private final String familyName;
+	ARIMO("Arimo", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
+	CARLITO("Carlito", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
+	TINOS("Tinos", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
+	DEJAVU_SANS(FONT_FOLDER_DEJAVU_SANS, "", FONT_SUFFIX_OBLIQUE, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_OBLIQUE),
+	INTER("Inter", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
+	POPPINS("Poppins", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC);
 
 	private final String folderName;
 
@@ -45,23 +41,23 @@ public enum EsignFontFamilyType {
 		};
 	}
 
-	public static EsignFontFamilyType getByFamilyName(String family) {
-		for (EsignFontFamilyType fontFamily : values()) {
-			if (fontFamily.familyName.equals(family)) {
-				return fontFamily;
-			}
-		}
-		return INTER;
-	}
-
-	public static String getFamilyName(String enumName) {
-
-		for (EsignFontFamilyType fontFamily : values()) {
-			if (fontFamily.name().equals(enumName)) {
-				return fontFamily.familyName;
-			}
-		}
-		return INTER.familyName;
-	}
+	// public static EsignFontFamilyType getByFamilyName(String family) {
+	// for (EsignFontFamilyType fontFamily : values()) {
+	// if (fontFamily.familyName.equals(family)) {
+	// return fontFamily;
+	// }
+	// }
+	// return INTER;
+	// }
+	//
+	// public static String getFamilyName(String enumName) {
+	//
+	// for (EsignFontFamilyType fontFamily : values()) {
+	// if (fontFamily.name().equals(enumName)) {
+	// return fontFamily.familyName;
+	// }
+	// }
+	// return INTER.familyName;
+	// }
 
 }

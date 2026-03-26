@@ -30,6 +30,6 @@ public class AdvanceFieldTemplateDetailResponseDto {
 
 	private Float textLineHeight;
 
-	private TemplateFieldOptionResponseDto fieldOption;
+	private TemplateFieldOptionResponseDto templateFieldOption;
 
 }
