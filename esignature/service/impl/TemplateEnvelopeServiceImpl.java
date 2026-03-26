@@ -20,7 +20,6 @@ import com.skapp.enterprise.esignature.model.TemplateField;
 import com.skapp.enterprise.esignature.model.TemplateFieldContainer;
 import com.skapp.enterprise.esignature.model.TemplateFieldOption;
 import com.skapp.enterprise.esignature.model.TemplateRecipient;
-import com.skapp.enterprise.esignature.payload.request.FieldContainerDto;
 import com.skapp.enterprise.esignature.payload.request.template.AdvanceTemplateFieldDto;
 import com.skapp.enterprise.esignature.payload.request.template.EnvelopeTemplateCustodyTransferDto;
 import com.skapp.enterprise.esignature.payload.request.template.TemplateEnvelopeDto;
@@ -700,7 +699,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 				long optionCount = templateFieldContainerDto.getTemplateFields()
 					.stream()
 					.filter(f -> f.getType() == FieldType.RADIO_BUTTON || f.getType() == FieldType.DROPDOWN)
-					.map(AdvanceTemplateFieldDto::getFieldOption)
+					.map(AdvanceTemplateFieldDto::getTemplateFieldOption)
 					.filter(Objects::nonNull)
 					.distinct()
 					.count();
@@ -762,8 +761,8 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 			validateDisplayOrder(advanceFieldDto, existingDisplayOrder);
 
 			TemplateFieldOption templateFieldOption = new TemplateFieldOption();
-			templateFieldOption.setOptionValue(advanceFieldDto.getFieldOption().getOptionValue().trim());
-			templateFieldOption.setDisplayOrder(advanceFieldDto.getFieldOption().getDisplayOrder());
+			templateFieldOption.setOptionValue(advanceFieldDto.getTemplateFieldOption().getOptionValue().trim());
+			templateFieldOption.setDisplayOrder(advanceFieldDto.getTemplateFieldOption().getDisplayOrder());
 			templateField.setTemplateFieldOption(templateFieldOption);
 		}
 
@@ -775,7 +774,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	}
 
 	private void validateOptionValue(AdvanceTemplateFieldDto templateFieldDto, Set<String> existingOptionValue) {
-		String value = templateFieldDto.getFieldOption().getOptionValue();
+		String value = templateFieldDto.getTemplateFieldOption().getOptionValue();
 		if (value == null || value.trim().isBlank()) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
 		}
@@ -788,7 +787,7 @@ public class TemplateEnvelopeServiceImpl implements TemplateEnvelopeService {
 	}
 
 	private void validateDisplayOrder(AdvanceTemplateFieldDto templateFieldDto, Set<Integer> existingDisplayOrder) {
-		Integer displayOrder = templateFieldDto.getFieldOption().getDisplayOrder();
+		Integer displayOrder = templateFieldDto.getTemplateFieldOption().getDisplayOrder();
 		if (displayOrder != null && displayOrder <= 0) {
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALID_DISPLAY_ORDER_REQUIRED);
 		}
