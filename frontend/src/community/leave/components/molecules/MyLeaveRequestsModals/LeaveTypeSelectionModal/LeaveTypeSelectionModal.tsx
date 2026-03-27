@@ -1,4 +1,3 @@
-import { Stack } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -18,7 +17,7 @@ const LeaveTypeSelectionModal = () => {
   const { setMyLeaveRequestModalType } = useLeaveStore();
 
   return (
-    <Stack sx={{ gap: "1rem" }}>
+    <div className="flex flex-col gap-4">
       <LeaveAllocation />
       <ButtonV2
         variant={"tertiary"}
@@ -28,7 +27,7 @@ const LeaveTypeSelectionModal = () => {
       >
         {translateText(["cancelBtn"])}
       </ButtonV2>
-    </Stack>
+    </div>
   );
 };
 

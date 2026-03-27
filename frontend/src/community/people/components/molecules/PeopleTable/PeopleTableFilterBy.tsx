@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { FC, MouseEvent } from "react";
+import { FC, KeyboardEvent, MouseEvent } from "react";
 
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import { FilterButtonTypes } from "~community/common/types/filterTypes";
@@ -10,7 +10,9 @@ import EmployeeTableFilterButton from "../EmployeeTableFilterButton/EmployeeTabl
 interface Props {
   filterEl: HTMLElement | null;
   handleFilterClose: (value?: boolean) => void;
-  handleFilterClick: (event: MouseEvent<HTMLElement>) => void;
+  handleFilterClick: (
+    event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLButtonElement>
+  ) => void;
   disabled: boolean;
   filterId: string | undefined;
   teams?: FilterButtonTypes[] | undefined;

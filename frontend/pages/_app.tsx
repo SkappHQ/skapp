@@ -126,41 +126,44 @@ function MyApp({
       <AuthProvider>
         {shouldUseWebSocketProvider ? (
           <WebSocketProvider>
-            <TanStackProvider>
-              <ThemeProvider theme={newTheme}>
+            <ToastProvider>
+              <TanStackProvider>
+                <ThemeProvider theme={newTheme}>
                   <I18nextProvider i18n={i18n}>
-                    <ToastProvider>
-                      <ErrorBoundary FallbackComponent={Error}>
-                        <RouteChangeLoader />
-                        <BaseLayout>
-                          <Component {...pageProps} />
-                        </BaseLayout>
-                      </ErrorBoundary>
-                    </ToastProvider>
-                    <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-                  </I18nextProvider>
-              </ThemeProvider>
-            </TanStackProvider>
-          </WebSocketProvider>
-        ) : (
-          <TanStackProvider>
-            <ThemeProvider theme={newTheme}>
-                <I18nextProvider i18n={i18n}>
-                  <AnnouncementProvider>
-                  <ToastProvider>
                     <ErrorBoundary FallbackComponent={Error}>
                       <RouteChangeLoader />
                       <BaseLayout>
                         <Component {...pageProps} />
                       </BaseLayout>
-                      <AnnouncementWrapper />
                     </ErrorBoundary>
-                  </ToastProvider>
-                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+                    <ReactQueryDevtools
+                      initialIsOpen={false}
+                      position="bottom"
+                    />
+                  </I18nextProvider>
+                </ThemeProvider>
+              </TanStackProvider>
+            </ToastProvider>
+          </WebSocketProvider>
+        ) : (
+          <ToastProvider>
+            <TanStackProvider>
+              <ThemeProvider theme={newTheme}>
+                <I18nextProvider i18n={i18n}>
+                  <AnnouncementProvider>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <RouteChangeLoader />
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
+                    <AnnouncementWrapper />
                   </AnnouncementProvider>
+                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
                 </I18nextProvider>
-            </ThemeProvider>
-          </TanStackProvider>
+              </ThemeProvider>
+            </TanStackProvider>
+          </ToastProvider>
         )}
       </AuthProvider>
     </div>

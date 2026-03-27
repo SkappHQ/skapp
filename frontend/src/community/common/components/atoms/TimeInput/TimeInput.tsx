@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { isTimePm } from "~community/attendance/utils/TimeUtils";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { IconName } from "~community/common/types/IconTypes";
 
 interface Props {
@@ -76,6 +77,7 @@ const TimeInput = ({ time, setTime, label, error }: Props) => {
           slotProps={{
             dialog: {
               sx: {
+                zIndex: ZIndexEnums.NEWMODAL,
                 "& .MuiPickersToolbar-penIconButton": { display: "none" },
                 "& .MuiClock-amButton:hover": {
                   backgroundColor: isTimePm(time)

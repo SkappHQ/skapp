@@ -17,6 +17,7 @@ const PeopleDirectoryEdit = () => {
       isBackButtonVisible
       onBackClick={() => router.push(ROUTES.PEOPLE.DIRECTORY)}
       isDividerVisible={false}
+      isTitleHidden={true}
     >
       <DirectoryEditSectionWrapper employeeId={Number(id)} />
     </ContentLayout>

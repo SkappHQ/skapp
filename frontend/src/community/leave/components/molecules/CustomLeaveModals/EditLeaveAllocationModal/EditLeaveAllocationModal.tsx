@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
@@ -151,16 +150,7 @@ const EditLeaveAllocationModal: React.FC<Props> = ({
         onSubmit={handleSubmit}
         datesDisabled={isDeleteDisabled}
       />
-      <Box sx={{ mt: "1rem" }}>
-        <ButtonV2
-          variant={"primary"}
-          onClick={() => onSubmit(values)}
-          disabled={isSaveDisabled}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["saveChangesBtn"])}
-        </ButtonV2>
+      <div className="flex flex-row justify-end gap-3 mt-4">
         <ButtonV2
           variant={"error"}
           onClick={onDelete}
@@ -170,7 +160,16 @@ const EditLeaveAllocationModal: React.FC<Props> = ({
         >
           {translateText(["deleteBtnText"])}
         </ButtonV2>
-      </Box>
+        <ButtonV2
+          variant={"primary"}
+          onClick={() => onSubmit(values)}
+          disabled={isSaveDisabled}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["saveChangesBtn"])}
+        </ButtonV2>
+      </div>
     </>
   );
 };
