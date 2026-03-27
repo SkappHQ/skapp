@@ -201,8 +201,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		response.setCustomFrequencyDays(announcement.getCustomFrequencyDays());
 		response.setStatus(announcement.getStatus());
 		response.setImagePath(announcement.getImagePath());
-		response.setCreatedDate(
-				announcement.getCreatedDate());
+		response.setCreatedDate(announcement.getCreatedDate());
 		response.setRecipientRoles(announcement.getRecipientRoles());
 		return response;
 	}
