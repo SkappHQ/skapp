@@ -865,29 +865,29 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				String folderName = fontFamilyType.getFolderName();
 				String variantSuffix = fontFamilyType.getVariantSuffix(fontVariant);
 
-				try (InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, variantSuffix);
-						ByteArrayOutputStream fontBuffer = new ByteArrayOutputStream()) {
+				InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, variantSuffix);
+				ByteArrayOutputStream fontBuffer = new ByteArrayOutputStream();
 
-					fontStream.transferTo(fontBuffer);
+				fontStream.transferTo(fontBuffer);
 
-					byte[] fontBytes = fontBuffer.toByteArray();
+				byte[] fontBytes = fontBuffer.toByteArray();
 
-					builder.useFont(() -> new ByteArrayInputStream(fontBytes), null, fontVariant.getFontWeight(),
-							fontVariant.getFontStyle(), true);
-				}
-				catch (IOException e) {
-					log.warn("Could not register font '{}' for HTML rendering: {}", folderName, e.getMessage());
-					throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_DOWNLOAD_FONT_FILE);
-				}
+				builder.useFont(() -> new ByteArrayInputStream(fontBytes), null, fontVariant.getFontWeight(),
+						fontVariant.getFontStyle(), true);
+
 			}
 			builder.toStream(baos);
 			builder.run();
 			return baos.toByteArray();
 
 		}
+		catch (IOException e) {
+			log.warn("Failed to download font file: {}", e.getMessage());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_DOWNLOAD_FONT_FILE);
+		}
 		catch (Exception e) {
 			log.error("Failed to merge text field: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_DOWNLOAD_FONT_FILE);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD);
 		}
 
 	}
