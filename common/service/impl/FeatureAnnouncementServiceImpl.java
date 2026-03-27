@@ -2,17 +2,14 @@ package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
-import com.skapp.enterprise.common.masterrepository.FeatureAnnouncementRecipientDao;
-import com.skapp.enterprise.common.model.master.FeatureAnnouncementRecipient;
+import com.skapp.enterprise.common.masterrepository.FeatureAnnouncementDao;
 import com.skapp.enterprise.common.model.master.FeatureAnnouncement;
 import com.skapp.enterprise.common.payload.request.AnnouncementListRequestFilterDto;
 import com.skapp.enterprise.common.payload.request.AnnouncementStatusUpdateRequestDto;
 import com.skapp.enterprise.common.payload.request.FeatureAnnouncementCreateRequestDto;
 import com.skapp.enterprise.common.payload.response.AnnouncementPageResponseDto;
 import com.skapp.enterprise.common.payload.response.FeatureAnnouncementResponseDto;
-import com.skapp.enterprise.common.masterrepository.FeatureAnnouncementDao;
 import com.skapp.enterprise.common.service.FeatureAnnouncementService;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
 import com.skapp.enterprise.common.type.AnnouncementStatus;
@@ -35,8 +32,6 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 	private final FeatureAnnouncementDao featureAnnouncementDao;
 
-	private final FeatureAnnouncementRecipientDao featureAnnouncementRecipientDao;
-
 	@Override
 	@Transactional
 	public ResponseEntityDto createAnnouncement(FeatureAnnouncementCreateRequestDto requestDto) {
@@ -47,13 +42,6 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		sanitizeAnnouncementRequest(requestDto);
 
 		FeatureAnnouncement saved = featureAnnouncementDao.save(buildAnnouncementEntity(requestDto));
-		List<FeatureAnnouncementRecipient> recipients = requestDto.getRecipientRoles().stream().distinct().map(role -> {
-			FeatureAnnouncementRecipient recipient = new FeatureAnnouncementRecipient();
-			recipient.setRecipientRole(role);
-			recipient.setFeatureAnnouncement(saved);
-			return recipient;
-		}).toList();
-		featureAnnouncementRecipientDao.saveAll(recipients);
 		log.info("createAnnouncement: execution ended");
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
@@ -105,19 +93,6 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 
 		populateAnnouncementEntityFromRequest(requestDto, entity);
 		FeatureAnnouncement saved = featureAnnouncementDao.save(entity);
-
-		featureAnnouncementRecipientDao.deleteByFeatureAnnouncementAnnouncementId(saved.getAnnouncementId());
-		List<FeatureAnnouncementRecipient> newRecipients = requestDto.getRecipientRoles()
-			.stream()
-			.distinct()
-			.map(role -> {
-				FeatureAnnouncementRecipient recipient = new FeatureAnnouncementRecipient();
-				recipient.setRecipientRole(role);
-				recipient.setFeatureAnnouncement(saved);
-				return recipient;
-			})
-			.toList();
-		featureAnnouncementRecipientDao.saveAll(newRecipients);
 		log.info("updateAnnouncement: execution ended");
 		return new ResponseEntityDto(false, buildAnnouncementResponseDto(saved));
 	}
@@ -171,12 +146,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		response.setCustomFrequencyDays(announcement.getCustomFrequencyDays());
 		response.setStatus(announcement.getStatus());
 		response.setImagePath(announcement.getImagePath());
-		List<Role> recipientRoles = featureAnnouncementRecipientDao
-			.findByFeatureAnnouncementAnnouncementId(announcement.getAnnouncementId())
-			.stream()
-			.map(FeatureAnnouncementRecipient::getRecipientRole)
-			.toList();
-		response.setRecipientRoles(recipientRoles);
+		response.setRecipientRoles(announcement.getRecipientRoles());
 		return response;
 	}
 
@@ -192,6 +162,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		announcement.setCustomFrequencyDays(createRequest.getCustomFrequencyDays());
 		announcement.setStatus(createRequest.getStatus());
 		announcement.setImagePath(createRequest.getImagePath());
+		announcement.setRecipientRoles(createRequest.getRecipientRoles().stream().distinct().toList());
 		return announcement;
 	}
 
@@ -207,6 +178,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		announcementEntity.setCustomFrequencyDays(createRequest.getCustomFrequencyDays());
 		announcementEntity.setStatus(createRequest.getStatus());
 		announcementEntity.setImagePath(createRequest.getImagePath());
+		announcementEntity.setRecipientRoles(createRequest.getRecipientRoles().stream().distinct().toList());
 	}
 
 }

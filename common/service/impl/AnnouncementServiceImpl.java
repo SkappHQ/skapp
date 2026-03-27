@@ -8,10 +8,8 @@ import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
-import com.skapp.enterprise.common.masterrepository.FeatureAnnouncementRecipientDao;
 import com.skapp.enterprise.common.model.AnnouncementUserInteraction;
 import com.skapp.enterprise.common.model.master.FeatureAnnouncement;
-import com.skapp.enterprise.common.model.master.FeatureAnnouncementRecipient;
 import com.skapp.enterprise.common.payload.response.FeatureAnnouncementResponseDto;
 import com.skapp.enterprise.common.repository.AnnouncementUserInteractionDao;
 import com.skapp.community.common.util.MessageUtil;
@@ -48,8 +46,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 	private final UserService userService;
 
 	private final FeatureAnnouncementDao featureAnnouncementDao;
-
-	private final FeatureAnnouncementRecipientDao featureAnnouncementRecipientDao;
 
 	private final TenantContext tenantContext;
 
@@ -207,12 +203,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		response.setImagePath(announcement.getImagePath());
 		response.setCreatedDate(
 				announcement.getCreatedDate() == null ? null : announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
-		List<Role> recipientRoles = featureAnnouncementRecipientDao
-			.findByFeatureAnnouncementAnnouncementId(announcement.getAnnouncementId())
-			.stream()
-			.map(FeatureAnnouncementRecipient::getRecipientRole)
-			.toList();
-		response.setRecipientRoles(recipientRoles);
+		response.setRecipientRoles(announcement.getRecipientRoles());
 		return response;
 	}
 

@@ -1,11 +1,14 @@
 package com.skapp.enterprise.common.model.master;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.community.common.type.Role;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
 import com.skapp.enterprise.common.type.AnnouncementStatus;
 import com.skapp.enterprise.common.type.AnnouncementTargetPage;
 import com.skapp.enterprise.common.type.AnnouncementTriggerType;
+import com.skapp.enterprise.common.util.RoleListConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,6 +18,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Table(name = "feature_announcement")
@@ -60,5 +65,9 @@ public class FeatureAnnouncement extends Auditable<String> {
 
 	@Column(name = "image_path")
 	private String imagePath;
+
+	@Convert(converter = RoleListConverter.class)
+	@Column(name = "recipient_roles", columnDefinition = "TEXT")
+	private List<Role> recipientRoles;
 
 }
