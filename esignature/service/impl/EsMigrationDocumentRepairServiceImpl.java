@@ -1,14 +1,25 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.service.CacheService;
+import com.skapp.community.common.type.CacheKeys;
+import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.service.AmazonS3Service;
+import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.model.Document;
 import com.skapp.enterprise.esignature.model.DocumentSignature;
 import com.skapp.enterprise.esignature.model.DocumentVersion;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.payload.response.DocumentHashRepairResponseDto;
+import com.skapp.enterprise.esignature.payload.response.RepairJobDto;
 import com.skapp.enterprise.esignature.repository.DocumentVersionDao;
+import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.service.DocumentService;
 import com.skapp.enterprise.esignature.service.EsMigrationDocumentRepairService;
+import com.skapp.enterprise.esignature.type.EnvelopeStatus;
+import com.skapp.enterprise.esignature.type.RepairJobStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +31,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyPair;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -35,6 +51,14 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 
 	private final DocumentService documentService;
 
+	private final CacheService cacheService;
+
+	private final EnvelopeDao envelopeDao;
+
+	private final TenantContext tenantContext;
+
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
 
@@ -44,64 +68,129 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 	 * not affect others.
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	public void repairDocument(Envelope envelope, Document document, DocumentHashRepairResponseDto response) {
-		String docLabel = buildLabel(envelope, document);
+	public void repairDocument(LocalDate startDate, RepairJobDto job) {
+
+		String tenantId = TenantContext.getCurrentTenant();
+		DocumentHashRepairResponseDto response = new DocumentHashRepairResponseDto();
+		response.setTenant(tenantId);
+
+		String jobId = job.getJobId();
+
 		try {
-			// 1. Resolve current version
-			DocumentVersion version = resolveCurrentVersion(document, docLabel, response);
-			if (version == null) {
-				return;
+			markRunning(job);
+
+			tenantContext.setTenantAndSwitchSchema(tenantId);
+
+			LocalDateTime cutoffDate = startDate.atStartOfDay();
+			log.info("[EsMigration] Starting document hash repair for tenant: {} from {}", tenantId, cutoffDate);
+
+			List<Envelope> envelopes = envelopeDao.findByStatusAndCompletedAtGreaterThanEqual(EnvelopeStatus.COMPLETED,
+					cutoffDate);
+
+			response.setTotalEnvelopes(envelopes.size());
+			log.info("[EsMigration] Found {} completed envelopes for tenant: {}", envelopes.size(), tenantId);
+
+			int totalDocuments = 0;
+			for (Envelope envelope : envelopes) {
+				if (envelope.getDocuments() == null || envelope.getDocuments().isEmpty()) {
+					continue;
+				}
+				for (Document document : envelope.getDocuments()) {
+					totalDocuments++;
+					String docLabel = buildLabel(envelope, document);
+					try {
+						// 1. Resolve current version
+						DocumentVersion version = resolveCurrentVersion(document, docLabel, response);
+						if (version == null) {
+							return;
+						}
+
+						// 2. Download file from S3
+						byte[] fileBytes = downloadFile(version, docLabel, response);
+						if (fileBytes == null) {
+							return;
+						}
+
+						// 3. Load the envelope owner's key pair (needed for both verify
+						// and re-sign)
+						KeyPair keyPair = loadKeyPairForEnvelope(envelope, docLabel, response);
+						if (keyPair == null) {
+							return;
+						}
+
+						// 4. Verify integrity: checks ECDSA signature (if present) and
+						// compares
+						// the stored hash against a freshly computed one. Returns false
+						// on any
+						// mismatch, signalling that the document needs repair.
+						boolean integrityOk = checkIntegrity(fileBytes, version, keyPair, docLabel);
+
+						if (integrityOk) {
+							recordOk(docLabel, response);
+							return;
+						}
+
+						// 5. Mismatch detected — recompute hash and signature using
+						// existing methods
+						log.info("{} Integrity mismatch for {}; recalculating hash and signature.", LOG_PREFIX,
+								docLabel);
+
+						String freshHash = documentService.hashDocument(new ByteArrayInputStream(fileBytes));
+						String freshSignature = documentService.signDocument(Base64.getDecoder().decode(freshHash),
+								keyPair.getPrivate());
+
+						// 6. Persist updated values
+						version.setDocumentHash(freshHash);
+
+						DocumentSignature sig = version.getSignatures();
+						if (sig == null) {
+							sig = new DocumentSignature();
+							version.setSignatures(sig);
+						}
+						sig.setSignature(freshSignature);
+
+						documentVersionDao.saveAndFlush(version);
+
+						log.info("{} Repaired {}", LOG_PREFIX, docLabel);
+						response.setRepaired(response.getRepaired() + 1);
+
+					}
+					catch (Exception e) {
+						log.error("{} Failed to repair {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
+						response.addFailedDocumentId(document.getId());
+						response.setFailed(response.getFailed() + 1);
+					}
+				}
 			}
 
-			// 2. Download file from S3
-			byte[] fileBytes = downloadFile(version, docLabel, response);
-			if (fileBytes == null) {
-				return;
-			}
+			response.setTotalDocuments(totalDocuments);
+			log.info(
+					"[EsMigration] Repair complete for tenant '{}' — envelopes: {}, documents: {}, repaired: {}, skipped: {}, failed: {}",
+					tenantId, response.getTotalEnvelopes(), response.getTotalDocuments(), response.getRepaired(),
+					response.getSkipped(), response.getFailed());
 
-			// 3. Load the envelope owner's key pair (needed for both verify and re-sign)
-			KeyPair keyPair = loadKeyPairForEnvelope(envelope, docLabel, response);
-			if (keyPair == null) {
-				return;
-			}
+			markCompleted(job, response);
+		}
+		catch (Exception ex) {
+			log.error("[EsMigration] Repair job {} failed for tenant '{}': {}", jobId, tenantId, ex.getMessage(), ex);
+			markFailed(job, response);
+		}
 
-			// 4. Verify integrity: checks ECDSA signature (if present) and compares
-			// the stored hash against a freshly computed one. Returns false on any
-			// mismatch, signalling that the document needs repair.
-			boolean integrityOk = checkIntegrity(fileBytes, version, keyPair, docLabel);
+	}
 
-			if (integrityOk) {
-				recordOk(docLabel, response);
-				return;
-			}
+	@Override
+	public RepairJobDto getRepairJobStatus(String jobId) {
+		CacheKeys cacheKey = CacheKeys.SYSTEM_VERSION_CACHE_KEY;
 
-			// 5. Mismatch detected — recompute hash and signature using existing methods
-			log.info("{} Integrity mismatch for {}; recalculating hash and signature.", LOG_PREFIX, docLabel);
-
-			String freshHash = documentService.hashDocument(new ByteArrayInputStream(fileBytes));
-			String freshSignature = documentService.signDocument(Base64.getDecoder().decode(freshHash),
-					keyPair.getPrivate());
-
-			// 6. Persist updated values
-			version.setDocumentHash(freshHash);
-
-			DocumentSignature sig = version.getSignatures();
-			if (sig == null) {
-				sig = new DocumentSignature();
-				version.setSignatures(sig);
-			}
-			sig.setSignature(freshSignature);
-
-			documentVersionDao.saveAndFlush(version);
-
-			log.info("{} Repaired {}", LOG_PREFIX, docLabel);
-			response.setRepaired(response.getRepaired() + 1);
-
+		String cachedJob = cacheService.get(cacheKey.format(jobId));
+		if (cachedJob == null) {
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_REPAIR_JOB_NOT_FOUND);
+		}
+		try {
+			return objectMapper.readValue(cachedJob, RepairJobDto.class);
 		}
 		catch (Exception e) {
-			log.error("{} Failed to repair {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
-			response.addFailedDocumentId(document.getId());
-			response.setFailed(response.getFailed() + 1);
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
 		}
 	}
 
@@ -220,6 +309,41 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 
 	private static String buildLabel(Envelope envelope, Document document) {
 		return "envelope=" + envelope.getId() + " / document=" + document.getId();
+	}
+
+	private void markRunning(RepairJobDto job) {
+		if (job != null) {
+			job.setStatus(RepairJobStatus.RUNNING);
+			job.setUpdatedAt(Instant.now());
+
+			CacheKeys cacheKey = CacheKeys.ESIGN_MIGRATION_REPAIR_JOB_CACHE_KEY;
+			cacheService.put(cacheKey.format(job.getJobId()), job.toString(), cacheKey.getTtl(),
+					cacheKey.getTimeUnit());
+		}
+	}
+
+	private void markCompleted(RepairJobDto job, DocumentHashRepairResponseDto result) {
+		if (job != null) {
+			job.setStatus(RepairJobStatus.COMPLETED);
+			job.setResult(result);
+			job.setUpdatedAt(Instant.now());
+
+			CacheKeys cacheKey = CacheKeys.ESIGN_MIGRATION_REPAIR_JOB_CACHE_KEY;
+			cacheService.put(cacheKey.format(job.getJobId()), job.toString(), cacheKey.getTtl(),
+					cacheKey.getTimeUnit());
+		}
+	}
+
+	private void markFailed(RepairJobDto job, DocumentHashRepairResponseDto result) {
+		if (job != null) {
+			job.setStatus(RepairJobStatus.FAILED);
+			job.setResult(result);
+			job.setUpdatedAt(Instant.now());
+
+			CacheKeys cacheKey = CacheKeys.ESIGN_MIGRATION_REPAIR_JOB_CACHE_KEY;
+			cacheService.put(cacheKey.format(job.getJobId()), job.toString(), cacheKey.getTtl(),
+					cacheKey.getTimeUnit());
+		}
 	}
 
 }

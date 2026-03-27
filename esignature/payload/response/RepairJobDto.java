@@ -20,4 +20,10 @@ public class RepairJobDto {
 
 	private Instant updatedAt;
 
+	@Override
+	public String toString() {
+		return "RepairJobDto{" + "createdAt=" + createdAt + ", jobId='" + jobId + '\'' + ", status=" + status
+				+ ", result=" + result + ", updatedAt=" + updatedAt + '}';
+	}
+
 }
