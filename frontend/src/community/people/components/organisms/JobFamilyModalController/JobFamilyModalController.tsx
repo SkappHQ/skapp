@@ -1,6 +1,6 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, ReactNode, SetStateAction, useMemo } from "react";
 
-import { SmallModal } from "@rootcodelabs/skapp-ui";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import AddJobFamilyModal from "~community/people/components/organisms/JobFamilyModals/JobFamilyFormModals/AddJobFamilyModal";
@@ -40,14 +40,16 @@ const JobFamilyModalController: FC<Props> = ({ setLatestRoleLabel, from }) => {
     jobFamilyModalType,
     currentEditingJobFamily,
     allJobFamilies,
-    setJobFamilyModalType
+    setJobFamilyModalType,
+    setIsJobFamilyModalOpen
   } = usePeopleStore((state) => ({
     currentTransferMembersData: state.currentTransferMembersData,
     isJobFamilyModalOpen: state.isJobFamilyModalOpen,
     jobFamilyModalType: state.jobFamilyModalType,
     currentEditingJobFamily: state.currentEditingJobFamily,
     allJobFamilies: state.allJobFamilies,
-    setJobFamilyModalType: state.setJobFamilyModalType
+    setJobFamilyModalType: state.setJobFamilyModalType,
+    setIsJobFamilyModalOpen: state.setIsJobFamilyModalOpen
   }));
 
   const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore((state) => ({
@@ -77,6 +79,8 @@ const JobFamilyModalController: FC<Props> = ({ setLatestRoleLabel, from }) => {
       jobFamilyModalType ===
         JobFamilyActionModalEnums.UNSAVED_CHANGED_JOB_TITLE_TRANSFER_MEMBERS
     ) {
+      setIsJobFamilyModalOpen(false);
+      setJobFamilyModalType(JobFamilyActionModalEnums.NONE);
       return;
     }
     handleJobFamilyCloseModal({

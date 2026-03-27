@@ -77,9 +77,7 @@ const ReassignMembersModal = () => {
 
   return (
     <div>
-      <p className="my-4">
-        {translateText(["reassignModalDes"])}
-      </p>
+      <p className="my-4">{translateText(["reassignModalDes"])}</p>
       <div className="flex flex-col gap-2 max-h-56 overflow-auto">
         {currentDeletingTeam?.supervisors?.map((supervisor) => (
           <ReassignMemberRow
@@ -112,7 +110,12 @@ const ReassignMembersModal = () => {
         <ButtonV2
           variant={"error"}
           onClick={reassignAndDeleteClick}
-          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+          icon={
+            <Icon
+              name={IconName.DELETE_BUTTON_ICON}
+              fill="var(--color-semantic-red-text)"
+            />
+          }
           iconPosition="end"
         >
           {translateText(["reassignAndDeleteBtnText"])}
