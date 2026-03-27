@@ -262,7 +262,12 @@
     "viewAllNotificationsButtonText": "View all notifications",
     "allFilterButtonText": "All",
     "unreadFilterButtonText": "Unread",
-    "markAllAsReadButton": "Mark all as read"
+    "markAllAsReadButton": "Mark all as read",
+    "todayGroup": "Today",
+    "yesterdayGroup": "Yesterday",
+    "last7DaysGroup": "Last 7 Days",
+    "last30DaysGroup": "Last 30 Days",
+    "olderGroup": "Older than 30 days"
   },
   "notificationSettings": {
     "title": "Notification Settings",

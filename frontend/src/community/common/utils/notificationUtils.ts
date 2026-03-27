@@ -1,7 +1,59 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 import ROUTES from "~community/common/constants/routes";
-import { NotificationItemsTypes } from "~community/common/types/notificationTypes";
+import { TimePeriodEnums } from "~community/common/enums/CommonEnums";
+import {
+  NotificationDataTypes,
+  NotificationItemsTypes
+} from "~community/common/types/notificationTypes";
+
+const TIME_PERIOD_ORDER: TimePeriodEnums[] = [
+  TimePeriodEnums.TODAY,
+  TimePeriodEnums.YESTERDAY,
+  TimePeriodEnums.LAST_7_DAYS,
+  TimePeriodEnums.LAST_30_DAYS,
+  TimePeriodEnums.OLDER
+];
+
+const getTimePeriod = (dateStr: string): TimePeriodEnums => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const notificationDate = new Date(dateStr);
+  const notifDay = new Date(
+    notificationDate.getFullYear(),
+    notificationDate.getMonth(),
+    notificationDate.getDate()
+  );
+
+  const diffMs = today.getTime() - notifDay.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return TimePeriodEnums.TODAY;
+  if (diffDays === 1) return TimePeriodEnums.YESTERDAY;
+  if (diffDays <= 7) return TimePeriodEnums.LAST_7_DAYS;
+  if (diffDays <= 30) return TimePeriodEnums.LAST_30_DAYS;
+  return TimePeriodEnums.OLDER;
+};
+
+export const groupNotificationsByTimePeriod = (
+  items: NotificationDataTypes[]
+): { period: TimePeriodEnums; items: NotificationDataTypes[] }[] => {
+  const groupMap = new Map<TimePeriodEnums, NotificationDataTypes[]>();
+
+  for (const item of items) {
+    const period = getTimePeriod(item.createdDate);
+    const existing = groupMap.get(period) ?? [];
+    existing.push(item);
+    groupMap.set(period, existing);
+  }
+
+  return TIME_PERIOD_ORDER.filter((period) => groupMap.has(period)).map(
+    (period) => ({
+      period,
+      items: groupMap.get(period)!
+    })
+  );
+};
 
 interface HandleNotifyRowParams {
   id: number;
@@ -62,7 +114,8 @@ export const handleNotifyRow = ({
       );
     }
   } else if (
-    notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED_OWNER ||
+    notificationType ===
+      NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED_OWNER ||
     notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED_OWNER ||
     notificationType === NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED
   ) {
