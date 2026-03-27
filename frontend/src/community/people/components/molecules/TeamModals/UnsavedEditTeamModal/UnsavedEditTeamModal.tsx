@@ -5,14 +5,10 @@ import { usePeopleStore } from "~community/people/store/store";
 import { AddTeamType, TeamModelTypes } from "~community/people/types/TeamTypes";
 
 interface Props {
-  tempTeamDetails: AddTeamType | undefined;
   setTempTeamDetails: Dispatch<SetStateAction<AddTeamType | undefined>>;
 }
 
-const UnsavedEditTeamModal = ({
-  tempTeamDetails,
-  setTempTeamDetails
-}: Props) => {
+const UnsavedEditTeamModal = ({ setTempTeamDetails }: Props) => {
   const { setTeamModalType, setIsTeamModalOpen, setCurrentEditingTeam } =
     usePeopleStore((state) => state);
 

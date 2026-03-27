@@ -40,16 +40,14 @@ const JobFamilyModalController: FC<Props> = ({ setLatestRoleLabel, from }) => {
     jobFamilyModalType,
     currentEditingJobFamily,
     allJobFamilies,
-    setJobFamilyModalType,
-    setIsJobFamilyModalOpen
+    setJobFamilyModalType
   } = usePeopleStore((state) => ({
     currentTransferMembersData: state.currentTransferMembersData,
     isJobFamilyModalOpen: state.isJobFamilyModalOpen,
     jobFamilyModalType: state.jobFamilyModalType,
     currentEditingJobFamily: state.currentEditingJobFamily,
     allJobFamilies: state.allJobFamilies,
-    setJobFamilyModalType: state.setJobFamilyModalType,
-    setIsJobFamilyModalOpen: state.setIsJobFamilyModalOpen
+    setJobFamilyModalType: state.setJobFamilyModalType
   }));
 
   const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore((state) => ({
@@ -79,8 +77,8 @@ const JobFamilyModalController: FC<Props> = ({ setLatestRoleLabel, from }) => {
       jobFamilyModalType ===
         JobFamilyActionModalEnums.UNSAVED_CHANGED_JOB_TITLE_TRANSFER_MEMBERS
     ) {
-      setIsJobFamilyModalOpen(false);
       setJobFamilyModalType(JobFamilyActionModalEnums.NONE);
+      stopAllOngoingQuickSetup();
       return;
     }
     handleJobFamilyCloseModal({
