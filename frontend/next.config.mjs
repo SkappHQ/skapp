@@ -296,6 +296,10 @@ const nextConfig = {
         destination: "/enterprise/sign/document/access/mfa-verify"
       },
       {
+        source: "/sign/document/access/bankid-verify",
+        destination: "/enterprise/sign/document/access/bankid-verify"
+      },
+      {
         source: "/sign/complete",
         destination: "/enterprise/sign/complete"
       },

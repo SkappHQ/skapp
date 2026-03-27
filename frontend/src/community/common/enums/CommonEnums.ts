@@ -11,7 +11,8 @@ export enum ZIndexEnums {
   DEFAULT = 1,
   MIN = 0,
   LEVEL_2 = 2,
-  MODAL = 1300
+  MODAL = 1300,
+  NEWMODAL = 1500
 }
 
 export enum GlobalLoginMethod {

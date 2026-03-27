@@ -14,8 +14,8 @@ import java.util.List;
 public interface LeaveEntitlementDao extends JpaRepository<LeaveEntitlement, Long>,
 		JpaSpecificationExecutor<LeaveEntitlement>, LeaveEntitlementRepository {
 
-	List<LeaveEntitlement> findByEmployeeAndValidFromAndValidToAndLeaveType(Employee employee, LocalDate validFrom,
-			LocalDate validTo, LeaveType leaveType);
+	List<LeaveEntitlement> findByEmployeeAndValidFromAndValidToAndLeaveTypeAndIsManualFalse(Employee employee,
+			LocalDate validFrom, LocalDate validTo, LeaveType leaveType);
 
 	List<LeaveEntitlement> findAllByEmployeeAndLeaveTypeAndIsActiveTrue(Employee employee, LeaveType leaveType);
 

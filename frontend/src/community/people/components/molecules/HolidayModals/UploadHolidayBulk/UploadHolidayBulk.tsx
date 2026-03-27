@@ -1,4 +1,3 @@
-import { Box, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 
@@ -160,16 +159,10 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
   };
 
   return (
-    <Box>
-      <Typography
-        sx={{
-          fontWeight: 400,
-          fontSize: "1rem",
-          marginBottom: "0.5rem"
-        }}
-      >
+    <div>
+      <p className="font-normal mb-2">
         {translateText(["addCsvTitle"])}
-      </Typography>
+      </p>
       <DragAndDropField
         setAttachments={async (acceptedFiles: FileUploadType[]) =>
           await setAttachment({
@@ -193,29 +186,30 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
           componentName: translateAria(["holidays"])
         }}
       />
-
-      <ButtonV2
-        disabled={!isNewCalendarDetailsValid}
-        variant={"primary"}
-        onClick={() => handleSaveCalendarBtn()}
-        className={getBlinkClass(
-          isNewCalendarDetailsValid &&
-            newCalenderDetails.acceptedFile?.length > 0
-        )}
-        icon={<RightArrowIcon />}
-        iconPosition="end"
-      >
-        {translateText(["UploadHolidays"])}
-      </ButtonV2>
-      <ButtonV2
-        variant={"tertiary"}
-        onClick={onCloseClick}
-        icon={<CloseIcon />}
-        iconPosition="end"
-      >
-        {translateText(["cancelBtnText"])}
-      </ButtonV2>
-    </Box>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={onCloseClick}
+          icon={<CloseIcon />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnText"])}
+        </ButtonV2>
+        <ButtonV2
+          disabled={!isNewCalendarDetailsValid}
+          variant={"primary"}
+          onClick={() => handleSaveCalendarBtn()}
+          className={getBlinkClass(
+            isNewCalendarDetailsValid &&
+              newCalenderDetails.acceptedFile?.length > 0
+          )}
+          icon={<RightArrowIcon />}
+          iconPosition="end"
+        >
+          {translateText(["UploadHolidays"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

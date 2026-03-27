@@ -127,7 +127,11 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                       item?.notificationType ===
                         NotificationItemsTypes.ESIGN_DOCUMENT_REMINDER ||
                       item?.notificationType ===
-                        NotificationItemsTypes.ESIGN_DOCUMENT_EXPIRED) &&
+                        NotificationItemsTypes.ESIGN_DOCUMENT_EXPIRED ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED_OWNER ||
+                      item?.notificationType ===
+                        NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED_OWNER) &&
                     !isEsignatureModuleEnabled
                   }
                   item={item}

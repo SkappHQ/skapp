@@ -1,6 +1,6 @@
-import { FC, useState } from "react";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { FC, ReactNode, useState } from "react";
 
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
 import DownloadCsv from "~community/leave/components/molecules/LeaveEntitlementModals/DownloadCsv/DownloadCsv";
@@ -45,46 +45,12 @@ const LeaveEntitlementModalController: FC = () => {
     }
   };
 
-  const getIds = (): {
-    title?: string;
-    description?: string;
-    closeButton?: string;
-  } => {
-    switch (leaveEntitlementModalType) {
-      case LeaveEntitlementModelTypes.DOWNLOAD_CSV:
-        return {
-          title: "download-csv-modal-title",
-          description: "download-csv-modal-description",
-          closeButton: "download-csv-modal-close-button"
-        };
-      case LeaveEntitlementModelTypes.UPLOAD_CSV:
-        return {
-          title: "upload-csv-modal-title",
-          description: "upload-csv-modal-description",
-          closeButton: "upload-csv-modal-close-button"
-        };
-      case LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION:
-        return {
-          title: "override-confirmation-modal-title",
-          description: "override-confirmation-modal-description",
-          closeButton: "override-confirmation-modal-close-button"
-        };
-      case LeaveEntitlementModelTypes.BULK_UPLOAD_SUMMARY:
-        return {
-          title: "bulk-upload-summary-modal-title",
-          description: "bulk-upload-summary-modal-description",
-          closeButton: "bulk-upload-summary-modal-close-button"
-        };
-      default:
-        return {
-          title: "modal-title",
-          description: "modal-description",
-          closeButton: "modal-close-button"
-        };
-    }
-  };
-
   const handleCloseModal = () => {
+    if (
+      leaveEntitlementModalType ===
+      LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION
+    )
+      return;
     setLeaveEntitlementModalType(LeaveEntitlementModelTypes.NONE);
 
     if (
@@ -95,41 +61,42 @@ const LeaveEntitlementModalController: FC = () => {
     }
   };
 
-  return (
-    <ModalController
-      ids={getIds()}
-      isModalOpen={isLeaveEntitlementModalOpen}
-      handleCloseModal={handleCloseModal}
-      modalTitle={getModalTitle()}
-      isClosable={
-        LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION !==
-        leaveEntitlementModalType
-      }
-    >
-      <>
-        {leaveEntitlementModalType ===
-          LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION && (
-          <OverrideConfirmation />
-        )}
-        {leaveEntitlementModalType ===
-          LeaveEntitlementModelTypes.DOWNLOAD_CSV && <DownloadCsv />}
-        {leaveEntitlementModalType ===
-          LeaveEntitlementModelTypes.UPLOAD_CSV && (
+  const modalContent = (): ReactNode => {
+    switch (leaveEntitlementModalType) {
+      case LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION:
+        return <OverrideConfirmation />;
+      case LeaveEntitlementModelTypes.DOWNLOAD_CSV:
+        return <DownloadCsv />;
+      case LeaveEntitlementModelTypes.UPLOAD_CSV:
+        return (
           <UploadCsv
             leaveTypes={leaveTypes}
             setLeaveTypes={setLeaveTypes}
             setErrorLog={setErrorLog}
           />
-        )}
-        {leaveEntitlementModalType ===
-          LeaveEntitlementModelTypes.BULK_UPLOAD_SUMMARY && (
+        );
+      case LeaveEntitlementModelTypes.BULK_UPLOAD_SUMMARY:
+        return (
           <LeaveEntitlementBulkUploadSummary
             leaveTypes={leaveTypes}
             errorLog={errorLog}
           />
-        )}
-      </>
-    </ModalController>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <SmallModal
+      isOpen={
+        isLeaveEntitlementModalOpen &&
+        leaveEntitlementModalType !== LeaveEntitlementModelTypes.NONE
+      }
+      onClose={handleCloseModal}
+      modalHeader={getModalTitle()}
+      content={modalContent()}
+    />
   );
 };
 

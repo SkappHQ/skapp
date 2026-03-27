@@ -108,27 +108,29 @@ const LeaveEntryConfirmation = ({ fromDateTime, toDateTime }: Props) => {
           isTruncated={false}
         />
       </Stack>
-      <ButtonV2
-        variant={"primary"}
-        onClick={handleSubmit}
-        icon={<Icon name={IconName.CHECK_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["confirmBtnTxt"])}
-      </ButtonV2>
-      <ButtonV2
-        variant={"tertiary"}
-        onClick={() => {
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
-          );
-        }}
-        icon={<Icon name={IconName.CLOSE_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["cancelBtnTxt"])}
-      </ButtonV2>
+      <div className="flex flex-row gap-3 mt-4 justify-end">
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleSubmit}
+          icon={<Icon name={IconName.CHECK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["confirmBtnTxt"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={() => {
+            setIsEmployeeTimesheetModalOpen(true);
+            setEmployeeTimesheetModalType(
+              EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
+            );
+          }}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtnTxt"])}
+        </ButtonV2>
+      </div>
     </>
   );
 };

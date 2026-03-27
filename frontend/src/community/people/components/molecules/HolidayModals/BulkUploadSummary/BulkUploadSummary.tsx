@@ -1,4 +1,3 @@
-import { Box, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
@@ -34,11 +33,10 @@ const BulkUploadSummary: FC<Props> = ({ data }) => {
   };
 
   return (
-    <Box>
-      <Typography
+    <div>
+      <p
         id="status-summary-description"
-        variant="body1"
-        sx={{ my: 1 }}
+        className="my-2"
       >
         {totalEntries &&
         data?.bulkStatusSummary?.failedCount <= 1 &&
@@ -52,16 +50,18 @@ const BulkUploadSummary: FC<Props> = ({ data }) => {
                 failedCount: data?.bulkStatusSummary?.failedCount
               })
             : ""}
-      </Typography>
-      <ButtonV2
-        variant={"primary"}
-        onClick={handleDownloadErrorLogCSV}
-        icon={<Icon name={IconName.DOWNLOAD_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["addBulkUploadSummaryButton"])}
-      </ButtonV2>
-    </Box>
+      </p>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleDownloadErrorLogCSV}
+          icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["addBulkUploadSummaryButton"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

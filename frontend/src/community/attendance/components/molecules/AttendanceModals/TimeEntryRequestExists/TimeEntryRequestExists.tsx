@@ -17,26 +17,28 @@ const TimeEntryRequestExists = ({ isEdit }: Props) => {
     useAttendanceStore((state) => state);
   return (
     <>
-      <Typography variant="body1" sx={{ pt: "1rem" }}>
+      <Typography variant="body1">
         {translateText(["requestExistModalDes"])}
       </Typography>
-      <ButtonV2
-        variant={"primary"}
-        onClick={() => {
-          if (isEdit) {
-            setIsEmployeeTimesheetModalOpen(false);
-          } else {
-            setIsEmployeeTimesheetModalOpen(true);
-            setEmployeeTimesheetModalType(
-              EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
-            );
-          }
-        }}
-        icon={<Icon name={IconName.CHECK_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["okayBtnTxt"])}
-      </ButtonV2>
+      <div className="flex justify-end">
+        <ButtonV2
+          variant={"primary"}
+          onClick={() => {
+            if (isEdit) {
+              setIsEmployeeTimesheetModalOpen(false);
+            } else {
+              setIsEmployeeTimesheetModalOpen(true);
+              setEmployeeTimesheetModalType(
+                EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
+              );
+            }
+          }}
+          icon={<Icon name={IconName.CHECK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["okayBtnTxt"])}
+        </ButtonV2>
+      </div>
     </>
   );
 };

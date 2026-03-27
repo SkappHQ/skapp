@@ -71,6 +71,7 @@ import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIco
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
 import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
+import IdentityVerifiedIcon from "~community/common/assets/Icons/IdentityVerifiedIcon";
 import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
@@ -157,6 +158,8 @@ import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
 import GreyRoundedTickIcon from "~enterprise/settings/assets/Icons/GreyRoundedTickIcon";
 import MasterCardIcon from "~enterprise/settings/assets/Icons/MasterCardIcon";
 import VisaCardIcon from "~enterprise/settings/assets/Icons/VisaCardIcon";
+import BankIdVerifyFailedIcon from "~enterprise/sign/assets/Icons/BankIdVerifyFailedIcon";
+import BankIdVerifySuccessIcon from "~enterprise/sign/assets/Icons/BankIdVerifySuccessIcon";
 
 interface Props extends IconProps {
   name: IconName;
@@ -295,6 +298,7 @@ export const IconMapping: Partial<
   [IconName.CREATE_DOCUMENT_ICON]: CreateDocumentIcon,
   [IconName.CLOCK_DENY_ICON]: ClockDenyIcon,
   [IconName.EYE_ICON]: EyeIcon,
+  [IconName.IDENTITY_VERIFIED_ICON]: IdentityVerifiedIcon,
   [IconName.SEND_ICON]: SendIcon,
   [IconName.SUCCESS_TICK_ICON]: SuccessIcon,
   [IconName.CROSSED_CIRCLE_ICON]: CrossedCircleIcon,
@@ -323,7 +327,9 @@ export const IconMapping: Partial<
   [IconName.PERCENTAGE_ICON]: PercentageIcon,
   [IconName.UPLOAD_DOCUMENT_ICON]: UploadDocumentIcon,
   [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon,
-  [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon
+  [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon,
+  [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
+  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon
   // Add more icons here as needed
 };
 

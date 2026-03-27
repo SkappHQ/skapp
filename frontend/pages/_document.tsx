@@ -24,8 +24,18 @@ export default function Document() {
           sizes="48x48"
           href="favicon/favicon-48x48.png"
         />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
-          href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap"
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Carlito:wght@400;700&family=Tinos:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/fontfaces/DejaVuSans.css"
           rel="stylesheet"
         />
         <link
