@@ -6,21 +6,21 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AddressBook_;
-import com.skapp.enterprise.esignature.model.ExternalUser;
-import com.skapp.enterprise.esignature.model.ExternalUser_;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Envelope_;
+import com.skapp.enterprise.esignature.model.ExternalUser;
+import com.skapp.enterprise.esignature.model.ExternalUser_;
 import com.skapp.enterprise.esignature.model.Recipient;
 import com.skapp.enterprise.esignature.model.Recipient_;
 import com.skapp.enterprise.esignature.repository.RecipientRepository;
-import com.skapp.enterprise.esignature.type.EnvelopeStatus;
-import com.skapp.enterprise.esignature.type.InboxStatus;
+import com.skapp.enterprise.esignature.type.RecipientStatus;
 import com.skapp.enterprise.esignature.type.UserType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 
@@ -66,16 +66,18 @@ public class RecipientRepositoryImpl implements RecipientRepository {
 	}
 
 	@Override
-	public Long countPendingDocumentsForUser(Long addressBookId) {
+	public Long countPendingDocumentsForUser(Long currentUserId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> query = cb.createQuery(Long.class);
-		Root<Recipient> recipient = query.from(Recipient.class);
-		Join<Recipient, Envelope> envelope = recipient.join(Recipient_.ENVELOPE);
+		Root<Envelope> envelope = query.from(Envelope.class);
+		Join<Envelope, Recipient> recipientJoin = envelope.join(Envelope_.RECIPIENTS, JoinType.INNER);
+		Join<Recipient, AddressBook> addressBookJoin = recipientJoin.join(Recipient_.ADDRESS_BOOK, JoinType.INNER);
 
-		query.select(cb.countDistinct(recipient))
-			.where(cb.and(cb.equal(recipient.get(Recipient_.ADDRESS_BOOK).get(AddressBook_.ID), addressBookId),
-					cb.equal(recipient.get(Recipient_.INBOX_STATUS), InboxStatus.NEED_TO_SIGN),
-					envelope.get(Envelope_.STATUS).in(EnvelopeStatus.NEED_TO_SIGN, EnvelopeStatus.WAITING)));
+		Predicate userPredicate = cb.equal(addressBookJoin.get(AddressBook_.INTERNAL_USER).get(User_.USER_ID),
+				currentUserId);
+		Predicate statusPredicate = cb.equal(recipientJoin.get(Recipient_.STATUS), RecipientStatus.NEED_TO_SIGN);
+
+		query.select(cb.count(envelope)).where(cb.and(userPredicate, statusPredicate));
 
 		return entityManager.createQuery(query).getSingleResult();
 	}
@@ -84,12 +86,12 @@ public class RecipientRepositoryImpl implements RecipientRepository {
 	public Long countPendingDocumentsForSendersAndAdmins() {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> query = cb.createQuery(Long.class);
-		Root<Recipient> recipient = query.from(Recipient.class);
-		Join<Recipient, Envelope> envelope = recipient.join(Recipient_.ENVELOPE);
+		Root<Envelope> envelope = query.from(Envelope.class);
+		Join<Envelope, Recipient> recipientJoin = envelope.join(Envelope_.RECIPIENTS, JoinType.INNER);
 
-		query.select(cb.countDistinct(recipient))
-			.where(cb.and(cb.equal(recipient.get(Recipient_.INBOX_STATUS), InboxStatus.NEED_TO_SIGN),
-					envelope.get(Envelope_.STATUS).in(EnvelopeStatus.NEED_TO_SIGN, EnvelopeStatus.WAITING)));
+		Predicate statusPredicate = cb.equal(recipientJoin.get(Recipient_.STATUS), RecipientStatus.NEED_TO_SIGN);
+
+		query.select(cb.count(envelope)).where(statusPredicate);
 
 		return entityManager.createQuery(query).getSingleResult();
 	}
