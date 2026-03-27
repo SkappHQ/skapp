@@ -82,11 +82,16 @@ const HolidayModalController: FC = () => {
 
   const handleCloseModal = (): void => {
     if (
-      holidayModalType === holidayModalTypes.HOLIDAY_EXIT_CONFIRMATION ||
       holidayModalType === holidayModalTypes.HOLIDAY_BULK_DELETE ||
       holidayModalType === holidayModalTypes.HOLIDAY_INDIVIDUAL_DELETE ||
       holidayModalType === holidayModalTypes.HOLIDAY_SELECTED_DELETE
     ) {
+      setIsHolidayModalOpen(false);
+      setHolidayModalType(holidayModalTypes.NONE);
+      return;
+    }
+
+    if (holidayModalType === holidayModalTypes.HOLIDAY_EXIT_CONFIRMATION) {
       return;
     }
 

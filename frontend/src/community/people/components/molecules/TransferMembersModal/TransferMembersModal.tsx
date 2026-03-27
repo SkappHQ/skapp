@@ -14,6 +14,7 @@ import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import RoundedSelect, {
   SelectOption
 } from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
@@ -175,7 +176,8 @@ const TransferMembersModal: FC<Props> = ({
                         },
                         menuProps: {
                           sx: {
-                            width: "100%"
+                            width: "100%",
+                            zIndex: ZIndexEnums.NEWMODAL
                           }
                         },
                         select: {
@@ -224,7 +226,8 @@ const TransferMembersModal: FC<Props> = ({
                         },
                         menuProps: {
                           sx: {
-                            width: "100%"
+                            width: "100%",
+                            zIndex: ZIndexEnums.NEWMODAL
                           }
                         },
                         select: {
