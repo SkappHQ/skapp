@@ -116,11 +116,6 @@ const useSessionData = () => {
     [user?.roles]
   );
 
-  const isInvoiceManager = useMemo(
-    () => user?.roles?.includes(AuthManagerType.INVOICE_MANAGER),
-    [user?.roles]
-  );
-
   return {
     isFreeTier,
     isProTier,
@@ -145,7 +140,6 @@ const useSessionData = () => {
     isAttendanceManager,
     isESignSender,
     isInvoiceAdmin,
-    isInvoiceManager,
     tenantID
   };
 };
