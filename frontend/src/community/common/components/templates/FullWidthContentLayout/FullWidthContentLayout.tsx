@@ -17,10 +17,10 @@ const FullWidthContentLayout = ({
   secondaryButtonProps
 }: Props) => {
   return (
-    <div className={`w-full h-auto overflow-y-auto ${className ?? ""}`}>
-      <div className="flex flex-col gap-4 w-full px-5">
+    <div className={`w-full py-6 ${className}`}>
+      <div className="flex flex-row items-center justify-between gap-4 w-full px-12">
         <h1 className="h1">{title}</h1>
-        <div className="flex flex-col-reverse sm:flex-row gap-2.5">
+        <div className="flex gap-2.5">
           {secondaryButtonProps && (
             <ButtonV2 {...secondaryButtonProps}>
               {secondaryButtonProps.children}

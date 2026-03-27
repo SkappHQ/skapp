@@ -1,12 +1,14 @@
 import { NextPage } from "next";
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 
-import { useGetNotifications } from "~community/common/api/notificationsApi";
-import Pagination from "~community/common/components/atoms/Pagination/Pagination";
+import {
+  useGetNotifications,
+  useMarkAllNotificationsAsRead
+} from "~community/common/api/notificationsApi";
 import Notifications from "~community/common/components/organisms/Notifications/Notifications";
 import FullWidthContentLayout from "~community/common/components/templates/FullWidthContentLayout/FullWidthContentLayout";
-import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   SortKeyTypes,
   SortOrderTypes
@@ -14,18 +16,32 @@ import {
 
 const NotificationsPage: NextPage = () => {
   const translateText = useTranslator("notifications");
-  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [currentPage] = useState<number>(0);
   const { data, isLoading, refetch } = useGetNotifications(
     currentPage,
     6,
     SortOrderTypes.DESC,
     SortKeyTypes.CREATED_DATE
   );
+  const { mutate: markAllAsRead } = useMarkAllNotificationsAsRead();
+  const { notifyData } = useCommonStore((state) => state);
 
   const notifications = data?.results?.[0];
 
+  const handleMarkAllRead = () => {
+    markAllAsRead();
+  };
+
   return (
-    <FullWidthContentLayout title={translateText(["title"])} primaryButtonProps={{la}}>
+    <FullWidthContentLayout
+      title={translateText(["title"])}
+      primaryButtonProps={{
+        variant: "tertiary",
+        onClick: handleMarkAllRead,
+        disabled: isLoading,
+        children: translateText(["markAllAsReadButton"])
+      }}
+    >
       <>
         <Notifications
           data={notifications}
