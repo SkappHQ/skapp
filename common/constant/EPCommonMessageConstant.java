@@ -201,7 +201,14 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_TIER_UPGRADE_NO_ACTIVE_SUBSCRIPTION("ep.common.error.tier-upgrade-no-active-subscription"),
 	EP_COMMON_ERROR_TIER_UPGRADE_ALREADY_ON_TIER("ep.common.error.tier-upgrade-already-on-tier"),
 	EP_COMMON_ERROR_TIER_UPGRADE_NOT_AN_UPGRADE("ep.common.error.tier-upgrade-not-an-upgrade"),
-	EP_COMMON_SUCCESS_TIER_UPGRADE_INITIATED("ep.common.success.tier-upgrade-initiated");
+	EP_COMMON_SUCCESS_TIER_UPGRADE_INITIATED("ep.common.success.tier-upgrade-initiated"),
+
+	EP_COMMON_ERROR_ANNOUNCEMENT_NOT_FOUND("ep.common.error.announcement-not-found"),
+	EP_COMMON_ERROR_ANNOUNCEMENT_CTA_LINK_REQUIRED_WHEN_LABEL_SET(
+			"ep.common.error.announcement-cta-link-required-when-label-set"),
+	EP_COMMON_ERROR_ANNOUNCEMENT_CUSTOM_FREQUENCY_DAYS_REQUIRED(
+			"ep.common.error.announcement-custom-frequency-days-required"),
+	EP_COMMON_SUCCESS_ANNOUNCEMENT_INTERACTION_RECORDED("ep.common.success.announcement-interaction-recorded");
 
 	private final String messageKey;
 
