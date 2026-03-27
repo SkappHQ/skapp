@@ -17,7 +17,7 @@ import {
 const NotificationsPage: NextPage = () => {
   const translateText = useTranslator("notifications");
   const [currentPage] = useState<number>(0);
-  const { data, isLoading, refetch } = useGetNotifications(
+  const { data, isLoading } = useGetNotifications(
     currentPage,
     6,
     SortOrderTypes.DESC,
@@ -41,13 +41,10 @@ const NotificationsPage: NextPage = () => {
         disabled: isLoading,
         children: translateText(["markAllAsReadButton"])
       }}
+      className="flex flex-col gap-4"
     >
       <>
-        <Notifications
-          data={notifications}
-          isLoading={isLoading}
-          refetch={refetch}
-        />
+        <Notifications data={notifications} isLoading={isLoading} />
         {/* <Pagination
           tableName={TableNames.NOTIFICATIONS}
           totalPages={data?.results?.[0].totalPages || 1}

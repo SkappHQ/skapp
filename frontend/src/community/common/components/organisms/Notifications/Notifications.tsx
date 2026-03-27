@@ -1,5 +1,4 @@
-import { Box, Divider, Skeleton, Stack } from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
+import { EmptyDataView, Spinner } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
 import { JSX } from "react";
 
@@ -17,16 +16,13 @@ import { handleNotifyRow } from "~community/common/utils/notificationUtils";
 
 import NotificationContent from "../../molecules/NotificationContent/NotificationContent";
 import NotificationsFilter from "../../molecules/NotificationsFilter/NotificationsFilter";
-import TableEmptyScreen from "../../molecules/TableEmptyScreen/TableEmptyScreen";
 
 interface Props {
   data?: NotificationTypes;
   isLoading: boolean;
-  refetch: () => void;
 }
 
 const Notifications = ({ data, isLoading }: Props): JSX.Element => {
-  const theme: Theme = useTheme();
   const { notifyData, setNotifyData } = useCommonStore((state) => state);
   const router = useRouter();
   const translateText = useTranslator("notifications");
@@ -41,7 +37,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
   } = useSessionData();
 
   return (
-    <Box>
+    <div className="px-12 flex gap-4 flex-col">
       <NotificationsFilter
         filterButton={notifyData.notificationFilterType}
         setFilterButton={(value) =>
@@ -49,48 +45,28 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
             notificationFilterType: value.filterButton
           })
         }
-        isLoading={isLoading}
       />
-      <Divider />
-      <Box>
+      <div>
         {isLoading ? (
-          <Skeleton
-            variant="rounded"
-            width="100%"
-            height={409}
-            animation="wave"
-            sx={{ mt: "24px" }}
-          />
+          <Spinner size={50} />
         ) : data?.items.length === 0 ? (
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              bgcolor: theme.palette.grey[50],
-              mt: "24px",
-              borderRadius: "12px"
-            }}
-          >
-            <TableEmptyScreen
-              title={
-                notifyData.notificationFilterType ===
-                NotifyFilterButtonTypes.ALL
-                  ? translateText(["emptyScreenTitle"])
-                  : translateText(["emptyScreenTitleUnread"])
-              }
-              description={translateText(["emptyScreenDescription"])}
-            />
-          </Stack>
+          <EmptyDataView
+            title={
+              notifyData.notificationFilterType === NotifyFilterButtonTypes.ALL
+                ? translateText(["emptyScreenTitle"])
+                : translateText(["emptyScreenTitleUnread"])
+            }
+            description={translateText(["emptyScreenDescription"])}
+          />
         ) : (
           data?.items?.map((item: NotificationDataTypes) => (
-            <Box
+            <div
               key={item.id}
-              sx={{
-                cursor: item.isViewed ? "default" : "pointer"
-              }}
+              className={item.isViewed ? "cursor-default" : "cursor-pointer"}
             >
-              <Box
-                sx={{ pt: "24px", pb: "16px" }}
+              <button
+                type="button"
+                className="pt-6 pb-4 w-full text-left"
                 onClick={() =>
                   handleNotifyRow({
                     id: item.id,
@@ -136,13 +112,12 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                   }
                   item={item}
                 />
-              </Box>
-              <Divider />
-            </Box>
+              </button>
+            </div>
           ))
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 

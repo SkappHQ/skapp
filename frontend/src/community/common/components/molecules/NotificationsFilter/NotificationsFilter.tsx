@@ -1,9 +1,6 @@
-import { Stack } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { Tabs } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
-import { useMarkAllNotificationsAsRead } from "~community/common/api/notificationsApi";
-import { useScreenSizeRange } from "~community/common/hooks/useScreenSizeRange";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { NotifyFilterButtonTypes } from "~community/common/types/notificationTypes";
@@ -11,76 +8,40 @@ import { NotifyFilterButtonTypes } from "~community/common/types/notificationTyp
 interface Props {
   filterButton: NotifyFilterButtonTypes;
   setFilterButton: (value: { filterButton: NotifyFilterButtonTypes }) => void;
-  isLoading?: boolean;
 }
 
 const NotificationsFilter = ({
   filterButton,
-  setFilterButton,
-  isLoading
+  setFilterButton
 }: Props): JSX.Element => {
-  const { mutate } = useMarkAllNotificationsAsRead();
-
-  const handleMarkAllRead = () => {
-    mutate();
-  };
-
-  const { notifyData } = useCommonStore((state) => state);
   const translateText = useTranslator("notifications");
-  const { isSmallPhoneScreen } = useScreenSizeRange();
+  const { notifyData } = useCommonStore((state) => state);
+
+  const tabs = [
+    { id: "all", label: translateText(["allFilterButtonText"]) },
+    {
+      id: "unread",
+      label: `${translateText(["unreadFilterButtonText"])} (${notifyData.unreadCount})`
+    }
+  ];
+
+  const activeTabId =
+    filterButton === NotifyFilterButtonTypes.ALL ? "all" : "unread";
 
   return (
-    <Stack
-      direction={isSmallPhoneScreen ? "column" : "row"}
-      justifyContent="space-between"
-      alignItems={isSmallPhoneScreen ? "flex-start" : "center"}
-      pb={isSmallPhoneScreen ? "1rem" : "1.5rem"}
-      pt={isSmallPhoneScreen ? "1rem" : "1.5rem"}
-      gap={isSmallPhoneScreen ? 2 : 0}
-      component="div"
-    >
-      <Stack direction={"row"} gap={isSmallPhoneScreen ? 1 : 2} component="div">
-        <ButtonV2
-          isFullWidth={false}
-          variant={
-            filterButton === NotifyFilterButtonTypes.ALL
-              ? "secondary"
-              : "tertiary"
-          }
-          onClick={() =>
-            setFilterButton({ filterButton: NotifyFilterButtonTypes.ALL })
-          }
-        >
-          {translateText(["allFilterButtonText"])}
-        </ButtonV2>
-        <ButtonV2
-          isFullWidth={false}
-          variant={
-            filterButton === NotifyFilterButtonTypes.UNREAD
-              ? "secondary"
-              : "tertiary"
-          }
-          onClick={() =>
-            setFilterButton({ filterButton: NotifyFilterButtonTypes.UNREAD })
-          }
-        >
-          {translateText(["unreadFilterButtonText"])}
-        </ButtonV2>
-      </Stack>
-
-      {!isLoading && notifyData.unreadCount !== 0 && (
-        <ButtonV2
-          isFullWidth={isSmallPhoneScreen}
-          variant={"tertiary"}
-          onClick={() => {
-            setFilterButton({ filterButton: NotifyFilterButtonTypes.ALL });
-            handleMarkAllRead();
-          }}
-        >
-          {translateText(["markAllAsReadButton"])}
-        </ButtonV2>
-      )}
-    </Stack>
+    <div className="border-b border-secondary-accent">
+      <Tabs
+        tabs={tabs}
+        activeTabId={activeTabId}
+        onTabChange={(tabId: string) => {
+          const newFilter =
+            tabId === "all"
+              ? NotifyFilterButtonTypes.ALL
+              : NotifyFilterButtonTypes.UNREAD;
+          setFilterButton({ filterButton: newFilter });
+        }}
+      />
+    </div>
   );
 };
 
