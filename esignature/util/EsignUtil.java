@@ -298,7 +298,6 @@ public class EsignUtil {
 
 		return template.replace("{{width}}", cssDto.getAdjustedWidth())
 			.replace("{{height}}", cssDto.getAdjustedHeight())
-			.replace("{{fontFamily}}", cssDto.getFontFamilyCss())
 			.replace("{{fontSize}}", cssDto.getFontSize())
 			.replace("{{fontWeight}}", cssDto.getFontWeight())
 			.replace("{{fontStyle}}", cssDto.getFontStyle())

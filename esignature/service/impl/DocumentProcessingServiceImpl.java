@@ -860,20 +860,18 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float heightInches = heightPt / POINTS_PER_INCH;
 
 			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
+
 			if (fontFamily != null) {
 				EsignFontFamilyType fontFamilyType = EsignFontFamilyType.valueOf(fontFamily);
 				String folderName = fontFamilyType.getFolderName();
 				String variantSuffix = fontFamilyType.getVariantSuffix(fontVariant);
 
-				InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, variantSuffix);
-				ByteArrayOutputStream fontBuffer = new ByteArrayOutputStream();
+				try (InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, variantSuffix)) {
+					byte[] fontBytes = fontStream.readAllBytes();
 
-				fontStream.transferTo(fontBuffer);
-
-				byte[] fontBytes = fontBuffer.toByteArray();
-
-				builder.useFont(() -> new ByteArrayInputStream(fontBytes), null, fontVariant.getFontWeight(),
-						fontVariant.getFontStyle(), true);
+					builder.useFont(() -> new ByteArrayInputStream(fontBytes), null, fontVariant.getFontWeight(),
+							fontVariant.getFontStyle(), true);
+				}
 
 			}
 			builder.toStream(baos);
@@ -884,10 +882,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		catch (IOException e) {
 			log.warn("Failed to download font file: {}", e.getMessage());
 			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_DOWNLOAD_FONT_FILE);
-		}
-		catch (Exception e) {
-			log.error("Failed to merge text field: {}", e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD);
 		}
 
 	}
