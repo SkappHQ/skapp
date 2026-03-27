@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -39,7 +39,7 @@ public class FeatureAnnouncementResponseDto {
 
 	private String imagePath;
 
-	private Instant createdDate;
+	private LocalDateTime createdDate;
 
 	private List<Role> recipientRoles;
 

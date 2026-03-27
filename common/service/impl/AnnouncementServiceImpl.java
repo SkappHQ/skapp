@@ -202,7 +202,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		response.setStatus(announcement.getStatus());
 		response.setImagePath(announcement.getImagePath());
 		response.setCreatedDate(
-				announcement.getCreatedDate() == null ? null : announcement.getCreatedDate().toInstant(ZoneOffset.UTC));
+				announcement.getCreatedDate());
 		response.setRecipientRoles(announcement.getRecipientRoles());
 		return response;
 	}

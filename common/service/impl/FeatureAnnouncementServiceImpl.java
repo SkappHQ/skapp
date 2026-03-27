@@ -146,6 +146,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 		response.setCustomFrequencyDays(announcement.getCustomFrequencyDays());
 		response.setStatus(announcement.getStatus());
 		response.setImagePath(announcement.getImagePath());
+		response.setCreatedDate(announcement.getCreatedDate());
 		response.setRecipientRoles(announcement.getRecipientRoles());
 		return response;
 	}
