@@ -6,6 +6,7 @@ import { useMarkNotificationAsRead } from "~community/common/api/notificationsAp
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
+import { IconName } from "~community/common/types/IconTypes";
 import {
   NotificationDataTypes,
   NotificationItemsTypes,
@@ -17,6 +18,7 @@ import {
   handleNotifyRow
 } from "~community/common/utils/notificationUtils";
 
+import Icon from "../../atoms/Icon/Icon";
 import NotificationContent from "../../molecules/NotificationContent/NotificationContent";
 import NotificationsFilter from "../../molecules/NotificationsFilter/NotificationsFilter";
 
@@ -59,12 +61,22 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
           <Spinner size={50} />
         ) : data?.items.length === 0 ? (
           <EmptyDataView
+            icon={
+              notifyData.notificationFilterType ===
+              NotifyFilterButtonTypes.UNREAD ? (
+                <Icon name={IconName.CHECK_CIRCLE_OUTLINED_ICON} />
+              ) : undefined
+            }
             title={
               notifyData.notificationFilterType === NotifyFilterButtonTypes.ALL
                 ? translateText(["emptyScreenTitle"])
                 : translateText(["emptyScreenTitleUnread"])
             }
-            description={translateText(["emptyScreenDescription"])}
+            description={
+              notifyData.notificationFilterType === NotifyFilterButtonTypes.ALL
+                ? translateText(["emptyScreenDescription"])
+                : translateText(["emptyScreenDescriptionUnread"])
+            }
           />
         ) : (
           groupedNotifications.map((group) => (
@@ -74,12 +86,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
               </h2>
               <div>
                 {group.items.map((item: NotificationDataTypes) => (
-                  <div
-                    key={item.id}
-                    className={
-                      item.isViewed ? "cursor-default" : "cursor-pointer"
-                    }
-                  >
+                  <div key={item.id}>
                     <button
                       type="button"
                       className="pt-6 pb-4 w-full text-left"
