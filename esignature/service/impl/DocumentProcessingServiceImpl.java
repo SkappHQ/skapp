@@ -774,6 +774,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			// Resolve display name to enum type
 			EsignFontVariantType fontVariant = EsignFontVariantType.fromStyle(isBold, isItalic);
+			EsignFontFamilyType fontFamilyType = EsignFontFamilyType.valueOf(fontFamily);
+			String fontFamilyCssName = fontFamilyType.getCssFontFamily();
 
 			// Final placement dimensions in PDF point space
 			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
@@ -797,6 +799,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
 			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
 			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
+			cssDto.setFontFamilyCss(fontFamilyCssName);
 			cssDto.setFontSize(String.valueOf(fontSize));
 			cssDto.setFontWeight(String.valueOf(fontVariant.getFontWeight()));
 			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
@@ -809,7 +812,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
-			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, fontFamily, fontVariant);
+			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, fontFamilyType,
+					fontVariant, fontFamilyCssName);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
@@ -849,8 +853,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt, String fontFamily,
-			EsignFontVariantType fontVariant) {
+	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt, EsignFontFamilyType fontFamily,
+			EsignFontVariantType fontVariant, String fontFamilyCssName) {
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -862,15 +866,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
 
 			if (fontFamily != null) {
-				EsignFontFamilyType fontFamilyType = EsignFontFamilyType.valueOf(fontFamily);
-				String folderName = fontFamilyType.getFolderName();
-				String variantSuffix = fontFamilyType.getVariantSuffix(fontVariant);
+				String folderName = fontFamily.getFolderName();
+				String variantSuffix = fontFamily.getVariantSuffix(fontVariant);
 
 				try (InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, variantSuffix)) {
 					byte[] fontBytes = fontStream.readAllBytes();
 
-					builder.useFont(() -> new ByteArrayInputStream(fontBytes), null, fontVariant.getFontWeight(),
-							fontVariant.getFontStyle(), true);
+					builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCssName,
+							fontVariant.getFontWeight(), fontVariant.getFontStyle(), true);
 				}
 
 			}

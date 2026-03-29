@@ -7,14 +7,16 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EsignFontFamilyType {
 
-	ARIMO("Arimo", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
-	CARLITO("Carlito", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
-	TINOS("Tinos", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
-	DEJAVU_SANS("DejaVuSans", "", "-Oblique", "-Bold", "-BoldOblique"),
-	INTER("Inter", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
-	POPPINS("Poppins", "-Regular", "-Italic", "-Bold", "-BoldItalic");
+	ARIMO("Arimo", "Arimo", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
+	CARLITO("Carlito", "Carlito", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
+	TINOS("Tinos", "Tinos", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
+	DEJAVU_SANS("DejaVuSans", "DejaVu Sans", "", "-Oblique", "-Bold", "-BoldOblique"),
+	INTER("Inter", "Inter", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
+	POPPINS("Poppins", "Poppins", "-Regular", "-Italic", "-Bold", "-BoldItalic");
 
 	private final String folderName;
+
+	private final String cssName;
 
 	private final String regularSuffix;
 
@@ -31,6 +33,11 @@ public enum EsignFontFamilyType {
 			case BOLD -> boldSuffix;
 			case BOLD_ITALIC -> boldItalicSuffix;
 		};
+	}
+
+	// Resolver since Multi-word names need to be wrap in quotes
+	public String getCssFontFamily() {
+		return cssName.contains(" ") ? "\"" + cssName + "\"" : cssName;
 	}
 
 }
