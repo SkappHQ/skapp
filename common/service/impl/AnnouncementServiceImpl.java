@@ -128,10 +128,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			.map(this::buildAnnouncementResponseDto)
 			.toList();
 
-		if (currentTenant != null) {
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-		}
-
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
 		return announcements;
 	}
 
