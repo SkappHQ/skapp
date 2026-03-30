@@ -731,6 +731,11 @@ public class EnvelopeServiceImpl implements EnvelopeService {
 		field.setFieldContainer(fieldContainer);
 
 		if (!isAdvanceFieldTypeWithoutOption(advanceFieldDto.getType())) {
+
+			if (advanceFieldDto.getFieldOption() == null) {
+				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FIELD_OPTION_VALUE_REQUIRED);
+			}
+
 			validateOptionValue(advanceFieldDto, existingOptionValue);
 			validateDisplayOrder(advanceFieldDto, existingDisplayOrder);
 
