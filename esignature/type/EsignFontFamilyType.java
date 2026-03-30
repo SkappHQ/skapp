@@ -37,7 +37,7 @@ public enum EsignFontFamilyType {
 
 	// Resolver since Multi-word names need to be wrap in quotes
 	public String getCssFontFamily() {
-		return cssName.contains(" ") ? "\"" + cssName + "\"" : cssName;
+		return cssName.contains(" ") ? "'" + cssName + "'" : cssName;
 	}
 
 }
