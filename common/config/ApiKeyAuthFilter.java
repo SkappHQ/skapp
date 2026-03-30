@@ -29,7 +29,9 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
 			"/internal/v1/ep/users/auth-pics", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
 			"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project",
 			"/internal/v1/ep/organization/timezone", "/internal/v1/ep/esign/migration/repair-document-hashes",
-			"/internal/v1/ep/esign/migration/repair-document-hashes/status");
+			"/internal/v1/ep/esign/migration/repair-document-hashes/status",
+			"/internal/v1/ep/organization/timezone", "/v1/announcement", "/v1/announcement/list",
+			"/v1/announcement/image/signed-url");
 
 	@Value("${internal.api.key}")
 	private String expectedApiKey;
