@@ -81,7 +81,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
         ) : (
           groupedNotifications.map((group) => (
             <div key={group.period} className="flex flex-col gap-3 pb-5">
-              <h2 className="text-sm font-semibold text-secondary-icon uppercase body1">
+              <h2 className="text-secondary-icon uppercase body1">
                 {translateText([group.period])}
               </h2>
               <div>
@@ -89,7 +89,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                   <div key={item.id}>
                     <button
                       type="button"
-                      className="pt-6 pb-4 w-full text-left"
+                      className="w-full text-left"
                       onClick={() =>
                         handleNotifyRow({
                           id: item.id,
@@ -138,7 +138,6 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
                         item={item}
                       />
                     </button>
-                    <div className="border-b border-secondary-accent"></div>
                   </div>
                 ))}
               </div>

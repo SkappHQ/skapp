@@ -1,12 +1,14 @@
 import { NextPage } from "next";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 import {
   useGetNotifications,
   useMarkAllNotificationsAsRead
 } from "~community/common/api/notificationsApi";
+import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import Notifications from "~community/common/components/organisms/Notifications/Notifications";
 import FullWidthContentLayout from "~community/common/components/templates/FullWidthContentLayout/FullWidthContentLayout";
+import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
@@ -16,7 +18,7 @@ import {
 
 const NotificationsPage: NextPage = () => {
   const translateText = useTranslator("notifications");
-  const [currentPage] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(0);
   const { data, isLoading } = useGetNotifications(
     currentPage,
     6,
@@ -45,7 +47,7 @@ const NotificationsPage: NextPage = () => {
     >
       <>
         <Notifications data={notifications} isLoading={isLoading} />
-        {/* <Pagination
+        <Pagination
           tableName={TableNames.NOTIFICATIONS}
           totalPages={data?.results?.[0].totalPages || 1}
           currentPage={currentPage}
@@ -53,7 +55,7 @@ const NotificationsPage: NextPage = () => {
             // back-end pagination is starting from 0, so we need to subtract 1 from the value
             setCurrentPage(value - 1)
           }
-        /> */}
+        />
       </>
     </FullWidthContentLayout>
   );

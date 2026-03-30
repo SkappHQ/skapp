@@ -21,7 +21,16 @@ const NotificationsFilter = ({
     { id: "all", label: translateText(["allFilterButtonText"]) },
     {
       id: "unread",
-      label: `${translateText(["unreadFilterButtonText"])} (${notifyData.unreadCount})`
+      label: (
+        <span className="inline-flex items-center gap-2">
+          {translateText(["unreadFilterButtonText"])}
+          {notifyData.unreadCount > 0 && (
+            <span className="inline-flex items-center justify-center bg-primary-text text-white subtitle4 px-2 rounded-full">
+              {notifyData.unreadCount}
+            </span>
+          )}
+        </span>
+      )
     }
   ];
 

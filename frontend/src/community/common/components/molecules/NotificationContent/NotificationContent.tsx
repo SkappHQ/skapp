@@ -1,5 +1,3 @@
-import { Box, Stack, Typography } from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
 import { JSX } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -25,7 +23,6 @@ const NotificationContent = ({
   isAttendanceModuleDisabled,
   isEsignatureModuleDisabled
 }: Props): JSX.Element => {
-  const theme: Theme = useTheme();
   const translateText = useTranslator("notifications");
 
   const isViewed =
@@ -35,60 +32,34 @@ const NotificationContent = ({
     isEsignatureModuleDisabled === true;
 
   return (
-    <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
-      <Box>
+    <div className="flex flex-row gap-4 w-full py-3 border-b border-secondary-accent hover:cursor-pointer">
+      <div className="flex items-start gap-4">
+        <div className="flex items-center gap-4 h-9 w-2">
+          {!isViewed && (
+            <div className="size-2 bg-primary-accent rounded-full" />
+          )}
+        </div>
         <Avatar
           firstName={""}
           lastName={""}
           alt={item.title}
           src={item.authPic ?? notificationDefaultImage}
+          avatarStyles={{ width: 36, height: 36 }}
         />
-      </Box>
-      <Box sx={{ flex: 1 }}>
-        <Typography
-          variant="body2"
-          sx={{
-            whiteSpace: "normal",
-            fontSize: "1rem",
-            fontWeight: 700,
-            lineHeight: "160%"
-          }}
-          color={!isViewed ? "primary.dark" : theme.palette.grey.A100}
-        >
+      </div>
+      <div className="flex flex-col gap-2">
+        <p className={`body1 ${isViewed ? "text-secondary-icon" : ""}`}>
           {item?.body}
-        </Typography>
-        <Typography
-          variant="inherit"
-          color={!isViewed ? "primary.dark" : theme.palette.grey.A100}
-          sx={{ fontSize: "0.75rem", fontWeight: 700, mt: "1rem" }}
-        >
+        </p>
+        <p className="body3 text-secondary-icon">
           {fromDateToRelativeTime(
             item.createdDate,
             translateText,
             i18n.language
           )}
-        </Typography>
-      </Box>
-      {!isViewed && (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            minWidth: "3.625rem"
-          }}
-        >
-          <Box
-            sx={{
-              width: "0.688rem",
-              height: "0.688rem",
-              bgcolor: "primary.dark",
-              borderRadius: "3.125rem"
-            }}
-          ></Box>
-        </Box>
-      )}
-    </Stack>
+        </p>
+      </div>
+    </div>
   );
 };
 
