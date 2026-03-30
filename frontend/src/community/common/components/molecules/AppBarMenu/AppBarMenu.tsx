@@ -64,7 +64,7 @@ const AppBarMenu = ({
                     marginTop: "0.5rem",
                     backgroundColor: "common.white",
                     minWidth: isSmallPhoneScreen ? "20rem" : "33rem",
-                    borderRadius: "1.5rem",
+                    borderRadius: "0.75rem",
                     padding: "1.25rem",
                     border: `0.0625rem solid ${theme.palette.grey[200]}`,
                     boxShadow: `0rem 0.5rem 0.5rem ${theme.palette.text.textLighter}`,
