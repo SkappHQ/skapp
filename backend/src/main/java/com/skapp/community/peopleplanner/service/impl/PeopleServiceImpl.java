@@ -704,7 +704,7 @@ public class PeopleServiceImpl implements PeopleService {
 		List<EmployeeEmploymentBasicDetailsManagerDetailsDto> otherSupervisors = requestDto.getEmploymentDetails()
 			.getOtherSupervisors();
 
-		if (primarySupervisor == null && (otherSupervisors == null || otherSupervisors.isEmpty())) {
+		if (primarySupervisor == null && otherSupervisors == null) {
 			return;
 		}
 
@@ -740,7 +740,7 @@ public class PeopleServiceImpl implements PeopleService {
 			}
 		}
 		else {
-			if (primarySupervisor != null && primarySupervisor.getEmployeeId() != null) {
+			if (primarySupervisor == null) {
 				existingManagers.stream()
 					.filter(em -> em.getManagerType() == ManagerType.PRIMARY)
 					.findFirst()
