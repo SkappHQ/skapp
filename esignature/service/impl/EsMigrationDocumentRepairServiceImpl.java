@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.service.CacheService;
@@ -26,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,7 +36,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -57,7 +56,7 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 
 	private final TenantContext tenantContext;
 
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final JsonMapper objectMapper;
 
 	@Value("${aws.s3.bucket-name}")
 	private String bucketName;
@@ -67,7 +66,7 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 	 * transaction ({@link Propagation#REQUIRES_NEW}) so a failure for one document does
 	 * not affect others.
 	 */
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional
 	public void repairDocument(LocalDate startDate, RepairJobDto job) {
 
 		String tenantId = TenantContext.getCurrentTenant();
@@ -102,20 +101,20 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 						// 1. Resolve current version
 						DocumentVersion version = resolveCurrentVersion(document, docLabel, response);
 						if (version == null) {
-							return;
+							continue;
 						}
 
 						// 2. Download file from S3
 						byte[] fileBytes = downloadFile(version, docLabel, response);
 						if (fileBytes == null) {
-							return;
+							continue;
 						}
 
 						// 3. Load the envelope owner's key pair (needed for both verify
 						// and re-sign)
 						KeyPair keyPair = loadKeyPairForEnvelope(envelope, docLabel, response);
 						if (keyPair == null) {
-							return;
+							continue;
 						}
 
 						// 4. Verify integrity: checks ECDSA signature (if present) and
@@ -127,7 +126,7 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 
 						if (integrityOk) {
 							recordOk(docLabel, response);
-							return;
+							continue;
 						}
 
 						// 5. Mismatch detected — recompute hash and signature using
@@ -180,7 +179,7 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 
 	@Override
 	public RepairJobDto getRepairJobStatus(String jobId) {
-		CacheKeys cacheKey = CacheKeys.SYSTEM_VERSION_CACHE_KEY;
+		CacheKeys cacheKey = CacheKeys.ESIGN_MIGRATION_REPAIR_JOB_CACHE_KEY;
 
 		String cachedJob = cacheService.get(cacheKey.format(jobId));
 		if (cachedJob == null) {
@@ -317,7 +316,7 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 			job.setUpdatedAt(Instant.now());
 
 			CacheKeys cacheKey = CacheKeys.ESIGN_MIGRATION_REPAIR_JOB_CACHE_KEY;
-			cacheService.put(cacheKey.format(job.getJobId()), job.toString(), cacheKey.getTtl(),
+			cacheService.put(cacheKey.format(job.getJobId()), objectMapper.writeValueAsString(job), cacheKey.getTtl(),
 					cacheKey.getTimeUnit());
 		}
 	}
@@ -329,7 +328,7 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 			job.setUpdatedAt(Instant.now());
 
 			CacheKeys cacheKey = CacheKeys.ESIGN_MIGRATION_REPAIR_JOB_CACHE_KEY;
-			cacheService.put(cacheKey.format(job.getJobId()), job.toString(), cacheKey.getTtl(),
+			cacheService.put(cacheKey.format(job.getJobId()), objectMapper.writeValueAsString(job), cacheKey.getTtl(),
 					cacheKey.getTimeUnit());
 		}
 	}
@@ -341,7 +340,7 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 			job.setUpdatedAt(Instant.now());
 
 			CacheKeys cacheKey = CacheKeys.ESIGN_MIGRATION_REPAIR_JOB_CACHE_KEY;
-			cacheService.put(cacheKey.format(job.getJobId()), job.toString(), cacheKey.getTtl(),
+			cacheService.put(cacheKey.format(job.getJobId()), objectMapper.writeValueAsString(job), cacheKey.getTtl(),
 					cacheKey.getTimeUnit());
 		}
 	}

@@ -1,12 +1,7 @@
 package com.skapp.enterprise.esignature.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.skapp.community.common.constant.CommonMessageConstant;
-import com.skapp.community.common.exception.EntityNotFoundException;
-import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.type.CacheKeys;
-import com.skapp.enterprise.esignature.constant.EsignMessageConstant;
 import com.skapp.enterprise.esignature.payload.response.RepairJobDto;
 import com.skapp.enterprise.esignature.service.EsMigrationDocumentRepairAsyncService;
 import com.skapp.enterprise.esignature.service.EsMigrationDocumentRepairService;
@@ -15,6 +10,8 @@ import com.skapp.enterprise.esignature.type.RepairJobStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,6 +31,8 @@ public class EsMigrationServiceImpl implements EsMigrationService {
 	private final EsMigrationDocumentRepairService esMigrationDocumentRepairService;
 
 	private final CacheService cacheService;
+
+	private final JsonMapper objectMapper;
 
 	// -------------------------------------------------------------------------
 	// Async repair orchestration
@@ -61,7 +60,13 @@ public class EsMigrationServiceImpl implements EsMigrationService {
 		log.info("[RepairJob] Created job {}", job.getJobId());
 
 		CacheKeys cacheKey = CacheKeys.ESIGN_MIGRATION_REPAIR_JOB_CACHE_KEY;
-		cacheService.put(cacheKey.format(job.getJobId()), job.toString(), cacheKey.getTtl(), cacheKey.getTimeUnit());
+		try {
+			cacheService.put(cacheKey.format(job.getJobId()), objectMapper.writeValueAsString(job), cacheKey.getTtl(),
+					cacheKey.getTimeUnit());
+		}
+		catch (JacksonException e) {
+			log.error("[RepairJob] Failed to serialize RepairJobDto for job {}: {}", job.getJobId(), e.getMessage(), e);
+		}
 		return job;
 	}
 
