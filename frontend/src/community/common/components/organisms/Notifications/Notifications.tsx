@@ -1,4 +1,4 @@
-import { EmptyDataView, Spinner } from "@rootcodelabs/skapp-ui";
+import { EmptyDataView } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
 import { JSX, useMemo } from "react";
 
@@ -21,6 +21,7 @@ import {
 import Icon from "../../atoms/Icon/Icon";
 import NotificationContent from "../../molecules/NotificationContent/NotificationContent";
 import NotificationsFilter from "../../molecules/NotificationsFilter/NotificationsFilter";
+import NotificationsSkeleton from "./NotificationsSkeleton";
 
 interface Props {
   data?: NotificationTypes;
@@ -58,7 +59,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
       />
       <div>
         {isLoading ? (
-          <Spinner size={50} />
+          <NotificationsSkeleton />
         ) : data?.items.length === 0 ? (
           <EmptyDataView
             icon={
