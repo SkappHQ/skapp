@@ -63,9 +63,9 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 	/**
 	 * Repair all documents for completed envelopes on or after the given start date.
 	 * Queries envelopes, downloads each document's current version from S3, verifies
-	 * integrity (hash and ECDSA signature), and recomputes/persists any mismatched values.
-	 * Runs within a single transaction (default {@code REQUIRED} propagation). Job
-	 * progress is tracked via cache using the provided {@link RepairJobDto}.
+	 * integrity (hash and ECDSA signature), and recomputes/persists any mismatched
+	 * values. Runs within a single transaction (default {@code REQUIRED} propagation).
+	 * Job progress is tracked via cache using the provided {@link RepairJobDto}.
 	 */
 	@Transactional
 	public void repairDocument(LocalDate startDate, RepairJobDto job) {

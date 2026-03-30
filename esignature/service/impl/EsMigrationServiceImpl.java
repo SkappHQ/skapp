@@ -1,5 +1,7 @@
 package com.skapp.enterprise.esignature.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.type.CacheKeys;
 import com.skapp.enterprise.esignature.payload.response.RepairJobDto;
@@ -66,6 +68,7 @@ public class EsMigrationServiceImpl implements EsMigrationService {
 		}
 		catch (JacksonException e) {
 			log.error("[RepairJob] Failed to serialize RepairJobDto for job {}: {}", job.getJobId(), e.getMessage(), e);
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
 		}
 		return job;
 	}
