@@ -18,8 +18,8 @@ public interface EsMigrationService {
 	 * Retrieve the current status and results of a previously started repair job.
 	 * @param jobId the job identifier returned by the repair initiation endpoint
 	 * @return the job status and results
-	 * @throws com.skapp.community.common.exception.EntityNotFoundException if no job
-	 * exists for the given ID
+	 * @throws com.skapp.community.common.exception.ModuleException if no job exists for
+	 * the given ID or the cached value cannot be deserialized
 	 */
 	RepairJobDto getRepairJobStatus(String jobId);
 

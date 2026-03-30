@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -62,9 +61,11 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 	private String bucketName;
 
 	/**
-	 * Repair a single document's current-version hash and signature. Runs in its own
-	 * transaction ({@link Propagation#REQUIRES_NEW}) so a failure for one document does
-	 * not affect others.
+	 * Repair all documents for completed envelopes on or after the given start date.
+	 * Queries envelopes, downloads each document's current version from S3, verifies
+	 * integrity (hash and ECDSA signature), and recomputes/persists any mismatched values.
+	 * Runs within a single transaction (default {@code REQUIRED} propagation). Job
+	 * progress is tracked via cache using the provided {@link RepairJobDto}.
 	 */
 	@Transactional
 	public void repairDocument(LocalDate startDate, RepairJobDto job) {
