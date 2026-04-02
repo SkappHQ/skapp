@@ -631,7 +631,7 @@ const CareerProgressionDetailsSection = ({
                       ) : (
                         <Icon
                           name={IconName.ADD_ICON}
-                          fill={theme.palette.primary.dark}
+                          fill="var(--color-primary-text)"
                         />
                       )
                     }

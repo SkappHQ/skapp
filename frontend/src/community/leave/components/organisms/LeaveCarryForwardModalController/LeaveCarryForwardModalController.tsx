@@ -20,9 +20,20 @@ const LeaveCarryForwardModalController: FC = () => {
   } = useLeaveStore((state) => state);
 
   const handleCloseModal = useCallback((): void => {
+    if (
+      leaveCarryForwardModalType ===
+        LeaveCarryForwardModalTypes.CARRY_FORWARD_TYPES_NOT_AVAILABLE ||
+      leaveCarryForwardModalType ===
+        LeaveCarryForwardModalTypes.CARRY_FORWARD_INELIGIBLE
+    )
+      return;
     setIsLeaveCarryForwardModalOpen(false);
     setLeaveCarryForwardModalType(LeaveCarryForwardModalTypes.NONE);
-  }, [setIsLeaveCarryForwardModalOpen, setLeaveCarryForwardModalType]);
+  }, [
+    leaveCarryForwardModalType,
+    setIsLeaveCarryForwardModalOpen,
+    setLeaveCarryForwardModalType
+  ]);
 
   const getModalTitle = useCallback((): string => {
     switch (leaveCarryForwardModalType) {
