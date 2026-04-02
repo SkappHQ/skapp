@@ -266,7 +266,7 @@ public enum EsignMessageConstant implements MessageConstant {
 			"ep.esign.error.templates.feature.not.available.for.current.tier"),
 	ESIGN_ERROR_TEXT_FIELD_VALUE_EXCEEDS_MAX_LENGTH("ep.esign.error.text.field.value.exceeds.max.length"),
 	ESIGN_ERROR_FAILED_TO_DOWNLOAD_SVG_FILE("ep.esign.error.failed.download.svg.file"),
-	ESIGN_ERROR_FAILED_TO_DOWNLOAD_FONT_FILE("ep.esign.error.failed.download.font.file");
+	ESIGN_ERROR_FAILED_TO_LOAD_FONT_TO_HTML("ep.esign.error.failed.load.font.to.html"),;
 
 	private final String messageKey;
 
