@@ -1,5 +1,5 @@
 import { ClickAwayListener, Popper } from "@mui/base";
-import { Box, Divider, Fade, Grow, Typography } from "@mui/material";
+import { Box, Fade, Grow, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { JSX } from "react";
 

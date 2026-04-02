@@ -115,7 +115,7 @@ const AppBar = () => {
                   }}
                   badgeContent={notifyData.unreadCount}
                   invisible={false}
-                  max={100}
+                  max={99}
                   aria-atomic={true}
                 >
                   <Icon
