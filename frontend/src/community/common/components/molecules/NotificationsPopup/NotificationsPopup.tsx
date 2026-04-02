@@ -7,6 +7,7 @@ import ROUTES from "~community/common/constants/routes";
 import { useScreenSizeRange } from "~community/common/hooks/useScreenSizeRange";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { IconName } from "~community/common/types/IconTypes";
 import {
   NotificationDataTypes,
@@ -32,8 +33,12 @@ const NotificationsPopup = ({
   const { isSmallPhoneScreen } = useScreenSizeRange();
   const translateText = useTranslator("notifications");
   const router = useRouter();
+  const { setNotifyData } = useCommonStore((state) => state);
 
   const handelAllNotification = (): void => {
+    setNotifyData({
+      notificationFilterType: NotifyFilterButtonTypes.ALL
+    });
     router.push(ROUTES.NOTIFICATIONS);
     handleCloseMenu();
   };
@@ -113,16 +118,17 @@ const NotificationsPopup = ({
           </>
         )}
       </div>
-      <ButtonV2
-        variant={"tertiary"}
-        onClick={handelAllNotification}
-        disabled={notifications?.length === 0}
-        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-        iconPosition="end"
-        isFullWidth
-      >
-        {translateText(["viewAllNotificationsButtonText"])}
-      </ButtonV2>
+      {notifications?.length > 0 && (
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={handelAllNotification}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+          isFullWidth
+        >
+          {translateText(["viewAllNotificationsButtonText"])}
+        </ButtonV2>
+      )}
     </div>
   );
 };
