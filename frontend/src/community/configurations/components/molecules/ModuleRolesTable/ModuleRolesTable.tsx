@@ -31,7 +31,7 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
         return leaveModuleRolesTableData;
       case Modules.PEOPLE:
         return peopleModuleRolesTableData;
-      case Modules.ESIGNATURE:
+      case Modules.ESIGN:
         return esignatureModuleRolesTableData;
       default:
         return [];
@@ -79,7 +79,7 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
     {
       id: "manager",
       label:
-        module === Modules.ESIGNATURE
+        module === Modules.ESIGN
           ? translateText(["senderHeader"])
           : translateText(["managerHeader"])
     },
