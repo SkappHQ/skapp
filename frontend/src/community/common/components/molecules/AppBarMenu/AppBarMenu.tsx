@@ -96,7 +96,6 @@ const AppBarMenu = ({
                             })
                           }
                         />
-                        <Divider />
                       </Box>
                       <NotificationsPopup
                         handleCloseMenu={handleCloseMenu}

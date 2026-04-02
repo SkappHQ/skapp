@@ -32,7 +32,7 @@ const NotificationContent = ({
     isEsignatureModuleDisabled === true;
 
   return (
-    <div className="flex flex-row gap-4 w-full py-3 border-b border-secondary-accent hover:cursor-pointer">
+    <div className="flex flex-row gap-4 w-full py-3 border-b border-secondary-accent hover:cursor-pointer hover:bg-tertiary-background">
       <div className="flex items-start gap-4">
         <div className="flex items-center gap-4 h-9 w-2">
           {!isViewed && (
@@ -48,7 +48,7 @@ const NotificationContent = ({
         />
       </div>
       <div className="flex flex-col gap-2">
-        <p className={`body1 ${isViewed ? "text-secondary-icon" : ""}`}>
+        <p className={`subtitle1 ${isViewed ? "text-secondary-icon" : ""}`}>
           {item?.body}
         </p>
         <p className="body3 text-secondary-icon">
