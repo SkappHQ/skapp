@@ -21,7 +21,7 @@ interface Props {
 
 const NotificationsSkeleton: FC<Props> = ({ rows = 3 }) => (
   <div className="flex flex-col gap-3 pb-5">
-    <div className="h-3 w-15 rounded bg-tertiary-background animate-pulse" />
+    <div className="h-3 w-[60px] rounded bg-tertiary-background animate-pulse" />
     <div>
       {Array.from({ length: rows }, (_, i) => (
         <NotificationRowSkeleton key={i} />

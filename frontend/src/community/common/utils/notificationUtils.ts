@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 import ROUTES from "~community/common/constants/routes";
@@ -16,17 +17,11 @@ const TIME_PERIOD_ORDER: TimePeriodEnums[] = [
 ];
 
 const getTimePeriod = (dateStr: string): TimePeriodEnums => {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const notificationDate = new Date(dateStr);
-  const notifDay = new Date(
-    notificationDate.getFullYear(),
-    notificationDate.getMonth(),
-    notificationDate.getDate()
-  );
+  const today = DateTime.now().startOf("day");
 
-  const diffMs = today.getTime() - notifDay.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const notificationDate = DateTime.fromISO(dateStr).startOf("day");
+
+  const diffDays = today.diff(notificationDate, "days").days;
 
   if (diffDays === 0) return TimePeriodEnums.TODAY;
   if (diffDays === 1) return TimePeriodEnums.YESTERDAY;

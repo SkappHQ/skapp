@@ -10,7 +10,6 @@ import Notifications from "~community/common/components/organisms/Notifications/
 import FullWidthContentLayout from "~community/common/components/templates/FullWidthContentLayout/FullWidthContentLayout";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   SortKeyTypes,
   SortOrderTypes
@@ -26,7 +25,6 @@ const NotificationsPage: NextPage = () => {
     SortKeyTypes.CREATED_DATE
   );
   const { mutate: markAllAsRead } = useMarkAllNotificationsAsRead();
-  const { notifyData } = useCommonStore((state) => state);
 
   const notifications = data?.results?.[0];
 

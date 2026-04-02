@@ -12,7 +12,7 @@ interface Props {
 const FullWidthContentLayout = ({
   title,
   children,
-  className,
+  className = "",
   primaryButtonProps,
   secondaryButtonProps
 }: Props) => {
