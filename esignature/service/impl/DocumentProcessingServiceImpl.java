@@ -884,7 +884,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 		catch (IOException e) {
 			log.warn("Failed to download font file: {}", e.getMessage());
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_DOWNLOAD_FONT_FILE);
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_FONT_TO_HTML);
 		}
 
 	}
