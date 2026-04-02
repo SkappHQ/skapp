@@ -295,9 +295,15 @@ const PreviousEmploymentDetailsSection = (props: Props): JSX.Element => {
               disabled={isInputsDisabled}
               icon={
                 rowEdited > -1 ? (
-                  <Icon name={IconName.TICK_ICON} />
+                  <Icon
+                    name={IconName.TICK_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 ) : (
-                  <Icon name={IconName.ADD_ICON} />
+                  <Icon
+                    name={IconName.ADD_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 )
               }
               iconPosition="end"

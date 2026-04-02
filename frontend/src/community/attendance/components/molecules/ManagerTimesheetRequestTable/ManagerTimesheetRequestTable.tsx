@@ -364,17 +364,19 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
         isLoading={isRequestLoading}
       />
       {!hasFullList && (
-        <ButtonV2
-          variant={"tertiary"}
-          onClick={async () => {
-            resetTimesheetRequestParams();
-            await router.push(ROUTES.TIMESHEET.TIMESHEET_REQUESTS);
-          }}
-          icon={<RightArrowIcon />}
-          iconPosition="end"
-        >
-          {translateText(["viewFullBtnTxt"])}
-        </ButtonV2>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+          <ButtonV2
+            variant={"tertiary"}
+            onClick={async () => {
+              resetTimesheetRequestParams();
+              await router.push(ROUTES.TIMESHEET.TIMESHEET_REQUESTS);
+            }}
+            icon={<RightArrowIcon />}
+            iconPosition="end"
+          >
+            {translateText(["viewFullBtnTxt"])}
+          </ButtonV2>
+        </Box>
       )}
     </>
   );
