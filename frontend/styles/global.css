@@ -9,7 +9,7 @@
   --color-primary-background: #dbeafe;
 
   --font-family-sans:
-    "Poppins", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   --color-label-bg-seafoam: #a4d1c9;
@@ -131,8 +131,8 @@
 }
 
 :root {
-  --app-font: Inter;
-  --app-font-family: "Inter", sans-serif;
+  --app-font: var(--font-inter);
+  --app-font-family: var(--font-inter), sans-serif;
 }
 
 html,
@@ -143,7 +143,7 @@ body {
   margin: 0;
   line-height: 1.5;
   font-family:
-    Inter,
+    var(--font-inter),
     -apple-system,
     BlinkMacSystemFont,
     Segoe UI,
