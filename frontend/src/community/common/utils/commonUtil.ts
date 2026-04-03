@@ -551,3 +551,9 @@ export const getCookieValue = (name: string): string | null => {
 export const isEnterpriseMode = (): boolean => {
   return process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 };
+
+export const isMobileDevice = (): boolean => {
+  return /Android|iPhone|iPad|iPod/i.test(
+    globalThis.navigator?.userAgent ?? ""
+  );
+};
