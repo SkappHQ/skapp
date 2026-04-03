@@ -1,5 +1,6 @@
 package com.skapp.enterprise.esignature.payload.response.template;
 
+import com.skapp.enterprise.esignature.type.SignType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,8 @@ public class EnvelopeTemplateDetailedResponseDto {
 	private String subject;
 
 	private String message;
+
+	private SignType signType;
 
 	private List<DocumentTemplateDetailResponseDto> templateDocuments;
 
