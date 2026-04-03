@@ -9,7 +9,7 @@
   --color-primary-background: #dbeafe;
 
   --font-family-sans:
-    "Poppins", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   --color-label-bg-seafoam: #a4d1c9;
@@ -67,6 +67,10 @@
   --color-semantic-green-200: #62b774;
   --color-semantic-green-text: #016630;
   --color-semantic-green-accent: #62b774;
+}
+
+:root {
+  --app-font: "Inter";
 }
 
 .h1 {
