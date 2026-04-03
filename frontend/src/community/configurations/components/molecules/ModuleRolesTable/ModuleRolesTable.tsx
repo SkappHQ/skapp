@@ -93,27 +93,34 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
     );
   };
 
+  const moduleColumns: Record<string, { id: string; label: string }[]> = {
+    [Modules.ATTENDANCE]: [
+      { id: "manager", label: translateText(["managerHeader"]) },
+      { id: "employee", label: translateText(["employeeHeader"]) }
+    ],
+    [Modules.LEAVE]: [
+      { id: "manager", label: translateText(["managerHeader"]) },
+      { id: "employee", label: translateText(["employeeHeader"]) }
+    ],
+    [Modules.PEOPLE]: [
+      { id: "manager", label: translateText(["managerHeader"]) },
+      { id: "employee", label: translateText(["employeeHeader"]) }
+    ],
+    [Modules.ESIGN]: [
+      { id: "manager", label: translateText(["senderHeader"]) },
+      { id: "employee", label: translateText(["employeeHeader"]) }
+    ],
+    [Modules.INVOICE]: [
+      { id: "manager", label: translateText(["managerHeader"]) }
+    ],
+    [Modules.PM]: [{ id: "employee", label: translateText(["employeeHeader"]) }]
+  };
+
   const headers = [
     { id: "permission", label: "" },
-    { id: "admin", label: translateText(["adminHeader"]) }
+    { id: "admin", label: translateText(["adminHeader"]) },
+    ...(moduleColumns[module] ?? [])
   ];
-
-  if (module !== Modules.INVOICE && module !== Modules.PM) {
-    headers.push({
-      id: "manager",
-      label:
-        module === Modules.ESIGN
-          ? translateText(["senderHeader"])
-          : translateText(["managerHeader"])
-    });
-  }
-
-  if (module !== Modules.INVOICE) {
-    headers.push({
-      id: "employee",
-      label: translateText(["employeeHeader"])
-    });
-  }
 
   return (
     <Box sx={classes.container}>
