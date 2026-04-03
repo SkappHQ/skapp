@@ -9,6 +9,7 @@
     "attendanceTitle": "Attendance Module Roles",
     "leaveTitle": "Leave Module Roles",
     "peopleTitle": "People Module Roles",
+    "invoiceTitle": "Invoice Module Roles",
     "adminHeader": "ADMIN",
     "managerHeader": "MANAGER",
     "employeeHeader": "EMPLOYEE",
@@ -52,7 +53,17 @@
     "createDocuments": "Create Documents",
     "manageContacts": "Manage the Contacts",
     "signOrDeclineDocuments": "Sign or Decline Documents",
-    "viewReceivedDocuments": "View Received Documents (Inbox)"
+    "viewReceivedDocuments": "View Received Documents (Inbox)",
+    "manageInvoiceSettings": "Manage Invoice Settings",
+    "addCustomers": "Add Customers",
+    "updateCustomerDetails": "Update Customer Details",
+    "createInvoices": "Create Invoices",
+    "projectmanagementTitle": "Project Management Module Roles",
+    "manageGuestUsers": "Manage Guest Users",
+    "viewProjects": "View Projects",
+    "createProjects": "Create Projects",
+    "allProjects": "(All projects)",
+    "assignedProjects": "(Assigned projects)"
   },
   "times": {
     "pageHead": "Time Configurations | Skapp",

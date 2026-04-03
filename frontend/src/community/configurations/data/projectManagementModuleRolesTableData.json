@@ -1,0 +1,41 @@
+[
+  {
+    "permission": "manageGuestUsers",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": ""
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false,
+      "label": ""
+    }
+  },
+  {
+    "permission": "viewProjects",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "allProjects"
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "assignedProjects"
+    }
+  },
+  {
+    "permission": "createProjects",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": ""
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": ""
+    }
+  }
+]

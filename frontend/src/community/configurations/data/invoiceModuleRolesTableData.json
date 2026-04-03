@@ -1,0 +1,62 @@
+[
+  {
+    "permission": "manageInvoiceSettings",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "addCustomers",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "updateCustomerDetails",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "createInvoices",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  }
+]

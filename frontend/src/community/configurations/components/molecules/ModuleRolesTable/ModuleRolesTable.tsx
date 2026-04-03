@@ -9,8 +9,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import attendanceModuleRolesTableData from "~community/configurations/data/attendanceModuleRolesTableData.json";
 import esignatureModuleRolesTableData from "~community/configurations/data/esignatureModuleRolesTableData.json";
+import invoiceModuleRolesTableData from "~community/configurations/data/invoiceModuleRolesTableData.json";
 import leaveModuleRolesTableData from "~community/configurations/data/leaveModuleRolesTableData.json";
 import peopleModuleRolesTableData from "~community/configurations/data/peopleModuleRolesTableData.json";
+import projectManagementModuleRolesTableData from "~community/configurations/data/projectManagementModuleRolesTableData.json";
 
 import styles from "./styles";
 
@@ -33,6 +35,10 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
         return peopleModuleRolesTableData;
       case Modules.ESIGN:
         return esignatureModuleRolesTableData;
+      case Modules.INVOICE:
+        return invoiceModuleRolesTableData;
+      case Modules.PM:
+        return projectManagementModuleRolesTableData;
       default:
         return [];
     }
@@ -46,6 +52,16 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
     );
   };
 
+  const getRoleLabel = (role: {
+    enabled: boolean;
+    viewOnly: boolean;
+    label?: string;
+  }) => {
+    if (role.label) return translateText([role.label]);
+    if (role.viewOnly) return translateText(["viewOnly"]);
+    return "";
+  };
+
   const transformToTableRows = () => {
     return (
       getTableData()?.map((data, index) => ({
@@ -54,37 +70,50 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
         admin: (
           <>
             {getIcon(data.admin.enabled)}
-            {data.admin.viewOnly ? translateText(["viewOnly"]) : ""}
+            {getRoleLabel(data.admin)}
           </>
         ),
-        manager: (
-          <>
-            {getIcon(data.manager.enabled)}
-            {data.manager.viewOnly ? translateText(["viewOnly"]) : ""}
-          </>
-        ),
-        employee: (
-          <>
-            {getIcon(data.employee.enabled)}
-            {data.employee.viewOnly ? translateText(["viewOnly"]) : ""}
-          </>
-        )
+        ...("manager" in data && {
+          manager: (
+            <>
+              {getIcon(data.manager.enabled)}
+              {getRoleLabel(data.manager)}
+            </>
+          )
+        }),
+        ...("employee" in data && {
+          employee: (
+            <>
+              {getIcon(data.employee.enabled)}
+              {getRoleLabel(data.employee)}
+            </>
+          )
+        })
       })) || []
     );
   };
 
   const headers = [
     { id: "permission", label: "" },
-    { id: "admin", label: translateText(["adminHeader"]) },
-    {
+    { id: "admin", label: translateText(["adminHeader"]) }
+  ];
+
+  if (module !== Modules.INVOICE && module !== Modules.PM) {
+    headers.push({
       id: "manager",
       label:
         module === Modules.ESIGN
           ? translateText(["senderHeader"])
           : translateText(["managerHeader"])
-    },
-    { id: "employee", label: translateText(["employeeHeader"]) }
-  ];
+    });
+  }
+
+  if (module !== Modules.INVOICE) {
+    headers.push({
+      id: "employee",
+      label: translateText(["employeeHeader"])
+    });
+  }
 
   return (
     <Box sx={classes.container}>
