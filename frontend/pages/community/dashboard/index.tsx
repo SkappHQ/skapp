@@ -130,7 +130,14 @@ const Dashboard: NextPage = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [billingTranslateText, setToastMessage, showLoader, query]);
+  }, [
+    billingTranslateText,
+    setToastMessage,
+    showLoader,
+    query.status,
+    query.tier,
+    query.trial
+  ]);
 
   useEffect(() => {
     if (query.isFirstTime) {
