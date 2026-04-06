@@ -138,7 +138,7 @@ const getLeaveEntitlementsForEmployee = (
   const entitlements = leaveTypeNames.map((leaveType) => {
     const leaveTypeDetails = leaveTypes?.find((type) => {
       return (
-        type?.name?.replace(/[\s\-]+/g, "").toLowerCase() ===
+        type?.name?.replace(/[\s-]+/g, "").toLowerCase() ===
         leaveType?.toLowerCase()
       );
     });
