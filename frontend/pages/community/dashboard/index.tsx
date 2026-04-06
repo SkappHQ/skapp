@@ -37,6 +37,7 @@ import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
+import { getBillingSuccessToast } from "~enterprise/common/utils/billingToastUtils";
 
 type RoleTypes = AdminTypes | ManagerTypes | EmployeeTypes;
 
@@ -113,12 +114,15 @@ const Dashboard: NextPage = () => {
       const timer = setTimeout(() => {
         setShowLoader(false);
         if (query.status === SUCCESS) {
+          const { title, description } = getBillingSuccessToast(
+            query.tier as string | undefined,
+            query.trial === "true",
+            billingTranslateText
+          );
           setToastMessage({
             toastType: ToastType.SUCCESS,
-            title: billingTranslateText(["subscriptionSuccessToastTitle"]),
-            description: billingTranslateText([
-              "subscriptionSuccessToastDescription"
-            ]),
+            title,
+            description,
             open: true
           });
         }
@@ -126,7 +130,7 @@ const Dashboard: NextPage = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [billingTranslateText, setToastMessage, showLoader]);
+  }, [billingTranslateText, setToastMessage, showLoader, query]);
 
   useEffect(() => {
     if (query.isFirstTime) {
