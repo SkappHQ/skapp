@@ -5,9 +5,11 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
+import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -30,6 +32,7 @@ import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +58,8 @@ public class RolesServiceImpl implements RolesService {
 
 	@Getter
 	private final UserService userService;
+
+	private final UserVersionService userVersionService;
 
 	private final EmployeeDao employeeDao;
 
@@ -519,6 +524,9 @@ public class RolesServiceImpl implements RolesService {
 
 	protected EmployeeRole createEmployeeRole(EmployeeSystemPermissionsDto roleRequestDto, Employee employee) {
 		EmployeeRole employeeRole = employee.getEmployeeRole();
+
+		EmployeeRole oldRole = employeeRole != null ? new EmployeeRole(employeeRole) : null;
+
 		if (employeeRole == null) {
 			employeeRole = new EmployeeRole();
 		}
@@ -553,6 +561,11 @@ public class RolesServiceImpl implements RolesService {
 		CommonModuleUtils.setIfExists(DateTimeUtils::getCurrentUtcDate, employeeRole::setChangedDate);
 		CommonModuleUtils.setIfExists(currentUser::getEmployee, employeeRole::setRoleChangedBy);
 		CommonModuleUtils.setIfExists(() -> employee, employeeRole::setEmployee);
+
+		if (oldRole != null && PeopleUtil.isPermissionsChanged(oldRole, employeeRole)
+				&& employee.getEmployeeId() != null) {
+			userVersionService.upgradeUserVersion(employee.getEmployeeId(), VersionType.MAJOR);
+		}
 
 		return employeeRole;
 	}
