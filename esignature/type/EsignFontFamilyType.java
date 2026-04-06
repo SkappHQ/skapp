@@ -1,13 +1,5 @@
 package com.skapp.enterprise.esignature.type;
 
-import static com.skapp.enterprise.esignature.constant.EsignConstants.FONT_FOLDER_DEJAVU_SANS;
-import static com.skapp.enterprise.esignature.constant.EsignConstants.FONT_SUFFIX_BOLD;
-import static com.skapp.enterprise.esignature.constant.EsignConstants.FONT_SUFFIX_BOLD_ITALIC;
-import static com.skapp.enterprise.esignature.constant.EsignConstants.FONT_SUFFIX_BOLD_OBLIQUE;
-import static com.skapp.enterprise.esignature.constant.EsignConstants.FONT_SUFFIX_ITALIC;
-import static com.skapp.enterprise.esignature.constant.EsignConstants.FONT_SUFFIX_OBLIQUE;
-import static com.skapp.enterprise.esignature.constant.EsignConstants.FONT_SUFFIX_REGULAR;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -15,19 +7,16 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EsignFontFamilyType {
 
-	ARIAL("Arial", "Arimo", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
-	CALIBRI("Calibri", "Carlito", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
-	TIMES_NEW_ROMAN("Times New Roman", "Tinos", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD,
-			FONT_SUFFIX_BOLD_ITALIC),
-	VERDANA("Verdana", FONT_FOLDER_DEJAVU_SANS, "", FONT_SUFFIX_OBLIQUE, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_OBLIQUE),
-	INTER("INTER", "Inter", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
-	POPPINS("POPPINS", "Poppins", FONT_SUFFIX_REGULAR, FONT_SUFFIX_ITALIC, FONT_SUFFIX_BOLD, FONT_SUFFIX_BOLD_ITALIC),
-	DEJAVU_SANS(FONT_FOLDER_DEJAVU_SANS, FONT_FOLDER_DEJAVU_SANS, "", FONT_SUFFIX_OBLIQUE, FONT_SUFFIX_BOLD,
-			FONT_SUFFIX_BOLD_OBLIQUE);
-
-	private final String familyName;
+	ARIMO("Arimo", "Arimo", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
+	CARLITO("Carlito", "Carlito", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
+	TINOS("Tinos", "Tinos", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
+	DEJAVU_SANS("DejaVuSans", "DejaVu Sans", "", "-Oblique", "-Bold", "-BoldOblique"),
+	INTER("Inter", "Inter", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
+	POPPINS("Poppins", "Poppins", "-Regular", "-Italic", "-Bold", "-BoldItalic");
 
 	private final String folderName;
+
+	private final String cssName;
 
 	private final String regularSuffix;
 
@@ -46,23 +35,9 @@ public enum EsignFontFamilyType {
 		};
 	}
 
-	public static EsignFontFamilyType getByFamilyName(String family) {
-		for (EsignFontFamilyType fontFamily : values()) {
-			if (fontFamily.familyName.equals(family)) {
-				return fontFamily;
-			}
-		}
-		return INTER;
-	}
-
-	public static String getFamilyName(String enumName) {
-
-		for (EsignFontFamilyType fontFamily : values()) {
-			if (fontFamily.name().equals(enumName)) {
-				return fontFamily.familyName;
-			}
-		}
-		return INTER.familyName;
+	// Resolver since Multi-word names need to be wrap in quotes
+	public String getCssFontFamily() {
+		return cssName.contains(" ") ? "'" + cssName + "'" : cssName;
 	}
 
 }
