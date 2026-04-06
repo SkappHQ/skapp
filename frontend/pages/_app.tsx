@@ -31,6 +31,8 @@ import i18n from "~i18n";
 
 import "../styles/global.css";
 import Error from "./_error";
+import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
+import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 
 // Initialize the font
 const inter = Inter({
@@ -148,12 +150,15 @@ function MyApp({
             <TanStackProvider>
               <ThemeProvider theme={newTheme}>
                 <I18nextProvider i18n={i18n}>
-                  <ErrorBoundary FallbackComponent={Error}>
-                    <RouteChangeLoader />
-                    <BaseLayout>
-                      <Component {...pageProps} />
-                    </BaseLayout>
-                  </ErrorBoundary>
+                  <AnnouncementProvider>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <RouteChangeLoader />
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
+                    <AnnouncementWrapper />
+                  </AnnouncementProvider>
                   <ReactQueryDevtools initialIsOpen={false} position="bottom" />
                 </I18nextProvider>
               </ThemeProvider>
