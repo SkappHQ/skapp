@@ -24,8 +24,4 @@ public class DocumentHashRepairResponseDto {
 
 	private List<Long> failedDocumentIds = new ArrayList<>();
 
-	public void addFailedDocumentId(Long documentId) {
-		this.failedDocumentIds.add(documentId);
-	}
-
 }

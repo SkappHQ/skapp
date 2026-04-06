@@ -157,7 +157,7 @@ public class EsMigrationDocumentRepairServiceImpl implements EsMigrationDocument
 					}
 					catch (Exception e) {
 						log.error("{} Failed to repair {}: {}", LOG_PREFIX, docLabel, e.getMessage(), e);
-						response.addFailedDocumentId(document.getId());
+						response.getFailedDocumentIds().add(document.getId());
 						response.setFailed(response.getFailed() + 1);
 					}
 				}
