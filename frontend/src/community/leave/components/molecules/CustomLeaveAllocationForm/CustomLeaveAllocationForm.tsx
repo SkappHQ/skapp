@@ -35,7 +35,13 @@ interface Props {
   errors: FormikErrors<CustomLeaveAllocationType>;
   setFieldValue: (
     field: string,
-    value: CustomLeaveAllocationType | number | Date | EmployeeType | string
+    value:
+      | CustomLeaveAllocationType
+      | number
+      | Date
+      | EmployeeType
+      | string
+      | undefined
   ) => void;
   setFieldError: (field: string, message: string | undefined) => void;
   translateText: (keys: string[]) => string;
@@ -121,17 +127,6 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
       };
     });
   }, [leaveTypesData]);
-
-  useEffect(() => {
-    if (values.employeeId && suggestions) {
-      const selectedUser = suggestions.find(
-        (user) => user.employeeId === values.employeeId
-      );
-      if (selectedUser) {
-        setSearchTerm(`${selectedUser.firstName} ${selectedUser.lastName}`);
-      }
-    }
-  }, [values.employeeId, suggestions]);
 
   const onSelectUser = async (user: EmployeeType): Promise<void> => {
     if (user) {
@@ -315,9 +310,15 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
         label={translateText(["leaveAllocationNameInputLabel"])}
         placeholder={translateText(["searchEmployeePlaceholder"])}
         options={(suggestions ?? []) as EmployeeType[]}
-        value={values.assignedTo}
         inputValue={searchTerm}
-        onInputChange={(value) => setSearchTerm(value)}
+        onInputChange={(value) => {
+          setSearchTerm(value);
+          if (!value) {
+            setFieldValue("employeeId", 0);
+            setFieldValue("name", "");
+            setFieldValue("assignedTo", undefined);
+          }
+        }}
         onChange={(value) => onSelectUser(value)}
         error={errors.employeeId}
         isDisabled={
