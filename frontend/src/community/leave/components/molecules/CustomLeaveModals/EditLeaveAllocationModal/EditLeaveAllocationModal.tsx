@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 
@@ -164,7 +164,7 @@ const EditLeaveAllocationModal: React.FC<Props> = ({
           variant={"primary"}
           onClick={() => onSubmit(values)}
           disabled={isSaveDisabled}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          icon={<ArrowRightIcon />}
           iconPosition="end"
         >
           {translateText(["saveChangesBtn"])}
