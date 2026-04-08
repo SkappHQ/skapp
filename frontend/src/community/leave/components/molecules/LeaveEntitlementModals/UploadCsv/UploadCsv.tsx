@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -176,7 +176,7 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
           onClick={handleUploadBtnClick}
           disabled={!isValid}
           isLoading={leaveEntitlementBulkUploadPending}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          icon={<ArrowRightIcon />}
           iconPosition="end"
         >
           {translateText(["uploadButton"])}

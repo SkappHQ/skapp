@@ -22,6 +22,7 @@ import CancelledStatusIcon from "~community/common/assets/Icons/CancelledStatusI
 import ChangeIcon from "~community/common/assets/Icons/ChangeIcon";
 import CheckCircleIcon from "~community/common/assets/Icons/CheckCircleIcon";
 import CheckCircleOutlineIcon from "~community/common/assets/Icons/CheckCircleOutlineIcon";
+import CheckCircleOutlinedIcon from "~community/common/assets/Icons/CheckCircleOutlinedIcon";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CheckWrapperIcon from "~community/common/assets/Icons/CheckWrapperIcon";
 import CheckboxIcon from "~community/common/assets/Icons/CheckboxIcon";
@@ -304,6 +305,7 @@ export const IconMapping: Partial<
   [IconName.CROSSED_CIRCLE_ICON]: CrossedCircleIcon,
   [IconName.SIGNATURE_PEN_ICON]: SignaturePenIcon,
   [IconName.CHECK_CIRCLE_OUTLINE_ICON]: CheckCircleOutlineIcon,
+  [IconName.CHECK_CIRCLE_OUTLINED_ICON]: CheckCircleOutlinedIcon,
   [IconName.FINANCE_MODULE_ICON]: FinanceModuleIcon,
   [IconName.ASSET_MODULE_ICON]: AssetModuleIcon,
   [IconName.CRM_MODULE_ICON]: CRMModuleIcon,

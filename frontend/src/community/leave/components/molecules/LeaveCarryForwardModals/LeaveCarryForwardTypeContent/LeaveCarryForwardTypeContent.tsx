@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { JSX, useEffect, useState } from "react";
@@ -192,7 +192,7 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
           onClick={() => formik.handleSubmit()}
           isLoading={loading}
           disabled={checkedList.length === 0}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          icon={<ArrowRightIcon />}
           iconPosition="end"
         >
           {translateTexts(["leaveCarryForwardModalConfirmBtn"])}
