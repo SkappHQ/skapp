@@ -79,7 +79,7 @@ public class EPSecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/internal/v1/ep/users", "/internal/v1/ep/users/auth-pics", "/internal/v1/ep/versions",
 						"/internal/v1/ep/jobs", "/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project",
-						"/internal/v1/ep/organization/timezone")
+						"/internal/v1/ep/organization/timezone", "/internal/v1/ep/user/guest")
 				.hasRole(EpAuthConstants.INTERNAL_API)
 				.requestMatchers("/v1/auth/**", "/v3/api-docs/**", "/v3/api-docs", "/v3/api-docs.yaml",
 						"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico",
@@ -101,7 +101,7 @@ public class EPSecurityConfig {
 						"/v2/ep/auth/signin/sso/microsoft", "/internal/v1/ep/versions", "/internal/v1/ep/jobs",
 						"/v1/ep/release/generate-pdf", "/v1/microsoft-calendar/redirect",
 						"/internal/v1/ep/invoice/customer", "/internal/v1/ep/invoice/project",
-						"/v1/ep/auth/signin/guest/send-otp", "/v1/ep/auth/signin/guest/resend-otp",
+						"/internal/v1/ep/user/guest", "/v1/ep/auth/signin/guest/send-otp", "/v1/ep/auth/signin/guest/resend-otp",
 						"/v1/ep/auth/signin/guest/verify-otp", "/v1/ep/auth/status", "/v1/auth/session/sign-in",
 						"/v1/auth/session/sign-out", "/v1/auth/session/refresh-token",
 						"/v2/ep/auth/session/signin/sso/google", "/v2/ep/auth/session/signin/sso/microsoft",
