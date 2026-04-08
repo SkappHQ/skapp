@@ -20,10 +20,10 @@ public class ModuleRolesRestriction {
 
 	@Id
 	@Enumerated(EnumType.STRING)
-	@Column(name = "module", columnDefinition = "varchar(255)")
+	@Column(name = "module")
 	private ModuleType module;
 
-	@Column(name = "restrictions", columnDefinition = "varchar(255)")
+	@Column(name = "restrictions")
 	private String restrictions;
 
 }
