@@ -20,6 +20,7 @@ import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionR
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
+import com.skapp.community.peopleplanner.repository.ModuleRolesRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.impl.RolesServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -56,10 +57,11 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 
 	public EpRolesServiceImpl(EmployeeRoleDao employeeRoleDao, UserService userService,
 			UserVersionService userVersionService, EmployeeDao employeeDao, TeamDao teamDao, PeopleMapper peopleMapper,
-			ModuleRoleRestrictionDao moduleRoleRestrictionDao, MessageUtil messageUtil,
-			EpEmployeeRoleDao epEmployeeRoleDao, EnvelopeService envelopeService, EpEmployeeDao epEmployeeDao) {
+			ModuleRoleRestrictionDao moduleRoleRestrictionDao, ModuleRolesRestrictionDao moduleRolesRestrictionDao,
+			MessageUtil messageUtil, EpEmployeeRoleDao epEmployeeRoleDao, EnvelopeService envelopeService,
+			EpEmployeeDao epEmployeeDao) {
 		super(employeeRoleDao, userService, userVersionService, employeeDao, teamDao, peopleMapper,
-				moduleRoleRestrictionDao, messageUtil);
+				moduleRoleRestrictionDao, moduleRolesRestrictionDao, messageUtil);
 		this.epEmployeeRoleDao = epEmployeeRoleDao;
 		this.envelopeService = envelopeService;
 		this.epEmployeeDao = epEmployeeDao;
