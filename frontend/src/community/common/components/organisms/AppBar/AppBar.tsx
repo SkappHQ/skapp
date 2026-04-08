@@ -16,6 +16,7 @@ import { useCommonStore } from "~community/common/stores/commonStore";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { AppBarItemTypes } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
+import { NotifyFilterButtonTypes } from "~community/common/types/notificationTypes";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 import styles from "./styles";
@@ -51,6 +52,9 @@ const AppBar = () => {
       if (title === AppBarItemTypes.NOTIFICATION) {
         queryClient.invalidateQueries({
           queryKey: [notificationsQueryKeys.GET_NOTIFICATIONS]
+        });
+        setNotifyData({
+          notificationFilterType: NotifyFilterButtonTypes.UNREAD
         });
       }
       setAnchorEl(userInfoRef.current);
@@ -111,7 +115,7 @@ const AppBar = () => {
                   }}
                   badgeContent={notifyData.unreadCount}
                   invisible={false}
-                  max={100}
+                  max={99}
                   aria-atomic={true}
                 >
                   <Icon

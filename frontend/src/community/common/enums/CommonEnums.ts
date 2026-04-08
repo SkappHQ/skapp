@@ -60,3 +60,11 @@ export enum HalfDayType {
   MORNING = "morning",
   EVENING = "evening"
 }
+
+export enum TimePeriodEnums {
+  TODAY = "todayGroup",
+  YESTERDAY = "yesterdayGroup",
+  LAST_7_DAYS = "last7DaysGroup",
+  LAST_30_DAYS = "last30DaysGroup",
+  OLDER = "olderGroup"
+}
