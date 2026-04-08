@@ -9,8 +9,8 @@
   --color-primary-background: #dbeafe;
 
   --font-family-sans:
-    var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    var(--font-inter), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   --color-label-bg-seafoam: #a4d1c9;
   --color-label-bg-sand: #ffe3a6;
@@ -130,11 +130,6 @@
   font-family: var(--font-family-sans);
 }
 
-:root {
-  --app-font: var(--font-inter);
-  --app-font-family: var(--font-inter), sans-serif;
-}
-
 html,
 body {
   width: 100%;
@@ -142,19 +137,7 @@ body {
   padding: 0;
   margin: 0;
   line-height: 1.5;
-  font-family:
-    var(--font-inter),
-    -apple-system,
-    BlinkMacSystemFont,
-    Segoe UI,
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    Fira Sans,
-    Droid Sans,
-    Helvetica Neue,
-    sans-serif;
+  font-family: var(--font-family-sans);
 }
 
 input,
@@ -261,14 +244,14 @@ input[type="number"] {
   font-size: 16px;
   font-weight: 700;
   line-height: 140%;
-  font-family: var(--app-font-family);
+  font-family: var(--font-family-sans);
 }
 
 .driver-popover .driver-popover-description {
   font-size: 14px;
   font-weight: 400;
   line-height: 140%;
-  font-family: var(--app-font-family);
+  font-family: var(--font-family-sans);
 }
 
 .full-day-border {
