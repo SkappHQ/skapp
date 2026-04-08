@@ -105,6 +105,14 @@ public class RolesServiceImpl implements RolesService {
 	public ResponseEntityDto updateRoleRestrictions(ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
 		log.info("updateRoleRestrictions: execution started");
 
+		if (moduleRoleRestrictionRequestDto.getRestrictions() != null
+				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
+			List<RoleLevel> restrictions = moduleRoleRestrictionRequestDto.getRestrictions();
+			moduleRoleRestrictionRequestDto.setIsAdmin(restrictions.contains(RoleLevel.ADMIN));
+			moduleRoleRestrictionRequestDto.setIsManager(
+					restrictions.contains(getSecondaryRestrictionRole(moduleRoleRestrictionRequestDto.getModule())));
+		}
+
 		ModuleRoleRestriction moduleRoleRestriction = peopleMapper
 			.roleRestrictionRequestDtoToRestrictRole(moduleRoleRestrictionRequestDto);
 		moduleRoleRestrictionDao.save(moduleRoleRestriction);
@@ -119,13 +127,20 @@ public class RolesServiceImpl implements RolesService {
 	private ModuleRolesRestriction buildModuleRolesRestriction(
 			ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
 		ModuleType module = moduleRoleRestrictionRequestDto.getModule();
-		List<String> restrictedRoles = new ArrayList<>();
 
-		if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsAdmin())) {
-			restrictedRoles.add(RoleLevel.ADMIN.name());
+		List<String> restrictedRoles;
+		if (moduleRoleRestrictionRequestDto.getRestrictions() != null
+				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
+			restrictedRoles = moduleRoleRestrictionRequestDto.getRestrictions().stream().map(RoleLevel::name).toList();
 		}
-		if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsManager())) {
-			restrictedRoles.add(getSecondaryRestrictionRole(module).name());
+		else {
+			restrictedRoles = new ArrayList<>();
+			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsAdmin())) {
+				restrictedRoles.add(RoleLevel.ADMIN.name());
+			}
+			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsManager())) {
+				restrictedRoles.add(getSecondaryRestrictionRole(module).name());
+			}
 		}
 
 		ModuleRolesRestriction moduleRolesRestriction = new ModuleRolesRestriction();
