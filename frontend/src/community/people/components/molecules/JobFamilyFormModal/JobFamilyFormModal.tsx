@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useEffect, useMemo } from "react";
 
@@ -162,7 +162,7 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
                   ? ongoingQuickSetup.DEFINE_JOB_FAMILIES
                   : false
               )}
-              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              icon={<ArrowRightIcon />}
               iconPosition="end"
             >
               {translateText(["saveBtnText"])}

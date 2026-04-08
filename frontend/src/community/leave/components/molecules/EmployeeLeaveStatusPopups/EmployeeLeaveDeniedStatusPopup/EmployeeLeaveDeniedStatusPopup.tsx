@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -66,7 +66,7 @@ const EmployeeLeaveDeniedStatusPopup = ({
       <ButtonV2
         variant={"primary"}
         onClick={() => handleRequestStatusPopup()}
-        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        icon={<ArrowRightIcon />}
         iconPosition="end"
       >
         {translateText(["myLeaveRequests", "proceedToHome"])}
