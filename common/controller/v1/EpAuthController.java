@@ -3,7 +3,6 @@ package com.skapp.enterprise.common.controller.v1;
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
-import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserOtpVerifyRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserSignInRequestDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
@@ -84,13 +83,6 @@ public class EpAuthController {
 	@GetMapping("/tenant/availability")
 	public ResponseEntity<ResponseEntityDto> verifyTenantAvailability(@RequestParam String subDomainName) {
 		ResponseEntityDto response = epAuthService.verifyTenantAvailability(subDomainName);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@PostMapping("/recaptcha")
-	public ResponseEntity<ResponseEntityDto> validateCaptcha(
-			@Valid @RequestBody EpCaptchaVerificationDto epCaptchaVerificationDto) {
-		ResponseEntityDto response = epAuthService.validateCaptcha(epCaptchaVerificationDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
