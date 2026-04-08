@@ -18,6 +18,7 @@ import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.ModuleRoleRestriction;
+import com.skapp.community.peopleplanner.model.ModuleRolesRestriction;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.ModuleRoleRestrictionRequestDto;
 import com.skapp.community.peopleplanner.payload.request.RoleRequestDto;
@@ -29,6 +30,7 @@ import com.skapp.community.peopleplanner.payload.response.RoleResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
+import com.skapp.community.peopleplanner.repository.ModuleRolesRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -69,6 +71,8 @@ public class RolesServiceImpl implements RolesService {
 
 	private final ModuleRoleRestrictionDao moduleRoleRestrictionDao;
 
+	private final ModuleRolesRestrictionDao moduleRolesRestrictionDao;
+
 	private final MessageUtil messageUtil;
 
 	@Override
@@ -105,8 +109,36 @@ public class RolesServiceImpl implements RolesService {
 			.roleRestrictionRequestDtoToRestrictRole(moduleRoleRestrictionRequestDto);
 		moduleRoleRestrictionDao.save(moduleRoleRestriction);
 
+		ModuleRolesRestriction moduleRolesRestriction = buildModuleRolesRestriction(moduleRoleRestrictionRequestDto);
+		moduleRolesRestrictionDao.save(moduleRolesRestriction);
+
 		log.info("updateRoleRestrictions: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_ROLE_RESTRICT));
+	}
+
+	private ModuleRolesRestriction buildModuleRolesRestriction(
+			ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
+		ModuleType module = moduleRoleRestrictionRequestDto.getModule();
+		List<String> restrictedRoles = new ArrayList<>();
+
+		if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsAdmin())) {
+			restrictedRoles.add(RoleLevel.ADMIN.name());
+		}
+		if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsManager())) {
+			restrictedRoles.add(getSecondaryRestrictionRole(module).name());
+		}
+
+		ModuleRolesRestriction moduleRolesRestriction = new ModuleRolesRestriction();
+		moduleRolesRestriction.setModule(module);
+		moduleRolesRestriction.setRestrictions(restrictedRoles.isEmpty() ? null : String.join(",", restrictedRoles));
+		return moduleRolesRestriction;
+	}
+
+	private RoleLevel getSecondaryRestrictionRole(ModuleType module) {
+		return switch (module) {
+			case ESIGN -> RoleLevel.SENDER;
+			default -> RoleLevel.MANAGER;
+		};
 	}
 
 	@Override
