@@ -68,7 +68,8 @@
       "selectJobFamily": "Select job family",
       "selectJobTitle": "Select job title",
       "selectCurrentEmploymentChecked": "Select current employment",
-      "careerProgressionTable": "Career progression table"
+      "careerProgressionTable": "Career progression table",
+      "currentPositionColumn": "Current position"
     },
     "diversityDetails": {
       "selectEthnicity": "Select ethnicity",
@@ -92,6 +93,7 @@
   },
   "peopleFormTable": {
     "actionColumn": {
+      "header": "Actions",
       "editButton": "Select edit",
       "deleteButton": "Select delete"
     }

@@ -35,10 +35,12 @@ interface Props {
   excludedColumns?: string[];
   isResponsive?: boolean;
   tableName?: string;
+  headingAriaLabels?: Record<number, string>;
 }
 
 const PeopleFormTable: FC<Props> = ({
   headings,
+  headingAriaLabels,
   data,
   onEdit,
   onDelete,
@@ -144,24 +146,30 @@ const PeopleFormTable: FC<Props> = ({
                 ...tableHeaderCellStyles
               }}
             >
-              <Typography
-                sx={{
-                  color: theme.palette.text.secondary,
-                  fontWeight: 400,
-                  letterSpacing: "0.03em",
-                  fontSize: 14,
-                  ...(isResponsive && {
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    maxWidth: "100%"
-                  }),
-                  [theme.breakpoints.down("lg")]: { fontSize: 12 },
-                  ...tableHeaderTextStyles
-                }}
-              >
-                {heading?.toUpperCase()}
-              </Typography>
+              {heading ? (
+                <Typography
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontWeight: 400,
+                    letterSpacing: "0.03em",
+                    fontSize: 14,
+                    ...(isResponsive && {
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      maxWidth: "100%"
+                    }),
+                    [theme.breakpoints.down("lg")]: { fontSize: 12 },
+                    ...tableHeaderTextStyles
+                  }}
+                >
+                  {heading.toUpperCase()}
+                </Typography>
+              ) : (
+                headingAriaLabels?.[index] && (
+                  <span className="sr-only">{headingAriaLabels[index]}</span>
+                )
+              )}
             </TableCell>
           ))}
           {actionsNeeded && (
@@ -173,11 +181,9 @@ const PeopleFormTable: FC<Props> = ({
                 ...tableHeaderCellStyles
               }}
             >
-              <Typography
-                sx={{
-                  ...tableHeaderTextStyles
-                }}
-              ></Typography>
+              <Typography className="sr-only" sx={{ ...tableHeaderTextStyles }}>
+                {translateText(["actionColumn", "header"])}
+              </Typography>
             </TableCell>
           )}
         </TableRow>
