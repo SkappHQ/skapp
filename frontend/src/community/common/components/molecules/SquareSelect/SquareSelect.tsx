@@ -99,14 +99,15 @@ const SquareSelect = ({
         }
         MenuProps={{
           PaperProps: {
-            sx: {},
             style: {
               maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP
             },
-            "& .MuiMenu-list": {
-              padding: "0rem"
-            },
-            ...customStyles?.menuProps?.paperProps?.sx
+            sx: {
+              "& .MuiMenu-list": {
+                padding: "0rem"
+              },
+              ...customStyles?.menuProps?.paperProps?.sx
+            }
           },
           sx: {
             "& .MuiMenuItem-root": {
