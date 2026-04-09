@@ -24,7 +24,7 @@ public class EpGuestUserInternalController {
 
 	@PostMapping
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<List<EpUserResponseDto>> createGuestUser(
+	public ResponseEntity<List<EpUserResponseDto>> createGuestUsers(
 			@Valid @RequestBody EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto) {
 		List<EpUserResponseDto> response = epGuestUserService.createGuestUsers(epGuestUserBulkInviteRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);

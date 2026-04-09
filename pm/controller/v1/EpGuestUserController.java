@@ -9,7 +9,6 @@ import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -82,7 +81,7 @@ public class EpGuestUserController {
 	@PatchMapping("/approval")
 	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> updateGuestUserApprovalStatus(
-			@Valid @RequestBody EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {
+			@RequestBody EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {
 		ResponseEntityDto response = epGuestUserService.updateGuestUserApprovalStatus(epGuestUserApprovalRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

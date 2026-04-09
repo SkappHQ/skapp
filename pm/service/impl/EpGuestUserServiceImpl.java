@@ -76,7 +76,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	@Override
 	public EpUserResponseDto createGuestUser(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
-		if (epGuestUserInviteRequestDto == null || epGuestUserInviteRequestDto.getEmail().isEmpty()) {
+		if (epGuestUserInviteRequestDto == null || epGuestUserInviteRequestDto.getEmail() == null
+				|| epGuestUserInviteRequestDto.getEmail().isBlank()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
 		return inviteSingleGuestUser(epGuestUserInviteRequestDto.getEmail(), epGuestUserInviteRequestDto.getProjects(),
@@ -105,10 +106,11 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
 
+		List<ProjectRequestDto> safeProjects = projects != null ? projects : List.of();
 		Employee employee = createAndSaveEmployee(email);
 
 		boolean isAssignSuccess = epGuestUserInternalService.assignGuestToProjects(employee.getUser().getUserId(),
-				projects);
+				safeProjects);
 
 		if (!isAssignSuccess) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED);
@@ -116,7 +118,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 		String invitationUrl = buildInvitationUrl(employee.getUser());
 
-		String projectNames = projects.stream()
+		String projectNames = safeProjects.stream()
 			.map(ProjectRequestDto::getProjectName)
 			.collect(Collectors.joining(", "));
 
@@ -233,7 +235,16 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	@Override
 	public ResponseEntityDto updateGuestUserApprovalStatus(
 			EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {
+		if (epGuestUserApprovalRequestDto.getId() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND);
+		}
+		if (epGuestUserApprovalRequestDto.getStatus() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_APPROVAL_STATUS);
+		}
+
 		User user = userDao.findById(epGuestUserApprovalRequestDto.getId())
+			.filter(this::isValidGuestEmployee)
+			.filter(u -> u.getEmployee().getAccountStatus() == AccountStatus.PENDING)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
 
 		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVE) {
