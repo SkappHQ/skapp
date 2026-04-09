@@ -284,15 +284,21 @@ const ContentLayout = ({
                 <Icon name={backIcon} />
               </IconButton>
             )}
+            {isTitleHidden && title && (
+              <Typography
+                variant="h1"
+                component="h1"
+                id="page-title"
+                className="sr-only"
+              >
+                {title}
+              </Typography>
+            )}
             {!isTitleHidden && (
               <header>
                 <Stack direction="row" spacing={2} alignItems="center">
-                  {title  && (
-                    <Typography
-                      variant="h1"
-                      component="h1"
-                      id="page-title"
-                    >
+                  {title && (
+                    <Typography variant="h1" component="h1" id="page-title">
                       {title}
                     </Typography>
                   )}
@@ -329,7 +335,10 @@ const ContentLayout = ({
                 className={getBlinkClass(shouldBlink?.secondaryBtn ?? false)}
                 icon={
                   secondaryBtnIconName ? (
-                    <Icon name={secondaryBtnIconName} fill={secondaryBtnIconFill} />
+                    <Icon
+                      name={secondaryBtnIconName}
+                      fill={secondaryBtnIconFill}
+                    />
                   ) : undefined
                 }
                 iconPosition="end"
