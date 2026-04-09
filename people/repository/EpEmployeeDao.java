@@ -1,5 +1,6 @@
 package com.skapp.enterprise.people.repository;
 
+import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,6 @@ public interface EpEmployeeDao
 
 	List<Employee> findAllByEmployeeIdInAndAccountStatusIn(List<Long> employeeIds, Set<AccountStatus> active);
 
-	List<Employee> findAllByEmployeeRoleIsSuperAdminTrueAndAccountStatusIn(List<AccountStatus> statuses);
+	List<Employee> findAllByEmployeeRolePmRoleAndAccountStatusIn(Role pmRole, List<AccountStatus> statuses);
 
 }

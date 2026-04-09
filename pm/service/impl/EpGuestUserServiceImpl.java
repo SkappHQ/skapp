@@ -95,6 +95,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		Employee requester = epGuestUserBulkInviteRequestDto.getRequestedByUserId() != null
 				? employeeDao.findById(epGuestUserBulkInviteRequestDto.getRequestedByUserId()).orElse(null) : null;
 		String adminName = requester != null && requester.getFirstName() != null ? requester.getFirstName() : "";
+
 		List<EpUserResponseDto> responses = new ArrayList<>();
 		for (String email : epGuestUserBulkInviteRequestDto.getEmails()) {
 			responses.add(inviteSingleGuestUser(email, epGuestUserBulkInviteRequestDto.getProjects(), adminName));
@@ -106,10 +107,11 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			.map(ProjectRequestDto::getProjectName)
 			.collect(Collectors.joining(", "));
 
-		for (Employee superAdmin : findAllSuperAdmins()) {
-			if (superAdmin.getUser() != null) {
-				epUserEmailService.sendGuestUserRequestAwaitingApprovalEmail(superAdmin.getUser().getEmail(),
-						projectName, adminName);
+		Long requesterUserId = requester != null ? requester.getEmployeeId() : null;
+		for (Employee pmAdmin : findAllPmAdmins()) {
+			if (pmAdmin.getUser() != null && !pmAdmin.getEmployeeId().equals(requesterUserId)) {
+				epUserEmailService.sendGuestUserRequestAwaitingApprovalEmail(pmAdmin.getUser().getEmail(), projectName,
+						adminName);
 			}
 		}
 
@@ -117,7 +119,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			epUserEmailService.sendGuestUserRequestAwaitingApprovalEmail(requester.getUser().getEmail(), projectName,
 					adminName);
 		}
-		
 		return responses;
 	}
 
@@ -341,9 +342,9 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		return epUserService.mapEmployeeToUserDto(user.getEmployee());
 	}
 
-	private List<Employee> findAllSuperAdmins() {
+	private List<Employee> findAllPmAdmins() {
 		List<AccountStatus> validStatuses = List.of(AccountStatus.PENDING, AccountStatus.ACTIVE);
-		return epEmployeeDao.findAllByEmployeeRoleIsSuperAdminTrueAndAccountStatusIn(validStatuses);
+		return epEmployeeDao.findAllByEmployeeRolePmRoleAndAccountStatusIn(Role.PM_ADMIN, validStatuses);
 	}
 
 	private EpGuestUserResponseDto mapEmployeeToGuestUserDto(Employee employee) {
