@@ -20,6 +20,7 @@ import com.skapp.enterprise.common.service.AnnouncementService;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
 import com.skapp.enterprise.common.type.AnnouncementInteractionType;
 import com.skapp.enterprise.common.type.AnnouncementStatus;
+import com.skapp.enterprise.common.util.EpDateTimeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -171,28 +172,14 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			case DAILY -> interaction == null || interaction.getLastSeenAt() == null
 					|| toOrgLocalDate(interaction.getLastSeenAt(), orgZone).isBefore(LocalDate.now(orgZone));
 			case WEEKLY -> interaction == null || interaction.getLastSeenAt() == null
-					|| isBeforeStartOfCurrentWeek(interaction.getLastSeenAt(), orgZone);
+					|| EpDateTimeUtils.isBeforeStartOfCurrentWeek(interaction.getLastSeenAt(), orgZone);
 			case CUSTOM -> interaction == null || interaction.getLastSeenAt() == null
-					|| isBeforeCustomDays(interaction.getLastSeenAt(), announcement.getCustomFrequencyDays(), orgZone);
+				|| EpDateTimeUtils.isBeforeCustomDays(interaction.getLastSeenAt(), announcement.getCustomFrequencyDays(), orgZone);
 		};
 	}
 
 	private LocalDate toOrgLocalDate(LocalDateTime utcDateTime, ZoneId orgZone) {
 		return utcDateTime.atZone(ZoneOffset.UTC).withZoneSameInstant(orgZone).toLocalDate();
-	}
-
-	private boolean isBeforeStartOfCurrentWeek(LocalDateTime lastSeenAt, ZoneId orgZone) {
-		LocalDate startOfWeek = LocalDate.now(orgZone).with(DayOfWeek.MONDAY);
-		return toOrgLocalDate(lastSeenAt, orgZone).isBefore(startOfWeek);
-	}
-
-	private boolean isBeforeCustomDays(LocalDateTime lastSeenAt, Integer customDays, ZoneId orgZone) {
-		if (customDays == null || customDays < 1) {
-			return true;
-		}
-		LocalDate threshold = LocalDate.now(orgZone).minusDays(customDays);
-		LocalDate lastSeenDate = toOrgLocalDate(lastSeenAt, orgZone);
-		return lastSeenDate.isBefore(threshold) || lastSeenDate.isEqual(threshold);
 	}
 
 	private FeatureAnnouncementResponseDto buildAnnouncementResponseDto(FeatureAnnouncement announcement) {
