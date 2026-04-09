@@ -92,11 +92,32 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
 
-		String adminName = userService.getCurrentUser().getEmployee().getFirstName();
+		Employee requester = epGuestUserBulkInviteRequestDto.getRequestedByUserId() != null
+				? employeeDao.findById(epGuestUserBulkInviteRequestDto.getRequestedByUserId()).orElse(null) : null;
+		String adminName = requester != null && requester.getFirstName() != null ? requester.getFirstName() : "";
 		List<EpUserResponseDto> responses = new ArrayList<>();
 		for (String email : epGuestUserBulkInviteRequestDto.getEmails()) {
 			responses.add(inviteSingleGuestUser(email, epGuestUserBulkInviteRequestDto.getProjects(), adminName));
 		}
+
+		List<ProjectRequestDto> safeProjects = epGuestUserBulkInviteRequestDto.getProjects() != null
+				? epGuestUserBulkInviteRequestDto.getProjects() : List.of();
+		String projectName = safeProjects.stream()
+			.map(ProjectRequestDto::getProjectName)
+			.collect(Collectors.joining(", "));
+
+		for (Employee superAdmin : findAllSuperAdmins()) {
+			if (superAdmin.getUser() != null) {
+				epUserEmailService.sendGuestUserRequestAwaitingApprovalEmail(superAdmin.getUser().getEmail(),
+						projectName, adminName);
+			}
+		}
+
+		if (requester != null && requester.getUser() != null && requester.getUser().getEmail() != null) {
+			epUserEmailService.sendGuestUserRequestAwaitingApprovalEmail(requester.getUser().getEmail(), projectName,
+					adminName);
+		}
+		
 		return responses;
 	}
 
@@ -252,15 +273,17 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			.map(ProjectRequestDto::getProjectName)
 			.collect(Collectors.joining(", "));
 
+		Employee currentAdmin = userService.getCurrentUser().getEmployee();
+
 		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVE) {
 			peopleService.updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false);
-			epUserEmailService.sendGuestUserRequestApprovedEmail(user.getEmployee(), projectName);
+			epUserEmailService.sendGuestUserRequestApprovedEmail(currentAdmin, projectName);
 			return new ResponseEntityDto(
 					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_APPROVED), false);
 		}
 		else {
 			peopleService.updateUserStatus(user.getUserId(), AccountStatus.TERMINATED, false);
-			epUserEmailService.sendGuestUserRequestDeclinedEmail(user.getEmployee(), projectName);
+			epUserEmailService.sendGuestUserRequestDeclinedEmail(currentAdmin, projectName);
 			return new ResponseEntityDto(
 					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DECLINED), false);
 		}
@@ -316,6 +339,11 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		epPeopleService.invalidateAllUserCaches();
 
 		return epUserService.mapEmployeeToUserDto(user.getEmployee());
+	}
+
+	private List<Employee> findAllSuperAdmins() {
+		List<AccountStatus> validStatuses = List.of(AccountStatus.PENDING, AccountStatus.ACTIVE);
+		return epEmployeeDao.findAllByEmployeeRoleIsSuperAdminTrueAndAccountStatusIn(validStatuses);
 	}
 
 	private EpGuestUserResponseDto mapEmployeeToGuestUserDto(Employee employee) {

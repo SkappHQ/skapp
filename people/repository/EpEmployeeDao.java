@@ -13,4 +13,6 @@ public interface EpEmployeeDao
 
 	List<Employee> findAllByEmployeeIdInAndAccountStatusIn(List<Long> employeeIds, Set<AccountStatus> active);
 
+	List<Employee> findAllByEmployeeRoleIsSuperAdminTrueAndAccountStatusIn(List<AccountStatus> statuses);
+
 }
