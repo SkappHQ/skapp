@@ -72,62 +72,50 @@
 .h1 {
   font-size: 24px;
   font-weight: 700;
-  font-family: var(--font-family-sans);
 }
 .h1b {
   font-size: 32px;
   font-weight: 600;
-  font-family: var(--font-family-sans);
 }
 .h1c {
   font-size: 42px;
   font-weight: 600;
-  font-family: var(--font-family-sans);
 }
 .h2 {
   font-size: 20px;
   font-weight: 700;
-  font-family: var(--font-family-sans);
 }
 .h3 {
   font-size: 18px;
   font-weight: 700;
-  font-family: var(--font-family-sans);
 }
 .subtitle1 {
   font-size: 16px;
   font-weight: 500;
-  font-family: var(--font-family-sans);
 }
 .subtitle2 {
   font-size: 16px;
   font-weight: 600;
-  font-family: var(--font-family-sans);
 }
 .subtitle3 {
   font-size: 14px;
   font-weight: 500;
-  font-family: var(--font-family-sans), serif;
 }
 .subtitle4 {
   font-size: 12px;
   font-weight: 500;
-  font-family: var(--font-family-sans), serif;
 }
 .body1 {
   font-size: 16px;
   font-weight: 400;
-  font-family: var(--font-family-sans);
 }
 .body2 {
   font-size: 14px;
   font-weight: 400;
-  font-family: var(--font-family-sans);
 }
 .body3 {
   font-size: 12px;
   font-weight: 400;
-  font-family: var(--font-family-sans);
 }
 
 html,
@@ -137,7 +125,6 @@ body {
   padding: 0;
   margin: 0;
   line-height: 1.5;
-  font-family: var(--font-family-sans);
 }
 
 input,
@@ -244,14 +231,12 @@ input[type="number"] {
   font-size: 16px;
   font-weight: 700;
   line-height: 140%;
-  font-family: var(--font-family-sans);
 }
 
 .driver-popover .driver-popover-description {
   font-size: 14px;
   font-weight: 400;
   line-height: 140%;
-  font-family: var(--font-family-sans);
 }
 
 .full-day-border {
