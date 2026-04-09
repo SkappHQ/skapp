@@ -1719,20 +1719,13 @@ public class TimeServiceImpl implements TimeService {
 			timeRecordTotReturn = optionalTimeRecord.get();
 		}
 		else {
-			Optional<TimeRecord> timeRecord = timeRecordDao.findByEmployeeAndDate(
-					userService.getCurrentUser().getEmployee(),
-					DateTimeUtils.toLocalDate(timeRequestDto.getStartTime()));
-			if (timeRecord.isPresent()) {
-				timeRecordTotReturn = timeRecord.get();
-			}
-			else {
-				if (timeRequestDto.getStartTime().isAfter(DateTimeUtils.getCurrentUtcDateTime())) {
-					throw new ModuleException(TimeMessageConstant.TIME_ERROR_CANNOT_ADD_REQUEST_FOR_FUTURE);
-				}
 
-				if (timeRequestDto.getRequestType().equals(RequestType.EDIT_RECORD_REQUEST)) {
-					throw new ModuleException(TimeMessageConstant.TIME_ERROR_NO_TIME_RECORD_TO_EDIT);
-				}
+			if (timeRequestDto.getStartTime().isAfter(DateTimeUtils.getCurrentUtcDateTime())) {
+				throw new ModuleException(TimeMessageConstant.TIME_ERROR_CANNOT_ADD_REQUEST_FOR_FUTURE);
+			}
+
+			if (timeRequestDto.getRequestType().equals(RequestType.EDIT_RECORD_REQUEST)) {
+				throw new ModuleException(TimeMessageConstant.TIME_ERROR_NO_TIME_RECORD_TO_EDIT);
 			}
 		}
 		return timeRecordTotReturn;
@@ -1880,17 +1873,6 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	private void validateTimeRequestToSave(TimeRequest timeRequestToSave) {
-		TimeSlotFilterDto timeSlotFilterDto = new TimeSlotFilterDto();
-		timeSlotFilterDto.setStartTime(timeRequestToSave.getRequestedStartTime());
-		timeSlotFilterDto.setEndTime(timeRequestToSave.getRequestedEndTime());
-		timeSlotFilterDto.setEmployeeId(timeRequestToSave.getEmployee().getEmployeeId());
-		timeSlotFilterDto.setSlotType(List.of(SlotType.WORK));
-		timeSlotFilterDto.setIsExport(true);
-
-		List<TimeSlot> overridingWorkSlots = timeSlotDao.getTimeSlotsByTimePeriod(timeSlotFilterDto).getContent();
-		if (overridingWorkSlots.size() == 1) {
-			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANUAL_ENTRY_OVER_WORK_SLOT);
-		}
 
 		EmployeeTimeRequestFilterDto filterDto = new EmployeeTimeRequestFilterDto();
 		filterDto.setRecordId(
