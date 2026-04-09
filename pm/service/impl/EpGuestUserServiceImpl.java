@@ -235,29 +235,32 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	@Override
 	public ResponseEntityDto updateGuestUserApprovalStatus(
 			EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {
-		if (epGuestUserApprovalRequestDto.getId() == null) {
+		if (epGuestUserApprovalRequestDto.getUserId() == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND);
 		}
 		if (epGuestUserApprovalRequestDto.getStatus() == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_APPROVAL_STATUS);
 		}
 
-		User user = userDao.findById(epGuestUserApprovalRequestDto.getId())
+		User user = userDao.findById(epGuestUserApprovalRequestDto.getUserId())
 			.filter(this::isValidGuestEmployee)
 			.filter(u -> u.getEmployee().getAccountStatus() == AccountStatus.PENDING)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
 
+		String projectName = epGuestUserCacheService.getUserAssignedProjects(user.getUserId())
+			.stream()
+			.map(ProjectRequestDto::getProjectName)
+			.collect(Collectors.joining(", "));
+
 		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVE) {
 			peopleService.updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false);
-			epUserEmailService.sendGuestUserRequestApprovedEmail(user.getEmployee(),
-					epGuestUserApprovalRequestDto.getProjectName());
+			epUserEmailService.sendGuestUserRequestApprovedEmail(user.getEmployee(), projectName);
 			return new ResponseEntityDto(
 					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_APPROVED), false);
 		}
 		else {
 			peopleService.updateUserStatus(user.getUserId(), AccountStatus.TERMINATED, false);
-			epUserEmailService.sendGuestUserRequestDeclinedEmail(user.getEmployee(),
-					epGuestUserApprovalRequestDto.getProjectName());
+			epUserEmailService.sendGuestUserRequestDeclinedEmail(user.getEmployee(), projectName);
 			return new ResponseEntityDto(
 					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DECLINED), false);
 		}

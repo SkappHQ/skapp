@@ -8,12 +8,8 @@ import lombok.Setter;
 @Setter
 public class EpGuestUserApprovalRequestDto {
 
-	private Long id;
+	private Long userId;
 
 	private GuestUserApprovalStatus status;
-
-	private String projectName;
-
-	private String approverEmail;
 
 }
