@@ -40,6 +40,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -102,6 +103,7 @@ public class RolesServiceImpl implements RolesService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto updateRoleRestrictions(ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
 		log.info("updateRoleRestrictions: execution started");
 
