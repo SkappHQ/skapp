@@ -444,7 +444,9 @@ const CareerProgressDetailsSection = ({
               onEdit={handleEdit}
               onDelete={handleDelete}
               headings={tableHeaders}
-              headingAriaLabels={{ 0: translateAria(["currentPositionColumn"]) }}
+              headingAriaLabels={{
+                0: translateAria(["currentPositionColumn"])
+              }}
               tableStyles={{
                 mt: "2rem"
               }}
