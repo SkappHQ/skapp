@@ -12,6 +12,8 @@ public enum EpPeopleMessageConstant implements MessageConstant {
 	EP_PEOPLE_SUCCESS_GUEST_USER_DELETED("ep.people.success.guest-user-deleted"),
 	EP_PEOPLE_SUCCESS_GUEST_USER_DEACTIVATED("ep.people.success.guest-user-deactivated"),
 	EP_PEOPLE_SUCCESS_GUEST_USER_ACTIVATED("ep.people.success.guest-user-activated"),
+	EP_PEOPLE_SUCCESS_GUEST_USER_APPROVED("ep.people.success.guest-user-approved"),
+	EP_PEOPLE_SUCCESS_GUEST_USER_DECLINED("ep.people.success.guest-user-declined"),
 
 	EP_PEOPLE_ERROR_ALLOWED_USER_LIMIT_EXCEEDED("ep.people.error.allowed-user-limit-exceeded"),
 	EP_PEOPLE_ERROR_SUPERVISOR_NOT_FOUND("ep.people.error.supervisor-not-found"),

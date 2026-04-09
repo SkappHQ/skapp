@@ -17,6 +17,7 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.payload.request.EpGuestUserApprovalRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserBulkInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
@@ -34,6 +35,7 @@ import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
 import com.skapp.enterprise.pm.service.EpGuestUserCacheService;
 import com.skapp.enterprise.pm.service.EpGuestUserInternalService;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
+import com.skapp.enterprise.pm.type.GuestUserApprovalStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -225,6 +227,29 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			.ifPresent(user -> peopleService.updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false));
 		return new ResponseEntityDto(
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_ACTIVATED), false);
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto updateGuestUserApprovalStatus(
+			EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {
+		User user = userDao.findById(epGuestUserApprovalRequestDto.getId())
+			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
+
+		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVE) {
+			peopleService.updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false);
+			epUserEmailService.sendGuestUserRequestApprovedEmail(user.getEmployee(),
+					epGuestUserApprovalRequestDto.getProjectName());
+			return new ResponseEntityDto(
+					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_APPROVED), false);
+		}
+		else {
+			peopleService.updateUserStatus(user.getUserId(), AccountStatus.TERMINATED, false);
+			epUserEmailService.sendGuestUserRequestDeclinedEmail(user.getEmployee(),
+					epGuestUserApprovalRequestDto.getProjectName());
+			return new ResponseEntityDto(
+					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DECLINED), false);
+		}
 	}
 
 	@Override

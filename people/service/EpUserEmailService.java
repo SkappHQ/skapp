@@ -9,4 +9,10 @@ public interface EpUserEmailService {
 
 	void sendGuestUserInvitationEmail(Employee employee, String invitationLink, String adminName, String projectNames);
 
+	void sendGuestUserRequestApprovedEmail(Employee employee, String projectName);
+
+	void sendGuestUserRequestDeclinedEmail(Employee employee, String projectName);
+
+	void sendGuestUserRequestAwaitingApprovalEmail(String approverEmail, String projectName, String requesterName);
+
 }

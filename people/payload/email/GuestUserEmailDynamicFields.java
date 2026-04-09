@@ -10,6 +10,8 @@ public class GuestUserEmailDynamicFields extends PeopleEmailDynamicFields {
 
 	private String projectNames;
 
+	private String projectName;
+
 	private String adminName;
 
 	private String recipientName;

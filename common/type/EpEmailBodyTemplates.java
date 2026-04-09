@@ -45,7 +45,10 @@ public enum EpEmailBodyTemplates implements EmailTemplates {
 	INVOICE_MODULE_INVOICE_CREATED_FOR_CUSTOMER("invoice-module-customer-invoice-email"),
 
 	// Guest User Templates
-	GUEST_MODULE_EMAIL_VERIFY("guest-module-email-verify"), GUEST_MODULE_INVITATION("guest-module-invitation");
+	GUEST_MODULE_EMAIL_VERIFY("guest-module-email-verify"), GUEST_MODULE_INVITATION("guest-module-invitation"),
+	GUEST_MODULE_REQUEST_APPROVED("guest-module-request-approved"),
+	GUEST_MODULE_REQUEST_DECLINED("guest-module-request-declined"),
+	GUEST_MODULE_REQUEST_AWAITING_APPROVAL("guest-module-request-awaiting-approval");
 
 	private final String templateId;
 

@@ -3,6 +3,7 @@ package com.skapp.enterprise.pm.service;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.enterprise.common.payload.request.EpGuestUserApprovalRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserBulkInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
@@ -33,6 +34,8 @@ public interface EpGuestUserService {
 
 	@Transactional
 	ResponseEntityDto activateGuestUser(Long id);
+
+	ResponseEntityDto updateGuestUserApprovalStatus(EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto);
 
 	EpUserResponseDto updateGuestUser(EpGuestUserUpdateRequestDto epGuestUserUpdateRequestDto);
 
