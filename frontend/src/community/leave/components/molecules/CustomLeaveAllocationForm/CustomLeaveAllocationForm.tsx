@@ -359,7 +359,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
             values.numberOfDaysOff ? values.numberOfDaysOff.toString() : ""
           }
           onChange={handleNumberOfDaysOffChange}
-          // isDisabled={isLeaveTypeSelected}
+          isDisabled={isLeaveTypeSelected}
           required
         />
       </Stack>
