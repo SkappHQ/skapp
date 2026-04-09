@@ -17,6 +17,7 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
+import com.skapp.enterprise.common.payload.request.EpGuestUserBulkInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
@@ -38,6 +39,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -75,35 +77,51 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		if (epGuestUserInviteRequestDto == null || epGuestUserInviteRequestDto.getEmail().isEmpty()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
+		return inviteSingleGuestUser(epGuestUserInviteRequestDto.getEmail(), epGuestUserInviteRequestDto.getProjects(),
+				userService.getCurrentUser().getEmployee().getFirstName());
+	}
 
-		String email = epGuestUserInviteRequestDto.getEmail();
-		Validation.validateEmail(email);
-		if (userDao.findByEmail(email).isEmpty()) {
-			Employee employee = createAndSaveEmployee(email);
-
-			boolean isAssignSuccess = epGuestUserInternalService.assignGuestToProjects(employee.getUser().getUserId(),
-					epGuestUserInviteRequestDto.getProjects());
-
-			if (!isAssignSuccess) {
-				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED);
-			}
-
-			String invitationUrl = buildInvitationUrl(employee.getUser());
-			String adminName = userService.getCurrentUser().getEmployee().getFirstName();
-
-			String projectNames = epGuestUserInviteRequestDto.getProjects()
-				.stream()
-				.map(ProjectRequestDto::getProjectName)
-				.collect(Collectors.joining(", "));
-
-			epUserEmailService.sendGuestUserInvitationEmail(employee, invitationUrl, adminName, projectNames);
-			peopleService.modifySubscriptionQuantity(1, true, false);
-
-			return epUserService.mapEmployeeToUserDto(employee);
-		}
-		else {
+	@Override
+	@Transactional
+	public List<EpUserResponseDto> createGuestUsers(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto) {
+		if (epGuestUserBulkInviteRequestDto == null || epGuestUserBulkInviteRequestDto.getEmails() == null
+				|| epGuestUserBulkInviteRequestDto.getEmails().isEmpty()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
+
+		String adminName = userService.getCurrentUser().getEmployee().getFirstName();
+		List<EpUserResponseDto> responses = new ArrayList<>();
+		for (String email : epGuestUserBulkInviteRequestDto.getEmails()) {
+			responses.add(inviteSingleGuestUser(email, epGuestUserBulkInviteRequestDto.getProjects(), adminName));
+		}
+		return responses;
+	}
+
+	private EpUserResponseDto inviteSingleGuestUser(String email, List<ProjectRequestDto> projects, String adminName) {
+		Validation.validateEmail(email);
+		if (userDao.findByEmail(email).isPresent()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
+		}
+
+		Employee employee = createAndSaveEmployee(email);
+
+		boolean isAssignSuccess = epGuestUserInternalService.assignGuestToProjects(employee.getUser().getUserId(),
+				projects);
+
+		if (!isAssignSuccess) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED);
+		}
+
+		String invitationUrl = buildInvitationUrl(employee.getUser());
+
+		String projectNames = projects.stream()
+			.map(ProjectRequestDto::getProjectName)
+			.collect(Collectors.joining(", "));
+
+		epUserEmailService.sendGuestUserInvitationEmail(employee, invitationUrl, adminName, projectNames);
+		peopleService.modifySubscriptionQuantity(1, true, false);
+
+		return epUserService.mapEmployeeToUserDto(employee);
 	}
 
 	private Employee createAndSaveEmployee(String email) {
