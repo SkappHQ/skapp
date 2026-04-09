@@ -8,7 +8,6 @@ import Form from "~community/common/components/molecules/Form/Form";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import SquareSelect from "~community/common/components/molecules/SquareSelect/SquareSelect";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { matchesNumberWithAtMostOneDecimalPlace } from "~community/common/regex/regexPatterns";
 import { getEmoji } from "~community/common/utils/commonUtil";
 import {
@@ -342,7 +341,6 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
             CustomLeaveAllocationModalTypes.EDIT_LEAVE_ALLOCATION
           }
           required
-          customStyles={{ menuProps: { sx: { zIndex: ZIndexEnums.NEWMODAL } } }}
         />
         <InputField
           id="leave-allocation-number-of-days-input"

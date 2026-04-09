@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import { ReactNode } from "react";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -110,6 +111,7 @@ const SquareSelect = ({
             }
           },
           sx: {
+            zIndex: ZIndexEnums.NEWMODAL,
             "& .MuiMenuItem-root": {
               padding: "0.75rem 1.25rem",
               minWidth: "9.375rem",
