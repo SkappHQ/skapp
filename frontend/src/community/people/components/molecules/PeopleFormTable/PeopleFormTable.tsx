@@ -16,8 +16,13 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { capitalizeFirstLetter } from "~community/common/utils/commonUtil";
 
+interface TableHeading {
+  label: string;
+  ariaLabel?: string;
+}
+
 interface Props {
-  headings: string[];
+  headings: TableHeading[];
   data: any[];
   onEdit?: (index: number) => void;
   onDelete?: (index: number) => void;
@@ -35,12 +40,10 @@ interface Props {
   excludedColumns?: string[];
   isResponsive?: boolean;
   tableName?: string;
-  headingAriaLabels?: Record<number, string>;
 }
 
 const PeopleFormTable: FC<Props> = ({
   headings,
-  headingAriaLabels,
   data,
   onEdit,
   onDelete,
@@ -106,7 +109,7 @@ const PeopleFormTable: FC<Props> = ({
         }}
       >
         <TableRow>
-          {headings?.map((heading, index) => (
+          {headings?.map(({ label, ariaLabel }, index) => (
             <TableCell
               key={index}
               sx={{
@@ -146,7 +149,7 @@ const PeopleFormTable: FC<Props> = ({
                 ...tableHeaderCellStyles
               }}
             >
-              {heading ? (
+              {label ? (
                 <Typography
                   sx={{
                     color: theme.palette.text.secondary,
@@ -163,12 +166,10 @@ const PeopleFormTable: FC<Props> = ({
                     ...tableHeaderTextStyles
                   }}
                 >
-                  {heading.toUpperCase()}
+                  {label.toUpperCase()}
                 </Typography>
               ) : (
-                headingAriaLabels?.[index] && (
-                  <span className="sr-only">{headingAriaLabels[index]}</span>
-                )
+                ariaLabel && <span className="sr-only">{ariaLabel}</span>
               )}
             </TableCell>
           ))}

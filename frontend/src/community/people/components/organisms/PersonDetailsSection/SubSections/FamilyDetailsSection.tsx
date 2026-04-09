@@ -65,13 +65,13 @@ const FamilyDetailsSection = ({
   } = useFamilyDetailsFormHandlers();
 
   const tableHeaders = [
-    translateText(["firstName"]),
-    translateText(["lastName"]),
-    translateText(["gender"]),
-    translateText(["relationship"]),
-    translateText(["parentName"]),
-    translateText(["birthDate"]),
-    translateText(["age"])
+    { label: translateText(["firstName"]) },
+    { label: translateText(["lastName"]) },
+    { label: translateText(["gender"]) },
+    { label: translateText(["relationship"]) },
+    { label: translateText(["parentName"]) },
+    { label: translateText(["birthDate"]) },
+    { label: translateText(["age"]) }
   ];
 
   const { employee, setPersonalDetails } = usePeopleStore((state) => state);
