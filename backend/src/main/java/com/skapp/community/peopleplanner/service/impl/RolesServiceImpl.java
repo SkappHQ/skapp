@@ -18,6 +18,7 @@ import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.ModuleRoleRestriction;
+import com.skapp.community.peopleplanner.model.ModuleRolesRestriction;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.ModuleRoleRestrictionRequestDto;
 import com.skapp.community.peopleplanner.payload.request.RoleRequestDto;
@@ -29,6 +30,7 @@ import com.skapp.community.peopleplanner.payload.response.RoleResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
+import com.skapp.community.peopleplanner.repository.ModuleRolesRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -38,6 +40,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -69,6 +72,8 @@ public class RolesServiceImpl implements RolesService {
 
 	private final ModuleRoleRestrictionDao moduleRoleRestrictionDao;
 
+	private final ModuleRolesRestrictionDao moduleRolesRestrictionDao;
+
 	private final MessageUtil messageUtil;
 
 	@Override
@@ -98,15 +103,59 @@ public class RolesServiceImpl implements RolesService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto updateRoleRestrictions(ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
 		log.info("updateRoleRestrictions: execution started");
+
+		if (moduleRoleRestrictionRequestDto.getRestrictions() != null
+				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
+			List<RoleLevel> restrictions = moduleRoleRestrictionRequestDto.getRestrictions();
+			moduleRoleRestrictionRequestDto.setIsAdmin(restrictions.contains(RoleLevel.ADMIN));
+			moduleRoleRestrictionRequestDto.setIsManager(
+					restrictions.contains(getSecondaryRestrictionRole(moduleRoleRestrictionRequestDto.getModule())));
+		}
 
 		ModuleRoleRestriction moduleRoleRestriction = peopleMapper
 			.roleRestrictionRequestDtoToRestrictRole(moduleRoleRestrictionRequestDto);
 		moduleRoleRestrictionDao.save(moduleRoleRestriction);
 
+		ModuleRolesRestriction moduleRolesRestriction = buildModuleRolesRestriction(moduleRoleRestrictionRequestDto);
+		moduleRolesRestrictionDao.save(moduleRolesRestriction);
+
 		log.info("updateRoleRestrictions: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_ROLE_RESTRICT));
+	}
+
+	private ModuleRolesRestriction buildModuleRolesRestriction(
+			ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
+		ModuleType module = moduleRoleRestrictionRequestDto.getModule();
+
+		List<String> restrictedRoles;
+		if (moduleRoleRestrictionRequestDto.getRestrictions() != null
+				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
+			restrictedRoles = moduleRoleRestrictionRequestDto.getRestrictions().stream().map(RoleLevel::name).toList();
+		}
+		else {
+			restrictedRoles = new ArrayList<>();
+			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsAdmin())) {
+				restrictedRoles.add(RoleLevel.ADMIN.name());
+			}
+			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsManager())) {
+				restrictedRoles.add(getSecondaryRestrictionRole(module).name());
+			}
+		}
+
+		ModuleRolesRestriction moduleRolesRestriction = new ModuleRolesRestriction();
+		moduleRolesRestriction.setModule(module);
+		moduleRolesRestriction.setRestrictions(restrictedRoles.isEmpty() ? null : String.join(",", restrictedRoles));
+		return moduleRolesRestriction;
+	}
+
+	private RoleLevel getSecondaryRestrictionRole(ModuleType module) {
+		return switch (module) {
+			case ESIGN -> RoleLevel.SENDER;
+			default -> RoleLevel.MANAGER;
+		};
 	}
 
 	@Override
