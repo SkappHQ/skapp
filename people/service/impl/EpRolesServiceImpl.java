@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
@@ -19,6 +20,7 @@ import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionR
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
+import com.skapp.community.peopleplanner.repository.ModuleRolesRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.impl.RolesServiceImpl;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -53,11 +55,13 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 
 	private final EpEmployeeDao epEmployeeDao;
 
-	public EpRolesServiceImpl(EmployeeRoleDao employeeRoleDao, UserService userService, EmployeeDao employeeDao,
-			TeamDao teamDao, PeopleMapper peopleMapper, ModuleRoleRestrictionDao moduleRoleRestrictionDao,
+	public EpRolesServiceImpl(EmployeeRoleDao employeeRoleDao, UserService userService,
+			UserVersionService userVersionService, EmployeeDao employeeDao, TeamDao teamDao, PeopleMapper peopleMapper,
+			ModuleRoleRestrictionDao moduleRoleRestrictionDao, ModuleRolesRestrictionDao moduleRolesRestrictionDao,
 			MessageUtil messageUtil, EpEmployeeRoleDao epEmployeeRoleDao, EnvelopeService envelopeService,
 			EpEmployeeDao epEmployeeDao) {
-		super(employeeRoleDao, userService, employeeDao, teamDao, peopleMapper, moduleRoleRestrictionDao, messageUtil);
+		super(employeeRoleDao, userService, userVersionService, employeeDao, teamDao, peopleMapper,
+				moduleRoleRestrictionDao, moduleRolesRestrictionDao, messageUtil);
 		this.epEmployeeRoleDao = epEmployeeRoleDao;
 		this.envelopeService = envelopeService;
 		this.epEmployeeDao = epEmployeeDao;

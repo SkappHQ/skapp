@@ -30,7 +30,7 @@ public class CustomerDocumentController {
 
 	@Operation(summary = "Create customer document",
 			description = "This endpoint allows creating a new customer document.")
-	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_INVOICE_ADMIN')")
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> createDocument(
 			@Valid @RequestBody CustomerDocumentCreateRequestDto requestDto) {
@@ -39,7 +39,7 @@ public class CustomerDocumentController {
 	}
 
 	@Operation(summary = "Get document by ID", description = "This endpoint retrieves a customer document by its ID.")
-	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_INVOICE_ADMIN')")
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getDocumentById(@PathVariable Long id) {
 		ResponseEntityDto response = customerDocumentService.getDocumentById(id);
@@ -48,7 +48,7 @@ public class CustomerDocumentController {
 
 	@Operation(summary = "Filter documents",
 			description = "This endpoint allows filtering documents based on criteria.")
-	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_INVOICE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_INVOICE_ADMIN')")
 	@GetMapping(value = "/filter", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> filterDocuments(CustomerDocumentFilterDto filterDto) {
 		ResponseEntityDto response = customerDocumentService.filterDocuments(filterDto);
@@ -56,7 +56,7 @@ public class CustomerDocumentController {
 	}
 
 	@Operation(summary = "Download document", description = "This endpoint allows to download documents.")
-	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_SUPER_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_INVOICE_ADMIN')")
 	@GetMapping(value = "/download/{id}")
 	public ResponseEntity<?> downloadDocument(@PathVariable Long id) {
 
@@ -65,7 +65,7 @@ public class CustomerDocumentController {
 	}
 
 	@Operation(summary = "Rename document", description = "This endpoint allows to rename documents.")
-	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_SUPER_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_INVOICE_ADMIN')")
 	@PatchMapping(value = "/rename", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> renameDocument(
 			@Valid @RequestBody CustomerDocumentRenameRequestDto customerDocumentRenameRequestDto) {
@@ -74,7 +74,7 @@ public class CustomerDocumentController {
 	}
 
 	@Operation(summary = "Delete document", description = "This endpoint allows to delete documents.")
-	@PreAuthorize("hasAnyRole('ROLE_INVOICE_ADMIN' , 'ROLE_SUPER_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_INVOICE_ADMIN')")
 	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> deleteDocument(@PathVariable Long id) {
 		ResponseEntityDto response = customerDocumentService.deleteDocument(id);

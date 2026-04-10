@@ -751,8 +751,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 		catch (IOException e) {
 			log.error("Failed to draw image [{}] for field [{}]: {}", imageType, field.getType(), e.getMessage(), e);
-			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_MERGE_ADVANCE_FIELD,
-					new String[] { field.getType().toString() });
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_DOWNLOAD_SVG_FILE);
 		}
 	}
 
@@ -774,9 +773,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float lineHeight = FontStyleExtractorUtil.extractLineHeight(fieldStyle);
 
 			// Resolve display name to enum type
-			String fontFamilyCss = EsignFontFamilyType.getFamilyName(fontFamily);
-			EsignFontFamilyType fontFamilyType = EsignFontFamilyType.getByFamilyName(fontFamilyCss);
 			EsignFontVariantType fontVariant = EsignFontVariantType.fromStyle(isBold, isItalic);
+			EsignFontFamilyType fontFamilyType = EsignFontFamilyType.valueOf(fontFamily);
+			String fontFamilyCssName = fontFamilyType.getCssFontFamily();
 
 			// Final placement dimensions in PDF point space
 			float adjustedWidth = (field.getWidthPercentage() / 100f) * pageWidth;
@@ -800,7 +799,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			EsignPdfRenderCssDto cssDto = new EsignPdfRenderCssDto();
 			cssDto.setAdjustedWidth(String.valueOf(adjustedWidth));
 			cssDto.setAdjustedHeight(String.valueOf(adjustedHeight));
-			cssDto.setFontFamilyCss(fontFamilyCss);
+			cssDto.setFontFamilyCss(fontFamilyCssName);
 			cssDto.setFontSize(String.valueOf(fontSize));
 			cssDto.setFontWeight(String.valueOf(fontVariant.getFontWeight()));
 			cssDto.setFontStyle(EsignUtil.resolveFontStyle(isItalic));
@@ -814,7 +813,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			String html = EsignUtil.buildTextFieldHtml(cssDto);
 
 			byte[] htmlPdfBytes = htmlToPdfBytesTextField(html, adjustedWidth, adjustedHeight, fontFamilyType,
-					fontFamilyCss, fontVariant);
+					fontVariant, fontFamilyCssName);
 
 			PDFormXObject formXObject = toFormXObject(document, htmlPdfBytes);
 
@@ -854,9 +853,8 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 		}
 	}
 
-	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt,
-			EsignFontFamilyType fontFamilyType, String fontFamilyCss, EsignFontVariantType fontVariant)
-			throws IOException {
+	public byte[] htmlToPdfBytesTextField(String html, float widthPt, float heightPt, EsignFontFamilyType fontFamily,
+			EsignFontVariantType fontVariant, String fontFamilyCssName) {
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -866,28 +864,29 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float heightInches = heightPt / POINTS_PER_INCH;
 
 			builder.useDefaultPageSize(widthInches, heightInches, BaseRendererBuilder.PageSizeUnits.INCHES);
-			if (fontFamilyType != null) {
-				String folderName = fontFamilyType.getFolderName();
-				String variantSuffix = fontFamilyType.getVariantSuffix(fontVariant);
 
-				try (InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, variantSuffix);
-						ByteArrayOutputStream fontBuffer = new ByteArrayOutputStream()) {
+			if (fontFamily != null) {
+				String folderName = fontFamily.getFolderName();
+				String variantSuffix = fontFamily.getVariantSuffix(fontVariant);
 
-					fontStream.transferTo(fontBuffer);
+				try (InputStream fontStream = amazonS3Service.downloadFontAsStream(folderName, variantSuffix)) {
+					byte[] fontBytes = fontStream.readAllBytes();
 
-					byte[] fontBytes = fontBuffer.toByteArray();
-
-					builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCss,
+					builder.useFont(() -> new ByteArrayInputStream(fontBytes), fontFamilyCssName,
 							fontVariant.getFontWeight(), fontVariant.getFontStyle(), true);
 				}
-				catch (Exception e) {
-					log.warn("Could not register font '{}' for HTML rendering: {}", folderName, e.getMessage());
-				}
+
 			}
 			builder.toStream(baos);
 			builder.run();
 			return baos.toByteArray();
+
 		}
+		catch (IOException e) {
+			log.warn("Failed to download font file: {}", e.getMessage());
+			throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_FAILED_TO_LOAD_FONT_TO_HTML);
+		}
+
 	}
 
 	public byte[] htmlToPdfBytesImageField(String html, float widthPt, float heightPt) throws IOException {

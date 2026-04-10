@@ -1,6 +1,5 @@
 package com.skapp.enterprise.esignature.payload.request.template;
 
-import com.skapp.enterprise.esignature.payload.request.FieldOptionDto;
 import com.skapp.enterprise.esignature.type.FieldType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
@@ -44,7 +43,7 @@ public class AdvanceTemplateFieldDto {
 	@NotNull(message = "{validation.template.field.height-percentage.notnull}")
 	private Float heightPercentage;
 
-	private FieldOptionDto fieldOption;
+	private TemplateFieldOptionDto templateFieldOption;
 
 	private Float horizontalPadding;
 
