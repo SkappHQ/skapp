@@ -46,4 +46,40 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 				EpEmailBodyTemplates.GUEST_MODULE_INVITATION, emailDynamicFields, emailDynamicFields.getWorkEmail());
 	}
 
+	@Override
+	public void sendGuestUserRequestApprovedEmail(Employee employee, String projectName) {
+		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
+		emailDynamicFields.setRecipientName(employee.getFirstName());
+		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
+		emailDynamicFields.setProjectName(projectName);
+
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_NO_BUTTON_V1,
+				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_APPROVED, emailDynamicFields,
+				emailDynamicFields.getWorkEmail());
+	}
+
+	@Override
+	public void sendGuestUserRequestDeclinedEmail(Employee employee, String projectName) {
+		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
+		emailDynamicFields.setRecipientName(employee.getFirstName());
+		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
+		emailDynamicFields.setProjectName(projectName);
+
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_NO_BUTTON_V1,
+				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_DECLINED, emailDynamicFields,
+				emailDynamicFields.getWorkEmail());
+	}
+
+	@Override
+	public void sendGuestUserRequestAwaitingApprovalEmail(String approverEmail, String projectName,
+			String requesterName) {
+		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
+		emailDynamicFields.setWorkEmail(approverEmail);
+		emailDynamicFields.setProjectName(projectName);
+		emailDynamicFields.setAdminName(requesterName);
+
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_NO_BUTTON_V1,
+				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_AWAITING_APPROVAL, emailDynamicFields, approverEmail);
+	}
+
 }

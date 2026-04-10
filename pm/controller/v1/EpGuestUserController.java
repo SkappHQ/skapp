@@ -2,6 +2,7 @@ package com.skapp.enterprise.pm.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.enterprise.common.payload.request.EpGuestUserApprovalRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
@@ -74,6 +75,14 @@ public class EpGuestUserController {
 	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> activateGuestUser(@RequestParam Long id) {
 		ResponseEntityDto response = epGuestUserService.activateGuestUser(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PatchMapping("/approval")
+	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> updateGuestUserApprovalStatus(
+			@RequestBody EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {
+		ResponseEntityDto response = epGuestUserService.updateGuestUserApprovalStatus(epGuestUserApprovalRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
