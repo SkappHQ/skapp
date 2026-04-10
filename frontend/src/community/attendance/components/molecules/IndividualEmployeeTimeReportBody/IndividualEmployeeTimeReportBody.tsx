@@ -32,7 +32,7 @@ interface Props {
 const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
   const translateText = useTranslator("attendanceModule", "timesheet");
 
-  const { isCoreTier } = useTier();
+  const { isAtLeastCoreTier } = useTier();
 
   const { employeeDetails } = useSessionData();
 
@@ -40,39 +40,41 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
     isDrawerToggled: state.isDrawerExpanded
   }));
 
-  const [month, setMonth] = useState(isCoreTier ? getCurrentMonth() : 1);
+  const [month, setMonth] = useState(isAtLeastCoreTier ? getCurrentMonth() : 1);
 
   const { data: dailyLogData, isLoading: isDailyLogLoading } =
     useGetDailyLogsByEmployeeId(
       getStartAndEndDateOfTheMonth().start,
       getStartAndEndDateOfTheMonth().end,
       selectedUser,
-      isCoreTier
+      isAtLeastCoreTier
     );
 
   const dailyLogs = useMemo(() => {
-    return isCoreTier ? dailyLogData : dailyLogMockData;
-  }, [isCoreTier, dailyLogData]);
+    return isAtLeastCoreTier ? dailyLogData : dailyLogMockData;
+  }, [isAtLeastCoreTier, dailyLogData]);
 
   const { data: managerUtilizationData } = useGetIndividualUtilization(
     selectedUser,
-    isCoreTier
+    isAtLeastCoreTier
   );
 
   const managerUtilizations = useMemo(() => {
-    return isCoreTier ? managerUtilizationData : managerUtilizationMockData;
-  }, [isCoreTier, managerUtilizationData]);
+    return isAtLeastCoreTier
+      ? managerUtilizationData
+      : managerUtilizationMockData;
+  }, [isAtLeastCoreTier, managerUtilizationData]);
 
   const { data: workHoursGraphData, isLoading: isWorkHoursGraphLoading } =
     useGetIndividualWorkHourGraphData(
       getMonthName(month)?.toUpperCase(),
       selectedUser,
-      isCoreTier
+      isAtLeastCoreTier
     );
 
   const employeeWorkHoursDataset = useMemo(() => {
-    return isCoreTier ? workHoursGraphData : workHoursGraphMockData;
-  }, [isCoreTier, workHoursGraphData]);
+    return isAtLeastCoreTier ? workHoursGraphData : workHoursGraphMockData;
+  }, [isAtLeastCoreTier, workHoursGraphData]);
 
   return (
     <PeopleLayout

@@ -1,6 +1,6 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, ReactNode, SetStateAction, useMemo } from "react";
 
-import { SmallModal } from "@rootcodelabs/skapp-ui";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import AddJobFamilyModal from "~community/people/components/organisms/JobFamilyModals/JobFamilyFormModals/AddJobFamilyModal";
@@ -77,6 +77,8 @@ const JobFamilyModalController: FC<Props> = ({ setLatestRoleLabel, from }) => {
       jobFamilyModalType ===
         JobFamilyActionModalEnums.UNSAVED_CHANGED_JOB_TITLE_TRANSFER_MEMBERS
     ) {
+      setJobFamilyModalType(JobFamilyActionModalEnums.NONE);
+      stopAllOngoingQuickSetup();
       return;
     }
     handleJobFamilyCloseModal({
