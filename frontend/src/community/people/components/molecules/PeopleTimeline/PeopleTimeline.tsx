@@ -30,7 +30,7 @@ interface Props {
 const PeopleTimeline: FC<Props> = ({ employeeId }) => {
   const classes = styles(theme);
 
-  const { isCoreTier } = useTier();
+  const { isAtLeastCoreTier } = useTier();
 
   const translateText = useTranslator("peopleModule", "editAllInfo");
   const translateTimelineText = useTranslator(
@@ -45,15 +45,15 @@ const PeopleTimeline: FC<Props> = ({ employeeId }) => {
 
   const { data: timelineData, isLoading } = useGetEmployeeTimeline(
     employeeId ?? 0,
-    isCoreTier
+    isAtLeastCoreTier
   );
 
   const timeline: EmployeeTimelineType[] = useMemo(() => {
-    if (isCoreTier) {
+    if (isAtLeastCoreTier) {
       return timelineData !== undefined ? timelineData : [];
     }
     return timelineMockData;
-  }, [isCoreTier, timelineData]);
+  }, [isAtLeastCoreTier, timelineData]);
 
   const getGroupTitle = (date: string): string => {
     const monthAndYear = formatISODateToMonthYear(date);
