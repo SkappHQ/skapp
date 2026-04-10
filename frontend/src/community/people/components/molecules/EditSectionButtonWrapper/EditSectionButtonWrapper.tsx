@@ -1,5 +1,5 @@
 import { Stack } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -43,7 +43,7 @@ const EditSectionButtonWrapper = ({ onCancelClick, onSaveClick }: Props) => {
         variant={"primary"}
         onClick={onSaveClick}
         disabled={!hasChanged && profilePic === null}
-        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        icon={<ArrowRightIcon />}
         iconPosition="end"
       >
         {translateText(["saveDetails"])}

@@ -5,9 +5,11 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
+import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -16,6 +18,7 @@ import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.ModuleRoleRestriction;
+import com.skapp.community.peopleplanner.model.ModuleRolesRestriction;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.ModuleRoleRestrictionRequestDto;
 import com.skapp.community.peopleplanner.payload.request.RoleRequestDto;
@@ -27,14 +30,17 @@ import com.skapp.community.peopleplanner.payload.response.RoleResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
+import com.skapp.community.peopleplanner.repository.ModuleRolesRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -56,6 +62,8 @@ public class RolesServiceImpl implements RolesService {
 	@Getter
 	private final UserService userService;
 
+	private final UserVersionService userVersionService;
+
 	private final EmployeeDao employeeDao;
 
 	private final TeamDao teamDao;
@@ -63,6 +71,8 @@ public class RolesServiceImpl implements RolesService {
 	private final PeopleMapper peopleMapper;
 
 	private final ModuleRoleRestrictionDao moduleRoleRestrictionDao;
+
+	private final ModuleRolesRestrictionDao moduleRolesRestrictionDao;
 
 	private final MessageUtil messageUtil;
 
@@ -93,15 +103,59 @@ public class RolesServiceImpl implements RolesService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto updateRoleRestrictions(ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
 		log.info("updateRoleRestrictions: execution started");
+
+		if (moduleRoleRestrictionRequestDto.getRestrictions() != null
+				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
+			List<RoleLevel> restrictions = moduleRoleRestrictionRequestDto.getRestrictions();
+			moduleRoleRestrictionRequestDto.setIsAdmin(restrictions.contains(RoleLevel.ADMIN));
+			moduleRoleRestrictionRequestDto.setIsManager(
+					restrictions.contains(getSecondaryRestrictionRole(moduleRoleRestrictionRequestDto.getModule())));
+		}
 
 		ModuleRoleRestriction moduleRoleRestriction = peopleMapper
 			.roleRestrictionRequestDtoToRestrictRole(moduleRoleRestrictionRequestDto);
 		moduleRoleRestrictionDao.save(moduleRoleRestriction);
 
+		ModuleRolesRestriction moduleRolesRestriction = buildModuleRolesRestriction(moduleRoleRestrictionRequestDto);
+		moduleRolesRestrictionDao.save(moduleRolesRestriction);
+
 		log.info("updateRoleRestrictions: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_ROLE_RESTRICT));
+	}
+
+	private ModuleRolesRestriction buildModuleRolesRestriction(
+			ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
+		ModuleType module = moduleRoleRestrictionRequestDto.getModule();
+
+		List<String> restrictedRoles;
+		if (moduleRoleRestrictionRequestDto.getRestrictions() != null
+				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
+			restrictedRoles = moduleRoleRestrictionRequestDto.getRestrictions().stream().map(RoleLevel::name).toList();
+		}
+		else {
+			restrictedRoles = new ArrayList<>();
+			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsAdmin())) {
+				restrictedRoles.add(RoleLevel.ADMIN.name());
+			}
+			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsManager())) {
+				restrictedRoles.add(getSecondaryRestrictionRole(module).name());
+			}
+		}
+
+		ModuleRolesRestriction moduleRolesRestriction = new ModuleRolesRestriction();
+		moduleRolesRestriction.setModule(module);
+		moduleRolesRestriction.setRestrictions(restrictedRoles.isEmpty() ? null : String.join(",", restrictedRoles));
+		return moduleRolesRestriction;
+	}
+
+	private RoleLevel getSecondaryRestrictionRole(ModuleType module) {
+		return switch (module) {
+			case ESIGN -> RoleLevel.SENDER;
+			default -> RoleLevel.MANAGER;
+		};
 	}
 
 	@Override
@@ -519,6 +573,9 @@ public class RolesServiceImpl implements RolesService {
 
 	protected EmployeeRole createEmployeeRole(EmployeeSystemPermissionsDto roleRequestDto, Employee employee) {
 		EmployeeRole employeeRole = employee.getEmployeeRole();
+
+		EmployeeRole oldRole = employeeRole != null ? new EmployeeRole(employeeRole) : null;
+
 		if (employeeRole == null) {
 			employeeRole = new EmployeeRole();
 		}
@@ -553,6 +610,11 @@ public class RolesServiceImpl implements RolesService {
 		CommonModuleUtils.setIfExists(DateTimeUtils::getCurrentUtcDate, employeeRole::setChangedDate);
 		CommonModuleUtils.setIfExists(currentUser::getEmployee, employeeRole::setRoleChangedBy);
 		CommonModuleUtils.setIfExists(() -> employee, employeeRole::setEmployee);
+
+		if (oldRole != null && PeopleUtil.isPermissionsChanged(oldRole, employeeRole)
+				&& employee.getEmployeeId() != null) {
+			userVersionService.upgradeUserVersion(employee.getEmployeeId(), VersionType.MAJOR);
+		}
 
 		return employeeRole;
 	}

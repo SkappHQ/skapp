@@ -6,9 +6,11 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Team;
 
 import java.util.List;
+import java.util.Objects;
 
 public class PeopleUtil {
 
@@ -76,6 +78,20 @@ public class PeopleUtil {
 
 	public static List<EmployeeManager> filterManagersByAttendanceRoles(List<EmployeeManager> managers) {
 		return filterManagersByRoles(managers, List.of(Role.ATTENDANCE_ADMIN, Role.ATTENDANCE_MANAGER));
+	}
+
+	public static boolean isPermissionsChanged(EmployeeRole oldRole, EmployeeRole newRole) {
+		if (oldRole == null || newRole == null) {
+			return false;
+		}
+		return !Objects.equals(oldRole.getPeopleRole(), newRole.getPeopleRole())
+				|| !Objects.equals(oldRole.getLeaveRole(), newRole.getLeaveRole())
+				|| !Objects.equals(oldRole.getAttendanceRole(), newRole.getAttendanceRole())
+				|| !Objects.equals(oldRole.getEsignRole(), newRole.getEsignRole())
+				|| !Objects.equals(oldRole.getPmRole(), newRole.getPmRole())
+				|| !Objects.equals(oldRole.getOkrRole(), newRole.getOkrRole())
+				|| !Objects.equals(oldRole.getInvoiceRole(), newRole.getInvoiceRole())
+				|| !Objects.equals(oldRole.getIsSuperAdmin(), newRole.getIsSuperAdmin());
 	}
 
 }
