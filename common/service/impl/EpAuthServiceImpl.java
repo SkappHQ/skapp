@@ -232,6 +232,9 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto) {
 		log.info("superAdminSignUp: execution started for email={}", superAdminSignUpRequestDto.getEmail());
 
+		log.info("superAdminSignUp: validating reCAPTCHA token");
+		validateRecaptchaToken(superAdminSignUpRequestDto.getRecaptchaToken());
+
 		log.info("superAdminSignUp: validating first name");
 		Validation.isValidFirstName(superAdminSignUpRequestDto.getFirstName());
 
@@ -991,48 +994,35 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			.compact();
 	}
 
-	@Override
-	public ResponseEntityDto validateCaptcha(EpCaptchaVerificationDto epCaptchaVerificationDto) {
-		log.info("validateCaptcha: execution started");
-
-		if (epCaptchaVerificationDto == null || epCaptchaVerificationDto.getRecaptchaToken() == null) {
-			log.warn("validateCaptcha: recaptchaToken is null or missing");
-			return new ResponseEntityDto(true,
-					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_RECAPTCHA_INVALID));
+	private void validateRecaptchaToken(String recaptchaToken) {
+		if (recaptchaToken == null || recaptchaToken.isBlank()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_RECAPTCHA_INVALID);
 		}
 
 		try {
 			String url = UriComponentsBuilder.fromUriString(recaptchaConfig.getVerifyUrl())
 				.queryParam("secret", recaptchaConfig.getSecret())
-				.queryParam("response", epCaptchaVerificationDto.getRecaptchaToken())
+				.queryParam("response", recaptchaToken)
 				.toUriString();
 
 			HttpHeaders headers = new HttpHeaders();
 			HttpEntity<?> requestEntity = new HttpEntity<>(headers);
 
-			log.debug("validateCaptcha: Sending request to reCAPTCHA verification endpoint");
 			ResponseEntity<Map<String, Object>> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity,
 					new ParameterizedTypeReference<>() {
 					});
 
 			Map<String, Object> responseBody = response.getBody();
-			log.debug("validateCaptcha: reCAPTCHA response received: {}", responseBody);
+			if (responseBody == null || !Boolean.TRUE.equals(responseBody.get("success"))) {
+				log.warn("validateRecaptchaToken: reCAPTCHA validation failed - {}", responseBody);
+				throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_RECAPTCHA_INVALID);
+			}
 
-			if (responseBody != null && Boolean.TRUE.equals(responseBody.get("success"))) {
-				log.info("validateCaptcha: reCAPTCHA validation succeeded");
-				return new ResponseEntityDto(false,
-						messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_RECAPTCHA_VALID));
-			}
-			else {
-				log.warn("validateCaptcha: reCAPTCHA validation failed - {}", responseBody);
-				return new ResponseEntityDto(true,
-						messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_RECAPTCHA_INVALID));
-			}
+			log.info("validateRecaptchaToken: reCAPTCHA validation succeeded");
 		}
 		catch (RestClientException e) {
-			log.error("validateCaptcha: Error during reCAPTCHA validation", e);
-			return new ResponseEntityDto(true,
-					messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_ERROR_VALIDATION_RECAPTCHA_INVALID));
+			log.error("validateRecaptchaToken: Error during reCAPTCHA validation", e);
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_VALIDATION_RECAPTCHA_INVALID);
 		}
 	}
 

@@ -3,7 +3,6 @@ package com.skapp.enterprise.common.service;
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
-import com.skapp.enterprise.common.payload.request.EpCaptchaVerificationDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserOtpVerifyRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserSignInRequestDto;
 import com.skapp.enterprise.common.payload.request.EpPasswordResetDto;
@@ -23,8 +22,6 @@ public interface EpAuthService {
 	ResponseEntityDto verifyOTP(String otp);
 
 	ResponseEntityDto verifySubDomain(String subDomainName);
-
-	ResponseEntityDto validateCaptcha(EpCaptchaVerificationDto epCaptchaVerificationDto);
 
 	ResponseEntityDto ssoGoogleSignUp(@Valid EpSignUpGoogleDataDto superAdminSignUpRequestDto);
 
