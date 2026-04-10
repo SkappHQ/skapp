@@ -32,18 +32,18 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
     "individualLeaveAnalytics"
   );
 
-  const { isCoreTier } = useTier();
+  const { isAtLeastCoreTier } = useTier();
 
   const { resetLeaveRequestParams } = useLeaveStore((state) => state);
 
   const [leaveTypesList, setLeaveTypesList] = useState<LeaveType[]>([]);
 
   const { data: leaveTypesData, isLoading: leaveTypeIsLoading } =
-    useGetLeaveTypes(isCoreTier);
+    useGetLeaveTypes(isAtLeastCoreTier);
 
   const leaveTypes = useMemo(() => {
-    return isCoreTier ? leaveTypesData : leaveTypesMockData;
-  }, [isCoreTier, leaveTypesData]);
+    return isAtLeastCoreTier ? leaveTypesData : leaveTypesMockData;
+  }, [isAtLeastCoreTier, leaveTypesData]);
 
   useEffect(() => {
     if (leaveTypes && !leaveTypeIsLoading) setLeaveTypesList(leaveTypes);
