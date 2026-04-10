@@ -145,7 +145,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			.collect(Collectors.joining(", "));
 
 		epUserEmailService.sendGuestUserInvitationEmail(employee, invitationUrl, adminName, projectNames);
-		peopleService.modifySubscriptionQuantity(1, true, false);
 
 		return epUserService.mapEmployeeToUserDto(employee);
 	}
@@ -269,22 +268,16 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			.filter(u -> u.getEmployee().getAccountStatus() == AccountStatus.PENDING)
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
 
-		String projectName = epGuestUserCacheService.getUserAssignedProjects(user.getUserId())
-			.stream()
-			.map(ProjectRequestDto::getProjectName)
-			.collect(Collectors.joining(", "));
-
-		Employee currentAdmin = userService.getCurrentUser().getEmployee();
-
 		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVE) {
-			peopleService.updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false);
-			epUserEmailService.sendGuestUserRequestApprovedEmail(currentAdmin, projectName);
+			user.getEmployee().setAccountStatus(AccountStatus.ACTIVE);
+			userDao.save(user);
+			peopleService.modifySubscriptionQuantity(1, true, false);
 			return new ResponseEntityDto(
 					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_APPROVED), false);
 		}
 		else {
-			peopleService.updateUserStatus(user.getUserId(), AccountStatus.TERMINATED, false);
-			epUserEmailService.sendGuestUserRequestDeclinedEmail(currentAdmin, projectName);
+			user.getEmployee().setAccountStatus(AccountStatus.TERMINATED);
+			userDao.save(user);
 			return new ResponseEntityDto(
 					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DECLINED), false);
 		}
