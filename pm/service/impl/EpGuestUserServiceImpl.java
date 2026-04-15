@@ -330,6 +330,14 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		return status != AccountStatus.TERMINATED && status != AccountStatus.DELETED;
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getPendingGuestUsersCount() {
+		long count = epEmployeeDao.countByEmployeeRolePmRoleAndAccountStatus(Role.PM_GUEST_EMPLOYEE,
+				AccountStatus.PENDING);
+		return new ResponseEntityDto(false, count);
+	}
+
 	private String buildInvitationUrl(User user) {
 		return String.format(EpCommonConstants.GUEST_USER_BASE_INVITE_URL, TenantContext.getCurrentTenant(),
 				user.getEmail());

@@ -93,4 +93,11 @@ public class EpGuestUserController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@GetMapping("/pending/count")
+	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> getPendingGuestUsersCount() {
+		ResponseEntityDto response = epGuestUserService.getPendingGuestUsersCount();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

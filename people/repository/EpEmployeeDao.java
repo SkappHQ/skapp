@@ -16,4 +16,6 @@ public interface EpEmployeeDao
 
 	List<Employee> findAllByEmployeeRolePmRoleAndAccountStatusIn(Role pmRole, List<AccountStatus> statuses);
 
+	long countByEmployeeRolePmRoleAndAccountStatus(Role pmRole, AccountStatus accountStatus);
+
 }
