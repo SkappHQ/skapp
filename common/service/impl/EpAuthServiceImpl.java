@@ -174,7 +174,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	@Value("${otp.expiry-seconds}")
 	private int otpExpirySeconds;
 
-	@Value("${google.recaptcha.bypass-secret:}")
+	@Value("${google.recaptcha.bypass-secret}")
 	private String recaptchaBypassToken;
 
 	public EpAuthServiceImpl(UserDao userDao, UserDetailsService userDetailsService, PeopleMapper peopleMapper,
