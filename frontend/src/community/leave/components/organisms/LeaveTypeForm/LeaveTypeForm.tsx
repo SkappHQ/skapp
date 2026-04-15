@@ -539,7 +539,7 @@ const LeaveTypeForm = () => {
             </ButtonV2>
             <ButtonV2
               variant="primary"
-              type={ButtonTypes.SUBMIT}
+              type="submit"
               disabled={!isSaveBtnActive}
               isLoading={isAddingLeaveTypePending || isEditingLeaveTypePending}
               className={getBlinkClass(ongoingQuickSetup.SETUP_LEAVE_TYPES)}

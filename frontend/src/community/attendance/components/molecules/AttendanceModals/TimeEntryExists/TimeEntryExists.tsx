@@ -61,15 +61,7 @@ const TimeEntryExists = ({ fromDateTime, toDateTime }: Props) => {
       <Typography variant="body1" sx={{ pt: "1rem" }}>
         {translateText(["entryExistModalDes"])}
       </Typography>
-      <div className="flex flex-row justify-end gap-3 mt-6">
-        <ButtonV2
-          variant={"primary"}
-          onClick={handleSubmit}
-          icon={<Icon name={IconName.CHECK_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["confirmBtnTxt"])}
-        </ButtonV2>
+      <div className="flex flex-row justify-end gap-3 mt-4">
         <ButtonV2
           variant={"tertiary"}
           onClick={() => {
@@ -82,6 +74,14 @@ const TimeEntryExists = ({ fromDateTime, toDateTime }: Props) => {
           iconPosition="end"
         >
           {translateText(["cancelBtnTxt"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleSubmit}
+          icon={<Icon name={IconName.CHECK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["confirmBtnTxt"])}
         </ButtonV2>
       </div>
     </>
