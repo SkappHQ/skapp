@@ -174,6 +174,9 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	@Value("${otp.expiry-seconds}")
 	private int otpExpirySeconds;
 
+	@Value("${google.recaptcha.bypass-secret:}")
+	private String recaptchaBypassToken;
+
 	public EpAuthServiceImpl(UserDao userDao, UserDetailsService userDetailsService, PeopleMapper peopleMapper,
 			EmployeeDao employeeDao, JwtService jwtService, AuthenticationManager authenticationManager,
 			PasswordEncoder passwordEncoder, EmployeeRoleDao employeeRoleDao, CommonMapper commonMapper,
@@ -229,11 +232,12 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	}
 
 	@Override
-	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto) {
+	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto,
+			String bypassHeader) {
 		log.info("superAdminSignUp: execution started for email={}", superAdminSignUpRequestDto.getEmail());
 
 		log.info("superAdminSignUp: validating reCAPTCHA token");
-		validateRecaptchaToken(superAdminSignUpRequestDto.getRecaptchaToken());
+		validateRecaptchaToken(superAdminSignUpRequestDto.getRecaptchaToken(), bypassHeader);
 
 		log.info("superAdminSignUp: validating first name");
 		Validation.isValidFirstName(superAdminSignUpRequestDto.getFirstName());
@@ -994,7 +998,13 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			.compact();
 	}
 
-	private void validateRecaptchaToken(String recaptchaToken) {
+	private void validateRecaptchaToken(String recaptchaToken, String bypassHeader) {
+		if (recaptchaBypassToken != null && !recaptchaBypassToken.isBlank()
+				&& recaptchaBypassToken.equals(bypassHeader)) {
+			log.info("validateRecaptchaToken: reCAPTCHA validation bypassed via X-Recaptcha-Bypass header.");
+			return;
+		}
+
 		if (recaptchaToken == null || recaptchaToken.isBlank()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_RECAPTCHA_INVALID);
 		}
