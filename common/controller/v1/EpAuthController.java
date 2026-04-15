@@ -40,8 +40,8 @@ public class EpAuthController {
 	public ResponseEntity<ResponseEntityDto> superAdminSignUp(
 			@Valid @RequestBody SuperAdminSignUpRequestDto superAdminSignUpRequestDto,
 			@RequestHeader(value = EpAuthConstants.RECAPTCHA_BYPASS_SECRET_HEADER,
-					required = false) String bypassHeader) {
-		ResponseEntityDto response = epAuthService.superAdminSignUp(superAdminSignUpRequestDto, bypassHeader);
+					required = false) String bypassSecret) {
+		ResponseEntityDto response = epAuthService.superAdminSignUp(superAdminSignUpRequestDto, bypassSecret);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 

@@ -174,9 +174,6 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	@Value("${otp.expiry-seconds}")
 	private int otpExpirySeconds;
 
-	@Value("${google.recaptcha.bypass-secret}")
-	private String recaptchaBypassToken;
-
 	public EpAuthServiceImpl(UserDao userDao, UserDetailsService userDetailsService, PeopleMapper peopleMapper,
 			EmployeeDao employeeDao, JwtService jwtService, AuthenticationManager authenticationManager,
 			PasswordEncoder passwordEncoder, EmployeeRoleDao employeeRoleDao, CommonMapper commonMapper,
@@ -233,11 +230,11 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 
 	@Override
 	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto,
-			String bypassHeader) {
+			String bypassSecret) {
 		log.info("superAdminSignUp: execution started for email={}", superAdminSignUpRequestDto.getEmail());
 
 		log.info("superAdminSignUp: validating reCAPTCHA token");
-		validateRecaptchaToken(superAdminSignUpRequestDto.getRecaptchaToken(), bypassHeader);
+		validateRecaptchaToken(superAdminSignUpRequestDto.getRecaptchaToken(), bypassSecret);
 
 		log.info("superAdminSignUp: validating first name");
 		Validation.isValidFirstName(superAdminSignUpRequestDto.getFirstName());
@@ -998,10 +995,11 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			.compact();
 	}
 
-	private void validateRecaptchaToken(String recaptchaToken, String bypassHeader) {
-		if (recaptchaBypassToken != null && !recaptchaBypassToken.isBlank()
-				&& recaptchaBypassToken.equals(bypassHeader)) {
-			log.info("validateRecaptchaToken: bypass secret header matched — skipping Google verification");
+	private void validateRecaptchaToken(String recaptchaToken, String bypassSecret) {
+		String configuredBypassSecret = recaptchaConfig.getBypassSecret();
+		if (configuredBypassSecret != null && !configuredBypassSecret.isBlank()
+				&& configuredBypassSecret.equals(bypassSecret)) {
+			log.warn("validateRecaptchaToken: reCAPTCHA validation bypassed via bypass secret");
 			return;
 		}
 
