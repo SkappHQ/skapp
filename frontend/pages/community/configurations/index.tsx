@@ -39,7 +39,7 @@ const Configurations: NextPage = () => {
 
   const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id);
 
-  // TODO: Need to handle this in a better way
+  // Need to handle this in a better way
   useEffect(() => {
     if (!router.isReady || visibleTabs.length === 0) return;
     const tabParam = router.query.tab as string | undefined;
