@@ -1001,7 +1001,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	private void validateRecaptchaToken(String recaptchaToken, String bypassHeader) {
 		if (recaptchaBypassToken != null && !recaptchaBypassToken.isBlank()
 				&& recaptchaBypassToken.equals(bypassHeader)) {
-			log.info("validateRecaptchaToken: reCAPTCHA validation bypassed via X-Recaptcha-Bypass header.");
+			log.info("validateRecaptchaToken: bypass secret header matched — skipping Google verification");
 			return;
 		}
 
