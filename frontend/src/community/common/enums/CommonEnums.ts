@@ -5,7 +5,7 @@ export enum ZIndexEnums {
 
   APP_BAR = 1100,
   POPOVER = 100,
-  TOAST = 1600,
+  TOAST = 1400,
   SKIP_TO_CONTENT = 1500,
   MAX = 2000,
   DEFAULT = 1,
