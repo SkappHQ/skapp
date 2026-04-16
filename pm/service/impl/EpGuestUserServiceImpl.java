@@ -37,6 +37,7 @@ import com.skapp.enterprise.pm.service.EpGuestUserInternalService;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
 import com.skapp.enterprise.pm.type.GuestUserApprovalStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @Primary
 @RequiredArgsConstructor
 public class EpGuestUserServiceImpl implements EpGuestUserService {
@@ -333,6 +335,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getPendingGuestUsersCount() {
+		log.info("getPendingGuestUsersCount: execution started");
 		long count = epEmployeeDao.countByEmployeeRolePmRoleAndAccountStatus(Role.PM_GUEST_EMPLOYEE,
 				AccountStatus.PENDING);
 		return new ResponseEntityDto(false, count);
