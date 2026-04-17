@@ -101,11 +101,7 @@ const ClockWidget = (): JSX.Element => {
 
   const handleClockIn = useCallback(() => {
     if (isDisabled) return;
-    if (
-      (status === AttendanceSlotType.READY ||
-        status === AttendanceSlotType.END) &&
-      !attendanceLeaveStatus.onLeave
-    ) {
+    if (status === AttendanceSlotType.READY && !attendanceLeaveStatus.onLeave) {
       mutate(setSlotType(AttendanceSlotType.START));
     } else {
       setIsAttendanceModalOpen(true);

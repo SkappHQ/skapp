@@ -5,7 +5,7 @@ import ROUTES from "./routes";
 /**
  * Static breadcrumb definitions keyed by route path.
  * Each entry is an array of BreadcrumbItem where the last item has no href (current page).
- * Dynamic routes use pattern keys like "/people/directory/edit/:id".
+ * * Dynamic routes are handled separately via `dynamicBreadcrumbPatterns`,
  */
 const breadcrumbConfig: Record<string, BreadcrumbItem[]> = {
   // ── Dashboard ──

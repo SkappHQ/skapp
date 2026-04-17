@@ -13,8 +13,6 @@ import AppBarMenu from "~community/common/components/molecules/AppBarMenu/AppBar
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appBarTestId } from "~community/common/constants/testIds";
 import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
-import useDrawer from "~community/common/hooks/useDrawer";
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { AppBarItemTypes } from "~community/common/types/CommonTypes";
@@ -25,7 +23,6 @@ import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 import styles from "./styles";
 
 const AppBar = () => {
-  const translateAria = useTranslator("commonAria", "components", "appBar");
   const router = useRouter();
 
   const classes = styles();
@@ -34,7 +31,6 @@ const AppBar = () => {
   const [menuTitle, setMenuTitle] = useState<AppBarItemTypes | null>(null);
   const [showClockWidget, setShowClockWidget] = useState(false);
 
-  const { handleDrawer } = useDrawer();
   const breadcrumbs = useBreadcrumbs();
 
   const { user } = useAuth();
