@@ -7,6 +7,7 @@ import com.skapp.community.common.model.Notification;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.request.NotificationsFilterDto;
 import com.skapp.community.common.payload.response.NotificationResponseDto;
+import com.skapp.community.common.payload.response.NotificationTypeCountResponseDto;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.NotificationDao;
@@ -39,12 +40,16 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -53,6 +58,12 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
 
 	private static final String NOTIFICATION_LANGUAGE = "en";
+
+	private static final Set<NotificationType> ESIGN_TYPES = EnumSet.of(NotificationType.ESIGN_DOCUMENT_SIGN_REQUEST,
+			NotificationType.ESIGN_DOCUMENT_COMPLETED, NotificationType.ESIGN_DOCUMENT_DECLINED,
+			NotificationType.ESIGN_DOCUMENT_VOIDED, NotificationType.ESIGN_DOCUMENT_REMINDER,
+			NotificationType.ESIGN_DOCUMENT_EXPIRED, NotificationType.ESIGN_DOCUMENT_COMPLETED_OWNER,
+			NotificationType.ESIGN_DOCUMENT_DECLINED_OWNER);
 
 	private final PushNotificationService pushNotificationService;
 
@@ -285,6 +296,45 @@ public class NotificationServiceImpl implements NotificationService {
 
 		log.info("getUnreviewedNotificationsCount: execution ended");
 		return new ResponseEntityDto(false, unreadCount);
+	}
+
+	@Override
+	public ResponseEntityDto getNotificationCountByType() {
+		log.info("getNotificationCountByType: execution started");
+
+		Long userId = userService.getCurrentUser().getUserId();
+		List<Object[]> results = notificationDao.countNotificationsByTypeForUser(userId);
+
+		Map<NotificationType, Long> countMap = results.stream()
+			.collect(Collectors.toMap(row -> (NotificationType) row[0], row -> (Long) row[1]));
+
+		long esignTotal = ESIGN_TYPES.stream().mapToLong(type -> countMap.getOrDefault(type, 0L)).sum();
+
+		List<NotificationTypeCountResponseDto> counts = Arrays.stream(NotificationType.values())
+			.filter(type -> type != NotificationType.ESIGN && !ESIGN_TYPES.contains(type))
+			.map(type -> new NotificationTypeCountResponseDto(type, countMap.getOrDefault(type, 0L)))
+			.collect(Collectors.toList());
+		counts.add(new NotificationTypeCountResponseDto(NotificationType.ESIGN, esignTotal));
+
+		log.info("getNotificationCountByType: execution ended");
+		return new ResponseEntityDto(false, counts);
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto markNotificationTypeAsViewed(NotificationType notificationType) {
+		log.info("markNotificationTypeAsViewed: execution started");
+
+		Long userId = userService.getCurrentUser().getUserId();
+		Collection<NotificationType> typesToMark = (notificationType == NotificationType.ESIGN)
+				? ESIGN_TYPES : List.of(notificationType);
+		List<Notification> notifications = notificationDao
+			.findByEmployee_User_UserIdAndNotificationTypeIn(userId, typesToMark);
+		notifications.forEach(notification -> notification.setIsTypeViewed(true));
+		notificationDao.saveAll(notifications);
+
+		log.info("markNotificationTypeAsViewed: execution ended");
+		return new ResponseEntityDto(false, "");
 	}
 
 	public List<NotificationResponseDto> mapNotifications(List<Notification> notifications) {

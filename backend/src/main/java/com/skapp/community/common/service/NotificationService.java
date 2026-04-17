@@ -21,4 +21,8 @@ public interface NotificationService {
 
 	ResponseEntityDto getUnreadNotificationsCount();
 
+	ResponseEntityDto getNotificationCountByType();
+
+	ResponseEntityDto markNotificationTypeAsViewed(NotificationType notificationType);
+
 }
