@@ -16,6 +16,7 @@ import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.model.VerifiedIdentity;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.payload.request.MetadataRequestDto;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
@@ -25,6 +26,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
+import com.skapp.enterprise.esignature.repository.VerifiedIdentityRepository;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
@@ -62,6 +64,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	private final AddressBookDao addressBookDao;
 
 	private final DocumentLinkService documentLinkService;
+
+	private final VerifiedIdentityRepository verifiedIdentityRepository;
 
 	private final JsonMapper objectMapper;
 
@@ -258,6 +262,16 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			else {
 				responseDto.setActionDoneByName(auditTrail.getRecipient().getAddressBook().getName());
 				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getAddressBook().getName());
+			}
+
+			Long documentId = auditTrail.getEnvelope().getDocuments().isEmpty() ? null
+					: auditTrail.getEnvelope().getDocuments().getFirst().getId();
+
+			if (auditTrail.getAction() == AuditAction.ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID) {
+				Optional<VerifiedIdentity> verifiedIdentity = verifiedIdentityRepository
+					.findByRecipientIdAndDocumentId(auditTrail.getRecipient().getId(), documentId);
+
+				verifiedIdentity.ifPresent(identity -> responseDto.setActionVerifiedByName(identity.getFullName()));
 			}
 
 			responseDto.setTimestamp(auditTrail.getTimestamp());
