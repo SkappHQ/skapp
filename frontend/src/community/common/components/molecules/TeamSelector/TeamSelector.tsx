@@ -35,6 +35,10 @@ const TeamSelector = ({
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<number>(0);
+  const [listMaxHeight, setListMaxHeight] = useState<number | undefined>(
+    undefined
+  );
+  const listRef = useRef<HTMLDivElement>(null);
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: managerAllTeamsData } = useGetAllManagerTeams();
@@ -54,6 +58,15 @@ const TeamSelector = ({
   useEffect(() => {
     checkUserRole();
   }, [user, managerAllTeamsData, allTeamsData]);
+
+  useEffect(() => {
+    if (showOverlay && listRef.current) {
+      const firstRow = listRef.current.querySelector<HTMLElement>("li");
+      if (firstRow) {
+        setListMaxHeight(firstRow.getBoundingClientRect().height * 5);
+      }
+    }
+  }, [showOverlay, teamsData]);
 
   const checkUserRole = () => {
     if (
@@ -136,7 +149,10 @@ const TeamSelector = ({
             backgroundColor: "common.white"
           }}
         >
-          <Box sx={{ maxHeight: "13.75rem", overflowY: "auto" }}>
+          <Box
+            ref={listRef}
+            sx={{ maxHeight: listMaxHeight, overflowY: "auto" }}
+          >
             <SortRow
               text={translateTexts(["allLabel"])}
               selected={selectedOptionId === 0}
