@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { JSX, MouseEvent, useEffect, useState } from "react";
+import { JSX, MouseEvent, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
@@ -136,23 +136,25 @@ const TeamSelector = ({
             backgroundColor: "common.white"
           }}
         >
-          <SortRow
-            text={translateTexts(["allLabel"])}
-            selected={selectedOptionId === 0}
-            onClick={() => {
-              onSelectOption(0);
-            }}
-          />
-          {teamsData?.map((item) => (
+          <Box sx={{ maxHeight: "13.75rem", overflowY: "auto" }}>
             <SortRow
-              key={item?.teamId}
-              text={item?.teamName}
-              selected={selectedOptionId === item?.teamId}
+              text={translateTexts(["allLabel"])}
+              selected={selectedOptionId === 0}
               onClick={() => {
-                onSelectOption(item?.teamId as number);
+                onSelectOption(0);
               }}
             />
-          ))}
+            {teamsData?.map((item) => (
+              <SortRow
+                key={item?.teamId}
+                text={item?.teamName}
+                selected={selectedOptionId === item?.teamId}
+                onClick={() => {
+                  onSelectOption(item?.teamId as number);
+                }}
+              />
+            ))}
+          </Box>
         </Box>
       </Popper>
     </>
