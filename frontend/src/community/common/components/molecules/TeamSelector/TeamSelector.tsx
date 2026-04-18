@@ -7,6 +7,7 @@ import { useAuth } from "~community/auth/providers/AuthProvider";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
 import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
 import Popper from "~community/common/components/molecules/Popper/Popper";
+import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -35,6 +36,7 @@ const TeamSelector = ({
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<number>(0);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [listMaxHeight, setListMaxHeight] = useState<number | undefined>(
     undefined
   );
@@ -50,9 +52,15 @@ const TeamSelector = ({
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const isTeamListEmpty = teamsData?.length === 0;
   const [selectedOptionName, setSelectedOptionName] = useState<string>("");
+
+  const filteredTeams = teamsData?.filter((item) =>
+    item?.teamName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const closeMenu = (): void => {
     setAnchorEl(null);
     setShowOverlay(false);
+    setSearchTerm("");
   };
 
   useEffect(() => {
@@ -149,6 +157,17 @@ const TeamSelector = ({
             backgroundColor: "common.white"
           }}
         >
+          <Box sx={{ padding: "0.5rem 0.5rem 0.25rem" }}>
+            <SearchBox
+              value={searchTerm}
+              setSearchTerm={setSearchTerm}
+              placeHolder={
+                translateTexts(["searchTeamPlaceholder"]) ?? "Search teams"
+              }
+              autoFocus={true}
+              name="teamSearch"
+            />
+          </Box>
           <Box
             ref={listRef}
             sx={{ maxHeight: listMaxHeight, overflowY: "auto" }}
@@ -160,7 +179,7 @@ const TeamSelector = ({
                 onSelectOption(0);
               }}
             />
-            {teamsData?.map((item) => (
+            {filteredTeams?.map((item) => (
               <SortRow
                 key={item?.teamId}
                 text={item?.teamName}
