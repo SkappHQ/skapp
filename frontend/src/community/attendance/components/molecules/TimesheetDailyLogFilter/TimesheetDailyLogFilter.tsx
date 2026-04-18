@@ -131,7 +131,7 @@ const TimesheetDailyLogFilter = ({
 
   const handleDateChange = (date: DateTime | null) => {
     if (!date) return;
-    const jsDate = date.toJSDate();
+    const jsDate = date.startOf("day").toJSDate();
     if (selectedDates.length === 2) {
       setSelectedDates([jsDate]);
     } else {
