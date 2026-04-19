@@ -25,4 +25,6 @@ public class EpEmployeeRoleLimitDto {
 
 	boolean esignSenderLimitExceeded;
 
+	boolean pmAdminLimitExceeded;
+
 }

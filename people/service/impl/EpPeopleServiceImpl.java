@@ -606,7 +606,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private EpEmployeeRoleLimitDto checkEmployeeRoleLimits() {
 		if (tenantValidator.isCurrentTenantCoreOrPro()) {
-			return new EpEmployeeRoleLimitDto(false, false, false, false, false, false, false, false, false);
+			return new EpEmployeeRoleLimitDto(false, false, false, false, false, false, false, false, false, false);
 		}
 
 		SpecialTenantConfig.TenantInfo tenantInfo = specialTenantConfig.getCurrentTenantInfo();
@@ -614,7 +614,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		return new EpEmployeeRoleLimitDto(checkLeaveAdminLimit(tenantInfo), checkAttendanceAdminLimit(tenantInfo),
 				checkPeopleAdminLimit(tenantInfo), checkESignAdminLimit(tenantInfo), checkLeaveManagerLimit(tenantInfo),
 				checkAttendanceManagerLimit(tenantInfo), checkPeopleManagerLimit(tenantInfo),
-				checkSuperAdminLimit(tenantInfo), checkEsignSenderLimit(tenantInfo));
+				checkSuperAdminLimit(tenantInfo), checkEsignSenderLimit(tenantInfo), checkPMAdminLimit(tenantInfo));
 	}
 
 	private boolean checkLeaveAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
@@ -669,6 +669,12 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
 				: EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT;
 		return employeeRoleDao.countByEsignRoleAndIsSuperAdmin(Role.ESIGN_SENDER, false) >= maxCount;
+	}
+
+	private boolean checkPMAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
+				: EpCommonConstants.ENTERPRISE_FREE_MAX_PM_ADMIN_COUNT;
+		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(Role.PM_ADMIN) >= maxCount;
 	}
 
 }
