@@ -110,6 +110,8 @@ const TeamSelector = ({
           translateTexts(["searchTeamPlaceholder"]) ?? "Search teams"
         }
         maxHeight="max-h-44"
+        popupWidth="w-[16.25rem]"
+        popupAlignment="right"
         disabled={isTeamListEmpty && !isAdmin}
         renderTrigger={(
           value: DropdownValue | null,
