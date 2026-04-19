@@ -345,6 +345,7 @@ const UserLeaveHistory: FC<Props> = ({
         status: (
           <IconChip
             label={leaveData.status.toLowerCase()}
+            accessibility={{ ariaLabel: leaveData.status.toLowerCase() }}
             icon={requestTypeSelector(getLeaveRequestStatus(leaveData.status))}
             isResponsive={true}
             chipStyles={{
