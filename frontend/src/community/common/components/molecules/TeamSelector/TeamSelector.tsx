@@ -1,18 +1,18 @@
 import { Box } from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { JSX, MouseEvent, useEffect, useRef, useState } from "react";
+import {
+  ButtonV2,
+  DropdownOption,
+  DropdownValue,
+  DropdownWithSearchablePopup,
+  TriggerProps
+} from "@rootcodelabs/skapp-ui";
+import { JSX, useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
-import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
-import Popper from "~community/common/components/molecules/Popper/Popper";
-import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { ManagerTeamType } from "~community/common/types/CommonTypes";
-import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import {
   useGetAllManagerTeams,
   useGetAllTeams
@@ -25,22 +25,14 @@ interface Props {
   moduleAdminType?: AdminTypes;
 }
 
+const ALL_TEAMS_OPTION_ID = 0;
+
 const TeamSelector = ({
   setTeamId,
   setTeamName,
   moduleAdminType
 }: Props): JSX.Element => {
   const translateTexts = useTranslator("attendanceModule", "timesheet");
-  const theme: Theme = useTheme();
-
-  const [showOverlay, setShowOverlay] = useState<boolean>(false);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [selectedOptionId, setSelectedOptionId] = useState<number>(0);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [listMaxHeight, setListMaxHeight] = useState<number | undefined>(
-    undefined
-  );
-  const listRef = useRef<HTMLDivElement>(null);
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: managerAllTeamsData } = useGetAllManagerTeams();
@@ -51,30 +43,28 @@ const TeamSelector = ({
 
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const isTeamListEmpty = teamsData?.length === 0;
-  const [selectedOptionName, setSelectedOptionName] = useState<string>("");
-
-  const filteredTeams = teamsData?.filter((item) =>
-    item?.teamName?.toLowerCase().includes(searchTerm.toLowerCase())
+  const [selectedValue, setSelectedValue] = useState<DropdownOption | null>(
+    null
   );
 
-  const closeMenu = (): void => {
-    setAnchorEl(null);
-    setShowOverlay(false);
-    setSearchTerm("");
+  const allTeamsOption: DropdownOption = {
+    id: ALL_TEAMS_OPTION_ID,
+    value: ALL_TEAMS_OPTION_ID,
+    label: translateTexts(["allLabel"])
   };
+
+  const options: DropdownOption[] = [
+    allTeamsOption,
+    ...(teamsData?.map((item) => ({
+      id: item.teamId as number,
+      value: item.teamId as number,
+      label: item.teamName
+    })) ?? [])
+  ];
 
   useEffect(() => {
     checkUserRole();
   }, [user, managerAllTeamsData, allTeamsData]);
-
-  useEffect(() => {
-    if (showOverlay && listRef.current) {
-      const firstRow = listRef.current.querySelector<HTMLElement>("li");
-      if (firstRow) {
-        setListMaxHeight(firstRow.getBoundingClientRect().height * 5);
-      }
-    }
-  }, [showOverlay, teamsData]);
 
   const checkUserRole = () => {
     if (
@@ -84,115 +74,78 @@ const TeamSelector = ({
       setIsAdmin(true);
       setTeamId(-1);
       setTeamsData(allTeamsData);
-      setSelectedOptionName(
-        allTeamsData?.length !== 0 ? translateTexts(["allLabel"]) : ""
-      );
+      setSelectedValue(allTeamsData?.length !== 0 ? allTeamsOption : null);
     } else {
       setTeamId(-1);
       setTeamsData(managerAllTeamsData?.managerTeams);
       setIsAdmin(false);
-      setSelectedOptionName(
-        managerAllTeamsData?.managerTeams.length !== 0
-          ? translateTexts(["allLabel"])
-          : translateTexts(["noTeamTxt"])
+      setSelectedValue(
+        managerAllTeamsData?.managerTeams.length !== 0 ? allTeamsOption : null
       );
     }
   };
 
-  const onSelectOption = (id: number): void => {
-    if (id !== 0) {
-      const selectedTeam = teamsData?.find((item) => item?.teamId === id);
-      if (selectedTeam) {
-        setSelectedOptionName(selectedTeam?.teamName);
-        setSelectedOptionId(id);
-        setShowOverlay(false);
-        setTeamId(id);
-        setTeamName && setTeamName(selectedTeam?.teamName);
-      }
-    } else {
+  const handleChange = (value: DropdownValue | null): void => {
+    const option = value as DropdownOption | null;
+    if (!option) return;
+
+    if (option.id === ALL_TEAMS_OPTION_ID) {
       setTeamId(-1);
-      setSelectedOptionName(translateTexts(["allLabel"]));
-      setSelectedOptionId(0);
-      setShowOverlay(false);
       setTeamName && setTeamName(translateTexts(["allLabel"]));
+    } else {
+      setTeamId(option.id as number);
+      setTeamName && setTeamName(option.label as string);
     }
+    setSelectedValue(option);
   };
 
   return (
-    <>
-      <Box sx={{ paddingLeft: "1rem" }}>
-        <ButtonV2
-          variant={"tertiary"}
-          size={"md"}
-          disabled={isTeamListEmpty && !isAdmin}
-          onClick={(event: MouseEvent<HTMLElement>) => {
-            setAnchorEl(event.currentTarget);
-            setShowOverlay(true);
-          }}
-          icon={<DropDownArrow />}
-          iconPosition="end"
-        >
-          {!isTeamListEmpty ? selectedOptionName : translateTexts(["allLabel"])}
-        </ButtonV2>
-      </Box>
-      <Popper
-        anchorEl={anchorEl}
-        open={Boolean(showOverlay)}
-        position={"bottom-end"}
-        handleClose={() => closeMenu()}
-        menuType={MenuTypes.SORT}
-        isManager={true}
-        disablePortal={true}
-        id="popper"
-        isFlip={true}
-        timeout={300}
-        ariaLabel="Your teams"
-        styles={{
-          boxShadow: `0rem .55rem 1.25rem ${theme.palette.grey[300]}`,
-          zIndex: ZIndexEnums.DEFAULT
-        }}
-      >
-        <Box
-          sx={{
-            backgroundColor: "common.white"
-          }}
-        >
-          <Box sx={{ padding: "0.5rem 0.5rem 0.25rem" }}>
-            <SearchBox
-              value={searchTerm}
-              setSearchTerm={setSearchTerm}
-              placeHolder={
-                translateTexts(["searchTeamPlaceholder"]) ?? "Search teams"
+    <Box sx={{ paddingLeft: "1rem" }}>
+      <DropdownWithSearchablePopup
+        options={options}
+        value={selectedValue}
+        onChange={handleChange}
+        searchable={true}
+        searchPlaceholder={
+          translateTexts(["searchTeamPlaceholder"]) ?? "Search teams"
+        }
+        maxHeight="max-h-44"
+        disabled={isTeamListEmpty && !isAdmin}
+        renderTrigger={(
+          value: DropdownValue | null,
+          _isOpen: boolean,
+          disabled: boolean,
+          triggerProps: TriggerProps
+        ) => {
+          const label =
+            !isTeamListEmpty && selectedValue
+              ? (selectedValue.label as string)
+              : translateTexts(["allLabel"]);
+          return (
+            <Box
+              ref={triggerProps.ref as React.RefObject<HTMLDivElement>}
+              onClick={triggerProps.onClick}
+              onKeyDown={
+                triggerProps.onKeyDown as React.KeyboardEventHandler<HTMLDivElement>
               }
-              autoFocus={true}
-              name="teamSearch"
-            />
-          </Box>
-          <Box
-            ref={listRef}
-            sx={{ maxHeight: listMaxHeight, overflowY: "auto" }}
-          >
-            <SortRow
-              text={translateTexts(["allLabel"])}
-              selected={selectedOptionId === 0}
-              onClick={() => {
-                onSelectOption(0);
-              }}
-            />
-            {filteredTeams?.map((item) => (
-              <SortRow
-                key={item?.teamId}
-                text={item?.teamName}
-                selected={selectedOptionId === item?.teamId}
-                onClick={() => {
-                  onSelectOption(item?.teamId as number);
-                }}
-              />
-            ))}
-          </Box>
-        </Box>
-      </Popper>
-    </>
+              aria-expanded={triggerProps["aria-expanded"]}
+              aria-haspopup={triggerProps["aria-haspopup"]}
+              sx={{ display: "inline-flex" }}
+            >
+              <ButtonV2
+                variant={"tertiary"}
+                size={"md"}
+                disabled={disabled}
+                icon={<DropDownArrow />}
+                iconPosition="end"
+              >
+                {label}
+              </ButtonV2>
+            </Box>
+          );
+        }}
+      />
+    </Box>
   );
 };
 
