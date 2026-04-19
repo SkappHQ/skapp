@@ -64,7 +64,7 @@ const UserLeaveHistory: FC<Props> = ({
 }) => {
   const theme: Theme = useTheme();
 
-  const { isFreeTier, isCoreTier } = useTier();
+  const { isFreeTier, isAtLeastCoreTier } = useTier();
 
   const translateText = useTranslator(
     "peopleModule",
@@ -152,12 +152,12 @@ const UserLeaveHistory: FC<Props> = ({
     currentPage,
     6,
     false,
-    isCoreTier
+    isAtLeastCoreTier
   );
 
   const leaveHistory = useMemo(() => {
-    return isCoreTier ? leaveHistoryData : leaveHistoryMockData;
-  }, [isCoreTier, leaveHistoryData]);
+    return isAtLeastCoreTier ? leaveHistoryData : leaveHistoryMockData;
+  }, [isAtLeastCoreTier, leaveHistoryData]);
 
   const { data: exportHistoryData } = useGetEmployeeLeaveHistory(
     employeeId,
@@ -167,7 +167,7 @@ const UserLeaveHistory: FC<Props> = ({
     0,
     6,
     true,
-    isCoreTier
+    isAtLeastCoreTier
   );
 
   const columns = [
@@ -520,7 +520,8 @@ const UserLeaveHistory: FC<Props> = ({
   return (
     <Box>
       <Typography
-        variant="h4"
+        variant="h2"
+        component="h2"
         sx={{
           mb: "0.75rem"
         }}

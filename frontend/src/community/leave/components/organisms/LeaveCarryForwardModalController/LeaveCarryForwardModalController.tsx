@@ -19,21 +19,10 @@ const LeaveCarryForwardModalController: FC = () => {
     leaveCarryForwardModalType
   } = useLeaveStore((state) => state);
 
-  const handleCloseModal = useCallback((): void => {
-    if (
-      leaveCarryForwardModalType ===
-        LeaveCarryForwardModalTypes.CARRY_FORWARD_TYPES_NOT_AVAILABLE ||
-      leaveCarryForwardModalType ===
-        LeaveCarryForwardModalTypes.CARRY_FORWARD_INELIGIBLE
-    )
-      return;
+  const handleClose = useCallback((): void => {
     setIsLeaveCarryForwardModalOpen(false);
     setLeaveCarryForwardModalType(LeaveCarryForwardModalTypes.NONE);
-  }, [
-    leaveCarryForwardModalType,
-    setIsLeaveCarryForwardModalOpen,
-    setLeaveCarryForwardModalType
-  ]);
+  }, [setIsLeaveCarryForwardModalOpen, setLeaveCarryForwardModalType]);
 
   const getModalTitle = useCallback((): string => {
     switch (leaveCarryForwardModalType) {
@@ -51,11 +40,6 @@ const LeaveCarryForwardModalController: FC = () => {
         return "";
     }
   }, [leaveCarryForwardModalType, translateText]);
-
-  const handleClose = () => {
-    setIsLeaveCarryForwardModalOpen(false);
-    setLeaveCarryForwardModalType(LeaveCarryForwardModalTypes.NONE);
-  };
 
   const modalContent = (): ReactNode => {
     switch (leaveCarryForwardModalType) {
@@ -78,7 +62,7 @@ const LeaveCarryForwardModalController: FC = () => {
         isLeaveCarryForwardModalOpen &&
         leaveCarryForwardModalType !== LeaveCarryForwardModalTypes.NONE
       }
-      onClose={handleCloseModal}
+      onClose={handleClose}
       modalHeader={getModalTitle()}
       content={modalContent()}
     />

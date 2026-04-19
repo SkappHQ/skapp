@@ -62,26 +62,31 @@ const DeleteConfirmModal = () => {
   };
   return (
     <Box>
-      <Typography sx={{ mt: "1rem" }}>
-        {translateText(["confirmDeleteModalDes"])}
-      </Typography>
+      <Typography>{translateText(["confirmDeleteModalDes"])}</Typography>
       <Box>
-        <ButtonV2
-          variant={"primary"}
-          onClick={handleReassignClick}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["reassignBtnText"])}
-        </ButtonV2>
-        <ButtonV2
-          variant={"error"}
-          onClick={handleDeleteClick}
-          icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["teamDeleteConfirmBtnText"])}
-        </ButtonV2>
+        <div className="flex flex-row gap-3 mt-4 justify-end">
+          <ButtonV2
+            variant={"primary"}
+            onClick={handleReassignClick}
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["reassignBtnText"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"error"}
+            onClick={handleDeleteClick}
+            icon={
+              <Icon
+                name={IconName.DELETE_BUTTON_ICON}
+                fill="var(--color-semantic-red-text)"
+              />
+            }
+            iconPosition="end"
+          >
+            {translateText(["teamDeleteConfirmBtnText"])}
+          </ButtonV2>
+        </div>
       </Box>
     </Box>
   );
