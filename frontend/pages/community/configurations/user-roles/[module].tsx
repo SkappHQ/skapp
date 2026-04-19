@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -41,6 +42,10 @@ const Module: NextPage = () => {
     setModuleType(formattedModule);
   };
 
+  const onBackClick = () => {
+    router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=user-roles`);
+  };
+
   return (
     <ContentLayout
       pageHead={translateText(["pageHead"])}
@@ -52,6 +57,7 @@ const Module: NextPage = () => {
       isPrimaryBtnLoading={isPending}
       isDividerVisible={true}
       isBackButtonVisible={true}
+      onBackClick={onBackClick}
     >
       <>
         <ModuleRolesTable module={formattedModule} />
