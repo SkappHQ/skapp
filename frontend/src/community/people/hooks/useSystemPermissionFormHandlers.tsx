@@ -53,7 +53,8 @@ const useSystemPermissionFormHandlers = () => {
     peopleManagerLimitExceeded: false,
     superAdminLimitExceeded: false,
     esignAdminLimitExceeded: false,
-    esignSenderLimitExceeded: false
+    esignSenderLimitExceeded: false,
+    pmAdminLimitExceeded: false
   });
 
   const { data: superAdminCountData } = useGetSuperAdminCount();
@@ -125,6 +126,13 @@ const useSystemPermissionFormHandlers = () => {
         limitExceeded: roleLimits.esignSenderLimitExceeded,
         title: "eSignSenderLimitationTitle",
         description: "eSignSenderLimitationDescription"
+      }
+    },
+    pmRole: {
+      [Role.PM_ADMIN]: {
+        limitExceeded: roleLimits.pmAdminLimitExceeded,
+        title: "pmAdminLimitationTitle",
+        description: "pmAdminLimitationDescription"
       }
     }
   };

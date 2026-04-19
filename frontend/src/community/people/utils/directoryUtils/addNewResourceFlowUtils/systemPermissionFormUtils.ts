@@ -159,6 +159,21 @@ export const handleCustomChangeEnterprise = ({
     return;
   }
 
+  if (
+    name === "pmRole" &&
+    value === Role.PM_ADMIN &&
+    roleLimits.pmAdminLimitExceeded
+  ) {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: roleLimitationText(["pmAdminLimitationTitle"]),
+      description: roleLimitationText(["pmAdminLimitationDescription"]),
+      isIcon: true
+    });
+    return;
+  }
+
   setFieldValue(name, value);
   setUserRoles(name, value);
 };
