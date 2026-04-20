@@ -18,6 +18,7 @@ import InputDate from "~community/common/components/molecules/InputDate/InputDat
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { MONTH_DATE_FORMAT } from "~community/common/constants/timeConstants";
+import { ButtonTypes } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { specialCharacters } from "~community/common/regex/regexPatterns";
@@ -528,7 +529,8 @@ const LeaveTypeForm = () => {
 
           <Stack sx={classes.buttonWrapper}>
             <ButtonV2
-              variant={"tertiary"}
+              variant="tertiary"
+              type="button"
               onClick={handleCancelBtnClick}
               icon={<Icon name={IconName.CLOSE_ICON} />}
               iconPosition="end"
@@ -536,7 +538,8 @@ const LeaveTypeForm = () => {
               {translateText(["cancelBtn"])}
             </ButtonV2>
             <ButtonV2
-              type={"submit"}
+              variant="primary"
+              type="submit"
               disabled={!isSaveBtnActive}
               isLoading={isAddingLeaveTypePending || isEditingLeaveTypePending}
               className={getBlinkClass(ongoingQuickSetup.SETUP_LEAVE_TYPES)}
