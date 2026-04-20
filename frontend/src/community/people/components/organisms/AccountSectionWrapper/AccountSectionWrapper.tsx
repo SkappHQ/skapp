@@ -4,7 +4,6 @@ import { useGetEmployee } from "~community/people/api/PeopleApi";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
-import { TeamNamesType } from "~community/people/types/TeamTypes";
 
 import DirectorySteppers from "../../molecules/DirectorySteppers/DirectorySteppers";
 import RouteChangeAreYouSureModal from "../../molecules/RouteChangeAreYouSureModal/RouteChangeAreYouSureModal";
