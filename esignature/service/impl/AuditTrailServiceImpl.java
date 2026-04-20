@@ -235,6 +235,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		List<AuditTrailResponseDto> responseDtoList = new ArrayList<>();
 
+		Long documentId = envelope.getDocuments().isEmpty() ? null : envelope.getDocuments().getFirst().getId();
+
 		for (AuditTrail auditTrail : auditTrails) {
 			log.debug("Processing audit trail with ID: {}", auditTrail.getId());
 
@@ -263,9 +265,6 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				responseDto.setActionDoneByName(auditTrail.getRecipient().getAddressBook().getName());
 				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getAddressBook().getName());
 			}
-
-			Long documentId = auditTrail.getEnvelope().getDocuments().isEmpty() ? null
-					: auditTrail.getEnvelope().getDocuments().getFirst().getId();
 
 			if (auditTrail.getAction() == AuditAction.ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID) {
 				Optional<VerifiedIdentity> verifiedIdentity = verifiedIdentityRepository
