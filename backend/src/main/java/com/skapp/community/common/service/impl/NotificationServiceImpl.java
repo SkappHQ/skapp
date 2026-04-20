@@ -267,7 +267,7 @@ public class NotificationServiceImpl implements NotificationService {
 		notificationDao.save(notification);
 
 		log.info("markNotificationAsRead: execution ended");
-		return new ResponseEntityDto(false, null);
+		return new ResponseEntityDto(false, "");
 	}
 
 	@Transactional
@@ -283,7 +283,7 @@ public class NotificationServiceImpl implements NotificationService {
 		notificationDao.saveAll(notifications);
 
 		log.info("markAllNotificationsAsRead: execution ended");
-		return new ResponseEntityDto(false, null);
+		return new ResponseEntityDto(false, "");
 	}
 
 	@Override
@@ -338,7 +338,7 @@ public class NotificationServiceImpl implements NotificationService {
 		notificationDao.saveAll(notifications);
 
 		log.info("markNotificationTypeAsViewed: execution ended");
-		return new ResponseEntityDto(false, null);
+		return new ResponseEntityDto(false, "");
 	}
 
 	public List<NotificationResponseDto> mapNotifications(List<Notification> notifications) {
