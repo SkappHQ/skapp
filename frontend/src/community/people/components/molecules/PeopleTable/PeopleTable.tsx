@@ -487,7 +487,9 @@ const PeopleTable: FC<Props> = ({
 
   useEffect(() => {
     if (!isLoading && teamData)
-      setProjectTeamNames(teamData as TeamNamesType[]);
+      setProjectTeamNames(
+        teamData.map(({ teamId, teamName }) => ({ teamId, teamName }))
+      );
   }, [isLoading, teamData]);
 
   const handleRowClick = async (employee: { id: number }) => {

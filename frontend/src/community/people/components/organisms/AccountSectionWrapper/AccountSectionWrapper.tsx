@@ -16,7 +16,7 @@ interface Props {
 }
 const AccountSectionWrapper = ({ employeeId }: Props) => {
   const { data: employeeData } = useGetEmployee(employeeId);
-  const { data: teamData, isLoading: isTeamsLoading } = useGetAllTeams();
+  const { data: teamData} = useGetAllTeams();
 
   const accountSectionsRef = useRef<HTMLDivElement>(null);
 
@@ -40,12 +40,12 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
   }, [employeeData, setEmployee]);
 
   useEffect(() => {
-    if (!isTeamsLoading && teamData) {
+    if (teamData) {
       setProjectTeamNames(
         teamData.map(({ teamId, teamName }) => ({ teamId, teamName }))
       );
     }
-  }, [isTeamsLoading, teamData, setProjectTeamNames]);
+  }, [teamData, setProjectTeamNames]);
 
   const { hasChanged } = useFormChangeDetector();
 
