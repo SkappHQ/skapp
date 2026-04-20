@@ -289,6 +289,10 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				if (identity != null) {
 					responseDto.setActionVerifiedByName(identity.getFullName());
 				}
+				else {
+					log.warn("No VerifiedIdentity found for BankID recipient={} document={}",
+							auditTrail.getRecipient().getId(), documentId);
+				}
 			}
 
 			responseDto.setTimestamp(auditTrail.getTimestamp());
