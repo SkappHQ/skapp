@@ -41,7 +41,7 @@ export const hasSpecificRole = (roles: string[], role: string): boolean => {
   return roles.includes(role);
 };
 
-export const isTempSession = (roles?: string[]): boolean => {
+export const isSuperAdminOnlySession = (roles?: string[]): boolean => {
   return (
     Array.isArray(roles) &&
     roles.length === 1 &&
