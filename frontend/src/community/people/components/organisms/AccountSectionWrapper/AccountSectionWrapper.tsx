@@ -42,7 +42,9 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
 
   useEffect(() => {
     if (!isTeamsLoading && teamData) {
-      setProjectTeamNames(teamData as TeamNamesType[]);
+      setProjectTeamNames(
+        teamData.map(({ teamId, teamName }) => ({ teamId, teamName }))
+      );
     }
   }, [isTeamsLoading, teamData, setProjectTeamNames]);
 
