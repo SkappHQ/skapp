@@ -606,15 +606,34 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private EpEmployeeRoleLimitDto checkEmployeeRoleLimits() {
 		if (tenantValidator.isCurrentTenantCoreOrPro()) {
-			return new EpEmployeeRoleLimitDto(false, false, false, false, false, false, false, false, false, false);
+			return EpEmployeeRoleLimitDto.builder()
+				.leaveAdminLimitExceeded(false)
+				.attendanceAdminLimitExceeded(false)
+				.peopleAdminLimitExceeded(false)
+				.esignAdminLimitExceeded(false)
+				.leaveManagerLimitExceeded(false)
+				.attendanceManagerLimitExceeded(false)
+				.peopleManagerLimitExceeded(false)
+				.superAdminLimitExceeded(false)
+				.esignSenderLimitExceeded(false)
+				.pmAdminLimitExceeded(false)
+				.build();
 		}
 
 		SpecialTenantConfig.TenantInfo tenantInfo = specialTenantConfig.getCurrentTenantInfo();
 
-		return new EpEmployeeRoleLimitDto(checkLeaveAdminLimit(tenantInfo), checkAttendanceAdminLimit(tenantInfo),
-				checkPeopleAdminLimit(tenantInfo), checkESignAdminLimit(tenantInfo), checkLeaveManagerLimit(tenantInfo),
-				checkAttendanceManagerLimit(tenantInfo), checkPeopleManagerLimit(tenantInfo),
-				checkSuperAdminLimit(tenantInfo), checkEsignSenderLimit(tenantInfo), checkPMAdminLimit(tenantInfo));
+		return EpEmployeeRoleLimitDto.builder()
+			.leaveAdminLimitExceeded(checkLeaveAdminLimit(tenantInfo))
+			.attendanceAdminLimitExceeded(checkAttendanceAdminLimit(tenantInfo))
+			.peopleAdminLimitExceeded(checkPeopleAdminLimit(tenantInfo))
+			.esignAdminLimitExceeded(checkESignAdminLimit(tenantInfo))
+			.leaveManagerLimitExceeded(checkLeaveManagerLimit(tenantInfo))
+			.attendanceManagerLimitExceeded(checkAttendanceManagerLimit(tenantInfo))
+			.peopleManagerLimitExceeded(checkPeopleManagerLimit(tenantInfo))
+			.superAdminLimitExceeded(checkSuperAdminLimit(tenantInfo))
+			.esignSenderLimitExceeded(checkEsignSenderLimit(tenantInfo))
+			.pmAdminLimitExceeded(checkPMAdminLimit(tenantInfo))
+			.build();
 	}
 
 	private boolean checkLeaveAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {

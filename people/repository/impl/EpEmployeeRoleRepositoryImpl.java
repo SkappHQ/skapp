@@ -49,7 +49,7 @@ public class EpEmployeeRoleRepositoryImpl implements EpEmployeeRoleRepository {
 				predicates.add(criteriaBuilder.isFalse(root.get(EmployeeRole_.isSuperAdmin)));
 			}
 			else if (roleName == Role.PM_ADMIN) {
-				predicates.add(criteriaBuilder.equal(root.get(EmployeeRole_.pmRole), roleName));
+				predicates.add(criteriaBuilder.equal(root.get(EmployeeRole_.PM_ROLE), roleName));
 				predicates.add(criteriaBuilder.isFalse(root.get(EmployeeRole_.isSuperAdmin)));
 			}
 			else if (roleName == Role.SUPER_ADMIN)
