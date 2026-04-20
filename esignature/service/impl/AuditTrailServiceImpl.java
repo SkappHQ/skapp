@@ -45,7 +45,9 @@ import tools.jackson.databind.node.ObjectNode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -237,6 +239,21 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		Long documentId = envelope.getDocuments().isEmpty() ? null : envelope.getDocuments().getFirst().getId();
 
+		Map<Long, VerifiedIdentity> verifiedIdentityMap = new HashMap<>();
+
+		if (documentId != null) {
+			List<Long> bankIdRecipientIds = auditTrails.stream()
+				.filter(a -> AuditAction.isIdentityVerifiedAction(a.getAction()) && a.getRecipient() != null)
+				.map(a -> a.getRecipient().getId())
+				.distinct()
+				.toList();
+
+			if (!bankIdRecipientIds.isEmpty()) {
+				verifiedIdentityDao.findByRecipientIdInAndDocumentId(bankIdRecipientIds, documentId)
+					.forEach(vi -> verifiedIdentityMap.put(vi.getRecipient().getId(), vi));
+			}
+		}
+
 		for (AuditTrail auditTrail : auditTrails) {
 			log.debug("Processing audit trail with ID: {}", auditTrail.getId());
 
@@ -268,10 +285,10 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 			if (AuditAction.isIdentityVerifiedAction(auditTrail.getAction()) && auditTrail.getRecipient() != null
 					&& documentId != null) {
-				Optional<VerifiedIdentity> verifiedIdentity = verifiedIdentityDao
-					.findByRecipientIdAndDocumentId(auditTrail.getRecipient().getId(), documentId);
-
-				verifiedIdentity.ifPresent(identity -> responseDto.setActionVerifiedByName(identity.getFullName()));
+				VerifiedIdentity identity = verifiedIdentityMap.get(auditTrail.getRecipient().getId());
+				if (identity != null) {
+					responseDto.setActionVerifiedByName(identity.getFullName());
+				}
 			}
 
 			responseDto.setTimestamp(auditTrail.getTimestamp());
