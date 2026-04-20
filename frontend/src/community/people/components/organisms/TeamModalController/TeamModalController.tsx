@@ -137,9 +137,7 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
 
   useEffect(() => {
     if (!teamsIsLoading && data)
-      setProjectTeamNames(
-        data.map(({ teamId, teamName }) => ({ teamId, teamName }))
-      );
+      setProjectTeamNames(data as TeamNamesType[]);
   }, [teamsIsLoading, data]);
 
   const modalContent = (): ReactNode => {

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import { useGetEmployee } from "~community/people/api/PeopleApi";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
+import { TeamNamesType } from "~community/people/types/TeamTypes";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
 
@@ -41,9 +42,7 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
 
   useEffect(() => {
     if (teamData) {
-      setProjectTeamNames(
-        teamData.map(({ teamId, teamName }) => ({ teamId, teamName }))
-      );
+      setProjectTeamNames(teamData as TeamNamesType[]);
     }
   }, [teamData, setProjectTeamNames]);
 
