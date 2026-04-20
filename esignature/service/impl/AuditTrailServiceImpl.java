@@ -266,8 +266,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getAddressBook().getName());
 			}
 
-			if (auditTrail.getAction() == AuditAction.ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID
-					&& auditTrail.getRecipient() != null) {
+			if (AuditAction.isIdentityVerifiedAction(auditTrail.getAction()) && auditTrail.getRecipient() != null
+					&& documentId != null) {
 				Optional<VerifiedIdentity> verifiedIdentity = verifiedIdentityRepository
 					.findByRecipientIdAndDocumentId(auditTrail.getRecipient().getId(), documentId);
 
