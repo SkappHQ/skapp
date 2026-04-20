@@ -4,8 +4,6 @@ import com.skapp.community.common.model.Notification;
 import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,13 +14,6 @@ public interface NotificationDao extends JpaRepository<Notification, Long>, Noti
 
 	Notification findFirstByResourceIdAndNotificationTypeOrderByCreatedDateDesc(String leaveRequestId,
 			NotificationType notificationType);
-
-	@Query("SELECT n.notificationType, COUNT(n) FROM Notification n "
-			+ "WHERE n.employee.user.userId = :userId AND n.isTypeViewed = false "
-			+ "GROUP BY n.notificationType")
-	List<Object[]> countNotificationsByTypeForUser(@Param("userId") Long userId);
-
-	List<Notification> findByEmployee_User_UserIdAndNotificationType(Long userId, NotificationType notificationType);
 
 	List<Notification> findByEmployee_User_UserIdAndNotificationTypeIn(Long userId,
 			Collection<NotificationType> notificationTypes);

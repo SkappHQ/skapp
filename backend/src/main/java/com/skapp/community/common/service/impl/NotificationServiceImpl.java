@@ -41,7 +41,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -268,7 +267,7 @@ public class NotificationServiceImpl implements NotificationService {
 		notificationDao.save(notification);
 
 		log.info("markNotificationAsRead: execution ended");
-		return new ResponseEntityDto(false, "");
+		return new ResponseEntityDto(false, null);
 	}
 
 	@Transactional
@@ -284,7 +283,7 @@ public class NotificationServiceImpl implements NotificationService {
 		notificationDao.saveAll(notifications);
 
 		log.info("markAllNotificationsAsRead: execution ended");
-		return new ResponseEntityDto(false, "");
+		return new ResponseEntityDto(false, null);
 	}
 
 	@Override
@@ -303,10 +302,11 @@ public class NotificationServiceImpl implements NotificationService {
 		log.info("getNotificationCountByType: execution started");
 
 		Long userId = userService.getCurrentUser().getUserId();
-		List<Object[]> results = notificationDao.countNotificationsByTypeForUser(userId);
+		List<NotificationTypeCountResponseDto> results = notificationDao.countNotificationsByTypeForUser(userId);
 
 		Map<NotificationType, Long> countMap = results.stream()
-			.collect(Collectors.toMap(row -> (NotificationType) row[0], row -> (Long) row[1]));
+			.collect(Collectors.toMap(NotificationTypeCountResponseDto::getNotificationType,
+					NotificationTypeCountResponseDto::getCount));
 
 		long esignTotal = ESIGN_TYPES.stream().mapToLong(type -> countMap.getOrDefault(type, 0L)).sum();
 
@@ -325,16 +325,20 @@ public class NotificationServiceImpl implements NotificationService {
 	public ResponseEntityDto markNotificationTypeAsViewed(NotificationType notificationType) {
 		log.info("markNotificationTypeAsViewed: execution started");
 
+		if (notificationType == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		}
+
 		Long userId = userService.getCurrentUser().getUserId();
-		Collection<NotificationType> typesToMark = (notificationType == NotificationType.ESIGN)
-				? ESIGN_TYPES : List.of(notificationType);
+		Set<NotificationType> typesToMark = (notificationType == NotificationType.ESIGN)
+				? ESIGN_TYPES : EnumSet.of(notificationType);
 		List<Notification> notifications = notificationDao
 			.findByEmployee_User_UserIdAndNotificationTypeIn(userId, typesToMark);
 		notifications.forEach(notification -> notification.setIsTypeViewed(true));
 		notificationDao.saveAll(notifications);
 
 		log.info("markNotificationTypeAsViewed: execution ended");
-		return new ResponseEntityDto(false, "");
+		return new ResponseEntityDto(false, null);
 	}
 
 	public List<NotificationResponseDto> mapNotifications(List<Notification> notifications) {

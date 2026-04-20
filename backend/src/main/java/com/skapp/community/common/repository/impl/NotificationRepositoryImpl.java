@@ -5,6 +5,7 @@ import com.skapp.community.common.model.Notification_;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.payload.request.NotificationsFilterDto;
+import com.skapp.community.common.payload.response.NotificationTypeCountResponseDto;
 import com.skapp.community.common.repository.NotificationRepository;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
@@ -85,6 +86,33 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 		criteriaQuery.where(predicatesArray);
 
 		return entityManager.createQuery(criteriaQuery).getSingleResult();
+	}
+
+	@Override
+	public List<NotificationTypeCountResponseDto> countNotificationsByTypeForUser(Long userId) {
+		var criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<NotificationTypeCountResponseDto> criteriaQuery = criteriaBuilder
+			.createQuery(NotificationTypeCountResponseDto.class);
+		Root<Notification> root = criteriaQuery.from(Notification.class);
+
+		Join<Notification, Employee> notificationEmployeeJoin = root.join(Notification_.EMPLOYEE);
+		Join<Employee, User> userJoin = notificationEmployeeJoin.join(Employee_.USER);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.equal(userJoin.get(User_.IS_ACTIVE), Boolean.TRUE));
+		predicates.add(criteriaBuilder.equal(userJoin.get(User_.USER_ID), userId));
+		predicates.add(criteriaBuilder.equal(root.get(Notification_.IS_TYPE_VIEWED), Boolean.FALSE));
+
+		Predicate[] predicatesArray = new Predicate[predicates.size()];
+		predicates.toArray(predicatesArray);
+
+		criteriaQuery.select(criteriaBuilder.construct(NotificationTypeCountResponseDto.class,
+				root.get(Notification_.NOTIFICATION_TYPE), criteriaBuilder.count(root)));
+		criteriaQuery.where(predicatesArray);
+		criteriaQuery.groupBy(root.get(Notification_.NOTIFICATION_TYPE));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 }
