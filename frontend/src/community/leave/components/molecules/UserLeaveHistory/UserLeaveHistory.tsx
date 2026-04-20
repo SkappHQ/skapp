@@ -342,23 +342,30 @@ const UserLeaveHistory: FC<Props> = ({
             </Typography>
           </Box>
         ),
-        status: (
-          <IconChip
-            label={leaveData.status.toLowerCase()}
-            accessibility={{ ariaLabel: leaveData.status.toLowerCase() }}
-            icon={requestTypeSelector(getLeaveRequestStatus(leaveData.status))}
-            isResponsive={true}
-            chipStyles={{
-              alignSelf: "flex-end",
-              [`@media (max-width: 81.25rem)`]: {
-                marginRight: "2.25rem",
-                padding: "1rem"
-              }
-            }}
-            isTruncated={!theme.breakpoints.up("xl")}
-            tabIndex={-1}
-          />
-        ),
+        status: (() => {
+          const statusLabel = leaveData.status.toLowerCase();
+          return (
+            <IconChip
+              label={statusLabel}
+              accessibility={{
+                ariaLabel: `${translateAria(["leaveStatusChip"])} ${statusLabel}`
+              }}
+              icon={requestTypeSelector(
+                getLeaveRequestStatus(leaveData.status)
+              )}
+              isResponsive={true}
+              chipStyles={{
+                alignSelf: "flex-end",
+                [`@media (max-width: 81.25rem)`]: {
+                  marginRight: "2.25rem",
+                  padding: "1rem"
+                }
+              }}
+              isTruncated={!theme.breakpoints.up("xl")}
+              tabIndex={-1}
+            />
+          );
+        })(),
         reason: (
           <Box
             sx={{
