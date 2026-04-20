@@ -6,6 +6,7 @@ import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.payload.request.eid.EsignPdfRenderCssDto;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.MetadataResponseDto;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.type.EnvelopeStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.ClassPathResource;
@@ -218,6 +219,7 @@ public class EsignUtil {
 
 	public static String getFormattedActionText(AuditTrailResponseDto audit) {
 		String actionBy = audit.getActionDoneByName() != null ? audit.getActionDoneByName() : "";
+		String actionVerifiedBy = audit.getActionVerifiedByName() != null ? audit.getActionVerifiedByName() : "";
 
 		switch (audit.getAction()) {
 			case ENVELOPE_CREATED:
@@ -239,7 +241,8 @@ public class EsignUtil {
 			case ENVELOPE_DOWNLOADED:
 				return actionBy + EsignConstants.AUDIT_ACTION_DOWNLOADED_DOCUMENT;
 			case ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID:
-				return actionBy + EsignConstants.AUDIT_ACTION_SWEDISH_BANKID_IDENTITY_VERIFIED_DOCUMENT;
+				return actionBy + EsignConstants.AUDIT_ACTION_SWEDISH_BANKID_IDENTITY_VERIFIED_DOCUMENT
+						+ actionVerifiedBy;
 			case ENVELOPE_CUSTODY_TRANSFERRED:
 				String newOwner = "";
 				if (audit.getMetadata() != null && !audit.getMetadata().isEmpty()) {
