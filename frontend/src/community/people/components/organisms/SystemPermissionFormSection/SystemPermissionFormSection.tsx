@@ -133,7 +133,8 @@ const SystemPermissionFormSection = ({
         leaveRole: employee?.systemPermissions?.leaveRole,
         attendanceRole: employee?.systemPermissions?.attendanceRole,
         esignRole: employee?.systemPermissions?.esignRole,
-        invoiceRole: employee?.systemPermissions?.invoiceRole
+        invoiceRole: employee?.systemPermissions?.invoiceRole,
+        pmRole: employee?.systemPermissions?.pmRole
       };
 
       const errorsToShow = [];
