@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface VerifiedIdentityRepository extends JpaRepository<VerifiedIdentity, Long> {
+public interface VerifiedIdentityDao extends JpaRepository<VerifiedIdentity, Long> {
 
 	/**
 	 * Check if a verified identity exists for recipient and document.

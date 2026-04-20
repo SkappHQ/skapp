@@ -26,7 +26,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
-import com.skapp.enterprise.esignature.repository.VerifiedIdentityRepository;
+import com.skapp.enterprise.esignature.repository.VerifiedIdentityDao;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
@@ -65,7 +65,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 	private final DocumentLinkService documentLinkService;
 
-	private final VerifiedIdentityRepository verifiedIdentityRepository;
+	private final VerifiedIdentityDao verifiedIdentityDao;
 
 	private final JsonMapper objectMapper;
 
@@ -268,7 +268,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 			if (AuditAction.isIdentityVerifiedAction(auditTrail.getAction()) && auditTrail.getRecipient() != null
 					&& documentId != null) {
-				Optional<VerifiedIdentity> verifiedIdentity = verifiedIdentityRepository
+				Optional<VerifiedIdentity> verifiedIdentity = verifiedIdentityDao
 					.findByRecipientIdAndDocumentId(auditTrail.getRecipient().getId(), documentId);
 
 				verifiedIdentity.ifPresent(identity -> responseDto.setActionVerifiedByName(identity.getFullName()));
