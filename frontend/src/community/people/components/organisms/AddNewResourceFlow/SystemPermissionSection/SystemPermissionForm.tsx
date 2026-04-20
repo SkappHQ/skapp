@@ -120,7 +120,8 @@ const SystemPermissionForm = ({
     peopleManagerLimitExceeded: false,
     superAdminLimitExceeded: false,
     esignAdminLimitExceeded: false,
-    esignSenderLimitExceeded: false
+    esignSenderLimitExceeded: false,
+    pmAdminLimitExceeded: false
   });
 
   const initialValues: SystemPermissionInitialStateType = {

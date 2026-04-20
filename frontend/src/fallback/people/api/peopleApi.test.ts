@@ -17,14 +17,10 @@ describe("useGetEmployeeRoleLimit", () => {
       leaveManagerLimitExceeded: false,
       attendanceManagerLimitExceeded: false,
       peopleManagerLimitExceeded: false,
-      superAdminLimitExceeded: false
-    };
-
-    const { mutate } = useGetEmployeeRoleLimit(mockOnSuccess, mockOnError);
-
-    // Mock the global fetch function to simulate success
-    global.fetch = jest.fn().mockResolvedValueOnce({
-      json: async () => mockResponse
+        superAdminLimitExceeded: false,
+        esignAdminLimitExceeded: false,
+        esignSenderLimitExceeded: false,
+        pmAdminLimitExceeded: false
     } as Response);
 
     await mutate();
