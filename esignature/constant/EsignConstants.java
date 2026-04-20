@@ -66,7 +66,9 @@ public class EsignConstants {
 
 	public static final String AUDIT_ACTION_TRANSFERRED_OWNERSHIP = " transferred ownership to ";
 
-	public static final String AUDIT_ACTION_SWEDISH_BANKID_IDENTITY_VERIFIED_DOCUMENT = " verified the identity through Swedish BankID to access the document as ";
+	public static final String AUDIT_ACTION_SWEDISH_BANKID_IDENTITY_VERIFIED_DOCUMENT_WITHOUT_NAME = " verified the identity through Swedish BankID to access the document as an unknown user";
+
+	public static final String AUDIT_ACTION_SWEDISH_BANKID_IDENTITY_VERIFIED_DOCUMENT_WITH_NAME = " verified the identity through Swedish BankID to access the document as ";
 
 	public static final String CURRENT_OWNER_METADATA_NAME = "currentOwner";
 

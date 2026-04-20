@@ -241,8 +241,19 @@ public class EsignUtil {
 			case ENVELOPE_DOWNLOADED:
 				return actionBy + EsignConstants.AUDIT_ACTION_DOWNLOADED_DOCUMENT;
 			case ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID:
-				return actionBy + EsignConstants.AUDIT_ACTION_SWEDISH_BANKID_IDENTITY_VERIFIED_DOCUMENT
-						+ actionVerifiedBy;
+
+				String auditString = null;
+
+				if (actionVerifiedBy == null || actionVerifiedBy.isEmpty()) {
+					auditString = actionBy
+							+ EsignConstants.AUDIT_ACTION_SWEDISH_BANKID_IDENTITY_VERIFIED_DOCUMENT_WITHOUT_NAME;
+				}
+				else {
+					auditString = actionBy
+							+ EsignConstants.AUDIT_ACTION_SWEDISH_BANKID_IDENTITY_VERIFIED_DOCUMENT_WITH_NAME
+							+ actionVerifiedBy;
+				}
+				return auditString;
 			case ENVELOPE_CUSTODY_TRANSFERRED:
 				String newOwner = "";
 				if (audit.getMetadata() != null && !audit.getMetadata().isEmpty()) {
