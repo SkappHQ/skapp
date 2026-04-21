@@ -1338,6 +1338,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		Long totalRows = entityManager.createQuery(countQuery).getSingleResult();
 
+		if (totalRows == 0) {
+			return new PageImpl<>(List.of(), pageable, 0);
+		}
+
 		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
 		query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
 		query.setMaxResults(pageable.getPageSize());
