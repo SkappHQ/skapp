@@ -12,11 +12,9 @@ import java.time.LocalDateTime;
 @Setter
 public class TimeRequestDto {
 
-	@NotNull
 	@Schema(description = "Work started time.")
 	private LocalDateTime startTime;
 
-	@NotNull
 	@Schema(description = "Work ended time.")
 	private LocalDateTime endTime;
 

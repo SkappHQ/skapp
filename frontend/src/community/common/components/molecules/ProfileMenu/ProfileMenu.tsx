@@ -1,12 +1,13 @@
 import { Typography } from "@mui/material";
 import { Box, Stack } from "@mui/system";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { JSX } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
+import { signOut } from "~community/auth/utils/authUtils";
 import ROUTES from "~community/common/constants/routes";
 import { appBarTestId } from "~community/common/constants/testIds";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
@@ -14,7 +15,6 @@ import { IconName } from "~community/common/types/IconTypes";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 import { usePeopleStore } from "~community/people/store/store";
 
-import Button from "../../atoms/Button/Button";
 import Icon from "../../atoms/Icon/Icon";
 import Avatar from "../Avatar/Avatar";
 
@@ -25,7 +25,7 @@ interface Props {
 const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   const router = useRouter();
   const translateText = useTranslator("appBar");
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { data: employee } = useGetUserPersonalDetails();
   const isPeopleManagerOrSuperAdmin = user?.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
@@ -60,14 +60,6 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
 
     handleCloseMenu();
   };
-
-  const getSubDomain = (url: string, multipleValues: boolean = false) => {
-    const subdomain = multipleValues ? url.split(".") : url.split(".")[0];
-    return subdomain;
-  };
-
-  const tenantId =
-    typeof window !== "undefined" ? getSubDomain(window.location.hostname) : "";
 
   const handleSignOut = async () => {
     await signOut();
@@ -108,30 +100,26 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
             </Typography>
           </Stack>
         </Stack>
-        <Button
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          label={translateText(["viewAccount"])}
-          styles={{
-            mt: "1rem",
-            width: "40%",
-            py: "0.5rem",
-            px: "0.75rem",
-            fontWeight: 500,
-            fontSize: "0.75rem"
-          }}
+        <ButtonV2
+          variant={"tertiary"}
           onClick={handelViewAccount}
-          isFullWidth={false}
           data-testid={appBarTestId.appBar.viewAccountBtn}
-        />
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["viewAccount"])}
+        </ButtonV2>
       </Stack>
-      <Button
-        buttonStyle={ButtonStyle.TERTIARY}
-        startIcon={<Icon name={IconName.SIGNOUT_ICON} />}
-        label={translateText(["logout"])}
-        styles={{ mt: "1rem" }}
+      <ButtonV2
+        variant={"tertiary"}
         onClick={handleSignOut}
-      />
+        isFullWidth
+        icon={<Icon name={IconName.SIGNOUT_ICON} />}
+        iconPosition="start"
+        className="mt-3"
+      >
+        {translateText(["logout"])}
+      </ButtonV2>
     </Box>
   );
 };

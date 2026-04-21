@@ -1,9 +1,9 @@
 import { Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -17,27 +17,28 @@ const TimeEntryRequestExists = ({ isEdit }: Props) => {
     useAttendanceStore((state) => state);
   return (
     <>
-      <Typography variant="body1" sx={{ pt: "1rem" }}>
+      <Typography variant="body1">
         {translateText(["requestExistModalDes"])}
       </Typography>
-      <Button
-        label={translateText(["okayBtnTxt"])}
-        styles={{
-          mt: "1rem"
-        }}
-        buttonStyle={ButtonStyle.PRIMARY}
-        endIcon={IconName.CHECK_ICON}
-        onClick={() => {
-          if (isEdit) {
-            setIsEmployeeTimesheetModalOpen(false);
-          } else {
-            setIsEmployeeTimesheetModalOpen(true);
-            setEmployeeTimesheetModalType(
-              EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
-            );
-          }
-        }}
-      />
+      <div className="flex justify-end">
+        <ButtonV2
+          variant={"primary"}
+          onClick={() => {
+            if (isEdit) {
+              setIsEmployeeTimesheetModalOpen(false);
+            } else {
+              setIsEmployeeTimesheetModalOpen(true);
+              setEmployeeTimesheetModalType(
+                EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
+              );
+            }
+          }}
+          icon={<Icon name={IconName.CHECK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["okayBtnTxt"])}
+        </ButtonV2>
+      </div>
     </>
   );
 };

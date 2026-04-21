@@ -14,7 +14,6 @@ import IconButton from "~community/common/components/atoms/IconButton/IconButton
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
@@ -45,6 +44,7 @@ import {
   requestedLeaveTypesPreProcessor
 } from "~community/leave/utils/LeaveRequestFilterActions";
 import ShowSelectedFilters from "~community/people/components/molecules/ShowSelectedFilters/ShowSelectedFilters";
+import useTier from "~enterprise/common/hooks/useTier";
 import leaveHistoryMockData from "~enterprise/leave/data/leaveHistoryMockData.json";
 
 import LeaveManagerModalController from "../../organisms/LeaveManagerModalController/LeaveManagerModalController";
@@ -64,7 +64,7 @@ const UserLeaveHistory: FC<Props> = ({
 }) => {
   const theme: Theme = useTheme();
 
-  const { isFreeTier, isProTier } = useSessionData();
+  const { isFreeTier, isAtLeastCoreTier } = useTier();
 
   const translateText = useTranslator(
     "peopleModule",
@@ -152,12 +152,12 @@ const UserLeaveHistory: FC<Props> = ({
     currentPage,
     6,
     false,
-    isProTier
+    isAtLeastCoreTier
   );
 
   const leaveHistory = useMemo(() => {
-    return isProTier ? leaveHistoryData : leaveHistoryMockData;
-  }, [isProTier, leaveHistoryData]);
+    return isAtLeastCoreTier ? leaveHistoryData : leaveHistoryMockData;
+  }, [isAtLeastCoreTier, leaveHistoryData]);
 
   const { data: exportHistoryData } = useGetEmployeeLeaveHistory(
     employeeId,
@@ -167,7 +167,7 @@ const UserLeaveHistory: FC<Props> = ({
     0,
     6,
     true,
-    isProTier
+    isAtLeastCoreTier
   );
 
   const columns = [

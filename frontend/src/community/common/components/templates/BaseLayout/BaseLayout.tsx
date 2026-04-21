@@ -65,8 +65,7 @@ const BaseLayout = ({ children }: Props) => {
         return <FullScreenLoader />;
       case "authenticated": {
         if (isEnterprise && isGlobalLoginMethodLoading) {
-          if (asPath === "/enterprise/settings/account?status=success")
-            return <LogoColorLoader />;
+          if (asPath === "/settings?status=success") return <LogoColorLoader />;
           return <FullScreenLoader />;
         }
 

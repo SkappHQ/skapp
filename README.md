@@ -92,3 +92,5 @@ Please read our **[Trademark Policy](TRADEMARK_POLICY.md)**.
 <p align="center">
   <sub>Built with ❤️ by the <a href="https://github.com/SkappHQ">Skapp Team</a> and <a href="https://github.com/SkappHQ/skapp/graphs/contributors">Contributors</a></sub>
 </p>
+
+

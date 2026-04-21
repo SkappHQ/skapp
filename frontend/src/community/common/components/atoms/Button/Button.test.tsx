@@ -11,7 +11,7 @@ describe("Button", () => {
   test("renders button correctly", () => {
     render(
       <MockTheme>
-        <Button label="Click Me" buttonStyle={ButtonStyle.SECONDARY} />
+        <ButtonV2 label="Click Me" buttonStyle={ButtonStyle.SECONDARY} />
       </MockTheme>
     );
   });
@@ -19,7 +19,7 @@ describe("Button", () => {
   test("renders button with correct label", () => {
     render(
       <MockTheme>
-        <Button label="Click Me" buttonStyle={ButtonStyle.SECONDARY} />
+        <ButtonV2 label="Click Me" buttonStyle={ButtonStyle.SECONDARY} />
       </MockTheme>
     );
     expect(screen.getByText("Click Me")).toBeInTheDocument();
@@ -30,7 +30,7 @@ describe("Button", () => {
     const user = userEvent.setup();
     render(
       <MockTheme>
-        <Button
+        <ButtonV2
           label="Click Me"
           buttonStyle={ButtonStyle.SECONDARY}
           onClick={handleClick}
@@ -45,7 +45,7 @@ describe("Button", () => {
   test("checks whether the button is disabled", () => {
     render(
       <MockTheme>
-        <Button label="Disabled Button" disabled={true} />
+        <ButtonV2 label="Disabled Button" disabled={true} />
       </MockTheme>
     );
     const button = screen.getByRole("button");
@@ -55,7 +55,7 @@ describe("Button", () => {
   test("displays endIcon when not loading", () => {
     render(
       <MockTheme>
-        <Button
+        <ButtonV2
           label="Icon Button"
           startIcon={<span>StartIcon</span>}
           endIcon={<span>EndIcon</span>}
@@ -70,7 +70,7 @@ describe("Button", () => {
   test("does not display startIcon and endIcon when loading", () => {
     render(
       <MockTheme>
-        <Button
+        <ButtonV2
           label="Icon Button"
           endIcon={<span>EndIcon</span>}
           isLoading={true}
@@ -83,7 +83,7 @@ describe("Button", () => {
   test("displays CircularProgress when loading is true", () => {
     render(
       <MockTheme>
-        <Button
+        <ButtonV2
           label="Progress Button"
           isLoading={true}
           endIcon={<span>EndIcon</span>}
@@ -96,7 +96,7 @@ describe("Button", () => {
   test("does not display CircularProgress when loading is false", () => {
     render(
       <MockTheme>
-        <Button label="Progress Button" isLoading={false} />
+        <ButtonV2 label="Progress Button" isLoading={false} />
       </MockTheme>
     );
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
@@ -106,7 +106,7 @@ describe("Button", () => {
     const customStyles = { borderRadius: "2px" };
     render(
       <MockTheme>
-        <Button label="Icon Button" styles={customStyles} />
+        <ButtonV2 label="Icon Button" styles={customStyles} />
       </MockTheme>
     );
     const button = screen.getByRole("button");

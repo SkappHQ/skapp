@@ -1,13 +1,10 @@
 import { Stack, SxProps, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, JSX } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
@@ -86,17 +83,17 @@ const TableFoot: FC<TableProps & TableFootProps> = ({
       <Stack sx={classes.tableFoot?.exportBtn?.wrapper}>
         {customElements?.right && customElements.right}
         {exportBtn.isVisible && exportBtn.label && (
-          <Button
-            buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-            size={ButtonSizes.MEDIUM}
-            label={exportBtn.label}
-            isFullWidth={false}
+          <ButtonV2
+            variant={"tertiary"}
+            size={"md"}
             isLoading={exportBtn.isLoading}
             disabled={exportBtn.disabled}
-            styles={exportBtn.styles?.button}
-            endIcon={IconName.DOWNLOAD_ICON}
             onClick={exportBtn.onClick}
-          />
+            icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+            iconPosition="end"
+          >
+            {exportBtn.label}
+          </ButtonV2>
         )}
         {exportBtn.toolTip?.text && <Tooltip title={exportBtn.toolTip?.text} />}
       </Stack>

@@ -1,9 +1,8 @@
-import { Divider, Stack, Theme, Typography, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   FileRejectionType,
@@ -15,8 +14,6 @@ import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 
 const AddAttachmentModal = () => {
-  const theme: Theme = useTheme();
-
   const translateText = useTranslator(
     "leaveModule",
     "myRequests",
@@ -34,17 +31,10 @@ const AddAttachmentModal = () => {
   };
 
   return (
-    <Stack sx={{ gap: "0.75rem" }}>
-      <Typography
-        variant="body1"
-        sx={{
-          color: attachmentError
-            ? theme.palette.error.contrastText
-            : theme.palette.text.primary
-        }}
-      >
+    <div className="flex flex-col gap-3">
+      <p className={attachmentError ? "text-red-600" : ""}>
         {translateText(["description"])}
-      </Typography>
+      </p>
       <DragAndDropField
         setAttachmentErrors={(errors: FileRejectionType[]) =>
           setAttachmentError(!!errors.length)
@@ -61,23 +51,28 @@ const AddAttachmentModal = () => {
         maxFileSize={MAX_ALLOWED_UPLOADS}
         supportedFiles={".jpg, .pdf, .png, .jpeg"}
       />
-      <Divider />
-      <Button
-        buttonStyle={ButtonStyle.PRIMARY}
-        label={translateText(["uploadBtn"])}
-        endIcon={IconName.TICK_ICON}
-        onClick={() =>
-          setMyLeaveRequestModalType(MyRequestModalEnums.APPLY_LEAVE)
-        }
-        disabled={attachmentError}
-      />
-      <Button
-        buttonStyle={ButtonStyle.TERTIARY}
-        label={translateText(["cancelBtn"])}
-        endIcon={IconName.CLOSE_ICON}
-        onClick={onCancelBtnClick}
-      />
-    </Stack>
+      <div className="flex flex-row gap-3 mt-4 justify-end">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={onCancelBtnClick}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
+          onClick={() =>
+            setMyLeaveRequestModalType(MyRequestModalEnums.APPLY_LEAVE)
+          }
+          disabled={attachmentError}
+          icon={<Icon name={IconName.TICK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["uploadBtn"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

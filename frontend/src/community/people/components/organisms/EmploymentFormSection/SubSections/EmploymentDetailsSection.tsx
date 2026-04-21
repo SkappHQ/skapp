@@ -212,8 +212,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
         containerStyles={{
           padding: "0",
           margin: "0 auto",
-          height: "auto",
-          fontFamily: "Poppins, sans-serif"
+          height: "auto"
         }}
         dividerStyles={{
           mt: "0.5rem"

@@ -1,14 +1,12 @@
 package com.skapp.community.peopleplanner.util.deserializer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.type.MaritalStatus;
-
-import java.io.IOException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 public class MaritalStatusDeserializer extends StdDeserializer<MaritalStatus> {
 
@@ -17,9 +15,9 @@ public class MaritalStatusDeserializer extends StdDeserializer<MaritalStatus> {
 	}
 
 	@Override
-	public MaritalStatus deserialize(JsonParser p, DeserializationContext ctxt) throws ModuleException, IOException {
+	public MaritalStatus deserialize(JsonParser p, DeserializationContext ctxt) throws ModuleException {
 		JsonNode jsonNode = p.readValueAsTree();
-		String value = jsonNode.asText().trim();
+		String value = jsonNode.asString().trim();
 
 		if (jsonNode.isNull() || jsonNode.isMissingNode() || value.isEmpty()) {
 			return null;

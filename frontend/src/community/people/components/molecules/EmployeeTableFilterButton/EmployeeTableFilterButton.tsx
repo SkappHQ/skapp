@@ -1,12 +1,10 @@
-import { Box, Stack, Typography } from "@mui/material";
-import { FC, MouseEvent } from "react";
+import { Stack, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { FC, KeyboardEvent, MouseEvent } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import { peopleDirectoryTestId } from "~community/common/constants/testIds";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { flatListValues } from "~community/common/utils/commonUtil";
@@ -15,7 +13,9 @@ import { usePeopleStore } from "~community/people/store/store";
 import ShowSelectedFilters from "../ShowSelectedFilters/ShowSelectedFilters";
 
 interface Props {
-  handleFilterClick?: (event: MouseEvent<HTMLElement>) => void;
+  handleFilterClick?: (
+    event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLButtonElement>
+  ) => void;
   filterId: string | undefined;
   disabled: boolean;
 }
@@ -26,9 +26,10 @@ const EmployeeTableFilterButton: FC<Props> = ({
   disabled
 }) => {
   const translateText = useTranslator("peopleModule", "peoples");
-  const { employeeDataFilter, removeEmployeeFilter } = usePeopleStore(
+  const { appliedEmployeeDataFilter, removeEmployeeFilter } = usePeopleStore(
     (state) => state
   );
+  const theme = useTheme();
 
   const removeFilters = (label?: string) => {
     removeEmployeeFilter(label);
@@ -38,36 +39,41 @@ const EmployeeTableFilterButton: FC<Props> = ({
 
   return (
     <Stack direction="row">
-      <Box
-        sx={{
-          alignItems: "center",
-          padding: "0.5rem 1rem",
-          height: "2.3125rem"
-        }}
-      >
-        {flatListValues(employeeDataFilter).length !== 0 && (
-          <Typography variant={"body1"}>{translateText(["filter"])}</Typography>
-        )}
-      </Box>
-      <Stack direction="row" spacing={"0.25rem"}>
+      <Stack direction="row" spacing={"0.25rem"} alignItems="center">
         <ShowSelectedFilters
-          filterOptions={flatListValues(employeeDataFilter)}
+          filterOptions={flatListValues(appliedEmployeeDataFilter)}
           onDeleteIcon={removeFilters}
         />
-        <Button
-          label={
-            flatListValues(employeeDataFilter).length === 0
-              ? translateText(["filter"])
-              : ""
-          }
-          buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-          size={ButtonSizes.MEDIUM}
-          endIcon={IconName.FILTER_ICON}
-          onClick={handleFilterClick}
-          disabled={disabled}
-          aria-describedby={filterId}
-          data-testid={peopleDirectoryTestId.buttons.filterBtn}
-        />
+        {flatListValues(appliedEmployeeDataFilter).length === 0 ? (
+          <ButtonV2
+            variant={"tertiary"}
+            size={"md"}
+            onClick={handleFilterClick}
+            disabled={disabled}
+            aria-describedby={filterId}
+            data-testid={peopleDirectoryTestId.buttons.filterBtn}
+            icon={<Icon name={IconName.FILTER_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["filter"])}
+          </ButtonV2>
+        ) : (
+          <IconButton
+            onClick={handleFilterClick}
+            disabled={disabled}
+            aria-describedby={filterId}
+            data-testid={peopleDirectoryTestId.buttons.filterBtn}
+            icon={<Icon name={IconName.FILTER_ICON} />}
+            ariaLabel={translateText(["filter"])}
+            title={translateText(["filter"])}
+            buttonStyles={{
+              width: "3.25rem",
+              height: "3rem",
+              backgroundColor: theme.palette.grey[100],
+              border: `0.0625rem solid ${theme.palette.grey[500]}`
+            }}
+          />
+        )}
       </Stack>
     </Stack>
   );

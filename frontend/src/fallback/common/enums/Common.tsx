@@ -7,7 +7,8 @@ export enum QuickSetupModalTypeEnums {
 
 export enum TierEnum {
   FREE = "",
-  PRO = ""
+  PRO = "",
+  CORE = ""
 }
 
 export enum SubscriptionModalTypeEnums {

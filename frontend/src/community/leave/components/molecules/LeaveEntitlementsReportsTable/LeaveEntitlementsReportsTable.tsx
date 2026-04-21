@@ -4,19 +4,18 @@ import {
   SelectChangeEvent,
   Stack,
   Theme,
-  Typography,
   useTheme
 } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import TableHeaderFill from "~community/attendance/components/molecules/TimesheetTableHeader/TableHeaderFill";
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import TableEmptyScreen from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
@@ -259,30 +258,22 @@ const LeaveEntitlementsReportsTable: FC = () => {
             id={"filter-types"}
             isResetBtnDisabled={selectedLeaveTypes.length === 0}
           >
-            <Typography variant="h5">
-              {translateText(["filterPopperLeaveTypeTitle"])}
-            </Typography>
-            <Box display="flex" flexWrap="wrap" gap={1}>
-              {leaveTypeButtons.map((leaveType) => (
-                <Button
-                  key={leaveType.id}
-                  isFullWidth={false}
-                  label={leaveType.text}
-                  buttonStyle={
-                    selectedLeaveTypes.includes(leaveType.text)
-                      ? ButtonStyle.SECONDARY
-                      : ButtonStyle.TERTIARY
-                  }
-                  onClick={() => handleLeaveTypeFilter(leaveType)}
-                  startIcon={
-                    selectedLeaveTypes.includes(leaveType.text) ? (
-                      <Icon name={IconName.CHECK_CIRCLE_ICON} />
-                    ) : undefined
-                  }
-                  styles={classes.filterButton}
-                />
-              ))}
-            </Box>
+            <SelectableItemList
+              title={translateText(["filterPopperLeaveTypeTitle"])}
+              items={leaveTypeButtons.map((leaveType) => ({
+                label: leaveType.text,
+                value: leaveType.text
+              }))}
+              selectedValues={selectedLeaveTypes}
+              onChipClick={(leaveTypeText) => {
+                const leaveType = leaveTypeButtons.find(
+                  (btn) => btn.text === leaveTypeText
+                );
+                if (leaveType) {
+                  handleLeaveTypeFilter(leaveType);
+                }
+              }}
+            />
           </FilterButton>
         </Box>
       </Stack>
@@ -360,14 +351,14 @@ const LeaveEntitlementsReportsTable: FC = () => {
               setReportsPagination(value - 1)
             }
           />
-          <Button
-            buttonStyle={ButtonStyle.TERTIARY_OUTLINED}
-            label={translateText(["exportBtnTxt"])}
-            endIcon={<Icon name={IconName.DOWNLOAD_ICON} />}
-            isFullWidth={false}
-            styles={classes.buttonStyles}
+          <ButtonV2
+            variant={"tertiary"}
             onClick={() => downloadCSV(SheetType.LeaveAllocation)}
-          />
+            icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["exportBtnTxt"])}
+          </ButtonV2>
         </Stack>
       </Stack>
     </>

@@ -21,6 +21,8 @@ import {
   leaveTypeQueryKeys
 } from "~community/leave/api/utils/QueryKeys";
 
+import { dashboardQueryKeys } from "~enterprise/common/api/utils/QueryKeys";
+
 import { leaveRequestPreProcessor } from "../actions/LeaveRequestPreprocessor";
 import { useLeaveStore } from "../store/store";
 import { LeaveTypeType } from "../types/AddLeaveTypes";
@@ -348,6 +350,16 @@ export const useHandelLeaves = (
       queryClient
         .invalidateQueries({
           queryKey: ["managerAssignedLeaves"]
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: leaveQueryKeys.PENDING_LEAVES
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: dashboardQueryKeys.GET_PENDING_COUNTS
         })
         .catch(rejects);
     },

@@ -1,7 +1,7 @@
 import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { NextRouter, useRouter } from "next/router";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
@@ -21,17 +21,17 @@ const Error = () => {
     >
       <Typography variant="h1">{translateText(["title"])}</Typography>
       <Typography variant="body1">{translateText(["description"])}</Typography>
-      <Button
+      <ButtonV2
         id="back-to-home-btn"
-        dataTestId="back-to-home-btn"
         isFullWidth={false}
-        label={translateText(["buttonText"])}
+        aria-label={translateText(["buttonText"])}
         onClick={async () => {
           await router.replace(ROUTES.DASHBOARD.BASE);
           router.reload();
         }}
-        ariaLabel={translateText(["buttonText"])}
-      />
+      >
+        {translateText(["buttonText"])}
+      </ButtonV2>
     </Stack>
   );
 };

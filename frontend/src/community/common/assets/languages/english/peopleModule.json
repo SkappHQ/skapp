@@ -100,6 +100,7 @@
     "noHolidayDesForNonAdmin": "No holidays have been added yet. Once admin add holidays, they will be displayed here.",
     "noHolidaysTitle": "No holidays available for  {{selectedYear}}",
     "downloadCsvDes": "Download the CSV template, fill in the holidays you wish to add to the organization, and upload the completed file.",
+    "nextBtn": "Next",
     "uploadCsvText": "Upload csv",
     "uploadCsvDesc": "Upload the CSV template with updated employee leave information.",
     "csvTemplateError": "Invalid File. Please use the provided template. ",
@@ -189,7 +190,8 @@
   },
 
   "editAllInfo": {
-    "tabTitle": "View Profile | Skapp",
+    "tabTitle": "Edit Profile | Skapp",
+    "title": "Edit Profile",
     "personal": "Personal",
     "emergency": "Emergency",
     "employment": "Employment",
@@ -369,7 +371,8 @@
       "userRoles": "User roles",
       "filters": "Filters",
       "noFIlters": "No filters selected",
-      "selectedFilters": "{{count}} filter selected",
+      "selectedFilters_one": "{{count}} filter selected",
+      "selectedFilters_other": "{{count}} filters selected",
       "male": "Male",
       "apply": "Apply filters",
       "reset": "Reset filters",

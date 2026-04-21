@@ -16,6 +16,8 @@ import {
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
+import { TierEnum } from "~enterprise/common/enums/Common";
+import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
 const commonRoutes = [
@@ -50,14 +52,11 @@ const superAdminRoutes = {
     ROUTES.SETTINGS.MODULES,
     ROUTES.SETTINGS.PAYMENT,
     ROUTES.REMOVE_PEOPLE,
-    ROUTES.SUBSCRIPTION,
     ROUTES.PROJECTS.BASE,
     ROUTES.PROJECTS.GUESTS,
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
-    ROUTES.INVOICE.CUSTOMERS.BASE,
-    ROUTES.SUBSCRIPTION,
-    ROUTES.CONFIGURATIONS.INVOICE
+    ROUTES.INVOICE.CUSTOMERS.BASE
   ]
 };
 
@@ -66,7 +65,7 @@ const adminRoutes = {
   [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
     ROUTES.TIMESHEET.BASE,
-    ROUTES.CONFIGURATIONS.ATTENDANCE
+    ROUTES.CONFIGURATIONS.BASE
   ],
   [AdminTypes.ESIGN_ADMIN]: [
     ROUTES.SIGN.CONTACTS,
@@ -79,13 +78,13 @@ const adminRoutes = {
     ROUTES.SIGN.SIGN,
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
-    ROUTES.CONFIGURATIONS.SIGN
+    ROUTES.CONFIGURATIONS.BASE
   ],
   [AdminTypes.INVOICE_ADMIN]: [
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE,
-    ROUTES.CONFIGURATIONS.INVOICE,
+    ROUTES.CONFIGURATIONS.BASE,
     ROUTES.INVOICE.CREATE.BASE
   ],
   [AdminTypes.PM_ADMIN]: [ROUTES.PROJECTS.BASE, ROUTES.PROJECTS.GUESTS]
@@ -197,18 +196,19 @@ export function middleware(request: NextRequest) {
     | SenderTypes
   )[] = claims?.roles || [];
 
-  const isPasswordChangedForTheFirstTime =
-    request.cookies.get("isPasswordChangedForTheFirstTime")?.value === "true";
+  const isPasswordChangedForTheFirstTime = request.cookies.get(
+    "isPasswordChangedForTheFirstTime"
+  )?.value;
 
   if (
-    !isPasswordChangedForTheFirstTime &&
+    isPasswordChangedForTheFirstTime === "false" &&
     currentPath !== ROUTES.AUTH.RESET_PASSWORD
   ) {
     return NextResponse.redirect(
       new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
     );
   } else if (
-    isPasswordChangedForTheFirstTime &&
+    isPasswordChangedForTheFirstTime === "true" &&
     currentPath === ROUTES.AUTH.RESET_PASSWORD
   ) {
     return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
@@ -253,7 +253,7 @@ export function middleware(request: NextRequest) {
 
     if (
       request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
-      claims?.tier !== "PRO"
+      !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
     ) {
       return NextResponse.redirect(
         new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
@@ -325,7 +325,6 @@ export const config = {
     "/timesheet/:path*",
     "/remove-people",
     "/integrations",
-    "/subscription",
     "/user-account",
     // Sign routes
     "/sign",

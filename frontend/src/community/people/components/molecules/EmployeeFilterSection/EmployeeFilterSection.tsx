@@ -1,4 +1,4 @@
-import { Stack, Typography, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { RefObject } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -33,19 +33,13 @@ const EmployeeFilterSection = ({
   const isSmallScreen = queryMatches(`(max-width: 1150px)`);
 
   return (
-    <Stack sx={{ marginBottom: 2 }}>
-      <Typography
-        variant={isSmallScreen ? "caption" : "body2"}
-        sx={{
-          fontWeight: "600",
-          marginBottom: 2
-        }}
-      >
+    <div className="flex flex-col gap-2 mb-3">
+      <p className={`font-semibold ${isSmallScreen ? "text-xs" : "text-sm"}`}>
         {title}
-      </Typography>
-      <Stack flexDirection="row" sx={{ gap: 0.5, flexWrap: "wrap" }}>
+      </p>
+      <div className="flex flex-row space-x-1 gap-2 flex-wrap">
         {data.map((item, index) => (
-          <Stack key={index}>
+          <div key={index}>
             <IconChip
               ref={(el: HTMLDivElement | null) => {
                 if (el && basicChipRef.current) {
@@ -79,10 +73,10 @@ const EmployeeFilterSection = ({
                   : "none"
               }}
             />
-          </Stack>
+          </div>
         ))}
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };
 

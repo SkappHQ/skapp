@@ -85,5 +85,14 @@
     "emptyWorkingDaysErrorDescription": "Setting up working days is required to save changes.",
     "emptyStartOfWeekErrorTitle": "Please set the start of the week",
     "emptyStartOfWeekErrorDescription": "Setting up start of the week is required to save changes."
+  },
+  "pageHead": "Configurations | Skapp",
+  "title": "Configurations",
+  "tabs": {
+    "time": "Time",
+    "attendance": "Attendance",
+    "sign": "Sign",
+    "userRoles": "User Roles",
+    "invoice": "Invoice"
   }
 }

@@ -33,6 +33,9 @@ public interface EmployeeRepository {
 
 	List<Employee> findEmployees(List<Long> employeeIds, String searchTerm, Set<AccountStatus> accountStatuses);
 
+	List<Employee> findEmployeesIncludingGuests(List<Long> employeeIds, String searchTerm,
+			Set<AccountStatus> accountStatuses);
+
 	List<Employee> findEmployeesForExport(EmployeeExportFilterDto employeeExportFilterDto);
 
 	List<EmployeeTeamDto> findTeamsByEmployees(List<Long> employeeIds);

@@ -32,15 +32,15 @@ const styles = (theme: Theme): StyleProps => ({
   popperContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "0.75rem",
-    padding: "0.75rem",
+    gap: "1rem",
     width: "22rem",
     backgroundColor: theme.palette.background.paper
   },
   popperBody: {
     flexDirection: "column",
-    gap: "0.75rem",
-    marginBottom: "0.75rem"
+    paddingX: "1.25rem",
+    paddingTop: "1.25rem",
+    gap: "1rem"
   },
   label: {
     whiteSpace: "nowrap"
@@ -60,7 +60,9 @@ const styles = (theme: Theme): StyleProps => ({
   },
   popperFooter: {
     flexDirection: "row",
-    gap: "0.75rem"
+    gap: "0.75rem",
+    paddingX: "1.25rem",
+    paddingBottom: "1.25rem"
   },
   popperButtons: {
     width: "20.5rem",

@@ -1,11 +1,11 @@
 package com.skapp.community.peopleplanner.payload.request;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.skapp.community.peopleplanner.type.BloodGroup;
 import com.skapp.community.peopleplanner.type.Ethnicity;
 import com.skapp.community.peopleplanner.type.MaritalStatus;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
 
 @Getter
 @Setter

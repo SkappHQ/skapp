@@ -1,9 +1,9 @@
 import { Box } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
 import { useRouter } from "next/navigation";
 import { JSX, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -179,22 +179,24 @@ const CarryForwardBalances: NextPage = () => {
               justifyContent: "flex-end"
             }}
           >
-            <Button
-              styles={{
+            <ButtonV2
+              style={{
                 width: "fit-content",
-                paddingY: "1.25rem",
-                paddingX: "2.5rem",
+                paddingTop: "1.25rem",
+                paddingBottom: "1.25rem",
+                paddingLeft: "2.5rem",
+                paddingRight: "2.5rem",
                 fontSize: "1rem"
               }}
-              label={
-                translateText(["leaveCarryForwardBallancePageSyncButton"]) ?? ""
-              }
-              endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
               isFullWidth={false}
               disabled={leaveCarryForwardSyncBtnStatus.isDisabled}
               isLoading={leaveCarryForwardSyncBtnStatus.isLoading}
               onClick={handleSync}
-            />
+            >
+              {translateText(["leaveCarryForwardBallancePageSyncButton"]) ?? ""}
+            </ButtonV2>
           </Box>
           <LeaveCarryForwardModalController />
         </>

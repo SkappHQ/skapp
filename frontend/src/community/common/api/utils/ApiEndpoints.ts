@@ -1,4 +1,7 @@
-import { moduleAPIPath } from "~community/common/constants/configs";
+import {
+  ApiVersions,
+  moduleAPIPath
+} from "~community/common/constants/configs";
 import {
   SortKeyTypes,
   SortOrderTypes
@@ -10,8 +13,8 @@ export const organizationCreateEndpoints = {
 };
 
 export const authenticationEndpoints = {
-  CREATE_SUPER_ADMIN: `${moduleAPIPath.AUTH}/signup/super-admin`,
-  SIGN_IN: `${moduleAPIPath.AUTH}/sign-in`,
+  CREDENTIAL_SIGN_IN: `${ApiVersions.V1}/auth/session/sign-in`,
+  CREDENTIAL_SIGN_UP: `${ApiVersions.V1}/auth/signup/super-admin`,
   RESET_PASSWORD: `${moduleAPIPath.AUTH}/reset-password`,
   CHANGE_PASSWORD: (userId: string | number) =>
     `${moduleAPIPath.AUTH}/change/password/${userId}`,

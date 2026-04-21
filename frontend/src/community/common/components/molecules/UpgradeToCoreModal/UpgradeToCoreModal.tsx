@@ -1,5 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import Image from "next/image";
 import React from "react";
 
@@ -25,6 +26,7 @@ interface UpgradeToCoreModalProps {
     src: string;
     alt: string;
   };
+  imageContent?: React.ReactNode;
   onClose: () => void;
 }
 
@@ -35,6 +37,7 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
   description,
   button,
   image,
+  imageContent,
   onClose
 }) => {
   return (
@@ -67,17 +70,19 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
             overflow: "hidden"
           }}
         >
-          <Image
-            src={image.src}
-            alt={image.alt}
-            width={280}
-            height={350}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover"
-            }}
-          />
+          {imageContent ?? (
+            <Image
+              src={image.src}
+              alt={image.alt}
+              width={280}
+              height={350}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover"
+              }}
+            />
+          )}
         </Box>
 
         {/* Content Section */}
@@ -121,18 +126,9 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
 
           {/* Action Button */}
           {button && (
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={button.onClick}
-              sx={{
-                mt: 4,
-                borderRadius: 8,
-                padding: "10px 4px"
-              }}
-            >
+            <ButtonV2 variant="primary" onClick={button.onClick}>
               {button.children}
-            </Button>
+            </ButtonV2>
           )}
         </Box>
       </Box>

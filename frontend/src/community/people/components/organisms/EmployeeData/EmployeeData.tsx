@@ -1,16 +1,12 @@
 import { Box, Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ROUTES from "~community/common/constants/routes";
 import { peopleDirectoryTestId } from "~community/common/constants/testIds";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -173,48 +169,48 @@ const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
       {isRemovePeople && (
         <>
           <Stack direction="row" gap={1} justifyContent="flex-start">
-            <Button
-              label={translateText([
+            <ButtonV2
+              variant={
+                employeeDataParams?.accountStatus?.includes(
+                  EmploymentStatusTypes.ACTIVE
+                )
+                  ? "secondary"
+                  : "tertiary"
+              }
+              size={"md"}
+              onClick={() =>
+                setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+                  EmploymentStatusTypes.ACTIVE
+                ])
+              }
+            >
+              {translateText([
                 "filters",
                 "selectedFiltersFilterItems",
                 "active"
               ])}
-              isFullWidth={false}
-              buttonStyle={
+            </ButtonV2>
+            <ButtonV2
+              variant={
                 employeeDataParams?.accountStatus?.includes(
-                  EmploymentStatusTypes.ACTIVE
+                  EmploymentStatusTypes.PENDING
                 )
-                  ? ButtonStyle.SECONDARY
-                  : ButtonStyle.TERTIARY
+                  ? "secondary"
+                  : "tertiary"
               }
-              size={ButtonSizes.MEDIUM}
+              size={"md"}
               onClick={() =>
                 setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
-                  EmploymentStatusTypes.ACTIVE
+                  EmploymentStatusTypes.PENDING
                 ])
               }
-            />
-            <Button
-              label={translateText([
+            >
+              {translateText([
                 "filters",
                 "selectedFiltersFilterItems",
                 "pending"
               ])}
-              isFullWidth={false}
-              buttonStyle={
-                employeeDataParams?.accountStatus?.includes(
-                  EmploymentStatusTypes.PENDING
-                )
-                  ? ButtonStyle.SECONDARY
-                  : ButtonStyle.TERTIARY
-              }
-              size={ButtonSizes.MEDIUM}
-              onClick={() =>
-                setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
-                  EmploymentStatusTypes.PENDING
-                ])
-              }
-            />
+            </ButtonV2>
           </Stack>
 
           <RemovePeopleCountBanner

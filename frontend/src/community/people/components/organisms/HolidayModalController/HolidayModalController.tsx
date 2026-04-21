@@ -1,6 +1,6 @@
-import { FC, Fragment, useState } from "react";
+import { FC, ReactNode, useState } from "react";
 
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
 import AddCalendar from "~community/people/components/molecules/HolidayModals/AddCalendar/AddCalendar";
@@ -18,11 +18,7 @@ import {
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
-import styles from "./styles";
-
 const HolidayModalController: FC = () => {
-  const classes = styles();
-
   const translateText = useTranslator("peopleModule", "holidays");
 
   const {
@@ -85,6 +81,20 @@ const HolidayModalController: FC = () => {
   };
 
   const handleCloseModal = (): void => {
+    if (
+      holidayModalType === holidayModalTypes.HOLIDAY_BULK_DELETE ||
+      holidayModalType === holidayModalTypes.HOLIDAY_INDIVIDUAL_DELETE ||
+      holidayModalType === holidayModalTypes.HOLIDAY_SELECTED_DELETE
+    ) {
+      setIsHolidayModalOpen(false);
+      setHolidayModalType(holidayModalTypes.NONE);
+      return;
+    }
+
+    if (holidayModalType === holidayModalTypes.HOLIDAY_EXIT_CONFIRMATION) {
+      return;
+    }
+
     const isEditingHoliday =
       newCalenderDetails?.acceptedFile?.length !== 0 ||
       newHolidayDetails.holidayDate ||
@@ -116,76 +126,61 @@ const HolidayModalController: FC = () => {
     }
   };
 
+  const modalContent = (): ReactNode => {
+    switch (holidayModalType) {
+      case holidayModalTypes.ADD_EDIT_HOLIDAY:
+        return (
+          <AddEditHolidayModal
+            holidays={holidays?.items}
+            holidayRefetch={refetch}
+          />
+        );
+      case holidayModalTypes.ADD_CALENDAR:
+        return <AddCalendar />;
+      case holidayModalTypes.UPLOAD_HOLIDAY_BULK:
+        return <UploadHolidayBulk setBulkUploadData={setBulkUploadData} />;
+      case holidayModalTypes.UPLOAD_SUMMARY:
+        return bulkUploadData &&
+          bulkUploadData?.bulkStatusSummary?.failedCount > 0 ? (
+          <BulkUploadSummary data={bulkUploadData} />
+        ) : null;
+      case holidayModalTypes.HOLIDAY_INDIVIDUAL_DELETE:
+        return (
+          <HolidayBulkDelete
+            setIsPopupOpen={setIsHolidayModalOpen}
+            type={HolidayDeleteType.INDIVIDUAL}
+          />
+        );
+      case holidayModalTypes.HOLIDAY_SELECTED_DELETE:
+        return (
+          <HolidayBulkDelete
+            setIsPopupOpen={setIsHolidayModalOpen}
+            type={HolidayDeleteType.SELECTED}
+          />
+        );
+      case holidayModalTypes.HOLIDAY_BULK_DELETE:
+        return (
+          <HolidayBulkDelete
+            setIsPopupOpen={setIsHolidayModalOpen}
+            type={HolidayDeleteType.ALL}
+          />
+        );
+      case holidayModalTypes.HOLIDAY_EXIT_CONFIRMATION:
+        return <HolidayExitConfirmationModal />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <>
-      <ModalController
-        isModalOpen={isHolidayModalOpen}
-        handleCloseModal={handleCloseModal}
-        modalTitle={getModalTitle()}
-        isClosable={
-          holidayModalType === holidayModalTypes.HOLIDAY_EXIT_CONFIRMATION ||
-          holidayModalType === holidayModalTypes.HOLIDAY_BULK_DELETE ||
-          holidayModalType === holidayModalTypes.HOLIDAY_INDIVIDUAL_DELETE ||
-          holidayModalType === holidayModalTypes.HOLIDAY_SELECTED_DELETE
-            ? false
-            : true
-        }
-        setModalType={setHolidayModalType}
-        modalContentStyles={
-          holidayModalType === holidayModalTypes.ADD_EDIT_HOLIDAY
-            ? classes.modalContent
-            : {}
-        }
-      >
-        <Fragment>
-          {holidayModalType === holidayModalTypes.ADD_EDIT_HOLIDAY && (
-            <AddEditHolidayModal
-              holidays={holidays?.items}
-              holidayRefetch={refetch}
-            />
-          )}
-
-          {holidayModalType === holidayModalTypes.ADD_CALENDAR && (
-            <AddCalendar />
-          )}
-
-          {holidayModalType === holidayModalTypes.UPLOAD_HOLIDAY_BULK && (
-            <UploadHolidayBulk setBulkUploadData={setBulkUploadData} />
-          )}
-
-          {bulkUploadData &&
-            holidayModalType === holidayModalTypes.UPLOAD_SUMMARY &&
-            bulkUploadData?.bulkStatusSummary?.failedCount > 0 && (
-              <BulkUploadSummary data={bulkUploadData} />
-            )}
-
-          {holidayModalType === holidayModalTypes.HOLIDAY_INDIVIDUAL_DELETE && (
-            <HolidayBulkDelete
-              setIsPopupOpen={setIsHolidayModalOpen}
-              type={HolidayDeleteType.INDIVIDUAL}
-            />
-          )}
-
-          {holidayModalType === holidayModalTypes.HOLIDAY_SELECTED_DELETE && (
-            <HolidayBulkDelete
-              setIsPopupOpen={setIsHolidayModalOpen}
-              type={HolidayDeleteType.SELECTED}
-            />
-          )}
-
-          {holidayModalType === holidayModalTypes.HOLIDAY_BULK_DELETE && (
-            <HolidayBulkDelete
-              setIsPopupOpen={setIsHolidayModalOpen}
-              type={HolidayDeleteType.ALL}
-            />
-          )}
-
-          {holidayModalType === holidayModalTypes.HOLIDAY_EXIT_CONFIRMATION && (
-            <HolidayExitConfirmationModal />
-          )}
-        </Fragment>
-      </ModalController>
-    </>
+    <SmallModal
+      isOpen={
+        isHolidayModalOpen && holidayModalType !== holidayModalTypes.NONE
+      }
+      onClose={handleCloseModal}
+      modalHeader={getModalTitle()}
+      content={modalContent()}
+    />
   );
 };
 

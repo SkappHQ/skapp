@@ -1,17 +1,15 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
 
 import { useGetUploadedLeaveAttachments } from "~community/common/api/FileHandleApi";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import CopyIcon from "~community/common/assets/Icons/CopyIcon";
-import Button from "~community/common/components/atoms/Button/Button";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appModes } from "~community/common/constants/configs";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useHandelLeaves } from "~community/leave/api/LeaveApi";
@@ -173,17 +171,10 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
     }
   }, [s3FileUrls, environment]);
   return (
-    <Box>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        sx={{ marginBottom: "0.75rem" }}
-        component="div"
-      >
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1.5}
+    <div>
+      <div className="flex flex-row justify-between mb-3">
+        <div
+          className="flex flex-row items-center gap-3"
           tabIndex={0}
           role="group"
           aria-label={translateAria(["employeeName"], {
@@ -191,24 +182,20 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
             lastName: leaveRequestData?.lastName
           })}
         >
-          <Box aria-hidden="true">
+          <div aria-hidden="true">
             <Avatar
               firstName={leaveRequestData?.empName ?? ""}
               lastName={leaveRequestData?.lastName ?? ""}
               src={leaveRequestData.avatarUrl ?? ""}
             />
-          </Box>
-          <Typography
-            variant="body2"
-            sx={{ fontSize: "1rem" }}
-            aria-hidden="true"
-          >
+          </div>
+          <span className="text-base" aria-hidden="true">
             {translateText(["employeeName"], {
               employeeName: leaveRequestData?.empName
             }) ?? ""}
-          </Typography>
-        </Stack>
-        <Box
+          </span>
+        </div>
+        <div
           tabIndex={0}
           role="group"
           aria-label={translateAria(["leaveType"], {
@@ -226,28 +213,17 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
             chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
             tabIndex={-1}
           />
-        </Box>
-      </Stack>
+        </div>
+      </div>
 
-      <Box
-        sx={{
-          maxHeight: "50vh",
-          overflow: "auto"
-        }}
-      >
-        <Box sx={{ pt: "0.75rem", pb: "1rem" }}>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ pb: "1rem" }}
-            component="div"
+      <div className="max-h-[50vh] overflow-auto">
+        <div className="pt-3 pb-4">
+          <div
+            className="flex flex-row justify-between items-center pb-4"
             tabIndex={0}
           >
-            <Typography variant="body2" sx={{ fontSize: "1rem" }}>
-              {translateText(["duration"])}:
-            </Typography>
-            <Stack direction="row" spacing={1}>
+            <span className="text-base">{translateText(["duration"])}:</span>
+            <div className="flex flex-row gap-2">
               <ReadOnlyChip
                 label={
                   typeof leaveRequestData?.days === "number"
@@ -260,8 +236,8 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
                 label={leaveRequestData?.dates ?? ""}
                 chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
               />
-            </Stack>
-          </Stack>
+            </div>
+          </div>
           <LeaveStatusPopupColumn
             label={translateText(["reason"])}
             text={
@@ -274,18 +250,10 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
           />
           {leaveRequestData.attachments &&
             leaveRequestData.attachments.length > 0 && (
-              <Stack
-                sx={{
-                  pt: "1rem",
-                  gap: 1
-                }}
-                tabIndex={0}
-              >
-                <Typography variant="body2" sx={{ fontSize: "1rem" }}>
-                  {translateText(["attachments"])}
-                </Typography>
+              <div className="pt-4 flex flex-col gap-2" tabIndex={0}>
+                <p className="text-base">{translateText(["attachments"])}</p>
 
-                <Box>
+                <div>
                   {leaveRequestData.attachments &&
                     leaveRequestData.attachments.length > 0 &&
                     leaveRequestData.attachments.map((attachment, index) => (
@@ -316,28 +284,32 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
                         onClick={() => downloadAttachment(attachment.url)}
                       />
                     ))}
-                </Box>
-              </Stack>
+                </div>
+              </div>
             )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Stack spacing={2} sx={{ mt: "1rem" }}>
-        <Button
-          label={translateText(["approveLeave"])}
-          endIcon={<CheckIcon />}
-          onClick={handleApprove}
-          ariaLabel={translateText(["approveAreaLabel"])}
-        />
-        <Button
-          buttonStyle={ButtonStyle.ERROR}
-          label={translateText(["declineLeave"])}
-          endIcon={<CloseIcon />}
+      <div className="flex flex-row gap-4 mt-4 justify-end">
+        <ButtonV2
+          variant={"error"}
           onClick={handleDeclineModel}
-          ariaLabel={translateText(["cancelAreaLabel"])}
-        />
-      </Stack>
-    </Box>
+          aria-label={translateText(["cancelAreaLabel"])}
+          icon={<CloseIcon fill="var(--color-primary-text)" />}
+          iconPosition="end"
+        >
+          {translateText(["declineLeave"])}
+        </ButtonV2>
+        <ButtonV2
+          onClick={handleApprove}
+          aria-label={translateText(["approveAreaLabel"])}
+          icon={<CheckIcon />}
+          iconPosition="end"
+        >
+          {translateText(["approveLeave"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

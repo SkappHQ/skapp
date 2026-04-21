@@ -4,7 +4,6 @@ import { FC, useMemo } from "react";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
 import {
@@ -22,6 +21,7 @@ import {
 } from "~enterprise/people/types/PeopleTypes";
 
 import styles from "./styles";
+import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number | undefined;
@@ -30,7 +30,7 @@ interface Props {
 const PeopleTimeline: FC<Props> = ({ employeeId }) => {
   const classes = styles(theme);
 
-  const { isProTier } = useSessionData();
+  const { isAtLeastCoreTier } = useTier();
 
   const translateText = useTranslator("peopleModule", "editAllInfo");
   const translateTimelineText = useTranslator(
@@ -45,15 +45,15 @@ const PeopleTimeline: FC<Props> = ({ employeeId }) => {
 
   const { data: timelineData, isLoading } = useGetEmployeeTimeline(
     employeeId ?? 0,
-    isProTier
+    isAtLeastCoreTier
   );
 
   const timeline: EmployeeTimelineType[] = useMemo(() => {
-    if (isProTier) {
+    if (isAtLeastCoreTier) {
       return timelineData !== undefined ? timelineData : [];
     }
     return timelineMockData;
-  }, [isProTier, timelineData]);
+  }, [isAtLeastCoreTier, timelineData]);
 
   const getGroupTitle = (date: string): string => {
     const monthAndYear = formatISODateToMonthYear(date);

@@ -1,8 +1,5 @@
 package com.skapp.community.peopleplanner.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -77,7 +74,6 @@ import com.skapp.community.peopleplanner.payload.response.AnalyticsSearchRespons
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkErrorResponseDto;
-import com.skapp.community.peopleplanner.payload.response.export.EmployeeDataExportDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCountDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
@@ -90,6 +86,7 @@ import com.skapp.community.peopleplanner.payload.response.EmployeePeriodResponse
 import com.skapp.community.peopleplanner.payload.response.EmployeeTeamDto;
 import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDto;
+import com.skapp.community.peopleplanner.payload.response.export.EmployeeDataExportDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
@@ -109,7 +106,6 @@ import com.skapp.community.peopleplanner.util.Validations;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -125,6 +121,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -179,7 +178,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private final PeopleEmailService peopleEmailService;
 
-	private final ObjectMapper mapper;
+	private final JsonMapper mapper;
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
@@ -194,9 +193,6 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeValidationService employeeValidationService;
 
 	private final EmployeeExportMapperService employeeExportMapperService;
-
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
 
 	@Override
 	@Transactional
@@ -438,7 +434,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (loginMethod == LoginMethod.CREDENTIALS) {
 			String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-			CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword, encryptSecret),
+			CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword),
 					user::setTempPassword);
 			CommonModuleUtils.setIfExists(() -> passwordEncoder.encode(tempPassword), user::setPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
@@ -461,8 +457,7 @@ public class PeopleServiceImpl implements PeopleService {
 				user::setEmail);
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-		CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword, encryptSecret),
-				user::setTempPassword);
+		CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword), user::setTempPassword);
 		CommonModuleUtils.setIfExists(() -> passwordEncoder.encode(tempPassword), user::setPassword);
 
 		peopleEmailService.sendUserInvitationEmail(user);
@@ -1013,7 +1008,7 @@ public class PeopleServiceImpl implements PeopleService {
 		if (user.getLoginMethod() == LoginMethod.CREDENTIALS) {
 			EmployeeCredentialsResponseDto credentials = new EmployeeCredentialsResponseDto();
 			credentials.setEmail(employee.getUser() != null ? employee.getUser().getEmail() : null);
-			credentials.setTempPassword(encryptionDecryptionService.decrypt(user.getTempPassword(), encryptSecret));
+			credentials.setTempPassword(encryptionDecryptionService.decrypt(user.getTempPassword()));
 			responseDto.setEmployeeCredentials(credentials);
 		}
 
@@ -1097,6 +1092,8 @@ public class PeopleServiceImpl implements PeopleService {
 			employeeDetailedResponseDto.setPeriodResponseDto(periodResponseDto);
 		}
 
+		applyRoleBasedRestrictionsToDetailedDto(employeeDetailedResponseDto);
+
 		return new ResponseEntityDto(false, employeeDetailedResponseDto);
 	}
 
@@ -1153,6 +1150,8 @@ public class PeopleServiceImpl implements PeopleService {
 				permissionFilterDto);
 		List<EmployeeDetailedResponseDto> employeeResponseDtos = peopleMapper
 			.employeeListToEmployeeDetailedResponseDtoList(employees);
+
+		employeeResponseDtos.forEach(this::stripSensitiveFieldsForDirectoryListing);
 
 		log.info("searchEmployeesByNameOrEmail: execution ended");
 		return new ResponseEntityDto(false, employeeResponseDtos);
@@ -1518,7 +1517,6 @@ public class PeopleServiceImpl implements PeopleService {
 				.findEmployeePeriodByEmployee_EmployeeIdAndIsActiveTrue(employee.getEmployeeId());
 			period.ifPresent(employeePeriod -> responseDto
 				.setPeriodResponseDto(peopleMapper.employeePeriodToEmployeePeriodResponseDto(employeePeriod)));
-			responseDtos.add(responseDto);
 
 			List<EmployeeTeam> teamList = employeeTeamDao.findByEmployee(employee);
 			if (!teamList.isEmpty()) {
@@ -1528,8 +1526,26 @@ public class PeopleServiceImpl implements PeopleService {
 				responseDto.setTeams(teamDtos);
 			}
 
+			stripSensitiveFieldsForDirectoryListing(responseDto);
+			responseDtos.add(responseDto);
+
 		}
 		return responseDtos;
+	}
+
+	private void stripSensitiveFieldsForDirectoryListing(EmployeeDetailedResponseDto dto) {
+		dto.setEmployeeEmergencies(null);
+		dto.setEmployeeFamilies(null);
+		dto.setEmployeeEducations(null);
+		dto.setEmployeeVisas(null);
+		dto.setPersonalInfo(null);
+		dto.setEmployeeCredentials(null);
+		dto.setEmployeeProgressions(null);
+		dto.setPersonalEmail(null);
+		dto.setPhone(null);
+		dto.setEeo(null);
+		dto.setEthnicity(null);
+		applyRoleBasedRestrictionsToDetailedDto(dto);
 	}
 
 	public void validateNIN(String nin, List<String> errors) {
@@ -1821,7 +1837,7 @@ public class PeopleServiceImpl implements PeopleService {
 		else {
 			String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 
-			user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword, encryptSecret));
+			user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
 			user.setPassword(passwordEncoder.encode(tempPassword));
 			user.setIsPasswordChangedForTheFirstTime(false);
 
@@ -2350,6 +2366,26 @@ public class PeopleServiceImpl implements PeopleService {
 		userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
+	}
+
+	/**
+	 * Applies role-based restrictions to EmployeeDetailedResponseDto. Used by /me
+	 * endpoint and directory list to strip sensitive fields based on the current user's
+	 * role.
+	 */
+	protected void applyRoleBasedRestrictionsToDetailedDto(EmployeeDetailedResponseDto dto) {
+		Set<String> userRoles = userService.getCurrentUserRoles();
+		String roleSuperAdmin = "ROLE_" + Role.SUPER_ADMIN.name();
+		String rolePeopleAdmin = "ROLE_" + Role.PEOPLE_ADMIN.name();
+		String rolePeopleManager = "ROLE_" + Role.PEOPLE_MANAGER.name();
+
+		if (userRoles.contains(roleSuperAdmin) || userRoles.contains(rolePeopleAdmin)
+				|| userRoles.contains(rolePeopleManager)) {
+			return;
+		}
+
+		// Regular employee: hide system permissions
+		dto.setEmployeeRole(null);
 	}
 
 }

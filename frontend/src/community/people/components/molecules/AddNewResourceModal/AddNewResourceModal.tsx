@@ -1,18 +1,20 @@
 import { Stack, Theme, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { ChangeEvent, useEffect } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import ROUTES from "~community/common/constants/routes";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { peopleDirectoryTestId } from "~community/common/constants/testIds";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import {
   useCheckEmailAndIdentificationNoForQuickAdd,
   useQuickAddEmployeeMutation
@@ -269,38 +271,38 @@ const AddNewResourceModal = () => {
       >
         {generalTexts(["addFullProfile"])}
       </Link>
-      <Button
-        buttonStyle={ButtonStyle.PRIMARY}
-        label={generalTexts(["save"])}
-        endIcon={IconName.FORWARD_ARROW}
-        styles={{
-          marginTop: 2
-        }}
-        onClick={handleRefetch}
-        disabled={
-          values.email === "" ||
-          values.firstName === "" ||
-          values.lastName === ""
-        }
-        data-testid={peopleDirectoryTestId.buttons.quickAddSaveBtn}
-        shouldBlink={
-          ongoingQuickSetup.INVITE_EMPLOYEES &&
-          values.email !== "" &&
-          values.firstName !== "" &&
-          values.lastName !== ""
-        }
-        isLoading={isCheckingEmailLoading || isPending}
-      />
-      <Button
-        buttonStyle={ButtonStyle.TERTIARY}
-        label={generalTexts(["cancel"])}
-        endIcon={IconName.CLOSE_ICON}
-        styles={{
-          marginTop: 2
-        }}
-        onClick={closeModal}
-        data-testid={peopleDirectoryTestId.buttons.quickAddCancelBtn}
-      />
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={closeModal}
+          data-testid={peopleDirectoryTestId.buttons.quickAddCancelBtn}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {generalTexts(["cancel"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleRefetch}
+          disabled={
+            values.email === "" ||
+            values.firstName === "" ||
+            values.lastName === ""
+          }
+          data-testid={peopleDirectoryTestId.buttons.quickAddSaveBtn}
+          isLoading={isCheckingEmailLoading || isPending}
+          className={getBlinkClass(
+            ongoingQuickSetup.INVITE_EMPLOYEES &&
+              values.email !== "" &&
+              values.firstName !== "" &&
+              values.lastName !== ""
+          )}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {generalTexts(["save"])}
+        </ButtonV2>
+      </div>
     </Stack>
   );
 };

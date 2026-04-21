@@ -1,11 +1,9 @@
-import { Box, Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, JSX, SetStateAction, useEffect } from "react";
 
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import UndoIcon from "~community/common/assets/Icons/UndoIcon";
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -76,12 +74,12 @@ const LeaveManagerSuccessModal = ({
   }, [isSuccess, setPopupType]);
 
   return (
-    <Box>
-      <Box sx={{ pt: ".75rem", pb: "1rem" }}>
+    <div>
+      <div className="pt-3 pb-4">
         <LeaveStatusPopupRow
           label={translateText(["member"])}
           isRecipient={true}
-          styles={{ mb: "1.25rem" }}
+          styles={{ marginBottom: "1.25rem" }}
           role="member"
           employee={data}
           profilePicture={data?.avatarUrl}
@@ -90,17 +88,18 @@ const LeaveManagerSuccessModal = ({
           label={translateText(["duration"])}
           durationByDays={getAsDaysString(data?.durationDays as string)}
           durationDate={data?.dates ?? ""}
-          styles={{ mb: "1.25rem" }}
+          styles={{ marginBottom: "1.25rem" }}
         />
         <LeaveStatusPopupRow
           label={translateText(["type"])}
           iconType={data?.leaveType ?? ""}
-          styles={{ mb: "1.25rem" }}
-          ariaLabel={`Leave request type is ${data?.leaveType ?? ""}`}
+          styles={{ marginBottom: "1.25rem" }}
+          aria-label={`Leave request type is ${data?.leaveType ?? ""}`}
           icon={data?.leaveEmoji}
         />
         <LeaveStatusPopupRow
           label={translateText(["status"])}
+          styles={{ marginBottom: "1.25rem" }}
           iconType={
             popupType === LeaveStatusTypes.APPROVED ||
             LeaveExtraPopupTypes.APPROVED_STATUS === popupType
@@ -112,7 +111,6 @@ const LeaveManagerSuccessModal = ({
                   ? LeaveStatusTypes.DENIED
                   : LeaveStatusTypes.REVOKED
           }
-          styles={{ mb: "1.25rem" }}
           icon={
             popupType === LeaveStatusTypes.APPROVED ||
             LeaveExtraPopupTypes.APPROVED_STATUS === popupType ? (
@@ -127,24 +125,28 @@ const LeaveManagerSuccessModal = ({
             )
           }
         />
-      </Box>
-      <Stack spacing={2}>
-        <Button
-          label={translateText(["proceedToDashboard"])}
-          endIcon={<RightArrowIcon />}
-          onClick={closeModel}
-        />
+      </div>
+      <div className="flex flex-row gap-4 justify-end">
         {(popupType === LeaveStatusTypes.APPROVED ||
           LeaveExtraPopupTypes.APPROVED_STATUS === popupType) && (
-          <Button
-            label={translateText(["revokeLeave"])}
-            buttonStyle={ButtonStyle.TERTIARY}
-            startIcon={<UndoIcon />}
+          <ButtonV2
+            variant={"tertiary"}
             onClick={handelUndo}
-          />
+            icon={<UndoIcon />}
+            iconPosition="start"
+          >
+            {translateText(["revokeLeave"])}
+          </ButtonV2>
         )}
-      </Stack>
-    </Box>
+        <ButtonV2
+          onClick={closeModel}
+          icon={<RightArrowIcon />}
+          iconPosition="end"
+        >
+          {translateText(["proceedToDashboard"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

@@ -1,7 +1,5 @@
 package com.skapp.community.common.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.skapp.community.common.component.ProfileActivator;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
@@ -53,22 +51,22 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.util.Validations;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -127,12 +125,9 @@ public class AuthServiceImpl implements AuthService {
 
 	private final OrganizationConfigDao organizationConfigDao;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	protected final CookieUtil cookieUtil;
-
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
 
 	@Override
 	@Transactional
@@ -161,9 +156,11 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto signOutWithCookie(HttpServletResponse response) {
 		log.info("signOutWithCookie: execution started");
 
-		Cookie cookie = cookieUtil.clearRefreshTokenCookie();
-		response.addCookie(cookie);
+		Cookie refreshCookie = cookieUtil.clearRefreshTokenCookie(getTenantId());
+		response.addCookie(refreshCookie);
 		log.info("signOutWithCookie: Cleared refresh token cookie");
+
+		clearTenantCookie(response);
 
 		log.info("signOutWithCookie: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_SIGN_OUT));
@@ -171,8 +168,16 @@ public class AuthServiceImpl implements AuthService {
 
 	private SignInResponseDto performSignIn(SignInRequestDto signInRequestDto, HttpServletResponse response) {
 		log.info("performSignIn: Authenticating user with email={}", signInRequestDto.getEmail());
-		authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(signInRequestDto.getEmail(), signInRequestDto.getPassword()));
+		try {
+			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequestDto.getEmail(),
+					signInRequestDto.getPassword()));
+		}
+		catch (BadCredentialsException exception) {
+			onSignInFailed(signInRequestDto.getEmail());
+			throw exception;
+		}
+
+		onSignInSuccess(signInRequestDto.getEmail());
 
 		Optional<User> optionalUser = userDao.findByEmail(signInRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
@@ -210,9 +215,12 @@ public class AuthServiceImpl implements AuthService {
 
 		if (response != null) {
 			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
-			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
-			response.addCookie(cookie);
+			Cookie refreshCookie = cookieUtil.createRefreshTokenCookie(getTenantId(), refreshToken, cookieMaxAge);
+			response.addCookie(refreshCookie);
 			log.info("performSignIn: Added refresh token cookie for userEmail={}", user.getEmail());
+
+			addTenantCookie(response, cookieMaxAge, user);
+
 		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
@@ -228,6 +236,14 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	protected void validateTenantStatus(User user) {
+		// This is only for Pro version
+	}
+
+	protected void addTenantCookie(HttpServletResponse response, long cookieMaxAge, User user) {
+		// This is only for Pro version
+	}
+
+	protected void clearTenantCookie(HttpServletResponse response) {
 		// This is only for Pro version
 	}
 
@@ -295,6 +311,17 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("superAdminSignUp: execution ended for userEmail{}", user.getEmail());
 		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto refreshAccessTokenFromCookie(HttpServletRequest request) {
+		String refreshToken = cookieUtil.getRefreshTokenFromCookies(request, getTenantId());
+		if (refreshToken == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_REFRESH_TOKEN);
+		}
+		RefreshTokenRequestDto refreshTokenRequestDto = new RefreshTokenRequestDto();
+		refreshTokenRequestDto.setRefreshToken(refreshToken);
+		return refreshAccessToken(refreshTokenRequestDto);
 	}
 
 	@Override
@@ -383,7 +410,7 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("sharePassword: User found for sharePassword: userEmail={}", user.getEmail());
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user,
-				encryptionDecryptionService.decrypt(user.getTempPassword(), encryptSecret));
+				encryptionDecryptionService.decrypt(user.getTempPassword()));
 
 		log.info("sharePassword: execution ended for  ={}", user.getEmail());
 		return new ResponseEntityDto(false, sharePasswordResponseDto);
@@ -402,7 +429,7 @@ public class AuthServiceImpl implements AuthService {
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		log.info("resetAndSharePassword: Generated new temp password for userEmail={}", user.getEmail());
-		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword, encryptSecret));
+		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
 		user.setPassword(passwordEncoder.encode(tempPassword));
 		user.setIsPasswordChangedForTheFirstTime(true);
 		User savedUser = userDao.save(user);
@@ -454,13 +481,10 @@ public class AuthServiceImpl implements AuthService {
 				CompletableFuture<Void> task = CompletableFuture.runAsync(() -> {
 					bulkContextService.setContext(currentTenant);
 					try {
-						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-							@Override
-							protected void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
-								log.info("sendReInvitation: Processing re-invitation for userId={}", id);
-								validateAndSendReInvitation(id, reInvitationSkippedCountDto, bulkRecordErrorLogs,
-										bulkStatusSummary);
-							}
+						transactionTemplate.executeWithoutResult(status -> {
+							log.info("sendReInvitation: Processing re-invitation for userId={}", id);
+							validateAndSendReInvitation(id, reInvitationSkippedCountDto, bulkRecordErrorLogs,
+									bulkStatusSummary);
 						});
 					}
 					catch (Exception e) {
@@ -592,8 +616,7 @@ public class AuthServiceImpl implements AuthService {
 	protected void createNewPassword(String newPassword, User user) {
 		log.info("createNewPassword: execution started={}", user.getEmail());
 		String tempPassword = user.getTempPassword();
-		if (tempPassword != null
-				&& Objects.equals(encryptionDecryptionService.decrypt(tempPassword, encryptSecret), newPassword)) {
+		if (tempPassword != null && Objects.equals(encryptionDecryptionService.decrypt(tempPassword), newPassword)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);
 		}
 
@@ -649,7 +672,7 @@ public class AuthServiceImpl implements AuthService {
 
 			if (loginMethod.equals(LoginMethod.CREDENTIALS)) {
 				String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-				user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword, encryptSecret));
+				user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
 				user.setPassword(passwordEncoder.encode(tempPassword));
 			}
 
@@ -671,6 +694,18 @@ public class AuthServiceImpl implements AuthService {
 		errorLog.setStatus(BulkItemStatus.ERROR);
 		errorLog.setMessage(String.join("; ", errors));
 		return errorLog;
+	}
+
+	protected void onSignInFailed(String email) {
+		// No-op: overridden by enterprise for brute force protection
+	}
+
+	protected void onSignInSuccess(String email) {
+		// No-op: overridden by enterprise for brute force protection
+	}
+
+	protected String getTenantId() {
+		return null;
 	}
 
 }

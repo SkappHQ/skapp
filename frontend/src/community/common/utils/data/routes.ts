@@ -108,7 +108,7 @@ const routes = [
       },
       {
         id: "2B",
-        name: "All Leave Requests",
+        name: "All Requests",
         url: ROUTES.LEAVE.LEAVE_REQUESTS,
         hasSubTree: false,
         requiredAuthLevel: [
@@ -339,48 +339,14 @@ const routes = [
     name: "Configurations",
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
-    hasSubTree: true,
+    hasSubTree: false,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
       AdminTypes.ATTENDANCE_ADMIN,
-      AdminTypes.INVOICE_ADMIN
-    ],
-    subTree: [
-      {
-        id: "7A",
-        name: "Time",
-        url: ROUTES.CONFIGURATIONS.TIME,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
-      },
-      {
-        id: "7B",
-        name: "Attendance",
-        url: ROUTES.CONFIGURATIONS.ATTENDANCE,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN]
-      },
-      {
-        id: "7C",
-        name: "Sign",
-        url: ROUTES.CONFIGURATIONS.SIGN,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.ESIGN_ADMIN]
-      },
-      {
-        id: "7D",
-        name: "User Roles",
-        url: ROUTES.CONFIGURATIONS.USER_ROLES,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
-      },
-      {
-        id: "7E",
-        name: "Invoice",
-        url: ROUTES.CONFIGURATIONS.INVOICE,
-        hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.INVOICE_ADMIN]
-      }
+      AdminTypes.INVOICE_ADMIN,
+      AdminTypes.ESIGN_ADMIN,
+      AdminTypes.PEOPLE_ADMIN,
+      AdminTypes.LEAVE_ADMIN
     ]
   },
   {
@@ -388,7 +354,7 @@ const routes = [
     name: "Settings",
     url: ROUTES.SETTINGS.BASE,
     icon: IconName.SETTINGS_ICON,
-    hasSubTree: true,
+    hasSubTree: false,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
       AdminTypes.PEOPLE_ADMIN,
@@ -401,26 +367,7 @@ const routes = [
       EmployeeTypes.LEAVE_EMPLOYEE,
       EmployeeTypes.ATTENDANCE_EMPLOYEE
     ],
-    subTree: [
-      {
-        id: "8A",
-        name: "Account Settings",
-        url: ROUTES.SETTINGS.ACCOUNT,
-        hasSubTree: false,
-        requiredAuthLevel: [
-          AdminTypes.SUPER_ADMIN,
-          AdminTypes.PEOPLE_ADMIN,
-          AdminTypes.LEAVE_ADMIN,
-          AdminTypes.ATTENDANCE_ADMIN,
-          ManagerTypes.PEOPLE_MANAGER,
-          ManagerTypes.LEAVE_MANAGER,
-          ManagerTypes.ATTENDANCE_MANAGER,
-          EmployeeTypes.PEOPLE_EMPLOYEE,
-          EmployeeTypes.LEAVE_EMPLOYEE,
-          EmployeeTypes.ATTENDANCE_EMPLOYEE
-        ]
-      }
-    ]
+    subTree: []
   }
 ];
 

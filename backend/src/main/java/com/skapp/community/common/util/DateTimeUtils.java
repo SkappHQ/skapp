@@ -519,6 +519,15 @@ public class DateTimeUtils {
 	}
 
 	/**
+	 * Converts epoch seconds to an {@link Instant}.
+	 * @param epochSecond the epoch seconds to convert
+	 * @return the corresponding {@link Instant}
+	 */
+	public static Instant epochSecondToInstant(Long epochSecond) {
+		return Instant.ofEpochSecond(epochSecond);
+	}
+
+	/**
 	 * Converts epoch milliseconds to LocalTime using UTC timezone.
 	 * @param epochMillis the epoch milliseconds to convert.
 	 * @return the corresponding LocalTime in UTC.

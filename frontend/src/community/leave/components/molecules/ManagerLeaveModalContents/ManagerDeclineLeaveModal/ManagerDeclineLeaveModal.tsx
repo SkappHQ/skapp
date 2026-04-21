@@ -1,9 +1,7 @@
-import { Box, Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useHandelLeaves } from "~community/leave/api/LeaveApi";
@@ -78,8 +76,8 @@ const ManagerDeclineLeaveModal = ({
   }, [leaveRequestData?.empName, leaveCancelError, isSuccess]);
 
   return (
-    <Box component="div" aria-modal={true}>
-      <Box sx={{ pb: "1rem" }}>
+    <div aria-modal={true}>
+      <div className="pb-4">
         <LeaveStatusPopupColumn
           id="reason"
           label={translateText(["reasonToDecline"])}
@@ -89,22 +87,26 @@ const ManagerDeclineLeaveModal = ({
           errorMessage={translateText(["EnterWhyDecline"])}
           required
         />
-      </Box>
-      <Stack spacing={2}>
-        <Button
-          buttonStyle={ButtonStyle.ERROR}
-          label="Decline Leave"
-          endIcon={<CloseIcon />}
-          onClick={handelDecline}
-        />
-        <Button
-          buttonStyle={ButtonStyle.TERTIARY}
-          label="Cancel"
-          endIcon={<CloseIcon />}
+      </div>
+      <div className="flex flex-row gap-4 justify-end">
+        <ButtonV2
+          variant={"tertiary"}
           onClick={closeModel}
-        />
-      </Stack>
-    </Box>
+          icon={<CloseIcon />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"error"}
+          onClick={handelDecline}
+          icon={<CloseIcon fill="var(--color-primary-text)" />}
+          iconPosition="end"
+        >
+          {translateText(["declineLeave"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

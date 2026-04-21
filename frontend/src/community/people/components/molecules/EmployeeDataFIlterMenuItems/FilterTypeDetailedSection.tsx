@@ -1,7 +1,5 @@
-import { Box } from "@mui/material";
 import { RefObject } from "react";
 
-import { useMediaQuery } from "~community/common/hooks/useMediaQuery";
 import { FilterButtonTypes } from "~community/common/types/filterTypes";
 import { PeopleFilterHeadings } from "~community/people/types/CommonTypes";
 
@@ -19,11 +17,9 @@ const FilterTypeDetailedSection = ({
 }: {
   basicChipRef: RefObject<{ [key: string]: HTMLDivElement | null }>;
   selected: PeopleFilterHeadings;
-  teams?: FilterButtonTypes[] | undefined;
-  jobFamilies?: FilterButtonTypes[] | undefined;
+  teams?: FilterButtonTypes[];
+  jobFamilies?: FilterButtonTypes[];
 }) => {
-  const queryMatches = useMediaQuery();
-  const isSmallScreen = queryMatches(`(max-width: 1150px)`);
   const renderSelectedSection = () => {
     switch (selected) {
       case PeopleFilterHeadings.DEMOGRAPICS:
@@ -34,39 +30,24 @@ const FilterTypeDetailedSection = ({
           />
         );
       case PeopleFilterHeadings.EMPLOYMENTS:
-        return (
-          <EmploymentSection basicChipRef={basicChipRef} selected={selected} />
-        );
+        return <EmploymentSection basicChipRef={basicChipRef} />;
       case PeopleFilterHeadings.JOB_FAMILIES:
         return (
           <JobFamiliesSection
             jobFamilies={jobFamilies}
             basicChipRef={basicChipRef}
-            selected={selected}
           />
         );
       case PeopleFilterHeadings.TEAMS:
-        return (
-          <TeamSection
-            teams={teams}
-            basicChipRef={basicChipRef}
-            selected={selected}
-          />
-        );
+        return <TeamSection teams={teams} basicChipRef={basicChipRef} />;
       case PeopleFilterHeadings.USER_ROLES:
-        return (
-          <UserRolesSection basicChipRef={basicChipRef} selected={selected} />
-        );
+        return <UserRolesSection basicChipRef={basicChipRef} />;
       default:
         return null;
     }
   };
 
-  return (
-    <Box sx={{ paddingX: isSmallScreen ? 1 : 3 }}>
-      {renderSelectedSection()}
-    </Box>
-  );
+  return <>{renderSelectedSection()}</>;
 };
 
 export default FilterTypeDetailedSection;

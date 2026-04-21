@@ -11,6 +11,7 @@ import AttachmentIcon from "~community/common/assets/Icons/AttachmentIcon";
 import AttendanceModuleIcon from "~community/common/assets/Icons/AttendanceModuleIcon";
 import BackArrowIcon from "~community/common/assets/Icons/BackArrowIcon";
 import BackIcon from "~community/common/assets/Icons/BackIcon";
+import BadgeCheckIcon from "~community/common/assets/Icons/BadgeCheckIcon";
 import BellIcon from "~community/common/assets/Icons/BellIcon";
 import BinIcon from "~community/common/assets/Icons/BinIcon";
 import BlockedIcon from "~community/common/assets/Icons/BlockedIcon";
@@ -23,6 +24,8 @@ import CheckCircleIcon from "~community/common/assets/Icons/CheckCircleIcon";
 import CheckCircleOutlineIcon from "~community/common/assets/Icons/CheckCircleOutlineIcon";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CheckWrapperIcon from "~community/common/assets/Icons/CheckWrapperIcon";
+import CheckboxIcon from "~community/common/assets/Icons/CheckboxIcon";
+import CheckboxSelectedIcon from "~community/common/assets/Icons/CheckboxSelectedIcon";
 import ChevronLeftIcon from "~community/common/assets/Icons/ChevronLeftIcon";
 import ChevronRightIcon from "~community/common/assets/Icons/ChevronRightIcon";
 import ClockDenyIcon from "~community/common/assets/Icons/ClockDenyIcon";
@@ -68,6 +71,7 @@ import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIco
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
 import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
+import IdentityVerifiedIcon from "~community/common/assets/Icons/IdentityVerifiedIcon";
 import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
@@ -103,6 +107,7 @@ import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import PopOutIcon from "~community/common/assets/Icons/PopOutIcon";
 import ProjectManagementModuleIcon from "~community/common/assets/Icons/ProjectManagementModuleIcon";
 import ProjectsIcon from "~community/common/assets/Icons/ProjectsIcon";
+import RadioSelectedIcon from "~community/common/assets/Icons/RadioSelectedIcon";
 import RemoveCircleIcon from "~community/common/assets/Icons/RemoveCircleIcon";
 import RequestCancelCrossIcon from "~community/common/assets/Icons/RequestCancelCrossIcon";
 import RestoreIcon from "~community/common/assets/Icons/RestoreIcon";
@@ -153,6 +158,8 @@ import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
 import GreyRoundedTickIcon from "~enterprise/settings/assets/Icons/GreyRoundedTickIcon";
 import MasterCardIcon from "~enterprise/settings/assets/Icons/MasterCardIcon";
 import VisaCardIcon from "~enterprise/settings/assets/Icons/VisaCardIcon";
+import BankIdVerifyFailedIcon from "~enterprise/sign/assets/Icons/BankIdVerifyFailedIcon";
+import BankIdVerifySuccessIcon from "~enterprise/sign/assets/Icons/BankIdVerifySuccessIcon";
 
 interface Props extends IconProps {
   name: IconName;
@@ -218,6 +225,7 @@ export const IconMapping: Partial<
   [IconName.TICK_ICON]: TickIcon,
   [IconName.EMOJI_ICON]: EmojiIcon,
   [IconName.UNCHECKED_ICON]: UnCheckedIcon,
+  [IconName.RADIO_SELECTED_ICON]: RadioSelectedIcon,
   [IconName.DOWNLOAD_ICON]: DownloadIcon,
   [IconName.ASSET_ICON]: AssetIcon,
   [IconName.OBJECTIVES_ICON]: ObjectivesIcon,
@@ -227,6 +235,8 @@ export const IconMapping: Partial<
   [IconName.PAUSE_ICON]: PauseIcon,
   [IconName.UNDO_ICON]: UndoIcon,
   [IconName.CHECK_ICON]: CheckIcon,
+  [IconName.CHECKBOX_ICON]: CheckboxIcon,
+  [IconName.CHECKBOX_SELECTED_ICON]: CheckboxSelectedIcon,
   [IconName.RESTRICTIONS_ICON]: RestrictionsIcon,
   [IconName.DENIED_ICON]: DeniedIcon,
   [IconName.CALENDAR_ICON]: CalendarIcon,
@@ -288,6 +298,7 @@ export const IconMapping: Partial<
   [IconName.CREATE_DOCUMENT_ICON]: CreateDocumentIcon,
   [IconName.CLOCK_DENY_ICON]: ClockDenyIcon,
   [IconName.EYE_ICON]: EyeIcon,
+  [IconName.IDENTITY_VERIFIED_ICON]: IdentityVerifiedIcon,
   [IconName.SEND_ICON]: SendIcon,
   [IconName.SUCCESS_TICK_ICON]: SuccessIcon,
   [IconName.CROSSED_CIRCLE_ICON]: CrossedCircleIcon,
@@ -315,7 +326,10 @@ export const IconMapping: Partial<
   [IconName.OUTLOOK_ICON]: OutlookIcon,
   [IconName.PERCENTAGE_ICON]: PercentageIcon,
   [IconName.UPLOAD_DOCUMENT_ICON]: UploadDocumentIcon,
-  [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon
+  [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon,
+  [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon,
+  [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
+  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon
   // Add more icons here as needed
 };
 

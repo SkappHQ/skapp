@@ -209,6 +209,7 @@ declare module "@mui/material/styles" {
     tableHeader: React.CSSProperties;
     label: React.CSSProperties;
     placeholder: React.CSSProperties;
+    subtitle3: React.CSSProperties;
     smallTitle: React.CSSProperties;
     allVariants: React.CSSProperties;
     kpiValue: React.CSSProperties;
@@ -219,6 +220,7 @@ declare module "@mui/material/styles" {
     tableHeader?: React.CSSProperties;
     label?: React.CSSProperties;
     placeholder?: React.CSSProperties;
+    subtitle3?: React.CSSProperties;
     smallTitle?: React.CSSProperties;
     allVariants: React.CSSProperties;
     kpiValue?: React.CSSProperties;
@@ -252,6 +254,7 @@ declare module "@mui/material/Typography" {
   interface TypographyPropsVariantOverrides {
     onboardingHeader: true;
     tableHeader: true;
+    subtitle3: true;
     smallTitle: true;
     label: true;
     placeholder: true;
@@ -329,7 +332,8 @@ export const theme = createTheme({
       textBurntGrey: "#65656E",
       whiteText: "#ffffff",
       blackText: "#000000",
-      neutral: "#6B7280"
+      neutral: "#6B7280",
+      disabled: "#71717A",
     },
     notifyBadge: {
       main: "#EF4444",
@@ -447,7 +451,7 @@ export const theme = createTheme({
     ]
   },
   typography: {
-    fontFamily: "'Poppins', sans-serif",
+    fontFamily: "var(--font-inter), sans-serif",
     allVariants: { color: "#000000" },
     // Heading, Modal Header
     h1: {
@@ -476,6 +480,11 @@ export const theme = createTheme({
     },
     subtitle1: undefined,
     subtitle2: undefined,
+    // Subtitle 3
+    subtitle3: {
+      fontWeight: 500,
+      fontSize: "0.875rem" // 14px
+    },
     // Nav heading, Table filter chip, Modal content, Button large, Paragraph, Toggle label
     body1: {
       fontWeight: 400,
@@ -494,7 +503,6 @@ export const theme = createTheme({
     button: undefined,
     overline: undefined,
     onboardingHeader: {
-      fontFamily: "'Poppins', sans-serif",
       fontWeight: 600,
       fontSize: "2rem", //32px
       lineHeight: "100%"
@@ -531,7 +539,6 @@ export const theme = createTheme({
     },
     //Document status title
     documentStatusTitle: {
-      fontFamily: "'Poppins', sans-serif",
       fontWeight: 600,
       fontSize: "1.5rem" // 24px
     }

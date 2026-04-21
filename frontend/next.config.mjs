@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   reactStrictMode: false,
   async rewrites() {
     const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
@@ -47,10 +48,8 @@ const nextConfig = {
           : "/community/signin"
       },
       {
-        source: "/settings/account",
-        destination: isEnterpriseMode
-          ? "/enterprise/settings/account"
-          : "/community/settings/account"
+        source: "/settings",
+        destination: "/community/settings"
       },
       {
         source: "/settings/billing",
@@ -173,24 +172,12 @@ const nextConfig = {
         destination: "/community/leave/analytics/reports"
       },
       {
-        source: "/configurations/attendance",
-        destination: "/community/configurations/attendance"
-      },
-      {
-        source: "/configurations/time",
-        destination: "/community/configurations/time"
-      },
-      {
-        source: "/configurations/esign",
-        destination: "/enterprise/configurations/esign"
+        source: "/configurations",
+        destination: "/community/configurations"
       },
       {
         source: "/configurations/user-roles",
         destination: "/community/configurations/user-roles"
-      },
-      {
-        source: "/configurations/invoice",
-        destination: "/enterprise/configurations/invoice"
       },
       {
         source: "/configurations/user-roles/attendance",
@@ -309,20 +296,12 @@ const nextConfig = {
         destination: "/enterprise/sign/document/access/mfa-verify"
       },
       {
+        source: "/sign/document/access/bankid-verify",
+        destination: "/enterprise/sign/document/access/bankid-verify"
+      },
+      {
         source: "/sign/complete",
         destination: "/enterprise/sign/complete"
-      },
-      {
-        source: "/settings/modules",
-        destination: "/enterprise/settings/modules"
-      },
-      {
-        source: "/integrations",
-        destination: "/enterprise/settings/account"
-      },
-      {
-        source: "/settings/integrations",
-        destination: "/enterprise/settings/integrations"
       },
       {
         source: "/remove-people",
@@ -339,10 +318,6 @@ const nextConfig = {
       {
         source: "/system-update",
         destination: "/enterprise/system-update"
-      },
-      {
-        source: "/subscription",
-        destination: "/enterprise/subscription"
       },
       {
         source: "/people/directory/edit/:id",

@@ -1,4 +1,4 @@
-import { Stack } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { RefObject } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -10,13 +10,9 @@ import {
   EmploymentTypes
 } from "~community/people/types/EmployeeTypes";
 
-import EmployeeFilterSection from "../EmployeeFilterSection/EmployeeFilterSection";
-
 const EmploymentSection = ({
-  selected,
   basicChipRef
 }: {
-  selected: string;
   basicChipRef: RefObject<{ [key: string]: HTMLDivElement | null }>;
 }) => {
   const translateText = useTranslator(
@@ -97,28 +93,29 @@ const EmploymentSection = ({
   };
 
   return (
-    <Stack
-      sx={{
-        overflowY: "auto",
-        flexDirection: "column",
-        maxHeight: "20rem"
-      }}
-    >
+    <div className="overflow-y-auto flex flex-col gap-6">
       {filterData.map((filter) => {
+        const filterKey = filter.accessibilityKey as FilterKey;
+        const currentFilterValues = (employeeDataFilter[filterKey] ??
+          []) as string[];
         return (
-          <EmployeeFilterSection
-            basicChipRef={basicChipRef}
-            selected={selected}
+          <SelectableItemList
             key={filter.title}
             title={filter.title}
-            accessibilityKey={filter.accessibilityKey}
-            data={filter.data}
-            handleFilterChange={handleFilterChange}
-            currentFilter={employeeDataFilter[filter.accessibilityKey] ?? []}
+            items={filter.data}
+            selectedValues={currentFilterValues}
+            onChipClick={(value) =>
+              handleFilterChange(
+                value,
+                filter.accessibilityKey,
+                currentFilterValues
+              )
+            }
+            chipRefs={basicChipRef}
           />
         );
       })}
-    </Stack>
+    </div>
   );
 };
 

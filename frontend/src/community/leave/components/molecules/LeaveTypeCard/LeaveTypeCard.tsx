@@ -1,13 +1,10 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { forwardRef, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import {
-  ButtonSizes,
-  ButtonStyle,
-  ToastType
-} from "~community/common/enums/ComponentEnums";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -129,14 +126,16 @@ const LeaveTypeCard = forwardRef<HTMLDivElement, Props>(
             <Box aria-hidden="true">{getEmoji(emojiCode)}</Box>
           )}
           {isMouseOn && !!balanceInDays && managers && (
-            <Button
-              label={translateText(["applyBtn"])}
+            <ButtonV2
               onClick={handleClick}
               disabled={!balanceInDays}
-              buttonStyle={ButtonStyle.PRIMARY}
-              size={ButtonSizes.MEDIUM}
-              endIcon={IconName.RIGHT_ARROW_ICON}
-            />
+              variant={"primary"}
+              size={"md"}
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["applyBtn"])}
+            </ButtonV2>
           )}
         </Stack>
       </Stack>

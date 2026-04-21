@@ -116,7 +116,7 @@ const PeopleLayout = ({
                   </Box>
                 )}
 
-                <Typography variant="h2">{title}</Typography>
+                {title && <Typography variant="h2">{title}</Typography>}
               </Stack>
             </Stack>
           </Box>

@@ -1,8 +1,7 @@
 import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -63,34 +62,31 @@ const DeleteConfirmModal = () => {
   };
   return (
     <Box>
-      <Typography sx={{ mt: "1rem" }}>
-        {translateText(["confirmDeleteModalDes"])}
-      </Typography>
+      <Typography>{translateText(["confirmDeleteModalDes"])}</Typography>
       <Box>
-        <Button
-          label={translateText(["reassignBtnText"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.PRIMARY}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          onClick={handleReassignClick}
-          accessibility={{
-            ariaHidden: true
-          }}
-        />
-        <Button
-          label={translateText(["teamDeleteConfirmBtnText"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.ERROR}
-          endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-          onClick={handleDeleteClick}
-          accessibility={{
-            ariaHidden: true
-          }}
-        />
+        <div className="flex flex-row gap-3 mt-4 justify-end">
+          <ButtonV2
+            variant={"primary"}
+            onClick={handleReassignClick}
+            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["reassignBtnText"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"error"}
+            onClick={handleDeleteClick}
+            icon={
+              <Icon
+                name={IconName.DELETE_BUTTON_ICON}
+                fill="var(--color-semantic-red-text)"
+              />
+            }
+            iconPosition="end"
+          >
+            {translateText(["teamDeleteConfirmBtnText"])}
+          </ButtonV2>
+        </div>
       </Box>
     </Box>
   );

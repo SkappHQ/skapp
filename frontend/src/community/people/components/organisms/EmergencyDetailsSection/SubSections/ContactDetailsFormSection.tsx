@@ -48,8 +48,7 @@ const ContactDetailsFormSection = ({
         padding: "0",
         margin: "0 auto",
         display: "block",
-        overflowY: "unset",
-        fontFamily: "Poppins, sans-serif"
+        overflowY: "unset"
       }}
       dividerStyles={{
         mt: "0.5rem"

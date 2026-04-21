@@ -1,12 +1,11 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Checkbox from "~community/common/components/atoms/Checkbox/Checkbox";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
-import Modal from "~community/common/components/organisms/Modal/Modal";
 import { Modules } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -83,52 +82,58 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
   });
 
   return (
-    <Modal
-      isModalOpen={isUserRoleModalOpen}
-      onCloseModal={handleCancelBtnClick}
-      title={translateText(["restrictedUserRolesTitle"])}
-      isClosable={true}
-    >
-      <Stack sx={classes.wrapper}>
-        <Stack sx={classes.description}>
-          <Typography sx={classes.text}>
-            {translateText(["restrictedUserRolesDescriptionPartOne"])}
-            <b>{translateText(["restrictedUserRolesDescriptionPartTwo"])}</b>
-            {translateText(["restrictedUserRolesDescriptionPartThree"])}
-          </Typography>
-          <Box sx={classes.tooltipWrapper}>
-            <Tooltip title={translateText(["restrictedUserRolesTooltip"])} />
-          </Box>
+    <SmallModal
+      isOpen={isUserRoleModalOpen}
+      onClose={handleCancelBtnClick}
+      modalHeader={translateText(["restrictedUserRolesTitle"])}
+      content={
+        <Stack sx={classes.wrapper}>
+          <Stack sx={classes.description}>
+            <Typography sx={classes.text}>
+              {translateText(["restrictedUserRolesDescriptionPartOne"])}
+              <b>{translateText(["restrictedUserRolesDescriptionPartTwo"])}</b>
+              {translateText(["restrictedUserRolesDescriptionPartThree"])}
+            </Typography>
+            <Box sx={classes.tooltipWrapper}>
+              <Tooltip title={translateText(["restrictedUserRolesTooltip"])} />
+            </Box>
+          </Stack>
+          <Stack sx={classes.fieldWrapper}>
+            <Checkbox
+              label="Admin"
+              name="isAdmin"
+              checked={values.isAdmin}
+              onChange={() => setFieldValue("isAdmin", !values.isAdmin)}
+            />
+            <Checkbox
+              label="Manager"
+              name="isManager"
+              checked={values.isManager}
+              onChange={() => setFieldValue("isManager", !values.isManager)}
+            />
+          </Stack>
+          <div className="flex flex-row justify-end gap-3 mt-4">
+            <ButtonV2
+              variant={"tertiary"}
+              onClick={handleCancelBtnClick}
+              icon={<Icon name={IconName.CLOSE_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["cancelBtnText"])}
+            </ButtonV2>
+            <ButtonV2
+              variant={"primary"}
+              onClick={handleSubmit}
+              disabled={!dirty}
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["saveBtnText"])}
+            </ButtonV2>
+          </div>
         </Stack>
-        <Stack sx={classes.fieldWrapper}>
-          <Checkbox
-            label="Admin"
-            name="isAdmin"
-            checked={values.isAdmin}
-            onChange={() => setFieldValue("isAdmin", !values.isAdmin)}
-          />
-          <Checkbox
-            label="Manager"
-            name="isManager"
-            checked={values.isManager}
-            onChange={() => setFieldValue("isManager", !values.isManager)}
-          />
-        </Stack>
-        <Button
-          label={translateText(["saveBtnText"])}
-          buttonStyle={ButtonStyle.PRIMARY}
-          endIcon={IconName.RIGHT_ARROW_ICON}
-          onClick={handleSubmit}
-          disabled={!dirty}
-        />
-        <Button
-          label={translateText(["cancelBtnText"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={IconName.CLOSE_ICON}
-          onClick={handleCancelBtnClick}
-        />
-      </Stack>
-    </Modal>
+      }
+    />
   );
 };
 

@@ -1,9 +1,7 @@
-import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useCallback } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -149,53 +147,48 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
 
   return (
     <>
-      <Box>
+      <div>
         {type === HolidayDeleteType.ALL && (
-          <Typography
-            id="delete-all-holidays"
-            variant="body2"
-            sx={{ mt: 1, mb: 1, lineHeight: "1.6rem", fontSize: "1rem" }}
-          >
+          <p id="delete-all-holidays" className="my-2">
             {translateText(["allHolidayDeleteModalDes"])}
-          </Typography>
+          </p>
         )}
         {type === HolidayDeleteType.SELECTED && (
-          <Typography
-            id="delete-selected-holidays"
-            variant="body2"
-            sx={{ mt: 1, mb: 1, lineHeight: "1.6rem", fontSize: "1rem" }}
-          >
+          <p id="delete-selected-holidays" className="my-2">
             {translateText(["selectedHolidayDeleteModalDes"])}
-          </Typography>
+          </p>
         )}
         {type === HolidayDeleteType.INDIVIDUAL && (
-          <Typography
-            id="delete-individual-holiday"
-            variant="body2"
-            sx={{ mt: 1, mb: 1, lineHeight: "1.6rem", fontSize: "1rem" }}
-          >
+          <p id="delete-individual-holiday" className="my-2">
             {translateText(["singleHolidayDeleteModalDes"])}
-          </Typography>
+          </p>
         )}
-        <Button
-          label={
-            type !== HolidayDeleteType.INDIVIDUAL
+        <div className="flex flex-row justify-end gap-3 mt-4">
+          <ButtonV2
+            variant={"tertiary"}
+            onClick={() => setIsPopupOpen(false)}
+            icon={<Icon name={IconName.CLOSE_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["cancelBtnText"])}
+          </ButtonV2>
+          <ButtonV2
+            variant={"error"}
+            onClick={() => handleBulkDelete()}
+            icon={
+              <Icon
+                name={IconName.DELETE_BUTTON_ICON}
+                fill="var(--color-primary-text)"
+              />
+            }
+            iconPosition="end"
+          >
+            {type !== HolidayDeleteType.INDIVIDUAL
               ? translateText(["deleteHolidays"])
-              : translateText(["deleteHoliday"])
-          }
-          endIcon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-          buttonStyle={ButtonStyle.ERROR}
-          styles={{ mt: "1rem" }}
-          onClick={() => handleBulkDelete()}
-        />
-        <Button
-          label={translateText(["cancelBtnText"])}
-          endIcon={<Icon name={IconName.CLOSE_ICON} />}
-          buttonStyle={ButtonStyle.TERTIARY}
-          styles={{ mt: "1rem" }}
-          onClick={() => setIsPopupOpen(false)}
-        />
-      </Box>
+              : translateText(["deleteHoliday"])}
+          </ButtonV2>
+        </div>
+      </div>
     </>
   );
 };

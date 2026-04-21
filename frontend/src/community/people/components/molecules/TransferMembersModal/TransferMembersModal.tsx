@@ -6,17 +6,15 @@ import {
   SxProps,
   Typography
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import RoundedSelect, {
   SelectOption
 } from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
-import {
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
@@ -178,7 +176,8 @@ const TransferMembersModal: FC<Props> = ({
                         },
                         menuProps: {
                           sx: {
-                            width: "100%"
+                            width: "100%",
+                            zIndex: ZIndexEnums.NEWMODAL
                           }
                         },
                         select: {
@@ -227,7 +226,8 @@ const TransferMembersModal: FC<Props> = ({
                         },
                         menuProps: {
                           sx: {
-                            width: "100%"
+                            width: "100%",
+                            zIndex: ZIndexEnums.NEWMODAL
                           }
                         },
                         select: {
@@ -245,25 +245,23 @@ const TransferMembersModal: FC<Props> = ({
           </Stack>
         </Stack>
       </Stack>
-      <Button
-        type={ButtonTypes.SUBMIT}
-        label={primaryBtnText}
-        buttonStyle={ButtonStyle.ERROR}
-        endIcon={IconName.RIGHT_ARROW_ICON}
+      <ButtonV2
+        type={"submit"}
+        variant={"error"}
         onClick={() => handleSubmit(values)}
-        accessibility={{
-          ariaHidden: true
-        }}
-      />
-      <Button
-        label={translateText(["backBtnText"])}
-        buttonStyle={ButtonStyle.TERTIARY}
-        startIcon={IconName.LEFT_ARROW_ICON}
+        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+        iconPosition="end"
+      >
+        {primaryBtnText}
+      </ButtonV2>
+      <ButtonV2
+        variant={"tertiary"}
         onClick={handleCancel}
-        accessibility={{
-          ariaHidden: true
-        }}
-      />
+        icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+        iconPosition="start"
+      >
+        {translateText(["backBtnText"])}
+      </ButtonV2>
     </Stack>
   );
 };

@@ -1,7 +1,5 @@
-import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { usePeopleStore } from "~community/people/store/store";
 import { holidayModalTypes } from "~community/people/types/HolidayTypes";
@@ -43,29 +41,19 @@ const HolidayExitConfirmationModal = () => {
   };
 
   return (
-    <Box>
-      <Typography sx={{ mt: "1rem" }}>
+    <div>
+      <p className="mt-4">
         {translateText(["deletionConfirmDescription"])}
-      </Typography>
-      <Box>
-        <Button
-          label={translateText(["deletionConfirmResumeBtn"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.PRIMARY}
-          onClick={resumeTaskHandler}
-        />
-        <Button
-          label={translateText(["deletionConfirmLeaveAnywayBtn"])}
-          styles={{
-            mt: "1rem"
-          }}
-          buttonStyle={ButtonStyle.ERROR}
-          onClick={leaveBtnOnClick}
-        />
-      </Box>
-    </Box>
+      </p>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2 variant={"primary"} onClick={resumeTaskHandler}>
+          {translateText(["deletionConfirmResumeBtn"])}
+        </ButtonV2>
+        <ButtonV2 variant={"error"} onClick={leaveBtnOnClick}>
+          {translateText(["deletionConfirmLeaveAnywayBtn"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

@@ -18,13 +18,19 @@ interface Props {
   tenantID?: string;
   organizationCalendarGoogleStatus?: boolean;
   organizationCalendarMicrosoftStatus?: boolean;
+  pendingLeaveCount?: number;
+  pendingTimesheetCount?: number;
+  pendingSignCount?: number;
 }
 
 const getEnterpriseDrawerRoutes = ({
   userRoles,
   globalLoginMethod,
   organizationCalendarGoogleStatus,
-  organizationCalendarMicrosoftStatus
+  organizationCalendarMicrosoftStatus,
+  pendingLeaveCount,
+  pendingTimesheetCount,
+  pendingSignCount
 }: Props) => {
   const userSpecificRoutes = routes.map((route) => {
     const isSuperAdmin = userRoles?.includes(AdminTypes.SUPER_ADMIN);
@@ -53,9 +59,11 @@ const getEnterpriseDrawerRoutes = ({
         return {
           id: route?.id,
           name: "Integrations",
-          url: ROUTES.SETTINGS.ACCOUNT,
+          url: ROUTES.SETTINGS.BASE,
           icon: IconName.INTEGRATIONS_ICON,
           hasSubTree: false,
+          // Feature flagged: "New" badge temporarily disabled
+          // badge: "New",
           requiredAuthLevel: [
             EmployeeTypes.PEOPLE_EMPLOYEE,
             EmployeeTypes.LEAVE_EMPLOYEE,
@@ -70,7 +78,7 @@ const getEnterpriseDrawerRoutes = ({
         name: "Settings",
         url: ROUTES.SETTINGS.BASE,
         icon: IconName.SETTINGS_ICON,
-        hasSubTree: true,
+        hasSubTree: false,
         requiredAuthLevel: [
           AdminTypes.SUPER_ADMIN,
           AdminTypes.PEOPLE_ADMIN,
@@ -83,40 +91,7 @@ const getEnterpriseDrawerRoutes = ({
           EmployeeTypes.LEAVE_EMPLOYEE,
           EmployeeTypes.ATTENDANCE_EMPLOYEE
         ],
-        subTree: [
-          {
-            id: "8B",
-            name: "Modules",
-            url: ROUTES.SETTINGS.MODULES,
-            hasSubTree: false,
-            requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
-          },
-          {
-            id: "8A",
-            name: "Account Settings",
-            url: ROUTES.SETTINGS.ACCOUNT,
-            hasSubTree: false,
-            requiredAuthLevel: [
-              AdminTypes.SUPER_ADMIN,
-              AdminTypes.PEOPLE_ADMIN,
-              AdminTypes.LEAVE_ADMIN,
-              AdminTypes.ATTENDANCE_ADMIN,
-              ManagerTypes.PEOPLE_MANAGER,
-              ManagerTypes.LEAVE_MANAGER,
-              ManagerTypes.ATTENDANCE_MANAGER,
-              EmployeeTypes.PEOPLE_EMPLOYEE,
-              EmployeeTypes.LEAVE_EMPLOYEE,
-              EmployeeTypes.ATTENDANCE_EMPLOYEE
-            ]
-          },
-          {
-            id: "8C",
-            name: "Integrations",
-            url: ROUTES.SETTINGS.INTEGRATIONS,
-            hasSubTree: false,
-            requiredAuthLevel: [AdminTypes.SUPER_ADMIN]
-          }
-        ]
+        subTree: []
       };
     }
 

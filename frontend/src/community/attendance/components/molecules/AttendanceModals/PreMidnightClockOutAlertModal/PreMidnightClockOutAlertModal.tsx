@@ -1,7 +1,8 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -36,12 +37,14 @@ const PreMidnightClockOutAlertModal: FC<Props> = ({ closeModal }) => {
             {translateText(["clockOutAlertMessage"])}
           </Typography>
           <Stack spacing={2}>
-            <Button
-              label={translateText(["ok"])}
-              endIcon={IconName.CHECK_ICON}
+            <ButtonV2
               onClick={handleOkay}
-              ariaLabel={translateText(["ok"])}
-            />
+              aria-label={translateText(["ok"])}
+              icon={<Icon name={IconName.CHECK_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["ok"])}
+            </ButtonV2>
           </Stack>
         </Box>
       </Box>
