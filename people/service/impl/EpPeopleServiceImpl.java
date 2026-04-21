@@ -606,34 +606,34 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	private EpEmployeeRoleLimitDto checkEmployeeRoleLimits() {
 		if (tenantValidator.isCurrentTenantCoreOrPro()) {
-			return EpEmployeeRoleLimitDto.builder()
-				.leaveAdminLimitExceeded(false)
-				.attendanceAdminLimitExceeded(false)
-				.peopleAdminLimitExceeded(false)
-				.esignAdminLimitExceeded(false)
-				.leaveManagerLimitExceeded(false)
-				.attendanceManagerLimitExceeded(false)
-				.peopleManagerLimitExceeded(false)
-				.superAdminLimitExceeded(false)
-				.esignSenderLimitExceeded(false)
-				.pmAdminLimitExceeded(false)
-				.build();
+			EpEmployeeRoleLimitDto dto = new EpEmployeeRoleLimitDto();
+			dto.setLeaveAdminLimitExceeded(false);
+			dto.setAttendanceAdminLimitExceeded(false);
+			dto.setPeopleAdminLimitExceeded(false);
+			dto.setEsignAdminLimitExceeded(false);
+			dto.setLeaveManagerLimitExceeded(false);
+			dto.setAttendanceManagerLimitExceeded(false);
+			dto.setPeopleManagerLimitExceeded(false);
+			dto.setSuperAdminLimitExceeded(false);
+			dto.setEsignSenderLimitExceeded(false);
+			dto.setPmAdminLimitExceeded(false);
+			return dto;
 		}
 
 		SpecialTenantConfig.TenantInfo tenantInfo = specialTenantConfig.getCurrentTenantInfo();
 
-		return EpEmployeeRoleLimitDto.builder()
-			.leaveAdminLimitExceeded(checkLeaveAdminLimit(tenantInfo))
-			.attendanceAdminLimitExceeded(checkAttendanceAdminLimit(tenantInfo))
-			.peopleAdminLimitExceeded(checkPeopleAdminLimit(tenantInfo))
-			.esignAdminLimitExceeded(checkESignAdminLimit(tenantInfo))
-			.leaveManagerLimitExceeded(checkLeaveManagerLimit(tenantInfo))
-			.attendanceManagerLimitExceeded(checkAttendanceManagerLimit(tenantInfo))
-			.peopleManagerLimitExceeded(checkPeopleManagerLimit(tenantInfo))
-			.superAdminLimitExceeded(checkSuperAdminLimit(tenantInfo))
-			.esignSenderLimitExceeded(checkEsignSenderLimit(tenantInfo))
-			.pmAdminLimitExceeded(checkPMAdminLimit(tenantInfo))
-			.build();
+		EpEmployeeRoleLimitDto dto = new EpEmployeeRoleLimitDto();
+		dto.setLeaveAdminLimitExceeded(checkLeaveAdminLimit(tenantInfo));
+		dto.setAttendanceAdminLimitExceeded(checkAttendanceAdminLimit(tenantInfo));
+		dto.setPeopleAdminLimitExceeded(checkPeopleAdminLimit(tenantInfo));
+		dto.setEsignAdminLimitExceeded(checkESignAdminLimit(tenantInfo));
+		dto.setLeaveManagerLimitExceeded(checkLeaveManagerLimit(tenantInfo));
+		dto.setAttendanceManagerLimitExceeded(checkAttendanceManagerLimit(tenantInfo));
+		dto.setPeopleManagerLimitExceeded(checkPeopleManagerLimit(tenantInfo));
+		dto.setSuperAdminLimitExceeded(checkSuperAdminLimit(tenantInfo));
+		dto.setEsignSenderLimitExceeded(checkEsignSenderLimit(tenantInfo));
+		dto.setPmAdminLimitExceeded(checkPMAdminLimit(tenantInfo));
+		return dto;
 	}
 
 	private boolean checkLeaveAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
@@ -691,6 +691,7 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 	}
 
 	private boolean checkPMAdminLimit(SpecialTenantConfig.TenantInfo tenantInfo) {
+		log.info("checkPMAdminLimit: execution started");
 		int maxCount = tenantInfo != null && tenantInfo.getUserCount() != null ? tenantInfo.getUserCount()
 				: EpCommonConstants.ENTERPRISE_FREE_MAX_PM_ADMIN_COUNT;
 		return epEmployeeRoleDao.countByEmployeeRoleIsSuperAdminAndAccountStatus(Role.PM_ADMIN) >= maxCount;
