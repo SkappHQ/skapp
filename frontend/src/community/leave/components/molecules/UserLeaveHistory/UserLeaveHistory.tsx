@@ -344,11 +344,15 @@ const UserLeaveHistory: FC<Props> = ({
         ),
         status: (() => {
           const statusLabel = leaveData.status.toLowerCase();
+          const translatedStatus = translateAria([
+            "leaveStatus",
+            statusLabel
+          ]);
           return (
             <IconChip
               label={statusLabel}
               accessibility={{
-                ariaLabel: `${translateAria(["leaveStatusChip"])} ${statusLabel}`
+                ariaLabel: `${translateAria(["leaveStatusChip"])} ${translatedStatus}`
               }}
               icon={requestTypeSelector(
                 getLeaveRequestStatus(leaveData.status)
