@@ -90,7 +90,7 @@
   },
   "individualLeaveAnalytics": {
     "leaveHistoryFilterButton": "Pressing enter on this button opens a menu where you can choose to filter by leave status and leave type",
-    "leaveStatusChip": "Leave status:"
+    "leaveStatusChip": "Leave request status:"
   },
   "peopleFormTable": {
     "actionColumn": {
