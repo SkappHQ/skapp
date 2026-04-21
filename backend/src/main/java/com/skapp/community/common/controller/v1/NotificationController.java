@@ -46,7 +46,7 @@ public class NotificationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/type-count")
+	@GetMapping("/count-by-type")
 	public ResponseEntity<ResponseEntityDto> getNotificationCountByType() {
 		ResponseEntityDto response = notificationService.getNotificationCountByType();
 		return new ResponseEntity<>(response, HttpStatus.OK);
