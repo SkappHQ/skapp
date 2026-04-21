@@ -39,7 +39,7 @@
         "duration": "Duration:",
         "recipient": "Recipients:"
       },
-      "submitBtn": "Confirm and apply",
+      "submitBtn": "Apply leave",
       "cancelBtn": "Cancel",
       "errorTexts": {
         "selectDatesRequired": "Please select a date(s)",

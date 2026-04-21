@@ -19,6 +19,8 @@ import {
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtils";
 
+import { AdminTypes } from "~community/common/types/AuthTypes";
+
 import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
 
@@ -37,6 +39,14 @@ export const getLabelByValue = (
 
 export const hasSpecificRole = (roles: string[], role: string): boolean => {
   return roles.includes(role);
+};
+
+export const isSuperAdminOnlySession = (roles?: string[]): boolean => {
+  return (
+    Array.isArray(roles) &&
+    roles.length === 1 &&
+    roles[0] === AdminTypes.SUPER_ADMIN
+  );
 };
 
 export const getEmoji = (unicode: string): string => {
