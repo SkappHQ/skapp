@@ -8,12 +8,14 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { appModes } from "~community/common/constants/configs";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
@@ -24,17 +26,16 @@ import { IconName } from "~community/common/types/IconTypes";
 import { SettingsModalTypes } from "~community/common/types/SettingsTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
-import ManageSubscriptionSettingsSection from "~enterprise/settings/components/molecules/ManageSubscriptionSettingsSection/ManageSubscriptionSettingsSection";
 
-import Button from "../../atoms/Button/Button";
 import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface SettingsSectionProps {
   customSettingsComponent?: ReactNode;
 }
 
-const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) => {
+const SettingsSection: FC<SettingsSectionProps> = ({
+  customSettingsComponent
+}) => {
   const translatedText = useTranslator("settings");
 
   const theme: Theme = useTheme();
@@ -91,37 +92,29 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
                     mt: "1.25rem"
                   }}
                 >
-                  <Button
-                    label={translatedText(["setupEmailServerButtonText"])}
-                    startIcon={<MailOutlineIcon />}
-                    isFullWidth={false}
-                    styles={{
-                      mt: "1.25rem",
-                      px: "1.75rem",
-                      width: "max-content"
-                    }}
-                    buttonStyle={ButtonStyle.TERTIARY}
+                  <ButtonV2
+                    variant={"tertiary"}
                     onClick={() => {
                       setModalType(SettingsModalTypes.SETUP_EMAIL_SERVER);
                       setModalOpen(true);
                     }}
-                  />
+                    icon={<MailOutlineIcon />}
+                    iconPosition="start"
+                  >
+                    {translatedText(["setupEmailServerButtonText"])}
+                  </ButtonV2>
                   {config?.emailServiceProvider !== null && (
-                    <Button
-                      label={translatedText(["testEmailServerButtonText"])}
-                      startIcon={<DraftsOutlinedIcon />}
-                      isFullWidth={false}
-                      styles={{
-                        mt: "1.25rem",
-                        px: "1.75rem",
-                        width: "max-content"
-                      }}
-                      buttonStyle={ButtonStyle.TERTIARY}
+                    <ButtonV2
+                      variant={"tertiary"}
                       onClick={() => {
                         setModalType(SettingsModalTypes.TEST_EMAIL_SERVER);
                         setModalOpen(true);
                       }}
-                    />
+                      icon={<DraftsOutlinedIcon />}
+                      iconPosition="start"
+                    >
+                      {translatedText(["testEmailServerButtonText"])}
+                    </ButtonV2>
                   )}
                 </Box>
               </Box>
@@ -130,92 +123,33 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
             </>
           )}
 
-          {customSettingsComponent && (
-            <>
-              {customSettingsComponent}        
-            </>
-          )}
-
-          <Box sx={{ py: "1.5rem" }}>
-            <Typography variant="h2" sx={{ pb: "0.75rem" }}>
-              {translatedText(["organizationSettingsTitle"])}
-            </Typography>
-
-            <Typography variant="body1">
-              {translatedText(["organizationSettingsDescription"])}
-            </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                width: "100%",
-                flexDirection: isLargeScreen ? "column" : "row",
-                gap: "0.75rem",
-                mt: "1.25rem"
-              }}
-            >
-              <Button
-                label={translatedText(["organizationDetailsButtonText"])}
-                startIcon={IconName.WRENCH_ICON}
-                styles={{
-                  width: "max-content",
-                  px: "1.75rem"
-                }}
-                buttonStyle={ButtonStyle.TERTIARY}
-                onClick={() => {
-                  setModalType(SettingsModalTypes.CHANGE_ORGANIZATION_SETTINGS);
-                  setModalOpen(true);
-                }}
-              />
-              <Button
-                label={translatedText(["brandingSettingsButtonText"])}
-                startIcon={IconName.PAINT_TRAY_ICON}
-                styles={{
-                  width: "max-content",
-                  px: "1.75rem"
-                }}
-                buttonStyle={ButtonStyle.TERTIARY}
-                onClick={() => {
-                  setModalType(SettingsModalTypes.CHANGE_BRANDING_SETTINGS);
-                  setModalOpen(true);
-                }}
-              />
-            </Box>
-          </Box>
-
-          <Divider />
+          {customSettingsComponent && <>{customSettingsComponent}</>}
         </>
       )}
 
       {globalLoginMethod === GlobalLoginMethod.CREDENTIALS && (
-        <>
-          <Box sx={{ py: "1.5rem" }}>
-            <Typography variant="h2" sx={{ pb: "0.75rem" }}>
-              {translatedText(["securitySettingsTitle"])}
-            </Typography>
+        <Box sx={{ py: "0.5rem" }}>
+          <Typography variant="h2" sx={{ pb: "0.75rem" }}>
+            {translatedText(["securitySettingsTitle"])}
+          </Typography>
 
-            <Typography variant="body1">
-              {translatedText(["securitySettingsDescription"])}
-            </Typography>
+          <Typography variant="body1">
+            {translatedText(["securitySettingsDescription"])}
+          </Typography>
 
-            <Button
-              label={translatedText(["resetPasswordButtonText"])}
-              startIcon={IconName.LOCK_ICON}
-              isFullWidth={false}
-              styles={{ mt: "1.25rem", px: "1.75rem" }}
-              buttonStyle={ButtonStyle.TERTIARY}
-              onClick={() => {
-                setModalType(SettingsModalTypes.RESET_PASSWORD);
-                setModalOpen(true);
-              }}
-            />
-          </Box>
-
-          <Divider />
-        </>
-      )}
-
-      {isEnterpriseMode && user?.roles?.includes(ROLE_SUPER_ADMIN) && (
-        <ManageSubscriptionSettingsSection />
+          <ButtonV2
+            variant="tertiary"
+            icon={<Icon name={IconName.LOCK_ICON} />}
+            iconPosition="start"
+            className="mt-5"
+            onClick={() => {
+              setModalType(SettingsModalTypes.RESET_PASSWORD);
+              setModalOpen(true);
+            }}
+          >
+            {translatedText(["resetPasswordButtonText"])}
+          </ButtonV2>
+        </Box>
       )}
     </>
   );

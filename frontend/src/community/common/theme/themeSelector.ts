@@ -44,10 +44,10 @@ export const themeSelector = (color: string): Theme => {
   let selectedTheme = BLUE_THEME;
   const getPalette = (theme: any) => ({
     main: (theme.primary as SimplePaletteColorOptions)?.main || "#93c5fd",
-    accent: (theme.primary as SimplePaletteColorOptions)?.light || "#408ce4",
-    text:
-      (theme.primary as SimplePaletteColorOptions)?.contrastText || "#2a61a0",
-    background: (theme.background as any)?.default || "#dbeafe"
+    accent: (theme.secondary as SimplePaletteColorOptions)?.dark || "#408ce4",
+    text: (theme.primary as SimplePaletteColorOptions)?.dark || "#2a61a0",
+    background:
+      (theme.secondary as SimplePaletteColorOptions)?.main || "#dbeafe"
   });
   if (
     !Object.values(ThemeTypes)

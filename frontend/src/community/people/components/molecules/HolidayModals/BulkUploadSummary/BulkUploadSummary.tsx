@@ -1,8 +1,7 @@
-import { Box, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
@@ -34,11 +33,10 @@ const BulkUploadSummary: FC<Props> = ({ data }) => {
   };
 
   return (
-    <Box>
-      <Typography
+    <div>
+      <p
         id="status-summary-description"
-        variant="body1"
-        sx={{ my: 1 }}
+        className="my-2"
       >
         {totalEntries &&
         data?.bulkStatusSummary?.failedCount <= 1 &&
@@ -52,18 +50,18 @@ const BulkUploadSummary: FC<Props> = ({ data }) => {
                 failedCount: data?.bulkStatusSummary?.failedCount
               })
             : ""}
-      </Typography>
-      <Button
-        label={translateText(["addBulkUploadSummaryButton"])}
-        endIcon={IconName.DOWNLOAD_ICON}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={{ mt: "1rem" }}
-        onClick={handleDownloadErrorLogCSV}
-        accessibility={{
-          ariaDescribedBy: "status-summary-description"
-        }}
-      />
-    </Box>
+      </p>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleDownloadErrorLogCSV}
+          icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["addBulkUploadSummaryButton"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

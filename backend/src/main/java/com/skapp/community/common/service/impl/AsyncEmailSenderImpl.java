@@ -1,7 +1,5 @@
 package com.skapp.community.common.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.OrganizationConfig;
@@ -14,11 +12,12 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Map;
 import java.util.Optional;
@@ -33,10 +32,7 @@ public class AsyncEmailSenderImpl implements AsyncEmailSender {
 
 	private final EncryptionDecryptionService encryptionDecryptionService;
 
-	private final ObjectMapper objectMapper;
-
-	@Value("${encryptDecryptAlgorithm.secret}")
-	private String encryptSecret;
+	private final JsonMapper objectMapper;
 
 	@Override
 	public void sendMail(String to, String subject, String htmlBody, Map<String, String> placeholders) {
@@ -82,7 +78,7 @@ public class AsyncEmailSenderImpl implements AsyncEmailSender {
 			mailSender.setHost(emailConfigDto.getEmailServiceProvider());
 			mailSender.setPort(emailConfigDto.getPortNumber());
 			mailSender.setUsername(emailConfigDto.getUsername());
-			mailSender.setPassword(encryptionDecryptionService.decrypt(emailConfigDto.getAppPassword(), encryptSecret));
+			mailSender.setPassword(encryptionDecryptionService.decrypt(emailConfigDto.getAppPassword()));
 
 			Properties props = mailSender.getJavaMailProperties();
 			props.put("mail.smtp.auth", "true");

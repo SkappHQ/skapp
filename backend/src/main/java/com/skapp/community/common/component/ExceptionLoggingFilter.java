@@ -1,10 +1,10 @@
 package com.skapp.community.common.component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.payload.response.ErrorResponse;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.ExceptionLogFormatter;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,21 +17,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ExceptionLoggingFilter implements Filter {
 
-	private static final String RED_COLOR = "\u001B[31m";
-
-	private static final String RESET_COLOR = "\u001B[0m";
-
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException {
@@ -42,7 +37,7 @@ public class ExceptionLoggingFilter implements Filter {
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
 			HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-			logDetailedException(e, httpRequest);
+			logException(e, httpRequest);
 			handleException(e, httpResponse);
 		}
 	}
@@ -83,19 +78,9 @@ public class ExceptionLoggingFilter implements Filter {
 		response.getWriter().write(objectMapper.writeValueAsString(responseDto));
 	}
 
-	private void logDetailedException(Exception e, HttpServletRequest request) {
-		String errorLog = "\n" + RED_COLOR + "==================== Filter Exception Occurred ====================\n"
-				+ String.format("Method:              %s%n", request.getMethod())
-				+ String.format("API Path:            %s%n", request.getRequestURI())
-				+ String.format("Exception Type:      %s%n", e.getClass().getSimpleName())
-				+ String.format("Message:             %s%n", e.getMessage())
-				+ String.format("Stack Trace:         %n    %s%n",
-						Arrays.stream(e.getStackTrace())
-							.limit(5)
-							.map(StackTraceElement::toString)
-							.collect(Collectors.joining("\n    ")))
-				+ "======================================================================" + RESET_COLOR;
-
+	private void logException(Exception e, HttpServletRequest request) {
+		String errorLog = ExceptionLogFormatter.format("Filter Exception", request.getMethod(), request.getRequestURI(),
+				e, null, null);
 		log.error(errorLog);
 	}
 

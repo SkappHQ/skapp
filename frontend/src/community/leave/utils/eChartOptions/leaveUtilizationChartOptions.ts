@@ -66,7 +66,7 @@ export const useLeaveUtilizationChartOptions = ({
       axisLabel: {
         color: theme.palette.common.black,
         fontSize: 13,
-        fontFamily: "Poppins"
+        fontFamily: theme.typography.fontFamily
       }
     },
     yAxis: {
@@ -92,7 +92,7 @@ export const useLeaveUtilizationChartOptions = ({
         margin: -40,
         color: theme.palette.common.black,
         fontSize: 12,
-        fontFamily: "Poppins"
+        fontFamily: theme.typography.fontFamily
       }
     },
     series: datasets?.data

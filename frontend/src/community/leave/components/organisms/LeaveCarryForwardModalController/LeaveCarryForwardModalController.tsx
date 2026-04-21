@@ -1,6 +1,6 @@
-import { FC, useCallback } from "react";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { FC, ReactNode, useCallback } from "react";
 
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveCarryForwardSyncConfirmation from "~community/leave/components/molecules/LeaveCarryForwardModals/LeaveCarryForwardSyncConfirmation/LeaveCarryForwardSyncConfirmation";
 import LeaveCarryForwardTypeContent from "~community/leave/components/molecules/LeaveCarryForwardModals/LeaveCarryForwardTypeContent/LeaveCarryForwardTypeContent";
@@ -20,9 +20,20 @@ const LeaveCarryForwardModalController: FC = () => {
   } = useLeaveStore((state) => state);
 
   const handleCloseModal = useCallback((): void => {
+    if (
+      leaveCarryForwardModalType ===
+        LeaveCarryForwardModalTypes.CARRY_FORWARD_TYPES_NOT_AVAILABLE ||
+      leaveCarryForwardModalType ===
+        LeaveCarryForwardModalTypes.CARRY_FORWARD_INELIGIBLE
+    )
+      return;
     setIsLeaveCarryForwardModalOpen(false);
     setLeaveCarryForwardModalType(LeaveCarryForwardModalTypes.NONE);
-  }, [setIsLeaveCarryForwardModalOpen, setLeaveCarryForwardModalType]);
+  }, [
+    leaveCarryForwardModalType,
+    setIsLeaveCarryForwardModalOpen,
+    setLeaveCarryForwardModalType
+  ]);
 
   const getModalTitle = useCallback((): string => {
     switch (leaveCarryForwardModalType) {
@@ -41,84 +52,36 @@ const LeaveCarryForwardModalController: FC = () => {
     }
   }, [leaveCarryForwardModalType, translateText]);
 
-  const getIds = (): {
-    title?: string;
-    description?: string;
-    closeButton?: string;
-  } => {
-    switch (leaveCarryForwardModalType) {
-      case LeaveCarryForwardModalTypes.CARRY_FORWARD:
-        return {
-          title: "leave-carry-forward-modal-title",
-          description: "leave-carry-forward-modal-description",
-          closeButton: "leave-carry-forward-modal-close-button"
-        };
-      case LeaveCarryForwardModalTypes.CARRY_FORWARD_TYPES_NOT_AVAILABLE:
-        return {
-          title: "no-carry-forward-leave-types-modal-title",
-          description: "no-carry-forward-leave-types-modal-description",
-          closeButton: "no-carry-forward-leave-types-modal-close-button"
-        };
-      case LeaveCarryForwardModalTypes.CARRY_FORWARD_INELIGIBLE:
-        return {
-          title: "leave-carry-forward-ineligible-modal-title",
-          description: "leave-carry-forward-ineligible-modal-description",
-          closeButton: "leave-carry-forward-ineligible-modal-close-button"
-        };
-      case LeaveCarryForwardModalTypes.CARRY_FORWARD_CONFIRM_SYNCHRONIZATION:
-        return {
-          title: "leave-carry-forward-confirm-synchronization-modal-title",
-          description:
-            "leave-carry-forward-confirm-synchronization-modal-description",
-          closeButton:
-            "leave-carry-forward-confirm-synchronization-modal-close-button"
-        };
-      default:
-        return {
-          title: "modal-title",
-          description: "modal-description",
-          closeButton: "modal-close-button"
-        };
-    }
-  };
-
   const handleClose = () => {
     setIsLeaveCarryForwardModalOpen(false);
     setLeaveCarryForwardModalType(LeaveCarryForwardModalTypes.NONE);
   };
 
+  const modalContent = (): ReactNode => {
+    switch (leaveCarryForwardModalType) {
+      case LeaveCarryForwardModalTypes.CARRY_FORWARD:
+        return <LeaveCarryForwardTypeContent handleClose={handleClose} />;
+      case LeaveCarryForwardModalTypes.CARRY_FORWARD_TYPES_NOT_AVAILABLE:
+        return <NoCarryForwardLeaveTypes handleClose={handleClose} />;
+      case LeaveCarryForwardModalTypes.CARRY_FORWARD_INELIGIBLE:
+        return <LeaveCarryForwardUnEligible />;
+      case LeaveCarryForwardModalTypes.CARRY_FORWARD_CONFIRM_SYNCHRONIZATION:
+        return <LeaveCarryForwardSyncConfirmation handleClose={handleClose} />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <ModalController
-      ids={getIds()}
-      isModalOpen={isLeaveCarryForwardModalOpen}
-      handleCloseModal={handleCloseModal}
-      modalTitle={getModalTitle()}
-      isClosable={
-        leaveCarryForwardModalType ===
-          LeaveCarryForwardModalTypes.CARRY_FORWARD ||
-        leaveCarryForwardModalType ===
-          LeaveCarryForwardModalTypes.CARRY_FORWARD_CONFIRM_SYNCHRONIZATION
+    <SmallModal
+      isOpen={
+        isLeaveCarryForwardModalOpen &&
+        leaveCarryForwardModalType !== LeaveCarryForwardModalTypes.NONE
       }
-    >
-      <>
-        {leaveCarryForwardModalType ===
-          LeaveCarryForwardModalTypes.CARRY_FORWARD && (
-          <LeaveCarryForwardTypeContent handleClose={handleClose} />
-        )}
-        {leaveCarryForwardModalType ===
-          LeaveCarryForwardModalTypes.CARRY_FORWARD_TYPES_NOT_AVAILABLE && (
-          <NoCarryForwardLeaveTypes handleClose={handleClose} />
-        )}
-        {leaveCarryForwardModalType ===
-          LeaveCarryForwardModalTypes.CARRY_FORWARD_INELIGIBLE && (
-          <LeaveCarryForwardUnEligible />
-        )}
-        {leaveCarryForwardModalType ===
-          LeaveCarryForwardModalTypes.CARRY_FORWARD_CONFIRM_SYNCHRONIZATION && (
-          <LeaveCarryForwardSyncConfirmation handleClose={handleClose} />
-        )}
-      </>
-    </ModalController>
+      onClose={handleCloseModal}
+      modalHeader={getModalTitle()}
+      content={modalContent()}
+    />
   );
 };
 

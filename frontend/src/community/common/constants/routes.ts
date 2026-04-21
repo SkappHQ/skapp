@@ -103,6 +103,7 @@ const ROUTES = {
     INFO: "/sign/info",
     DOCUMENT_ACCESS: "/sign/document/access",
     MFA_VERIFY: "/sign/document/access/mfa-verify",
+    BANK_ID_VERIFY: "/sign/document/access/bankid-verify",
     COMPLETE: "/sign/complete",
     SENT_INFO: {
       BASE: "/sign/sent/envelope",
@@ -120,7 +121,6 @@ const ROUTES = {
   },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
-  SUBSCRIPTION: "/subscription",
   PROJECTS: {
     BASE: "/projects/list",
     GUESTS: "/projects/guests"

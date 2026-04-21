@@ -1,12 +1,13 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import Modal from "~community/common/components/organisms/Modal/Modal";
 import { appModes } from "~community/common/constants/configs";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -100,14 +101,27 @@ const SystemPermissionFormSection = ({
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isSuperAdmin,
-    isInvoiceModuleEnabled,
-    tenantID
+    isInvoiceModuleEnabled
   } = useSessionData();
+
+  const hasOtherSuperAdmins = isSuperAdmin && superAdminCount > 1;
 
   const { handleNext } = useStepper();
 
   const isInputsDisabled =
     employee?.common?.accountStatus === AccountStatusTypes.TERMINATED;
+
+  const isDropdownDisabled =
+    isProfileView ||
+    (permissions.isSuperAdmin && !hasOtherSuperAdmins) ||
+    isInputsDisabled ||
+    (isReadOnly && !hasOtherSuperAdmins);
+
+  const isPeopleDropdownDisabled =
+    isProfileView ||
+    (permissions.isSuperAdmin && !hasOtherSuperAdmins) ||
+    isInputsDisabled ||
+    (isReadOnly && !isPeopleAdminViewingOwnProfile && !hasOtherSuperAdmins);
 
   const onSave = () => {
     if (
@@ -266,12 +280,7 @@ const SystemPermissionFormSection = ({
                   onChange={(event) =>
                     handleRoleDropdown("peopleRole", event.target.value as Role)
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    (isReadOnly && !isPeopleAdminViewingOwnProfile)
-                  }
+                  isDisabled={isPeopleDropdownDisabled}
                 />
               )}
 
@@ -288,12 +297,7 @@ const SystemPermissionFormSection = ({
                   onChange={(event) =>
                     handleRoleDropdown("leaveRole", event.target.value as Role)
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    isReadOnly
-                  }
+                  isDisabled={isDropdownDisabled}
                 />
               )}
 
@@ -316,12 +320,7 @@ const SystemPermissionFormSection = ({
                       event.target.value as Role
                     )
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    isReadOnly
-                  }
+                  isDisabled={isDropdownDisabled}
                 />
               )}
 
@@ -338,12 +337,7 @@ const SystemPermissionFormSection = ({
                   onChange={(event) =>
                     handleRoleDropdown("esignRole", event.target.value as Role)
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    isReadOnly
-                  }
+                  isDisabled={isDropdownDisabled}
                 />
               )}
 
@@ -358,12 +352,7 @@ const SystemPermissionFormSection = ({
                 onChange={(event) =>
                   handleRoleDropdown("pmRole", event.target.value as Role)
                 }
-                isDisabled={
-                  isProfileView ||
-                  permissions.isSuperAdmin ||
-                  isInputsDisabled ||
-                  isReadOnly
-                }
+                isDisabled={isDropdownDisabled}
               />
             )}
 
@@ -388,12 +377,7 @@ const SystemPermissionFormSection = ({
                       event.target.value as Role
                     )
                   }
-                  isDisabled={
-                    isProfileView ||
-                    permissions.isSuperAdmin ||
-                    isInputsDisabled ||
-                    isReadOnly
-                  }
+                  isDisabled={isDropdownDisabled}
                 />
               )}
           </Stack>
@@ -422,13 +406,14 @@ const SystemPermissionFormSection = ({
           >
             <Stack sx={classes.modalContainer}>
               <Typography>{modalDescription}</Typography>
-              <Button
-                buttonStyle={ButtonStyle.PRIMARY}
-                label={commonText(["okay"])}
+              <ButtonV2
+                variant={"primary"}
                 onClick={() => {
                   setOpenModal(false);
                 }}
-              />
+              >
+                {commonText(["okay"])}
+              </ButtonV2>
             </Stack>
           </Modal>
         </>

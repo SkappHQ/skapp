@@ -19,7 +19,11 @@ import {
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtils";
 
+import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
+
+export const getBlinkClass = (shouldBlink: boolean): string =>
+  shouldBlink ? "animate-pulse" : "";
 
 export const getLabelByValue = (
   objectArray: DropdownListType[],
@@ -113,6 +117,16 @@ export const pascalCaseFormatter = (wordString: string | null | undefined) => {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
+};
+
+export const pascalCaseFormatterExcludeUnderscore = (
+  label: string | null | undefined
+) => {
+  if (!label) {
+    return "";
+  }
+
+  return pascalCaseFormatter(label.replace(/_/g, " "));
 };
 
 export const arraysEqual = (
@@ -532,4 +546,8 @@ export const getCookieValue = (name: string): string | null => {
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
   return match ? decodeURIComponent(match[2]) : null;
+};
+
+export const isEnterpriseMode = (): boolean => {
+  return process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 };

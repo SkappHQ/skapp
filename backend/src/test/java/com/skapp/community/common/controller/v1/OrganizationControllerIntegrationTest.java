@@ -1,6 +1,5 @@
 package com.skapp.community.common.controller.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.request.OrganizationDto;
@@ -12,15 +11,15 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -30,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@RequiredArgsConstructor
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("Organization Controller Integration Tests")
 class OrganizationControllerIntegrationTest {
@@ -56,23 +57,17 @@ class OrganizationControllerIntegrationTest {
 
 	private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
 
-	@Autowired
-	private AuthorityService authorityService;
+	private final AuthorityService authorityService;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
-	@Autowired
-	private JwtService jwtService;
+	private final JwtService jwtService;
 
-	@Autowired
-	private UserDetailsService userDetailsService;
+	private final UserDetailsService userDetailsService;
 
-	@Autowired
-	private MockMvc mvc;
+	private final MockMvc mvc;
 
-	@Autowired
-	private MessageUtil messageUtil;
+	private final MessageUtil messageUtil;
 
 	private String authToken;
 

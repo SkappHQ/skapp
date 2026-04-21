@@ -282,7 +282,26 @@ public class RolesServiceImpl implements RolesService {
 		User currentUser = userService.getCurrentUser();
 		if (user.getEmployee() != null && userRoles != null
 				&& Objects.equals(currentUser.getUserId(), user.getEmployee().getEmployeeId())) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_CHANGE_OWN_PERMISSIONS);
+
+			boolean isCurrentUserSuperAdmin = user.getEmployee().getEmployeeRole() != null
+					&& Boolean.TRUE.equals(user.getEmployee().getEmployeeRole().getIsSuperAdmin());
+
+			boolean isCurrentUserPeopleAdmin = user.getEmployee().getEmployeeRole() != null
+					&& Role.PEOPLE_ADMIN.equals(user.getEmployee().getEmployeeRole().getPeopleRole());
+
+			long superAdminCount = employeeRoleDao
+				.countByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set.of(AccountStatus.ACTIVE));
+
+			if (!(isCurrentUserSuperAdmin && superAdminCount > 1) && !isCurrentUserPeopleAdmin) {
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_CHANGE_OWN_PERMISSIONS);
+			}
+
+			// Prevent non-super-admin users (including People Admins) from granting
+			// themselves super admin
+			if (!isCurrentUserSuperAdmin && userRoles.getIsSuperAdmin() != null
+					&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin())) {
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_CHANGE_OWN_PERMISSIONS);
+			}
 		}
 
 		if (userRoles != null && user.getEmployee() != null

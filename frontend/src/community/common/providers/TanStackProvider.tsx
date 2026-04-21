@@ -1,18 +1,22 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect, useState } from "react";
 
+import { getNewAccessToken, signOut } from "~community/auth/utils/authUtils";
 import {
   COMMON_ERROR_INVALID_TOKEN,
   COMMON_ERROR_SYSTEM_VERSION_MISMATCH,
   COMMON_ERROR_TOKEN_EXPIRED,
   COMMON_ERROR_USER_VERSION_MISMATCH
 } from "~community/common/constants/errorMessageKeys";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 import { useAuth } from "../../auth/providers/AuthProvider";
+import { useToast } from "./ToastProvider";
 
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
-  const { refreshAccessToken, signOut, user } = useAuth();
+  const { user, checkAuth } = useAuth();
+  const { setToastMessage } = useToast();
 
   const [queryClient] = useState(() => {
     return new QueryClient({
@@ -28,20 +32,28 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     });
   });
 
-  const handleTokenRefresh = async () => {
-    try {
-      await refreshAccessToken();
-      queryClient.invalidateQueries();
-    } catch (error) {
-      console.error("Token refresh failed:", error);
-      await signOut();
-    }
-  };
-
   useEffect(() => {
+    const handleTokenRefresh = async () => {
+      await getNewAccessToken();
+      await checkAuth();
+      queryClient.invalidateQueries();
+    };
+
     const interceptor = authFetch.interceptors.response.use(
       (response) => response,
       async (error) => {
+        if (!navigator.onLine) {
+          setToastMessage({
+            open: true,
+            toastType: ToastType.ERROR,
+            title: "Oops! Something went wrong.",
+            description:
+              "No internet connection. Please check your network and try again.",
+            isIcon: true
+          });
+          throw error;
+        }
+
         if (
           error?.response?.data?.results?.[0]?.messageKey ===
             COMMON_ERROR_SYSTEM_VERSION_MISMATCH ||
@@ -70,7 +82,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       authFetch.interceptors.response.eject(interceptor);
     };
-  }, [user, refreshAccessToken, signOut]);
+  }, [user, checkAuth, queryClient, setToastMessage]);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

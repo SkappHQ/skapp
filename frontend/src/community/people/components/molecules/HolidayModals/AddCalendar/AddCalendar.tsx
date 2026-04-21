@@ -1,11 +1,10 @@
-import { Box, Divider, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
 import DownSideArrow from "~community/common/assets/Icons/DownSideArrow";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
-import Button from "~community/common/components/atoms/Button/Button";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { getBlinkClass } from "~community/common/utils/commonUtil";
 import { usePeopleStore } from "~community/people/store/store";
 import { holidayModalTypes } from "~community/people/types/HolidayTypes";
 import { downloadBulkCsvTemplate } from "~community/people/utils/directoryUtils/holidayBulkUploadUtils/downloadHolidayBulkTemplateModalUtils";
@@ -46,39 +45,34 @@ const AddCalendar: FC = () => {
   };
 
   return (
-    <Box>
-      <Box>
-        <Typography
-          id="download-csv-description"
-          variant="body1"
-          sx={{
-            py: "1rem",
-            borderRadius: "0.75rem"
-          }}
-        >
-          {translateText(["downloadCsvDes"])}
-        </Typography>
-        <Button
-          label={translateText(["downloadCsvTitle"])}
-          buttonStyle={ButtonStyle.SECONDARY}
-          styles={{ my: "0.75rem" }}
-          endIcon={<DownSideArrow />}
-          onClick={downloadTemplateHandler}
-          shouldBlink={isButtonBlinking.download}
-        />
-      </Box>
-      <Divider aria-hidden={true} />
-      <Button
-        label="Next"
-        endIcon={<RightArrowIcon />}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={{ mt: "0.75rem" }}
-        onClick={() =>
-          setHolidayModalType(holidayModalTypes.UPLOAD_HOLIDAY_BULK)
-        }
-        shouldBlink={isButtonBlinking.next}
-      />
-    </Box>
+    <div>
+      <div>
+        <p id="download-csv-description">{translateText(["downloadCsvDes"])}</p>
+        <div className="flex flex-row justify-end gap-3 mt-4">
+          <ButtonV2
+            variant={"secondary"}
+            onClick={downloadTemplateHandler}
+            className={getBlinkClass(isButtonBlinking.download)}
+            icon={<DownSideArrow fill="var(--color-primary-text)" />}
+            iconPosition="end"
+          >
+            {translateText(["downloadCsvTitle"])}
+          </ButtonV2>
+
+          <ButtonV2
+            variant={"primary"}
+            onClick={() =>
+              setHolidayModalType(holidayModalTypes.UPLOAD_HOLIDAY_BULK)
+            }
+            className={getBlinkClass(isButtonBlinking.next)}
+            icon={<RightArrowIcon />}
+            iconPosition="end"
+          >
+            {translateText(["nextBtn"])}
+          </ButtonV2>
+        </div>
+      </div>
+    </div>
   );
 };
 

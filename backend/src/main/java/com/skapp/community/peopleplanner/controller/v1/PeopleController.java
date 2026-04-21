@@ -84,6 +84,7 @@ public class PeopleController {
 	@Operation(summary = "Get a list of employees",
 			description = "This endpoint fetches a list of employees based on provided filters to export.")
 	@GetMapping(value = "/employees/export", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> exportEmployeesData(EmployeeExportFilterDto employeeExportFilterDto) {
 		ResponseEntityDto response = peopleService.exportEmployees(employeeExportFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);

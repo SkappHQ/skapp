@@ -1,9 +1,8 @@
-import { Divider, Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
@@ -25,8 +24,6 @@ import { handleLeaveEntitlementApiResponse } from "~community/leave/utils/leaveE
 import { setAttachment } from "~community/leave/utils/leaveEntitlement/uploadCsvUtils";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 
-import styles from "./styles";
-
 interface Props {
   leaveTypes: LeaveTypeType[];
   setLeaveTypes: Dispatch<SetStateAction<LeaveTypeType[]>>;
@@ -34,8 +31,6 @@ interface Props {
 }
 
 const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
-  const classes = styles();
-
   const translateText = useTranslator("leaveModule", "leaveEntitlements");
 
   const { setToastMessage } = useToast();
@@ -137,14 +132,10 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
   };
 
   return (
-    <Stack sx={classes.wrapper}>
-      <Typography
-        variant="body1"
-        sx={classes.description}
-        id="upload-csv-modal-description"
-      >
+    <div className="flex flex-col gap-3 mb-4">
+      <p className="pb-4" id="upload-csv-modal-description">
         {translateText(["uploadCsvModalDes"])}
-      </Typography>
+      </p>
       <DragAndDropField
         accessibility={{
           componentName: translateText(["title"]),
@@ -171,29 +162,27 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
         maxFileSize={1}
         customError={customError}
       />
-      <Divider sx={classes.divider} aria-hidden={true} />
-      <Button
-        accessibility={{
-          ariaHidden: true
-        }}
-        label={translateText(["uploadButton"])}
-        endIcon={IconName.RIGHT_ARROW_ICON}
-        buttonStyle={ButtonStyle.PRIMARY}
-        styles={classes.uploadButton}
-        onClick={handleUploadBtnClick}
-        disabled={!isValid}
-        isLoading={leaveEntitlementBulkUploadPending}
-      />
-      <Button
-        accessibility={{
-          ariaHidden: true
-        }}
-        label={translateText(["goBackButton"])}
-        startIcon={IconName.LEFT_ARROW_ICON}
-        buttonStyle={ButtonStyle.TERTIARY}
-        onClick={handleBackBtnClick}
-      />
-    </Stack>
+      <div className="flex flex-row gap-4 justify-end">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={handleBackBtnClick}
+          icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+          iconPosition="start"
+        >
+          {translateText(["goBackButton"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleUploadBtnClick}
+          disabled={!isValid}
+          isLoading={leaveEntitlementBulkUploadPending}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["uploadButton"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

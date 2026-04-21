@@ -151,7 +151,9 @@ const FilterSearch: FC<Props> = ({
               sx={{
                 flex: 1,
                 "& input::placeholder": {
-                  fontSize: "1rem"
+                  fontSize: "1rem",
+                  color: theme.palette.text.secondary,
+                  opacity: 1
                 },
                 ...inputStyles
               }}
@@ -199,6 +201,7 @@ const FilterSearch: FC<Props> = ({
           handleClose={() => {}}
           id={"suggestionPopper"}
           containerStyles={popperStyles}
+          disablePortal
         >
           <Box
             sx={{
@@ -244,6 +247,12 @@ const FilterSearch: FC<Props> = ({
                       ? () => onSelectOption(suggestion)
                       : undefined
                   }
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
                 >
                   <Typography
                     sx={{

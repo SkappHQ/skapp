@@ -10,10 +10,11 @@ import { APP } from "~community/common/constants/stringConstants";
 import { OrganizationSetupStatus } from "~community/common/types/AuthTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { useAuth } from "~community/auth/providers/AuthProvider";
+import { signOut } from "~community/auth/utils/authUtils";
 
 export default function Index() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
 
   const tenantId = window.location.host.split(".")[0];
 
@@ -43,7 +44,7 @@ export default function Index() {
 
   const handleEnterpriseNavigation = async () => {
     if (tenantId === APP) {
-      signOut(false);
+      await signOut(false);
       await router.replace(ROUTES.AUTH.SIGNIN);
     } else {
       const route = user ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;

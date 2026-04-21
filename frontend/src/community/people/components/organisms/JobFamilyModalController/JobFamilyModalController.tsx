@@ -1,6 +1,6 @@
-import { Dispatch, FC, SetStateAction, useMemo } from "react";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { Dispatch, FC, ReactNode, SetStateAction, useMemo } from "react";
 
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import AddJobFamilyModal from "~community/people/components/organisms/JobFamilyModals/JobFamilyFormModals/AddJobFamilyModal";
@@ -19,10 +19,8 @@ import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnum
 import { usePeopleStore } from "~community/people/store/store";
 import {
   checkDataChanges,
-  getCustomStyles,
   getModalTitle,
-  handleJobFamilyCloseModal,
-  isClosableModalType
+  handleJobFamilyCloseModal
 } from "~community/people/utils/jobFamilyUtils/modalControllerUtils";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
@@ -56,10 +54,6 @@ const JobFamilyModalController: FC<Props> = ({ setLatestRoleLabel, from }) => {
     stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
   }));
 
-  const customStyles = useMemo(() => {
-    return getCustomStyles(jobFamilyModalType);
-  }, [jobFamilyModalType]);
-
   const hasDataChanged: boolean = useMemo(() => {
     return checkDataChanges(
       jobFamilyModalType,
@@ -74,91 +68,80 @@ const JobFamilyModalController: FC<Props> = ({ setLatestRoleLabel, from }) => {
     allJobFamilies
   ]);
 
-  return (
-    <ModalController
-      isModalOpen={isJobFamilyModalOpen}
-      modalTitle={
-        isPeopleAdmin
-          ? getModalTitle(jobFamilyModalType, peopleTranslateText)
-          : peopleTranslateText(["viewJobFamilyTitle"])
-      }
-      handleCloseModal={() =>
-        handleJobFamilyCloseModal({
-          hasDataChanged,
-          jobFamilyModalType,
-          setJobFamilyModalType,
-          stopAllOngoingQuickSetup
-        })
-      }
-      isClosable={isClosableModalType(jobFamilyModalType)}
-      modalWrapperStyles={customStyles.modalWrapperStyles}
-      modalContentStyles={customStyles.modalContentStyles}
-    >
-      <>
-        {jobFamilyModalType === JobFamilyActionModalEnums.ADD_JOB_FAMILY && (
+  const handleCloseModal = (): void => {
+    if (
+      jobFamilyModalType ===
+        JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY ||
+      jobFamilyModalType ===
+        JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY_TRANSFER_MEMBERS ||
+      jobFamilyModalType ===
+        JobFamilyActionModalEnums.UNSAVED_CHANGED_JOB_TITLE_TRANSFER_MEMBERS
+    ) {
+      setJobFamilyModalType(JobFamilyActionModalEnums.NONE);
+      stopAllOngoingQuickSetup();
+      return;
+    }
+    handleJobFamilyCloseModal({
+      hasDataChanged,
+      jobFamilyModalType,
+      setJobFamilyModalType,
+      stopAllOngoingQuickSetup
+    });
+  };
+
+  const modalContent = (): ReactNode => {
+    switch (jobFamilyModalType) {
+      case JobFamilyActionModalEnums.ADD_JOB_FAMILY:
+        return (
           <AddJobFamilyModal
             hasDataChanged={hasDataChanged}
             setLatestRoleLabel={setLatestRoleLabel}
             from={from}
           />
-        )}
+        );
+      case JobFamilyActionModalEnums.EDIT_JOB_FAMILY:
+        return <EditJobFamilyModal hasDataChanged={hasDataChanged} />;
+      case JobFamilyActionModalEnums.JOB_FAMILY_DELETE_CONFIRMATION:
+        return <JobFamilyDeleteConfirmationModal />;
+      case JobFamilyActionModalEnums.JOB_FAMILY_DELETION_WARNING:
+        return <JobFamilyDeletionWarningModal />;
+      case JobFamilyActionModalEnums.JOB_TITLE_DELETE_CONFIRMATION:
+        return <JobTitleDeleteConfirmationModal />;
+      case JobFamilyActionModalEnums.JOB_TITLE_DELETION_WARNING:
+        return <JobTitleDeletionWarningModal />;
+      case JobFamilyActionModalEnums.JOB_TITLE_EDIT_CONFIRMATION:
+        return <JobTitleEditConfirmationModal />;
+      case JobFamilyActionModalEnums.ADD_NEW_JOB_FAMILY:
+        return <AddNewJobFamily />;
+      case JobFamilyActionModalEnums.ADD_NEW_JOB_TITLE:
+        return <AddNewJobTitle />;
+      case JobFamilyActionModalEnums.JOB_FAMILY_TRANSFER_MEMBERS:
+        return <JobFamilyTransferMembersModal />;
+      case JobFamilyActionModalEnums.JOB_TITLE_TRANSFER_MEMBERS:
+        return <JobTitleTransferMembersModal />;
+      case JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY:
+      case JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY_TRANSFER_MEMBERS:
+      case JobFamilyActionModalEnums.UNSAVED_CHANGED_JOB_TITLE_TRANSFER_MEMBERS:
+        return <UnsavedChangesModal />;
+      default:
+        return null;
+    }
+  };
 
-        {jobFamilyModalType === JobFamilyActionModalEnums.EDIT_JOB_FAMILY && (
-          <EditJobFamilyModal hasDataChanged={hasDataChanged} />
-        )}
-
-        {jobFamilyModalType ===
-          JobFamilyActionModalEnums.JOB_FAMILY_DELETE_CONFIRMATION && (
-          <JobFamilyDeleteConfirmationModal />
-        )}
-
-        {jobFamilyModalType ===
-          JobFamilyActionModalEnums.JOB_FAMILY_DELETION_WARNING && (
-          <JobFamilyDeletionWarningModal />
-        )}
-
-        {jobFamilyModalType ===
-          JobFamilyActionModalEnums.JOB_TITLE_DELETE_CONFIRMATION && (
-          <JobTitleDeleteConfirmationModal />
-        )}
-
-        {jobFamilyModalType ===
-          JobFamilyActionModalEnums.JOB_TITLE_DELETION_WARNING && (
-          <JobTitleDeletionWarningModal />
-        )}
-
-        {jobFamilyModalType ===
-          JobFamilyActionModalEnums.JOB_TITLE_EDIT_CONFIRMATION && (
-          <JobTitleEditConfirmationModal />
-        )}
-
-        {jobFamilyModalType ===
-          JobFamilyActionModalEnums.ADD_NEW_JOB_FAMILY && <AddNewJobFamily />}
-
-        {jobFamilyModalType === JobFamilyActionModalEnums.ADD_NEW_JOB_TITLE && (
-          <AddNewJobTitle />
-        )}
-
-        {jobFamilyModalType ===
-          JobFamilyActionModalEnums.JOB_FAMILY_TRANSFER_MEMBERS && (
-          <JobFamilyTransferMembersModal />
-        )}
-
-        {jobFamilyModalType ===
-          JobFamilyActionModalEnums.JOB_TITLE_TRANSFER_MEMBERS && (
-          <JobTitleTransferMembersModal />
-        )}
-
-        {(jobFamilyModalType ===
-          JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY ||
-          jobFamilyModalType ===
-            JobFamilyActionModalEnums.UNSAVED_CHANGES_JOB_FAMILY_TRANSFER_MEMBERS ||
-          jobFamilyModalType ===
-            JobFamilyActionModalEnums.UNSAVED_CHANGED_JOB_TITLE_TRANSFER_MEMBERS) && (
-          <UnsavedChangesModal />
-        )}
-      </>
-    </ModalController>
+  return (
+    <SmallModal
+      isOpen={
+        isJobFamilyModalOpen &&
+        jobFamilyModalType !== JobFamilyActionModalEnums.NONE
+      }
+      onClose={handleCloseModal}
+      modalHeader={
+        isPeopleAdmin
+          ? getModalTitle(jobFamilyModalType, peopleTranslateText)
+          : peopleTranslateText(["viewJobFamilyTitle"])
+      }
+      content={modalContent()}
+    />
   );
 };
 

@@ -27,7 +27,6 @@ export const styles = (): StyleProps => ({
   button: {
     px: "2.5rem",
     width: "80%",
-    fontFamily: "Poppins",
     fontWeight: 400,
     marginTop: "2.5rem",
     maxWidth: "37.5rem"

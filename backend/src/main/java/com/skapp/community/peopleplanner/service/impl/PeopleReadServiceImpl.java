@@ -1,8 +1,5 @@
 package com.skapp.community.peopleplanner.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
@@ -34,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -50,7 +49,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 
 	private final EmployeeDao employeeDao;
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
 	private final UserService userService;
 
@@ -131,13 +130,8 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 
 	private EmployeePersonalSocialMediaDetailsDto mapPersonalSocialMediaDetails(Employee employee) {
 		if (employee.getPersonalInfo() != null && employee.getPersonalInfo().getSocialMediaDetails() != null) {
-			try {
-				return objectMapper.treeToValue(employee.getPersonalInfo().getSocialMediaDetails(),
-						EmployeePersonalSocialMediaDetailsDto.class);
-			}
-			catch (JsonProcessingException e) {
-				log.error("Error converting social media details JSON to DTO", e);
-			}
+			return objectMapper.convertValue(employee.getPersonalInfo().getSocialMediaDetails(),
+					EmployeePersonalSocialMediaDetailsDto.class);
 		}
 		return new EmployeePersonalSocialMediaDetailsDto();
 	}
@@ -150,16 +144,12 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			dto.setBloodGroup(personalInfo.getBloodGroup());
 
 			if (personalInfo.getExtraInfo() != null) {
-				try {
-					EmployeeExtraInfoDto extraInfo = objectMapper.treeToValue(personalInfo.getExtraInfo(),
-							EmployeeExtraInfoDto.class);
-					dto.setAllergies(extraInfo.getAllergies());
-					dto.setDietaryRestrictions(extraInfo.getDietaryRestrictions());
-					dto.setTShirtSize(extraInfo.getTShirtSize());
-				}
-				catch (JsonProcessingException e) {
-					log.error("Error converting extra info JSON to DTO", e);
-				}
+				EmployeeExtraInfoDto extraInfo = objectMapper.convertValue(personalInfo.getExtraInfo(),
+						EmployeeExtraInfoDto.class);
+				dto.setAllergies(extraInfo.getAllergies());
+				dto.setDietaryRestrictions(extraInfo.getDietaryRestrictions());
+				dto.setTShirtSize(extraInfo.getTShirtSize());
+
 			}
 		}
 
@@ -222,14 +212,10 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 
 	private List<EmployeeEmploymentPreviousEmploymentDetailsDto> mapPreviousEmploymentDetails(Employee employee) {
 		if (employee.getPersonalInfo() != null && employee.getPersonalInfo().getPreviousEmploymentDetails() != null) {
-			try {
-				return objectMapper.treeToValue(employee.getPersonalInfo().getPreviousEmploymentDetails(),
-						new TypeReference<>() {
-						});
-			}
-			catch (JsonProcessingException e) {
-				log.error("Error converting previous employment details JSON to DTO", e);
-			}
+			JavaType listType = objectMapper.getTypeFactory()
+				.constructCollectionType(List.class, EmployeeEmploymentPreviousEmploymentDetailsDto.class);
+
+			return objectMapper.convertValue(employee.getPersonalInfo().getPreviousEmploymentDetails(), listType);
 		}
 		return new ArrayList<>();
 	}
@@ -365,38 +351,36 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		String employment_employmentDetails_probationEndDateField = employmentField + "_" + employmentDetailsField + "_"
 				+ probationEndDateField;
 
+		// Super Admin: full access
 		if (!doesNotHaveRole(userRoles, Role.SUPER_ADMIN)) {
 			return;
 		}
 
+		// Current user viewing own profile (Account page) without People Admin/Manager
+		// role: hide system permissions only — they can see their own personal data
 		if (isCurrentUser && doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN, Role.PEOPLE_MANAGER)) {
 			setNull(dto, systemPermissionsField);
 			return;
 		}
 
-		if (doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN) && doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER)) {
-			setNull(dto, systemPermissionsField);
-			setNull(dto, personal_contactField, personal_familyField, personal_educationalField,
-					personal_socialMediaField, personal_healthAndOtherField);
-			setNull(dto, employment_careerProgressionField, employment_previousEmploymentField,
-					employment_identificationAndDiversityDetailsField, employment_visaDetailsField,
-					employment_employmentDetails_employeeNumberField, employment_employmentDetails_joinedDateField,
-					employment_employmentDetails_probationStartDateField,
-					employment_employmentDetails_probationEndDateField);
+		// People Admin or People Manager viewing any profile (Directory Edit): full
+		// access
+		if (!doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN, Role.PEOPLE_MANAGER)) {
 			return;
 		}
 
-		if ((doesNotHaveRole(userRoles, Role.PEOPLE_ADMIN) && doesNotHaveRole(userRoles, Role.PEOPLE_MANAGER))
-				&& (doesNotHaveRole(userRoles, Role.ATTENDANCE_ADMIN) || doesNotHaveRole(userRoles, Role.LEAVE_ADMIN)
-						|| doesNotHaveRole(userRoles, Role.ATTENDANCE_MANAGER)
-						|| doesNotHaveRole(userRoles, Role.LEAVE_MANAGER))) {
-			setNull(dto, systemPermissionsField, emergencyField);
-			setNull(dto, personal_contactField, personal_familyField, personal_educationalField,
-					personal_socialMediaField, personal_healthAndOtherField);
-			setNull(dto, personal_general_maritalStatusField, personal_general_ninField,
-					employment_employmentDetails_primarySupervisorField,
-					employment_employmentDetails_secondarySupervisorField);
-		}
+		// Regular employee viewing another employee (Individual Profile): restricted
+		// access — hide system permissions and sensitive personal/employment details.
+		// Emergency contacts (primary and secondary) remain visible.
+		setNull(dto, systemPermissionsField);
+		setNull(dto, personal_contactField, personal_familyField, personal_educationalField, personal_socialMediaField,
+				personal_healthAndOtherField);
+		setNull(dto, personal_general_ninField, personal_general_maritalStatusField);
+		setNull(dto, employment_careerProgressionField, employment_previousEmploymentField,
+				employment_identificationAndDiversityDetailsField, employment_visaDetailsField,
+				employment_employmentDetails_employeeNumberField, employment_employmentDetails_joinedDateField,
+				employment_employmentDetails_probationStartDateField,
+				employment_employmentDetails_probationEndDateField);
 	}
 
 	private <T, R> String field(FieldExtractor.SerializableFunction<T, R> getter) {

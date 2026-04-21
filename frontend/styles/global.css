@@ -1,5 +1,139 @@
 @import "pdfjs-dist/web/pdf_viewer.css";
 @import "@rootcodelabs/skapp-ui";
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #93c5fd;
+  --color-primary-accent: #408ce4;
+  --color-primary-text: #2a61a0;
+  --color-primary-background: #dbeafe;
+
+  --font-family-sans:
+    "Poppins", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  --color-label-bg-seafoam: #a4d1c9;
+  --color-label-bg-sand: #ffe3a6;
+  --color-label-bg-lemon: #f4f478;
+  --color-label-bg-slate: #cbd5e1;
+  --color-label-bg-peach: #ffd6a8;
+  --color-label-bg-mint: #b9f8cf;
+  --color-label-bg-aqua: #96f7e4;
+  --color-label-bg-indigo: #c6d2ff;
+  --color-label-bg-magenta: #f4a8ff;
+  --color-label-bg-purple: #ddd6ff;
+
+  --color-label-text-seafoam: #1a4a4a;
+  --color-label-text-sand: #9e4f00;
+  --color-label-text-lemon: #715613;
+  --color-label-text-slate: #1e293b;
+  --color-label-text-peach: #9f2d00;
+  --color-label-text-mint: #0d542b;
+  --color-label-text-aqua: #0b4f4a;
+  --color-label-text-indigo: #3730a3;
+  --color-label-text-magenta: #721378;
+  --color-label-text-purple: #4d179a;
+
+  --color-status-sky: #60a5fa;
+  --color-status-pink: #14b8a6;
+  --color-status-apricot: #fde047;
+  --color-status-sunshine: #ff9f40;
+  --color-status-teal: #ea5da3;
+  --color-status-lavender: #de7cff;
+  --color-status-gold: #9366fd;
+  --color-status-coral: #b55253;
+  --color-status-slate: #84cc16;
+  --color-status-lime: #83a0a0;
+  --color-status-rosewood: #ff3e3e;
+  --color-status-indigo: #eab308;
+
+  --color-secondary-text: #52525b;
+  --color-secondary-background: #fafafa;
+  --color-tertiary-background: #f4f4f5;
+  --color-secondary-accent: #e4e4e7;
+  --color-secondary-icon: #71717a;
+  --color-white: #ffffff;
+
+  --color-semantic-red-background: #fee2e2;
+  --color-semantic-red-text: #7f1d1d;
+  --color-semantic-red-accent: #dc2626;
+
+  --color-semantic-amber-background: #fef3c7;
+  --color-semantic-amber-text: #78350f;
+  --color-semantic-amber-accent: #b45309;
+
+  --color-semantic-green-background: #d8f999;
+  --color-semantic-green-200: #62b774;
+  --color-semantic-green-200: #62b774;
+  --color-semantic-green-text: #016630;
+  --color-semantic-green-accent: #62b774;
+}
+
+.h1 {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--font-family-sans);
+}
+.h1b {
+  font-size: 32px;
+  font-weight: 600;
+  font-family: var(--font-family-sans);
+}
+.h1c {
+  font-size: 42px;
+  font-weight: 600;
+  font-family: var(--font-family-sans);
+}
+.h2 {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-family-sans);
+}
+.h3 {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-family-sans);
+}
+.subtitle1 {
+  font-size: 16px;
+  font-weight: 500;
+  font-family: var(--font-family-sans);
+}
+.subtitle2 {
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-family-sans);
+}
+.subtitle3 {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-family-sans), serif;
+}
+.subtitle4 {
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-family-sans), serif;
+}
+.body1 {
+  font-size: 16px;
+  font-weight: 400;
+  font-family: var(--font-family-sans);
+}
+.body2 {
+  font-size: 14px;
+  font-weight: 400;
+  font-family: var(--font-family-sans);
+}
+.body3 {
+  font-size: 12px;
+  font-weight: 400;
+  font-family: var(--font-family-sans);
+}
+
+:root {
+  --app-font: Inter;
+  --app-font-family: "Inter", sans-serif;
+}
 
 html,
 body {
@@ -9,6 +143,7 @@ body {
   margin: 0;
   line-height: 1.5;
   font-family:
+    Inter,
     -apple-system,
     BlinkMacSystemFont,
     Segoe UI,
@@ -20,6 +155,13 @@ body {
     Droid Sans,
     Helvetica Neue,
     sans-serif;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
 }
 
 a {
@@ -117,16 +259,16 @@ input[type="number"] {
 
 .driver-popover .driver-popover-title {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 700;
   line-height: 140%;
-  font-family: "Poppins", sans-serif;
+  font-family: var(--app-font-family);
 }
 
 .driver-popover .driver-popover-description {
   font-size: 14px;
   font-weight: 400;
   line-height: 140%;
-  font-family: "Poppins", sans-serif;
+  font-family: var(--app-font-family);
 }
 
 .full-day-border {

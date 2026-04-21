@@ -11,7 +11,6 @@ import com.skapp.community.leaveplanner.payload.EmployeeLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.EmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.ManagerType;
-import com.skapp.community.peopleplanner.type.EmployeeSort;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
@@ -35,6 +34,7 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeTeamDto;
 import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeRepository;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.EmployeeSort;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
@@ -192,6 +192,51 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public List<Employee> findEmployees(List<Long> employeeIds, String searchTerm, Set<AccountStatus> accountStatuses) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+		Join<Employee, User> userJoin = root.join(Employee_.user, JoinType.LEFT);
+		Join<Employee, EmployeeRole> roleJoin = root.join((Employee_.employeeRole));
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+
+		if (accountStatuses != null && !accountStatuses.isEmpty()) {
+			predicates.add(root.get(Employee_.accountStatus).in(accountStatuses));
+		}
+
+		if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+			String searchPattern = "%" + searchTerm.trim().toLowerCase() + "%";
+
+			List<Predicate> searchPredicates = new ArrayList<>();
+			searchPredicates
+				.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.firstName)), searchPattern));
+
+			searchPredicates
+				.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.lastName)), searchPattern));
+
+			searchPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(userJoin.get(User_.email)), searchPattern));
+
+			predicates.add(criteriaBuilder.or(searchPredicates.toArray(new Predicate[0])));
+		}
+		else if (employeeIds != null && !employeeIds.isEmpty()) {
+			predicates.add(root.get(Employee_.employeeId).in(employeeIds));
+		}
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.select(root);
+		criteriaQuery.distinct(true);
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(Employee_.firstName)),
+				criteriaBuilder.asc(root.get(Employee_.lastName)));
+
+		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
+		return query.getResultList();
+	}
+
+	@Override
+	public List<Employee> findEmployeesIncludingGuests(List<Long> employeeIds, String searchTerm,
+			Set<AccountStatus> accountStatuses) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
@@ -424,6 +469,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.EMPLOYEE_ROLE);
 
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
+		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 
 		if (keyword != null && !keyword.trim().isEmpty()) {
 			predicates.add(findByEmailName(keyword, criteriaBuilder, root, userJoin));

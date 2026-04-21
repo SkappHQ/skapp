@@ -300,7 +300,6 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
           padding: "0",
           margin: "0 auto",
           height: "auto",
-          fontFamily: "Poppins, sans-serif"
         }}
         dividerStyles={{
           mt: "0.5rem"
@@ -516,7 +515,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                       mt: "0rem"
                     }}
                     labelStyles={{
-                      color: theme.palette.grey.A100
+                      color: theme.palette.text.blackText
                     }}
                   />
                 </div>

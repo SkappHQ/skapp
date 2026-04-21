@@ -1,12 +1,5 @@
 package com.skapp.community.leaveplanner.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.skapp.community.common.constant.CommonMessageConstant;
-import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.type.OrganizationConfigType;
@@ -18,6 +11,10 @@ import com.skapp.community.peopleplanner.type.LeaveCycleConfigField;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -31,7 +28,7 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 
 	private final OrganizationConfigDao organizationConfigDao;
 
-	private final ObjectMapper mapper;
+	private final JsonMapper mapper;
 
 	@Override
 	public LeaveCycleDetailsDto getLeaveCycleConfigs() {
@@ -41,27 +38,15 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 
 		if (organizationConfig.isPresent() && Objects.equals(organizationConfig.get().getOrganizationConfigType(),
 				OrganizationConfigType.LEAVE_CYCLE.name())) {
-			try {
-				leaveCycle = mapper.readValue(organizationConfig.get().getOrganizationConfigValue(),
-						new TypeReference<>() {
-						});
-			}
-			catch (JsonProcessingException e) {
-				log.error(
-						"getLeaveCycleConfigs: An error occurred while converting LeaveCycle JSON string to Object: {}",
-						e.getMessage());
-			}
+
+			leaveCycle = mapper.readValue(organizationConfig.get().getOrganizationConfigValue(), new TypeReference<>() {
+			});
+
 		}
 
 		JsonNode leaveCycleJson;
-		try {
-			String jsonString = mapper.writeValueAsString(leaveCycle);
-			leaveCycleJson = mapper.readTree(jsonString);
-		}
-		catch (JsonProcessingException e) {
-			log.error("Error converting leaveCycle map to JsonNode: {}", e.getMessage());
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-		}
+		String jsonString = mapper.writeValueAsString(leaveCycle);
+		leaveCycleJson = mapper.readTree(jsonString);
 
 		LeaveCycleDetailsDto leaveCycleDetail = new LeaveCycleDetailsDto();
 
@@ -175,15 +160,8 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 	public void setLeaveCycleDefaultConfigs() {
 		log.info("setLeaveCycleDefaultConfigs: execution started");
 		ObjectNode leaveCycle = saveLeaveCycleConfigs(1, 1, true);
-		try {
-			String jsonObject = mapper.writeValueAsString(leaveCycle);
-			organizationConfigDao.save(new OrganizationConfig(OrganizationConfigType.LEAVE_CYCLE.name(), jsonObject));
-		}
-		catch (JsonProcessingException e) {
-			log.error("setLeaveCycleDefaultConfigs: An error occurred while converting object node to JSON string: {}",
-					e.getMessage());
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_JSON_STRING_TO_OBJECT_CONVERSION_FAILED);
-		}
+		String jsonObject = mapper.writeValueAsString(leaveCycle);
+		organizationConfigDao.save(new OrganizationConfig(OrganizationConfigType.LEAVE_CYCLE.name(), jsonObject));
 	}
 
 	private ObjectNode saveLeaveCycleConfigs(int startMonth, int startDate, boolean isDefault) {

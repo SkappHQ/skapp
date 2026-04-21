@@ -99,7 +99,12 @@ public enum EmailBodyTemplates implements EmailTemplates {
 	LEAVE_MODULE_MANAGER_NUDGE_SINGLE_DAY_LEAVE("leave-module-manager-nudge-single-day-leave"),
 	LEAVE_MODULE_MANAGER_NUDGE_MULTI_DAY_LEAVE("leave-module-manager-nudge-multi-day-leave"),
 	LEAVE_MODULE_MANAGER_AUTO_APPROVED_SINGLE_DAY_LEAVE("leave-module-manager-auto-approved-single-day-leave"),
-	LEAVE_MODULE_MANAGER_AUTO_APPROVED_MULTI_DAY_LEAVE("leave-module-manager-auto-approved-multi-day-leave");
+	LEAVE_MODULE_MANAGER_AUTO_APPROVED_MULTI_DAY_LEAVE("leave-module-manager-auto-approved-multi-day-leave"),
+
+	// E-Sign Templates
+	ESIGN_DOCUMENT_SIGN_REQUEST("esign-document-sign-request"), ESIGN_DOCUMENT_COMPLETED("esign-document-completed"),
+	ESIGN_DOCUMENT_DECLINED("esign-document-declined"), ESIGN_DOCUMENT_VOIDED("esign-document-voided"),
+	ESIGN_DOCUMENT_REMINDER("esign-document-reminder"), ESIGN_DOCUMENT_EXPIRED("esign-document-expired");
 
 	private final String templateId;
 

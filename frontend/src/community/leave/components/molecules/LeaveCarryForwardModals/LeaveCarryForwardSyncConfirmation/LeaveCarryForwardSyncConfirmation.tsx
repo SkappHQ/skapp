@@ -1,13 +1,7 @@
-import { Typography } from "@mui/material";
-import { Box, Stack } from "@mui/system";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect } from "react";
 
-import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import {
-  ButtonStyle,
-  ButtonTypes
-} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -16,8 +10,6 @@ import { useLeaveStore } from "~community/leave/store/store";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
-import styles from "./styles";
-
 interface Props {
   handleClose: () => void;
 }
@@ -25,8 +17,6 @@ interface Props {
 const LeaveCarryForwardSyncConfirmation = ({
   handleClose
 }: Props): JSX.Element => {
-  const classes = styles();
-
   const { setToastMessage } = useToast();
 
   const translateTexts = useTranslator("leaveModule", "leaveCarryForward");
@@ -71,37 +61,33 @@ const LeaveCarryForwardSyncConfirmation = ({
   }, [isPending, setLeaveCarryForwardSyncBtnStatus]);
 
   return (
-    <Stack sx={classes.wrapper}>
-      <Typography
-        sx={classes.title}
-        variant="body1"
+    <div className="min-w-[31.25rem]">
+      <p
+        className="mb-4 text-gray-900 w-full"
         id="leave-carry-forward-confirm-synchronization-modal-description"
       >
         {translateTexts(["leaveCarryForwardModalDescription"]) ?? ""}
-      </Typography>
-      <Box>
-        <Button
-          accessibility={{
-            ariaHidden: true
-          }}
-          label={translateTexts(["leaveCarryForwardModalConfirmSyncBtn"])}
-          endIcon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-          type={ButtonTypes.SUBMIT}
-          onClick={() => mutate(leaveCarryForwardId)}
-        />
-        <Button
-          accessibility={{
-            ariaHidden: true
-          }}
-          buttonStyle={ButtonStyle.TERTIARY}
-          styles={{ mt: "1rem" }}
-          type={ButtonTypes.BUTTON}
-          label={translateTexts(["leaveCarryForwardModalCancelBtn"])}
-          endIcon={<Icon name={IconName.CLOSE_ICON} />}
+      </p>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"tertiary"}
+          type={"button"}
           onClick={handleClose}
-        />
-      </Box>
-    </Stack>
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateTexts(["leaveCarryForwardModalCancelBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          type={"submit"}
+          onClick={() => mutate(leaveCarryForwardId)}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateTexts(["leaveCarryForwardModalConfirmSyncBtn"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

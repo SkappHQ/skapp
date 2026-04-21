@@ -249,7 +249,9 @@ const useAddEntry = () => {
     isWithToast: boolean
   ) => {
     const prevStartTimeWithDate = DateTime.fromISO(prevFromTime);
-    const prevEndTimeWithDate = DateTime.fromISO(prevToTime);
+    const prevEndTimeWithDate = prevToTime
+      ? DateTime.fromISO(prevToTime)
+      : null;
     const startTimeWithDate = DateTime.fromFormat(
       fromTime,
       TIME_FORMAT_AM_PM
@@ -258,15 +260,20 @@ const useAddEntry = () => {
       month: prevStartTimeWithDate.month,
       year: prevStartTimeWithDate.year
     });
+
+    if (clockInOutValidation(fromTime, toTime, isWithToast)) {
+      return true;
+    }
+
+    if (prevEndTimeWithDate === null) {
+      return false;
+    }
+
     const endTimeWithDate = DateTime.fromFormat(toTime, TIME_FORMAT_AM_PM).set({
       day: prevEndTimeWithDate.day,
       month: prevEndTimeWithDate.month,
       year: prevEndTimeWithDate.year
     });
-
-    if (clockInOutValidation(fromTime, toTime, isWithToast)) {
-      return true;
-    }
 
     if (startTimeWithDate >= prevEndTimeWithDate) {
       if (isWithToast) {

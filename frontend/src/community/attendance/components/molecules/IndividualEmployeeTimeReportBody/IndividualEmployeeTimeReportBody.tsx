@@ -23,6 +23,7 @@ import dailyLogMockData from "~enterprise/attendance/data/dailyLogMockData";
 import managerUtilizationMockData from "~enterprise/attendance/data/managerUtilizationMockData.json";
 import workHoursGraphMockData from "~enterprise/attendance/data/workHoursGraphMockData.json";
 import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverlay/UpgradeOverlay";
+import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   selectedUser: number;
@@ -31,45 +32,49 @@ interface Props {
 const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
   const translateText = useTranslator("attendanceModule", "timesheet");
 
-  const { employeeDetails, isProTier } = useSessionData();
+  const { isAtLeastCoreTier } = useTier();
+
+  const { employeeDetails } = useSessionData();
 
   const { isDrawerToggled } = useCommonStore((state) => ({
     isDrawerToggled: state.isDrawerExpanded
   }));
 
-  const [month, setMonth] = useState(isProTier ? getCurrentMonth() : 1);
+  const [month, setMonth] = useState(isAtLeastCoreTier ? getCurrentMonth() : 1);
 
   const { data: dailyLogData, isLoading: isDailyLogLoading } =
     useGetDailyLogsByEmployeeId(
       getStartAndEndDateOfTheMonth().start,
       getStartAndEndDateOfTheMonth().end,
       selectedUser,
-      isProTier
+      isAtLeastCoreTier
     );
 
   const dailyLogs = useMemo(() => {
-    return isProTier ? dailyLogData : dailyLogMockData;
-  }, [isProTier, dailyLogData]);
+    return isAtLeastCoreTier ? dailyLogData : dailyLogMockData;
+  }, [isAtLeastCoreTier, dailyLogData]);
 
   const { data: managerUtilizationData } = useGetIndividualUtilization(
     selectedUser,
-    isProTier
+    isAtLeastCoreTier
   );
 
   const managerUtilizations = useMemo(() => {
-    return isProTier ? managerUtilizationData : managerUtilizationMockData;
-  }, [isProTier, managerUtilizationData]);
+    return isAtLeastCoreTier
+      ? managerUtilizationData
+      : managerUtilizationMockData;
+  }, [isAtLeastCoreTier, managerUtilizationData]);
 
   const { data: workHoursGraphData, isLoading: isWorkHoursGraphLoading } =
     useGetIndividualWorkHourGraphData(
       getMonthName(month)?.toUpperCase(),
       selectedUser,
-      isProTier
+      isAtLeastCoreTier
     );
 
   const employeeWorkHoursDataset = useMemo(() => {
-    return isProTier ? workHoursGraphData : workHoursGraphMockData;
-  }, [isProTier, workHoursGraphData]);
+    return isAtLeastCoreTier ? workHoursGraphData : workHoursGraphMockData;
+  }, [isAtLeastCoreTier, workHoursGraphData]);
 
   return (
     <PeopleLayout

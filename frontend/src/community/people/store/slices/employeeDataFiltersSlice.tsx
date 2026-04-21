@@ -22,6 +22,17 @@ export const employeeDataFiltersSlice = (
     nationality: [],
     employeeType: []
   },
+  appliedEmployeeDataFilter: {
+    employmentTypes: [],
+    permission: [],
+    team: [],
+    role: [],
+    accountStatus: [],
+    employmentAllocations: [],
+    gender: null,
+    nationality: [],
+    employeeType: []
+  },
   employeeDataFilterOrder: [],
   employeeDataParams: {
     sortKey: SortKeyTypes.NAME,
@@ -67,6 +78,17 @@ export const employeeDataFiltersSlice = (
   resetEmployeeDataParams: () => {
     set((state: EmployeeDataFiltersSliceType) => ({
       employeeDataFilter: {
+        employmentTypes: [] as string[],
+        permission: [] as string[],
+        team: [],
+        role: [],
+        accountStatus: [],
+        employmentAllocations: [] as string[],
+        gender: null,
+        nationality: [],
+        employeeType: []
+      },
+      appliedEmployeeDataFilter: {
         employmentTypes: [] as string[],
         permission: [] as string[],
         team: [],
@@ -255,6 +277,7 @@ export const employeeDataFiltersSlice = (
       return {
         ...state,
         employeeDataFilter: updatedFilters,
+        appliedEmployeeDataFilter: updatedFilters,
         employeeDataParams: updatedParams
       };
     });
@@ -266,7 +289,18 @@ export const employeeDataFiltersSlice = (
       employeeDataFilter: {
         ...state.employeeDataFilter,
         gender: null
+      },
+      appliedEmployeeDataFilter: {
+        ...state.appliedEmployeeDataFilter,
+        gender: null
       }
+    }));
+  },
+
+  setAppliedEmployeeDataFilter: (value) => {
+    set((state: EmployeeDataFiltersSliceType) => ({
+      ...state,
+      appliedEmployeeDataFilter: value
     }));
   }
 });

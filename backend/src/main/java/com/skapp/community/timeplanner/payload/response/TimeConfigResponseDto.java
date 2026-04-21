@@ -1,8 +1,8 @@
 package com.skapp.community.timeplanner.payload.response;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;

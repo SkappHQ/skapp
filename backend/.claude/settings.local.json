@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn spotless:apply)",
+      "Bash(mvn spring-javaformat:apply)"
+    ]
+  }
+}

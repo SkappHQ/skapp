@@ -1,4 +1,4 @@
-import { Box, Theme, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { useEffect } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
@@ -17,12 +17,12 @@ import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
 import { getLeaveRequestState } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 
 const OnLeaveModal = () => {
+  const theme = useTheme();
   const translateText = useTranslator(
     "leaveModule",
     "leaveRequests",
     "leaveRequestTable"
   );
-  const theme: Theme = useTheme();
 
   const {
     setIsManagerModal,
@@ -149,7 +149,7 @@ const OnLeaveModal = () => {
   };
 
   return (
-    <Box sx={{ pt: 1 }}>
+    <div className="pt-2">
       <Table
         tableName={TableNames.ON_LEAVE_MODAL}
         headers={tableHeaders}
@@ -174,7 +174,7 @@ const OnLeaveModal = () => {
           }
         }}
       />
-    </Box>
+    </div>
   );
 };
 

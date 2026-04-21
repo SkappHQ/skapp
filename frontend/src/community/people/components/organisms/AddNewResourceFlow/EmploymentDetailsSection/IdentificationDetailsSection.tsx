@@ -95,8 +95,7 @@ const IdentificationDetailsSection = forwardRef<FormMethods, props>(
         title={translateText(["title"])}
         containerStyles={{
           padding: "0",
-          margin: "0 auto",
-          fontFamily: "Poppins, sans-serif"
+          margin: "0 auto"
         }}
         dividerStyles={{
           mt: "0.5rem"

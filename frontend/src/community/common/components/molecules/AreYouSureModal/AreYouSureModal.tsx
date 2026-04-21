@@ -1,5 +1,5 @@
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -27,7 +27,6 @@ const AreYouSureModal = ({ onPrimaryBtnClick, onSecondaryBtnClick }: Props) => {
         label: translateText(["leaveAnywayBtn"]),
         onClick: onSecondaryBtnClick,
         endIcon: IconName.CLOSE_ICON,
-        buttonStyle: ButtonStyle.ERROR
       }}
     />
   );

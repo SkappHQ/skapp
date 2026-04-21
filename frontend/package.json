@@ -29,7 +29,8 @@
     "@mui/base": "^5.0.0-beta.58",
     "@mui/x-date-pickers": "^7.29.1",
     "@next/third-parties": "^15.3.1",
-    "@rootcodelabs/skapp-ui": "1.0.5-beta.3",
+    "@rootcodelabs/skapp-ui": "1.0.7",
+    "@tailwindcss/postcss": "^4.2.1",
     "@tanstack/react-query": "^5.74.4",
     "@tanstack/react-query-devtools": "^5.74.6",
     "axios": "^1.9.0",
@@ -46,6 +47,8 @@
     "next": "^14.2.35",
     "papaparse": "^5.5.2",
     "pdfjs-dist": "^4.10.38",
+    "postcss": "^8.5.6",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-day-picker": "^9.9.0",
     "react-dom": "^18.3.1",
@@ -57,6 +60,7 @@
     "react-pdf": "^9.2.1",
     "react-phone-input-2": "^2.15.1",
     "react-select": "^5.8.0",
+    "tailwindcss": "^4.2.1",
     "zustand": "^4.5.5"
   },
   "devDependencies": {

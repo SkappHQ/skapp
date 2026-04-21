@@ -1,15 +1,14 @@
-import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useCallback, useEffect, useMemo } from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import TextArea from "~community/common/components/atoms/TextArea/TextArea";
 import CalendarDateRangePicker from "~community/common/components/molecules/CalendarDateRangePicker/CalendarDateRangePicker";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import { appModes } from "~community/common/constants/configs";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { LeaveStates } from "~community/common/types/CommonTypes";
@@ -61,8 +60,6 @@ import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFuncti
 import styles from "./styles";
 
 const ApplyLeaveModal = () => {
-  const classes = styles();
-
   const { setToastMessage } = useToast();
 
   const translateStorageText = useTranslator("StorageToastMessage");
@@ -363,9 +360,9 @@ const ApplyLeaveModal = () => {
   };
 
   return (
-    <Stack sx={classes.wrapper}>
-      <Stack sx={classes.formWrapper}>
-        <Stack sx={classes.calendarWrapper}>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col md:flex-row gap-3 md:gap-7">
+        <div className="flex flex-col gap-3">
           <CalendarDateRangePicker
             selectedDates={selectedDates}
             setSelectedDates={setSelectedDates}
@@ -380,18 +377,18 @@ const ApplyLeaveModal = () => {
             myLeaveRequests={pendingAndApprovedLeaveRequests}
             error={formErrors?.selectedDates}
           />
-          <Stack sx={classes.textWrapper}>
-            <Typography variant="body1">
+          <div className="hidden md:flex flex-row items-center gap-2">
+            <p>
               {translateText(["myEntitlements"], {
                 leaveType: selectedLeaveAllocationData.leaveType.name
               }) ?? ""}
-            </Typography>
+            </p>
             <LeaveEntitlementBalanceCard
               leaveEntitlementBalance={leaveEntitlementBalance}
             />
-          </Stack>
-        </Stack>
-        <Stack sx={classes.fieldWrapper}>
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 w-full">
           {selectedDates.length && myTeams?.length ? (
             <TeamAvailabilityCard
               teams={myTeams}
@@ -468,26 +465,30 @@ const ApplyLeaveModal = () => {
               workingDays={workingDays}
             />
           )}
-        </Stack>
-      </Stack>
-      <Stack sx={classes.btnWrapper}>
-        <Button
-          label={translateText(["submitBtn"])}
-          buttonStyle={ButtonStyle.PRIMARY}
-          endIcon={IconName.TICK_ICON}
+        </div>
+      </div>
+      <div className="flex flex-row gap-3 mt-4 justify-end">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
           onClick={onSubmit}
           isLoading={isLeaveApplyPending}
           disabled={isApplyLeaveModalBtnDisabled}
-          ariaLabel={translateAria(["confirmApplyLeave"])}
-        />
-        <Button
-          label={translateText(["cancelBtn"])}
-          buttonStyle={ButtonStyle.TERTIARY}
-          endIcon={IconName.CLOSE_ICON}
-          onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
-        />
-      </Stack>
-    </Stack>
+          aria-label={translateAria(["confirmApplyLeave"])}
+          icon={<Icon name={IconName.TICK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["submitBtn"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

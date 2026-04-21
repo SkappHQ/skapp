@@ -1,6 +1,6 @@
-import { Stack, Typography } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import Button from "~community/common/components/atoms/Button/Button";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
@@ -48,41 +48,44 @@ const LoginCredentialsModal = () => {
   };
 
   return (
-    <Stack gap={3} marginTop={2}>
-      <Typography>{translateText(["sectionOne"])}</Typography>
+    <div className="flex flex-col gap-3 mt-2">
+      <p>{translateText(["sectionOne"])}</p>
 
-      <Typography>
+      <p>
         {translateText(["sectionTwo"], {
           name: userName() ?? ""
         })}
-      </Typography>
+      </p>
 
-      <Typography>{translateText(["sectionThree"])}</Typography>
+      <p>{translateText(["sectionThree"])}</p>
 
-      <Stack>
-        <Typography>
-          {translateText(["loginUrl"], { link: loginUrl })}
-        </Typography>
-        <Typography>
+      <div>
+        <p>{translateText(["loginUrl"], { link: loginUrl })}</p>
+        <p>
           {translateText(["username"], {
             username: employeeCredentials.email
           })}
-        </Typography>
-        <Typography>
+        </p>
+        <p>
           {translateText(["password"], {
             password: employeeCredentials.tempPassword
           })}
-        </Typography>
-      </Stack>
+        </p>
+      </div>
 
-      <Typography>{translateText(["sectionFive"])}</Typography>
+      <p>{translateText(["sectionFive"])}</p>
 
-      <Button
-        label={translateText(["copy"])}
-        onClick={handleCopyText}
-        endIcon={IconName.COPY_ICON}
-      />
-    </Stack>
+      <div className="flex flex-row justify-end gap-3 mt-4">
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleCopyText}
+          icon={<Icon name={IconName.COPY_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["copy"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

@@ -15,22 +15,28 @@ type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
 
 interface Props {
   userRoles: Role[] | undefined;
-  tier: string;
+  tiers: TierEnum[];
   isEnterprise: boolean;
   globalLoginMethod: GlobalLoginMethod;
   tenantID?: string;
   organizationCalendarGoogleStatus?: boolean;
   organizationCalendarMicrosoftStatus?: boolean;
+  pendingLeaveCount?: number;
+  pendingTimesheetCount?: number;
+  pendingSignCount?: number;
 }
 
 const getDrawerRoutes = ({
   userRoles,
-  tier,
+  tiers,
   isEnterprise,
   globalLoginMethod,
   tenantID,
   organizationCalendarGoogleStatus,
-  organizationCalendarMicrosoftStatus
+  organizationCalendarMicrosoftStatus,
+  pendingLeaveCount = 0,
+  pendingTimesheetCount = 0,
+  pendingSignCount = 0
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
@@ -38,7 +44,10 @@ const getDrawerRoutes = ({
         globalLoginMethod,
         tenantID,
         organizationCalendarGoogleStatus,
-        organizationCalendarMicrosoftStatus
+        organizationCalendarMicrosoftStatus,
+        pendingLeaveCount,
+        pendingTimesheetCount,
+        pendingSignCount
       })
     : routes;
 
@@ -227,7 +236,9 @@ const getDrawerRoutes = ({
         if (isSuperAdmin) {
           const subRoutes = route?.subTree?.filter((subRoute) => {
             if (subRoute.name === "Integrations") {
-              return tier === TierEnum.PRO;
+              return (
+                tiers.includes(TierEnum.PRO) || tiers.includes(TierEnum.CORE)
+              );
             }
 
             return subRoute.requiredAuthLevel?.some((requiredRole) =>
@@ -250,72 +261,9 @@ const getDrawerRoutes = ({
           return {
             id: route?.id,
             name: route?.name,
-            url: ROUTES.SETTINGS.ACCOUNT,
+            url: ROUTES.SETTINGS.BASE,
             icon: route?.icon,
             hasSubTree: false,
-            badge: route?.badge
-          };
-        }
-      }
-
-      if (route?.name === "Configurations") {
-        const isSuperAdmin = userRoles?.some((role) =>
-          [AdminTypes.SUPER_ADMIN].includes(role as AdminTypes)
-        );
-
-        if (isSuperAdmin) {
-          const subRoutes = route?.subTree?.filter((subRoute) => {
-            if (
-              subRoute.name === "Attendance" &&
-              !userRoles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
-            ) {
-              return false;
-            }
-            if (
-              subRoute.name === "Sign" &&
-              !userRoles?.includes(EmployeeTypes.ESIGN_EMPLOYEE)
-            ) {
-              return false;
-            }
-            return subRoute.requiredAuthLevel?.some((requiredRole) =>
-              userRoles?.includes(requiredRole as Role)
-            );
-          });
-
-          return {
-            id: route?.id,
-            name: route?.name,
-            url: ROUTES.CONFIGURATIONS.BASE,
-            icon: route?.icon,
-            hasSubTree: route?.hasSubTree,
-            subTree: subRoutes
-          };
-        }
-
-        const isEsignAdmin = userRoles?.some((role) =>
-          [AdminTypes.ESIGN_ADMIN].includes(role as AdminTypes)
-        );
-
-        if (isEsignAdmin) {
-          const subRoutes = route?.subTree?.filter((subRoute) => {
-            if (
-              subRoute.name === "Sign" &&
-              !userRoles?.includes(EmployeeTypes.ESIGN_EMPLOYEE)
-            ) {
-              return false;
-            }
-            return subRoute.requiredAuthLevel?.some((requiredRole) =>
-              userRoles?.includes(requiredRole as Role)
-            );
-          });
-
-          return {
-            id: route?.id,
-            name: route?.name,
-            url: ROUTES.CONFIGURATIONS.BASE,
-            icon: route?.icon,
-            hasSubTree: route?.hasSubTree,
-            subTree: subRoutes,
             badge: route?.badge
           };
         }
@@ -346,11 +294,44 @@ const getDrawerRoutes = ({
       }
 
       if (isAuthorized && route?.hasSubTree) {
-        const subRoutes = route?.subTree?.filter((subRoute) =>
-          subRoute.requiredAuthLevel?.some((requiredRole) =>
-            userRoles?.includes(requiredRole as Role)
-          )
-        );
+        const subRoutes = route?.subTree
+          ?.map((subRoute) => {
+            const isSubRouteAuthorized = subRoute.requiredAuthLevel?.some(
+              (requiredRole) => userRoles?.includes(requiredRole as Role)
+            );
+
+            if (!isSubRouteAuthorized) return null;
+
+            // Add badge to "All Requests" if there are pending requests
+            if (subRoute.id === "2B" && pendingLeaveCount > 0) {
+              return {
+                ...subRoute,
+                badge: pendingLeaveCount.toString()
+              };
+            }
+
+            // Add badge to "All Timesheets" if there are pending timesheets
+            if (subRoute.id === "1B" && pendingTimesheetCount > 0) {
+              return {
+                ...subRoute,
+                badge: pendingTimesheetCount.toString()
+              };
+            }
+
+            // Add badge to "Inbox" if there are pending documents to sign
+            if (subRoute.id === "4A" && pendingSignCount > 0) {
+              return {
+                ...subRoute,
+                badge: pendingSignCount.toString()
+              };
+            }
+
+            return subRoute;
+          })
+          .filter(
+            (subRoute): subRoute is NonNullable<typeof subRoute> =>
+              subRoute !== null
+          );
 
         if (subRoutes && subRoutes?.length > 0) {
           return {

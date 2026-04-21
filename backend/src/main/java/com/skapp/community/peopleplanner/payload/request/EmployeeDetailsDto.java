@@ -1,6 +1,5 @@
 package com.skapp.community.peopleplanner.payload.request;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EEO;
@@ -12,6 +11,7 @@ import com.skapp.community.peopleplanner.util.deserializer.EmploymentAllocationD
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.time.LocalDate;
 import java.util.List;

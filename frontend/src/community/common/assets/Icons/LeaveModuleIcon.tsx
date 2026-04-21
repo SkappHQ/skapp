@@ -1,10 +1,9 @@
 import { JSX } from "react";
-
 import { IconProps } from "~community/common/types/IconTypes";
 
 const LeaveModuleIcon = ({
-  width = "36",
-  height = "34",
+  width = "151",
+  height = "147",
   id,
   svgProps,
   onClick
@@ -14,42 +13,60 @@ const LeaveModuleIcon = ({
       id={id}
       width={width}
       height={height}
-      viewBox="0 0 36 34"
+      viewBox="0 0 151 147"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       onClick={onClick}
       {...svgProps}
     >
       <path
-        d="M15.9084 29.124L24.9795 5.09595"
+        d="M63.7803 129.709L100.168 33.3223"
         stroke="#D64550"
-        style={{ stroke: "#D64550", strokeOpacity: 1 }}
-        strokeWidth="1.02268"
+        style={{
+          stroke: "color(display-p3 0.8392 0.2706 0.3137)",
+          strokeOpacity: 1,
+        }}
+        strokeWidth="4.10244"
       />
       <path
-        d="M31.525 19.2718L21.0975 15.3791L25.0635 4.87378C32.1237 7.50948 33.4242 12.2188 31.525 19.2718Z"
+        d="M126.425 90.1781L84.5957 74.5626L100.505 32.4213C128.827 42.9943 134.043 61.8853 126.425 90.1781Z"
         fill="#2A61A0"
-        style={{ fill: "#2A61A0", fillOpacity: 1 }}
+        style={{
+          fill: "color(display-p3 0.1653 0.3810 0.6285)",
+          fillOpacity: 1,
+        }}
       />
       <path
-        d="M21.0975 15.3791L25.0635 4.87378C28.1285 6.87116 28.2472 13.4578 26.7283 17.4811L21.0975 15.3791Z"
+        d="M84.5957 74.5626L100.505 32.4213C112.8 40.4336 113.276 66.8558 107.183 82.995L84.5957 74.5626Z"
         fill="#EF8D42"
-        style={{ fill: "#EF8D42", fillOpacity: 1 }}
+        style={{
+          fill: "color(display-p3 0.9373 0.5529 0.2588)",
+          fillOpacity: 1,
+        }}
       />
       <path
-        d="M10.6701 11.4863L21.0975 15.3791L25.0635 4.87378C18.0032 2.23807 13.9076 4.93291 10.6701 11.4863Z"
+        d="M42.7666 58.9471L84.5957 74.5626L100.505 32.4213C72.1831 21.8483 55.7536 32.6585 42.7666 58.9471Z"
         fill="#2A61A0"
-        style={{ fill: "#2A61A0", fillOpacity: 1 }}
+        style={{
+          fill: "color(display-p3 0.1653 0.3810 0.6285)",
+          fillOpacity: 1,
+        }}
       />
       <path
-        d="M21.0975 15.3791L25.0635 4.87378C21.4338 4.37193 16.9856 9.25368 15.4667 13.277L21.0975 15.3791Z"
+        d="M84.5957 74.5626L100.505 32.4213C85.9448 30.4081 68.1009 49.991 62.008 66.1303L84.5957 74.5626Z"
         fill="#D64550"
-        style={{ fill: "#D64550", fillOpacity: 1 }}
+        style={{
+          fill: "color(display-p3 0.8392 0.2706 0.3137)",
+          fillOpacity: 1,
+        }}
       />
       <path
-        d="M34.8805 32.3335H0.00878906C5.79285 28.2565 10.329 25.6579 17.6692 25.721C24.8449 25.7827 33.3711 28.2683 34.8805 32.3335Z"
+        d="M139.886 142.581H0C23.2025 126.226 41.3988 115.802 70.8437 116.055C99.6286 116.303 133.831 126.274 139.886 142.581Z"
         fill="#EF8D42"
-        style={{ fill: "#EF8D42", fillOpacity: 1 }}
+        style={{
+          fill: "color(display-p3 0.9373 0.5529 0.2588)",
+          fillOpacity: 1,
+        }}
       />
     </svg>
   );

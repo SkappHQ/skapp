@@ -1,3 +1,4 @@
+import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { unitConversion } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import {
@@ -8,7 +9,10 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import { getCookieValue } from "~community/common/utils/commonUtil";
+import {
+  getCookieValue,
+  isEnterpriseMode
+} from "~community/common/utils/commonUtil";
 import {
   EnterpriseSignInParams,
   EnterpriseSignUpParams,
@@ -21,7 +25,12 @@ import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 import { config } from "../../../../middleware";
 import { COOKIE_EXPIRY_DAYS } from "../constants/authConstants";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
-import { AuthResponseType } from "../types/auth";
+import { SignInStatus } from "../enums/auth";
+import {
+  AuthResponseType,
+  CommunitySignInParams,
+  CommunitySignUpParams
+} from "../types/auth";
 import authAxios from "./authInterceptor";
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
@@ -70,6 +79,7 @@ export interface User {
   isPasswordChangedForTheFirstTime?: boolean;
   employee?: AuthEmployeeType;
   tier?: TierEnum;
+  tiers?: TierEnum[];
   tenantId?: string;
   tenantStatus?: TenantStatusEnums;
 }
@@ -99,18 +109,10 @@ export const getNewAccessToken = async (): Promise<string | null> => {
       if (accessToken) {
         setAccessToken(accessToken);
         return accessToken;
-      } else {
-        await clearCookies();
-        if (typeof window !== "undefined") {
-          window.location.href = ROUTES.AUTH.SIGNIN;
-        }
-        return null;
       }
-    } catch (error) {
-      await clearCookies();
-      if (typeof window !== "undefined") {
-        window.location.href = ROUTES.AUTH.SIGNIN;
-      }
+
+      return null;
+    } catch {
       return null;
     } finally {
       isRefreshing = false;
@@ -148,7 +150,7 @@ export const clearCookies = async (): Promise<void> => {
       {},
       { withCredentials: true }
     );
-  } catch (error) {
+  } catch {
     console.error("Error calling signout API");
   }
 
@@ -228,6 +230,7 @@ export const extractUserFromToken = (token: string): User | null => {
         claims?.isPasswordChangedForTheFirstTime ?? true,
       employee: claims?.employee,
       tier: claims?.tier as TierEnum,
+      tiers: claims?.tiers as TierEnum[],
       tenantId: claims?.tenantId,
       tenantStatus: claims?.tenantStatus
     };
@@ -237,20 +240,81 @@ export const extractUserFromToken = (token: string): User | null => {
   }
 };
 
-export const communitySignIn = async (_email: string, _password: string) => {};
+const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
+  const accessToken = response?.data?.results[0]?.accessToken;
+  const isPasswordChangedForTheFirstTime =
+    response?.data?.results[0]?.isPasswordChangedForTheFirstTime;
+
+  if (accessToken) {
+    setAccessToken(accessToken);
+
+    setIsPasswordChangedForTheFirstTime(
+      isPasswordChangedForTheFirstTime ?? true
+    );
+
+    return { status: SignInStatus.SUCCESS };
+  } else {
+    return { status: SignInStatus.FAILURE, error: response?.data?.message };
+  }
+};
+
+export const communitySignIn = async (
+  params: CommunitySignInParams
+): Promise<AuthResponseType> => {
+  const payload = { email: params.email, password: params.password };
+  try {
+    const response = await authAxios.post(
+      communityAuthEndpoints.CREDENTIAL_SIGN_IN,
+      payload
+    );
+    return handleAuthResponse(response);
+  } catch (error: any) {
+    return {
+      status: SignInStatus.FAILURE,
+      error: error?.response?.data?.[0]?.messageKey
+    };
+  }
+};
+
+export const communitySignUp = async (
+  params: CommunitySignUpParams
+): Promise<AuthResponseType> => {
+  const payload = {
+    firstName: params.firstName,
+    lastName: params.lastName,
+    email: params.email,
+    password: params.password
+  };
+  try {
+    const response = await authAxios.post(
+      communityAuthEndpoints.CREDENTIAL_SIGN_UP,
+      payload
+    );
+    return handleAuthResponse(response);
+  } catch (error: any) {
+    return {
+      status: SignInStatus.FAILURE,
+      error: error?.response?.data?.[0]?.messageKey
+    };
+  }
+};
 
 export const handleSignIn = async (
   params: EnterpriseSignInParams
 ): Promise<AuthResponseType> => {
-  const response = await enterpriseSignIn(params);
-  return response;
+  if (!isEnterpriseMode()) {
+    return communitySignIn(params);
+  }
+  return enterpriseSignIn(params);
 };
 
 export const handleSignUp = async (
   params: EnterpriseSignUpParams
 ): Promise<AuthResponseType> => {
-  const response = await enterpriseSignUp(params);
-  return response;
+  if (!isEnterpriseMode()) {
+    return communitySignUp(params);
+  }
+  return enterpriseSignUp(params);
 };
 
 export const checkUserAuthentication = async (): Promise<User | null> => {
@@ -263,4 +327,19 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   const userData = extractUserFromToken(token);
 
   return userData;
+};
+
+export const signOut = async (redirect: boolean = true): Promise<void> => {
+  await clearCookies();
+
+  if (redirect === false) return;
+
+  if (typeof window !== "undefined") {
+    const currentPath = window.location.pathname;
+    const urlParams = new URLSearchParams(window.location.search);
+    const existingCallback = urlParams.get("callback");
+
+    const callbackPath = existingCallback || currentPath;
+    window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
+  }
 };
