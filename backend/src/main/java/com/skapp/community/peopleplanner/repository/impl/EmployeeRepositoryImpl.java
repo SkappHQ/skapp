@@ -303,116 +303,103 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 
-		root.fetch(Employee_.personalInfo, JoinType.LEFT);
-		root.fetch(Employee_.employeeEmergencies, JoinType.LEFT);
+		// root.fetch() cast to Join so the same SQL JOIN serves both eager-loading and
+		// predicate building. Safe because Hibernate Fetch implements Join internally.
+		@SuppressWarnings("unchecked")
+		Join<Employee, EmployeePersonalInfo> personalInfoJoin = (Join<Employee, EmployeePersonalInfo>) root
+			.fetch(Employee_.personalInfo, JoinType.LEFT);
+
 		Join<Employee, User> userJoin = root.join(Employee_.user);
-		Join<Employee, EmployeePersonalInfo> personalInfoJoin = root.join(Employee_.personalInfo, JoinType.LEFT);
-		Join<Employee, EmployeeRole> roleJoin = root.join((Employee_.employeeRole));
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole);
+
+		criteriaQuery.where(buildExportPredicates(employeeExportFilterDto, criteriaBuilder, root, userJoin,
+				personalInfoJoin, roleJoin)
+			.toArray(new Predicate[0]));
+		criteriaQuery.distinct(true);
+		criteriaQuery.orderBy(buildExportOrder(employeeExportFilterDto, criteriaBuilder, root, userJoin));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	private List<Predicate> buildExportPredicates(EmployeeExportFilterDto dto, CriteriaBuilder criteriaBuilder,
+			Root<Employee> root, Join<Employee, User> userJoin, Join<Employee, EmployeePersonalInfo> personalInfoJoin,
+			Join<Employee, EmployeeRole> roleJoin) {
 
 		List<Predicate> predicates = new ArrayList<>();
-
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
 		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 
-		if (employeeExportFilterDto.getRole() != null && !employeeExportFilterDto.getRole().isEmpty()) {
-			predicates.add(
-					root.get(Employee_.JOB_FAMILY).get(JobFamily_.JOB_FAMILY_ID).in(employeeExportFilterDto.getRole()));
-		}
+		applyExportSimpleFilters(dto, criteriaBuilder, root, personalInfoJoin, predicates);
 
-		if (employeeExportFilterDto.getTeam() != null && !employeeExportFilterDto.getTeam().isEmpty()) {
+		if (dto.getTeam() != null && !dto.getTeam().isEmpty()) {
 			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams);
-			predicates
-				.add(employeeTeam.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeExportFilterDto.getTeam()));
+			predicates.add(employeeTeam.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(dto.getTeam()));
 		}
 
-		if (employeeExportFilterDto.getNationality() != null && !employeeExportFilterDto.getNationality().isEmpty()) {
-			predicates.add(personalInfoJoin.get(EmployeePersonalInfo_.NATIONALITY)
-				.in(employeeExportFilterDto.getNationality()));
+		if (dto.getSearchKeyword() != null && !dto.getSearchKeyword().isEmpty()) {
+			predicates.add(findByEmailName(dto.getSearchKeyword(), criteriaBuilder, root, userJoin));
 		}
 
-		if (employeeExportFilterDto.getGender() != null) {
-			predicates.add(criteriaBuilder.equal(root.get(Employee_.GENDER), employeeExportFilterDto.getGender()));
+		if (dto.getPermissions() != null && !dto.getPermissions().isEmpty()) {
+			predicates.addAll(buildPermissionsPredicates(dto.getPermissions(), criteriaBuilder, roleJoin));
 		}
 
-		if (employeeExportFilterDto.getEmploymentTypes() != null
-				&& !employeeExportFilterDto.getEmploymentTypes().isEmpty()) {
-			predicates.add(root.get(Employee_.EMPLOYMENT_TYPE).in(employeeExportFilterDto.getEmploymentTypes()));
+		return predicates;
+	}
+
+	private void applyExportSimpleFilters(EmployeeExportFilterDto dto, CriteriaBuilder criteriaBuilder,
+			Root<Employee> root, Join<Employee, EmployeePersonalInfo> personalInfoJoin, List<Predicate> predicates) {
+		if (dto.getRole() != null && !dto.getRole().isEmpty()) {
+			predicates.add(root.get(Employee_.JOB_FAMILY).get(JobFamily_.JOB_FAMILY_ID).in(dto.getRole()));
 		}
-
-		if (employeeExportFilterDto.getAccountStatus() != null
-				&& !employeeExportFilterDto.getAccountStatus().isEmpty()) {
-			predicates.add(root.get(Employee_.ACCOUNT_STATUS).in(employeeExportFilterDto.getAccountStatus()));
+		if (dto.getNationality() != null && !dto.getNationality().isEmpty()) {
+			predicates.add(personalInfoJoin.get(EmployeePersonalInfo_.NATIONALITY).in(dto.getNationality()));
 		}
-
-		if (employeeExportFilterDto.getEmploymentAllocations() != null
-				&& !employeeExportFilterDto.getEmploymentAllocations().isEmpty()) {
-			predicates
-				.add(root.get(Employee_.EMPLOYMENT_ALLOCATION).in(employeeExportFilterDto.getEmploymentAllocations()));
+		if (dto.getGender() != null) {
+			predicates.add(criteriaBuilder.equal(root.get(Employee_.GENDER), dto.getGender()));
 		}
-
-		if (employeeExportFilterDto.getSearchKeyword() != null
-				&& !employeeExportFilterDto.getSearchKeyword().isEmpty()) {
-			predicates
-				.add(findByEmailName(employeeExportFilterDto.getSearchKeyword(), criteriaBuilder, root, userJoin));
+		if (dto.getEmploymentTypes() != null && !dto.getEmploymentTypes().isEmpty()) {
+			predicates.add(root.get(Employee_.EMPLOYMENT_TYPE).in(dto.getEmploymentTypes()));
 		}
-
-		if (employeeExportFilterDto.getPermissions() != null && !employeeExportFilterDto.getPermissions().isEmpty()) {
-			Predicate attendanceRolePredicate = roleJoin.get(EmployeeRole_.ATTENDANCE_ROLE)
-				.in(employeeExportFilterDto.getPermissions());
-			Predicate peopleRolePredicate = roleJoin.get(EmployeeRole_.PEOPLE_ROLE)
-				.in(employeeExportFilterDto.getPermissions());
-			Predicate leaveRolePredicate = roleJoin.get(EmployeeRole_.LEAVE_ROLE)
-				.in(employeeExportFilterDto.getPermissions());
-
-			Predicate rolePredicate = criteriaBuilder.or(attendanceRolePredicate, peopleRolePredicate,
-					leaveRolePredicate);
-			predicates.add(rolePredicate);
-			predicates.add(criteriaBuilder.equal(roleJoin.get(EmployeeRole_.IS_SUPER_ADMIN), false));
+		if (dto.getAccountStatus() != null && !dto.getAccountStatus().isEmpty()) {
+			predicates.add(root.get(Employee_.ACCOUNT_STATUS).in(dto.getAccountStatus()));
 		}
+		if (dto.getEmploymentAllocations() != null && !dto.getEmploymentAllocations().isEmpty()) {
+			predicates.add(root.get(Employee_.EMPLOYMENT_ALLOCATION).in(dto.getEmploymentAllocations()));
+		}
+	}
 
-		criteriaQuery.where(predicates.toArray(new Predicate[0]));
-
+	private List<Order> buildExportOrder(EmployeeExportFilterDto dto, CriteriaBuilder criteriaBuilder,
+			Root<Employee> root, Join<Employee, User> userJoin) {
 		List<Order> orderList = new ArrayList<>();
-		if (employeeExportFilterDto.getSearchKeyword() != null
-				&& !employeeExportFilterDto.getSearchKeyword().isEmpty()) {
-			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
-				.when(criteriaBuilder.like(root.get(Employee_.FIRST_NAME),
-						getSearchString(employeeExportFilterDto.getSearchKeyword())), 1)
-				.when(criteriaBuilder.like(root.get(Employee_.LAST_NAME),
-						getSearchString(employeeExportFilterDto.getSearchKeyword())), 2)
-				.when(criteriaBuilder.like(userJoin.get(User_.EMAIL),
-						getSearchString(employeeExportFilterDto.getSearchKeyword())), 3)
-				.otherwise(4));
-			orderList.add(sortingOrder);
+
+		if (dto.getSearchKeyword() != null && !dto.getSearchKeyword().isEmpty()) {
+			orderList.add(criteriaBuilder.asc(criteriaBuilder.selectCase()
+				.when(criteriaBuilder.like(root.get(Employee_.FIRST_NAME), getSearchString(dto.getSearchKeyword())), 1)
+				.when(criteriaBuilder.like(root.get(Employee_.LAST_NAME), getSearchString(dto.getSearchKeyword())), 2)
+				.when(criteriaBuilder.like(userJoin.get(User_.EMAIL), getSearchString(dto.getSearchKeyword())), 3)
+				.otherwise(4)));
 		}
 
-		if (employeeExportFilterDto.getSortKey() != null && employeeExportFilterDto.getSortOrder() != null) {
-			if (employeeExportFilterDto.getSortKey() == EmployeeSort.NAME) {
-				if (employeeExportFilterDto.getSortOrder() == Sort.Direction.ASC) {
-					orderList.add(criteriaBuilder.asc(root.get(Employee_.FIRST_NAME)));
-					orderList.add(criteriaBuilder.asc(root.get(Employee_.LAST_NAME)));
-				}
-				else {
-					orderList.add(criteriaBuilder.desc(root.get(Employee_.FIRST_NAME)));
-					orderList.add(criteriaBuilder.desc(root.get(Employee_.LAST_NAME)));
-				}
-			}
-			else {
-				if (employeeExportFilterDto.getSortOrder() == Sort.Direction.ASC) {
-					orderList.add(criteriaBuilder.asc(root.get(employeeExportFilterDto.getSortKey().toString())));
-				}
-				else {
-					orderList.add(criteriaBuilder.desc(root.get(employeeExportFilterDto.getSortKey().toString())));
-				}
-			}
+		if (dto.getSortKey() != null && dto.getSortOrder() != null) {
+			orderList.addAll(buildExportSortKeyOrder(dto, criteriaBuilder, root));
 		}
 
-		criteriaQuery.distinct(true);
-		criteriaQuery.orderBy(orderList);
+		return orderList;
+	}
 
-		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
-
-		return query.getResultList();
+	private List<Order> buildExportSortKeyOrder(EmployeeExportFilterDto dto, CriteriaBuilder criteriaBuilder,
+			Root<Employee> root) {
+		boolean isAsc = dto.getSortOrder() == Sort.Direction.ASC;
+		if (dto.getSortKey() == EmployeeSort.NAME) {
+			return List.of(
+					isAsc ? criteriaBuilder.asc(root.get(Employee_.FIRST_NAME))
+							: criteriaBuilder.desc(root.get(Employee_.FIRST_NAME)),
+					isAsc ? criteriaBuilder.asc(root.get(Employee_.LAST_NAME))
+							: criteriaBuilder.desc(root.get(Employee_.LAST_NAME)));
+		}
+		return List.of(isAsc ? criteriaBuilder.asc(root.get(dto.getSortKey().toString()))
+				: criteriaBuilder.desc(root.get(dto.getSortKey().toString())));
 	}
 
 	@Override
