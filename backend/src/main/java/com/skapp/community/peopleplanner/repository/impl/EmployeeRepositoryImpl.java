@@ -96,48 +96,73 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	public Page<Employee> findEmployees(EmployeeFilterDto employeeFilterDto, Pageable page) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
+		// Count Query to get total rows for pagination
+		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+		Root<Employee> countRoot = countQuery.from(Employee.class);
+		Join<Employee, User> countUserJoin = countRoot.join(Employee_.user);
+		Join<Employee, EmployeePersonalInfo> countPersonalInfoJoin = countRoot.join(Employee_.personalInfo,
+				JoinType.LEFT);
+		Join<Employee, EmployeeRole> countRoleJoin = countRoot.join(Employee_.employeeRole);
+
+		List<Predicate> countPredicates = buildFindEmployeesPredicates(employeeFilterDto, criteriaBuilder, countRoot,
+				countUserJoin, countPersonalInfoJoin, countRoleJoin);
+		countQuery.select(criteriaBuilder.countDistinct(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+
+		Long totalRows = entityManager.createQuery(countQuery).getSingleResult();
+
+		if (totalRows == 0) {
+			return new PageImpl<>(List.of(), page, 0);
+		}
+
+		// Data Query with sorting and pagination
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
-
 		Join<Employee, User> userJoin = root.join(Employee_.user);
-		Join<Employee, EmployeePersonalInfo> personalInfoJoin = root.join((Employee_.personalInfo), JoinType.LEFT);
-		Join<Employee, EmployeeRole> roleJoin = root.join((Employee_.employeeRole));
+		Join<Employee, EmployeePersonalInfo> personalInfoJoin = root.join(Employee_.personalInfo, JoinType.LEFT);
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole);
+
+		List<Predicate> predicates = buildFindEmployeesPredicates(employeeFilterDto, criteriaBuilder, root, userJoin,
+				personalInfoJoin, roleJoin);
+		criteriaQuery.distinct(true).where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.orderBy(
+				buildFindEmployeesOrder(employeeFilterDto.getSearchKeyword(), criteriaBuilder, root, userJoin, page));
+
+		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
+		query.setFirstResult(page.getPageNumber() * page.getPageSize());
+		query.setMaxResults(page.getPageSize());
+
+		return new PageImpl<>(query.getResultList(), page, totalRows);
+	}
+
+	private List<Order> buildFindEmployeesOrder(String searchKeyword, CriteriaBuilder criteriaBuilder,
+			Root<Employee> root, Join<Employee, User> userJoin, Pageable page) {
+		if (searchKeyword == null || searchKeyword.isEmpty()) {
+			return QueryUtils.toOrders(page.getSort(), root, criteriaBuilder);
+		}
+		List<Order> orderList = new ArrayList<>();
+		orderList.add(criteriaBuilder.asc(criteriaBuilder.selectCase()
+			.when(criteriaBuilder.like(root.get(Employee_.FIRST_NAME), getSearchString(searchKeyword)), 1)
+			.when(criteriaBuilder.like(root.get(Employee_.LAST_NAME), getSearchString(searchKeyword)), 2)
+			.when(criteriaBuilder.like(userJoin.get(User_.EMAIL), getSearchString(searchKeyword)), 3)
+			.otherwise(4)));
+		orderList.addAll(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+		return orderList;
+	}
+
+	private List<Predicate> buildFindEmployeesPredicates(EmployeeFilterDto employeeFilterDto,
+			CriteriaBuilder criteriaBuilder, Root<Employee> root, Join<Employee, User> userJoin,
+			Join<Employee, EmployeePersonalInfo> personalInfoJoin, Join<Employee, EmployeeRole> roleJoin) {
 
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
 		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 
-		if (employeeFilterDto.getRole() != null && !employeeFilterDto.getRole().isEmpty()) {
-			predicates
-				.add(root.get(Employee_.JOB_FAMILY).get(JobFamily_.JOB_FAMILY_ID).in(employeeFilterDto.getRole()));
-		}
+		applyEmployeeSimpleFilters(employeeFilterDto, criteriaBuilder, root, personalInfoJoin, predicates);
 
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
-			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams);
+			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams, JoinType.LEFT);
 			predicates.add(employeeTeam.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeFilterDto.getTeam()));
-		}
-
-		if (employeeFilterDto.getNationality() != null && !employeeFilterDto.getNationality().isEmpty()) {
-			predicates
-				.add(personalInfoJoin.get(EmployeePersonalInfo_.NATIONALITY).in(employeeFilterDto.getNationality()));
-		}
-
-		if (employeeFilterDto.getGender() != null) {
-			predicates.add(criteriaBuilder.equal(root.get(Employee_.GENDER), employeeFilterDto.getGender()));
-		}
-
-		if (employeeFilterDto.getEmploymentTypes() != null && !employeeFilterDto.getEmploymentTypes().isEmpty()) {
-			predicates.add(root.get(Employee_.EMPLOYMENT_TYPE).in(employeeFilterDto.getEmploymentTypes()));
-		}
-
-		if (employeeFilterDto.getAccountStatus() != null && !employeeFilterDto.getAccountStatus().isEmpty()) {
-			predicates.add(root.get(Employee_.ACCOUNT_STATUS).in(employeeFilterDto.getAccountStatus()));
-		}
-
-		if (employeeFilterDto.getEmploymentAllocations() != null
-				&& !employeeFilterDto.getEmploymentAllocations().isEmpty()) {
-			predicates.add(root.get(Employee_.EMPLOYMENT_ALLOCATION).in(employeeFilterDto.getEmploymentAllocations()));
 		}
 
 		if (employeeFilterDto.getSearchKeyword() != null && !employeeFilterDto.getSearchKeyword().isEmpty()) {
@@ -145,49 +170,45 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		}
 
 		if (employeeFilterDto.getPermissions() != null && !employeeFilterDto.getPermissions().isEmpty()) {
-			Predicate attendanceRolePredicate = roleJoin.get(EmployeeRole_.ATTENDANCE_ROLE)
-				.in(employeeFilterDto.getPermissions());
-			Predicate peopleRolePredicate = roleJoin.get(EmployeeRole_.PEOPLE_ROLE)
-				.in(employeeFilterDto.getPermissions());
-			Predicate leaveRolePredicate = roleJoin.get(EmployeeRole_.LEAVE_ROLE)
-				.in(employeeFilterDto.getPermissions());
-
-			Predicate rolePredicate = criteriaBuilder.or(attendanceRolePredicate, peopleRolePredicate,
-					leaveRolePredicate);
-			predicates.add(rolePredicate);
-			predicates.add(criteriaBuilder.equal(roleJoin.get(EmployeeRole_.IS_SUPER_ADMIN), false));
+			predicates
+				.addAll(buildPermissionsPredicates(employeeFilterDto.getPermissions(), criteriaBuilder, roleJoin));
 		}
 
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		criteriaQuery.where(predArray);
+		return predicates;
+	}
 
-		if (employeeFilterDto.getSearchKeyword() != null && !employeeFilterDto.getSearchKeyword().isEmpty()) {
-			List<Order> orderList = new ArrayList<>();
-			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
-				.when(criteriaBuilder.like(root.get(Employee_.FIRST_NAME),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 1)
-				.when(criteriaBuilder.like(root.get(Employee_.LAST_NAME),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 2)
-				.when(criteriaBuilder.like(userJoin.get(User_.EMAIL),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 3)
-				.otherwise(4));
-			orderList.add(sortingOrder);
-			orderList.addAll(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
-			criteriaQuery.orderBy(orderList);
+	private void applyEmployeeSimpleFilters(EmployeeFilterDto employeeFilterDto, CriteriaBuilder criteriaBuilder,
+			Root<Employee> root, Join<Employee, EmployeePersonalInfo> personalInfoJoin, List<Predicate> predicates) {
+		if (employeeFilterDto.getRole() != null && !employeeFilterDto.getRole().isEmpty()) {
+			predicates
+				.add(root.get(Employee_.JOB_FAMILY).get(JobFamily_.JOB_FAMILY_ID).in(employeeFilterDto.getRole()));
 		}
-		else {
-			criteriaQuery.distinct(true);
-			criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+		if (employeeFilterDto.getNationality() != null && !employeeFilterDto.getNationality().isEmpty()) {
+			predicates
+				.add(personalInfoJoin.get(EmployeePersonalInfo_.NATIONALITY).in(employeeFilterDto.getNationality()));
 		}
+		if (employeeFilterDto.getGender() != null) {
+			predicates.add(criteriaBuilder.equal(root.get(Employee_.GENDER), employeeFilterDto.getGender()));
+		}
+		if (employeeFilterDto.getEmploymentTypes() != null && !employeeFilterDto.getEmploymentTypes().isEmpty()) {
+			predicates.add(root.get(Employee_.EMPLOYMENT_TYPE).in(employeeFilterDto.getEmploymentTypes()));
+		}
+		if (employeeFilterDto.getAccountStatus() != null && !employeeFilterDto.getAccountStatus().isEmpty()) {
+			predicates.add(root.get(Employee_.ACCOUNT_STATUS).in(employeeFilterDto.getAccountStatus()));
+		}
+		if (employeeFilterDto.getEmploymentAllocations() != null
+				&& !employeeFilterDto.getEmploymentAllocations().isEmpty()) {
+			predicates.add(root.get(Employee_.EMPLOYMENT_ALLOCATION).in(employeeFilterDto.getEmploymentAllocations()));
+		}
+	}
 
-		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
-
-		int totalRows = query.getResultList().size();
-		query.setFirstResult(page.getPageNumber() * page.getPageSize());
-		query.setMaxResults(page.getPageSize());
-
-		return new PageImpl<>(query.getResultList(), page, totalRows);
+	private List<Predicate> buildPermissionsPredicates(List<String> permissions, CriteriaBuilder criteriaBuilder,
+			Join<Employee, EmployeeRole> roleJoin) {
+		Predicate attendanceRolePredicate = roleJoin.get(EmployeeRole_.ATTENDANCE_ROLE).in(permissions);
+		Predicate peopleRolePredicate = roleJoin.get(EmployeeRole_.PEOPLE_ROLE).in(permissions);
+		Predicate leaveRolePredicate = roleJoin.get(EmployeeRole_.LEAVE_ROLE).in(permissions);
+		return List.of(criteriaBuilder.or(attendanceRolePredicate, peopleRolePredicate, leaveRolePredicate),
+				criteriaBuilder.equal(roleJoin.get(EmployeeRole_.IS_SUPER_ADMIN), false));
 	}
 
 	@Override
