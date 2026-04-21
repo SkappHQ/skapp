@@ -559,6 +559,8 @@ export const isMobileDevice = (): boolean => {
 };
 
 export const replaceTabQueryParam = (path: string, tabId: string): void => {
-  const basePath = path.split("?")[0];
-  globalThis.history.replaceState(null, "", `${basePath}?tab=${tabId}`);
+  const [basePath, query] = path.split("?");
+  const params = new URLSearchParams(query);
+  params.set("tab", tabId);
+  globalThis.history.replaceState(null, "", `${basePath}?${params.toString()}`);
 };

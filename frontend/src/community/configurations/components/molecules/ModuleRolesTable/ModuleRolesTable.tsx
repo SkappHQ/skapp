@@ -21,6 +21,11 @@ interface ModuleColumn {
   label: string;
 }
 
+interface RoleStatus {
+  viewOnly: boolean;
+  label?: string;
+}
+
 interface Props {
   module: Modules;
 }
@@ -57,11 +62,7 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
     );
   };
 
-  const getRoleLabel = (role: {
-    enabled: boolean;
-    viewOnly: boolean;
-    label?: string;
-  }) => {
+  const getRoleLabel = (role: RoleStatus) => {
     if (role.label) return translateText([role.label]);
     if (role.viewOnly) return translateText(["viewOnly"]);
     return "";
