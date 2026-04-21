@@ -1032,9 +1032,6 @@ public class PeopleServiceImpl implements PeopleService {
 		Page<Employee> employees = employeeDao.findEmployees(employeeFilterDto, pageable);
 		PageDto pageDto = pageTransformer.transform(employees);
 
-		List<Long> employeeIds = employees.stream().map(Employee::getEmployeeId).toList();
-		List<EmployeeTeamDto> teamList = employeeDao.findTeamsByEmployees(employeeIds);
-
 		if (!isExport) {
 			pageDto.setItems(fetchEmployeeSearchData(employees));
 
@@ -1042,6 +1039,10 @@ public class PeopleServiceImpl implements PeopleService {
 			return new ResponseEntityDto(false, pageDto);
 		}
 		else {
+
+			List<Long> employeeIds = employees.stream().map(Employee::getEmployeeId).toList();
+			List<EmployeeTeamDto> teamList = employeeDao.findTeamsByEmployees(employeeIds);
+
 			List<EmployeeDataExportResponseDto> responseDtos = exportEmployeeData(employees, teamList, employeeIds);
 			log.info("getEmployees: Successfully finished returning {} employees on exportEmployeeData",
 					responseDtos.size());
