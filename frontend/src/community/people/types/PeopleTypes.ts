@@ -66,6 +66,7 @@ export interface L2CommonDetailsType {
 
 //L3 Types
 export interface L3GeneralDetailsType {
+  title?: string;
   firstName?: string;
   middleName?: string;
   lastName?: string;

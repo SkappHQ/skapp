@@ -259,6 +259,7 @@ export interface EmployeeDetails {
   employeePermission?: EmployeePermission | null;
   managers?: [] | Array<EmployeeManagerType>;
   gender: string | null;
+  title: string | null | undefined;
   identificationNo: string | null | undefined;
   jobFamily?: null | JobFamilies;
   jobTitle?: JobTitles | null;

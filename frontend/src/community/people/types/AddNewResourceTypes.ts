@@ -20,6 +20,7 @@ export interface ManagerStoreType {
 export interface EmployeeGeneralDetailsTypes {
   authPic: [] | ModifiedFileType[] | string | null | undefined;
   thumbnail: [] | ModifiedFileType[] | string | null | undefined;
+  title: string | null | undefined;
   firstName: string | null | undefined;
   middleName: string | null | undefined;
   lastName: string | null | undefined;

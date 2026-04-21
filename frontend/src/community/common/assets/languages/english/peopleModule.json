@@ -531,6 +531,7 @@
     },
     "generalDetails": {
       "title": "General Details",
+      "employeeTitle": "Title",
       "firstName": "First name",
       "middleName": "Middle name",
       "lastName": "Last name",

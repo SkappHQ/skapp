@@ -51,7 +51,8 @@ import { ModifiedFileType } from "~community/people/types/AddNewResourceTypes";
 import {
   GenderList,
   MaritalStatusList,
-  NationalityList
+  NationalityList,
+  TitleList
 } from "~community/people/utils/data/employeeSetupStaticData";
 import generateThumbnail from "~community/people/utils/image/thumbnailGenerator";
 import { employeeGeneralDetailsValidation } from "~community/people/utils/peopleValidations";
@@ -102,6 +103,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
       () => ({
         authPic: employeeGeneralDetails?.authPic ?? "",
         thumbnail: employeeGeneralDetails?.thumbnail ?? "",
+        title: employeeGeneralDetails?.title || "",
         firstName: employeeGeneralDetails?.firstName || "",
         middleName: employeeGeneralDetails?.middleName || "",
         lastName: employeeGeneralDetails?.lastName || "",
@@ -299,7 +301,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
         containerStyles={{
           padding: "0",
           margin: "0 auto",
-          height: "auto",
+          height: "auto"
         }}
         dividerStyles={{
           mt: "0.5rem"
@@ -375,29 +377,54 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
               }}
             >
               <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-                <InputField
-                  label={translateText(["firstName"])}
-                  inputType="text"
-                  value={values.firstName}
-                  placeHolder={translateText(["enterFirstName"])}
-                  onChange={handleInput}
-                  inputName="firstName"
-                  error={errors.firstName ?? ""}
-                  componentStyle={{
-                    flex: 1,
-                    mt: "0rem"
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "1rem"
                   }}
-                  required={!isManager}
-                  readOnly={isManager}
-                  isDisabled={isInputsDisabled}
-                  maxLength={NAME_MAX_CHARACTER_LENGTH}
-                  data-testid={
-                    generalDetailsSectionTestId.InputFields.firstName
-                  }
-                  validation-testid={
-                    generalDetailsSectionTestId.InputFields.firstNameValidation
-                  }
-                />
+                >
+                  <DropdownList
+                    inputName="title"
+                    label={translateText(["employeeTitle"])}
+                    value={values.title}
+                    placeholder={translateText(["employeeTitle"])}
+                    onChange={handleChange}
+                    componentStyle={{
+                      flex: 0.4,
+                      mt: "0rem"
+                    }}
+                    errorFocusOutlineNeeded={false}
+                    itemList={TitleList}
+                    checkSelected
+                    readOnly={isManager}
+                    isDisabled={isInputsDisabled}
+                  />
+                  <InputField
+                    label={translateText(["firstName"])}
+                    inputType="text"
+                    value={values.firstName}
+                    placeHolder={translateText(["enterFirstName"])}
+                    onChange={handleInput}
+                    inputName="firstName"
+                    error={errors.firstName ?? ""}
+                    componentStyle={{
+                      flex: 1,
+                      mt: "0rem"
+                    }}
+                    required={!isManager}
+                    readOnly={isManager}
+                    isDisabled={isInputsDisabled}
+                    maxLength={NAME_MAX_CHARACTER_LENGTH}
+                    data-testid={
+                      generalDetailsSectionTestId.InputFields.firstName
+                    }
+                    validation-testid={
+                      generalDetailsSectionTestId.InputFields
+                        .firstNameValidation
+                    }
+                  />
+                </div>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6, xl: 4 }}>

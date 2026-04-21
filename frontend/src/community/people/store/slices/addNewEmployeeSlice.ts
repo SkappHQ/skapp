@@ -29,6 +29,7 @@ import { AddNewResourceSliceTypes } from "~community/people/types/SliceTypes";
 const employeeGeneralDetails: EmployeeGeneralDetailsTypes = {
   authPic: [],
   thumbnail: [],
+  title: "",
   firstName: "",
   middleName: "",
   lastName: "",
