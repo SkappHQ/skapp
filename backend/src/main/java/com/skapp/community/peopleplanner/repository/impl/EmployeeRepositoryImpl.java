@@ -417,6 +417,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public List<EmployeeTeamDto> findTeamsByEmployees(List<Long> employeeIDs) {
+
+		if (employeeIDs == null || employeeIDs.isEmpty()) {
+			return List.of();
+		}
+
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<EmployeeTeamDto> criteriaQuery = criteriaBuilder.createQuery(EmployeeTeamDto.class);
@@ -430,7 +435,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
 		criteriaQuery.where(predArray);
-		criteriaQuery.multiselect(root.get(Employee_.EMPLOYEE_ID), team);
+		criteriaQuery.select(criteriaBuilder.construct(EmployeeTeamDto.class, root.get(Employee_.EMPLOYEE_ID), team));
 		TypedQuery<EmployeeTeamDto> typedQuery = entityManager.createQuery(criteriaQuery);
 		return typedQuery.getResultList();
 	}
