@@ -8,10 +8,6 @@
     "manager": {
       "enabled": false,
       "viewOnly": false
-    },
-    "employee": {
-      "enabled": false,
-      "viewOnly": false
     }
   },
   {
@@ -21,10 +17,6 @@
       "viewOnly": false
     },
     "manager": {
-      "enabled": false,
-      "viewOnly": false
-    },
-    "employee": {
       "enabled": false,
       "viewOnly": false
     }
@@ -38,10 +30,6 @@
     "manager": {
       "enabled": true,
       "viewOnly": false
-    },
-    "employee": {
-      "enabled": false,
-      "viewOnly": false
     }
   },
   {
@@ -52,10 +40,6 @@
     },
     "manager": {
       "enabled": true,
-      "viewOnly": false
-    },
-    "employee": {
-      "enabled": false,
       "viewOnly": false
     }
   }

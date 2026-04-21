@@ -3,13 +3,11 @@
     "permission": "manageGuestUsers",
     "admin": {
       "enabled": true,
-      "viewOnly": false,
-      "label": ""
+      "viewOnly": false
     },
     "employee": {
       "enabled": false,
-      "viewOnly": false,
-      "label": ""
+      "viewOnly": false
     }
   },
   {
@@ -29,13 +27,11 @@
     "permission": "createProjects",
     "admin": {
       "enabled": true,
-      "viewOnly": false,
-      "label": ""
+      "viewOnly": false
     },
     "employee": {
       "enabled": true,
-      "viewOnly": false,
-      "label": ""
+      "viewOnly": false
     }
   }
 ]
