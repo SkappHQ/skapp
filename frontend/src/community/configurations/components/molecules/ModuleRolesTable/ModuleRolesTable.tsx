@@ -16,6 +16,11 @@ import projectManagementModuleRolesTableData from "~community/configurations/dat
 
 import styles from "./styles";
 
+interface ModuleColumn {
+  id: string;
+  label: string;
+}
+
 interface Props {
   module: Modules;
 }
@@ -93,7 +98,7 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
     );
   };
 
-  const moduleColumns: Record<string, { id: string; label: string }[]> = {
+  const moduleColumns: Record<string, ModuleColumn[]> = {
     [Modules.ATTENDANCE]: [
       { id: "manager", label: translateText(["managerHeader"]) },
       { id: "employee", label: translateText(["employeeHeader"]) }

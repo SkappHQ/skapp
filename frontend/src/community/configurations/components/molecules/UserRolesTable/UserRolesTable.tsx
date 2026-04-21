@@ -37,13 +37,13 @@ const UserRolesTable = (): JSX.Element => {
     if (allUserRoles !== undefined && allUserRoles?.length > 0) {
       const formattedUserRoles = allUserRoles
         ?.filter((role: AllUserRolesResponseType) => {
-          if (role.module.toUpperCase() === Modules.OKR) {
+          if (role?.module?.toUpperCase() === Modules.OKR) {
             return false;
           }
-          if (role.module.toUpperCase() === Modules.LEAVE) {
+          if (role?.module?.toUpperCase() === Modules.LEAVE) {
             return user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE);
           }
-          if (role.module.toUpperCase() === Modules.ATTENDANCE) {
+          if (role?.module?.toUpperCase() === Modules.ATTENDANCE) {
             return user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE);
           }
 

@@ -19,7 +19,7 @@ const Module: NextPage = () => {
   const { module } = router.query;
 
   const formattedModule = useMemo(() => {
-    return mapApiModuleToEnum(module?.toString() ?? "");
+    return mapApiModuleToEnum(module?.toString());
   }, [module]);
 
   const translateText = useTranslator("configurations", "userRoles");

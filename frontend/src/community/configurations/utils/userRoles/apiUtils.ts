@@ -46,6 +46,7 @@ const apiModuleToEnumMap: Record<string, Modules> = {
   projectmanagement: Modules.PM
 };
 
-export const mapApiModuleToEnum = (apiModule: string): Modules => {
+export const mapApiModuleToEnum = (apiModule?: string): Modules => {
+  if (!apiModule) return Modules.NONE;
   return apiModuleToEnumMap[apiModule.toLowerCase()] ?? Modules.NONE;
 };
