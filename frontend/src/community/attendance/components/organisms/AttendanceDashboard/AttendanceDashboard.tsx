@@ -1,6 +1,5 @@
 import { Box, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { useSession } from "next-auth/react";
 import { JSX, useEffect, useState } from "react";
 
 import {
@@ -15,6 +14,7 @@ import {
   clockInOutGraphTypes,
   lateArrivalsGraphTypes
 } from "~community/attendance/utils/echartOptions/constants";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import TeamSelector from "~community/common/components/molecules/TeamSelector/TeamSelector";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -47,12 +47,12 @@ const AttendanceDashboard = (): JSX.Element => {
   );
   const [isFetchingEnabled, setIsFetchingEnabled] = useState<boolean>(false);
 
-  const { data } = useSession();
+  const { user } = useAuth();
   const theme: Theme = useTheme();
 
   useEffect(() => {
-    if (data || teamId) setIsFetchingEnabled(true);
-  }, [data, teamId]);
+    if (user || teamId) setIsFetchingEnabled(true);
+  }, [user, teamId]);
 
   // fetch data for the analytics cards
   const { data: analyticsData } = useGetAttendanceDashboardAnalytics(

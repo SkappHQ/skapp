@@ -29,7 +29,8 @@ export const peoplesEndpoints = {
   DELETE_USER: (employeeId: string | number) =>
     `${moduleAPIPath.PEOPLE}/user/delete/${employeeId}`,
   HAS_SUPERVISOR_ROLES: (employeeId: number) =>
-    `${moduleAPIPath.PEOPLE}/${employeeId}/has-supervisory-roles`
+    `${moduleAPIPath.PEOPLE}/${employeeId}/has-supervisory-roles`,
+  EXPORT_PEOPLE_DIRECTORY: `/people/employees/export`
 };
 
 export const authEndpoints = {

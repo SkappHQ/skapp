@@ -1,9 +1,10 @@
 import { Box } from "@mui/material";
 import { useFormik } from "formik";
 import { NextPage } from "next";
-import { signIn } from "next-auth/react";
 import { NextRouter, useRouter } from "next/router";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { AuthMethods, SignInStatus } from "~community/auth/enums/auth";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import { useCheckOrgSetupStatus } from "~community/common/api/OrganizationCreateApi";
 import SetupSuperAdminForm from "~community/common/components/organisms/Forms/SignUpForm/setupSuperAdminForm/SetupSuperAdminForm";
@@ -22,6 +23,7 @@ const SignUp: NextPage = () => {
   const router: NextRouter = useRouter();
   const { navigateByStatus } = useOrgSetupRedirect();
   const { setToastMessage } = useToast();
+  const { signUp } = useAuth();
 
   const { data: orgSetupStatus } = useCheckOrgSetupStatus();
 
@@ -84,17 +86,17 @@ const SignUp: NextPage = () => {
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    const result = await signIn("credentials", {
-      redirect: false,
+    const result = await signUp({
       firstName: values.firstName,
       lastName: values.lastName,
       email: values.email,
-      password: values.password
+      password: values.password,
+      method: AuthMethods.CREDENTIAL
     });
 
     setIsLoading(false);
 
-    if (result?.ok) {
+    if (result === SignInStatus.SUCCESS) {
       router.push(ROUTES.ORGANIZATION.SETUP);
     }
   };

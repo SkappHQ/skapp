@@ -1,5 +1,6 @@
 package com.skapp.community.common.service;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public interface CacheService {
@@ -9,5 +10,7 @@ public interface CacheService {
 	void put(String cacheKey, String value, long ttl, TimeUnit timeUnit);
 
 	void invalidate(String cacheKey);
+
+	List<String> getValuesByPattern(String pattern);
 
 }

@@ -263,6 +263,17 @@ const routes = [
         ]
       },
       {
+        id: "4C",
+        name: "Templates",
+        url: ROUTES.SIGN.TEMPLATE,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          SenderTypes.ESIGN_SENDER,
+          AdminTypes.ESIGN_ADMIN
+        ]
+      },
+      {
         id: "5C",
         name: "Contacts",
         url: ROUTES.SIGN.CONTACTS,
@@ -278,10 +289,10 @@ const routes = [
   {
     id: "6",
     name: "Projects",
-    url: ROUTES.PROJECTS,
+    url: ROUTES.PROJECTS.BASE,
     icon: IconName.PROJECTS_ICON,
-    hasSubTree: false,
-    badge: "New",
+    hasSubTree: true,
+    // badge: "New",
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
       AdminTypes.PEOPLE_ADMIN,
@@ -293,6 +304,33 @@ const routes = [
       EmployeeTypes.PEOPLE_EMPLOYEE,
       EmployeeTypes.LEAVE_EMPLOYEE,
       EmployeeTypes.ATTENDANCE_EMPLOYEE
+    ],
+    subTree: [
+      {
+        id: "6A",
+        name: "All Projects",
+        url: ROUTES.PROJECTS.BASE,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.PEOPLE_ADMIN,
+          AdminTypes.LEAVE_ADMIN,
+          AdminTypes.ATTENDANCE_ADMIN,
+          ManagerTypes.PEOPLE_MANAGER,
+          ManagerTypes.LEAVE_MANAGER,
+          ManagerTypes.ATTENDANCE_MANAGER,
+          EmployeeTypes.PEOPLE_EMPLOYEE,
+          EmployeeTypes.LEAVE_EMPLOYEE,
+          EmployeeTypes.ATTENDANCE_EMPLOYEE
+        ]
+      },
+      {
+        id: "6B",
+        name: "Guest Users",
+        url: ROUTES.PROJECTS.GUESTS,
+        hasSubTree: false,
+        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.PM_ADMIN]
+      }
     ]
   },
   {

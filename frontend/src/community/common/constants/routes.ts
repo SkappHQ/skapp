@@ -12,6 +12,8 @@ const ROUTES = {
     VERIFY_SUCCESS: "/verify/success",
     VERIFY_RESET_PASSWORD: "/verify/reset-password",
     VERIFY_FORGOT_OTP: "/verify/reset-password",
+    VERIFY_GUEST: "/verify/guest",
+    VERIFY_GUEST_OTP: "/verify/guest-otp",
     FORGET_PASSWORD: "/forget-password",
     SYSTEM_UPDATE: "/system-update"
   },
@@ -92,12 +94,15 @@ const ROUTES = {
     BASE: "/sign",
     INBOX: "/sign/inbox",
     SENT: "/sign/sent",
+    TEMPLATE: "/sign/template",
     FOLDERS: "/sign/folders",
     CONTACTS: "/sign/contacts",
     CREATE_DOCUMENT: "/sign/create",
     SIGN: "/sign/sign",
+    REVIEW: "/sign/review",
     INFO: "/sign/info",
     DOCUMENT_ACCESS: "/sign/document/access",
+    MFA_VERIFY: "/sign/document/access/mfa-verify",
     COMPLETE: "/sign/complete",
     SENT_INFO: {
       BASE: "/sign/sent/envelope",
@@ -106,6 +111,11 @@ const ROUTES = {
     INBOX_INFO: {
       BASE: "/sign/inbox/envelope",
       ID: (id: number) => `/sign/inbox/envelope/${id}`
+    },
+    CREATE_TEMPLATE: "/sign/template/create",
+    EDIT_TEMPLATE: {
+      BASE: "/sign/template/",
+      ID: (id: number | string) => `/sign/template/${id}`
     }
   },
   OKR: {
@@ -122,7 +132,10 @@ const ROUTES = {
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
   SUBSCRIPTION: "/subscription",
-  PROJECTS: "/projects",
+  PROJECTS: {
+    BASE: "/projects/list",
+    GUESTS: "/projects/guests"
+  },
   INVOICE: {
     BASE: "/invoice",
     ALL_INVOICES: "/invoice/allInvoices",

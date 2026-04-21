@@ -27,3 +27,5 @@ export enum NotificationItemsTypes {
   LEAVE_REQUEST = "LEAVE_REQUEST",
   TIME_ENTRY = "TIME_ENTRY"
 }
+
+export const notificationDefaultImage = "/logo/skapp-thumbnail_16_16.svg";

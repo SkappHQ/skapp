@@ -1,5 +1,4 @@
 import { Box, useTheme } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { JSX, useMemo } from "react";
 
@@ -18,6 +17,7 @@ import {
 } from "~community/configurations/types/UserRolesTypes";
 
 import styles from "./styles";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 const UserRolesTable = (): JSX.Element => {
   const theme = useTheme();
@@ -30,17 +30,17 @@ const UserRolesTable = (): JSX.Element => {
   const { data: allUserRoles, isPending: isUserRolesPending } =
     useGetAllUserRoles();
 
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
   const formattedUserRoles = useMemo(() => {
     if (allUserRoles !== undefined && allUserRoles?.length > 0) {
       const formattedUserRoles = allUserRoles
         ?.filter((role: AllUserRolesResponseType) => {
           if (role.module.toUpperCase() === Modules.LEAVE) {
-            return session?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE);
+            return user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE);
           }
           if (role.module.toUpperCase() === Modules.ATTENDANCE) {
-            return session?.user?.roles?.includes(
+            return user?.roles?.includes(
               EmployeeTypes.ATTENDANCE_EMPLOYEE
             );
           }
@@ -58,7 +58,7 @@ const UserRolesTable = (): JSX.Element => {
     } else {
       return [];
     }
-  }, [allUserRoles, translateText, session?.user?.roles?.length]);
+  }, [allUserRoles, translateText, user?.roles?.length]);
 
   const transformToTableRows = (): UserRoleTableType[] => {
     return (

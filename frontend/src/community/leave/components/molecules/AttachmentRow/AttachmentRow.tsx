@@ -6,6 +6,7 @@ import { FileTypes } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useDownloadAttachment } from "~community/leave/hooks/useDownloadAttachment";
 import { AttachmentType } from "~community/leave/types/EmployeeLeaveRequestTypes";
+import { getFileNameOfAttachmentFromUrl } from "~community/leave/utils/getFileNameofAttachedFiles/getFileNamesofAttachments";
 
 interface Props {
   attachments?: AttachmentType[];
@@ -36,12 +37,11 @@ const AttachmentRow = ({ attachments }: Props) => {
       <Typography variant="body2" sx={{ fontSize: "1rem" }}>
         {translateText(["myLeaveRequests", "attachments"])}
       </Typography>
-
       <Box sx={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         {attachments.map((attachment, index) => (
           <IconChip
             key={index}
-            label={`${translateText(["myLeaveRequests", "uploadedAttachment"])} ${index + 1}`}
+            label={getFileNameOfAttachmentFromUrl(attachment.url) || translateText(["myLeaveRequests", "uploadedAttachment"])}
             chipStyles={{
               backgroundColor: "grey.100",
               py: "0.75rem",

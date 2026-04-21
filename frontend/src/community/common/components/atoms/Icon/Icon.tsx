@@ -9,6 +9,7 @@ import AssetIcon from "~community/common/assets/Icons/AssetIcon";
 import AssetModuleIcon from "~community/common/assets/Icons/AssetModuleIcon";
 import AttachmentIcon from "~community/common/assets/Icons/AttachmentIcon";
 import AttendanceModuleIcon from "~community/common/assets/Icons/AttendanceModuleIcon";
+import BackArrowIcon from "~community/common/assets/Icons/BackArrowIcon";
 import BackIcon from "~community/common/assets/Icons/BackIcon";
 import BellIcon from "~community/common/assets/Icons/BellIcon";
 import BinIcon from "~community/common/assets/Icons/BinIcon";
@@ -49,6 +50,7 @@ import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
 import DrawerOpenIcon from "~community/common/assets/Icons/DrawerOpenIcon";
 import DropDownArrowIcon from "~community/common/assets/Icons/DropDownArrowIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
+import DropdownIcon from "~community/common/assets/Icons/DropdownIcon";
 import DueIndicatorIcon from "~community/common/assets/Icons/DueIndicatorIcon";
 import EditIcon from "~community/common/assets/Icons/EditIcon";
 import EmailIcon from "~community/common/assets/Icons/EmailIcon";
@@ -86,6 +88,7 @@ import NewWindowIcon from "~community/common/assets/Icons/NewWindowIcon";
 import NoDataIcon from "~community/common/assets/Icons/NoDataIcon";
 import NudgeBellIcon from "~community/common/assets/Icons/NudgeBellIcon";
 import ObjectivesIcon from "~community/common/assets/Icons/ObjectivesIcon";
+import OutlookIcon from "~community/common/assets/Icons/OutlookIcon";
 import PaintTrayIcon from "~community/common/assets/Icons/PaintTrayIcon";
 import PauseIcon from "~community/common/assets/Icons/PauseIcon";
 import PdfIcon from "~community/common/assets/Icons/PdfIcon";
@@ -94,6 +97,7 @@ import PendingStatusIcon from "~community/common/assets/Icons/PendingStatusIcon"
 import PeopleIcon from "~community/common/assets/Icons/PeopleIcon";
 import PeopleModuleIcon from "~community/common/assets/Icons/PeopleModuleIcon";
 import PeopleRemoveIcon from "~community/common/assets/Icons/PeopleRemoveIcon";
+import PercentageIcon from "~community/common/assets/Icons/PercentageIcon";
 import PlayIcon from "~community/common/assets/Icons/PlayIcon";
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import PopOutIcon from "~community/common/assets/Icons/PopOutIcon";
@@ -111,6 +115,7 @@ import RingBellIcon from "~community/common/assets/Icons/RingBellIcon";
 import RotateLeftIcon from "~community/common/assets/Icons/RotateLeftIcon";
 import RoundedCloseIcon from "~community/common/assets/Icons/RoundedCloseIcon";
 import SaveIcon from "~community/common/assets/Icons/SaveIcon";
+import ScanDocumentIcon from "~community/common/assets/Icons/ScanDocumentIcon";
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import SelectedIcon from "~community/common/assets/Icons/SelectedIcon";
 import SendIcon from "~community/common/assets/Icons/SendIcon";
@@ -125,6 +130,7 @@ import StampIcon from "~community/common/assets/Icons/StampIcon";
 import SuccessIcon from "~community/common/assets/Icons/SuccessIcon";
 import SuperAdminIcon from "~community/common/assets/Icons/SuperAdminIcon";
 import SyncIcon from "~community/common/assets/Icons/SyncIcon";
+import TextIcon from "~community/common/assets/Icons/TextIcon";
 import ThreeDotsIcon from "~community/common/assets/Icons/ThreeDotsIcon";
 import TickIcon from "~community/common/assets/Icons/TickIcon";
 import TimerIcon from "~community/common/assets/Icons/TimerIcon";
@@ -133,6 +139,7 @@ import UnCheckedIcon from "~community/common/assets/Icons/UnCheckedIcon";
 import UndoIcon from "~community/common/assets/Icons/UndoIcon";
 import UpArrowIcon from "~community/common/assets/Icons/UpArrowIcon";
 import UpgradeInfoIcon from "~community/common/assets/Icons/UpgradeInfoIcon";
+import UploadDocumentIcon from "~community/common/assets/Icons/UploadDocumentIcon";
 import UserIcon from "~community/common/assets/Icons/UserIcon";
 import UserUploadIcon from "~community/common/assets/Icons/UserUploadIcon";
 import ViewIcon from "~community/common/assets/Icons/ViewIcon";
@@ -198,6 +205,8 @@ export const IconMapping: Partial<
   [IconName.WARNING_ICON]: WarningIcon,
   [IconName.SUCCESS_ICON]: SuccessIcon,
   [IconName.THREE_DOTS_ICON]: ThreeDotsIcon,
+  [IconName.TEXT_ICON]: TextIcon,
+  [IconName.BACK_ARROW_ICON]: BackArrowIcon,
   [IconName.MORE_ICON]: MoreIcon,
   [IconName.DANCING_WOMEN_ICON]: DancingWomenIcon,
   [IconName.RESTORE_ICON]: RestoreIcon,
@@ -265,6 +274,7 @@ export const IconMapping: Partial<
   [IconName.APPROVED_ICON]: ApprovedIcon,
   [IconName.DECLINED_ICON]: DeclinedIcon,
   [IconName.SIGNATURE_ICON]: SignatureIcon,
+  [IconName.DROPDOWN_ICON]: DropdownIcon,
   [IconName.INVITE_ICON]: InviteIcon,
   [IconName.REMOVE_PEOPLE_ICON]: PeopleRemoveIcon,
   [IconName.MINUS_ICON]: MinusIcon,
@@ -301,7 +311,11 @@ export const IconMapping: Partial<
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
-  [IconName.CAMERA_ICON]: CameraIcon
+  [IconName.CAMERA_ICON]: CameraIcon,
+  [IconName.OUTLOOK_ICON]: OutlookIcon,
+  [IconName.PERCENTAGE_ICON]: PercentageIcon,
+  [IconName.UPLOAD_DOCUMENT_ICON]: UploadDocumentIcon,
+  [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon
   // Add more icons here as needed
 };
 

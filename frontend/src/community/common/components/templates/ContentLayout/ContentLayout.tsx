@@ -7,11 +7,11 @@ import {
   useTheme
 } from "@mui/material";
 import { type SxProps } from "@mui/system";
-import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { JSX, memo, useEffect, useMemo } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
 import Button from "~community/common/components/atoms/Button/Button";
@@ -133,15 +133,15 @@ const ContentLayout = ({
 
   const router = useRouter();
 
-  const { data } = useSession();
+  const { user, signOut } = useAuth();
   const { asPath } = useRouter();
 
   const { showInfoBanner, isDailyNotifyDisplayed } = useVersionUpgradeStore(
     (state) => state
   );
 
-  const isSuperAdmin = data?.user?.roles?.includes(AdminTypes.SUPER_ADMIN);
-  const tenantStatus = data?.user?.tenantStatus;
+  const isSuperAdmin = user?.roles?.includes(AdminTypes.SUPER_ADMIN);
+  const tenantStatus = user?.tenantStatus;
 
   const modalTypeMap = {
     [TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED]:
@@ -175,10 +175,7 @@ const ContentLayout = ({
         TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
       ].includes(tenantStatus)
     ) {
-      signOut({
-        redirect: true,
-        callbackUrl: ROUTES.AUTH.SYSTEM_UPDATE
-      });
+      signOut();
       return;
     }
 
@@ -189,9 +186,9 @@ const ContentLayout = ({
     } else if (tenantStatus === TenantStatusEnums.ACTIVE) {
       setIsSubscriptionEndedModalOpen(false);
     }
-  }, [data?.user?.tenantStatus]);
+  }, [user?.tenantStatus]);
 
-  const { data: organizationDetails } = useGetOrganization(!!data);
+  const { data: organizationDetails } = useGetOrganization(!!user);
 
   const themeColor = shouldUseDefaultTheme(asPath)
     ? ThemeTypes.BLUE_THEME
@@ -211,14 +208,14 @@ const ContentLayout = ({
     setIsUserLimitExceeded: state.setIsUserLimitExceeded
   }));
 
-  const { data: storageAvailabilityData } = useStorageAvailability(!!data);
+  const { data: storageAvailabilityData } = useStorageAvailability(!!user);
 
   const usedStoragePercentage = useMemo(() => {
     return 100 - storageAvailabilityData?.availableSpace;
   }, [storageAvailabilityData]);
 
   const { data: checkUserLimit, isSuccess: isCheckUserLimitSuccess } =
-    useCheckUserLimit(isEnterpriseMode, !!data);
+    useCheckUserLimit(isEnterpriseMode, !!user);
 
   useEffect(() => {
     if (isEnterpriseMode) {
@@ -243,11 +240,11 @@ const ContentLayout = ({
       <Stack sx={mergeSx([classes.container, containerStyles])}>
         {showInfoBanner &&
           !isDailyNotifyDisplayed &&
-          data?.user.roles?.includes(AdminTypes.SUPER_ADMIN) && (
+          user?.roles?.includes(AdminTypes.SUPER_ADMIN) && (
             <VersionUpgradeBanner />
           )}
         {process.env.NEXT_PUBLIC_MODE === appModes.COMMUNITY &&
-          data?.user.roles?.includes(AdminTypes.SUPER_ADMIN) &&
+          user?.roles?.includes(AdminTypes.SUPER_ADMIN) &&
           usedStoragePercentage !== undefined &&
           usedStoragePercentage !== null &&
           usedStoragePercentage >= EIGHTY_PERCENT && (
@@ -258,8 +255,8 @@ const ContentLayout = ({
           )}
 
         {showUserLimitBanner &&
-          (data?.user.roles?.includes(AdminTypes.SUPER_ADMIN) ||
-            data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN)) && (
+          (user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+            user?.roles?.includes(AdminTypes.PEOPLE_ADMIN)) && (
             <UserLimitBanner />
           )}
 

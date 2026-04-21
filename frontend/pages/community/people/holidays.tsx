@@ -1,6 +1,6 @@
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -22,9 +22,9 @@ const Holidays: NextPage = () => {
   const [isConcatenationDone, setIsConcatenationDone] =
     useState<boolean>(false);
 
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
-  const isAdmin = session?.user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
+  const isAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
 
   const {
     setIsHolidayModalOpen,

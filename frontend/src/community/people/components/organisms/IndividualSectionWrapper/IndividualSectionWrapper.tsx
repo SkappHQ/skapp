@@ -13,7 +13,7 @@ interface Props {
 }
 
 const IndividualSectionWrapper = ({ employeeId }: Props) => {
-  const { data: employeeData } = useGetEmployee(employeeId);
+  const { data: employeeData, isLoading } = useGetEmployee(employeeId);
 
   const { currentStep, nextStep, employee, setCurrentStep, setEmployee } =
     usePeopleStore((state) => state);
@@ -54,6 +54,7 @@ const IndividualSectionWrapper = ({ employeeId }: Props) => {
       <PeopleIndividualSection
         employeeId={Number(employeeId)}
         formRef={individualSectionsRef}
+        isLoading={isLoading}
       />
     </>
   );

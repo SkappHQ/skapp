@@ -1,12 +1,11 @@
-import { useSession } from "next-auth/react";
-
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 import AccountSectionWrapper from "../../organisms/AccountSectionWrapper/AccountSectionWrapper";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 const PeopleAccount = () => {
-  const { data } = useSession();
+  const { user } = useAuth();
 
   const translateText = useTranslator("peopleModule");
 
@@ -19,7 +18,7 @@ const PeopleAccount = () => {
       title={""}
     >
       <>
-        <AccountSectionWrapper employeeId={Number(data?.user.userId)} />
+        <AccountSectionWrapper employeeId={Number(user?.userId)} />
       </>
     </ContentLayout>
   );

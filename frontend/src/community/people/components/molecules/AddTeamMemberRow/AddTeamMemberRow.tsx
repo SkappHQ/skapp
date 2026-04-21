@@ -6,8 +6,6 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
-import { useSession } from "next-auth/react";
-import * as React from "react";
 import { FC, useEffect, useState } from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
@@ -21,6 +19,7 @@ import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
 import { TeamMemberTypes } from "~community/people/types/TeamTypes";
 
 import styles from "./styles";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface Props {
   id: string;
@@ -45,9 +44,9 @@ const AddTeamMemberRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
-  const isAdmin = session?.user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
+  const isAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [selectedUserType, setSelectedUserType] =

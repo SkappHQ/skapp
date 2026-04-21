@@ -10,6 +10,7 @@ public enum CommonMessageConstant implements MessageConstant {
 	// Success message constants
 	COMMON_SUCCESS_FILE_UPLOAD("api.success.common.file-upload"),
 	COMMON_SUCCESS_ORGANIZATION_CREATE("api.success.common.create-organization"),
+	COMMON_SUCCESS_SIGN_OUT("api.success.common.sign-out"),
 
 	// Error message constants
 	COMMON_ERROR_ACCESS_DENIED("api.error.common.access-denied"),

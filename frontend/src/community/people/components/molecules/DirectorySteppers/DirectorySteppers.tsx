@@ -1,7 +1,8 @@
-import { useSession } from "next-auth/react";
 import { RefObject, useEffect, useState } from "react";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   AdminTypes,
@@ -29,7 +30,9 @@ const DirectorySteppers = ({
   const [isTimeTabVisible, setIsTimeTabVisible] = useState(false);
   const translateText = useTranslator("peopleModule");
 
-  const { data: session } = useSession();
+  const { user } = useAuth();
+
+  const { isPeopleAdmin } = useSessionData();
 
   const { setNextStep, currentStep } = usePeopleStore((state) => state);
 
@@ -38,17 +41,17 @@ const DirectorySteppers = ({
   const { data: supervisedData, isLoading: supervisorDataLoading } =
     useGetSupervisedByMe(Number(employeeId));
 
-  const isLeaveAdmin = session?.user.roles?.includes(AdminTypes.LEAVE_ADMIN);
+  const isLeaveAdmin = user?.roles?.includes(AdminTypes.LEAVE_ADMIN);
 
-  const isAttendanceAdmin = session?.user.roles?.includes(
+  const isAttendanceAdmin = user?.roles?.includes(
     AdminTypes.ATTENDANCE_ADMIN
   );
 
-  const isLeaveManager = session?.user.roles?.includes(
+  const isLeaveManager = user?.roles?.includes(
     ManagerTypes.LEAVE_MANAGER || AdminTypes.LEAVE_ADMIN
   );
 
-  const isAttendanceManager = session?.user.roles?.includes(
+  const isAttendanceManager = user?.roles?.includes(
     ManagerTypes.ATTENDANCE_MANAGER || AdminTypes.ATTENDANCE_ADMIN
   );
 
@@ -88,14 +91,16 @@ const DirectorySteppers = ({
       : [translateText(["editAllInfo", "timeline"])]),
     ...(isLeaveTabVisible &&
     !isAccountView &&
-    session?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+    user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
       ? [translateText(["editAllInfo", "leave"])]
       : []),
     ...(isTimeTabVisible &&
     !isAccountView &&
-    session?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
+    user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
-      : [])
+      : []),
+      // Feature flagged
+    // ...(isPeopleAdmin ? [translateText(["editAllInfo", "documents"])] : [])
   ];
 
   const handleStepClick = (step: EditPeopleFormTypes) => {

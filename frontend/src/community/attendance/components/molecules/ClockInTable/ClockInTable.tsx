@@ -1,8 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { SxProps, type Theme, useTheme } from "@mui/material/styles";
 import { DateTime } from "luxon";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
 import { Dispatch, FC, SetStateAction, useEffect, useRef } from "react";
 
 import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
@@ -48,14 +46,10 @@ const ClockInTable: FC<Props> = ({
   setIsFetchEnable
 }) => {
   const theme: Theme = useTheme();
-  const { data } = useSession();
-  const router = useRouter();
   const translateTexts = useTranslator("attendanceModule");
 
   const {
-    isPendingInvitationListOpen,
-    setIsFromPeopleDirectory,
-    setViewEmployeeId
+    isPendingInvitationListOpen
   } = usePeopleStore((state) => state);
 
   const { data: teamData } = useGetAllTeams();

@@ -3,7 +3,6 @@ import { Box, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
@@ -20,6 +19,7 @@ import {
   clockInOutGraphTypes,
   lateArrivalsGraphTypes
 } from "~community/attendance/utils/echartOptions/constants";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
@@ -48,13 +48,13 @@ const TeamTimeSheetAnalytics: NextPage = () => {
 
   const [activeStep, setActiveStep] = useState("timeSheetAnalytics");
 
-  const { data } = useSession();
+  const { user } = useAuth();
 
-  const isLeaveManager = data?.user.roles?.includes(
+  const isLeaveManager = user?.roles?.includes(
     ManagerTypes.LEAVE_MANAGER || AdminTypes.LEAVE_ADMIN
   );
 
-  const isAttendanceManager = data?.user.roles?.includes(
+  const isAttendanceManager = user?.roles?.includes(
     ManagerTypes.ATTENDANCE_MANAGER || AdminTypes.ATTENDANCE_ADMIN
   );
 

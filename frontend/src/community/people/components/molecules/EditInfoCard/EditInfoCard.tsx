@@ -1,10 +1,10 @@
 import { Box, Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { JSX, useEffect } from "react";
 import { type MouseEventHandler, useCallback, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
 import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
@@ -62,7 +62,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
 
   const AVAILABLE_FIELD_COUNT = 2;
 
-  const { data } = useSession();
+  const { user } = useAuth();
 
   const { asPath } = useRouter();
 
@@ -105,8 +105,8 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
 
   const { data: storageAvailableData } = useStorageAvailability();
   const hasTerminationAbility =
-    data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN) &&
-    data?.user?.userId !== employee?.common?.employeeId &&
+    user?.roles?.includes(AdminTypes.PEOPLE_ADMIN) &&
+    user?.userId !== employee?.common?.employeeId &&
     !employee?.systemPermissions?.isSuperAdmin;
 
   const [supervisor, setSupervisor] = useState<EmployeeManagerType | null>(

@@ -8,6 +8,23 @@ import {
   HolidayDurationType
 } from "~community/people/types/HolidayTypes";
 
+const generateLeaveClasses = (
+  leaveRequests: MyLeaveRequestPayloadType[]
+): string[] => {
+  return leaveRequests?.map((request) => {
+    switch (request.leaveState) {
+      case LeaveStates.FULL_DAY:
+        return "Mui-full-day-leave";
+      case LeaveStates.MORNING:
+        return "Mui-half-day-morning-leave";
+      case LeaveStates.EVENING:
+        return "Mui-half-day-evening-leave";
+      default:
+        return "";
+    }
+  });
+};
+
 export const getHolidayClasses = (holidays: Holiday[] | null): string => {
   const holidayClasses = holidays?.map((holiday) => {
     switch (holiday?.holidayDuration) {
@@ -57,19 +74,8 @@ export const getLeaveRequestClasses = ({
   });
 
   if (isDateEnabled) {
-    if (holidays?.length !== 0) {
-      const leaveClasses = holidays?.map((holiday) => {
-        switch (holiday?.holidayDuration) {
-          case HolidayDurationType.FULLDAY:
-            return "";
-          case HolidayDurationType.HALFDAY_MORNING:
-            return "Mui-half-day-evening-leave";
-          case HolidayDurationType.HALFDAY_EVENING:
-            return "Mui-half-day-morning-leave";
-          default:
-            return "";
-        }
-      });
+    if (holidays?.length) {
+      const leaveClasses = generateLeaveClasses(leaveRequests);
 
       const uniqueLeaveClasses = new Set(leaveClasses);
 
@@ -82,18 +88,7 @@ export const getLeaveRequestClasses = ({
 
       return Array.from(uniqueLeaveClasses).join(" ");
     } else {
-      const leaveClasses = leaveRequests?.map((request) => {
-        switch (request.leaveState) {
-          case LeaveStates.FULL_DAY:
-            return "Mui-full-day-leave";
-          case LeaveStates.MORNING:
-            return "Mui-half-day-morning-leave";
-          case LeaveStates.EVENING:
-            return "Mui-half-day-evening-leave";
-          default:
-            return "";
-        }
-      });
+      const leaveClasses = generateLeaveClasses(leaveRequests);
 
       const uniqueLeaveClasses = new Set(leaveClasses);
 

@@ -1,6 +1,6 @@
 import { Stack } from "@mui/material";
 import { type NextRouter, useRouter } from "next/router";
-import { JSX, useEffect, useMemo } from "react";
+import { JSX, useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   useGetEmployeeLeaveStatus,
@@ -32,7 +32,7 @@ const ClockWidget = (): JSX.Element => {
   const { refetch: refetchLeaveStatusData } = useGetEmployeeLeaveStatus(
     timeConfigData?.[0] as DefaultDayCapacityType
   );
-
+  const [hasHoveredAfterEnd, setHasHoveredAfterEnd] = useState(false);
   const {
     data: isTimeRequestAvailableToday,
     isLoading: isAvailabilityLoading
@@ -54,7 +54,7 @@ const ClockWidget = (): JSX.Element => {
   const title = useMemo(() => {
     if (!isDisabled) return "";
     switch (status) {
-      case AttendanceSlotType.END:
+      case hasHoveredAfterEnd && AttendanceSlotType.END:
         return translateText(["youHaveAlreadyLoggedTime"]);
       case AttendanceSlotType.HOLIDAY:
         return translateText(["notAllowedToClockInOnHolidaysTooltip"]);
@@ -65,7 +65,7 @@ const ClockWidget = (): JSX.Element => {
       default:
         return "";
     }
-  }, [isDisabled, status, translateText]);
+  }, [isDisabled, status, translateText, hasHoveredAfterEnd]);
 
   const showTimer = useMemo(
     () =>
@@ -75,6 +75,18 @@ const ClockWidget = (): JSX.Element => {
     [status]
   );
 
+  useEffect(() => {
+    if (status !== AttendanceSlotType.END) {
+      setHasHoveredAfterEnd(false);
+    }
+  }, [status]);
+
+  // Handle mouse enter to track hover
+  const handleMouseEnter = useCallback(() => {
+    if (status === AttendanceSlotType.END) {
+      setHasHoveredAfterEnd(true);
+    }
+  }, [status]);
   useEffect(() => {
     void getEmployeeStatusRefetch();
     void refetchLeaveStatusData();
@@ -89,6 +101,7 @@ const ClockWidget = (): JSX.Element => {
       component="div"
       sx={classes.timerContainer(isDisabled)}
       aria-label={translateAria(["widget"])}
+      onMouseEnter={handleMouseEnter}
     >
       {showTimer && <Timer disabled={isDisabled} />}
       <Tooltip title={title} placement={TooltipPlacement.BOTTOM}>

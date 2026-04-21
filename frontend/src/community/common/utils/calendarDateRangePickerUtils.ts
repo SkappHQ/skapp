@@ -11,7 +11,7 @@ import {
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { MyRequestsToastMsgKeyEnums } from "~community/leave/enums/ToastMsgKeyEnums";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
-import { Holiday } from "~community/people/types/HolidayTypes";
+import { Holiday, HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 interface IsNotAWorkingDateProps {
   date: DateTime;
@@ -129,7 +129,14 @@ export const hasAtLeastOneNonHolidayDate = ({
       date
     });
 
-    return !holidaysForDay || holidaysForDay.length === 0;
+    if (!holidaysForDay || holidaysForDay.length === 0) return true;
+
+    const hasOnlyFullDayHolidays = holidaysForDay.every(
+      (holiday) => holiday.holidayDuration === HolidayDurationType.FULLDAY
+    );
+
+    return !hasOnlyFullDayHolidays; // Return true if there are half-day holidays
+
   });
 };
 

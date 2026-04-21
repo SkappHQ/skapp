@@ -1,11 +1,11 @@
 import { Stack } from "@mui/material";
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import ManagerTimesheet from "~community/attendance/components/organisms/ManagerTimesheet/ManagerTImesheet";
 import { TimeSheetSearchBarCategories } from "~community/attendance/enums/timesheetEnums";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import PeopleAndTeamAutocompleteSearch, {
   OptionType
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
@@ -20,7 +20,7 @@ const AllTimesheetsPage: NextPage = () => {
   const translateText = useTranslator("attendanceModule", "timesheet");
   const router = useRouter();
 
-  const { data } = useSession();
+  const { user } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -34,8 +34,8 @@ const AllTimesheetsPage: NextPage = () => {
 
   const handleRowClick = async ({ employeeId }: { employeeId: number }) => {
     if (
-      data?.user.roles?.includes(ManagerTypes.PEOPLE_MANAGER) ||
-      data?.user.roles?.includes(AdminTypes.SUPER_ADMIN)
+      user?.roles?.includes(ManagerTypes.PEOPLE_MANAGER) ||
+      user?.roles?.includes(AdminTypes.SUPER_ADMIN)
     ) {
       setSelectedEmployeeId(employeeId);
       const url = `${ROUTES.PEOPLE.EDIT(employeeId)}?tab=timesheet`;

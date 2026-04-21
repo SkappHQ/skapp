@@ -20,6 +20,7 @@ import {
   LeaveExtraPopupTypes,
   LeaveStatusTypes
 } from "~community/leave/types/LeaveRequestTypes";
+import { getFileNameOfAttachmentFromUrl } from "~community/leave/utils/getFileNameofAttachedFiles/getFileNamesofAttachments";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
@@ -287,20 +288,32 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
                 <Box>
                   {leaveRequestData.attachments &&
                     leaveRequestData.attachments.length > 0 &&
-                    leaveRequestData.attachments.map((attachement, index) => (
+                    leaveRequestData.attachments.map((attachment, index) => (
                       <IconChip
                         accessibility={{
-                          ariaLabel: `Attachment ${index + 1}`
+                          ariaLabel: `Attachment ${
+                            getFileNameOfAttachmentFromUrl(attachment.url) ||
+                            translateText([
+                              "myLeaveRequests",
+                              "uploadedAttachment"
+                            ])
+                          }`
                         }}
                         key={index}
-                        label={`Attachment ${index}`}
+                        label={
+                          getFileNameOfAttachmentFromUrl(attachment.url) ||
+                          translateText([
+                            "myLeaveRequests",
+                            "uploadedAttachment"
+                          ])
+                        }
                         chipStyles={{
                           backgroundColor: "grey.100",
                           py: "0.75rem",
                           px: "0.75rem"
                         }}
                         icon={<CopyIcon />}
-                        onClick={() => downloadAttachment(attachement.url)}
+                        onClick={() => downloadAttachment(attachment.url)}
                       />
                     ))}
                 </Box>

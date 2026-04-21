@@ -12,15 +12,16 @@ import {
   Theme,
   useTheme
 } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import Button from "~community/common/components/atoms/Button/Button";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { appModes } from "~community/common/constants/configs";
+import ROUTES from "~community/common/constants/routes";
 import { appDrawerTestId } from "~community/common/constants/testIds";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import {
@@ -43,9 +44,10 @@ import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
+import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
+import Badge from "~enterprise/common/components/atoms/Badge/Badge";
 import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
 import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
-import Badge from "~enterprise/common/components/atoms/Badge/Badge";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
@@ -53,6 +55,7 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
 import { getSelectedDrawerItemColor, styles } from "./styles";
+import { tenantID } from "~community/common/utils/axiosInterceptor";
 
 const Drawer = (): JSX.Element => {
   const theme: Theme = useTheme();
@@ -63,7 +66,7 @@ const Drawer = (): JSX.Element => {
 
   const router = useRouter();
 
-  const { data: sessionData } = useSession();
+  const { user } = useAuth();
 
   const queryMatches = useMediaQuery();
   const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);
@@ -102,6 +105,9 @@ const Drawer = (): JSX.Element => {
     globalLoginMethod: state.globalLoginMethod
   }));
 
+  const { data: organizationCalendarStatusData } =
+    useGetOrganizationCalendarStatus();
+
   const { setMyLeaveRequestModalType } = useLeaveStore((state) => ({
     setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
   }));
@@ -113,13 +119,17 @@ const Drawer = (): JSX.Element => {
   const drawerRoutes = useMemo(
     () =>
       getDrawerRoutes({
-        userRoles: sessionData?.user?.roles,
-        tier: sessionData?.user?.tier ?? "",
+        userRoles: user?.roles,
+        tier: user?.tier ?? "",
         isEnterprise,
         globalLoginMethod,
-        tenantID: sessionData?.user?.tenantId
+        tenantID: tenantID as string,
+        organizationCalendarGoogleStatus:
+          organizationCalendarStatusData?.isGoogleCalendarEnabled ?? false,
+        organizationCalendarMicrosoftStatus:
+          organizationCalendarStatusData?.isMicrosoftCalendarEnabled ?? false
       }),
-    [sessionData, isEnterprise, globalLoginMethod]
+    [user, isEnterprise, globalLoginMethod, organizationCalendarStatusData]
   );
 
   const updatedTheme = themeSelector(
@@ -168,7 +178,7 @@ const Drawer = (): JSX.Element => {
   const handleOpenSubmitRequestModal = () => {
     setSubmitRequestModalType(SubmitRequestModalEnums.SUBMIT_REQUEST);
   };
-  
+
   if (orgLoading) return <FullScreenLoader />;
 
   return (
@@ -198,6 +208,15 @@ const Drawer = (): JSX.Element => {
               height={logoUrl ? 0 : 77}
               style={classes.logoImage}
               data-testid={appDrawerTestId.organizationLogo}
+              onClick={() => router.push(ROUTES.DASHBOARD.BASE)}
+              onKeyDown={(e) => {
+                if (shouldActivateLink(e.key)) {
+                  e.preventDefault();
+                  router.push(ROUTES.DASHBOARD.BASE);
+                }
+              }}
+              tabIndex={0}
+              role="button"
             />
           )}
         </Box>
@@ -367,9 +386,7 @@ const Drawer = (): JSX.Element => {
 
         {isDrawerExpanded && (
           <Stack sx={classes.footer}>
-            {sessionData?.user.roles?.includes(
-              EmployeeTypes.LEAVE_EMPLOYEE
-            ) && (
+            {user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE) && (
               <Button
                 styles={classes.applyLeaveBtn}
                 size={ButtonSizes.MEDIUM}

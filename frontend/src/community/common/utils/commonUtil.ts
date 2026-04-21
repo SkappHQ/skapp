@@ -1,6 +1,5 @@
 import { SxProps, Theme } from "@mui/material";
-import { NextRequestWithAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { HOURS_PER_DAY } from "~community/common/constants/timeConstants";
 import {
@@ -462,7 +461,7 @@ export const downloadAttachmentToUserDevice = (attachment: FileUploadType) => {
 };
 
 export const checkRestrictedRoutesAndRedirect = (
-  request: NextRequestWithAuth,
+  request: NextRequest,
   restrictedRoutes: string[],
   requiredRole: string,
   roles: string[]
@@ -510,4 +509,27 @@ export const validateEnvelopeSearch = (input: string): string => {
       return isEmailChar || isAlphaNumericSpecialChar;
     })
     .join("");
+};
+
+/**
+ * Retrieves a cookie value by name from document.cookie
+ *
+ * Logic:
+ * 1. Returns null if document is undefined (server-side rendering)
+ * 2. Uses regex (^| )" + name + "=([^;]+) to find the cookie:
+ *    - (^| ) matches start of string or space (handles first/subsequent cookies)
+ *    - name + "=" matches the cookie name followed by equals sign
+ *    - ([^;]+) captures everything after = until the next semicolon (the cookie value)
+ * 3. Returns decoded value using decodeURIComponent(match[2]) if found, null otherwise
+ *
+ * @example
+ * // With document.cookie = "user=John%20Doe; token=abc123"
+ * getCookieValue("user") // returns "John Doe"
+ * getCookieValue("token") // returns "abc123"
+ * getCookieValue("missing") // returns null
+ */
+export const getCookieValue = (name: string): string | null => {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
 };

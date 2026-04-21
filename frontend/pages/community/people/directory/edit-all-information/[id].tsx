@@ -1,10 +1,10 @@
 import { Modal, Stack } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { type NextPage } from "next/types";
 import { useCallback, useEffect, useState } from "react";
 
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
@@ -66,7 +66,7 @@ const EditAllInformation: NextPage = () => {
 
   const { setToastMessage, toastMessage } = useToast();
 
-  const { data } = useSession();
+  const { user } = useAuth();
 
   const environment = useGetEnvironment();
 
@@ -74,8 +74,8 @@ const EditAllInformation: NextPage = () => {
 
   const { data: currentEmployeeDetails } = useGetUserPersonalDetails();
 
-  const isPeopleAdmin = data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN);
-  const isPeopleManager = data?.user.roles?.includes(
+  const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
+  const isPeopleManager = user?.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER
   );
 
@@ -89,24 +89,24 @@ const EditAllInformation: NextPage = () => {
     "editAllInfo.editAllInfoErrors"
   );
 
-  const isAdmin = data?.user.roles?.includes(
+  const isAdmin = user?.roles?.includes(
     AdminTypes.SUPER_ADMIN ||
       AdminTypes.PEOPLE_ADMIN ||
       AdminTypes.LEAVE_ADMIN ||
       AdminTypes.ATTENDANCE_ADMIN
   );
 
-  const isLeaveAdmin = data?.user.roles?.includes(AdminTypes.LEAVE_ADMIN);
+  const isLeaveAdmin = user?.roles?.includes(AdminTypes.LEAVE_ADMIN);
 
-  const isAttendanceAdmin = data?.user.roles?.includes(
+  const isAttendanceAdmin = user?.roles?.includes(
     AdminTypes.ATTENDANCE_ADMIN
   );
 
-  const isLeaveManager = data?.user.roles?.includes(
+  const isLeaveManager = user?.roles?.includes(
     ManagerTypes.LEAVE_MANAGER || AdminTypes.LEAVE_ADMIN
   );
 
-  const isAttendanceManager = data?.user.roles?.includes(
+  const isAttendanceManager = user?.roles?.includes(
     ManagerTypes.ATTENDANCE_MANAGER || AdminTypes.ATTENDANCE_ADMIN
   );
 
@@ -188,11 +188,11 @@ const EditAllInformation: NextPage = () => {
     translateText(["editAllInfo", "systemPermissions"]),
     // translateText(["editAllInfo", "timeline"]),
     ...(isLeaveTabVisible &&
-    data?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+    user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
       ? [translateText(["editAllInfo", "leave"])]
       : []),
     ...(isTimeTabVisible &&
-    data?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
+    user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
       : [])
   ];

@@ -8,7 +8,6 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { FC, ReactNode } from "react";
 
 import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
@@ -29,6 +28,7 @@ import ManageSubscriptionSettingsSection from "~enterprise/settings/components/m
 
 import Button from "../../atoms/Button/Button";
 import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface SettingsSectionProps {
   customSettingsComponent?: ReactNode;
@@ -41,7 +41,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
 
   const isLargeScreen: boolean = useMediaQuery(theme.breakpoints.down("lg"));
 
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
   const { setModalType, setModalOpen } = useCommonStore((state) => state);
 
@@ -51,7 +51,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
 
   const managerRoles = Object.values(ManagerTypes);
 
-  const hasManagerRole = session?.user?.roles
+  const hasManagerRole = user?.roles
     ?.filter((role): role is ManagerTypes =>
       managerRoles.includes(role as ManagerTypes)
     )
@@ -69,7 +69,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
         </>
       )}
 
-      {session?.user?.roles?.includes(ROLE_SUPER_ADMIN) && (
+      {user?.roles?.includes(ROLE_SUPER_ADMIN) && (
         <>
           {process.env.NEXT_PUBLIC_MODE !== "enterprise" && (
             <>
@@ -214,7 +214,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({ customSettingsComponent }) 
         </>
       )}
 
-      {isEnterpriseMode && session?.user?.roles?.includes(ROLE_SUPER_ADMIN) && (
+      {isEnterpriseMode && user?.roles?.includes(ROLE_SUPER_ADMIN) && (
         <ManageSubscriptionSettingsSection />
       )}
     </>

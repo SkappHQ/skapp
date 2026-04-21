@@ -1,5 +1,4 @@
 import { Stack, Typography } from "@mui/material";
-import { DateTime } from "luxon";
 import { useCallback, useEffect, useMemo } from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
@@ -49,7 +48,10 @@ import {
 } from "~community/leave/utils/myRequests/applyLeaveModalUtils";
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
 import { useGetMyTeams } from "~community/people/api/TeamApi";
-import { useIsGoogleCalendarConnected } from "~enterprise/common/api/CalendarApi";
+import {
+  useIsGoogleCalendarConnected,
+  useIsMicrosoftCalendarConnected
+} from "~enterprise/common/api/CalendarApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
@@ -119,11 +121,14 @@ const ApplyLeaveModal = () => {
   }));
 
   const firstDateOfYear = useMemo(
-    () => getFirstDateOfYear(DateTime.now().year).toJSDate(),
-    []
+    () => getFirstDateOfYear(Number(selectedYear)).toJSDate(),
+    [selectedYear]
   );
 
-  const lastDateOfYear = useMemo(() => getMaxDateOfYear().toJSDate(), []);
+  const lastDateOfYear = useMemo(
+    () => getMaxDateOfYear(Number(selectedYear)).toJSDate(),
+    [selectedYear]
+  );
 
   const { data: timeConfig } = useDefaultCapacity();
 
@@ -141,6 +146,8 @@ const ApplyLeaveModal = () => {
 
   const { data: isGoogleConnected } = useIsGoogleCalendarConnected();
 
+  const { data: isMicrosoftConnected } = useIsMicrosoftCalendarConnected();
+
   const isEnterprise = useGetEnvironment() === appModes.ENTERPRISE;
 
   const { sendEvent } = useGoogleAnalyticsEvent();
@@ -151,7 +158,7 @@ const ApplyLeaveModal = () => {
       setToastMessage,
       translateText
     });
-    if (isEnterprise && isGoogleConnected) {
+    if (isEnterprise && (isGoogleConnected || isMicrosoftConnected)) {
       setLeaveRequestId(data.leaveRequestId);
       setMyLeaveRequestModalType(MyRequestModalEnums.MARK_OUT_OF_OFFICE);
     } else {

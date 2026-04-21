@@ -5,6 +5,7 @@ export default function Document() {
     <Html lang="en">
       <Head>
         <meta name="referrer" content="no-referrer" />
+        <meta name="apple-itunes-app" content="app-id=6743853274" />
         <link
           rel="icon"
           type="image/png"

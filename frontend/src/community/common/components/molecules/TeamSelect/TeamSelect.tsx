@@ -1,5 +1,4 @@
 import { SelectChangeEvent } from "@mui/material";
-import { useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -10,6 +9,7 @@ import {
 } from "~community/people/api/TeamApi";
 
 import RoundedSelect from "../RoundedSelect/RoundedSelect";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 const TeamSelect = ({
   value,
@@ -22,7 +22,7 @@ const TeamSelect = ({
 }) => {
   const translateTexts = useTranslator("attendanceModule", "timesheet");
 
-  const { data } = useSession();
+  const { user } = useAuth();
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: allManagerTeamsData } = useGetAllManagerTeams();
@@ -30,15 +30,14 @@ const TeamSelect = ({
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const checkForUserRoles = useMemo(() => {
-    if (data?.user?.roles) {
+    if (user?.roles) {
       return (
-        data.user.roles.includes(AdminTypes.SUPER_ADMIN) ||
-        (adminType && data.user.roles.includes(adminType))
+        user?.roles.includes(AdminTypes.SUPER_ADMIN) ||
+        (adminType && user?.roles.includes(adminType))
       );
     }
     return false;
-  }, [data, adminType]);
-
+  }, [user, adminType]);
   const options = useMemo(() => {
     if (checkForUserRoles) {
       setIsAdmin(true);

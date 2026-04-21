@@ -82,8 +82,9 @@ public class EmailServiceImpl implements EmailService {
 			setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails, module);
 
 			String emailBody = buildEmailBody(templateDetails, module, placeholders, emailMainTemplate);
+			String subject = setSubjectPlaceholders(templateDetails.getSubject(), placeholders);
 
-			asyncEmailSender.sendMail(recipient, templateDetails.getSubject(), emailBody, placeholders);
+			asyncEmailSender.sendMail(recipient, subject, emailBody, placeholders);
 		}
 		catch (Exception e) {
 			log.error("Unexpected error in email sending process: {}", e.getMessage(), e);
@@ -98,6 +99,14 @@ public class EmailServiceImpl implements EmailService {
 	protected void setTemplatePlaceholderData(EmailTemplates emailTemplate, Map<String, String> placeholders,
 			EmailTemplateMetadata templateDetails, String module) {
 		placeholders.put("subject", templateDetails.getSubject());
+	}
+
+	private String setSubjectPlaceholders(String subject, Map<String, String> placeholders) {
+		for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+			String replacement = entry.getValue() == null ? "" : entry.getValue();
+			subject = subject.replace("{{" + entry.getKey() + "}}", replacement);
+		}
+		return subject;
 	}
 
 	protected void getEnumTranslationsStream() {

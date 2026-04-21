@@ -229,6 +229,18 @@ const nextConfig = {
         destination: "/enterprise/verify/reset-password"
       },
       {
+        source: "/verify/guest-otp",
+        destination: "/enterprise/verify/guest-otp"
+      },
+      {
+        source: "/verify/guest",
+        destination: "/enterprise/verify/guest"
+      },
+      {
+        source: "/verify/guest",
+        destination: "/enterprise/verify/guest"
+      },
+      {
         source: "/forget-password",
         destination: "/enterprise/forget-password"
       },
@@ -253,6 +265,18 @@ const nextConfig = {
         destination: "/enterprise/sign/sent/envelope/:id"
       },
       {
+        source: "/sign/template",
+        destination: "/enterprise/sign/template"
+      },
+      {
+        source: "/sign/template/:id",
+        destination: "/enterprise/sign/template/:id"
+      },
+      {
+        source: "/sign/template/create",
+        destination: "/enterprise/sign/template/create"
+      },
+      {
         source: "/sign/contacts",
         destination: "/enterprise/sign/contacts"
       },
@@ -269,12 +293,20 @@ const nextConfig = {
         destination: "/enterprise/sign/sign"
       },
       {
+        source: "/sign/review",
+        destination: "/enterprise/sign/review"
+      },
+      {
         source: "/sign/info",
         destination: "/enterprise/sign/info"
       },
       {
         source: "/sign/document/access",
         destination: "/enterprise/sign/document/access"
+      },
+      {
+        source: "/sign/document/access/mfa-verify",
+        destination: "/enterprise/sign/document/access/mfa-verify"
       },
       {
         source: "/sign/complete",
@@ -329,8 +361,12 @@ const nextConfig = {
         destination: "/community/user-account"
       },
       {
-        source: "/projects",
-        destination: "/enterprise/projects"
+        source: "/projects/list",
+        destination: "/enterprise/projects/list"
+      },
+      {
+        source: "/projects/guests",
+        destination: "/enterprise/projects/guests"
       },
       {
         source: "/invoice",
@@ -349,6 +385,10 @@ const nextConfig = {
         destination: "/enterprise/invoice/create/:id"
       },
       {
+        source: "/invoice/creates/:id",
+        destination: "/enterprise/invoice/creates/:id"
+      },
+      {
         source: "/invoice/customers/customer-details/:id",
         destination: "/enterprise/invoice/customers/customer-details/:id"
       },
@@ -358,7 +398,8 @@ const nextConfig = {
       },
       {
         source: "/invoice/customers/customer-details/projects/:id",
-        destination: "/enterprise/invoice/customers/customer-details/projects/:id"
+        destination:
+          "/enterprise/invoice/customers/customer-details/projects/:id"
       },
       {
         source: "/app-link",

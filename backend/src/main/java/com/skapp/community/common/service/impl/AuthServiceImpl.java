@@ -37,6 +37,7 @@ import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.CommonModuleUtils;
+import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
@@ -51,6 +52,8 @@ import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.util.Validations;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -126,6 +129,8 @@ public class AuthServiceImpl implements AuthService {
 
 	private final ObjectMapper objectMapper;
 
+	protected final CookieUtil cookieUtil;
+
 	@Value("${encryptDecryptAlgorithm.secret}")
 	private String encryptSecret;
 
@@ -134,52 +139,92 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto signIn(SignInRequestDto signInRequestDto) {
 		log.info("signIn: execution started for email={}", signInRequestDto.getEmail());
 
-		log.info("signIn: Authenticating user with email={}", signInRequestDto.getEmail());
+		SignInResponseDto signInResponseDto = performSignIn(signInRequestDto, null);
+		signInResponseDto.setRefreshToken(signInResponseDto.getRefreshToken());
+
+		log.info("signIn: execution ended for userEmail={}", signInRequestDto.getEmail());
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto signInWithCookie(SignInRequestDto signInRequestDto, HttpServletResponse response) {
+		log.info("signInWithCookie: execution started for email={}", signInRequestDto.getEmail());
+
+		SignInResponseDto signInResponseDto = performSignIn(signInRequestDto, response);
+
+		log.info("signInWithCookie: execution ended for userEmail={}", signInRequestDto.getEmail());
+		return new ResponseEntityDto(false, signInResponseDto);
+	}
+
+	@Override
+	public ResponseEntityDto signOutWithCookie(HttpServletResponse response) {
+		log.info("signOutWithCookie: execution started");
+
+		Cookie cookie = cookieUtil.clearRefreshTokenCookie();
+		response.addCookie(cookie);
+		log.info("signOutWithCookie: Cleared refresh token cookie");
+
+		log.info("signOutWithCookie: execution ended");
+		return new ResponseEntityDto(false, messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_SIGN_OUT));
+	}
+
+	private SignInResponseDto performSignIn(SignInRequestDto signInRequestDto, HttpServletResponse response) {
+		log.info("performSignIn: Authenticating user with email={}", signInRequestDto.getEmail());
 		authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(signInRequestDto.getEmail(), signInRequestDto.getPassword()));
 
 		Optional<User> optionalUser = userDao.findByEmail(signInRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
-			log.warn("signIn: User not found for email={}", signInRequestDto.getEmail());
+			log.warn("performSignIn: User not found for email={}", signInRequestDto.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
-		log.info("signIn: User found: userEmail={}, isActive={}", user.getEmail(), user.getIsActive());
+		log.info("performSignIn: User found: userEmail={}, isActive={}", user.getEmail(), user.getIsActive());
 
 		validateTenantStatus(user);
-		log.info("signIn: Tenant status validated for userEmail={}", user.getEmail());
+		log.info("performSignIn: Tenant status validated for userEmail={}", user.getEmail());
 
 		if (Boolean.FALSE.equals(user.getIsActive())) {
-			log.warn("signIn: User account deactivated: userEmail={}", user.getEmail());
+			log.warn("performSignIn: User account deactivated: userEmail={}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
 		}
 
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
-			log.warn("signIn: Employee not found for userEmail={}", user.getEmail());
+			log.warn("performSignIn: Employee not found for userEmail={}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
-		log.info("signIn: Employee found for userEmail={}", user.getEmail());
+		log.info("performSignIn: Employee found for userEmail={}", user.getEmail());
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
 			.employeeToEmployeeSignInResponseDto(employee.get());
-		log.info("signIn: Mapped EmployeeSignInResponseDto for userEmail={}", user.getEmail());
+		log.info("performSignIn: Mapped EmployeeSignInResponseDto for userEmail={}", user.getEmail());
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-		log.info("signIn: Loaded UserDetails for email={}", user.getEmail());
+		log.info("performSignIn: Loaded UserDetails for email={}", user.getEmail());
 
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		String refreshToken = jwtService.generateRefreshToken(userDetails);
-		log.info("signIn: Generated access and refresh tokens for userEmail={}", user.getEmail());
+		log.info("performSignIn: Generated access and refresh tokens for userEmail={}", user.getEmail());
+
+		if (response != null) {
+			long cookieMaxAge = jwtService.getRefreshTokenMaxAge(userDetails);
+			Cookie cookie = cookieUtil.createRefreshTokenCookie(refreshToken, cookieMaxAge);
+			response.addCookie(cookie);
+			log.info("performSignIn: Added refresh token cookie for userEmail={}", user.getEmail());
+		}
 
 		SignInResponseDto signInResponseDto = new SignInResponseDto();
 		signInResponseDto.setAccessToken(accessToken);
-		signInResponseDto.setRefreshToken(refreshToken);
 		signInResponseDto.setEmployee(employeeSignInResponseDto);
 		signInResponseDto.setIsPasswordChangedForTheFirstTime(user.getIsPasswordChangedForTheFirstTime());
 
-		log.info("signIn: execution ended for userEmail={}", user.getEmail());
-		return new ResponseEntityDto(false, signInResponseDto);
+		if (response == null) {
+			signInResponseDto.setRefreshToken(refreshToken);
+		}
+
+		return signInResponseDto;
 	}
 
 	protected void validateTenantStatus(User user) {
@@ -293,7 +338,7 @@ public class AuthServiceImpl implements AuthService {
 		AccessTokenResponseDto accessTokenResponseDto = new AccessTokenResponseDto();
 		accessTokenResponseDto.setAccessToken(accessToken);
 
-		log.info("refreshAccessToken: execution ended for email", user.getEmail());
+		log.info("refreshAccessToken: execution ended for email={}", user.getEmail());
 		return new ResponseEntityDto(false, accessTokenResponseDto);
 	}
 

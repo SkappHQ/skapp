@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
-import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
@@ -16,11 +16,10 @@ import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Pending = () => {
   const translateText = useTranslator("peopleModule", "peoples");
-  const { data } = useSession();
+  const { user } = useAuth();
   const router = useRouter();
 
-  const isAdmin = data?.user.roles?.includes(AdminTypes.PEOPLE_ADMIN);
-
+  const isAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
   const {
     setDirectoryModalType,
     setIsDirectoryModalOpen,

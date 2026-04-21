@@ -1,10 +1,10 @@
 import { Stack } from "@mui/material";
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -30,28 +30,28 @@ const Individual: NextPage = () => {
   const router = useRouter();
   const translateText = useTranslator("peopleModule");
 
-  const { data } = useSession();
+  const { user } = useAuth();
 
   const { tab, viewEmployeeId } = router.query;
 
   const [isLeaveTabVisible, setIsLeaveTabVisible] = useState(false);
   const [isTimeTabVisible, setIsTimeTabVisible] = useState(false);
 
-  const isLeaveAdmin = data?.user.roles?.includes(AdminTypes.LEAVE_ADMIN);
+  const isLeaveAdmin = user?.roles?.includes(AdminTypes.LEAVE_ADMIN);
 
-  const isAttendanceAdmin = data?.user.roles?.includes(
+  const isAttendanceAdmin = user?.roles?.includes(
     AdminTypes.ATTENDANCE_ADMIN
   );
 
-  const isLeaveManager = data?.user.roles?.includes(
+  const isLeaveManager = user?.roles?.includes(
     ManagerTypes.LEAVE_MANAGER || AdminTypes.LEAVE_ADMIN
   );
 
-  const isAttendanceManager = data?.user.roles?.includes(
+  const isAttendanceManager = user?.roles?.includes(
     ManagerTypes.ATTENDANCE_MANAGER || AdminTypes.ATTENDANCE_ADMIN
   );
 
-  const isEmployee = data?.user.roles?.every((role) =>
+  const isEmployee = user?.roles?.every((role) =>
     Object.values(EmployeeTypes).includes(role as EmployeeTypes)
   );
 
@@ -82,11 +82,11 @@ const Individual: NextPage = () => {
     translateText(["editAllInfo", "personal"]),
     translateText(["editAllInfo", "employment"]),
     ...(isLeaveTabVisible &&
-    data?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+    user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
       ? [translateText(["editAllInfo", "leave"])]
       : []),
     ...(isTimeTabVisible &&
-    data?.user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
+    user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
       : [])
   ];

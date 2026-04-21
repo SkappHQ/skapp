@@ -40,12 +40,14 @@ import generateThumbnail from "~community/people/utils/image/thumbnailGenerator"
 import { employeeGeneralDetailsValidation } from "~community/people/utils/peopleValidations";
 
 import PeopleFormSectionWrapper from "../../PeopleFormSectionWrapper/PeopleFormSectionWrapper";
+import EditAllInfoSkeleton from "~community/people/components/molecules/EditAllInfoSkeleton/EditAllInfoSkeleton";
 
 interface Props {
   isReadOnly?: boolean;
   isAdmin?: boolean;
   isInputsDisabled?: boolean;
   isAddFlow?: boolean;
+  isLoading?: boolean;
 }
 
 const GeneralDetailsSection = forwardRef<FormMethods, Props>(
@@ -54,7 +56,8 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
       isReadOnly = false,
       isAdmin = false,
       isInputsDisabled = false,
-      isAddFlow
+      isAddFlow,
+      isLoading
     }: Props,
     ref
   ) => {
@@ -210,6 +213,9 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
         }}
         pageHead={translateText(["head"])}
       >
+        {isLoading ? (
+          <EditAllInfoSkeleton />
+        ) : (
         <form onSubmit={formik.handleSubmit}>
           {isAddFlow && (
             <Stack
@@ -526,6 +532,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
             </Grid>
           </Grid>
         </form>
+        )}
       </PeopleFormSectionWrapper>
     );
   }

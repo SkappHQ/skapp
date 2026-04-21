@@ -60,7 +60,8 @@ export const styles = ({ theme }: stylesProps) => ({
     height: "auto",
     maxWidth: "10rem",
     maxHeight: "3.25rem",
-    objectFit: "contain" as const
+    objectFit: "contain" as const,
+    cursor: "pointer"
   },
   list: {
     display: "flex",

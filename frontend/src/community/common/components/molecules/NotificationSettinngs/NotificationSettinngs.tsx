@@ -1,6 +1,5 @@
 import { Box, Typography } from "@mui/material";
 import { Stack } from "@mui/system";
-import { useSession } from "next-auth/react";
 import { JSX } from "react";
 
 import {
@@ -14,6 +13,7 @@ import { EmployeeTypes } from "~community/common/types/AuthTypes";
 
 import SwitchRow from "../../atoms/SwitchRow/SwitchRow";
 import ToastMessage from "../ToastMessage/ToastMessage";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 
 const NotificationSettings = (): JSX.Element => {
   const translateText = useTranslator("settings");
@@ -21,7 +21,7 @@ const NotificationSettings = (): JSX.Element => {
 
   const { data: settings } = useGetNotificationSettings();
 
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
   const updateMutation = useUpdateNotificationSettings(() => {
     setToastMessage({
@@ -72,13 +72,13 @@ const NotificationSettings = (): JSX.Element => {
             Object.keys(settings).map((key, index) => {
               if (
                 index === 0 &&
-                !session?.user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+                !user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
               ) {
                 return null;
               }
               if (
                 index === 1 &&
-                !session?.user?.roles?.includes(
+                !user?.roles?.includes(
                   EmployeeTypes.ATTENDANCE_EMPLOYEE
                 )
               ) {
