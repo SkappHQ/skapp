@@ -196,13 +196,11 @@ const getDrawerRoutes = ({
 
         if (!hasPMAccess) return null;
 
-        const isPMAdminOrSuperAdmin = userRoles?.some((role) =>
-          [AdminTypes.SUPER_ADMIN, AdminTypes.PM_ADMIN].includes(
-            role as AdminTypes
-          )
+        const isPMAdmin = userRoles?.some((role) =>
+          [AdminTypes.PM_ADMIN].includes(role as AdminTypes)
         );
 
-        if (isPMAdminOrSuperAdmin) {
+        if (isPMAdmin) {
           const subRoutes = route?.subTree?.filter((subRoute) =>
             subRoute.requiredAuthLevel?.some((requiredRole) =>
               userRoles?.includes(requiredRole as Role)
