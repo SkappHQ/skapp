@@ -425,7 +425,7 @@ export interface EmployeeRoleType {
   peopleRole: Role;
   leaveRole: Role;
   esignRole: Role;
-  pmRole?: Role;
+  pmRole: Role;
 }
 
 export interface EmployeeDataExists {

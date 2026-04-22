@@ -434,9 +434,7 @@ export const handleSystemPermissionFormSubmit = ({
   setUserRoles("peopleRole", values.peopleRole);
   setUserRoles("leaveRole", values.leaveRole);
   setUserRoles("esignRole", values.esignRole);
-  if (values.pmRole) {
-    setUserRoles("pmRole", values.pmRole);
-  }
+  setUserRoles("pmRole", values.pmRole);
 };
 
 interface HandleModalClose {
@@ -469,11 +467,8 @@ export const handleModalClose = ({
     ] as const;
 
     roles.forEach((role) => {
-      const value = employee.userRoles[role];
-      if (value !== undefined) {
-        setUserRoles(role, value);
-        void setFieldValue(role, value);
-      }
+      setUserRoles(role, employee.userRoles[role]);
+      void setFieldValue(role, employee.userRoles[role]);
     });
   }
 
