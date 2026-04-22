@@ -14,6 +14,6 @@ public class NotificationTypeCountResponseDto {
 
 	private NotificationType notificationType;
 
-	private Long count;
+	private Long notificationCount;
 
 }

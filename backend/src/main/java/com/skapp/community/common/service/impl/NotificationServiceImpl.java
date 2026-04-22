@@ -306,7 +306,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 		Map<NotificationType, Long> countMap = results.stream()
 			.collect(Collectors.toMap(NotificationTypeCountResponseDto::getNotificationType,
-					NotificationTypeCountResponseDto::getCount));
+					NotificationTypeCountResponseDto::getNotificationCount));
 
 		long esignTotal = ESIGN_TYPES.stream().mapToLong(type -> countMap.getOrDefault(type, 0L)).sum();
 
