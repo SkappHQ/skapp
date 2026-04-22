@@ -140,6 +140,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		String invitationUrl = buildInvitationUrl(employee.getUser());
 		String projectNames = safeProjects.stream()
 			.map(ProjectRequestDto::getProjectName)
+			.filter(name -> name != null && !name.isBlank())
 			.collect(Collectors.joining(", "));
 
 		epUserEmailService.sendGuestUserInvitationEmail(employee, invitationUrl, adminName, projectNames);
@@ -398,6 +399,9 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	}
 
 	private void saveGuestUserRequest(String email, List<ProjectRequestDto> projects, User requester) {
+		if (requester == null || requester.getEmployee() == null) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND);
+		}
 		Validation.validateEmail(email);
 		if (userDao.findByEmail(email).isPresent()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);

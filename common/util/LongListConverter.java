@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.util;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +27,7 @@ public class LongListConverter implements AttributeConverter<List<Long>, String>
 		if (dbData == null || dbData.isBlank()) {
 			return Collections.emptyList();
 		}
-		return Arrays.stream(dbData.split(DELIMITER)).map(String::trim).map(Long::valueOf).toList();
+		return new ArrayList<>(Arrays.stream(dbData.split(DELIMITER)).map(String::trim).map(Long::valueOf).toList());
 	}
 
 }
