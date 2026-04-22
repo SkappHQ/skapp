@@ -203,7 +203,14 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_VALIDATION_ONLY_ONE_CURRENT_EMPLOYMENT_ALLOWED(
 			"api.error.people.validation-only-one-current-employment-allowed"),
 	PEOPLE_ERROR_VALIDATION_CANNOT_ADD_OTHER_SUPERVISORS_WITHOUT_PRIMARY_SUPERVISOR(
-			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),;
+			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),
+	PEOPLE_SUCCESS_TRANSFER_SUPERVISORS("api.success.people.transfer-supervisors"),
+	PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND("api.error.people.transfer-supervisors.new-supervisor-not-found"),
+	PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN("api.error.people.transfer-supervisors.self-assign"),
+	PEOPLE_ERROR_TRANSFER_PRIMARY_SUPERVISOR_RECORD_NOT_FOUND(
+			"api.error.people.transfer-supervisors.primary-record-not-found"),
+	PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND(
+			"api.error.people.transfer-supervisors.team-record-not-found"),;
 
 	private final String messageKey;
 
