@@ -16,6 +16,9 @@ public class RecaptchaConfig {
 	@Value("${google.recaptcha.verify-url}")
 	private String verifyUrl;
 
+	@Value("${google.recaptcha.bypass-secret}")
+	private String bypassSecret;
+
 	@Bean
 	public RestTemplate restTemplate() {
 		return new RestTemplate();

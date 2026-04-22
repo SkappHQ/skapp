@@ -29,4 +29,6 @@ public class EpAuthConstants {
 
 	public static final int BRUTE_FORCE_LOGIN_ATTEMPT_THRESHOLD = 3;
 
+	public static final String RECAPTCHA_BYPASS_SECRET_HEADER = "x-recaptcha-bypass-secret";
+
 }

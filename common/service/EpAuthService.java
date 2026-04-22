@@ -15,7 +15,8 @@ import jakarta.validation.Valid;
 
 public interface EpAuthService {
 
-	ResponseEntityDto superAdminSignUp(@Valid SuperAdminSignUpRequestDto superAdminSignUpRequestDto);
+	ResponseEntityDto superAdminSignUp(@Valid SuperAdminSignUpRequestDto superAdminSignUpRequestDto,
+			String bypassSecret);
 
 	ResponseEntityDto generateAndSendOTP();
 
