@@ -21,7 +21,7 @@ import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -297,6 +297,7 @@ public class NotificationServiceImpl implements NotificationService {
 		return new ResponseEntityDto(false, unreadCount);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public ResponseEntityDto getNotificationCountByType() {
 		log.info("getNotificationCountByType: execution started");
@@ -330,10 +331,7 @@ public class NotificationServiceImpl implements NotificationService {
 		// to all concrete ESIGN_DOCUMENT_* types so the badge clears correctly.
 		Set<NotificationType> typesToMark = (notificationType == NotificationType.ESIGN)
 				? ESIGN_TYPES : EnumSet.of(notificationType);
-		List<Notification> notifications = notificationDao
-			.findByEmployee_User_UserIdAndNotificationTypeIn(userId, typesToMark);
-		notifications.forEach(notification -> notification.setIsTypeViewed(true));
-		notificationDao.saveAll(notifications);
+		notificationDao.markTypeViewedByUserIdAndTypes(userId, typesToMark);
 
 		log.info("markNotificationTypeAsViewed: execution ended");
 		return new ResponseEntityDto(false, "");

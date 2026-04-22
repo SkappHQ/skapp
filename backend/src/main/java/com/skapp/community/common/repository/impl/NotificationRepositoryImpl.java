@@ -12,9 +12,11 @@ import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import com.skapp.community.common.type.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,6 +25,7 @@ import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -113,6 +116,30 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 		criteriaQuery.groupBy(root.get(Notification_.NOTIFICATION_TYPE));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public int markTypeViewedByUserIdAndTypes(Long userId, Collection<NotificationType> types) {
+		var criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaUpdate<Notification> update = criteriaBuilder.createCriteriaUpdate(Notification.class);
+		Root<Notification> root = update.from(Notification.class);
+
+		Join<Notification, Employee> employeeJoin = root.join(Notification_.EMPLOYEE);
+		Join<Employee, User> userJoin = employeeJoin.join(Employee_.USER);
+
+		update.set(root.get(Notification_.IS_TYPE_VIEWED), Boolean.TRUE);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.equal(userJoin.get(User_.USER_ID), userId));
+		predicates.add(root.get(Notification_.NOTIFICATION_TYPE).in(types));
+		predicates.add(criteriaBuilder.equal(root.get(Notification_.IS_TYPE_VIEWED), Boolean.FALSE));
+
+		Predicate[] predicatesArray = new Predicate[predicates.size()];
+		predicates.toArray(predicatesArray);
+		update.where(predicatesArray);
+
+		return entityManager.createQuery(update).executeUpdate();
 	}
 
 }

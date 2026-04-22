@@ -5,7 +5,6 @@ import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
 import java.util.List;
 
 public interface NotificationDao extends JpaRepository<Notification, Long>, NotificationRepository {
@@ -14,8 +13,5 @@ public interface NotificationDao extends JpaRepository<Notification, Long>, Noti
 
 	Notification findFirstByResourceIdAndNotificationTypeOrderByCreatedDateDesc(String leaveRequestId,
 			NotificationType notificationType);
-
-	List<Notification> findByEmployee_User_UserIdAndNotificationTypeIn(Long userId,
-			Collection<NotificationType> notificationTypes);
 
 }
