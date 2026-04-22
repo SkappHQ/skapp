@@ -269,7 +269,7 @@ public class RolesServiceImpl implements RolesService {
 	protected Map<ModuleType, List<RoleLevel>> initializeRolesForModule() {
 		Map<ModuleType, List<RoleLevel>> roles = new EnumMap<>(ModuleType.class);
 
-			roles.put(ModuleType.ATTENDANCE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
+		roles.put(ModuleType.ATTENDANCE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.LEAVE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.OKR, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
