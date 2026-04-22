@@ -46,13 +46,13 @@ public class NotificationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/count-by-type")
+	@GetMapping("/summary")
 	public ResponseEntity<ResponseEntityDto> getNotificationCountByType() {
 		ResponseEntityDto response = notificationService.getNotificationCountByType();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PatchMapping("/mark-type-viewed/type")
+	@PatchMapping("/summary")
 	public ResponseEntity<ResponseEntityDto> markNotificationTypeAsRead(
 			@Valid @RequestBody NotificationTypeRequestDto requestDto) {
 		ResponseEntityDto response = notificationService.markNotificationTypeAsRead(requestDto.getNotificationType());
