@@ -22,7 +22,7 @@ public enum AuditAction {
 		return List.of(ENVELOPE_VIEWED, ENVELOPE_DOWNLOADED).contains(action);
 	}
 
-	public static boolean isIdentityVerifiedAction(AuditAction action) {
+	public static boolean isIdentityVerifiedByBankIdAction(AuditAction action) {
 		return List.of(ENVELOPE_IDENTITY_VERIFIED_SWEDISH_BANKID).contains(action);
 	}
 

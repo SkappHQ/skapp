@@ -106,8 +106,8 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 
 			Long documentId = envelope.getDocuments().isEmpty() ? null : envelope.getDocuments().getFirst().getId();
 
-			if (AuditAction.isIdentityVerifiedAction(auditTrail.getAction()) && auditTrail.getRecipient() != null
-					&& documentId != null) {
+			if (AuditAction.isIdentityVerifiedByBankIdAction(auditTrail.getAction())
+					&& auditTrail.getRecipient() != null && documentId != null) {
 				Optional<VerifiedIdentity> verifiedIdentity = verifiedIdentityDao
 					.findByRecipientIdAndDocumentId(auditTrail.getRecipient().getId(), documentId);
 

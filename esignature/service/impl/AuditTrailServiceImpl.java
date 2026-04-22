@@ -243,7 +243,7 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		if (documentId != null) {
 			List<Long> bankIdRecipientIds = auditTrails.stream()
-				.filter(a -> AuditAction.isIdentityVerifiedAction(a.getAction()) && a.getRecipient() != null)
+				.filter(a -> AuditAction.isIdentityVerifiedByBankIdAction(a.getAction()) && a.getRecipient() != null)
 				.map(a -> a.getRecipient().getId())
 				.distinct()
 				.toList();
@@ -283,8 +283,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getAddressBook().getName());
 			}
 
-			if (AuditAction.isIdentityVerifiedAction(auditTrail.getAction()) && auditTrail.getRecipient() != null
-					&& documentId != null) {
+			if (AuditAction.isIdentityVerifiedByBankIdAction(auditTrail.getAction())
+					&& auditTrail.getRecipient() != null && documentId != null) {
 				VerifiedIdentity identity = verifiedIdentityMap.get(auditTrail.getRecipient().getId());
 				if (identity != null) {
 					responseDto.setActionVerifiedByName(identity.getFullName());
