@@ -303,14 +303,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 
-		// root.fetch() cast to Join so the same SQL JOIN serves both eager-loading and
-		// predicate building. Safe because Hibernate Fetch implements Join internally.
-		@SuppressWarnings("unchecked")
-		Join<Employee, EmployeePersonalInfo> personalInfoJoin = (Join<Employee, EmployeePersonalInfo>) root
-			.fetch(Employee_.personalInfo, JoinType.LEFT);
-
+		root.fetch(Employee_.personalInfo, JoinType.LEFT);
+		root.fetch(Employee_.employeeEmergencies, JoinType.LEFT);
 		Join<Employee, User> userJoin = root.join(Employee_.user);
-		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole);
+		Join<Employee, EmployeePersonalInfo> personalInfoJoin = root.join(Employee_.personalInfo, JoinType.LEFT);
+		Join<Employee, EmployeeRole> roleJoin = root.join((Employee_.employeeRole));
 
 		criteriaQuery.where(buildExportPredicates(employeeExportFilterDto, criteriaBuilder, root, userJoin,
 				personalInfoJoin, roleJoin)
