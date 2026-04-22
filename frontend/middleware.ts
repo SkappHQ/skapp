@@ -86,8 +86,7 @@ const adminRoutes = {
     ROUTES.INVOICE.CUSTOMERS.BASE,
     ROUTES.CONFIGURATIONS.BASE,
     ROUTES.INVOICE.CREATE.BASE
-  ],
-  [AdminTypes.PM_ADMIN]: [ROUTES.PROJECTS.BASE, ROUTES.PROJECTS.GUESTS]
+  ]
 };
 
 const managerRoutes = {
@@ -141,7 +140,9 @@ const employeeRoutes = {
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
     ...commonRoutes
-  ]
+  ],
+  [EmployeeTypes.PM_EMPLOYEE]: [...commonRoutes],
+  [EmployeeTypes.PM_GUEST_EMPLOYEE]: [...commonRoutes]
 };
 
 const senderRoutes = {

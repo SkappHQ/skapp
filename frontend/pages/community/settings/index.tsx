@@ -15,6 +15,7 @@ import {
   EmployeeTypes,
   ManagerTypes
 } from "~community/common/types/AuthTypes";
+import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
 import { getSettingsTabs } from "~community/settings/utils/settingsTabsUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
@@ -72,8 +73,7 @@ const Settings: NextPage = () => {
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);
-    const basePath = router.asPath.split("?")[0];
-    globalThis.history.replaceState(null, "", `${basePath}?tab=${id}`);
+    replaceTabQueryParam(router.asPath, id);
   };
 
   return (
