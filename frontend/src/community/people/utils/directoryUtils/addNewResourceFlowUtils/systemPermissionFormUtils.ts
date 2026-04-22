@@ -159,6 +159,21 @@ export const handleCustomChangeEnterprise = ({
     return;
   }
 
+  if (
+    name === "pmRole" &&
+    value === Role.PM_ADMIN &&
+    roleLimits.pmAdminLimitExceeded
+  ) {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: roleLimitationText(["pmAdminLimitationTitle"]),
+      description: roleLimitationText(["pmAdminLimitationDescription"]),
+      isIcon: true
+    });
+    return;
+  }
+
   setFieldValue(name, value);
   setUserRoles(name, value);
 };
@@ -192,6 +207,8 @@ export const handleCustomChangeDefault = ({
     setUserRoles("attendanceRole", value);
   } else if (name === "esignRole") {
     setUserRoles("esignRole", value);
+  } else if (name === "pmRole") {
+    setUserRoles("pmRole", value);
   }
 };
 
@@ -247,16 +264,19 @@ export const handleSuperAdminChangeEnterprise = async ({
   const leaveRole = Role.LEAVE_ADMIN;
   const attendanceRole = Role.ATTENDANCE_ADMIN;
   const esignRole = Role.ESIGN_ADMIN;
+  const pmRole = Role.PM_ADMIN;
 
   void setFieldValue("peopleRole", peopleRole);
   void setFieldValue("leaveRole", leaveRole);
   void setFieldValue("attendanceRole", attendanceRole);
   void setFieldValue("esignRole", esignRole);
+  void setFieldValue("pmRole", pmRole);
 
   setUserRoles("attendanceRole", attendanceRole);
   setUserRoles("peopleRole", peopleRole);
   setUserRoles("leaveRole", leaveRole);
   setUserRoles("esignRole", esignRole);
+  setUserRoles("pmRole", pmRole);
 };
 
 interface HandleSuperAdminChangeDefaultProps {
@@ -414,6 +434,9 @@ export const handleSystemPermissionFormSubmit = ({
   setUserRoles("peopleRole", values.peopleRole);
   setUserRoles("leaveRole", values.leaveRole);
   setUserRoles("esignRole", values.esignRole);
+  if (values.pmRole) {
+    setUserRoles("pmRole", values.pmRole);
+  }
 };
 
 interface HandleModalClose {
@@ -440,12 +463,17 @@ export const handleModalClose = ({
       "isSuperAdmin",
       "peopleRole",
       "leaveRole",
-      "attendanceRole"
+      "attendanceRole",
+      "esignRole",
+      "pmRole"
     ] as const;
 
     roles.forEach((role) => {
-      setUserRoles(role, employee.userRoles[role]);
-      void setFieldValue(role, employee.userRoles[role]);
+      const value = employee.userRoles[role];
+      if (value !== undefined) {
+        setUserRoles(role, value);
+        void setFieldValue(role, value);
+      }
     });
   }
 

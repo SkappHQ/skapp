@@ -58,6 +58,11 @@ const useSessionData = () => {
     [user?.roles]
   );
 
+  const isPmModuleEnabled = useMemo(
+    () => user?.roles?.includes(EmployeeTypes.PM_EMPLOYEE),
+    [user?.roles]
+  );
+
   const employeeDetails = useMemo(() => user?.employee, [user?.employee]);
 
   const isSuperAdmin = useMemo(
@@ -123,6 +128,7 @@ const useSessionData = () => {
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isInvoiceModuleEnabled,
+    isPmModuleEnabled,
     employeeDetails,
     isSuperAdmin,
     isPeopleAdmin,

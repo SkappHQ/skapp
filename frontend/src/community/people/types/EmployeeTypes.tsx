@@ -414,7 +414,9 @@ export enum Role {
   ATTENDANCE_EMPLOYEE = "ATTENDANCE_EMPLOYEE",
   ESIGN_EMPLOYEE = "ESIGN_EMPLOYEE",
   ESIGN_SENDER = "ESIGN_SENDER",
-  ESIGN_ADMIN = "ESIGN_ADMIN"
+  ESIGN_ADMIN = "ESIGN_ADMIN",
+  PM_ADMIN = "PM_ADMIN",
+  PM_EMPLOYEE = "PM_EMPLOYEE"
 }
 
 export interface EmployeeRoleType {
@@ -423,6 +425,7 @@ export interface EmployeeRoleType {
   peopleRole: Role;
   leaveRole: Role;
   esignRole: Role;
+  pmRole?: Role;
 }
 
 export interface EmployeeDataExists {
