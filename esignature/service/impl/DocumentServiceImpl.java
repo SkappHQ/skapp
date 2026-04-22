@@ -353,6 +353,13 @@ public class DocumentServiceImpl implements DocumentService {
 			ResponseEntityDto responseEntityDto = completeDocument(document, newVersion, updatedDocumentBytes,
 					recipient, ipAddress, isDocAccess);
 
+			nextSignRecipientList.forEach(rec -> {
+				rec.setReceivedAt(getCurrentUtcDateTime());
+				rec.setStatus(RecipientStatus.COMPLETED);
+			});
+
+			recipientDao.saveAll(nextSignRecipientList);
+
 			// Set to null to help GC
 			updatedDocumentBytes = null;
 			return responseEntityDto;
