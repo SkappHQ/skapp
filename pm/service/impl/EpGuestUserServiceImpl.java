@@ -189,7 +189,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		Map<Long, List<ProjectRequestDto>> guestUsersProjectsMap = epGuestUserCacheService
 			.getAllGuestUsersWithProjects(guestEmployees);
 
-		List<EpGuestUserResponseDto> result = new ArrayList<>(guestEmployees.stream().map(employee -> {
+		return guestEmployees.stream().map(employee -> {
 			EpGuestUserResponseDto userDto = mapEmployeeToGuestUserDto(employee);
 			List<ProjectRequestDto> userProjects = guestUsersProjectsMap.getOrDefault(employee.getUser().getUserId(),
 					Collections.emptyList());
@@ -200,26 +200,12 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				return true;
 			}
 			return userDto.getProjects().stream().anyMatch(project -> projectIds.contains(project.getProjectId()));
-		}).toList());
-
-		boolean includePending = statuses == null || statuses.contains(AccountStatus.PENDING);
-		if (includePending) {
-			List<EpGuestUserResponseDto> requestDtos = guestUserRequestDao.findAll()
-				.stream()
-				.filter(req -> email == null || email.isBlank()
-						|| req.getEmail().toLowerCase().contains(email.toLowerCase()))
-				.filter(req -> projectIds == null || projectIds.isEmpty()
-						|| req.getProjectIds().stream().anyMatch(projectIds::contains))
-				.map(this::mapGuestUserRequestToDto)
-				.toList();
-			result.addAll(requestDtos);
-		}
-
-		return result;
+		}).toList();
 	}
 
 	private EpGuestUserResponseDto mapGuestUserRequestToDto(GuestUserRequest request) {
 		EpGuestUserResponseDto dto = new EpGuestUserResponseDto();
+		dto.setRequestId(request.getId());
 		dto.setEmail(request.getEmail());
 		dto.setAccountStatus(AccountStatus.PENDING);
 		dto.setRequestedDate(request.getRequestedDate());
@@ -244,6 +230,18 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		}
 
 		return dto;
+	}
+
+	@Override
+	public List<EpGuestUserResponseDto> getPendingGuestUserRequests(String email, List<Long> projectIds) {
+		return guestUserRequestDao.findAll()
+			.stream()
+			.filter(req -> email == null || email.isBlank()
+					|| req.getEmail().toLowerCase().contains(email.toLowerCase()))
+			.filter(req -> projectIds == null || projectIds.isEmpty()
+					|| req.getProjectIds().stream().anyMatch(projectIds::contains))
+			.map(this::mapGuestUserRequestToDto)
+			.toList();
 	}
 
 	@Override
@@ -295,31 +293,34 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	@Override
 	public ResponseEntityDto updateGuestUserApprovalStatus(
 			EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {
-		if (epGuestUserApprovalRequestDto.getUserId() == null) {
+		if (epGuestUserApprovalRequestDto.getRequestId() == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND);
 		}
 		if (epGuestUserApprovalRequestDto.getStatus() == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_APPROVAL_STATUS);
 		}
 
-		User user = userDao.findById(epGuestUserApprovalRequestDto.getUserId())
-			.filter(this::isValidGuestEmployee)
-			.filter(u -> u.getEmployee().getAccountStatus() == AccountStatus.PENDING)
+		GuestUserRequest request = guestUserRequestDao.findById(epGuestUserApprovalRequestDto.getRequestId())
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
 
 		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVED) {
-			user.getEmployee().setAccountStatus(AccountStatus.ACTIVE);
-			userDao.save(user);
-			peopleService.modifySubscriptionQuantity(1, true, false);
+			String adminName = userService.getCurrentUser().getEmployee().getFirstName();
+			List<ProjectRequestDto> projects = request.getProjectIds().stream().map(projectId -> {
+				ProjectRequestDto projectRequestDto = new ProjectRequestDto();
+				projectRequestDto.setProjectId(projectId);
+				return projectRequestDto;
+			}).toList();
+			inviteSingleGuestUser(request.getEmail(), projects, adminName);
+		}
+
+		guestUserRequestDao.delete(request);
+
+		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVED) {
 			return new ResponseEntityDto(
 					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_APPROVED), false);
 		}
-		else {
-			user.getEmployee().setAccountStatus(AccountStatus.TERMINATED);
-			userDao.save(user);
-			return new ResponseEntityDto(
-					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DECLINED), false);
-		}
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DECLINED), false);
 	}
 
 	@Override

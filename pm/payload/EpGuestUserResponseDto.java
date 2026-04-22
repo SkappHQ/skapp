@@ -13,6 +13,8 @@ import java.util.List;
 @Setter
 public class EpGuestUserResponseDto extends EpUserResponseDto {
 
+	private Long requestId;
+
 	private List<ProjectRequestDto> projects;
 
 	private LocalDateTime requestedDate;

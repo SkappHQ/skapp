@@ -24,6 +24,8 @@ public interface EpGuestUserService {
 
 	List<EpGuestUserResponseDto> getAllGuestUsers(String email, List<AccountStatus> statuses, List<Long> projectIds);
 
+	List<EpGuestUserResponseDto> getPendingGuestUserRequests(String email, List<Long> projectIds);
+
 	EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto);
 
 	@Transactional

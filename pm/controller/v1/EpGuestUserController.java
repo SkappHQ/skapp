@@ -56,6 +56,14 @@ public class EpGuestUserController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@GetMapping("/request")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
+	public ResponseEntity<List<EpGuestUserResponseDto>> getPendingGuestUserRequests(
+			@RequestParam(required = false) String email, @RequestParam(required = false) List<Long> projectIds) {
+		List<EpGuestUserResponseDto> response = epGuestUserService.getPendingGuestUserRequests(email, projectIds);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@PostMapping("/re-invite")
 	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
 	public ResponseEntity<EpUserResponseDto> reInviteGuestUser(
@@ -79,7 +87,7 @@ public class EpGuestUserController {
 	}
 
 	@PatchMapping("/approval")
-	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> updateGuestUserApprovalStatus(
 			@RequestBody EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {
 		ResponseEntityDto response = epGuestUserService.updateGuestUserApprovalStatus(epGuestUserApprovalRequestDto);
