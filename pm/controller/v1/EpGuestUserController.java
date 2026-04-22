@@ -32,7 +32,7 @@ public class EpGuestUserController {
 	private final EpGuestUserService epGuestUserService;
 
 	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN', 'ROLE_PM_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_EMPLOYEE')")
 	public ResponseEntity<EpUserResponseDto> createGuestUser(
 			@RequestBody EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
 		EpUserResponseDto response = epGuestUserService.createGuestUser(epGuestUserInviteRequestDto);
