@@ -86,8 +86,7 @@ const adminRoutes = {
     ROUTES.INVOICE.CUSTOMERS.BASE,
     ROUTES.CONFIGURATIONS.BASE,
     ROUTES.INVOICE.CREATE.BASE
-  ],
-  [AdminTypes.PM_ADMIN]: [ROUTES.PROJECTS.BASE, ROUTES.PROJECTS.GUESTS]
+  ]
 };
 
 const managerRoutes = {

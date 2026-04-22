@@ -187,11 +187,7 @@ const getDrawerRoutes = ({
 
       if (route?.name === "Projects") {
         const hasPMAccess = userRoles?.some((role) =>
-          [
-            AdminTypes.PM_ADMIN,
-            EmployeeTypes.PM_EMPLOYEE,
-            EmployeeTypes.PM_GUEST_EMPLOYEE
-          ].includes(role as AdminTypes | EmployeeTypes)
+          [EmployeeTypes.PM_EMPLOYEE].includes(role as EmployeeTypes)
         );
 
         if (!hasPMAccess) return null;
