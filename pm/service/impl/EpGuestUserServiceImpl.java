@@ -31,16 +31,21 @@ import com.skapp.enterprise.people.repository.EpEmployeeDao;
 import com.skapp.enterprise.people.service.EpPeopleService;
 import com.skapp.enterprise.people.service.EpUserEmailService;
 import com.skapp.enterprise.people.service.EpUserService;
+import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
+import com.skapp.enterprise.pm.model.GuestUserRequest;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
+import com.skapp.enterprise.pm.repository.GuestUserRequestDao;
 import com.skapp.enterprise.pm.service.EpGuestUserCacheService;
 import com.skapp.enterprise.pm.service.EpGuestUserInternalService;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
 import com.skapp.enterprise.pm.type.GuestUserApprovalStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +54,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Primary
+@Slf4j
 @RequiredArgsConstructor
 public class EpGuestUserServiceImpl implements EpGuestUserService {
 
@@ -74,14 +80,22 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	private final EpGuestUserCacheService epGuestUserCacheService;
 
+	private final GuestUserRequestDao guestUserRequestDao;
+
 	@Override
 	public EpUserResponseDto createGuestUser(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
 		if (epGuestUserInviteRequestDto == null || epGuestUserInviteRequestDto.getEmail() == null
 				|| epGuestUserInviteRequestDto.getEmail().isBlank()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
+		User currentUser = userService.getCurrentUser();
+		if (!isPrivilegedUser(currentUser)) {
+			saveGuestUserRequest(epGuestUserInviteRequestDto.getEmail(), epGuestUserInviteRequestDto.getProjects(),
+					currentUser);
+			return new EpUserResponseDto();
+		}
 		return inviteSingleGuestUser(epGuestUserInviteRequestDto.getEmail(), epGuestUserInviteRequestDto.getProjects(),
-				userService.getCurrentUser().getEmployee().getFirstName());
+				currentUser.getEmployee().getFirstName());
 	}
 
 	@Override
@@ -89,6 +103,15 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		if (epGuestUserBulkInviteRequestDto == null || epGuestUserBulkInviteRequestDto.getEmails() == null
 				|| epGuestUserBulkInviteRequestDto.getEmails().isEmpty()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		if (!isPrivilegedUser(currentUser)) {
+			epGuestUserBulkInviteRequestDto.getEmails().forEach(Validation::validateEmail);
+			for (String email : epGuestUserBulkInviteRequestDto.getEmails()) {
+				saveGuestUserRequest(email, epGuestUserBulkInviteRequestDto.getProjects(), currentUser);
+			}
+			return Collections.emptyList();
 		}
 
 		List<EpUserResponseDto> responses = new ArrayList<>();
@@ -166,7 +189,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		Map<Long, List<ProjectRequestDto>> guestUsersProjectsMap = epGuestUserCacheService
 			.getAllGuestUsersWithProjects(guestEmployees);
 
-		return guestEmployees.stream().map(employee -> {
+		List<EpGuestUserResponseDto> result = new ArrayList<>(guestEmployees.stream().map(employee -> {
 			EpGuestUserResponseDto userDto = mapEmployeeToGuestUserDto(employee);
 			List<ProjectRequestDto> userProjects = guestUsersProjectsMap.getOrDefault(employee.getUser().getUserId(),
 					Collections.emptyList());
@@ -177,7 +200,50 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				return true;
 			}
 			return userDto.getProjects().stream().anyMatch(project -> projectIds.contains(project.getProjectId()));
-		}).toList();
+		}).toList());
+
+		boolean includePending = statuses == null || statuses.contains(AccountStatus.PENDING);
+		if (includePending) {
+			List<EpGuestUserResponseDto> requestDtos = guestUserRequestDao.findAll()
+				.stream()
+				.filter(req -> email == null || email.isBlank()
+						|| req.getEmail().toLowerCase().contains(email.toLowerCase()))
+				.filter(req -> projectIds == null || projectIds.isEmpty()
+						|| req.getProjectIds().stream().anyMatch(projectIds::contains))
+				.map(this::mapGuestUserRequestToDto)
+				.toList();
+			result.addAll(requestDtos);
+		}
+
+		return result;
+	}
+
+	private EpGuestUserResponseDto mapGuestUserRequestToDto(GuestUserRequest request) {
+		EpGuestUserResponseDto dto = new EpGuestUserResponseDto();
+		dto.setEmail(request.getEmail());
+		dto.setAccountStatus(AccountStatus.PENDING);
+		dto.setRequestedDate(request.getRequestedDate());
+
+		if (request.getProjectIds() != null && !request.getProjectIds().isEmpty()) {
+			List<ProjectRequestDto> projects = request.getProjectIds().stream().map(projectId -> {
+				ProjectRequestDto projectRequestDto = new ProjectRequestDto();
+				projectRequestDto.setProjectId(projectId);
+				return projectRequestDto;
+			}).toList();
+			dto.setProjects(projects);
+		}
+
+		Employee requester = request.getRequestedUser();
+		if (requester != null) {
+			EmployeeBasicDetailsResponseDto requestedBy = new EmployeeBasicDetailsResponseDto();
+			requestedBy.setEmployeeId(requester.getEmployeeId());
+			requestedBy.setFirstName(requester.getFirstName());
+			requestedBy.setLastName(requester.getLastName());
+			requestedBy.setAuthPic(requester.getAuthPic());
+			dto.setRequestedBy(requestedBy);
+		}
+
+		return dto;
 	}
 
 	@Override
@@ -319,6 +385,35 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 		dto.setAuthPic(employee.getAuthPic());
 		return dto;
+	}
+
+	private boolean isPrivilegedUser(User user) {
+		if (user.getEmployee() == null || user.getEmployee().getEmployeeRole() == null) {
+			return false;
+		}
+		Boolean isSuperAdmin = user.getEmployee().getEmployeeRole().getIsSuperAdmin();
+		Role pmRole = user.getEmployee().getEmployeeRole().getPmRole();
+		return Boolean.TRUE.equals(isSuperAdmin) || pmRole == Role.PM_ADMIN;
+	}
+
+	private void saveGuestUserRequest(String email, List<ProjectRequestDto> projects, User requester) {
+		Validation.validateEmail(email);
+		if (userDao.findByEmail(email).isPresent()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
+		}
+		if (guestUserRequestDao.existsByEmail(email)) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
+		}
+		List<Long> projectIds = projects != null ? projects.stream().map(ProjectRequestDto::getProjectId).toList()
+				: List.of();
+		GuestUserRequest request = new GuestUserRequest();
+		request.setEmail(email);
+		request.setRequestedUser(requester.getEmployee());
+		request.setRequestedDate(LocalDateTime.now());
+		request.setProjectIds(projectIds);
+		guestUserRequestDao.save(request);
+		log.info("saveGuestUserRequest: Guest user request saved for email: {} by employee: {}", email,
+				requester.getEmployee().getEmployeeId());
 	}
 
 	private boolean isValidGuestEmployee(User user) {
