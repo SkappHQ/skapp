@@ -325,10 +325,6 @@ public class NotificationServiceImpl implements NotificationService {
 	public ResponseEntityDto markNotificationTypeAsViewed(NotificationType notificationType) {
 		log.info("markNotificationTypeAsViewed: execution started");
 
-		if (notificationType == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
-		}
-
 		Long userId = userService.getCurrentUser().getUserId();
 		Set<NotificationType> typesToMark = (notificationType == NotificationType.ESIGN)
 				? ESIGN_TYPES : EnumSet.of(notificationType);
