@@ -58,6 +58,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getEligibleAnnouncements() {
+		log.info("getEligibleAnnouncements: execution started");
 
 		List<FeatureAnnouncementResponseDto> active = fetchActiveAnnouncements();
 		if (active.isEmpty()) {
@@ -94,6 +95,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 	@Override
 	@Transactional
 	public ResponseEntityDto recordInteraction(Long announcementId, AnnouncementInteractionType type) {
+		log.info("recordInteraction: execution started");
 
 		User currentUser = userService.getCurrentUser();
 		Long employeeId = currentUser.getEmployee().getEmployeeId();

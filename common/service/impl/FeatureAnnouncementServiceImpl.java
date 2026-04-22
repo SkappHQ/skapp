@@ -126,7 +126,7 @@ public class FeatureAnnouncementServiceImpl implements FeatureAnnouncementServic
 			throw new ModuleException(
 					EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_CTA_LINK_REQUIRED_WHEN_LABEL_SET);
 		}
-		if (StringUtils.hasText(ctaLink) && !ctaLink.startsWith("/")) {
+		if (StringUtils.hasText(ctaLink) && (!ctaLink.startsWith("/") || ctaLink.startsWith("//"))) {
 			throw new ModuleException(
 					EPCommonMessageConstant.EP_COMMON_ERROR_ANNOUNCEMENT_CTA_LINK_MUST_BE_RELATIVE);
 		}
