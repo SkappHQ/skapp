@@ -323,8 +323,8 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Transactional
 	@Override
-	public ResponseEntityDto markNotificationTypeAsViewed(NotificationType notificationType) {
-		log.info("markNotificationTypeAsViewed: execution started");
+	public ResponseEntityDto markNotificationTypeAsRead(NotificationType notificationType) {
+		log.info("markNotificationTypeAsRead: execution started");
 
 		Long userId = userService.getCurrentUser().getUserId();
 		// ESIGN is an aggregation-only alias that is never stored in the DB; fan it out
@@ -333,7 +333,7 @@ public class NotificationServiceImpl implements NotificationService {
 				? ESIGN_TYPES : EnumSet.of(notificationType);
 		notificationDao.markTypeViewedByUserIdAndTypes(userId, typesToMark);
 
-		log.info("markNotificationTypeAsViewed: execution ended");
+		log.info("markNotificationTypeAsRead: execution ended");
 		return new ResponseEntityDto(false, "");
 	}
 

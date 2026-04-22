@@ -23,6 +23,6 @@ public interface NotificationService {
 
 	ResponseEntityDto getNotificationCountByType();
 
-	ResponseEntityDto markNotificationTypeAsViewed(NotificationType notificationType);
+	ResponseEntityDto markNotificationTypeAsRead(NotificationType notificationType);
 
 }
