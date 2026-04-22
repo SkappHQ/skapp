@@ -52,7 +52,7 @@ public class NotificationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PatchMapping("/type")
+	@PatchMapping("/mark-type-viewed/type")
 	public ResponseEntity<ResponseEntityDto> markNotificationTypeAsViewed(
 			@Valid @RequestBody NotificationTypeRequestDto requestDto) {
 		ResponseEntityDto response = notificationService.markNotificationTypeAsViewed(requestDto.getNotificationType());
