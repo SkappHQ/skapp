@@ -196,6 +196,14 @@ const nextConfig = {
         destination: "/community/configurations/user-roles/esignature"
       },
       {
+        source: "/configurations/work-location/create",
+        destination: "/enterprise/configurations/work-location/create"
+      },
+      {
+        source: "/configurations/work-location/:id",
+        destination: "/enterprise/configurations/work-location/:id"
+      },
+      {
         source: "/leave/analytics/:id",
         destination: "/community/leave/analytics/:id"
       },

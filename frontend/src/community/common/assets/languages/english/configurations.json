@@ -93,6 +93,7 @@
     "attendance": "Attendance",
     "sign": "Sign",
     "userRoles": "User Roles",
-    "invoice": "Invoice"
+    "invoice": "Invoice",
+    "organization": "Organization"
   }
 }

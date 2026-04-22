@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
+import com.skapp.community.timeplanner.event.GeoFencingDisabledEvent;
 import com.skapp.community.timeplanner.model.AttendanceConfig;
 import com.skapp.community.timeplanner.payload.request.AttendanceConfigRequestDto;
 import com.skapp.community.timeplanner.repository.AttendanceConfigDao;
@@ -12,6 +13,7 @@ import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,9 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	@NonNull
 	private final MessageUtil messageUtil;
 
+	@NonNull
+	private final ApplicationEventPublisher applicationEventPublisher;
+
 	@Override
 	public void setDefaultAttendanceConfig() {
 		log.info("setDefaultAttendanceConfig: execution started");
@@ -41,6 +46,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		configMap.put(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS, DEFAULT_CONFIG_VALUE);
 		configMap.put(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS, DEFAULT_CONFIG_VALUE);
 		configMap.put(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES, DEFAULT_CONFIG_VALUE);
+		configMap.put(AttendanceConfigType.IS_GEO_FENCING_ENABLED, DEFAULT_CONFIG_VALUE);
 
 		configMap.forEach(this::updateOrCreateConfig);
 
@@ -61,8 +67,14 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				String.valueOf(attendanceConfigRequestDto.getIsClockInOnLeaveDays()));
 		configMap.put(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES,
 				String.valueOf(attendanceConfigRequestDto.getIsAutoApprovalForChanges()));
+		configMap.put(AttendanceConfigType.IS_GEO_FENCING_ENABLED,
+				String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
 
 		configMap.forEach(this::updateOrCreateConfig);
+
+		if (Boolean.FALSE.equals(attendanceConfigRequestDto.getIsGeoFencingEnabled())) {
+			applicationEventPublisher.publishEvent(new GeoFencingDisabledEvent(this));
+		}
 
 		log.info("updateAttendanceConfig: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(TimeMessageConstant.TIME_SUCCESS_ATTENDANCE_CONFIG_UPDATED),
@@ -85,7 +97,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	public ResponseEntityDto getAllAttendanceConfigs() {
 		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
-		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false);
+		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
 
 		for (AttendanceConfig config : attendanceConfigs) {
 			boolean value = Boolean.parseBoolean(config.getAttendanceConfigValue());
@@ -94,6 +106,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				case CLOCK_IN_ON_COMPANY_HOLIDAYS -> dto.setIsClockInOnCompanyHolidays(value);
 				case CLOCK_IN_ON_LEAVE_DAYS -> dto.setIsClockInOnLeaveDays(value);
 				case AUTO_APPROVAL_FOR_CHANGES -> dto.setIsAutoApprovalForChanges(value);
+				case IS_GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
 			}
 		}
 

@@ -3,6 +3,7 @@ export type AttendanceConfigurationType = {
   isClockInOnCompanyHolidays: boolean;
   isClockInOnLeaveDays: boolean;
   isAutoApprovalForChanges: boolean;
+  isGeoFencingEnabled: boolean;
 };
 
 export interface ManagerTimesheetHeaderType {

@@ -77,7 +77,9 @@ const ROUTES = {
     SIGN: "/configurations/esign",
     USER_ROLES_MODULE: (module: string) =>
       `/configurations/user-roles/${module}`,
-    INVOICE: "/configurations/invoice"
+    INVOICE: "/configurations/invoice",
+    WORK_LOCATION_CREATE: "/configurations/work-location/create",
+    WORK_LOCATION_EDIT: (id: number) => `/configurations/work-location/${id}`
   },
   DASHBOARD: {
     BASE: "/dashboard",
