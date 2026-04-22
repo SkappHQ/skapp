@@ -269,12 +269,13 @@ public class RolesServiceImpl implements RolesService {
 	protected Map<ModuleType, List<RoleLevel>> initializeRolesForModule() {
 		Map<ModuleType, List<RoleLevel>> roles = new EnumMap<>(ModuleType.class);
 
-		roles.put(ModuleType.ATTENDANCE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
+			roles.put(ModuleType.ATTENDANCE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.LEAVE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.OKR, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.INVOICE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
 		roles.put(ModuleType.PM, List.of(RoleLevel.ADMIN, RoleLevel.EMPLOYEE));
+		roles.put(ModuleType.CRM, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 
 		return roles;
 	}
@@ -565,6 +566,12 @@ public class RolesServiceImpl implements RolesService {
 			case INVOICE -> switch (roleLevel) {
 				case ADMIN -> Role.INVOICE_ADMIN;
 				case MANAGER -> Role.INVOICE_MANAGER;
+				default -> null;
+			};
+			case CRM -> switch (roleLevel) {
+				case ADMIN -> Role.CRM_ADMIN;
+				case MANAGER -> Role.CRM_SALES_MANAGER;
+				case EMPLOYEE -> Role.CRM_SALES_REP;
 				default -> null;
 			};
 			default -> null;
