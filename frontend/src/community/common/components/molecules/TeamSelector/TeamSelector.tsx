@@ -6,7 +6,7 @@ import {
   DropdownWithSearchablePopup,
   TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
@@ -25,14 +25,17 @@ interface Props {
   moduleAdminType?: AdminTypes;
 }
 
-const ALL_TEAMS_OPTION_ID = 0;
+const ALL_TEAMS_OPTION_ID = -1;
+
+const isDropdownOption = (v: DropdownValue | null): v is DropdownOption =>
+  v !== null && typeof v === "object";
 
 const TeamSelector = ({
   setTeamId,
   setTeamName,
   moduleAdminType
 }: Props): JSX.Element => {
-  const translateTexts = useTranslator("attendanceModule", "timesheet");
+  const translateTexts = useTranslator("commonComponents", "teamSelector");
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: managerAllTeamsData } = useGetAllManagerTeams();
@@ -47,26 +50,30 @@ const TeamSelector = ({
     null
   );
 
-  const allTeamsOption: DropdownOption = {
-    id: ALL_TEAMS_OPTION_ID,
-    value: ALL_TEAMS_OPTION_ID,
-    label: translateTexts(["allLabel"])
-  };
+  const allTeamsLabel = translateTexts(["allLabel"]);
 
-  const options: DropdownOption[] = [
-    allTeamsOption,
-    ...(teamsData?.map((item) => ({
-      id: item.teamId as number,
-      value: item.teamId as number,
-      label: item.teamName
-    })) ?? [])
-  ];
+  const allTeamsOption = useMemo<DropdownOption>(
+    () => ({
+      id: ALL_TEAMS_OPTION_ID,
+      value: ALL_TEAMS_OPTION_ID,
+      label: allTeamsLabel
+    }),
+    [allTeamsLabel]
+  );
 
-  useEffect(() => {
-    checkUserRole();
-  }, [user, managerAllTeamsData, allTeamsData]);
+  const options = useMemo<DropdownOption[]>(
+    () => [
+      allTeamsOption,
+      ...(teamsData?.map((item) => ({
+        id: item.teamId as number,
+        value: item.teamId as number,
+        label: item.teamName
+      })) ?? [])
+    ],
+    [allTeamsOption, teamsData]
+  );
 
-  const checkUserRole = () => {
+  const checkUserRole = useCallback(() => {
     if (
       user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
       (moduleAdminType && user?.roles?.includes(moduleAdminType))
@@ -83,20 +90,30 @@ const TeamSelector = ({
         managerAllTeamsData?.managerTeams.length !== 0 ? allTeamsOption : null
       );
     }
-  };
+  }, [
+    user,
+    managerAllTeamsData,
+    allTeamsData,
+    moduleAdminType,
+    allTeamsOption,
+    setTeamId
+  ]);
+
+  useEffect(() => {
+    checkUserRole();
+  }, [checkUserRole]);
 
   const handleChange = (value: DropdownValue | null): void => {
-    const option = value as DropdownOption | null;
-    if (!option) return;
+    if (!isDropdownOption(value)) return;
 
-    if (option.id === ALL_TEAMS_OPTION_ID) {
+    if (value.id === ALL_TEAMS_OPTION_ID) {
       setTeamId(-1);
       setTeamName && setTeamName(translateTexts(["allLabel"]));
     } else {
-      setTeamId(option.id as number);
-      setTeamName && setTeamName(option.label as string);
+      setTeamId(value.id as number);
+      setTeamName && setTeamName(value.label as string);
     }
-    setSelectedValue(option);
+    setSelectedValue(value);
   };
 
   return (
@@ -106,15 +123,13 @@ const TeamSelector = ({
         value={selectedValue}
         onChange={handleChange}
         searchable={true}
-        searchPlaceholder={
-          translateTexts(["searchTeamPlaceholder"]) ?? "Search teams"
-        }
+        searchPlaceholder={translateTexts(["searchTeamPlaceholder"])}
         maxHeight="max-h-44"
         popupWidth="w-[16.25rem]"
         popupAlignment="right"
         disabled={isTeamListEmpty && !isAdmin}
         renderTrigger={(
-          value: DropdownValue | null,
+          _value: DropdownValue | null,
           _isOpen: boolean,
           disabled: boolean,
           triggerProps: TriggerProps
@@ -125,19 +140,19 @@ const TeamSelector = ({
               : translateTexts(["allLabel"]);
           return (
             <Box
-              ref={triggerProps.ref as React.RefObject<HTMLDivElement>}
+              ref={triggerProps.ref}
               onClick={triggerProps.onClick}
-              onKeyDown={
-                triggerProps.onKeyDown as React.KeyboardEventHandler<HTMLDivElement>
-              }
+              onKeyDown={(e) => triggerProps.onKeyDown(e)}
               aria-expanded={triggerProps["aria-expanded"]}
               aria-haspopup={triggerProps["aria-haspopup"]}
+              tabIndex={0}
               sx={{ display: "inline-flex" }}
             >
               <ButtonV2
                 variant={"tertiary"}
                 size={"md"}
                 disabled={disabled}
+                tabIndex={-1}
                 icon={<DropDownArrow />}
                 iconPosition="end"
               >

@@ -94,7 +94,7 @@ const TimesheetDailyLogFilter = ({
   }, []);
 
   useEffect(() => {
-    setSelectedDates([DateTime.local().toJSDate()]);
+    setSelectedDates([DateTime.local().startOf("day").toJSDate()]);
   }, [selectedOptionName]);
 
   const goForward = () => {
