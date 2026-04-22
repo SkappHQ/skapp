@@ -174,8 +174,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 					|| toOrgLocalDate(interaction.getLastSeenAt(), orgZone).isBefore(LocalDate.now(orgZone));
 			case WEEKLY -> interaction == null || interaction.getLastSeenAt() == null
 					|| EpDateTimeUtils.isBeforeStartOfCurrentWeek(interaction.getLastSeenAt(), orgZone);
-			case CUSTOM -> interaction == null || interaction.getLastSeenAt() == null
-				|| EpDateTimeUtils.isBeforeCustomDays(interaction.getLastSeenAt(), announcement.getCustomFrequencyDays(), orgZone);
+			case CUSTOM -> interaction == null || interaction.getLastSeenAt() == null || EpDateTimeUtils
+				.isBeforeCustomDays(interaction.getLastSeenAt(), announcement.getCustomFrequencyDays(), orgZone);
 		};
 	}
 
