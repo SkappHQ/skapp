@@ -4,7 +4,11 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import lombok.experimental.UtilityClass;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -31,6 +35,21 @@ public class EpDateTimeUtils {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
 		}
 		return dateTime.format(GOOGLE_CALENDAR_DATE_TIME_FORMATTER);
+	}
+
+	public static boolean isBeforeStartOfCurrentWeek(LocalDateTime lastSeenAt, ZoneId orgZone) {
+		LocalDate startOfWeek = LocalDate.now(orgZone).with(DayOfWeek.MONDAY);
+		LocalDate lastSeenDate = lastSeenAt.atZone(ZoneOffset.UTC).withZoneSameInstant(orgZone).toLocalDate();
+		return lastSeenDate.isBefore(startOfWeek);
+	}
+
+	public static boolean isBeforeCustomDays(LocalDateTime lastSeenAt, Integer customDays, ZoneId orgZone) {
+		if (customDays == null || customDays < 1) {
+			return true;
+		}
+		LocalDate threshold = LocalDate.now(orgZone).minusDays(customDays);
+		LocalDate lastSeenDate = lastSeenAt.atZone(ZoneOffset.UTC).withZoneSameInstant(orgZone).toLocalDate();
+		return lastSeenDate.isBefore(threshold) || lastSeenDate.isEqual(threshold);
 	}
 
 }
