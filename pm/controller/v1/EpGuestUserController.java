@@ -36,7 +36,8 @@ public class EpGuestUserController {
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> createGuestUser(
 			@RequestBody EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
-		return epGuestUserService.createGuestUser(epGuestUserInviteRequestDto);
+		ResponseEntityDto response = epGuestUserService.createGuestUser(epGuestUserInviteRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PatchMapping
