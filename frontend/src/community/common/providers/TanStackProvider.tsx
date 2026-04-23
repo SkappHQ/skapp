@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
 import { ReactNode, useEffect, useState } from "react";
 
 import { getNewAccessToken, signOut } from "~community/auth/utils/authUtils";
@@ -23,7 +23,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
       defaultOptions: {
         mutations: {
           onMutate: async () => {
-            if (!navigator.onLine) {
+            if (!onlineManager.isOnline()) {
               throw new Error("Network error: No internet connection");
             }
           }
@@ -42,7 +42,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     const interceptor = authFetch.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (!navigator.onLine) {
+        if (!onlineManager.isOnline()) {
           setToastMessage({
             open: true,
             toastType: ToastType.ERROR,
