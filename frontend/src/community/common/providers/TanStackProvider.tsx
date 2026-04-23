@@ -1,4 +1,8 @@
-import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  onlineManager
+} from "@tanstack/react-query";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 
 import { getNewAccessToken, signOut } from "~community/auth/utils/authUtils";
