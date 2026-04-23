@@ -3,9 +3,12 @@ package com.skapp.enterprise.pm.model;
 import com.skapp.community.common.model.Auditable;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.enterprise.common.util.LongListConverter;
+import com.skapp.enterprise.pm.type.GuestUserRequestStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -45,5 +48,9 @@ public class GuestUserRequest extends Auditable<String> {
 	@Column(name = "project_ids", columnDefinition = "text")
 	@Convert(converter = LongListConverter.class)
 	private List<Long> projectIds;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private GuestUserRequestStatus status;
 
 }

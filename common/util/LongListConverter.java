@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Converter
@@ -19,7 +20,7 @@ public class LongListConverter implements AttributeConverter<List<Long>, String>
 		if (ids == null || ids.isEmpty()) {
 			return null;
 		}
-		return ids.stream().map(String::valueOf).collect(Collectors.joining(DELIMITER));
+		return ids.stream().filter(Objects::nonNull).map(String::valueOf).collect(Collectors.joining(DELIMITER));
 	}
 
 	@Override
@@ -27,7 +28,11 @@ public class LongListConverter implements AttributeConverter<List<Long>, String>
 		if (dbData == null || dbData.isBlank()) {
 			return Collections.emptyList();
 		}
-		return new ArrayList<>(Arrays.stream(dbData.split(DELIMITER)).map(String::trim).map(Long::valueOf).toList());
+		return Arrays.stream(dbData.split(DELIMITER))
+			.map(String::trim)
+			.filter(s -> !s.isEmpty() && s.chars().allMatch(Character::isDigit))
+			.map(Long::valueOf)
+			.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 }

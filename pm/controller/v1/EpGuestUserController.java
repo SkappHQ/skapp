@@ -7,6 +7,7 @@ import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
+import com.skapp.enterprise.pm.payload.EpGuestUserRequestResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
 import lombok.RequiredArgsConstructor;
@@ -32,15 +33,14 @@ public class EpGuestUserController {
 	private final EpGuestUserService epGuestUserService;
 
 	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_EMPLOYEE')")
-	public ResponseEntity<EpUserResponseDto> createGuestUser(
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> createGuestUser(
 			@RequestBody EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
-		EpUserResponseDto response = epGuestUserService.createGuestUser(epGuestUserInviteRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return epGuestUserService.createGuestUser(epGuestUserInviteRequestDto);
 	}
 
 	@PatchMapping
-	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
 	public ResponseEntity<EpUserResponseDto> updateGuestUser(
 			@RequestBody EpGuestUserUpdateRequestDto epGuestUserUpdateRequestDto) {
 		EpUserResponseDto response = epGuestUserService.updateGuestUser(epGuestUserUpdateRequestDto);
@@ -48,7 +48,7 @@ public class EpGuestUserController {
 	}
 
 	@GetMapping
-	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
 	public ResponseEntity<List<EpGuestUserResponseDto>> getAllGuestUsers(@RequestParam(required = false) String email,
 			@RequestParam(required = false) List<AccountStatus> statuses,
 			@RequestParam(required = false) List<Long> projectIds) {
@@ -56,16 +56,17 @@ public class EpGuestUserController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/request")
+	@GetMapping("/requests")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
-	public ResponseEntity<List<EpGuestUserResponseDto>> getPendingGuestUserRequests(
+	public ResponseEntity<List<EpGuestUserRequestResponseDto>> getPendingGuestUserRequests(
 			@RequestParam(required = false) String email, @RequestParam(required = false) List<Long> projectIds) {
-		List<EpGuestUserResponseDto> response = epGuestUserService.getPendingGuestUserRequests(email, projectIds);
+		List<EpGuestUserRequestResponseDto> response = epGuestUserService.getPendingGuestUserRequests(email,
+				projectIds);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PostMapping("/re-invite")
-	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
 	public ResponseEntity<EpUserResponseDto> reInviteGuestUser(
 			@RequestBody EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto) {
 		EpUserResponseDto response = epGuestUserService.reInviteGuestUsers(epGuestUserReInviteRequestDto);
@@ -73,14 +74,14 @@ public class EpGuestUserController {
 	}
 
 	@PatchMapping("/de-activate")
-	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> deActivateGuestUser(@RequestParam Long id) {
 		ResponseEntityDto response = epGuestUserService.deactivateGuestUser(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PatchMapping("/activate")
-	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> activateGuestUser(@RequestParam Long id) {
 		ResponseEntityDto response = epGuestUserService.activateGuestUser(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -95,7 +96,7 @@ public class EpGuestUserController {
 	}
 
 	@DeleteMapping()
-	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> deleteGuestUser(@RequestParam Long id) {
 		ResponseEntityDto response = epGuestUserService.deleteGuestUser(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
