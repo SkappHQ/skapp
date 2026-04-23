@@ -16,6 +16,7 @@ import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.Envelope;
 import com.skapp.enterprise.esignature.model.Recipient;
+import com.skapp.enterprise.esignature.model.VerifiedIdentity;
 import com.skapp.enterprise.esignature.payload.request.AuditTrailDto;
 import com.skapp.enterprise.esignature.payload.request.MetadataRequestDto;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
@@ -25,6 +26,7 @@ import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
+import com.skapp.enterprise.esignature.repository.VerifiedIdentityDao;
 import com.skapp.enterprise.esignature.service.AuditTrailService;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.type.AuditAction;
@@ -43,7 +45,9 @@ import tools.jackson.databind.node.ObjectNode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -62,6 +66,8 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 	private final AddressBookDao addressBookDao;
 
 	private final DocumentLinkService documentLinkService;
+
+	private final VerifiedIdentityDao verifiedIdentityDao;
 
 	private final JsonMapper objectMapper;
 
@@ -231,6 +237,23 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 
 		List<AuditTrailResponseDto> responseDtoList = new ArrayList<>();
 
+		Long documentId = envelope.getDocuments().isEmpty() ? null : envelope.getDocuments().getFirst().getId();
+
+		Map<Long, VerifiedIdentity> verifiedIdentityMap = new HashMap<>();
+
+		if (documentId != null) {
+			List<Long> bankIdRecipientIds = auditTrails.stream()
+				.filter(a -> AuditAction.isIdentityVerifiedByBankIdAction(a.getAction()) && a.getRecipient() != null)
+				.map(a -> a.getRecipient().getId())
+				.distinct()
+				.toList();
+
+			if (!bankIdRecipientIds.isEmpty()) {
+				verifiedIdentityDao.findByRecipientIdInAndDocumentId(bankIdRecipientIds, documentId)
+					.forEach(vi -> verifiedIdentityMap.put(vi.getRecipient().getId(), vi));
+			}
+		}
+
 		for (AuditTrail auditTrail : auditTrails) {
 			log.debug("Processing audit trail with ID: {}", auditTrail.getId());
 
@@ -258,6 +281,18 @@ public class AuditTrailServiceImpl implements AuditTrailService {
 			else {
 				responseDto.setActionDoneByName(auditTrail.getRecipient().getAddressBook().getName());
 				log.debug("Action done by recipient: {}", auditTrail.getRecipient().getAddressBook().getName());
+			}
+
+			if (AuditAction.isIdentityVerifiedByBankIdAction(auditTrail.getAction())
+					&& auditTrail.getRecipient() != null && documentId != null) {
+				VerifiedIdentity identity = verifiedIdentityMap.get(auditTrail.getRecipient().getId());
+				if (identity != null) {
+					responseDto.setActionVerifiedByName(identity.getFullName());
+				}
+				else {
+					log.warn("No VerifiedIdentity found for BankID recipient={} document={}",
+							auditTrail.getRecipient().getId(), documentId);
+				}
 			}
 
 			responseDto.setTimestamp(auditTrail.getTimestamp());

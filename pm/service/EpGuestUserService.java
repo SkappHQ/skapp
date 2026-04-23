@@ -45,4 +45,6 @@ public interface EpGuestUserService {
 
 	EpUserResponseDto updateGuestUser(EpGuestUserUpdateRequestDto epGuestUserUpdateRequestDto);
 
+	ResponseEntityDto getPendingGuestUsersCount();
+
 }

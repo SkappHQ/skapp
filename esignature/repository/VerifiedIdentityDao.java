@@ -4,10 +4,11 @@ import com.skapp.enterprise.esignature.model.VerifiedIdentity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface VerifiedIdentityRepository extends JpaRepository<VerifiedIdentity, Long> {
+public interface VerifiedIdentityDao extends JpaRepository<VerifiedIdentity, Long> {
 
 	/**
 	 * Check if a verified identity exists for recipient and document.
@@ -18,6 +19,12 @@ public interface VerifiedIdentityRepository extends JpaRepository<VerifiedIdenti
 	 * Find verified identity by recipient and document.
 	 */
 	Optional<VerifiedIdentity> findByRecipientIdAndDocumentId(Long recipientId, Long documentId);
+
+	/**
+	 * Find all verified identities for multiple recipients and a given document (batch
+	 * fetch to avoid N+1 queries).
+	 */
+	List<VerifiedIdentity> findByRecipientIdInAndDocumentId(List<Long> recipientIds, Long documentId);
 
 	/**
 	 * Check if a verified identity exists for a recipient with no document (auth-only

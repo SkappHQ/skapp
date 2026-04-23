@@ -229,11 +229,12 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	}
 
 	@Override
-	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto) {
+	public ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto,
+			String bypassSecret) {
 		log.info("superAdminSignUp: execution started for email={}", superAdminSignUpRequestDto.getEmail());
 
 		log.info("superAdminSignUp: validating reCAPTCHA token");
-		validateRecaptchaToken(superAdminSignUpRequestDto.getRecaptchaToken());
+		validateRecaptchaToken(superAdminSignUpRequestDto.getRecaptchaToken(), bypassSecret);
 
 		log.info("superAdminSignUp: validating first name");
 		Validation.isValidFirstName(superAdminSignUpRequestDto.getFirstName());
@@ -994,7 +995,14 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			.compact();
 	}
 
-	private void validateRecaptchaToken(String recaptchaToken) {
+	private void validateRecaptchaToken(String recaptchaToken, String bypassSecret) {
+		String configuredBypassSecret = recaptchaConfig.getBypassSecret();
+		if (configuredBypassSecret != null && !configuredBypassSecret.isBlank()
+				&& configuredBypassSecret.equals(bypassSecret)) {
+			log.warn("validateRecaptchaToken: reCAPTCHA validation bypassed via bypass secret");
+			return;
+		}
+
 		if (recaptchaToken == null || recaptchaToken.isBlank()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_RECAPTCHA_INVALID);
 		}

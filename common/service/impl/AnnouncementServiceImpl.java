@@ -2,6 +2,7 @@ package com.skapp.enterprise.common.service.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
@@ -19,15 +20,15 @@ import com.skapp.enterprise.common.service.AnnouncementService;
 import com.skapp.enterprise.common.type.AnnouncementFrequencyType;
 import com.skapp.enterprise.common.type.AnnouncementInteractionType;
 import com.skapp.enterprise.common.type.AnnouncementStatus;
+import com.skapp.enterprise.common.util.EpDateTimeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
@@ -51,9 +52,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 	private final MessageUtil messageUtil;
 
+	private final OrganizationService organizationService;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getEligibleAnnouncements() {
+		log.info("getEligibleAnnouncements: execution started");
 
 		List<FeatureAnnouncementResponseDto> active = fetchActiveAnnouncements();
 		if (active.isEmpty()) {
@@ -78,8 +82,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			.stream()
 			.collect(Collectors.toMap(i -> i.getAnnouncementId(), i -> i));
 
+		ZoneId orgZone = ZoneId.of(organizationService.getOrganizationTimeZone());
+
 		List<FeatureAnnouncementResponseDto> eligible = filtered.stream()
-			.filter(a -> isFrequencyEligible(a, interactionMap.get(a.getAnnouncementId())))
+			.filter(a -> isFrequencyEligible(a, interactionMap.get(a.getAnnouncementId()), orgZone))
 			.toList();
 
 		return new ResponseEntityDto(false, eligible);
@@ -88,6 +94,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 	@Override
 	@Transactional
 	public ResponseEntityDto recordInteraction(Long announcementId, AnnouncementInteractionType type) {
+		log.info("recordInteraction: execution started");
 
 		User currentUser = userService.getCurrentUser();
 		Long employeeId = currentUser.getEmployee().getEmployeeId();
@@ -101,11 +108,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			interaction.setAnnouncementId(announcementId);
 			interaction.setEmployeeId(employeeId);
 			interaction.setInteractionType(type);
-			interaction.setLastSeenAt(LocalDateTime.now());
+			interaction.setLastSeenAt(LocalDateTime.now(ZoneOffset.UTC));
 		}
 		else {
 			interaction.setInteractionType(type);
-			interaction.setLastSeenAt(LocalDateTime.now());
+			interaction.setLastSeenAt(LocalDateTime.now(ZoneOffset.UTC));
 		}
 
 		interactionDao.save(interaction);
@@ -123,10 +130,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			.map(this::buildAnnouncementResponseDto)
 			.toList();
 
-		if (currentTenant != null) {
-			tenantContext.setTenantAndSwitchSchema(currentTenant);
-		}
-
+		tenantContext.setTenantAndSwitchSchema(currentTenant);
 		return announcements;
 	}
 
@@ -159,7 +163,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 	}
 
 	private boolean isFrequencyEligible(FeatureAnnouncementResponseDto announcement,
-			AnnouncementUserInteraction interaction) {
+			AnnouncementUserInteraction interaction, ZoneId orgZone) {
 		AnnouncementFrequencyType frequency = announcement.getFrequencyType();
 		if (frequency == null) {
 			return true;
@@ -167,25 +171,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 		return switch (frequency) {
 			case ONE_TIME -> interaction == null;
 			case DAILY -> interaction == null || interaction.getLastSeenAt() == null
-					|| interaction.getLastSeenAt().toLocalDate().isBefore(LocalDate.now());
+					|| toOrgLocalDate(interaction.getLastSeenAt(), orgZone).isBefore(LocalDate.now(orgZone));
 			case WEEKLY -> interaction == null || interaction.getLastSeenAt() == null
-					|| isBeforeStartOfCurrentWeek(interaction.getLastSeenAt());
-			case CUSTOM -> interaction == null || interaction.getLastSeenAt() == null
-					|| isBeforeCustomDays(interaction.getLastSeenAt(), announcement.getCustomFrequencyDays());
+					|| EpDateTimeUtils.isBeforeStartOfCurrentWeek(interaction.getLastSeenAt(), orgZone);
+			case CUSTOM -> interaction == null || interaction.getLastSeenAt() == null || EpDateTimeUtils
+				.isBeforeCustomDays(interaction.getLastSeenAt(), announcement.getCustomFrequencyDays(), orgZone);
 		};
 	}
 
-	private boolean isBeforeStartOfCurrentWeek(LocalDateTime lastSeenAt) {
-		LocalDate startOfWeek = LocalDate.now().with(DayOfWeek.MONDAY);
-		return lastSeenAt.toLocalDate().isBefore(startOfWeek);
-	}
-
-	private boolean isBeforeCustomDays(LocalDateTime lastSeenAt, Integer customDays) {
-		if (customDays == null || customDays < 1) {
-			return true;
-		}
-		LocalDate threshold = LocalDate.now().minusDays(customDays);
-		return lastSeenAt.toLocalDate().isBefore(threshold) || lastSeenAt.toLocalDate().isEqual(threshold);
+	private LocalDate toOrgLocalDate(LocalDateTime utcDateTime, ZoneId orgZone) {
+		return utcDateTime.atZone(ZoneOffset.UTC).withZoneSameInstant(orgZone).toLocalDate();
 	}
 
 	private FeatureAnnouncementResponseDto buildAnnouncementResponseDto(FeatureAnnouncement announcement) {

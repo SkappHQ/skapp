@@ -61,8 +61,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@Primary
 @Slf4j
+@Primary
 @RequiredArgsConstructor
 public class EpGuestUserServiceImpl implements EpGuestUserService {
 
@@ -522,6 +522,15 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		if (!hasAccess) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_ACCESS_DENIED);
 		}
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getPendingGuestUsersCount() {
+		log.info("getPendingGuestUsersCount: execution started");
+		long count = epEmployeeDao.countByEmployeeRolePmRoleAndAccountStatus(Role.PM_GUEST_EMPLOYEE,
+				AccountStatus.PENDING);
+		return new ResponseEntityDto(false, count);
 	}
 
 	private String buildInvitationUrl(User user) {

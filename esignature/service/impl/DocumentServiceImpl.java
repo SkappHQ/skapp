@@ -350,6 +350,13 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if (isDocumentComplete(nextSignRecipientList)) {
 
+			LocalDateTime ccRecipientEnvelopeReceivedAt = getCurrentUtcDateTime();
+
+			nextSignRecipientList.forEach(rec -> {
+				rec.setReceivedAt(ccRecipientEnvelopeReceivedAt);
+				finalizeCcRecipientOnSequentialFlow(rec, true);
+			});
+
 			ResponseEntityDto responseEntityDto = completeDocument(document, newVersion, updatedDocumentBytes,
 					recipient, ipAddress, isDocAccess);
 
@@ -375,8 +382,7 @@ public class DocumentServiceImpl implements DocumentService {
 			rec.setReceivedAt(getCurrentUtcDateTime());
 
 			if (rec.getMemberRole().equals(MemberRole.CC)) {
-				rec.setStatus(RecipientStatus.COMPLETED);
-				rec.setInboxStatus(InboxStatus.WAITING);
+				finalizeCcRecipientOnSequentialFlow(rec, false);
 			}
 			else {
 				document.setCurrentSignOderNumber(rec.getSigningOrder());
@@ -1935,6 +1941,16 @@ public class DocumentServiceImpl implements DocumentService {
 				throw new ModuleException(EsignMessageConstant.ESIGN_ERROR_TEXT_FIELD_VALUE_EXCEEDS_MAX_LENGTH);
 			}
 		}
+	}
+
+	/**
+	 * Finalizes a CC recipient by setting the appropriate status and inbox status.
+	 * @param recipient the CC recipient to finalize
+	 * @param envelopeComplete whether the envelope is being completed
+	 */
+	private void finalizeCcRecipientOnSequentialFlow(Recipient recipient, boolean envelopeComplete) {
+		recipient.setStatus(RecipientStatus.COMPLETED);
+		recipient.setInboxStatus(envelopeComplete ? InboxStatus.COMPLETED : InboxStatus.WAITING);
 	}
 
 }

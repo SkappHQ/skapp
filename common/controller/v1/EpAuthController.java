@@ -2,6 +2,7 @@ package com.skapp.enterprise.common.controller.v1;
 
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.payload.request.CodeChallengeRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserOtpVerifyRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserSignInRequestDto;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,8 +38,10 @@ public class EpAuthController {
 
 	@PostMapping("/signup/super-admin")
 	public ResponseEntity<ResponseEntityDto> superAdminSignUp(
-			@Valid @RequestBody SuperAdminSignUpRequestDto superAdminSignUpRequestDto) {
-		ResponseEntityDto response = epAuthService.superAdminSignUp(superAdminSignUpRequestDto);
+			@Valid @RequestBody SuperAdminSignUpRequestDto superAdminSignUpRequestDto,
+			@RequestHeader(value = EpAuthConstants.RECAPTCHA_BYPASS_SECRET_HEADER,
+					required = false) String bypassSecret) {
+		ResponseEntityDto response = epAuthService.superAdminSignUp(superAdminSignUpRequestDto, bypassSecret);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
