@@ -451,21 +451,25 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		if (requester == null || requester.getEmployee() == null) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_REQUESTER);
 		}
+
 		Validation.validateEmail(email);
 		if (userDao.findByEmail(email).isPresent()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
+
 		List<Long> projectIds = projects != null ? projects.stream()
 			.map(ProjectRequestDto::getProjectId)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();
 		validateRequesterProjectAccess(requester, projectIds);
+
 		GuestUserRequest request = new GuestUserRequest();
 		request.setEmail(email);
 		request.setRequestedUser(requester.getEmployee());
 		request.setRequestedDate(LocalDateTime.now());
 		request.setProjectIds(projectIds);
 		guestUserRequestDao.save(request);
+
 		log.info("saveGuestUserRequest: Guest user request saved by employee: {}",
 				requester.getEmployee().getEmployeeId());
 		return mapGuestUserRequestToDto(request);
@@ -495,11 +499,13 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		if (projectIds == null || projectIds.isEmpty()) {
 			return;
 		}
+
 		List<ProjectRequestDto> requesterProjects = epGuestUserCacheService
 			.getUserAssignedProjects(requester.getUserId());
 		Set<Long> accessibleProjectIds = requesterProjects.stream()
 			.map(ProjectRequestDto::getProjectId)
 			.collect(Collectors.toSet());
+
 		boolean hasAccess = accessibleProjectIds.containsAll(projectIds);
 		if (!hasAccess) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_ACCESS_DENIED);
