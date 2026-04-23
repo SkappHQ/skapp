@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -120,10 +119,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			for (String email : uniqueEmails) {
 				if (userDao.findByEmail(email).isPresent()) {
 					throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
-				}
-				if (guestUserRequestDao.existsByEmail(email)) {
-					throw new ModuleException(
-							EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_REQUEST_ALREADY_EXISTS);
 				}
 			}
 			List<EpGuestUserRequestResponseDto> requestDtos = new ArrayList<>();
@@ -266,8 +261,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	public List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email, List<Long> projectIds) {
 		return guestUserRequestDao.findAll()
 			.stream()
-			.filter(req -> email == null || email.isBlank()
-					|| req.getEmail().toLowerCase(Locale.ENGLISH).contains(email.toLowerCase(Locale.ENGLISH)))
+			.filter(req -> email == null || email.isBlank() || req.getEmail().contains(email))
 			.filter(req -> projectIds == null || projectIds.isEmpty()
 					|| req.getProjectIds().stream().anyMatch(projectIds::contains))
 			.map(this::mapGuestUserRequestToDto)
@@ -334,26 +328,41 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		GuestUserRequest request = guestUserRequestDao.findById(epGuestUserApprovalRequestDto.getRequestId())
 			.orElseThrow(() -> new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_NOT_FOUND));
 
+		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVED) {
+			List<ProjectRequestDto> projects = toProjectRequestDtos(request.getProjectIds());
+			User currentUser = userService.getCurrentUser();
+			String adminName = currentUser.getEmployee() != null ? currentUser.getEmployee().getFirstName() : "";
+
+			if (userDao.findByEmail(request.getEmail()).isPresent()) {
+				User existingUser = userDao.findByEmail(request.getEmail()).get();
+				epGuestUserInternalService.updateGuestUserProjects(existingUser.getUserId(), projects);
+			}
+			else {
+				inviteSingleGuestUser(request.getEmail(), projects, adminName);
+				peopleService.modifySubscriptionQuantity(1, true, false);
+			}
+
+			guestUserRequestDao.delete(request);
+
+			String projectNames = projects.stream()
+				.map(ProjectRequestDto::getProjectName)
+				.filter(name -> name != null && !name.isBlank())
+				.collect(Collectors.joining(", "));
+			Employee requester = request.getRequestedUser();
+			if (requester != null) {
+				epUserEmailService.sendGuestUserRequestApprovedEmail(requester, projectNames);
+			}
+
+			return new ResponseEntityDto(
+					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_APPROVED), false);
+		}
+
 		Employee requester = request.getRequestedUser();
 		List<ProjectRequestDto> projects = toProjectRequestDtos(request.getProjectIds());
 		String projectNames = projects.stream()
 			.map(ProjectRequestDto::getProjectName)
 			.filter(name -> name != null && !name.isBlank())
 			.collect(Collectors.joining(", "));
-
-		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVED) {
-			User currentUser = userService.getCurrentUser();
-			String adminName = currentUser.getEmployee() != null ? currentUser.getEmployee().getFirstName() : "";
-			inviteSingleGuestUser(request.getEmail(), projects, adminName);
-			peopleService.modifySubscriptionQuantity(1, true, false);
-			guestUserRequestDao.delete(request);
-			if (requester != null) {
-				epUserEmailService.sendGuestUserRequestApprovedEmail(requester, projectNames);
-			}
-			return new ResponseEntityDto(
-					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_APPROVED), false);
-		}
-
 		guestUserRequestDao.delete(request);
 		if (requester != null) {
 			epUserEmailService.sendGuestUserRequestDeclinedEmail(requester, projectNames);
@@ -446,9 +455,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		Validation.validateEmail(email);
 		if (userDao.findByEmail(email).isPresent()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
-		}
-		if (guestUserRequestDao.existsByEmail(email)) {
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_REQUEST_ALREADY_EXISTS);
 		}
 		List<Long> projectIds = projects != null ? projects.stream()
 			.map(ProjectRequestDto::getProjectId)
