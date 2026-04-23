@@ -67,7 +67,7 @@ public class EmployeeRole {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "crm_role", length = 20, columnDefinition = "varchar(255)")
-	private Role crmRole = Role.CRM_SALES_REP;
+	private Role crmRole;
 
 	@Column(name = "is_super_admin", nullable = false)
 	private Boolean isSuperAdmin = false;

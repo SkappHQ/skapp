@@ -32,7 +32,7 @@ public class CrmContact {
 	@Column(name = "email", nullable = false)
 	private String email;
 
-	@Column(name = "contact_number", length = 50)
+	@Column(name = "contact_number")
 	private String contactNumber;
 
 	@ManyToOne(fetch = FetchType.LAZY)

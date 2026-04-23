@@ -32,7 +32,7 @@ public class CrmDealStage {
 	@Column(name = "name", nullable = false)
 	private String name;
 
-	@Column(name = "color", nullable = false, length = 50)
+	@Column(name = "color", nullable = false)
 	private String color;
 
 	@Column(name = "order_index", nullable = false)
