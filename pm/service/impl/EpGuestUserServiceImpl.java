@@ -157,8 +157,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
 
-		deletePendingRequests(email);
-
 		List<ProjectRequestDto> safeProjects = projects != null ? projects : List.of();
 		Employee employee = createAndSaveEmployee(email);
 
@@ -491,13 +489,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			dto.setProjectId(projectId);
 			return dto;
 		}).toList();
-	}
-
-	private void deletePendingRequests(String email) {
-		List<GuestUserRequest> pendingRequests = guestUserRequestDao.findByEmail(email);
-		if (!pendingRequests.isEmpty()) {
-			guestUserRequestDao.deleteAll(pendingRequests);
-		}
 	}
 
 	private void validateRequesterProjectAccess(User requester, List<Long> projectIds) {
