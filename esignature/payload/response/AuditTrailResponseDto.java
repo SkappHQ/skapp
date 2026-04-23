@@ -29,4 +29,6 @@ public class AuditTrailResponseDto {
 
 	private String hash;
 
+	private String actionVerifiedByName;
+
 }

@@ -23,7 +23,7 @@ import com.skapp.enterprise.esignature.payload.response.eid.ProviderFrontendConf
 import com.skapp.enterprise.esignature.repository.DocumentDao;
 import com.skapp.enterprise.esignature.repository.EidVerificationSessionRepository;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
-import com.skapp.enterprise.esignature.repository.VerifiedIdentityRepository;
+import com.skapp.enterprise.esignature.repository.VerifiedIdentityDao;
 import com.skapp.enterprise.esignature.type.BankIdHintCode;
 import com.skapp.enterprise.esignature.type.BankIdStatus;
 import com.skapp.enterprise.esignature.type.AuditAction;
@@ -68,7 +68,7 @@ public class BankIdProvider implements EidProvider {
 
 	private final EidVerificationSessionRepository sessionRepository;
 
-	private final VerifiedIdentityRepository verifiedIdentityRepository;
+	private final VerifiedIdentityDao verifiedIdentityRepository;
 
 	private final RecipientDao recipientDao;
 
