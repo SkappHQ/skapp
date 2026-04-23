@@ -24,6 +24,14 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
         mutations: {
           onMutate: async () => {
             if (!onlineManager.isOnline()) {
+              setToastMessage({
+                open: true,
+                toastType: ToastType.ERROR,
+                title: "Oops! Something went wrong.",
+                description:
+                  "No internet connection. Please check your network and try again.",
+                isIcon: true
+              });
               throw new Error("Network error: No internet connection");
             }
           }
