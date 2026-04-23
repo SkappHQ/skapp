@@ -46,6 +46,7 @@ const useUserBulkConvert = () => {
 
         const newUser: BulkEmployeeDetails = {
           teams: teamIds,
+          title: user?.title?.toUpperCase(),
           firstName: user?.firstName,
           middleName: user?.middleName,
           lastName: user?.lastName,

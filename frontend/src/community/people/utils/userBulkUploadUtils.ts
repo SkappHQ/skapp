@@ -81,6 +81,7 @@ export const replaceEmptyStringsWithNull = (obj: any) => {
 
 export const convertUserBulkCsvHeaders = (header: string) => {
   const headerSelector: Record<string, string> = {
+    Title: "title",
     "First name*": "firstName",
     "Middle name": "middleName",
     "Last name*": "lastName",
