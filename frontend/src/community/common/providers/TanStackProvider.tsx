@@ -17,7 +17,7 @@ import { useToast } from "./ToastProvider";
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
   const { user, checkAuth } = useAuth();
   const { setToastMessage } = useToast();
-  
+
   const showOfflineToast = useCallback(() => {
     setToastMessage({
       open: true,
