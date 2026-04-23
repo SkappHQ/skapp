@@ -22,8 +22,28 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-add-user-lang.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-add-crm-module-config.sql
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-module-config-add-column-crm-module.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-add-crm-employee-role.sql
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-employee-role-add-column-crm-role.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-crm-tables.sql
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-task-stage.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-task-status.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-task-type.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-task-priority.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-sale-state.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-pipeline-template.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-deal-stage.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-company.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-contact.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-deal.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-task.sql
