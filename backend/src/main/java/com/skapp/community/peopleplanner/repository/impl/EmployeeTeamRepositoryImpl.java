@@ -199,9 +199,10 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 					criteriaBuilder.equal(clockInExistsRoot.get(TimeRecord_.date), date),
 					criteriaBuilder.isNotNull(clockInExistsRoot.get(TimeRecord_.clockInTime)));
 
-		criteriaQuery.orderBy(criteriaBuilder
-			.desc(criteriaBuilder.selectCase().when(criteriaBuilder.exists(clockInExistsSubquery), 1).otherwise(0)),
-				criteriaBuilder.asc(employeeRoot.get(Employee_.firstName)),
+		criteriaQuery.orderBy(criteriaBuilder.desc(criteriaBuilder.selectCase()
+			.when(criteriaBuilder.exists(clockInExistsSubquery), 1)
+			.otherwise(0)
+			.as(Integer.class)), criteriaBuilder.asc(employeeRoot.get(Employee_.firstName)),
 				criteriaBuilder.asc(employeeRoot.get(Employee_.lastName)));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
