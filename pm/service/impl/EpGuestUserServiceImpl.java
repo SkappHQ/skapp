@@ -53,6 +53,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -333,9 +334,9 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			User currentUser = userService.getCurrentUser();
 			String adminName = currentUser.getEmployee() != null ? currentUser.getEmployee().getFirstName() : "";
 
-			if (userDao.findByEmail(request.getEmail()).isPresent()) {
-				User existingUser = userDao.findByEmail(request.getEmail()).get();
-				epGuestUserInternalService.updateGuestUserProjects(existingUser.getUserId(), projects);
+			Optional<User> existingUserOpt = userDao.findByEmail(request.getEmail());
+			if (existingUserOpt.isPresent()) {
+				epGuestUserInternalService.updateGuestUserProjects(existingUserOpt.get().getUserId(), projects);
 			}
 			else {
 				inviteSingleGuestUser(request.getEmail(), projects, adminName);
