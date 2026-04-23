@@ -350,8 +350,10 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if (isDocumentComplete(nextSignRecipientList)) {
 
+			LocalDateTime ccRecipientEnvelopeReceivedAt = getCurrentUtcDateTime();
+
 			nextSignRecipientList.forEach(rec -> {
-				rec.setReceivedAt(getCurrentUtcDateTime());
+				rec.setReceivedAt(ccRecipientEnvelopeReceivedAt);
 				finalizeCcRecipientOnSequentialFlow(rec, true);
 			});
 
