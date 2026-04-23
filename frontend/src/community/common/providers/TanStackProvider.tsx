@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 
 import { getNewAccessToken, signOut } from "~community/auth/utils/authUtils";
 import {
@@ -17,6 +17,17 @@ import { useToast } from "./ToastProvider";
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
   const { user, checkAuth } = useAuth();
   const { setToastMessage } = useToast();
+  
+  const showOfflineToast = useCallback(() => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: "Oops! Something went wrong.",
+      description:
+        "No internet connection. Please check your network and try again.",
+      isIcon: true
+    });
+  }, [setToastMessage]);
 
   const [queryClient] = useState(() => {
     return new QueryClient({
@@ -24,14 +35,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
         mutations: {
           onMutate: async () => {
             if (!onlineManager.isOnline()) {
-              setToastMessage({
-                open: true,
-                toastType: ToastType.ERROR,
-                title: "Oops! Something went wrong.",
-                description:
-                  "No internet connection. Please check your network and try again.",
-                isIcon: true
-              });
+              showOfflineToast();
               throw new Error("Network error: No internet connection");
             }
           }
@@ -51,14 +55,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
       (response) => response,
       async (error) => {
         if (!onlineManager.isOnline()) {
-          setToastMessage({
-            open: true,
-            toastType: ToastType.ERROR,
-            title: "Oops! Something went wrong.",
-            description:
-              "No internet connection. Please check your network and try again.",
-            isIcon: true
-          });
+          showOfflineToast();
           throw error;
         }
 
@@ -90,7 +87,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       authFetch.interceptors.response.eject(interceptor);
     };
-  }, [user, checkAuth, queryClient, setToastMessage]);
+  }, [user, checkAuth, queryClient, showOfflineToast]);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
