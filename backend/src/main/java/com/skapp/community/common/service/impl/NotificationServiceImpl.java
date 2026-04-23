@@ -329,8 +329,8 @@ public class NotificationServiceImpl implements NotificationService {
 		Long userId = userService.getCurrentUser().getUserId();
 		// ESIGN is an aggregation-only alias that is never stored in the DB; fan it out
 		// to all concrete ESIGN_DOCUMENT_* types so the badge clears correctly.
-		Set<NotificationType> typesToMark = (notificationType == NotificationType.ESIGN)
-				? ESIGN_TYPES : EnumSet.of(notificationType);
+		Set<NotificationType> typesToMark = (notificationType == NotificationType.ESIGN) ? ESIGN_TYPES
+				: EnumSet.of(notificationType);
 		notificationDao.markTypeViewedByUserIdAndTypes(userId, typesToMark);
 
 		log.info("markNotificationTypeAsRead: execution ended");
