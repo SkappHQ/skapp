@@ -65,8 +65,8 @@ const TeamSelector = ({
     () => [
       allTeamsOption,
       ...(teamsData?.map((item) => ({
-        id: item.teamId as number,
-        value: item.teamId as number,
+        id: item.teamId,
+        value: item.teamId,
         label: item.teamName
       })) ?? [])
     ],
@@ -111,7 +111,7 @@ const TeamSelector = ({
       setTeamName && setTeamName(translateTexts(["allLabel"]));
     } else {
       setTeamId(value.id);
-      setTeamName && setTeamName(String(value.label));
+      setTeamName && setTeamName(value.label as string);
     }
     setSelectedValue(value);
   };
