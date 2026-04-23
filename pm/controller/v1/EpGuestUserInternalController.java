@@ -3,6 +3,8 @@ package com.skapp.enterprise.pm.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserBulkInviteRequestDto;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +27,7 @@ public class EpGuestUserInternalController {
 			@RequestBody EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto) {
 		return new ResponseEntity<>(
 				new ResponseEntityDto(false,
-						new java.util.ArrayList<Object>(
-								epGuestUserService.createGuestUsersInternal(epGuestUserBulkInviteRequestDto))),
+						epGuestUserService.createGuestUsersInternal(epGuestUserBulkInviteRequestDto)),
 				HttpStatus.CREATED);
 	}
 
