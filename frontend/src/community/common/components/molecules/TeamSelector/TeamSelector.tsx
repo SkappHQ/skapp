@@ -110,8 +110,8 @@ const TeamSelector = ({
       setTeamId(-1);
       setTeamName && setTeamName(translateTexts(["allLabel"]));
     } else {
-      setTeamId(value.id as number);
-      setTeamName && setTeamName(value.label as string);
+      setTeamId(value.id);
+      setTeamName && setTeamName(String(value.label));
     }
     setSelectedValue(value);
   };
@@ -139,20 +139,15 @@ const TeamSelector = ({
               ? (selectedValue.label as string)
               : translateTexts(["allLabel"]);
           return (
-            <Box
-              ref={triggerProps.ref}
-              onClick={triggerProps.onClick}
-              onKeyDown={(e) => triggerProps.onKeyDown(e)}
-              aria-expanded={triggerProps["aria-expanded"]}
-              aria-haspopup={triggerProps["aria-haspopup"]}
-              tabIndex={0}
-              sx={{ display: "inline-flex" }}
-            >
+            <Box ref={triggerProps.ref} sx={{ display: "inline-flex" }}>
               <ButtonV2
+                onClick={triggerProps.onClick}
+                onKeyDown={(e) => triggerProps.onKeyDown(e)}
+                aria-expanded={triggerProps["aria-expanded"]}
+                aria-haspopup={triggerProps["aria-haspopup"]}
                 variant={"tertiary"}
                 size={"md"}
                 disabled={disabled}
-                tabIndex={-1}
                 icon={<DropDownArrow />}
                 iconPosition="end"
               >
