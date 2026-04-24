@@ -235,6 +235,10 @@
       "billing": "Billing"
     }
   },
+  "networkError": {
+    "title": "Oops! Something went wrong.",
+    "description": "No internet connection. Please check your network and try again."
+  },
   "unauthorized": {
     "pageHead": "Access Denied | Skapp",
     "title": "Access Denied",
