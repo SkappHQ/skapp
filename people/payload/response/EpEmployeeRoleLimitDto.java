@@ -2,8 +2,10 @@ package com.skapp.enterprise.people.payload.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class EpEmployeeRoleLimitDto {
 
@@ -24,5 +26,7 @@ public class EpEmployeeRoleLimitDto {
 	boolean superAdminLimitExceeded;
 
 	boolean esignSenderLimitExceeded;
+
+	boolean pmAdminLimitExceeded;
 
 }
