@@ -1039,7 +1039,6 @@ public class PeopleServiceImpl implements PeopleService {
 			return new ResponseEntityDto(false, pageDto);
 		}
 		else {
-
 			List<Long> employeeIds = employees.stream().map(Employee::getEmployeeId).toList();
 			List<EmployeeTeamDto> teamList = employeeDao.findTeamsByEmployees(employeeIds);
 
