@@ -27,7 +27,7 @@ public interface EpGuestUserService {
 
 	List<EpGuestUserResponseDto> getAllGuestUsers(String email, List<AccountStatus> statuses, List<Long> projectIds);
 
-	List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email, List<Long> projectIds);
+	List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email);
 
 	EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto);
 
