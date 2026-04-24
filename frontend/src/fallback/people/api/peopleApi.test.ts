@@ -17,7 +17,10 @@ describe("useGetEmployeeRoleLimit", () => {
       leaveManagerLimitExceeded: false,
       attendanceManagerLimitExceeded: false,
       peopleManagerLimitExceeded: false,
-      superAdminLimitExceeded: false
+      superAdminLimitExceeded: false,
+      esignAdminLimitExceeded: false,
+      esignSenderLimitExceeded: false,
+      pmAdminLimitExceeded: false
     };
 
     const { mutate } = useGetEmployeeRoleLimit(mockOnSuccess, mockOnError);
