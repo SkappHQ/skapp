@@ -351,7 +351,7 @@ const SystemPermissionForm = ({
           {isPmModuleEnabled && (
             <DropdownList
               inputName={"pmRole"}
-              label="Project Management"
+              label={systemPermissionsText(["projectManagement"])}
               itemList={grantablePermission?.pm || []}
               value={values.pmRole}
               componentStyle={classes.dropdownListComponentStyles}
