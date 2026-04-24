@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class EpGuestUserApprovalRequestDto {
 
-	private Long userId;
+	private Long requestId;
 
 	private GuestUserApprovalStatus status;
 
