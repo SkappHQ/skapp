@@ -23,10 +23,10 @@ export const EmployeeTypesList = [
   { label: "Permanent", value: EmploymentTypes.PERMANENT }
 ];
 
-export const TitleList = [
-  { label: "Mr", value: TitleEnum.MR },
-  { label: "Mrs", value: TitleEnum.MRS },
-  { label: "Miss", value: TitleEnum.MISS }
+export const getTitleList = (translateText: (keys: string[]) => string) => [
+  { label: translateText(["titleMr"]), value: TitleEnum.MR },
+  { label: translateText(["titleMrs"]), value: TitleEnum.MRS },
+  { label: translateText(["titleMiss"]), value: TitleEnum.MISS }
 ];
 
 export const GenderList = [

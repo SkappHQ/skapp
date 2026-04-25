@@ -49,7 +49,7 @@ public class Employee extends Auditable<String> {
 	private User user;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "title", columnDefinition = "varchar(10)")
+	@Column(name = "title")
 	private Title title;
 
 	@Column(name = "first_name", length = 50)

@@ -11,7 +11,8 @@ import {
   MaritalStatusTypes,
   NationalityEnum,
   RelationshipTypes,
-  Role
+  Role,
+  TitleEnum
 } from "../enums/PeopleEnums";
 import { EmploymentStatusTypes } from "./EmployeeTypes";
 
@@ -66,7 +67,7 @@ export interface L2CommonDetailsType {
 
 //L3 Types
 export interface L3GeneralDetailsType {
-  title?: string;
+  title?: TitleEnum;
   firstName?: string;
   middleName?: string;
   lastName?: string;

@@ -532,6 +532,9 @@
     "generalDetails": {
       "title": "General Details",
       "employeeTitle": "Title",
+      "titleMr": "Mr",
+      "titleMrs": "Mrs",
+      "titleMiss": "Miss",
       "firstName": "First name",
       "middleName": "Middle name",
       "lastName": "Last name",

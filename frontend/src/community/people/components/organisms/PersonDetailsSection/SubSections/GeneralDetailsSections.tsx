@@ -36,7 +36,7 @@ import {
   GenderList,
   MaritalStatusList,
   NationalityList,
-  TitleList
+  getTitleList
 } from "~community/people/utils/data/employeeSetupStaticData";
 import generateThumbnail from "~community/people/utils/image/thumbnailGenerator";
 import { employeeGeneralDetailsValidation } from "~community/people/utils/peopleValidations";
@@ -308,7 +308,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                       mt: "0rem"
                     }}
                     errorFocusOutlineNeeded={false}
-                    itemList={TitleList}
+                    itemList={getTitleList(translateText)}
                     checkSelected
                     readOnly={isReadOnly}
                     isDisabled={isInputsDisabled}
