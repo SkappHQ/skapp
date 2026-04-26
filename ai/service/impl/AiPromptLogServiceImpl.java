@@ -1,7 +1,10 @@
 package com.skapp.enterprise.ai.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.UserDao;
 import com.skapp.enterprise.ai.constant.AIMessageConstant;
 import com.skapp.enterprise.ai.model.AiPromptLog;
 import com.skapp.enterprise.ai.model.AiPromptLogMessage;
@@ -27,15 +30,20 @@ public class AiPromptLogServiceImpl implements AiPromptLogService {
 
 	private final AiPromptLogMessageDao aiPromptLogMessageDao;
 
+	private final UserDao userDao;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto createPromptLog(CreatePromptLogRequestDto createPromptLogRequestDto) {
 		log.info("createPromptLog: Creating prompt log for userId: {}", createPromptLogRequestDto.getUserId());
 
+		User user = userDao.findById(createPromptLogRequestDto.getUserId())
+			.orElseThrow(() -> new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
+
 		Instant now = Instant.now();
 
 		AiPromptLog promptLog = new AiPromptLog();
-		promptLog.setUserId(createPromptLogRequestDto.getUserId());
+		promptLog.setUser(user);
 		promptLog.setStartedAt(now);
 
 		promptLog = aiPromptLogDao.save(promptLog);
