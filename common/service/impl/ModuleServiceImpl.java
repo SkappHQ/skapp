@@ -40,6 +40,7 @@ public class ModuleServiceImpl implements ModuleService {
 		moduleConfig.setEsignModule(true);
 		moduleConfig.setInvoiceModule(true);
 		moduleConfig.setPmModule(true);
+		moduleConfig.setCrmModule(false);
 
 		moduleDao.save(moduleConfig);
 		log.info("setDefaultModules: Default modules configuration set successfully");
@@ -82,6 +83,7 @@ public class ModuleServiceImpl implements ModuleService {
 			case ESIGN -> moduleConfig.setEsignModule(isToggled);
 			case INVOICE -> moduleConfig.setInvoiceModule(isToggled);
 			case PM -> moduleConfig.setPmModule(isToggled);
+			case CRM -> moduleConfig.setCrmModule(isToggled);
 			default -> throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_MODULE_NAME);
 		}
 	}
@@ -98,6 +100,8 @@ public class ModuleServiceImpl implements ModuleService {
 			activeModules.add(ModuleType.INVOICE.name());
 		if (moduleConfig.isPmModule())
 			activeModules.add(ModuleType.PM.name());
+		if (moduleConfig.isCrmModule())
+			activeModules.add(ModuleType.CRM.name());
 		return activeModules.stream().sorted().toList();
 	}
 
@@ -128,6 +132,7 @@ public class ModuleServiceImpl implements ModuleService {
 			case ESIGN -> moduleConfig.isEsignModule();
 			case INVOICE -> moduleConfig.isInvoiceModule();
 			case PM -> moduleConfig.isPmModule();
+			case CRM -> moduleConfig.isCrmModule();
 			default -> false;
 		};
 	}
