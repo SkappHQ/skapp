@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.community.peopleplanner.model.Employee;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,31 +20,31 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "crm_contact")
-public class CrmContact {
+public class CrmContact extends Auditable<String> {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
-	private Long id;
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name = "id", nullable = false, updatable = false)
+private Long id;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+@Column(name = "name", nullable = false)
+private String name;
 
-	@Column(name = "email", nullable = false)
-	private String email;
+@Column(name = "email", nullable = false)
+private String email;
 
-	@Column(name = "contact_number")
-	private String contactNumber;
+@Column(name = "contact_number", length = 50)
+private String contactNumber;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "company_id")
-	private CrmCompany company;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "company_id")
+private CrmCompany company;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "owner_id", nullable = false)
-	private Employee owner;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "owner_id", nullable = false)
+private Employee owner;
 
-	@Column(name = "is_active")
-	private Boolean isActive = true;
+@Column(name = "is_deleted", nullable = false)
+private Boolean isDeleted = false;
 
 }

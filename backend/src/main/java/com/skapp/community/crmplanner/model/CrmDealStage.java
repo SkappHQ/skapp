@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.model;
 
+import com.skapp.community.common.model.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,27 +19,27 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "crm_deal_stage")
-public class CrmDealStage {
+public class CrmDealStage extends Auditable<String> {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
-	private Long id;
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name = "id", nullable = false, updatable = false)
+private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "template_id", nullable = false)
-	private CrmPipelineTemplate template;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "template_id", nullable = false)
+private CrmPipelineTemplate template;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+@Column(name = "name", nullable = false)
+private String name;
 
-	@Column(name = "color", nullable = false)
-	private String color;
+@Column(name = "color", nullable = false)
+private String color;
 
-	@Column(name = "order_index", nullable = false)
-	private Long orderIndex;
+@Column(name = "order_index", nullable = false)
+private Integer orderIndex;
 
-	@Column(name = "is_active")
-	private Boolean isActive = true;
+@Column(name = "is_deleted", nullable = false)
+private Boolean isDeleted = false;
 
 }

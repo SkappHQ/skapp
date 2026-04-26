@@ -28,4 +28,10 @@ public class CrmSaleState {
 	@Column(name = "color", length = 50)
 	private String color;
 
+	@Column(name = "order_index")
+	private Integer orderIndex;
+
+
 }
+
+

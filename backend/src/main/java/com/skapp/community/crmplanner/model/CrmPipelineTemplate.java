@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.model;
 
+import com.skapp.community.common.model.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,20 +16,20 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "crm_pipeline_template")
-public class CrmPipelineTemplate {
+public class CrmPipelineTemplate extends Auditable<String> {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
-	private Long id;
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name = "id", nullable = false, updatable = false)
+private Long id;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+@Column(name = "name", nullable = false)
+private String name;
 
-	@Column(name = "description", columnDefinition = "TEXT")
-	private String description;
+@Column(name = "description", columnDefinition = "TEXT")
+private String description;
 
-	@Column(name = "is_active")
-	private Boolean isActive = true;
+@Column(name = "is_deleted", nullable = false)
+private Boolean isDeleted = false;
 
 }

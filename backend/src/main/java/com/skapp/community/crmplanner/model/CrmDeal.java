@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.community.peopleplanner.model.Employee;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,47 +15,54 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @Table(name = "crm_deal")
-public class CrmDeal {
+public class CrmDeal extends Auditable<String> {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
-	private Long id;
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name = "id", nullable = false, updatable = false)
+private Long id;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+@Column(name = "name", nullable = false)
+private String name;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "stage_id", nullable = false)
-	private CrmDealStage stage;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "stage_id", nullable = false)
+private CrmDealStage stage;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "sale_state_id")
-	private CrmSaleState saleState;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "sale_state_id")
+private CrmSaleState saleState;
 
-	@Column(name = "closing_date")
-	private LocalDate closingDate;
+@Column(name = "closing_date", columnDefinition = "datetime(6)")
+private LocalDateTime closingDate;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "company_id")
-	private CrmCompany company;
+@Column(name = "amount", precision = 19, scale = 4)
+private BigDecimal amount;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "contact_id", nullable = false)
-	private CrmContact contact;
+@Column(name = "currency_code", length = 3)
+private String currencyCode;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "owner_id", nullable = false)
-	private Employee owner;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "company_id")
+private CrmCompany company;
 
-	@Column(name = "is_active")
-	private Boolean isActive = true;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "contact_id", nullable = false)
+private CrmContact contact;
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "owner_id", nullable = false)
+private Employee owner;
+
+@Column(name = "is_deleted", nullable = false)
+private Boolean isDeleted = false;
 
 }

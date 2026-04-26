@@ -128,6 +128,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_PEOPLE_RESTRICTED_ROLE_ACCESS("api.error.people.people-restricted-role-access"),
 	PEOPLE_ERROR_LEAVE_RESTRICTED_ROLE_ACCESS("api.error.people.leave-restricted-role-access"),
 	PEOPLE_ERROR_INVOICE_RESTRICTED_ROLE_ACCESS("api.error.people.invoice-restricted-role-access"),
+	PEOPLE_ERROR_CRM_RESTRICTED_ROLE_ACCESS("api.error.people.crm-restricted-role-access"),
 	PEOPLE_ERROR_FAMILY_DOB_FUTURE_DATE("api.error.people.family-dob-future-date"),
 	PEOPLE_ERROR_DOB_FUTURE_DATE("api.error.people.dob-future-date"),
 	PEOPLE_ERROR_EDUCATION_START_END_DATE("api.error.people.education-start-end-date"),

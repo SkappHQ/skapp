@@ -14,8 +14,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "crm_task_stage")
-public class CrmTaskStage {
+@Table(name = "crm_task_priority")
+public class CrmTaskPriority {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

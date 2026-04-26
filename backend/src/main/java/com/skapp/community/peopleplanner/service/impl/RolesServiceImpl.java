@@ -194,7 +194,9 @@ public class RolesServiceImpl implements RolesService {
 				|| isRoleDemoted(employeeRole.getLeaveRole(), roleRequestDto.getLeaveRole(), Role.LEAVE_MANAGER,
 						Role.LEAVE_ADMIN, Role.LEAVE_EMPLOYEE)
 				|| isRoleDemoted(employeeRole.getInvoiceRole(), roleRequestDto.getInvoiceRole(), Role.INVOICE_MANAGER,
-						Role.INVOICE_ADMIN, Role.INVOICE_NONE);
+						Role.INVOICE_ADMIN, Role.INVOICE_NONE)
+				|| isRoleDemoted(employeeRole.getCrmRole(), roleRequestDto.getCrmRole(), Role.CRM_SALES_MANAGER,
+						Role.CRM_ADMIN, Role.CRM_SALES_REP);
 	}
 
 	private boolean isRoleDemoted(Role currentRole, Role newRole, Role managerRole, Role adminRole, Role employeeRole) {
@@ -325,6 +327,7 @@ public class RolesServiceImpl implements RolesService {
 		defaultEmployeeRoles.setEsignRole(Role.ESIGN_EMPLOYEE);
 		defaultEmployeeRoles.setInvoiceRole(Role.INVOICE_NONE);
 		defaultEmployeeRoles.setPmRole(Role.PM_EMPLOYEE);
+		defaultEmployeeRoles.setCrmRole(Role.CRM_SALES_REP);
 		return defaultEmployeeRoles;
 	}
 
@@ -419,7 +422,8 @@ public class RolesServiceImpl implements RolesService {
 				&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin())
 				&& (userRoles.getPeopleRole() != Role.PEOPLE_ADMIN || userRoles.getLeaveRole() != Role.LEAVE_ADMIN
 						|| userRoles.getAttendanceRole() != Role.ATTENDANCE_ADMIN
-						|| userRoles.getInvoiceRole() != Role.INVOICE_ADMIN)) {
+						|| userRoles.getInvoiceRole() != Role.INVOICE_ADMIN
+						|| userRoles.getCrmRole() != Role.CRM_ADMIN)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_SUPER_ADMIN_ROLES_CANNOT_BE_CHANGED);
 		}
 
@@ -455,7 +459,8 @@ public class RolesServiceImpl implements RolesService {
 				&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin())
 				&& (userRoles.getPeopleRole() != Role.PEOPLE_ADMIN || userRoles.getLeaveRole() != Role.LEAVE_ADMIN
 						|| userRoles.getAttendanceRole() != Role.ATTENDANCE_ADMIN
-						|| userRoles.getInvoiceRole() != Role.INVOICE_ADMIN)) {
+						|| userRoles.getInvoiceRole() != Role.INVOICE_ADMIN
+						|| userRoles.getCrmRole() != Role.CRM_ADMIN)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_SHOULD_ASSIGN_PROPER_PERMISSIONS);
 		}
 
@@ -482,6 +487,12 @@ public class RolesServiceImpl implements RolesService {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_INVOICE_RESTRICTED_ROLE_ACCESS,
 					new String[] { userRoles.getInvoiceRole().name() });
 		}
+
+		if (userRoles != null && hasOnlyPeopleAdminPermissions(currentUser) && Boolean.TRUE
+			.equals(validateRestrictedRoleAssignment(userRoles.getCrmRole(), ModuleType.CRM))) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_CRM_RESTRICTED_ROLE_ACCESS,
+					new String[] { userRoles.getCrmRole().name() });
+		}
 	}
 
 	@Override
@@ -494,6 +505,7 @@ public class RolesServiceImpl implements RolesService {
 		superAdminRoles.setLeaveRole(Role.LEAVE_ADMIN);
 		superAdminRoles.setAttendanceRole(Role.ATTENDANCE_ADMIN);
 		superAdminRoles.setInvoiceRole(Role.INVOICE_ADMIN);
+		superAdminRoles.setCrmRole(Role.CRM_ADMIN);
 		superAdminRoles.setIsSuperAdmin(true);
 		superAdminRoles.setChangedDate(DateTimeUtils.getCurrentUtcDate());
 		superAdminRoles.setRoleChangedBy(employee);
@@ -513,12 +525,12 @@ public class RolesServiceImpl implements RolesService {
 		ModuleRoleRestrictionResponseDto restrictedRole = getRestrictedRoleByModule(moduleType);
 
 		if (role == Role.PEOPLE_ADMIN || role == Role.ATTENDANCE_ADMIN || role == Role.LEAVE_ADMIN
-				|| role == Role.INVOICE_ADMIN) {
+				|| role == Role.INVOICE_ADMIN || role == Role.CRM_ADMIN) {
 			return Boolean.TRUE.equals(restrictedRole.getIsAdmin());
 		}
 
 		if (role == Role.PEOPLE_MANAGER || role == Role.ATTENDANCE_MANAGER || role == Role.LEAVE_MANAGER
-				|| role == Role.INVOICE_MANAGER) {
+				|| role == Role.INVOICE_MANAGER || role == Role.CRM_SALES_MANAGER) {
 			return Boolean.TRUE.equals(restrictedRole.getIsManager());
 		}
 
@@ -601,6 +613,7 @@ public class RolesServiceImpl implements RolesService {
 			employeeRole.setOkrRole(Role.OKR_ADMIN);
 			employeeRole.setPmRole(Role.PM_ADMIN);
 			employeeRole.setInvoiceRole(Role.INVOICE_ADMIN);
+			employeeRole.setCrmRole(Role.CRM_ADMIN);
 			employeeRole.setIsSuperAdmin(true);
 		}
 		else {
@@ -611,6 +624,7 @@ public class RolesServiceImpl implements RolesService {
 			CommonModuleUtils.setIfExists(roleRequestDto::getOkrRole, employeeRole::setOkrRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getInvoiceRole, employeeRole::setInvoiceRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getPmRole, employeeRole::setPmRole);
+			CommonModuleUtils.setIfExists(roleRequestDto::getCrmRole, employeeRole::setCrmRole);
 			CommonModuleUtils.setIfExists(roleRequestDto::getIsSuperAdmin, employeeRole::setIsSuperAdmin);
 		}
 
@@ -653,7 +667,8 @@ public class RolesServiceImpl implements RolesService {
 	private boolean isUserRoleDowngraded(EmployeeSystemPermissionsDto roleRequestDto) {
 		return roleRequestDto.getPeopleRole() == null || !roleRequestDto.getPeopleRole().equals(Role.PEOPLE_ADMIN)
 				|| !roleRequestDto.getAttendanceRole().equals(Role.ATTENDANCE_ADMIN)
-				|| !roleRequestDto.getLeaveRole().equals(Role.LEAVE_ADMIN);
+				|| !roleRequestDto.getLeaveRole().equals(Role.LEAVE_ADMIN)
+				|| roleRequestDto.getCrmRole() == null || !roleRequestDto.getCrmRole().equals(Role.CRM_ADMIN);
 	}
 
 }

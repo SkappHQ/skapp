@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS `crm_task` (
     `name`               varchar(255) NOT NULL,
     `type_id`            bigint       NOT NULL,
     `priority_id`        bigint       NOT NULL,
-    `stage_id`           bigint       NOT NULL,
     `status_id`          bigint       NOT NULL,
     `due_date`           datetime(6)  DEFAULT NULL,
     `notes`              text,
@@ -24,8 +23,6 @@ CREATE TABLE IF NOT EXISTS `crm_task` (
         FOREIGN KEY (`type_id`) REFERENCES `crm_task_type` (`id`),
     CONSTRAINT `FK_crm_task_crm_task_priority_priority_id`
         FOREIGN KEY (`priority_id`) REFERENCES `crm_task_priority` (`id`),
-    CONSTRAINT `FK_crm_task_crm_task_stage_stage_id`
-        FOREIGN KEY (`stage_id`) REFERENCES `crm_task_stage` (`id`),
     CONSTRAINT `FK_crm_task_crm_task_status_status_id`
         FOREIGN KEY (`status_id`) REFERENCES `crm_task_status` (`id`),
     CONSTRAINT `FK_crm_task_employee_owner_id`
