@@ -35,7 +35,7 @@ private String website;
 @Column(name = "address")
 private String address;
 
-@Column(name = "contact_number", length = 50)
+@Column(name = "contact_number")
 private String contactNumber;
 
 @Column(name = "is_deleted", nullable = false)
