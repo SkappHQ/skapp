@@ -142,7 +142,9 @@ const employeeRoutes = {
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
     ...commonRoutes
-  ]
+  ],
+  [EmployeeTypes.PM_EMPLOYEE]: [...commonRoutes],
+  [EmployeeTypes.PM_GUEST_EMPLOYEE]: [...commonRoutes]
 };
 
 const senderRoutes = {

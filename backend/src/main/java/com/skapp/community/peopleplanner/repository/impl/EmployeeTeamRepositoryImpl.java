@@ -25,7 +25,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -192,17 +191,18 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(employeeRoot).distinct(true);
 
-		Subquery<Long> clockInTimeSubquery = criteriaQuery.subquery(Long.class);
-		Root<TimeRecord> timeRecordRoot = clockInTimeSubquery.from(TimeRecord.class);
-		clockInTimeSubquery.select(criteriaBuilder.min(timeRecordRoot.get(TimeRecord_.clockInTime)))
-			.where(criteriaBuilder.equal(timeRecordRoot.get(TimeRecord_.employee).get(Employee_.employeeId),
+		Subquery<Long> clockInExistsSubquery = criteriaQuery.subquery(Long.class);
+		Root<TimeRecord> clockInExistsRoot = clockInExistsSubquery.from(TimeRecord.class);
+		clockInExistsSubquery.select(criteriaBuilder.literal(1L))
+			.where(criteriaBuilder.equal(clockInExistsRoot.get(TimeRecord_.employee).get(Employee_.employeeId),
 					employeeRoot.get(Employee_.employeeId)),
-					criteriaBuilder.equal(timeRecordRoot.get(TimeRecord_.date), date));
+					criteriaBuilder.equal(clockInExistsRoot.get(TimeRecord_.date), date),
+					criteriaBuilder.isNotNull(clockInExistsRoot.get(TimeRecord_.clockInTime)));
 
-		Expression<Boolean> isClockedIn = criteriaBuilder.isNotNull(clockInTimeSubquery.getSelection());
-
-		criteriaQuery.orderBy(criteriaBuilder.desc(isClockedIn),
-				criteriaBuilder.asc(employeeRoot.get(Employee_.firstName)),
+		criteriaQuery.orderBy(criteriaBuilder.desc(criteriaBuilder.selectCase()
+			.when(criteriaBuilder.exists(clockInExistsSubquery), 1)
+			.otherwise(0)
+			.as(Integer.class)), criteriaBuilder.asc(employeeRoot.get(Employee_.firstName)),
 				criteriaBuilder.asc(employeeRoot.get(Employee_.lastName)));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();

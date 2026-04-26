@@ -89,7 +89,15 @@
     }
   },
   "individualLeaveAnalytics": {
-    "leaveHistoryFilterButton": "Pressing enter on this button opens a menu where you can choose to filter by leave status and leave type"
+    "leaveHistoryFilterButton": "Pressing enter on this button opens a menu where you can choose to filter by leave status and leave type",
+    "leaveStatusChip": "Status:",
+    "leaveStatus": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "denied": "Denied",
+      "cancelled": "Cancelled",
+      "revoked": "Revoked"
+    }
   },
   "peopleFormTable": {
     "actionColumn": {

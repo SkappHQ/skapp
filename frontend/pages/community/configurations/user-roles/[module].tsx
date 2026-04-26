@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { Modules } from "~community/common/enums/CommonEnums";
+import ROUTES from "~community/common/constants/routes";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -12,13 +12,14 @@ import ModuleRolesTable from "~community/configurations/components/molecules/Mod
 import RestrictedUserRolesModal from "~community/configurations/components/organisms/RestrictedUserRolesModal/RestrictedUserRolesModal";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import { UserRoleRestrictionsType } from "~community/configurations/types/UserRolesTypes";
+import { mapApiModuleToEnum } from "~community/configurations/utils/userRoles/apiUtils";
 
 const Module: NextPage = () => {
   const router = useRouter();
   const { module } = router.query;
 
   const formattedModule = useMemo(() => {
-    return module?.toString().toUpperCase() as Modules;
+    return mapApiModuleToEnum(module?.toString());
   }, [module]);
 
   const translateText = useTranslator("configurations", "userRoles");
@@ -41,6 +42,10 @@ const Module: NextPage = () => {
     setModuleType(formattedModule);
   };
 
+  const onBackClick = () => {
+    router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=user-roles`);
+  };
+
   return (
     <ContentLayout
       pageHead={translateText(["pageHead"])}
@@ -52,6 +57,7 @@ const Module: NextPage = () => {
       isPrimaryBtnLoading={isPending}
       isDividerVisible={true}
       isBackButtonVisible={true}
+      onBackClick={onBackClick}
     >
       <>
         <ModuleRolesTable module={formattedModule} />

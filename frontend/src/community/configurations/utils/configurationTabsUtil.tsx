@@ -25,7 +25,7 @@ export const getConfigurationTabs = (
     {
       id: "user-roles",
       label: translateText(["tabs", "userRoles"]),
-      requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.PEOPLE_ADMIN],
+      requiredRoles: [AdminTypes.SUPER_ADMIN],
       component: <UserRolesTable />,
       position: 5
     }
