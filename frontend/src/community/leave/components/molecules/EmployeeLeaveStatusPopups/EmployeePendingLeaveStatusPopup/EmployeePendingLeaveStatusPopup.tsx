@@ -85,7 +85,8 @@ const EmployeePendingLeaveStatusPopup: FC<Props> = ({ setPopupType }) => {
         flexDirection: "column",
         marginBottom: "0.375rem",
         marginTop: "1rem",
-        gap: "1.25rem"
+        gap: "1.25rem",
+        padding: "0.75rem"
       }}
     >
       <>
