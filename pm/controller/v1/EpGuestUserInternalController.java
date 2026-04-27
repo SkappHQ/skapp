@@ -25,6 +25,15 @@ public class EpGuestUserInternalController {
 
 	private final EpGuestUserService epGuestUserService;
 
+	@GetMapping("/requests")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
+	public ResponseEntity<ResponseEntityDto> getPendingGuestUserRequests(@RequestParam(required = false) String email,
+			@RequestParam(required = false) List<Long> projectIds) {
+		return new ResponseEntity<>(
+				new ResponseEntityDto(false, epGuestUserService.getPendingGuestUserRequests(email, projectIds)),
+				HttpStatus.OK);
+	}
+
 	@PostMapping
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> createGuestUsers(
@@ -39,15 +48,6 @@ public class EpGuestUserInternalController {
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> revokeGuestUserRequest(@RequestParam Long requestId) {
 		return new ResponseEntity<>(epGuestUserService.revokeGuestUserRequest(requestId), HttpStatus.OK);
-	}
-
-	@GetMapping("/requests")
-	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<ResponseEntityDto> getPendingGuestUserRequests(@RequestParam(required = false) String email,
-			@RequestParam(required = false) List<Long> projectIds) {
-		return new ResponseEntity<>(
-				new ResponseEntityDto(false, epGuestUserService.getPendingGuestUserRequests(email, projectIds)),
-				HttpStatus.OK);
 	}
 
 }
