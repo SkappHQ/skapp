@@ -161,7 +161,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		applyEmployeeSimpleFilters(employeeFilterDto, criteriaBuilder, root, personalInfoJoin, predicates);
 
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
-			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams, JoinType.LEFT);
+			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams);
 			predicates.add(employeeTeam.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeFilterDto.getTeam()));
 		}
 
