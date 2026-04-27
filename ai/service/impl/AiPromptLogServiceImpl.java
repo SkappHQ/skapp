@@ -19,8 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -40,11 +38,8 @@ public class AiPromptLogServiceImpl implements AiPromptLogService {
 		User user = userDao.findById(createPromptLogRequestDto.getUserId())
 			.orElseThrow(() -> new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
 
-		Instant now = Instant.now();
-
 		AiPromptLog promptLog = new AiPromptLog();
 		promptLog.setUser(user);
-		promptLog.setStartedAt(now);
 
 		promptLog = aiPromptLogDao.save(promptLog);
 
@@ -67,7 +62,6 @@ public class AiPromptLogServiceImpl implements AiPromptLogService {
 		message.setPromptLog(promptLog);
 		message.setUserMessage(addPromptLogMessageRequestDto.getUserMessage());
 		message.setAiMessage(addPromptLogMessageRequestDto.getAiMessage());
-		message.setCreatedAt(Instant.now());
 
 		aiPromptLogMessageDao.save(message);
 
