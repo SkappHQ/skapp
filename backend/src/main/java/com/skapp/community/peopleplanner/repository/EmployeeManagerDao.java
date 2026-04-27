@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EmployeeManagerDao extends JpaRepository<EmployeeManager, Long>, EmployeeManagerRepository {
@@ -18,5 +19,10 @@ public interface EmployeeManagerDao extends JpaRepository<EmployeeManager, Long>
 	List<EmployeeManager> findByManager(Employee employee);
 
 	List<EmployeeManager> findByManagerInAndManagerType(List<Employee> employees, ManagerType managerType);
+
+	List<EmployeeManager> findByManagerAndManagerType(Employee manager, ManagerType managerType);
+
+	Optional<EmployeeManager> findByManagerAndEmployeeAndManagerType(Employee manager, Employee employee,
+			ManagerType managerType);
 
 }
