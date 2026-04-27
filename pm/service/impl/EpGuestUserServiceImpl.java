@@ -530,7 +530,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	public ResponseEntityDto revokeGuestUserRequest(Long requestId) {
 		log.info("revokeGuestUserRequest: Revoking guest user request with ID: {}", requestId);
 
-		if (requestId == null || requestId <= 0) {
+		if (requestId == null) {
 			throw new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_INVALID_GUEST_USER_REQUEST_ID);
 		}
 
