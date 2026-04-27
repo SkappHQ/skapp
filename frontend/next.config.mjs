@@ -196,6 +196,14 @@ const nextConfig = {
         destination: "/community/configurations/user-roles/esignature"
       },
       {
+        source: "/configurations/user-roles/invoice",
+        destination: "/community/configurations/user-roles/invoice"
+      },
+      {
+        source: "/configurations/user-roles/projectmanagement",
+        destination: "/community/configurations/user-roles/projectmanagement"
+      },
+      {
         source: "/configurations/work-location/create",
         destination: "/enterprise/configurations/work-location/create"
       },

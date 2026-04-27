@@ -1,19 +1,22 @@
 import { Box, Divider } from "@mui/material";
 import { Tabs } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { appModes } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
+import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
 import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
 
 const Configurations: NextPage = () => {
   const { user } = useAuth();
+  const router = useRouter();
   const translateText = useTranslator("configurations");
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
@@ -37,6 +40,19 @@ const Configurations: NextPage = () => {
 
   const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id);
 
+  useEffect(() => {
+    if (!router.isReady || visibleTabs?.length === 0) return;
+    const tabParam = router.query.tab as string | undefined;
+    if (tabParam && visibleTabs.some((tab) => tab.id === tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [router.isReady]);
+
+  const handleTabChange = (id: string) => {
+    setActiveTab(id);
+    replaceTabQueryParam(router.asPath, id);
+  };
+
   return (
     <ContentLayout
       pageHead={translateText(["pageHead"])}
@@ -49,7 +65,7 @@ const Configurations: NextPage = () => {
         <Tabs
           tabs={visibleTabs}
           activeTabId={activeTab}
-          onTabChange={(id) => setActiveTab(id)}
+          onTabChange={handleTabChange}
           size="lg"
         />
         <Divider />

@@ -567,3 +567,10 @@ export const isMobileDevice = (): boolean => {
     globalThis.navigator?.userAgent ?? ""
   );
 };
+
+export const replaceTabQueryParam = (path: string, tabId: string): void => {
+  const [basePath, query] = path.split("?");
+  const params = new URLSearchParams(query);
+  params.set("tab", tabId);
+  globalThis.history.replaceState(null, "", `${basePath}?${params.toString()}`);
+};
