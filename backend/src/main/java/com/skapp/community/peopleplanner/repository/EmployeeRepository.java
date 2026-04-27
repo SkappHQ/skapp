@@ -94,6 +94,8 @@ public interface EmployeeRepository {
 
 	Long findAllActiveAndPendingEmployeesCount();
 
+	List<Employee> findByWorkLocationWorkLocationId(Long workLocationId);
+
 	Page<Employee> findEmployeesV2(EmployeeFilterDtoV2 employeeFilterDto, Pageable pageable);
 
 }
