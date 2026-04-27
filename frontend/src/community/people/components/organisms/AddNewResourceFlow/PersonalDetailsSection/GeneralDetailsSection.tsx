@@ -377,48 +377,29 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
               }}
             >
               <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-                <div className="flex items-start gap-4">
-                  <DropdownList
-                    inputName="title"
-                    label={translateText(["employeeTitle"])}
-                    value={values.title}
-                    placeholder={translateText(["employeeTitle"])}
-                    onChange={handleChange}
-                    componentStyle={{
-                      flex: 0.4,
-                      mt: "0rem"
-                    }}
-                    errorFocusOutlineNeeded={false}
-                    itemList={getTitleList(translateText)}
-                    checkSelected
-                    readOnly={isManager}
-                    isDisabled={isInputsDisabled}
-                  />
-                  <InputField
-                    label={translateText(["firstName"])}
-                    inputType="text"
-                    value={values.firstName}
-                    placeHolder={translateText(["enterFirstName"])}
-                    onChange={handleInput}
-                    inputName="firstName"
-                    error={errors.firstName ?? ""}
-                    componentStyle={{
-                      flex: 1,
-                      mt: "0rem"
-                    }}
-                    required={!isManager}
-                    readOnly={isManager}
-                    isDisabled={isInputsDisabled}
-                    maxLength={NAME_MAX_CHARACTER_LENGTH}
-                    data-testid={
-                      generalDetailsSectionTestId.InputFields.firstName
-                    }
-                    validation-testid={
-                      generalDetailsSectionTestId.InputFields
-                        .firstNameValidation
-                    }
-                  />
-                </div>
+                <InputField
+                  label={translateText(["firstName"])}
+                  inputType="text"
+                  value={values.firstName}
+                  placeHolder={translateText(["enterFirstName"])}
+                  onChange={handleInput}
+                  inputName="firstName"
+                  error={errors.firstName ?? ""}
+                  componentStyle={{
+                    flex: 1,
+                    mt: "0rem"
+                  }}
+                  required={!isManager}
+                  readOnly={isManager}
+                  isDisabled={isInputsDisabled}
+                  maxLength={NAME_MAX_CHARACTER_LENGTH}
+                  data-testid={
+                    generalDetailsSectionTestId.InputFields.firstName
+                  }
+                  validation-testid={
+                    generalDetailsSectionTestId.InputFields.firstNameValidation
+                  }
+                />
               </Grid>
 
               <Grid size={{ xs: 12, md: 6, xl: 4 }}>
