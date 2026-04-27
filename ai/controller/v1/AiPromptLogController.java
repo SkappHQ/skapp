@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/internal/v1/ep/ai/prompt-logs")
-@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
+@RequestMapping("/internal/v1/ep/ai/prompt-log")
 public class AiPromptLogController {
 
 	private final AiPromptLogService aiPromptLogService;
 
 	@Operation(summary = "Create a new AI prompt log session",
 			description = "Creates a new prompt log session for the given user. Protected by API key authentication.")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	@PostMapping
 	public ResponseEntity<ResponseEntityDto> createPromptLog(
 			@Valid @RequestBody CreatePromptLogRequestDto createPromptLogRequestDto) {
@@ -33,7 +33,8 @@ public class AiPromptLogController {
 
 	@Operation(summary = "Add a message to an existing AI prompt log",
 			description = "Adds a user/AI message exchange to an existing prompt log session. Protected by API key authentication.")
-	@PostMapping(value = "/messages")
+	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
+	@PostMapping(value = "/message")
 	public ResponseEntity<ResponseEntityDto> addMessage(
 			@Valid @RequestBody AddPromptLogMessageRequestDto addPromptLogMessageRequestDto) {
 		aiPromptLogService.addMessage(addPromptLogMessageRequestDto);

@@ -21,7 +21,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "ai_prompt_log_messages")
+@Table(name = "ai_prompt_log_message")
 public class AiPromptLogMessage {
 
 	@Id
