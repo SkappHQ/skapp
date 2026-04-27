@@ -14,7 +14,8 @@ const styles = (theme: Theme): StyleProps => ({
     justifyContent: "center",
     alignItems: "center",
     textAlign: "center",
-    gap: "1rem"
+    gap: "1rem",
+    padding: "0.75rem"
   },
   title: {
     fontWeight: 700,

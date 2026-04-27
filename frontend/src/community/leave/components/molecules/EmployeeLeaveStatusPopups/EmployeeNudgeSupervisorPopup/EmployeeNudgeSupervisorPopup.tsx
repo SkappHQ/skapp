@@ -45,7 +45,8 @@ const EmployeeNudgeSupervisorPopup: FC<Props> = ({
           marginTop: "1.25rem",
           display: "flex",
           flexDirection: "column",
-          gap: "1.25rem"
+          gap: "1.25rem",
+          padding: "1rem"
         }}
       >
         <StatusPopupRow
