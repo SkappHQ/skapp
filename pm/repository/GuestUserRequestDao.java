@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface GuestUserRequestDao extends JpaRepository<GuestUserRequest, Long> {
 
-	List<GuestUserRequest> findByEmail(String email);
-
 	List<GuestUserRequest> findByEmailContaining(String email);
 
 }
