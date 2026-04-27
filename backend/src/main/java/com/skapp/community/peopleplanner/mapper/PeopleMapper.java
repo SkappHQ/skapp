@@ -56,6 +56,8 @@ import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDetai
 import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDto;
 import com.skapp.community.peopleplanner.payload.response.JobTitleResponseDetailDto;
 import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionResponseDto;
+import com.skapp.community.peopleplanner.payload.response.SupervisedEmployeeResponseDto;
+import com.skapp.community.peopleplanner.payload.response.SupervisedTeamResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamDetailResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDto;
@@ -282,5 +284,9 @@ public interface PeopleMapper {
 	@Mapping(source = "issuedDate", target = "issuedDate")
 	@Mapping(source = "expiryDate", target = "expirationDate")
 	EmployeeVisa visaDetailsDtoToEmployeeVisa(EmployeeEmploymentVisaDetailsDto dto);
+
+	SupervisedEmployeeResponseDto employeeToSupervisedEmployeeResponseDto(Employee employee);
+
+	SupervisedTeamResponseDto teamToSupervisedTeamResponseDto(Team team);
 
 }
