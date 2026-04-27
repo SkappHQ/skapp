@@ -9,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 public enum AIMessageConstant implements MessageConstant {
 
 	AI_ERROR_CHATBOT_DAILY_USAGE_REQUIRED("ai.error.chatbot-daily-usage-required"),
-	AI_ERROR_CHATBOT_DAILY_USAGE_MUST_BE_NON_NEGATIVE("ai.error.chatbot-daily-usage-must-be-non-negative");
+	AI_ERROR_CHATBOT_DAILY_USAGE_MUST_BE_NON_NEGATIVE("ai.error.chatbot-daily-usage-must-be-non-negative"),
+	AI_ERROR_PROMPT_LOG_NOT_FOUND("ai.error.prompt-log-not-found");
 
 	private final String messageKey;
 
