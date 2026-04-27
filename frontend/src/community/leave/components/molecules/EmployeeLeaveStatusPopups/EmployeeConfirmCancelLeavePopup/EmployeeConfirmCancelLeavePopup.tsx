@@ -81,8 +81,7 @@ const EmployeeConfirmCancelLeavePopup: FC<Props> = ({ setPopupType }) => {
 
       <Box
         sx={{
-          marginTop: "1.25rem",
-          padding: "0.75rem"
+          marginTop: "1.25rem"
         }}
       >
         <ButtonV2

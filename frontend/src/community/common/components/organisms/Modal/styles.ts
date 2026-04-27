@@ -50,7 +50,7 @@ const styles = (): StyleProps => ({
   },
   childrenWrapper: {
     marginTop: "1rem",
-    overflow: "auto"
+    overflow: "visible"
   }
 });
 

@@ -41,7 +41,7 @@ const styles = (theme: Theme): StyleProps => ({
     display: "flex",
     flexDirection: { xs: "column-reverse", sm: "row" },
     gap: "0.625rem",
-    padding: "0.75rem"
+    padding: "0.125rem"
   },
   dividerWrapper: {
     padding: "1rem 0rem 1rem 0rem"

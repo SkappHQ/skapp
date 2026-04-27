@@ -50,8 +50,7 @@ const EmployeeLeaveRequestCancelledPopup: FC<Props> = ({
           marginTop: "1.25rem",
           display: "flex",
           flexDirection: "column",
-          gap: "1.25rem",
-          padding: "0.75rem"
+          gap: "1.25rem"
         }}
       >
         <StatusPopupRow
