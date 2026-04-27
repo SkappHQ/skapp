@@ -52,7 +52,7 @@ public class AiPromptLogServiceImpl implements AiPromptLogService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto addMessage(AddPromptLogMessageRequestDto addPromptLogMessageRequestDto) {
+	public void addMessage(AddPromptLogMessageRequestDto addPromptLogMessageRequestDto) {
 		log.info("addMessage: Adding message to prompt log id: {}", addPromptLogMessageRequestDto.getPromptLogId());
 
 		AiPromptLog promptLog = aiPromptLogDao.findById(addPromptLogMessageRequestDto.getPromptLogId())
@@ -67,7 +67,6 @@ public class AiPromptLogServiceImpl implements AiPromptLogService {
 
 		log.info("addMessage: Successfully added message to prompt log id: {}",
 				addPromptLogMessageRequestDto.getPromptLogId());
-		return new ResponseEntityDto();
 	}
 
 }

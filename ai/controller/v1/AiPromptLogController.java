@@ -36,7 +36,8 @@ public class AiPromptLogController {
 	@PostMapping(value = "/messages")
 	public ResponseEntity<ResponseEntityDto> addMessage(
 			@Valid @RequestBody AddPromptLogMessageRequestDto addPromptLogMessageRequestDto) {
-		return new ResponseEntity<>(aiPromptLogService.addMessage(addPromptLogMessageRequestDto), HttpStatus.CREATED);
+		aiPromptLogService.addMessage(addPromptLogMessageRequestDto);
+		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
 }

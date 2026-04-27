@@ -8,6 +8,6 @@ public interface AiPromptLogService {
 
 	ResponseEntityDto createPromptLog(CreatePromptLogRequestDto createPromptLogRequestDto);
 
-	ResponseEntityDto addMessage(AddPromptLogMessageRequestDto addPromptLogMessageRequestDto);
+	void addMessage(AddPromptLogMessageRequestDto addPromptLogMessageRequestDto);
 
 }
