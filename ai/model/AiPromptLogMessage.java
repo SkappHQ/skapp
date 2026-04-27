@@ -33,10 +33,10 @@ public class AiPromptLogMessage {
 	@JoinColumn(name = "prompt_log_id", nullable = false)
 	private AiPromptLog promptLog;
 
-	@Column(name = "user_message", columnDefinition = "TEXT")
+	@Column(name = "user_message")
 	private String userMessage;
 
-	@Column(name = "ai_message", columnDefinition = "TEXT")
+	@Column(name = "ai_message")
 	private String aiMessage;
 
 	@CreationTimestamp
