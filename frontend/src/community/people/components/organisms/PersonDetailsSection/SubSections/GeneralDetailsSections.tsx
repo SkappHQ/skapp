@@ -288,13 +288,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
               }}
             >
               <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "1rem"
-                  }}
-                >
+                <div className="flex items-start gap-4">
                   <DropdownList
                     inputName="title"
                     label={translateText(["employeeTitle"])}
