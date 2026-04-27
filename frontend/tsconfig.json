@@ -37,8 +37,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".storybook/**/*",
-    "frontend/pages/api/health.js",
-    "src/community/leave/components/molecules/EmployeeLeaveStatusPopups/EmployeeConfirmCancelLeavePopup"
+    "frontend/pages/api/health.js"
   ],
   "exclude": [
     "node_modules",
