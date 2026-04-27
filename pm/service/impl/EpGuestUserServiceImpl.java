@@ -257,10 +257,16 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email) {
-		return guestUserRequestDao.findAll()
-			.stream()
-			.filter(req -> email == null || email.isBlank() || req.getEmail().contains(email))
+	public List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email, List<Long> projectIds) {
+		log.info("getPendingGuestUserRequests: Fetching pending guest user requests with email: {}, projectIds: {}",
+				email, projectIds);
+
+		List<GuestUserRequest> requests = (email != null && !email.isBlank())
+				? guestUserRequestDao.findByEmailContaining(email) : guestUserRequestDao.findAll();
+
+		return requests.stream()
+			.filter(req -> projectIds == null || projectIds.isEmpty()
+					|| (req.getProjectIds() != null && req.getProjectIds().stream().anyMatch(projectIds::contains)))
 			.map(this::mapGuestUserRequestToDto)
 			.toList();
 	}
@@ -517,6 +523,22 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		long count = epEmployeeDao.countByEmployeeRolePmRoleAndAccountStatus(Role.PM_GUEST_EMPLOYEE,
 				AccountStatus.PENDING);
 		return new ResponseEntityDto(false, count);
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto revokeGuestUserRequest(Long requestId) {
+		log.info("revokeGuestUserRequest: Revoking guest user request with ID: {}", requestId);
+
+		if (requestId == null || requestId <= 0) {
+			throw new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_INVALID_GUEST_USER_REQUEST_ID);
+		}
+
+		Optional<GuestUserRequest> request = guestUserRequestDao.findById(requestId);
+		request.ifPresent(guestUserRequestDao::delete);
+
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_REQUEST_REVOKED), false);
 	}
 
 	private String buildInvitationUrl(User user) {

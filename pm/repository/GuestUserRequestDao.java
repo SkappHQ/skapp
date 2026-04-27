@@ -9,4 +9,6 @@ public interface GuestUserRequestDao extends JpaRepository<GuestUserRequest, Lon
 
 	List<GuestUserRequest> findByEmail(String email);
 
+	List<GuestUserRequest> findByEmailContaining(String email);
+
 }
