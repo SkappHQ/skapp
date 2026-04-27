@@ -37,7 +37,7 @@ public class EpGuestUserInternalController {
 
 	@DeleteMapping("/requests")
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
-	public ResponseEntity<ResponseEntityDto> revokeGuestUserRequest(@RequestBody Long requestId) {
+	public ResponseEntity<ResponseEntityDto> revokeGuestUserRequest(@RequestParam Long requestId) {
 		return new ResponseEntity<>(epGuestUserService.revokeGuestUserRequest(requestId), HttpStatus.OK);
 	}
 
