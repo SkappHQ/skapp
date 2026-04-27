@@ -41,13 +41,13 @@ private CrmDealStage stage;
 @JoinColumn(name = "sale_state_id")
 private CrmSaleState saleState;
 
-@Column(name = "closing_date", columnDefinition = "datetime(6)")
+@Column(name = "closing_date")
 private LocalDateTime closingDate;
 
-@Column(name = "amount", precision = 19, scale = 4)
+@Column(name = "amount")
 private BigDecimal amount;
 
-@Column(name = "currency_code", length = 3)
+@Column(name = "currency_code")
 private String currencyCode;
 
 @ManyToOne(fetch = FetchType.LAZY)

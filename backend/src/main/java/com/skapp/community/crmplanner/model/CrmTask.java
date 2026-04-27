@@ -44,10 +44,10 @@ private CrmTaskPriority priority;
 @JoinColumn(name = "status_id", nullable = false)
 private CrmTaskStatus status;
 
-@Column(name = "due_date", columnDefinition = "datetime(6)")
+@Column(name = "due_date")
 private LocalDateTime dueDate;
 
-@Column(name = "notes", columnDefinition = "TEXT")
+@Column(name = "notes")
 private String notes;
 
 @ManyToOne(fetch = FetchType.LAZY)

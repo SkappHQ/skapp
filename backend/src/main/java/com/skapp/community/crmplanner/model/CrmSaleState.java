@@ -25,7 +25,7 @@ public class CrmSaleState {
 	@Column(name = "name", nullable = false)
 	private String name;
 
-	@Column(name = "color", length = 50)
+	@Column(name = "color")
 	private String color;
 
 	@Column(name = "order_index")
