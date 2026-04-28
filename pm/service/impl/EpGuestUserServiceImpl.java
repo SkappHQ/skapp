@@ -33,6 +33,7 @@ import com.skapp.enterprise.people.service.EpUserEmailService;
 import com.skapp.enterprise.people.service.EpUserService;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.enterprise.pm.model.GuestUserRequest;
+import com.skapp.enterprise.pm.payload.EpGuestUserRequestInternalResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserRequestResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
 import com.skapp.enterprise.pm.repository.GuestUserRequestDao;
@@ -255,13 +256,41 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		return dto;
 	}
 
+	private EpGuestUserRequestInternalResponseDto mapGuestUserRequestToInternalDto(GuestUserRequest request) {
+		EpGuestUserRequestInternalResponseDto dto = new EpGuestUserRequestInternalResponseDto();
+		dto.setRequestId(request.getId());
+		dto.setEmail(request.getEmail());
+		dto.setProjectIds(request.getProjectIds());
+		dto.setRequestedDate(request.getRequestedDate());
+		return dto;
+	}
+
 	@Override
 	@Transactional(readOnly = true)
 	public List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email) {
-		return guestUserRequestDao.findAll()
-			.stream()
-			.filter(req -> email == null || email.isBlank() || req.getEmail().contains(email))
-			.map(this::mapGuestUserRequestToDto)
+		log.info("getPendingGuestUserRequests: Fetching pending guest user requests with email: {}", email);
+
+		List<GuestUserRequest> requests = (email != null && !email.isBlank())
+				? guestUserRequestDao.findByEmailContaining(email) : guestUserRequestDao.findAll();
+
+		return requests.stream().map(this::mapGuestUserRequestToDto).toList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<EpGuestUserRequestInternalResponseDto> getPendingGuestUserRequestsInternal(String email,
+			List<Long> projectIds) {
+		log.info(
+				"getPendingGuestUserRequestsInternal: Fetching pending guest user requests with email: {}, projectIds: {}",
+				email, projectIds);
+
+		List<GuestUserRequest> requests = (email != null && !email.isBlank())
+				? guestUserRequestDao.findByEmailContaining(email) : guestUserRequestDao.findAll();
+
+		return requests.stream()
+			.filter(req -> projectIds == null || projectIds.isEmpty()
+					|| (req.getProjectIds() != null && req.getProjectIds().stream().anyMatch(projectIds::contains)))
+			.map(this::mapGuestUserRequestToInternalDto)
 			.toList();
 	}
 
@@ -517,6 +546,22 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		long count = epEmployeeDao.countByEmployeeRolePmRoleAndAccountStatus(Role.PM_GUEST_EMPLOYEE,
 				AccountStatus.PENDING);
 		return new ResponseEntityDto(false, count);
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto revokeGuestUserRequest(Long requestId) {
+		log.info("revokeGuestUserRequest: Revoking guest user request with ID: {}", requestId);
+
+		if (requestId == null) {
+			throw new ModuleException(EpPeopleMessageConstant.EP_PEOPLE_ERROR_INVALID_GUEST_USER_REQUEST_ID);
+		}
+
+		Optional<GuestUserRequest> request = guestUserRequestDao.findById(requestId);
+		request.ifPresent(guestUserRequestDao::delete);
+
+		return new ResponseEntityDto(
+				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_REQUEST_REVOKED), false);
 	}
 
 	private String buildInvitationUrl(User user) {
