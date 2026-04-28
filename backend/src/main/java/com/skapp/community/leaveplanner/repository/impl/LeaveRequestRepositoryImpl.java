@@ -72,6 +72,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1048,10 +1049,13 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	@Override
-	public List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate from,
-			LocalDate to) {
+	public List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds,
+			@NonNull LocalDate from, @NonNull LocalDate to) {
 		if (employeeIds == null || employeeIds.isEmpty()) {
-			return new ArrayList<>();
+			return Collections.emptyList();
+		}
+		if (from.isAfter(to)) {
+			return Collections.emptyList();
 		}
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
