@@ -1360,7 +1360,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			Subquery<Long> teamSubquery = criteriaQuery.subquery(Long.class);
 			Root<EmployeeTeam> teamRoot = teamSubquery.from(EmployeeTeam.class);
 			teamSubquery.select(criteriaBuilder.literal(1L));
-			teamSubquery.where(criteriaBuilder.equal(teamRoot.get(EmployeeTeam_.EMPLOYEE), root),
+			teamSubquery.where(criteriaBuilder.equal(teamRoot.get(EmployeeTeam_.employee), root),
 					teamRoot.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeFilterDto.getTeam()));
 			predicates.add(criteriaBuilder.exists(teamSubquery));
 		}
