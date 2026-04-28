@@ -13,6 +13,7 @@ import {
   BloodGroupSelector,
   EeoSelector,
   EthnicitySelector,
+  TitleSelector,
   replaceEmptyStringsWithNull
 } from "../utils/userBulkUploadUtils";
 
@@ -46,7 +47,7 @@ const useUserBulkConvert = () => {
 
         const newUser: BulkEmployeeDetails = {
           teams: teamIds,
-          title: user?.title?.toUpperCase(),
+          title: user?.title ? TitleSelector[user?.title] : null,
           firstName: user?.firstName,
           middleName: user?.middleName,
           lastName: user?.lastName,
