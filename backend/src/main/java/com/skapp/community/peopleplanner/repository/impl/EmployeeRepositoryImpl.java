@@ -1351,9 +1351,15 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
 
-		// Enterprise predicate: use EXISTS subquery instead of join to avoid row
-		// multiplication
-		buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates);
+		boolean hasPermissionsFilter = employeeFilterDto.getPermissions() != null
+				&& !employeeFilterDto.getPermissions().isEmpty();
+
+		// When permissions filter is active, we merge the enterprise predicate
+		// (PM_ROLE != PM_GUEST_EMPLOYEE) into the permissions EXISTS subquery to avoid
+		// two correlated subqueries against the same @OneToOne EmployeeRole row.
+		if (!hasPermissionsFilter) {
+			buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates);
+		}
 
 		// Team filter: use EXISTS subquery instead of join
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
@@ -1392,8 +1398,9 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			predicates.add(findByEmailName(employeeFilterDto.getSearchKeyword(), criteriaBuilder, root, userJoin));
 		}
 
-		// Permissions filter: use EXISTS subquery instead of join
-		if (employeeFilterDto.getPermissions() != null && !employeeFilterDto.getPermissions().isEmpty()) {
+		// Permissions filter: use EXISTS subquery instead of join, merged with enterprise
+		// predicate
+		if (hasPermissionsFilter) {
 			Subquery<Long> roleSubquery = criteriaQuery.subquery(Long.class);
 			Root<EmployeeRole> roleRoot = roleSubquery.from(EmployeeRole.class);
 			roleSubquery.select(criteriaBuilder.literal(1L));
@@ -1411,7 +1418,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 					leaveRolePredicate, esignRolePredicate);
 
 			roleSubquery.where(criteriaBuilder.equal(roleRoot.get(EmployeeRole_.employee), root), rolePredicate,
-					criteriaBuilder.equal(roleRoot.get(EmployeeRole_.IS_SUPER_ADMIN), false));
+					criteriaBuilder.equal(roleRoot.get(EmployeeRole_.IS_SUPER_ADMIN), false),
+					criteriaBuilder.notEqual(roleRoot.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 			predicates.add(criteriaBuilder.exists(roleSubquery));
 		}
 
