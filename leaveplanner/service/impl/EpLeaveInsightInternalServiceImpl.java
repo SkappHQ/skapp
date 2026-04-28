@@ -49,7 +49,6 @@ public class EpLeaveInsightInternalServiceImpl implements EpLeaveInsightInternal
 			return null;
 		}
 
-		// One entry per employee — prefer currently-on-leave, then earliest start
 		Map<Long, LeaveRequest> bestLeaveByEmployee = new LinkedHashMap<>();
 		for (LeaveRequest lr : relevantLeaveRequests) {
 			Long empId = lr.getEmployee().getEmployeeId();
