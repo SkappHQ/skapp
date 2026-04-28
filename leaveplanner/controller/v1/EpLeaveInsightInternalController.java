@@ -31,9 +31,8 @@ public class EpLeaveInsightInternalController {
 	@Operation(summary = "Get leave insight context",
 			description = "Returns pre-computed leave data for a set of employees within the warning window. The response is always wrapped in a ResponseEntityDto. When no relevant leave signals exist, the results field contains a single null element — the caller should treat this as a no-op and skip the AI model call.")
 	public ResponseEntity<ResponseEntityDto> getLeaveInsightContext(
-			@RequestParam(required = false) List<Long> employeeIds,
-			@RequestParam(defaultValue = "3") int warningWindowDays,
-			@RequestParam(defaultValue = "30") int capacityDropThresholdPct) {
+			@RequestParam(required = false) List<Long> employeeIds, @RequestParam int warningWindowDays,
+			@RequestParam int capacityDropThresholdPct) {
 		EpLeaveInsightContextResponseDto context = epLeaveInsightInternalService.getLeaveInsightContext(employeeIds,
 				warningWindowDays, capacityDropThresholdPct);
 		return new ResponseEntity<>(new ResponseEntityDto(false, context), HttpStatus.OK);
