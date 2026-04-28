@@ -1,7 +1,6 @@
 package com.skapp.enterprise.timeplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.timeplanner.payload.response.TimeConfigResponseDto;
 import com.skapp.enterprise.timeplanner.service.EpTimeInternalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,8 +26,8 @@ public class EpTimeInternalController {
 	@Operation(summary = "Get organization time config",
 			description = "Returns the organization's working day time configurations sorted by day of week.")
 	public ResponseEntity<ResponseEntityDto> getOrganizationTimeConfigs() {
-		List<TimeConfigResponseDto> configs = epTimeInternalService.getOrganizationTimeConfigs();
-		return new ResponseEntity<>(new ResponseEntityDto(false, configs), HttpStatus.OK);
+		return new ResponseEntity<>(new ResponseEntityDto(false, epTimeInternalService.getOrganizationTimeConfigs()),
+				HttpStatus.OK);
 	}
 
 }
