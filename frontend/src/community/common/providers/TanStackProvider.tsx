@@ -1,5 +1,4 @@
 import {
-  MutationCache,
   QueryClient,
   QueryClientProvider,
   onlineManager
@@ -43,17 +42,11 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
 
   const [queryClient] = useState(() => {
     return new QueryClient({
-      mutationCache: new MutationCache({
-        onError: (error) => {
-          if (error instanceof Error && !onlineManager.isOnline()) {
-            showOfflineToastRef.current();
-          }
-        }
-      }),
       defaultOptions: {
         mutations: {
           onMutate: async () => {
             if (!onlineManager.isOnline()) {
+              showOfflineToastRef.current();
               throw new Error("Network error: No internet connection");
             }
           }
