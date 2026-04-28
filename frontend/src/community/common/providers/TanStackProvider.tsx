@@ -1,9 +1,10 @@
 import {
+  MutationCache,
   QueryClient,
   QueryClientProvider,
   onlineManager
 } from "@tanstack/react-query";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import { getNewAccessToken, signOut } from "~community/auth/utils/authUtils";
 import {
@@ -17,29 +18,42 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 
 import { useAuth } from "../../auth/providers/AuthProvider";
 import { useToast } from "./ToastProvider";
+import { useTranslator } from "../hooks/useTranslator";
 
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
   const { user, checkAuth } = useAuth();
   const { setToastMessage } = useToast();
+  const translateText = useTranslator("networkError");
 
   const showOfflineToast = useCallback(() => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: "Oops! Something went wrong.",
-      description:
-        "No internet connection. Please check your network and try again.",
+      title: translateText(["title"]),
+      description: translateText(["description"]),
       isIcon: true
     });
-  }, [setToastMessage]);
+  }, [setToastMessage, translateText]);
+
+  const showOfflineToastRef = useRef(showOfflineToast);
+
+  useEffect(() => {
+    showOfflineToastRef.current = showOfflineToast;
+  }, [showOfflineToast]);
 
   const [queryClient] = useState(() => {
     return new QueryClient({
+      mutationCache: new MutationCache({
+        onError: (error) => {
+          if (error instanceof Error && !onlineManager.isOnline()) {
+            showOfflineToastRef.current();
+          }
+        }
+      }),
       defaultOptions: {
         mutations: {
           onMutate: async () => {
             if (!onlineManager.isOnline()) {
-              showOfflineToast();
               throw new Error("Network error: No internet connection");
             }
           }
