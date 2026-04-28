@@ -142,6 +142,7 @@ export interface L3EmploymentDetailsType {
   probationStartDate?: string;
   probationEndDate?: string;
   workTimeZone?: string;
+  workLocation?: string;
 }
 
 export interface L3CareerProgressionDetailsType {

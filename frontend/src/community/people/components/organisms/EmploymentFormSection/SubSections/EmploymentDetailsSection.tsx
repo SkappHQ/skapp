@@ -613,6 +613,32 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                 readOnly={isReadOnly}
               />
             </Grid>
+
+            <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+              <DropdownList
+                inputName="workLocation"
+                label={translateText(["workLocation"])}
+                value={values.workLocation ?? ""}
+                placeholder={
+                  isReadOnly ? "" : translateText(["selectWorkLocation"])
+                }
+                onChange={handleChange}
+                error={errors.workLocation ?? ""}
+                componentStyle={{
+                  mt: "0rem"
+                }} 
+                errorFocusOutlineNeeded={false}
+                itemList={[
+                  { label: "Remote", value: "REMOTE" },
+                  { label: "Onsite", value: "ONSITE" },
+                  { label: "Hybrid", value: "HYBRID" }
+                ]} // TODO: Replace with work location API data
+                readOnly={isReadOnly || isProfileView}
+                isDisabled={isInputsDisabled}
+                checkSelected
+                ariaLabel={translateAria(["selectWorkLocation"])}
+              />
+            </Grid>
           </Grid>
           {!isReadOnly && !isProfileView && (
             <TeamModalController setLatestTeamId={setLatestTeamId} />
