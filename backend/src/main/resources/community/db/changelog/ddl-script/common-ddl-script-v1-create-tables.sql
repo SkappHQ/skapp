@@ -552,6 +552,168 @@ CREATE TABLE IF NOT EXISTS `carry_forward_info`
     CONSTRAINT `FK_carry_forward_info_leave_type_type_id` FOREIGN KEY (`leave_type_id`) REFERENCES `leave_type` (`type_id`)
 ) ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `crm_priority`
+(
+    `id`   bigint       NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_task_status`
+(
+    `id`          bigint       NOT NULL AUTO_INCREMENT,
+    `name`        varchar(255) NOT NULL,
+    `order_index` int DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_task_type`
+(
+    `id`          bigint       NOT NULL AUTO_INCREMENT,
+    `name`        varchar(255) NOT NULL,
+    `order_index` int DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_company`
+(
+    `id`                 bigint       NOT NULL AUTO_INCREMENT,
+    `created_by`         varchar(255) DEFAULT NULL,
+    `created_date`       datetime(6)  DEFAULT NULL,
+    `last_modified_by`   varchar(255) DEFAULT NULL,
+    `last_modified_date` datetime(6)  DEFAULT NULL,
+    `name`               varchar(255) NOT NULL,
+    `industry`           varchar(255) DEFAULT NULL,
+    `website`            varchar(255) DEFAULT NULL,
+    `address`            varchar(255) DEFAULT NULL,
+    `contact_number`     varchar(50)  DEFAULT NULL,
+    `is_deleted`         bit(1)       NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_pipeline_template`
+(
+    `id`                 bigint       NOT NULL AUTO_INCREMENT,
+    `created_by`         varchar(255) DEFAULT NULL,
+    `created_date`       datetime(6)  DEFAULT NULL,
+    `last_modified_by`   varchar(255) DEFAULT NULL,
+    `last_modified_date` datetime(6)  DEFAULT NULL,
+    `name`               varchar(255) NOT NULL,
+    `description`        text,
+    `is_deleted`         bit(1)       NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_contact`
+(
+    `id`                  bigint       NOT NULL AUTO_INCREMENT,
+    `created_by`          varchar(255) DEFAULT NULL,
+    `created_date`        datetime(6)  DEFAULT NULL,
+    `last_modified_by`    varchar(255) DEFAULT NULL,
+    `last_modified_date`  datetime(6)  DEFAULT NULL,
+    `name`                varchar(255) NOT NULL,
+    `email`               varchar(255) NOT NULL,
+    `contact_number`      varchar(50)  DEFAULT NULL,
+    `last_contacted_date` datetime(6)  DEFAULT NULL,
+    `company_id`          bigint       DEFAULT NULL,
+    `owner_id`            bigint       NOT NULL,
+    `is_deleted`          bit(1)       NOT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_crm_contact_crm_company_company_id` FOREIGN KEY (`company_id`) REFERENCES `crm_company` (`id`),
+    CONSTRAINT `FK_crm_contact_employee_owner_id` FOREIGN KEY (`owner_id`) REFERENCES `employee` (`employee_id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_deal_stage`
+(
+    `id`                 bigint       NOT NULL AUTO_INCREMENT,
+    `created_by`         varchar(255)          DEFAULT NULL,
+    `created_date`       datetime(6)           DEFAULT NULL,
+    `last_modified_by`   varchar(255)          DEFAULT NULL,
+    `last_modified_date` datetime(6)           DEFAULT NULL,
+    `template_id`        bigint       NOT NULL,
+    `name`               varchar(255) NOT NULL,
+    `color`              varchar(50)  NOT NULL,
+    `order_index`        int          NOT NULL,
+    `is_initial`         bit(1)       NOT NULL DEFAULT b'0',
+    `is_final`           bit(1)       NOT NULL DEFAULT b'0',
+    `is_won`             bit(1)       NOT NULL DEFAULT b'0',
+    `is_deleted`         bit(1)       NOT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_crm_deal_stage_crm_pipeline_template_template_id` FOREIGN KEY (`template_id`) REFERENCES `crm_pipeline_template` (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_deal`
+(
+    `id`                 bigint       NOT NULL AUTO_INCREMENT,
+    `created_by`         varchar(255)   DEFAULT NULL,
+    `created_date`       datetime(6)    DEFAULT NULL,
+    `last_modified_by`   varchar(255)   DEFAULT NULL,
+    `last_modified_date` datetime(6)    DEFAULT NULL,
+    `name`               varchar(255) NOT NULL,
+    `stage_id`           bigint       NOT NULL,
+    `priority_id`        bigint         DEFAULT NULL,
+    `closing_date`       datetime(6)    DEFAULT NULL,
+    `amount`             decimal(19, 4) DEFAULT NULL,
+    `currency_code`      char(3)        DEFAULT NULL,
+    `company_id`         bigint         DEFAULT NULL,
+    `contact_id`         bigint       NOT NULL,
+    `owner_id`           bigint       NOT NULL,
+    `is_deleted`         bit(1)       NOT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_crm_deal_crm_deal_stage_stage_id` FOREIGN KEY (`stage_id`) REFERENCES `crm_deal_stage` (`id`),
+    CONSTRAINT `FK_crm_deal_crm_priority_priority_id` FOREIGN KEY (`priority_id`) REFERENCES `crm_priority` (`id`),
+    CONSTRAINT `FK_crm_deal_crm_company_company_id` FOREIGN KEY (`company_id`) REFERENCES `crm_company` (`id`),
+    CONSTRAINT `FK_crm_deal_crm_contact_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `crm_contact` (`id`),
+    CONSTRAINT `FK_crm_deal_employee_owner_id` FOREIGN KEY (`owner_id`) REFERENCES `employee` (`employee_id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_task`
+(
+    `id`                 bigint       NOT NULL AUTO_INCREMENT,
+    `created_by`         varchar(255) DEFAULT NULL,
+    `created_date`       datetime(6)  DEFAULT NULL,
+    `last_modified_by`   varchar(255) DEFAULT NULL,
+    `last_modified_date` datetime(6)  DEFAULT NULL,
+    `name`               varchar(255) NOT NULL,
+    `type_id`            bigint       NOT NULL,
+    `priority_id`        bigint       NOT NULL,
+    `status_id`          bigint       NOT NULL,
+    `due_date`           datetime(6)  DEFAULT NULL,
+    `notes`              text,
+    `owner_id`           bigint       NOT NULL,
+    `contact_id`         bigint       DEFAULT NULL,
+    `company_id`         bigint       DEFAULT NULL,
+    `deal_id`            bigint       DEFAULT NULL,
+    `is_deleted`         bit(1)       NOT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_crm_task_crm_task_type_type_id` FOREIGN KEY (`type_id`) REFERENCES `crm_task_type` (`id`),
+    CONSTRAINT `FK_crm_task_crm_priority_priority_id` FOREIGN KEY (`priority_id`) REFERENCES `crm_priority` (`id`),
+    CONSTRAINT `FK_crm_task_crm_task_status_status_id` FOREIGN KEY (`status_id`) REFERENCES `crm_task_status` (`id`),
+    CONSTRAINT `FK_crm_task_employee_owner_id` FOREIGN KEY (`owner_id`) REFERENCES `employee` (`employee_id`),
+    CONSTRAINT `FK_crm_task_crm_contact_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `crm_contact` (`id`),
+    CONSTRAINT `FK_crm_task_crm_company_company_id` FOREIGN KEY (`company_id`) REFERENCES `crm_company` (`id`),
+    CONSTRAINT `FK_crm_task_crm_deal_deal_id` FOREIGN KEY (`deal_id`) REFERENCES `crm_deal` (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_deal_stage_log`
+(
+    `id`                 bigint NOT NULL AUTO_INCREMENT,
+    `created_by`         varchar(255) DEFAULT NULL,
+    `created_date`       datetime(6)  DEFAULT NULL,
+    `last_modified_by`   varchar(255) DEFAULT NULL,
+    `last_modified_date` datetime(6)  DEFAULT NULL,
+    `deal_id`            bigint NOT NULL,
+    `from_stage_id`      bigint       DEFAULT NULL,
+    `to_stage_id`        bigint NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `IDX_crm_deal_stage_log_deal_id` (`deal_id`),
+    KEY `IDX_crm_deal_stage_log_from_stage_id` (`from_stage_id`),
+    KEY `IDX_crm_deal_stage_log_to_stage_id` (`to_stage_id`),
+    CONSTRAINT `FK_crm_deal_stage_log_crm_deal_deal_id` FOREIGN KEY (`deal_id`) REFERENCES `crm_deal` (`id`),
+    CONSTRAINT `FK_crm_deal_stage_log_crm_deal_stage_from_stage_id` FOREIGN KEY (`from_stage_id`) REFERENCES `crm_deal_stage` (`id`),
+    CONSTRAINT `FK_crm_deal_stage_log_crm_deal_stage_to_stage_id` FOREIGN KEY (`to_stage_id`) REFERENCES `crm_deal_stage` (`id`)
+) ENGINE = InnoDB;
+
 -- rollback drop table carry_forward_info;
 -- rollback drop table user_settings;
 -- rollback drop table rule_property;
@@ -588,3 +750,13 @@ CREATE TABLE IF NOT EXISTS `carry_forward_info`
 -- rollback drop table job_family;
 -- rollback drop table organization;
 -- rollback drop table user;
+-- rollback drop table crm_task;
+-- rollback drop table crm_deal;
+-- rollback drop table crm_deal_stage;
+-- rollback drop table crm_contact;
+-- rollback drop table crm_pipeline_template;
+-- rollback drop table crm_company;
+-- rollback drop table crm_task_type;
+-- rollback drop table crm_task_status;
+-- rollback drop table crm_deal_stage_log;
+-- rollback drop table crm_priority;

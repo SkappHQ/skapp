@@ -27,23 +27,3 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-employee-role-add-column-crm-role.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-dml-script-v1-update-employee-role-set-crm-role.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-task-status.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-task-type.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-task-priority.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-sale-state.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-pipeline-template.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-deal-stage.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-company.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-contact.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-deal.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-crm-task.sql
