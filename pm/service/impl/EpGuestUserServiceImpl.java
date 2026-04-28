@@ -33,6 +33,7 @@ import com.skapp.enterprise.people.service.EpUserEmailService;
 import com.skapp.enterprise.people.service.EpUserService;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.enterprise.pm.model.GuestUserRequest;
+import com.skapp.enterprise.pm.payload.EpGuestUserRequestInternalResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserRequestResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
 import com.skapp.enterprise.pm.repository.GuestUserRequestDao;
@@ -255,6 +256,15 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		return dto;
 	}
 
+	private EpGuestUserRequestInternalResponseDto mapGuestUserRequestToInternalDto(GuestUserRequest request) {
+		EpGuestUserRequestInternalResponseDto dto = new EpGuestUserRequestInternalResponseDto();
+		dto.setRequestId(request.getId());
+		dto.setEmail(request.getEmail());
+		dto.setProjectIds(request.getProjectIds());
+		dto.setRequestedDate(request.getRequestedDate());
+		return dto;
+	}
+
 	@Override
 	@Transactional(readOnly = true)
 	public List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email, List<Long> projectIds) {
@@ -268,6 +278,24 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			.filter(req -> projectIds == null || projectIds.isEmpty()
 					|| (req.getProjectIds() != null && req.getProjectIds().stream().anyMatch(projectIds::contains)))
 			.map(this::mapGuestUserRequestToDto)
+			.toList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<EpGuestUserRequestInternalResponseDto> getPendingGuestUserRequestsInternal(String email,
+			List<Long> projectIds) {
+		log.info(
+				"getPendingGuestUserRequestsInternal: Fetching pending guest user requests with email: {}, projectIds: {}",
+				email, projectIds);
+
+		List<GuestUserRequest> requests = (email != null && !email.isBlank())
+				? guestUserRequestDao.findByEmailContaining(email) : guestUserRequestDao.findAll();
+
+		return requests.stream()
+			.filter(req -> projectIds == null || projectIds.isEmpty()
+					|| (req.getProjectIds() != null && req.getProjectIds().stream().anyMatch(projectIds::contains)))
+			.map(this::mapGuestUserRequestToInternalDto)
 			.toList();
 	}
 

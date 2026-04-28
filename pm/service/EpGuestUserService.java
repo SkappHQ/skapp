@@ -9,6 +9,7 @@ import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
+import com.skapp.enterprise.pm.payload.EpGuestUserRequestInternalResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserRequestResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
 
@@ -27,6 +28,9 @@ public interface EpGuestUserService {
 	List<EpGuestUserResponseDto> getAllGuestUsers(String email, List<AccountStatus> statuses, List<Long> projectIds);
 
 	List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email, List<Long> projectIds);
+
+	List<EpGuestUserRequestInternalResponseDto> getPendingGuestUserRequestsInternal(String email,
+			List<Long> projectIds);
 
 	EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto);
 

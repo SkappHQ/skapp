@@ -30,7 +30,7 @@ public class EpGuestUserInternalController {
 	public ResponseEntity<ResponseEntityDto> getPendingGuestUserRequests(@RequestParam(required = false) String email,
 			@RequestParam(required = false) List<Long> projectIds) {
 		return new ResponseEntity<>(
-				new ResponseEntityDto(false, epGuestUserService.getPendingGuestUserRequests(email, projectIds)),
+				new ResponseEntityDto(false, epGuestUserService.getPendingGuestUserRequestsInternal(email, projectIds)),
 				HttpStatus.OK);
 	}
 
