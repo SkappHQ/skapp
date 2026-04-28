@@ -1047,6 +1047,28 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
+	@Override
+	public List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate from,
+			LocalDate to) {
+		if (employeeIds == null || employeeIds.isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveRequest> cq = cb.createQuery(LeaveRequest.class);
+		Root<LeaveRequest> root = cq.from(LeaveRequest.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		predicates.add(root.get(LeaveRequest_.employee).get(Employee_.employeeId).in(employeeIds));
+		predicates.add(cb.equal(root.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
+		predicates.add(cb.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), to));
+		predicates.add(cb.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), from));
+
+		cq.select(root).where(predicates.toArray(new Predicate[0]));
+		return entityManager.createQuery(cq).getResultList();
+	}
+
 	public Optional<LeaveRequest> findAuthLeaveRequestById(Long id, User user, Boolean isManager) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
