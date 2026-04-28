@@ -38,8 +38,8 @@ private String name;
 private CrmDealStage stage;
 
 @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "sale_state_id")
-private CrmSaleState saleState;
+@JoinColumn(name = "priority_id")
+private CrmPriority priority;
 
 @Column(name = "closing_date")
 private LocalDateTime closingDate;

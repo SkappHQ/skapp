@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -35,6 +37,9 @@ private String email;
 
 @Column(name = "contact_number")
 private String contactNumber;
+
+@Column(name = "last_contacted_date")
+private LocalDateTime lastContactedDate;
 
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "company_id")

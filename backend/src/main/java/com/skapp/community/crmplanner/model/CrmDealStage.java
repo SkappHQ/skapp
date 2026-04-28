@@ -39,6 +39,15 @@ private String color;
 @Column(name = "order_index", nullable = false)
 private Integer orderIndex;
 
+@Column(name = "is_initial", nullable = false)
+private Boolean isInitial = false;
+
+@Column(name = "is_final", nullable = false)
+private Boolean isFinal = false;
+
+@Column(name = "is_won", nullable = false)
+private Boolean isWon = false;
+
 @Column(name = "is_deleted", nullable = false)
 private Boolean isDeleted = false;
 

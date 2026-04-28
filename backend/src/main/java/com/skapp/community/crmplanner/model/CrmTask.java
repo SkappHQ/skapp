@@ -38,7 +38,7 @@ private CrmTaskType type;
 
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "priority_id", nullable = false)
-private CrmTaskPriority priority;
+private CrmPriority priority;
 
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "status_id", nullable = false)
