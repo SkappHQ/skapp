@@ -30,6 +30,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -40,21 +41,46 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 	@Override
 	public List<JobFamily> getJobFamiliesByEmployeeCount() {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		// Step 1: Get job family IDs ordered by employee count
+		CriteriaQuery<Long> idQuery = criteriaBuilder.createQuery(Long.class);
+		Root<JobFamily> idRoot = idQuery.from(JobFamily.class);
+		Join<JobFamily, Employee> employeeJoin = idRoot.join(JobFamily_.EMPLOYEES, JoinType.LEFT);
+
+		idQuery.select(idRoot.get(JobFamily_.JOB_FAMILY_ID));
+		idQuery.where(criteriaBuilder.equal(idRoot.get(JobFamily_.isActive), true));
+		idQuery.groupBy(idRoot.get(JobFamily_.JOB_FAMILY_ID));
+		idQuery.orderBy(criteriaBuilder
+			.desc(criteriaBuilder.coalesce(criteriaBuilder.count(employeeJoin.get(Employee_.EMPLOYEE_ID)), 0)));
+
+		List<Long> orderedIds = entityManager.createQuery(idQuery).getResultList();
+		if (orderedIds.isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		// Step 2: Fetch job families with active job titles eagerly in a single query
 		CriteriaQuery<JobFamily> criteriaQuery = criteriaBuilder.createQuery(JobFamily.class);
 		Root<JobFamily> root = criteriaQuery.from(JobFamily.class);
-		Join<JobFamily, Employee> employeeJoin = root.join(JobFamily_.EMPLOYEES, JoinType.LEFT);
+		root.fetch(JobFamily_.JOB_TITLES, JoinType.LEFT);
 
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(criteriaBuilder.equal(root.get(JobFamily_.isActive), true));
+		criteriaQuery.where(root.get(JobFamily_.JOB_FAMILY_ID).in(orderedIds));
+		criteriaQuery.distinct(true);
 
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		criteriaQuery.where(predArray);
-		criteriaQuery.groupBy(root.get(JobFamily_.JOB_FAMILY_ID));
-		criteriaQuery.orderBy(criteriaBuilder
-			.desc(criteriaBuilder.coalesce(criteriaBuilder.count(employeeJoin.get(Employee_.EMPLOYEE_ID)), 0)));
-		TypedQuery<JobFamily> typedQuery = entityManager.createQuery(criteriaQuery);
-		return typedQuery.getResultList();
+		List<JobFamily> jobFamilies = entityManager.createQuery(criteriaQuery).getResultList();
+
+		// Restore the ordering from Step 1
+		Map<Long, JobFamily> familyMap = new java.util.LinkedHashMap<>();
+		for (JobFamily jf : jobFamilies) {
+			familyMap.put(jf.getJobFamilyId(), jf);
+		}
+		List<JobFamily> result = new ArrayList<>();
+		for (Long id : orderedIds) {
+			JobFamily jf = familyMap.get(id);
+			if (jf != null) {
+				result.add(jf);
+			}
+		}
+		return result;
 	}
 
 	@Override
