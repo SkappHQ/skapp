@@ -1315,16 +1315,16 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		criteriaQuery.orderBy(orderList);
 
 		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
-		int offset = (int) pageable.getOffset();
+		long offset = pageable.getOffset();
 		int pageSize = pageable.getPageSize();
-		query.setFirstResult(offset);
+		query.setFirstResult((int) offset);
 		query.setMaxResults(pageSize);
 
 		List<Employee> resultList = query.getResultList();
 
 		long totalRows;
 		if (!resultList.isEmpty() && resultList.size() < pageSize) {
-			totalRows = offset + (long) resultList.size();
+			totalRows = offset + resultList.size();
 		}
 		else {
 			CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
