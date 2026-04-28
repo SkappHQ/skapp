@@ -1,6 +1,5 @@
 package com.skapp.community.timeplanner.controller.v1;
 
-import com.skapp.TestSkappApplication;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -14,6 +13,7 @@ import com.skapp.community.timeplanner.payload.request.TimeRequestManagerPatchDt
 import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
 import com.skapp.support.MockUserFactory;
 import com.skapp.support.SecurityTestUtils;
+import com.skapp.TestSkappApplication;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -1,6 +1,5 @@
 package com.skapp.community.common.controller.v1;
 
-import com.skapp.TestSkappApplication;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.payload.request.OrganizationDto;
 import com.skapp.community.common.payload.request.UpdateOrganizationRequestDto;
@@ -9,6 +8,7 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.support.MockUserFactory;
 import com.skapp.support.SecurityTestUtils;
+import com.skapp.TestSkappApplication;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

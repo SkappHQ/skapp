@@ -1,6 +1,5 @@
 package com.skapp.community.leaveplanner.controller.v1;
 
-import com.skapp.TestSkappApplication;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -11,6 +10,7 @@ import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.support.MockUserFactory;
 import com.skapp.support.SecurityTestUtils;
+import com.skapp.TestSkappApplication;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
