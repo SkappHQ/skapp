@@ -1284,7 +1284,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	public Page<Employee> findEmployeesV2(EmployeeFilterDtoV2 employeeFilterDto, Pageable pageable) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
-		// --- Main data query ---
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 		Join<Employee, User> userJoin = root.join(Employee_.user);
@@ -1323,10 +1322,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		List<Employee> resultList = query.getResultList();
 
-		// --- Count query: skip if we can infer total from result size ---
 		long totalRows;
 		if (!resultList.isEmpty() && resultList.size() < pageSize) {
-			// Partial page means we know the exact total without a count query
 			totalRows = offset + (long) resultList.size();
 		}
 		else {
@@ -1354,14 +1351,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		boolean hasPermissionsFilter = employeeFilterDto.getPermissions() != null
 				&& !employeeFilterDto.getPermissions().isEmpty();
 
-		// When permissions filter is active, we merge the enterprise predicate
-		// (PM_ROLE != PM_GUEST_EMPLOYEE) into the permissions EXISTS subquery to avoid
-		// two correlated subqueries against the same @OneToOne EmployeeRole row.
 		if (!hasPermissionsFilter) {
 			buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates);
 		}
 
-		// Team filter: use EXISTS subquery instead of join
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
 			Subquery<Long> teamSubquery = criteriaQuery.subquery(Long.class);
 			Root<EmployeeTeam> teamRoot = teamSubquery.from(EmployeeTeam.class);
@@ -1398,8 +1391,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			predicates.add(findByEmailName(employeeFilterDto.getSearchKeyword(), criteriaBuilder, root, userJoin));
 		}
 
-		// Permissions filter: use EXISTS subquery instead of join, merged with enterprise
-		// predicate
 		if (hasPermissionsFilter) {
 			Subquery<Long> roleSubquery = criteriaQuery.subquery(Long.class);
 			Root<EmployeeRole> roleRoot = roleSubquery.from(EmployeeRole.class);
