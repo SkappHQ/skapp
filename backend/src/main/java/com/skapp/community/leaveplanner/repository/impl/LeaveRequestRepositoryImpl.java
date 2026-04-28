@@ -1049,8 +1049,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	@Override
-	public List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate from,
-			LocalDate to) {
+	public List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate fromDate,
+			LocalDate toDate) {
 		if (employeeIds == null || employeeIds.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -1063,8 +1063,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		predicates.add(root.get(LeaveRequest_.employee).get(Employee_.employeeId).in(employeeIds));
 		predicates.add(cb.equal(root.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
-		predicates.add(cb.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), to));
-		predicates.add(cb.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), from));
+		predicates.add(cb.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), toDate));
+		predicates.add(cb.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), fromDate));
 
 		cq.select(root).where(predicates.toArray(new Predicate[0]));
 		return entityManager.createQuery(cq).getResultList();
