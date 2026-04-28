@@ -1284,21 +1284,23 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	public Page<Employee> findEmployeesV2(EmployeeFilterDtoV2 employeeFilterDto, Pageable pageable) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
+		// --- Main data query ---
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 		Join<Employee, User> userJoin = root.join(Employee_.user);
 
-		List<Predicate> predicates = buildPredicates(employeeFilterDto, criteriaBuilder, root, userJoin);
+		List<Predicate> predicates = buildPredicatesV2(employeeFilterDto, criteriaBuilder, criteriaQuery, root,
+				userJoin);
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 
 		List<Order> orderList = new ArrayList<>();
 
-		if (employeeFilterDto.getSearchKeyword() != null && !employeeFilterDto.getSearchKeyword().isEmpty()) {
+		String searchKeyword = employeeFilterDto.getSearchKeyword();
+		if (searchKeyword != null && !searchKeyword.isEmpty()) {
+			String searchPattern = getSearchString(searchKeyword);
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
-				.when(criteriaBuilder.like(root.get(Employee_.FIRST_NAME),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 1)
-				.when(criteriaBuilder.like(root.get(Employee_.LAST_NAME),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 2)
+				.when(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.FIRST_NAME)), searchPattern), 1)
+				.when(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.LAST_NAME)), searchPattern), 2)
 				.otherwise(3));
 			orderList.add(sortingOrder);
 		}
@@ -1312,37 +1314,60 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			orderList.add(criteriaBuilder.desc(root.get(Employee_.LAST_NAME)));
 		}
 
-		criteriaQuery.distinct(true);
 		criteriaQuery.orderBy(orderList);
 
-		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
-		Root<Employee> countRoot = countQuery.from(Employee.class);
-		Join<Employee, User> countUserJoin = countRoot.join(Employee_.user);
-
-		List<Predicate> countPredicates = buildPredicates(employeeFilterDto, criteriaBuilder, countRoot, countUserJoin);
-		countQuery.where(countPredicates.toArray(new Predicate[0]));
-		countQuery.select(criteriaBuilder.countDistinct(countRoot));
-
-		Long totalRows = entityManager.createQuery(countQuery).getSingleResult();
-
 		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
-		query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-		query.setMaxResults(pageable.getPageSize());
+		int offset = pageable.getPageNumber() * pageable.getPageSize();
+		int pageSize = pageable.getPageSize();
+		query.setFirstResult(offset);
+		query.setMaxResults(pageSize);
 
-		return new PageImpl<>(query.getResultList(), pageable, totalRows);
+		List<Employee> resultList = query.getResultList();
+
+		// --- Count query: skip if we can infer total from result size ---
+		long totalRows;
+		if (offset == 0 && resultList.size() < pageSize) {
+			// First page and fewer results than page size means this is all there is
+			totalRows = resultList.size();
+		}
+		else if (resultList.size() < pageSize) {
+			// Last page: total = offset + actual results
+			totalRows = offset + (long) resultList.size();
+		}
+		else {
+			CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+			Root<Employee> countRoot = countQuery.from(Employee.class);
+			Join<Employee, User> countUserJoin = countRoot.join(Employee_.user);
+
+			List<Predicate> countPredicates = buildPredicatesV2(employeeFilterDto, criteriaBuilder, countQuery,
+					countRoot, countUserJoin);
+			countQuery.where(countPredicates.toArray(new Predicate[0]));
+			countQuery.select(criteriaBuilder.count(countRoot));
+
+			totalRows = entityManager.createQuery(countQuery).getSingleResult();
+		}
+
+		return new PageImpl<>(resultList, pageable, totalRows);
 	}
 
-	private List<Predicate> buildPredicates(EmployeeFilterDtoV2 employeeFilterDto, CriteriaBuilder criteriaBuilder,
-			Root<Employee> root, Join<Employee, User> userJoin) {
+	private List<Predicate> buildPredicatesV2(EmployeeFilterDtoV2 employeeFilterDto, CriteriaBuilder criteriaBuilder,
+			CriteriaQuery<?> criteriaQuery, Root<Employee> root, Join<Employee, User> userJoin) {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
 
-		buildEnterprisePredicates(criteriaBuilder, root, predicates);
+		// Enterprise predicate: use EXISTS subquery instead of join to avoid row
+		// multiplication
+		buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates);
 
+		// Team filter: use EXISTS subquery instead of join
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
-			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams);
-			predicates.add(employeeTeam.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeFilterDto.getTeam()));
+			Subquery<Long> teamSubquery = criteriaQuery.subquery(Long.class);
+			Root<EmployeeTeam> teamRoot = teamSubquery.from(EmployeeTeam.class);
+			teamSubquery.select(criteriaBuilder.literal(1L));
+			teamSubquery.where(criteriaBuilder.equal(teamRoot.get(EmployeeTeam_.EMPLOYEE), root),
+					teamRoot.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeFilterDto.getTeam()));
+			predicates.add(criteriaBuilder.exists(teamSubquery));
 		}
 
 		if (employeeFilterDto.getNationality() != null && !employeeFilterDto.getNationality().isEmpty()) {
@@ -1372,25 +1397,40 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			predicates.add(findByEmailName(employeeFilterDto.getSearchKeyword(), criteriaBuilder, root, userJoin));
 		}
 
+		// Permissions filter: use EXISTS subquery instead of join
 		if (employeeFilterDto.getPermissions() != null && !employeeFilterDto.getPermissions().isEmpty()) {
-			Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole);
+			Subquery<Long> roleSubquery = criteriaQuery.subquery(Long.class);
+			Root<EmployeeRole> roleRoot = roleSubquery.from(EmployeeRole.class);
+			roleSubquery.select(criteriaBuilder.literal(1L));
 
-			Predicate attendanceRolePredicate = roleJoin.get(EmployeeRole_.ATTENDANCE_ROLE)
+			Predicate attendanceRolePredicate = roleRoot.get(EmployeeRole_.ATTENDANCE_ROLE)
 				.in(employeeFilterDto.getPermissions());
-			Predicate peopleRolePredicate = roleJoin.get(EmployeeRole_.PEOPLE_ROLE)
+			Predicate peopleRolePredicate = roleRoot.get(EmployeeRole_.PEOPLE_ROLE)
 				.in(employeeFilterDto.getPermissions());
-			Predicate leaveRolePredicate = roleJoin.get(EmployeeRole_.LEAVE_ROLE)
+			Predicate leaveRolePredicate = roleRoot.get(EmployeeRole_.LEAVE_ROLE)
 				.in(employeeFilterDto.getPermissions());
-			Predicate esignRolePredicate = roleJoin.get(EmployeeRole_.ESIGN_ROLE)
+			Predicate esignRolePredicate = roleRoot.get(EmployeeRole_.ESIGN_ROLE)
 				.in(employeeFilterDto.getPermissions());
 
 			Predicate rolePredicate = criteriaBuilder.or(attendanceRolePredicate, peopleRolePredicate,
 					leaveRolePredicate, esignRolePredicate);
-			predicates.add(rolePredicate);
-			predicates.add(criteriaBuilder.equal(roleJoin.get(EmployeeRole_.IS_SUPER_ADMIN), false));
+
+			roleSubquery.where(criteriaBuilder.equal(roleRoot.get("employee"), root), rolePredicate,
+					criteriaBuilder.equal(roleRoot.get(EmployeeRole_.IS_SUPER_ADMIN), false));
+			predicates.add(criteriaBuilder.exists(roleSubquery));
 		}
 
 		return predicates;
+	}
+
+	protected void buildEnterprisePredicatesV2(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
+			Root<Employee> root, List<Predicate> predicates) {
+		Subquery<Long> roleSubquery = criteriaQuery.subquery(Long.class);
+		Root<EmployeeRole> roleRoot = roleSubquery.from(EmployeeRole.class);
+		roleSubquery.select(criteriaBuilder.literal(1L));
+		roleSubquery.where(criteriaBuilder.equal(roleRoot.get("employee"), root),
+				criteriaBuilder.notEqual(roleRoot.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+		predicates.add(criteriaBuilder.exists(roleSubquery));
 	}
 
 	private Predicate findByEmailName(String keyword, CriteriaBuilder criteriaBuilder, Root<Employee> employee,
