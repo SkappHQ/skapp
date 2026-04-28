@@ -1351,9 +1351,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		boolean hasPermissionsFilter = employeeFilterDto.getPermissions() != null
 				&& !employeeFilterDto.getPermissions().isEmpty();
 
-		if (!hasPermissionsFilter) {
-			buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates);
-		}
+		buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates);
 
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
 			Subquery<Long> teamSubquery = criteriaQuery.subquery(Long.class);
@@ -1409,8 +1407,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 					leaveRolePredicate, esignRolePredicate);
 
 			roleSubquery.where(criteriaBuilder.equal(roleRoot.get(EmployeeRole_.employee), root), rolePredicate,
-					criteriaBuilder.equal(roleRoot.get(EmployeeRole_.IS_SUPER_ADMIN), false),
-					criteriaBuilder.notEqual(roleRoot.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+					criteriaBuilder.equal(roleRoot.get(EmployeeRole_.IS_SUPER_ADMIN), false));
 			predicates.add(criteriaBuilder.exists(roleSubquery));
 		}
 
