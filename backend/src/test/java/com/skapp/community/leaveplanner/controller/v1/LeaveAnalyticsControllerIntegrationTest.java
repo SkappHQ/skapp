@@ -1,117 +1,64 @@
 package com.skapp.community.leaveplanner.controller.v1;
 
-import com.skapp.community.common.model.User;
 import com.skapp.community.common.security.AuthorityService;
-import com.skapp.community.common.security.SkappUserDetails;
 import com.skapp.community.common.service.JwtService;
-import com.skapp.community.common.type.Role;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.support.MockUserFactory;
+import com.skapp.support.SecurityTestUtils;
+import com.skapp.TestSkappApplication;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.time.LocalDate;
 import java.time.Month;
 
+import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(classes = TestSkappApplication.class)
 @AutoConfigureMockMvc
+@Transactional
+@RequiredArgsConstructor
 @DisplayName("Leave Analytics Controller Integration Tests")
 class LeaveAnalyticsControllerIntegrationTest {
 
-	private static final String RESULTS_0_PATH = "['results'][0]";
+	private final AuthorityService authorityService;
 
-	@Autowired
-	private AuthorityService authorityService;
+	private final JwtService jwtService;
 
-	@Autowired
-	private JwtService jwtService;
+	private final UserDetailsService userDetailsService;
 
-	@Autowired
-	private UserDetailsService userDetailsService;
-
-	@Autowired
-	private MockMvc mvc;
+	private final MockMvc mvc;
 
 	private String authToken;
 
 	@BeforeEach
 	void setup() {
-		setupSecurityContext();
+		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createLeaveAdmin());
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
 	}
 
-	private RequestPostProcessor bearerToken() {
-		return request -> {
-			request.addHeader("Authorization", "Bearer " + authToken);
-			return request;
-		};
-	}
-
 	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
-		return mvc.perform(request.with(bearerToken()));
+		return mvc.perform(request.with(SecurityTestUtils.bearerToken(authToken)));
 	}
 
 	private ResultActions performGetRequestWithParams(MultiValueMap<String, String> params) throws Exception {
 		return performRequest(get("/v1/leave/analytics/all/leaves").params(params).accept(MediaType.APPLICATION_JSON));
-	}
-
-	private void setupSecurityContext() {
-		User mockUser = createMockUser();
-		SkappUserDetails userDetails = SkappUserDetails.builder()
-			.username(mockUser.getEmail())
-			.password(mockUser.getPassword())
-			.enabled(mockUser.getIsActive())
-			.authorities(authorityService.getAuthorities(mockUser))
-			.build();
-
-		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-				userDetails.getAuthorities());
-
-		SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-		securityContext.setAuthentication(authentication);
-		SecurityContextHolder.setContext(securityContext);
-	}
-
-	private User createMockUser() {
-		User mockUser = new User();
-		mockUser.setUserId(1L);
-		mockUser.setEmail("user1@gmail.com");
-		mockUser.setPassword("$2a$12$CGe4n75Yejv/O8dnOTD7R.x0LruTiKM22kcdc3YNl4RRw01srJsB6");
-		mockUser.setIsActive(true);
-
-		Employee mockEmployee = new Employee();
-		mockEmployee.setEmployeeId(1L);
-		mockEmployee.setFirstName("name");
-
-		EmployeeRole role = new EmployeeRole();
-		role.setLeaveRole(Role.LEAVE_ADMIN);
-		role.setIsSuperAdmin(true);
-
-		mockEmployee.setEmployeeRole(role);
-		mockUser.setEmployee(mockEmployee);
-
-		return mockUser;
 	}
 
 	private MultiValueMap<String, String> createDefaultLeaveRequestParams(String status) {
