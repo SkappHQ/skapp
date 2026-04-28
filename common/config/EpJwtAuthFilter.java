@@ -79,7 +79,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/internal/v1/ep/esign/migration/repair-document-hashes/status", "/internal/v1/ep/organization/timezone",
 			"/v1/announcement", "/v1/announcement/list", "/v1/announcement/image/signed-url",
 			"/internal/v1/ep/user/guest", "/internal/v1/ep/user/guest/requests", "/internal/v1/ep/ai/prompt-log",
-			"/internal/v1/ep/ai/prompt-log/message");
+			"/internal/v1/ep/ai/prompt-log/message", "/internal/v1/ep/leave/insight-context");
 
 	private final JwtService jwtService;
 

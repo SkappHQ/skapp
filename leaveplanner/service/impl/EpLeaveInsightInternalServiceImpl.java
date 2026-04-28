@@ -13,7 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -40,27 +44,42 @@ public class EpLeaveInsightInternalServiceImpl implements EpLeaveInsightInternal
 		List<LeaveRequest> relevantLeaveRequests = leaveRequestDao
 			.findApprovedLeaveRequestsForEmployeesInRange(employeeIds, today, windowEnd);
 
-		boolean hasRelevantLeave = relevantLeaveRequests.stream().anyMatch(lr -> {
-			boolean isOnLeave = !lr.getStartDate().isAfter(today) && !lr.getEndDate().isBefore(today);
-			long daysUntilStart = ChronoUnit.DAYS.between(today, lr.getStartDate());
-			return isOnLeave || daysUntilStart <= warningWindowDays;
-		});
-
-		if (!hasRelevantLeave) {
+		if (relevantLeaveRequests.isEmpty()) {
 			log.info("getLeaveInsightContext: no relevant leave signals — returning null");
 			return null;
 		}
 
-		List<EpLeaveInsightMemberDto> teamMembers = new ArrayList<>();
-		int membersOnLeaveCount = 0;
-
+		// One entry per employee — prefer currently-on-leave, then earliest start
+		Map<Long, LeaveRequest> bestLeaveByEmployee = new LinkedHashMap<>();
 		for (LeaveRequest lr : relevantLeaveRequests) {
+			Long empId = lr.getEmployee().getEmployeeId();
+			boolean isOnLeave = !lr.getStartDate().isAfter(today) && !lr.getEndDate().isBefore(today);
+			LeaveRequest existing = bestLeaveByEmployee.get(empId);
+			if (existing == null) {
+				bestLeaveByEmployee.put(empId, lr);
+			}
+			else {
+				boolean existingIsOnLeave = !existing.getStartDate().isAfter(today)
+						&& !existing.getEndDate().isBefore(today);
+				if (isOnLeave && !existingIsOnLeave) {
+					bestLeaveByEmployee.put(empId, lr);
+				}
+				else if (isOnLeave == existingIsOnLeave && lr.getStartDate().isBefore(existing.getStartDate())) {
+					bestLeaveByEmployee.put(empId, lr);
+				}
+			}
+		}
+
+		List<EpLeaveInsightMemberDto> teamMembers = new ArrayList<>();
+		Set<Long> onLeaveEmployeeIds = new HashSet<>();
+
+		for (LeaveRequest lr : bestLeaveByEmployee.values()) {
 			boolean isOnLeave = !lr.getStartDate().isAfter(today) && !lr.getEndDate().isBefore(today);
 			long startDaysFromNow = ChronoUnit.DAYS.between(today, lr.getStartDate());
 			long endDaysFromNow = ChronoUnit.DAYS.between(today, lr.getEndDate());
 
 			if (isOnLeave) {
-				membersOnLeaveCount++;
+				onLeaveEmployeeIds.add(lr.getEmployee().getEmployeeId());
 			}
 
 			EpLeaveInsightMemberDto memberDto = new EpLeaveInsightMemberDto();
@@ -75,6 +94,7 @@ public class EpLeaveInsightInternalServiceImpl implements EpLeaveInsightInternal
 		}
 
 		int teamSize = employeeIds.size();
+		int membersOnLeaveCount = onLeaveEmployeeIds.size();
 		int pctTeamOnLeave = teamSize > 0 ? (int) Math.round(100.0 * membersOnLeaveCount / teamSize) : 0;
 
 		EpLeaveInsightContextResponseDto response = new EpLeaveInsightContextResponseDto();
