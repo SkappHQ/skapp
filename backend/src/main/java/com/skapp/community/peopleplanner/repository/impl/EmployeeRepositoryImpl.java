@@ -1325,12 +1325,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		// --- Count query: skip if we can infer total from result size ---
 		long totalRows;
-		if (offset == 0 && resultList.size() < pageSize) {
-			// First page and fewer results than page size means this is all there is
-			totalRows = resultList.size();
-		}
-		else if (resultList.size() < pageSize) {
-			// Last page: total = offset + actual results
+		if (!resultList.isEmpty() && resultList.size() < pageSize) {
+			// Partial page means we know the exact total without a count query
 			totalRows = offset + (long) resultList.size();
 		}
 		else {
@@ -1414,7 +1410,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			Predicate rolePredicate = criteriaBuilder.or(attendanceRolePredicate, peopleRolePredicate,
 					leaveRolePredicate, esignRolePredicate);
 
-			roleSubquery.where(criteriaBuilder.equal(roleRoot.get("employee"), root), rolePredicate,
+			roleSubquery.where(criteriaBuilder.equal(roleRoot.get(EmployeeRole_.employee), root), rolePredicate,
 					criteriaBuilder.equal(roleRoot.get(EmployeeRole_.IS_SUPER_ADMIN), false));
 			predicates.add(criteriaBuilder.exists(roleSubquery));
 		}
@@ -1427,7 +1423,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Subquery<Long> roleSubquery = criteriaQuery.subquery(Long.class);
 		Root<EmployeeRole> roleRoot = roleSubquery.from(EmployeeRole.class);
 		roleSubquery.select(criteriaBuilder.literal(1L));
-		roleSubquery.where(criteriaBuilder.equal(roleRoot.get("employee"), root),
+		roleSubquery.where(criteriaBuilder.equal(roleRoot.get(EmployeeRole_.employee), root),
 				criteriaBuilder.notEqual(roleRoot.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 		predicates.add(criteriaBuilder.exists(roleSubquery));
 	}
