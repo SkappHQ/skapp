@@ -1289,8 +1289,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 		Join<Employee, User> userJoin = root.join(Employee_.user);
 
-		List<Predicate> predicates = buildPredicatesV2(employeeFilterDto, criteriaBuilder, criteriaQuery, root,
-				userJoin);
+		List<Predicate> predicates = buildPredicates(employeeFilterDto, criteriaBuilder, criteriaQuery, root, userJoin);
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 
 		List<Order> orderList = new ArrayList<>();
@@ -1339,8 +1338,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			Root<Employee> countRoot = countQuery.from(Employee.class);
 			Join<Employee, User> countUserJoin = countRoot.join(Employee_.user);
 
-			List<Predicate> countPredicates = buildPredicatesV2(employeeFilterDto, criteriaBuilder, countQuery,
-					countRoot, countUserJoin);
+			List<Predicate> countPredicates = buildPredicates(employeeFilterDto, criteriaBuilder, countQuery, countRoot,
+					countUserJoin);
 			countQuery.where(countPredicates.toArray(new Predicate[0]));
 			countQuery.select(criteriaBuilder.count(countRoot));
 
@@ -1350,7 +1349,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		return new PageImpl<>(resultList, pageable, totalRows);
 	}
 
-	private List<Predicate> buildPredicatesV2(EmployeeFilterDtoV2 employeeFilterDto, CriteriaBuilder criteriaBuilder,
+	private List<Predicate> buildPredicates(EmployeeFilterDtoV2 employeeFilterDto, CriteriaBuilder criteriaBuilder,
 			CriteriaQuery<?> criteriaQuery, Root<Employee> root, Join<Employee, User> userJoin) {
 		List<Predicate> predicates = new ArrayList<>();
 
