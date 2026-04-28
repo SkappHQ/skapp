@@ -267,18 +267,13 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email, List<Long> projectIds) {
-		log.info("getPendingGuestUserRequests: Fetching pending guest user requests with email: {}, projectIds: {}",
-				email, projectIds);
+	public List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email) {
+		log.info("getPendingGuestUserRequests: Fetching pending guest user requests with email: {}", email);
 
 		List<GuestUserRequest> requests = (email != null && !email.isBlank())
 				? guestUserRequestDao.findByEmailContaining(email) : guestUserRequestDao.findAll();
 
-		return requests.stream()
-			.filter(req -> projectIds == null || projectIds.isEmpty()
-					|| (req.getProjectIds() != null && req.getProjectIds().stream().anyMatch(projectIds::contains)))
-			.map(this::mapGuestUserRequestToDto)
-			.toList();
+		return requests.stream().map(this::mapGuestUserRequestToDto).toList();
 	}
 
 	@Override
