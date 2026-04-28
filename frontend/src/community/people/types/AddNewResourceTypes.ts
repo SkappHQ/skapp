@@ -1,6 +1,8 @@
 import { type FormikProps } from "formik";
 import { ChangeEvent } from "react";
 
+import { TitleEnum } from "~community/people/enums/PeopleEnums";
+
 import {
   EmployeeDataType,
   EmployeeRoleType,
@@ -20,6 +22,7 @@ export interface ManagerStoreType {
 export interface EmployeeGeneralDetailsTypes {
   authPic: [] | ModifiedFileType[] | string | null | undefined;
   thumbnail: [] | ModifiedFileType[] | string | null | undefined;
+  title: TitleEnum | null | undefined;
   firstName: string | null | undefined;
   middleName: string | null | undefined;
   lastName: string | null | undefined;

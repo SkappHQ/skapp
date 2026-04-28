@@ -8,6 +8,7 @@ import com.skapp.community.peopleplanner.type.EEO;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
+import com.skapp.community.peopleplanner.type.Title;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,6 +47,10 @@ public class Employee extends Auditable<String> {
 	@MapsId
 	@JoinColumn(name = "employee_id")
 	private User user;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "title")
+	private Title title;
 
 	@Column(name = "first_name", length = 50)
 	private String firstName;
