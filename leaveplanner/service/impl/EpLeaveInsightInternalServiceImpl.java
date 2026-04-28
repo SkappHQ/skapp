@@ -61,10 +61,8 @@ public class EpLeaveInsightInternalServiceImpl implements EpLeaveInsightInternal
 			else {
 				boolean existingIsOnLeave = !existing.getStartDate().isAfter(today)
 						&& !existing.getEndDate().isBefore(today);
-				if (isOnLeave && !existingIsOnLeave) {
-					bestLeaveByEmployee.put(empId, lr);
-				}
-				else if (isOnLeave == existingIsOnLeave && lr.getStartDate().isBefore(existing.getStartDate())) {
+				if ((isOnLeave && !existingIsOnLeave)
+						|| (isOnLeave == existingIsOnLeave && lr.getStartDate().isBefore(existing.getStartDate()))) {
 					bestLeaveByEmployee.put(empId, lr);
 				}
 			}
