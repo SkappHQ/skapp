@@ -68,8 +68,8 @@ public interface LeaveRequestRepository {
 
 	Long countSupervisedPendingLeaveRequests(Long employeeId);
 
-	List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, @NonNull LocalDate from,
-			@NonNull LocalDate to);
+	List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate from,
+			LocalDate to);
 
 	List<LeaveRequest> getEmployeesOnLeaveByTeamAndDate(List<Long> teams, LocalDate current, Long currentUserId,
 			boolean isLeaveAdmin);

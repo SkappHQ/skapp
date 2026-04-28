@@ -1049,12 +1049,9 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	@Override
-	public List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds,
-			@NonNull LocalDate from, @NonNull LocalDate to) {
+	public List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate from,
+			LocalDate to) {
 		if (employeeIds == null || employeeIds.isEmpty()) {
-			return Collections.emptyList();
-		}
-		if (from.isAfter(to)) {
 			return Collections.emptyList();
 		}
 
