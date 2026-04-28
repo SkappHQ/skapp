@@ -46,7 +46,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		configMap.put(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS, DEFAULT_CONFIG_VALUE);
 		configMap.put(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS, DEFAULT_CONFIG_VALUE);
 		configMap.put(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES, DEFAULT_CONFIG_VALUE);
-		configMap.put(AttendanceConfigType.IS_GEO_FENCING_ENABLED, DEFAULT_CONFIG_VALUE);
+		configMap.put(AttendanceConfigType.GEO_FENCING_ENABLED, DEFAULT_CONFIG_VALUE);
 
 		configMap.forEach(this::updateOrCreateConfig);
 
@@ -67,12 +67,22 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				String.valueOf(attendanceConfigRequestDto.getIsClockInOnLeaveDays()));
 		configMap.put(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES,
 				String.valueOf(attendanceConfigRequestDto.getIsAutoApprovalForChanges()));
-		configMap.put(AttendanceConfigType.IS_GEO_FENCING_ENABLED,
-				String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
+
+		boolean wasGeoFencingEnabled = false;
+		AttendanceConfig geoFencingConfig = attendanceConfigDao
+				.findByAttendanceConfigType(AttendanceConfigType.GEO_FENCING_ENABLED);
+		if (geoFencingConfig != null) {
+			wasGeoFencingEnabled = Boolean.parseBoolean(geoFencingConfig.getAttendanceConfigValue());
+		}
+
+		if (attendanceConfigRequestDto.getIsGeoFencingEnabled() != null) {
+			configMap.put(AttendanceConfigType.GEO_FENCING_ENABLED,
+					String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
+		}
 
 		configMap.forEach(this::updateOrCreateConfig);
 
-		if (Boolean.FALSE.equals(attendanceConfigRequestDto.getIsGeoFencingEnabled())) {
+		if (wasGeoFencingEnabled && Boolean.FALSE.equals(attendanceConfigRequestDto.getIsGeoFencingEnabled())) {
 			applicationEventPublisher.publishEvent(new GeoFencingDisabledEvent(this));
 		}
 
@@ -106,7 +116,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				case CLOCK_IN_ON_COMPANY_HOLIDAYS -> dto.setIsClockInOnCompanyHolidays(value);
 				case CLOCK_IN_ON_LEAVE_DAYS -> dto.setIsClockInOnLeaveDays(value);
 				case AUTO_APPROVAL_FOR_CHANGES -> dto.setIsAutoApprovalForChanges(value);
-				case IS_GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
+				case GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
 			}
 		}
 
