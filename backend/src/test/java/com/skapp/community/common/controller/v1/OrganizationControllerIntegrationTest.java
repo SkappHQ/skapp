@@ -1,37 +1,33 @@
 package com.skapp.community.common.controller.v1;
 
+import com.skapp.TestSkappApplication;
 import com.skapp.community.common.constant.CommonMessageConstant;
-import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.request.OrganizationDto;
 import com.skapp.community.common.payload.request.UpdateOrganizationRequestDto;
 import com.skapp.community.common.security.AuthorityService;
-import com.skapp.community.common.security.SkappUserDetails;
 import com.skapp.community.common.service.JwtService;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.support.MockUserFactory;
+import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import com.skapp.TestSkappApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import static com.skapp.support.TestConstants.MESSAGE_PATH;
+import static com.skapp.support.TestConstants.RESULTS_0_PATH;
+import static com.skapp.support.TestConstants.STATUS_PATH;
+import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,22 +37,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(classes = TestSkappApplication.class)
 @AutoConfigureMockMvc
+@Transactional
 @RequiredArgsConstructor
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("Organization Controller Integration Tests")
 class OrganizationControllerIntegrationTest {
 
 	private static final String BASE_PATH = "/v1/organization";
-
-	private static final String STATUS_PATH = "['status']";
-
-	private static final String RESULTS_0_PATH = "['results'][0]";
-
-	private static final String MESSAGE_PATH = "['message']";
-
-	private static final String STATUS_SUCCESSFUL = "successful";
-
-	private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
 
 	private final AuthorityService authorityService;
 
@@ -74,19 +60,12 @@ class OrganizationControllerIntegrationTest {
 
 	@BeforeEach
 	void setup() {
-		setupSecurityContext();
+		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createSuperAdmin());
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
 	}
 
-	private RequestPostProcessor bearerToken() {
-		return request -> {
-			request.addHeader("Authorization", "Bearer " + authToken);
-			return request;
-		};
-	}
-
 	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
-		return mvc.perform(request.with(bearerToken()));
+		return mvc.perform(request.with(SecurityTestUtils.bearerToken(authToken)));
 	}
 
 	private ResultActions performGetRequest() throws Exception {
@@ -107,45 +86,7 @@ class OrganizationControllerIntegrationTest {
 					.accept(MediaType.APPLICATION_JSON));
 	}
 
-	private void setupSecurityContext() {
-		User mockUser = createMockUser();
-		SkappUserDetails userDetails = SkappUserDetails.builder()
-			.username(mockUser.getEmail())
-			.password(mockUser.getPassword())
-			.enabled(mockUser.getIsActive())
-			.authorities(authorityService.getAuthorities(mockUser))
-			.build();
-
-		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-				userDetails.getAuthorities());
-
-		SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-		securityContext.setAuthentication(authentication);
-		SecurityContextHolder.setContext(securityContext);
-	}
-
-	private User createMockUser() {
-		User mockUser = new User();
-		mockUser.setEmail("user1@gmail.com");
-		mockUser.setPassword("$2a$12$CGe4n75Yejv/O8dnOTD7R.x0LruTiKM22kcdc3YNl4RRw01srJsB6");
-		mockUser.setIsActive(true);
-
-		Employee mockEmployee = new Employee();
-		mockEmployee.setEmployeeId(1L);
-		mockEmployee.setFirstName("name");
-
-		EmployeeRole role = new EmployeeRole();
-		role.setAttendanceRole(Role.SUPER_ADMIN);
-		role.setIsSuperAdmin(true);
-
-		mockEmployee.setEmployeeRole(role);
-		mockUser.setEmployee(mockEmployee);
-
-		return mockUser;
-	}
-
 	@Test
-	@Order(2)
 	@DisplayName("Create organization with all fields - Returns Created")
 	void createOrganization_ReturnsCreated() throws Exception {
 		OrganizationDto organizationDto = new OrganizationDto();
@@ -160,7 +101,6 @@ class OrganizationControllerIntegrationTest {
 	}
 
 	@Test
-	@Order(1)
 	@DisplayName("Create organization with only name - Returns Unprocessed Entity")
 	void createOrganizationOnlyWithName_ReturnsUnprocessedEntity() throws Exception {
 		OrganizationDto organizationDto = new OrganizationDto();
@@ -176,9 +116,15 @@ class OrganizationControllerIntegrationTest {
 	}
 
 	@Test
-	@Order(3)
 	@DisplayName("Get organization - Returns OK")
 	void getOrganization_ReturnsOk() throws Exception {
+		// Setup: create organization first
+		OrganizationDto organizationDto = new OrganizationDto();
+		organizationDto.setOrganizationName("Org");
+		organizationDto.setCountry("Canada");
+		organizationDto.setOrganizationTimeZone("Asia/Kolkata");
+		performPostRequest(organizationDto);
+
 		performGetRequest().andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -187,9 +133,15 @@ class OrganizationControllerIntegrationTest {
 	}
 
 	@Test
-	@Order(4)
 	@DisplayName("Update organization name - Returns OK")
 	void updateOrganizationName_ReturnsOk() throws Exception {
+		// Setup: create organization first
+		OrganizationDto setupDto = new OrganizationDto();
+		setupDto.setOrganizationName("Org");
+		setupDto.setCountry("Canada");
+		setupDto.setOrganizationTimeZone("Asia/Kolkata");
+		performPostRequest(setupDto);
+
 		UpdateOrganizationRequestDto organizationDto = new UpdateOrganizationRequestDto();
 		organizationDto.setOrganizationName("NewOrg");
 
