@@ -88,7 +88,8 @@ const SystemPermissionForm = ({
   const {
     isAttendanceModuleEnabled,
     isLeaveModuleEnabled,
-    isEsignatureModuleEnabled
+    isEsignatureModuleEnabled,
+    isPmModuleEnabled
   } = useSessionData();
 
   const { setToastMessage } = useToast();
@@ -120,7 +121,8 @@ const SystemPermissionForm = ({
     peopleManagerLimitExceeded: false,
     superAdminLimitExceeded: false,
     esignAdminLimitExceeded: false,
-    esignSenderLimitExceeded: false
+    esignSenderLimitExceeded: false,
+    pmAdminLimitExceeded: false
   });
 
   const initialValues: SystemPermissionInitialStateType = {
@@ -128,7 +130,8 @@ const SystemPermissionForm = ({
     peopleRole: userRoles.peopleRole || Role.PEOPLE_EMPLOYEE,
     leaveRole: userRoles.leaveRole || Role.LEAVE_EMPLOYEE,
     attendanceRole: userRoles.attendanceRole || Role.ATTENDANCE_EMPLOYEE,
-    esignRole: userRoles.esignRole || Role.ESIGN_EMPLOYEE
+    esignRole: userRoles.esignRole || Role.ESIGN_EMPLOYEE,
+    pmRole: userRoles.pmRole || Role.PM_EMPLOYEE
   };
 
   const { values, setFieldValue } = useFormik({
@@ -336,6 +339,26 @@ const SystemPermissionForm = ({
               onChange={(event) =>
                 handleCustomChange({
                   name: "esignRole",
+                  value: event.target.value
+                })
+              }
+              isDisabled={
+                isProfileView || values.isSuperAdmin || isInputsDisabled
+              }
+            />
+          )}
+
+          {isPmModuleEnabled && (
+            <DropdownList
+              inputName={"pmRole"}
+              label={systemPermissionsText(["projectManagement"])}
+              itemList={grantablePermission?.pm || []}
+              value={values.pmRole}
+              componentStyle={classes.dropdownListComponentStyles}
+              checkSelected
+              onChange={(event) =>
+                handleCustomChange({
+                  name: "pmRole",
                   value: event.target.value
                 })
               }

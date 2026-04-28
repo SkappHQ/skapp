@@ -531,6 +531,10 @@
     },
     "generalDetails": {
       "title": "General Details",
+      "employeeTitle": "Title",
+      "titleMr": "Mr",
+      "titleMrs": "Mrs",
+      "titleMiss": "Miss",
       "firstName": "First name",
       "middleName": "Middle name",
       "lastName": "Last name",
@@ -1067,7 +1071,9 @@
     "eSignAdminLimitationTitle": "E-sign Admin Limit Reached",
     "eSignAdminLimitationDescription": "Only one E-sign admin account is allowed.",
     "userRoleLimitationTitle": "User Role Limit Reached",
-    "userRoleLimitationDescription": "Failed to change user role. Please try again."
+    "userRoleLimitationDescription": "Failed to change user role. Please try again.",
+    "pmAdminLimitationTitle": "Project Admin Limit Reached",
+    "pmAdminLimitationDescription": "Only one Project Admin account is allowed."
   },
   "inbox": {
     "pageHead": "Documents | Skapp",

@@ -196,6 +196,14 @@ const nextConfig = {
         destination: "/community/configurations/user-roles/esignature"
       },
       {
+        source: "/configurations/user-roles/invoice",
+        destination: "/community/configurations/user-roles/invoice"
+      },
+      {
+        source: "/configurations/user-roles/projectmanagement",
+        destination: "/community/configurations/user-roles/projectmanagement"
+      },
+      {
         source: "/leave/analytics/:id",
         destination: "/community/leave/analytics/:id"
       },
@@ -342,6 +350,10 @@ const nextConfig = {
       {
         source: "/projects/guests",
         destination: "/enterprise/projects/guests"
+      },
+      {
+        source: "/projects/guest-requests",
+        destination: "/enterprise/projects/guest-requests"
       },
       {
         source: "/invoice",

@@ -313,6 +313,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private Employee createEmployeeEntity(Employee employee, CreateEmployeeRequestDto requestDto) {
 		// Personal General Information
+		CommonModuleUtils.setIfExists(() -> requestDto.getPersonal().getGeneral().getTitle(), employee::setTitle);
 		CommonModuleUtils.setIfExists(() -> requestDto.getPersonal().getGeneral().getFirstName(),
 				employee::setFirstName);
 		CommonModuleUtils.setIfExists(() -> requestDto.getPersonal().getGeneral().getMiddleName(),

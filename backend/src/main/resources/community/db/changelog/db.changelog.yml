@@ -22,6 +22,8 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-add-user-lang.sql
   - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-add-employee-title.sql
+  - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-module-config-add-column-crm-module.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-employee-role-add-column-crm-role.sql

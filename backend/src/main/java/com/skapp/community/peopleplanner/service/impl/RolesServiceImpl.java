@@ -259,11 +259,12 @@ public class RolesServiceImpl implements RolesService {
 		return moduleResponse;
 	}
 
-	// Helper method to determine if a role is allowed based on restrictions
+	// TODO: Temporary implementation - Helper method to determine if a role is
+	// allowed based on restrictions
 	private boolean isRoleAllowed(RoleLevel roleLevel, boolean isAdminAllowed, boolean isManagerAllowed) {
 		return switch (roleLevel) {
 			case ADMIN -> isAdminAllowed;
-			case MANAGER -> isManagerAllowed;
+			case MANAGER, SENDER -> isManagerAllowed;
 			default -> true; // other roles are always allowed
 		};
 	}
