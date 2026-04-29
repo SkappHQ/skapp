@@ -552,6 +552,44 @@ CREATE TABLE IF NOT EXISTS `carry_forward_info`
     CONSTRAINT `FK_carry_forward_info_leave_type_type_id` FOREIGN KEY (`leave_type_id`) REFERENCES `leave_type` (`type_id`)
 ) ENGINE = InnoDB;
 
+-- rollback drop table carry_forward_info;
+-- rollback drop table user_settings;
+-- rollback drop table rule_property;
+-- rollback drop table type_rule;
+-- rollback drop table notification;
+-- rollback drop table leave_request_entitlement;
+-- rollback drop table leave_request_attachment;
+-- rollback drop table leave_request;
+-- rollback drop table leave_entitlement;
+-- rollback drop table job_family_title;
+-- rollback drop table holiday;
+-- rollback drop table employee_visa;
+-- rollback drop table employee_timeline;
+-- rollback drop table employee_team;
+-- rollback drop table employee_role;
+-- rollback drop table employee_progression;
+-- rollback drop table employee_personal_info;
+-- rollback drop table employee_period;
+-- rollback drop table employee_manager;
+-- rollback drop table employee_family;
+-- rollback drop table employee_emergency;
+-- rollback drop table employee_education;
+-- rollback drop table time_request;
+-- rollback drop table time_slot;
+-- rollback drop table time_record;
+-- rollback drop table employee;
+-- rollback drop table time_config;
+-- rollback drop table module_role_restriction;
+-- rollback drop table organization_config;
+-- rollback drop table attendance_config;
+-- rollback drop table leave_type;
+-- rollback drop table team;
+-- rollback drop table job_title;
+-- rollback drop table job_family;
+-- rollback drop table organization;
+-- rollback drop table user;
+
+-- changeset AkilaSachintha:common-ddl-script-v1-create-crm-tables
 CREATE TABLE IF NOT EXISTS `crm_priority`
 (
     `id`   bigint       NOT NULL AUTO_INCREMENT,
@@ -599,7 +637,7 @@ CREATE TABLE IF NOT EXISTS `crm_pipeline_template`
     `last_modified_by`   varchar(255) DEFAULT NULL,
     `last_modified_date` datetime(6)  DEFAULT NULL,
     `name`               varchar(255) NOT NULL,
-    `description`        text,
+    `description`        varchar(255) DEFAULT NULL,
     `is_deleted`         bit(1)       NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB;
@@ -679,7 +717,7 @@ CREATE TABLE IF NOT EXISTS `crm_task`
     `priority_id`        bigint       NOT NULL,
     `status_id`          bigint       NOT NULL,
     `due_date`           datetime(6)  DEFAULT NULL,
-    `notes`              text,
+    `notes`              varchar(255) DEFAULT NULL,
     `owner_id`           bigint       NOT NULL,
     `contact_id`         bigint       DEFAULT NULL,
     `company_id`         bigint       DEFAULT NULL,
@@ -714,42 +752,7 @@ CREATE TABLE IF NOT EXISTS `crm_deal_stage_log`
     CONSTRAINT `FK_crm_deal_stage_log_crm_deal_stage_to_stage_id` FOREIGN KEY (`to_stage_id`) REFERENCES `crm_deal_stage` (`id`)
 ) ENGINE = InnoDB;
 
--- rollback drop table carry_forward_info;
--- rollback drop table user_settings;
--- rollback drop table rule_property;
--- rollback drop table type_rule;
--- rollback drop table notification;
--- rollback drop table leave_request_entitlement;
--- rollback drop table leave_request_attachment;
--- rollback drop table leave_request;
--- rollback drop table leave_entitlement;
--- rollback drop table job_family_title;
--- rollback drop table holiday;
--- rollback drop table employee_visa;
--- rollback drop table employee_timeline;
--- rollback drop table employee_team;
--- rollback drop table employee_role;
--- rollback drop table employee_progression;
--- rollback drop table employee_personal_info;
--- rollback drop table employee_period;
--- rollback drop table employee_manager;
--- rollback drop table employee_family;
--- rollback drop table employee_emergency;
--- rollback drop table employee_education;
--- rollback drop table time_request;
--- rollback drop table time_slot;
--- rollback drop table time_record;
--- rollback drop table employee;
--- rollback drop table time_config;
--- rollback drop table module_role_restriction;
--- rollback drop table organization_config;
--- rollback drop table attendance_config;
--- rollback drop table leave_type;
--- rollback drop table team;
--- rollback drop table job_title;
--- rollback drop table job_family;
--- rollback drop table organization;
--- rollback drop table user;
+-- rollback drop table crm_deal_stage_log;
 -- rollback drop table crm_task;
 -- rollback drop table crm_deal;
 -- rollback drop table crm_deal_stage;
@@ -758,5 +761,4 @@ CREATE TABLE IF NOT EXISTS `crm_deal_stage_log`
 -- rollback drop table crm_company;
 -- rollback drop table crm_task_type;
 -- rollback drop table crm_task_status;
--- rollback drop table crm_deal_stage_log;
 -- rollback drop table crm_priority;
