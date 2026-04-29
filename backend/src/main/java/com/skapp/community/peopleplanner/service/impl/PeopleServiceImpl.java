@@ -1392,23 +1392,13 @@ public class PeopleServiceImpl implements PeopleService {
 	public ResponseEntityDto isPrimarySecondaryOrTeamSupervisor(Long employeeId) {
 		User currentUser = userService.getCurrentUser();
 
-		Optional<Employee> employeeOptional = employeeDao.findById(employeeId);
-		if (employeeOptional.isEmpty()) {
+		if (!employeeDao.existsById(employeeId)) {
 			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
 
-		List<EmployeeTeam> currentEmployeeTeams = employeeTeamDao
-			.findEmployeeTeamsByEmployee(currentUser.getEmployee());
-		List<EmployeeTeam> employeeTeams = employeeTeamDao.findEmployeeTeamsByEmployee(employeeOptional.get());
-
 		PrimarySecondaryOrTeamSupervisorResponseDto primarySecondaryOrTeamSupervisor = employeeDao
-			.isPrimarySecondaryOrTeamSupervisor(employeeOptional.get(), currentUser.getEmployee());
+			.isPrimarySecondaryOrTeamSupervisor(employeeId, currentUser.getEmployee().getEmployeeId());
 
-		boolean isTeamSupervisor = currentEmployeeTeams.stream()
-			.anyMatch(currentTeam -> employeeTeams.stream()
-				.anyMatch(empTeam -> currentTeam.getTeam().equals(empTeam.getTeam()) && currentTeam.getIsSupervisor()));
-
-		primarySecondaryOrTeamSupervisor.setIsTeamSupervisor(isTeamSupervisor);
 		return new ResponseEntityDto(false, primarySecondaryOrTeamSupervisor);
 	}
 
