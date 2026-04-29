@@ -18,6 +18,8 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_SUCCESS_EMPLOYEE_ADDED("api.success.people.employee-added"),
 	PEOPLE_SUCCESS_EMPLOYEE_TERMINATED("api.success.people.employee-terminated"),
 	PEOPLE_SUCCESS_EMPLOYEE_DELETED("api.success.people.employee-deleted"),
+	PEOPLE_SUCCESS_DELETE_HOLIDAYS("api.success.people.delete-holidays"),
+	PEOPLE_SUCCESS_DELETE_SELECTED_HOLIDAYS("api.success.people.delete-selected-holidays"),
 
 	// Error messages
 	PEOPLE_ERROR_TEAM_SUPERVISOR_IDS_NOT_VALID("api.error.people.notnull.team.supervisors.invalid"),

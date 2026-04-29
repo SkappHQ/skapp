@@ -129,6 +129,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	private EmployeePersonalGeneralDetailsDto mapPersonalGeneralDetails(Employee employee,
 			EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeePersonalGeneralDetailsDto dto = new EmployeePersonalGeneralDetailsDto();
+		dto.setTitle(employee.getTitle());
 		dto.setFirstName(employee.getFirstName());
 		dto.setMiddleName(employee.getMiddleName());
 		dto.setLastName(employee.getLastName());

@@ -8,6 +8,7 @@ import com.skapp.community.peopleplanner.type.EEO;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
+import com.skapp.community.peopleplanner.type.Title;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -55,6 +56,8 @@ public class EmployeeAllDataExportResponseDto {
 	private EmploymentAllocation employmentAllocation;
 
 	private EEO eeoJobCategory;
+
+	private Title title;
 
 	private Gender gender;
 

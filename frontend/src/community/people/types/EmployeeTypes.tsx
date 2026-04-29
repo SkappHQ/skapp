@@ -4,6 +4,7 @@ import {
   ManagerTypes
 } from "~community/common/types/CommonTypes";
 import { AccountStatus } from "~community/leave/types/LeaveTypes";
+import { TitleEnum } from "~community/people/enums/PeopleEnums";
 
 import {
   EmploymentAllocationTypes,
@@ -259,6 +260,7 @@ export interface EmployeeDetails {
   employeePermission?: EmployeePermission | null;
   managers?: [] | Array<EmployeeManagerType>;
   gender: string | null;
+  title: TitleEnum | null | undefined;
   identificationNo: string | null | undefined;
   jobFamily?: null | JobFamilies;
   jobTitle?: JobTitles | null;

@@ -31,6 +31,12 @@ export const getGeneralDetailsChanges = (
   const changes: Partial<L3GeneralDetailsType> = {};
 
   if (
+    isFieldDifferentAndValid(newGeneral?.title, previousGeneral?.title)
+  ) {
+    changes.title = newGeneral?.title;
+  }
+
+  if (
     isFieldDifferentAndValid(newGeneral?.firstName, previousGeneral?.firstName)
   ) {
     changes.firstName = newGeneral?.firstName;
