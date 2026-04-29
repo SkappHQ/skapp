@@ -138,7 +138,7 @@ export interface JobLevel {
   name: string;
 }
 export interface BulkEmployeeDetails {
-  title: string | null | undefined;
+  title: string | null;
   country: string | null;
   gender: string | null | undefined;
   identificationNo: string | null;
