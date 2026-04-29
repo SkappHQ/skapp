@@ -282,7 +282,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			.ifPresent(teams -> dto
 				.setTeamIds(teams.stream().map(team -> team.getTeam().getTeamId()).toArray(Long[]::new)));
 
-		if (employee.getEmployeeManagers() != null && accessLevel.canSeeSensitiveData()) {
+		if (accessLevel.canSeeSensitiveData() && employee.getEmployeeManagers() != null) {
 			dto.setPrimarySupervisor(employee.getEmployeeManagers()
 				.stream()
 				.filter(EmployeeManager::getIsPrimaryManager)
