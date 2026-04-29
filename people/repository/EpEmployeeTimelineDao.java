@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface EpEmployeeTimelineDao
-		extends JpaRepository<EmployeeTimeline, Long>, JpaSpecificationExecutor<EmployeeTimeline> {
+public interface EpEmployeeTimelineDao extends JpaRepository<EmployeeTimeline, Long>,
+		JpaSpecificationExecutor<EmployeeTimeline>, EpEmployeeTimelineRepository {
 
 	List<EmployeeTimeline> findAllByEmployee(Employee employee);
 

@@ -90,17 +90,19 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		User currentUser = userService.getCurrentUser();
 		log.info("getEmployeeTimelineRecords: started by user: {}", currentUser.getUserId());
 
-		Employee employee = employeeDao.findById(id)
-			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
-
-		List<EpEmployeeTimelineResponseListDto> responseList = new ArrayList<>();
-
 		List<Tier> currentUserTiers = epUserService.getCurrentUserTiers();
-		if (currentUserTiers.contains(Tier.CORE)) {
-			List<EmployeeTimeline> employeeTimelines = epEmployeeTimelineDao.findAllByEmployee(employee);
-
-			responseList = mapToResponseListDto(employeeTimelines);
+		if (!currentUserTiers.contains(Tier.CORE)) {
+			log.info("getEmployeeTimelineRecords: invalid tier. Completed by user: {}", currentUser.getUserId());
+			return new ResponseEntityDto(false, new ArrayList<>());
 		}
+
+		if (!employeeDao.existsById(id)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
+		}
+
+		List<EmployeeTimeline> employeeTimelines = epEmployeeTimelineDao.findAllByEmployeeIdWithRecordedBy(id);
+
+		List<EpEmployeeTimelineResponseListDto> responseList = mapToResponseListDto(employeeTimelines);
 
 		log.info("getEmployeeTimelineRecords: completed by user: {}", currentUser.getUserId());
 		return new ResponseEntityDto(false, responseList);
@@ -255,19 +257,14 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 		return employeeTimelines.stream()
 			.filter(e -> e.getLastModifiedDate() != null)
-			.collect(Collectors.groupingBy(e -> YearMonth.from(e.getLastModifiedDate())))
+			.collect(Collectors.groupingBy(e -> YearMonth.from(e.getLastModifiedDate()), Collectors.toList()))
 			.entrySet()
 			.stream()
 			.map(entry -> {
 				YearMonth yearMonth = entry.getKey();
 
-				List<EmployeeTimeline> sortedTimelines = entry.getValue()
-					.stream()
-					.sorted(Comparator.comparing(EmployeeTimeline::getCreatedDate).reversed())
-					.toList();
-
 				List<EpEmployeeTimelineResponseDto> records = epPeopleMapper
-					.employeeTimelinesToEmployeeTimelineResponseDtoList(sortedTimelines);
+					.employeeTimelinesToEmployeeTimelineResponseDtoList(entry.getValue());
 
 				EpEmployeeTimelineResponseListDto responseDto = new EpEmployeeTimelineResponseListDto();
 				responseDto.setYear((long) yearMonth.getYear());
