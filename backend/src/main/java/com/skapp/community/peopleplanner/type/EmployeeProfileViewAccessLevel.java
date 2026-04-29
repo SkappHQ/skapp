@@ -21,6 +21,14 @@ public enum EmployeeProfileViewAccessLevel {
 	 * Regular employee viewing another employee's profile. Sensitive personal,
 	 * employment, and system permission details are hidden.
 	 */
-	RESTRICTED
+	RESTRICTED;
+
+	public boolean canSeeSensitiveData() {
+		return this != RESTRICTED;
+	}
+
+	public boolean canSeeSystemPermissions() {
+		return this == FULL_ACCESS;
+	}
 
 }
