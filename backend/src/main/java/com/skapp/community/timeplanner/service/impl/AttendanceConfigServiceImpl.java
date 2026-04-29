@@ -70,7 +70,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 
 		boolean wasGeoFencingEnabled = false;
 		AttendanceConfig geoFencingConfig = attendanceConfigDao
-				.findByAttendanceConfigType(AttendanceConfigType.GEO_FENCING_ENABLED);
+			.findByAttendanceConfigType(AttendanceConfigType.GEO_FENCING_ENABLED);
 		if (geoFencingConfig != null) {
 			wasGeoFencingEnabled = Boolean.parseBoolean(geoFencingConfig.getAttendanceConfigValue());
 		}
