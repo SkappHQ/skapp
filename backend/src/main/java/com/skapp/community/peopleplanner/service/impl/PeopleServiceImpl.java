@@ -2376,12 +2376,10 @@ public class PeopleServiceImpl implements PeopleService {
 	 */
 	protected void applyRoleBasedRestrictionsToDetailedDto(EmployeeDetailedResponseDto dto) {
 		Set<String> userRoles = userService.getCurrentUserRoles();
-		String roleSuperAdmin = "ROLE_" + Role.SUPER_ADMIN.name();
-		String rolePeopleAdmin = "ROLE_" + Role.PEOPLE_ADMIN.name();
-		String rolePeopleManager = "ROLE_" + Role.PEOPLE_MANAGER.name();
 
-		if (userRoles.contains(roleSuperAdmin) || userRoles.contains(rolePeopleAdmin)
-				|| userRoles.contains(rolePeopleManager)) {
+		if (userRoles.contains(Role.SUPER_ADMIN.constructAuthority())
+				|| userRoles.contains(Role.PEOPLE_ADMIN.constructAuthority())
+				|| userRoles.contains(Role.PEOPLE_MANAGER.constructAuthority())) {
 			return;
 		}
 

@@ -83,7 +83,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 
 	private boolean hasRole(Set<String> userRoles, Role... roles) {
 		for (Role role : roles) {
-			if (userRoles.contains("ROLE_" + role.name())) {
+			if (userRoles.contains(role.constructAuthority())) {
 				return true;
 			}
 		}
