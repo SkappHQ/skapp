@@ -3,8 +3,8 @@ export function isValidEmail(): RegExp {
   return /^(([^<>()[\]\\.,;:\s@"`~!$%^&*=\}'?#]+(\.[^<>()[\]\\.,;:\s@"`~!$%^&*=\}'?#]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}))$/;
 }
 
-export function isValidPhoneNumber(): RegExp {
-  return /^[0-9()+-]{10,}$/g;
+export function isValidPhoneNumber(minLength: number = 7, maxLength: number = 15): RegExp {
+  return new RegExp(`^[0-9]{${minLength},${maxLength}}$`);
 }
 
 export function numberPattern(): RegExp {
