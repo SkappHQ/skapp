@@ -92,7 +92,9 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	private CreateEmployeeRequestDto mapEmployeeToDto(Employee employee, EmployeeProfileViewAccessLevel accessLevel) {
 		CreateEmployeeRequestDto dto = new CreateEmployeeRequestDto();
 		dto.setPersonal(mapPersonalDetails(employee, accessLevel));
-		dto.setEmergency(mapEmergencyDetails(employee));
+		if (accessLevel != EmployeeProfileViewAccessLevel.RESTRICTED) {
+			dto.setEmergency(mapEmergencyDetails(employee));
+		}
 		dto.setEmployment(mapEmploymentDetails(employee, accessLevel));
 		if (accessLevel == EmployeeProfileViewAccessLevel.FULL_ACCESS) {
 			dto.setSystemPermissions(mapSystemPermissions(employee));
@@ -101,7 +103,8 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		return dto;
 	}
 
-	private EmployeePersonalDetailsDto mapPersonalDetails(Employee employee, EmployeeProfileViewAccessLevel accessLevel) {
+	private EmployeePersonalDetailsDto mapPersonalDetails(Employee employee,
+			EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeePersonalDetailsDto dto = new EmployeePersonalDetailsDto();
 		dto.setGeneral(mapPersonalGeneralDetails(employee, accessLevel));
 
@@ -132,10 +135,10 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		dto.setGender(employee.getGender());
 
 		Optional.ofNullable(employee.getPersonalInfo()).ifPresent(personalInfo -> {
-			dto.setDateOfBirth(personalInfo.getBirthDate());
 			dto.setNationality(personalInfo.getNationality());
-			dto.setPassportNumber(personalInfo.getPassportNo());
+			dto.setDateOfBirth(personalInfo.getBirthDate());
 			if (accessLevel != EmployeeProfileViewAccessLevel.RESTRICTED) {
+				dto.setPassportNumber(personalInfo.getPassportNo());
 				dto.setMaritalStatus(personalInfo.getMaritalStatus());
 				dto.setNin(personalInfo.getNin());
 			}
@@ -211,7 +214,8 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		return dto;
 	}
 
-	private EmployeeEmploymentDetailsDto mapEmploymentDetails(Employee employee, EmployeeProfileViewAccessLevel accessLevel) {
+	private EmployeeEmploymentDetailsDto mapEmploymentDetails(Employee employee,
+			EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeeEmploymentDetailsDto dto = new EmployeeEmploymentDetailsDto();
 		dto.setEmploymentDetails(mapEmploymentBasicDetails(employee, accessLevel));
 
