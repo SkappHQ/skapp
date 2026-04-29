@@ -116,6 +116,11 @@ const useSessionData = () => {
     [user?.roles]
   );
 
+  const isPmAdmin = useMemo(
+    () => user?.roles?.includes(AdminTypes.PM_ADMIN),
+    [user?.roles]
+  );
+
   const isInvoiceAdmin = useMemo(
     () => user?.roles?.includes(AdminTypes.INVOICE_ADMIN),
     [user?.roles]
@@ -145,6 +150,7 @@ const useSessionData = () => {
     isAttendanceEmployee,
     isAttendanceManager,
     isESignSender,
+    isPmAdmin,
     isInvoiceAdmin,
     tenantID
   };

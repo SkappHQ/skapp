@@ -16,6 +16,7 @@ import { PeopleSliceTypes } from "~community/people/types/SliceTypes";
 const defaultEmployee: L1EmployeeType = {
   personal: {
     general: {
+      title: undefined,
       firstName: "",
       middleName: "",
       lastName: "",

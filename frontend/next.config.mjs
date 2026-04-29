@@ -360,6 +360,10 @@ const nextConfig = {
         destination: "/enterprise/projects/guests"
       },
       {
+        source: "/projects/guest-requests",
+        destination: "/enterprise/projects/guest-requests"
+      },
+      {
         source: "/invoice",
         destination: "/enterprise/invoice"
       },

@@ -125,7 +125,8 @@ const ROUTES = {
   CHANGE_SUPERVISORS: "/change-supervisors",
   PROJECTS: {
     BASE: "/projects/list",
-    GUESTS: "/projects/guests"
+    GUESTS: "/projects/guests",
+    GUEST_REQUESTS: "/projects/guest-requests"
   },
   INVOICE: {
     BASE: "/invoice",
