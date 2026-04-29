@@ -744,9 +744,6 @@ CREATE TABLE IF NOT EXISTS `crm_deal_stage_log`
     `from_stage_id`      bigint       DEFAULT NULL,
     `to_stage_id`        bigint NOT NULL,
     PRIMARY KEY (`id`),
-    KEY `IDX_crm_deal_stage_log_deal_id` (`deal_id`),
-    KEY `IDX_crm_deal_stage_log_from_stage_id` (`from_stage_id`),
-    KEY `IDX_crm_deal_stage_log_to_stage_id` (`to_stage_id`),
     CONSTRAINT `FK_crm_deal_stage_log_crm_deal_deal_id` FOREIGN KEY (`deal_id`) REFERENCES `crm_deal` (`id`),
     CONSTRAINT `FK_crm_deal_stage_log_crm_deal_stage_from_stage_id` FOREIGN KEY (`from_stage_id`) REFERENCES `crm_deal_stage` (`id`),
     CONSTRAINT `FK_crm_deal_stage_log_crm_deal_stage_to_stage_id` FOREIGN KEY (`to_stage_id`) REFERENCES `crm_deal_stage` (`id`)
