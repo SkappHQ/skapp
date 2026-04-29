@@ -26,7 +26,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalSocialMediaDetailsDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
-import com.skapp.community.peopleplanner.type.ViewAccessLevel;
+import com.skapp.community.peopleplanner.type.EmployeeProfileViewAccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,7 +55,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeeById(Long employeeId) {
-		ViewAccessLevel accessLevel = resolveAccessLevel(employeeId);
+		EmployeeProfileViewAccessLevel accessLevel = resolveAccessLevel(employeeId);
 
 		Employee employee = employeeDao.findById(employeeId)
 			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
@@ -65,19 +65,19 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		return new ResponseEntityDto(false, dto);
 	}
 
-	private ViewAccessLevel resolveAccessLevel(Long targetEmployeeId) {
+	private EmployeeProfileViewAccessLevel resolveAccessLevel(Long targetEmployeeId) {
 		Set<String> userRoles = userService.getCurrentUserRoles();
 		Long currentUserId = userService.getCurrentUser().getUserId();
 
 		if (hasRole(userRoles, Role.SUPER_ADMIN) || hasRole(userRoles, Role.PEOPLE_ADMIN, Role.PEOPLE_MANAGER)) {
-			return ViewAccessLevel.FULL_ACCESS;
+			return EmployeeProfileViewAccessLevel.FULL_ACCESS;
 		}
 
 		if (currentUserId != null && currentUserId.equals(targetEmployeeId)) {
-			return ViewAccessLevel.SELF_WITHOUT_PERMISSIONS;
+			return EmployeeProfileViewAccessLevel.OWN_PROFILE;
 		}
 
-		return ViewAccessLevel.RESTRICTED;
+		return EmployeeProfileViewAccessLevel.RESTRICTED;
 	}
 
 	private boolean hasRole(Set<String> userRoles, Role... roles) {
@@ -89,23 +89,23 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		return false;
 	}
 
-	private CreateEmployeeRequestDto mapEmployeeToDto(Employee employee, ViewAccessLevel accessLevel) {
+	private CreateEmployeeRequestDto mapEmployeeToDto(Employee employee, EmployeeProfileViewAccessLevel accessLevel) {
 		CreateEmployeeRequestDto dto = new CreateEmployeeRequestDto();
 		dto.setPersonal(mapPersonalDetails(employee, accessLevel));
 		dto.setEmergency(mapEmergencyDetails(employee));
 		dto.setEmployment(mapEmploymentDetails(employee, accessLevel));
-		if (accessLevel == ViewAccessLevel.FULL_ACCESS) {
+		if (accessLevel == EmployeeProfileViewAccessLevel.FULL_ACCESS) {
 			dto.setSystemPermissions(mapSystemPermissions(employee));
 		}
 		dto.setCommon(mapCommonDetails(employee));
 		return dto;
 	}
 
-	private EmployeePersonalDetailsDto mapPersonalDetails(Employee employee, ViewAccessLevel accessLevel) {
+	private EmployeePersonalDetailsDto mapPersonalDetails(Employee employee, EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeePersonalDetailsDto dto = new EmployeePersonalDetailsDto();
 		dto.setGeneral(mapPersonalGeneralDetails(employee, accessLevel));
 
-		if (accessLevel != ViewAccessLevel.RESTRICTED) {
+		if (accessLevel != EmployeeProfileViewAccessLevel.RESTRICTED) {
 			dto.setContact(mapPersonalContactDetails(employee));
 
 			Optional.ofNullable(employee.getEmployeeFamilies())
@@ -124,7 +124,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	}
 
 	private EmployeePersonalGeneralDetailsDto mapPersonalGeneralDetails(Employee employee,
-			ViewAccessLevel accessLevel) {
+			EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeePersonalGeneralDetailsDto dto = new EmployeePersonalGeneralDetailsDto();
 		dto.setFirstName(employee.getFirstName());
 		dto.setMiddleName(employee.getMiddleName());
@@ -135,7 +135,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			dto.setDateOfBirth(personalInfo.getBirthDate());
 			dto.setNationality(personalInfo.getNationality());
 			dto.setPassportNumber(personalInfo.getPassportNo());
-			if (accessLevel != ViewAccessLevel.RESTRICTED) {
+			if (accessLevel != EmployeeProfileViewAccessLevel.RESTRICTED) {
 				dto.setMaritalStatus(personalInfo.getMaritalStatus());
 				dto.setNin(personalInfo.getNin());
 			}
@@ -211,11 +211,11 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		return dto;
 	}
 
-	private EmployeeEmploymentDetailsDto mapEmploymentDetails(Employee employee, ViewAccessLevel accessLevel) {
+	private EmployeeEmploymentDetailsDto mapEmploymentDetails(Employee employee, EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeeEmploymentDetailsDto dto = new EmployeeEmploymentDetailsDto();
 		dto.setEmploymentDetails(mapEmploymentBasicDetails(employee, accessLevel));
 
-		if (accessLevel != ViewAccessLevel.RESTRICTED) {
+		if (accessLevel != EmployeeProfileViewAccessLevel.RESTRICTED) {
 			Optional.ofNullable(employee.getEmployeeProgressions())
 				.ifPresent(progressions -> dto.setCareerProgression(
 						progressions.stream().map(peopleMapper::employeeProgressionToCareerProgressionDto).toList()));
@@ -256,17 +256,17 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	}
 
 	private EmployeeEmploymentBasicDetailsDto mapEmploymentBasicDetails(Employee employee,
-			ViewAccessLevel accessLevel) {
+			EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeeEmploymentBasicDetailsDto dto = new EmployeeEmploymentBasicDetailsDto();
 		dto.setWorkTimeZone(employee.getTimeZone());
 		dto.setEmploymentAllocation(employee.getEmploymentAllocation());
 
-		if (accessLevel != ViewAccessLevel.RESTRICTED) {
+		if (accessLevel != EmployeeProfileViewAccessLevel.RESTRICTED) {
 			dto.setJoinedDate(employee.getJoinDate());
 		}
 
 		Optional.ofNullable(employee.getUser()).ifPresent(user -> {
-			if (accessLevel != ViewAccessLevel.RESTRICTED) {
+			if (accessLevel != EmployeeProfileViewAccessLevel.RESTRICTED) {
 				dto.setEmployeeNumber(employee.getIdentificationNo());
 			}
 			dto.setEmail(user.getEmail());
@@ -276,7 +276,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			.ifPresent(teams -> dto
 				.setTeamIds(teams.stream().map(team -> team.getTeam().getTeamId()).toArray(Long[]::new)));
 
-		if (employee.getEmployeeManagers() != null && accessLevel != ViewAccessLevel.RESTRICTED) {
+		if (employee.getEmployeeManagers() != null && accessLevel != EmployeeProfileViewAccessLevel.RESTRICTED) {
 			dto.setPrimarySupervisor(employee.getEmployeeManagers()
 				.stream()
 				.filter(EmployeeManager::getIsPrimaryManager)
@@ -291,7 +291,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 				.toList());
 		}
 
-		if (accessLevel != ViewAccessLevel.RESTRICTED) {
+		if (accessLevel != EmployeeProfileViewAccessLevel.RESTRICTED) {
 			Optional.ofNullable(employee.getEmployeePeriods())
 				.flatMap(periods -> periods.stream().findFirst())
 				.ifPresent(probation -> {
