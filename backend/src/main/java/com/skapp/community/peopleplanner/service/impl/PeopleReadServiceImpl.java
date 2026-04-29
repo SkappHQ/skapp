@@ -69,7 +69,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		Set<String> userRoles = userService.getCurrentUserRoles();
 		Long currentUserId = userService.getCurrentUser().getUserId();
 
-		if (hasRole(userRoles, Role.SUPER_ADMIN) || hasRole(userRoles, Role.PEOPLE_ADMIN, Role.PEOPLE_MANAGER)) {
+		if (hasRole(userRoles, Role.SUPER_ADMIN, Role.PEOPLE_ADMIN, Role.PEOPLE_MANAGER)) {
 			return EmployeeProfileViewAccessLevel.FULL_ACCESS;
 		}
 
