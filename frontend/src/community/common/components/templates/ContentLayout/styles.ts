@@ -40,8 +40,7 @@ const styles = (theme: Theme): StyleProps => ({
   rightContent: {
     display: "flex",
     flexDirection: { xs: "column-reverse", sm: "row" },
-    gap: "0.625rem",
-    padding: "0.125rem"
+    gap: "0.625rem"
   },
   dividerWrapper: {
     padding: "1rem 0rem 1rem 0rem"
