@@ -55,10 +55,11 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeeById(Long employeeId) {
-		EmployeeProfileViewAccessLevel accessLevel = resolveAccessLevel(employeeId);
 
 		Employee employee = employeeDao.findById(employeeId)
 			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+
+		EmployeeProfileViewAccessLevel accessLevel = resolveAccessLevel(employeeId);
 
 		CreateEmployeeRequestDto dto = mapEmployeeToDto(employee, accessLevel);
 
