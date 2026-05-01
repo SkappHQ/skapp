@@ -89,7 +89,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private final GuestUserRequestDao guestUserRequestDao;
 
 	@Override
-	@Transactional
 	public ResponseEntityDto createGuestUser(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
 		if (epGuestUserInviteRequestDto == null || epGuestUserInviteRequestDto.getEmail() == null
 				|| epGuestUserInviteRequestDto.getEmail().isBlank()) {
@@ -108,7 +107,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	}
 
 	@Override
-	@Transactional
 	public ResponseEntityDto createGuestUsers(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto) {
 		if (epGuestUserBulkInviteRequestDto == null || epGuestUserBulkInviteRequestDto.getEmails() == null
 				|| epGuestUserBulkInviteRequestDto.getEmails().isEmpty()) {
@@ -138,7 +136,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	}
 
 	@Override
-	@Transactional
 	public List<EpUserResponseDto> createGuestUsersInternal(
 			EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto) {
 		if (epGuestUserBulkInviteRequestDto == null || epGuestUserBulkInviteRequestDto.getEmails() == null
@@ -160,10 +157,10 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 		List<ProjectRequestDto> safeProjects = projects != null ? projects : List.of();
 		Employee employee = createAndSaveEmployee(email);
+		epPeopleService.invalidateAllUserCaches();
 
 		boolean isAssignSuccess = epGuestUserInternalService.assignGuestToProjects(employee.getUser().getUserId(),
 				safeProjects);
-
 		if (!isAssignSuccess) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED);
 		}
@@ -199,8 +196,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		employeeRole.setIsSuperAdmin(false);
 
 		employeeDao.save(employee);
-
-		epPeopleService.invalidateAllUserCaches();
 
 		return employee;
 	}
