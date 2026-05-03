@@ -6,8 +6,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -17,11 +17,11 @@ import java.util.Map;
 
 /**
  * Local development email sender that routes all emails to a local SMTP server (e.g.
- * Mailpit). Activated only when the "local-mail" Spring profile is active. Overrides the
- * SendGrid-based EpAsyncEmailSenderImpl.
+ * Mailpit). Activated only when environment.name=local. Overrides the SendGrid-based
+ * EpAsyncEmailSenderImpl.
  */
 @Service
-@Profile("local-mail")
+@ConditionalOnProperty(name = "environment.name", havingValue = "local")
 @Primary
 @Slf4j
 public class LocalSmtpEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSender {
