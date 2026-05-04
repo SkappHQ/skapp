@@ -25,4 +25,7 @@ public class CrmPriority {
 	@Column(name = "name", nullable = false)
 	private String name;
 
+	@Column(name = "order_index")
+	private Integer orderIndex;
+
 }

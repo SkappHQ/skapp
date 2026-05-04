@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -41,11 +40,11 @@ private CrmDealStage stage;
 @JoinColumn(name = "priority_id")
 private CrmPriority priority;
 
-@Column(name = "closing_date")
-private LocalDateTime closingDate;
+@Column(name = "closing_at")
+private LocalDateTime closingAt;
 
 @Column(name = "amount")
-private BigDecimal amount;
+private String amount;
 
 @Column(name = "currency_code")
 private String currencyCode;

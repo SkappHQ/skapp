@@ -40,12 +40,11 @@ private CrmTaskType type;
 @JoinColumn(name = "priority_id", nullable = false)
 private CrmPriority priority;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "status_id", nullable = false)
-private CrmTaskStatus status;
+@Column(name = "is_completed", nullable = false)
+private Boolean isCompleted = false;
 
-@Column(name = "due_date")
-private LocalDateTime dueDate;
+@Column(name = "due_at")
+private LocalDateTime dueAt;
 
 @Column(name = "notes")
 private String notes;

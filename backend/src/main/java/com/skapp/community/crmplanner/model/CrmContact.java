@@ -38,8 +38,8 @@ private String email;
 @Column(name = "contact_number")
 private String contactNumber;
 
-@Column(name = "last_contacted_date")
-private LocalDateTime lastContactedDate;
+@Column(name = "last_contact_at")
+private LocalDateTime lastContactAt;
 
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "company_id")
