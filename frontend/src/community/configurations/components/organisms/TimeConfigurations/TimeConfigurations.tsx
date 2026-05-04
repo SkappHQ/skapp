@@ -123,10 +123,11 @@ const TimeConfigurations = (): JSX.Element => {
       );
       setWorkingDays(updatedSettings);
     } else {
-      const updatedSettings = [...workingDays, { id: index, day }].sort(
-        (a, b) => a.id - b.id
+      const dayOrder = daysOfWeek.map((d) => d.toUpperCase());
+      const sortedWorkingDays = [...workingDays, { id: index, day }].sort(
+        (a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day)
       );
-      setWorkingDays(updatedSettings);
+      setWorkingDays(sortedWorkingDays);
     }
     setWeekStartDay("");
   };
