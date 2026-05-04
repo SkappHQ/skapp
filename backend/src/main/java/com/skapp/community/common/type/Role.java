@@ -9,12 +9,4 @@ public enum Role {
 	ATTENDANCE_ADMIN, ATTENDANCE_MANAGER, ATTENDANCE_EMPLOYEE, ESIGN_ADMIN, ESIGN_SENDER, ESIGN_EMPLOYEE, OKR_ADMIN,
 	OKR_MANAGER, OKR_EMPLOYEE, INVOICE_ADMIN, INVOICE_MANAGER, INVOICE_NONE, PM_ADMIN, PM_EMPLOYEE, PM_GUEST_EMPLOYEE;
 
-	/**
-	 * Returns the Spring Security authority string for this role (e.g.
-	 * "ROLE_SUPER_ADMIN").
-	 */
-	public String constructAuthority() {
-		return "ROLE_" + this.name();
-	}
-
 }
