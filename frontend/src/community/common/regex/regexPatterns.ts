@@ -1,10 +1,12 @@
+import { characterLengths } from "../constants/stringConstants";
+
 export function isValidEmail(): RegExp {
   // eslint-disable-next-line no-useless-escape
   return /^(([^<>()[\]\\.,;:\s@"`~!$%^&*=\}'?#]+(\.[^<>()[\]\\.,;:\s@"`~!$%^&*=\}'?#]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}))$/;
 }
 
-export function isValidPhoneNumber(minLength: number = 7, maxLength: number = 15): RegExp {
-  return new RegExp(`^[0-9]{${minLength},${maxLength}}$`);
+export function isValidPhoneNumber(): RegExp {
+  return new RegExp(`^[0-9]{${characterLengths.PHONE_NUMBER_LENGTH_MIN},${characterLengths.PHONE_NUMBER_LENGTH_MAX}}$`);
 }
 
 export function numberPattern(): RegExp {
