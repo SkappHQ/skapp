@@ -209,6 +209,12 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		if (moduleType == ModuleType.ESIGN) {
 			roles.add(RoleLevel.SENDER.getDisplayName());
 		}
+		else if (moduleType == ModuleType.CRM) {
+			roles.add(RoleLevel.MANAGER.getDisplayName());
+			roles.add(RoleLevel.SALES_REPRESENTATIVE.getDisplayName());
+			roles.add(RoleLevel.NONE.getDisplayName());
+			return roles;
+		}
 		else if (moduleType != ModuleType.PM) {
 			roles.add(RoleLevel.MANAGER.getDisplayName());
 		}
