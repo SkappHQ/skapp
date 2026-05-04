@@ -196,7 +196,7 @@ public class RolesServiceImpl implements RolesService {
 				|| isRoleDemoted(employeeRole.getInvoiceRole(), roleRequestDto.getInvoiceRole(), Role.INVOICE_MANAGER,
 						Role.INVOICE_ADMIN, Role.INVOICE_NONE)
 				|| isRoleDemoted(employeeRole.getCrmRole(), roleRequestDto.getCrmRole(), Role.CRM_SALES_MANAGER,
-						Role.CRM_ADMIN, Role.CRM_SALES_REP);
+						Role.CRM_ADMIN, Role.CRM_NONE);
 	}
 
 	private boolean isRoleDemoted(Role currentRole, Role newRole, Role managerRole, Role adminRole, Role employeeRole) {
@@ -278,7 +278,7 @@ public class RolesServiceImpl implements RolesService {
 		roles.put(ModuleType.OKR, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.INVOICE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
 		roles.put(ModuleType.PM, List.of(RoleLevel.ADMIN, RoleLevel.EMPLOYEE));
-		roles.put(ModuleType.CRM, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE, RoleLevel.NONE));
+		roles.put(ModuleType.CRM, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.SALES_REPRESENTATIVE, RoleLevel.NONE));
 
 		return roles;
 	}
@@ -458,7 +458,7 @@ public class RolesServiceImpl implements RolesService {
 
 		if (userRoles != null && userRoles.getCrmRole() != null) {
 			Role crmRole = userRoles.getCrmRole();
-			EnumSet<Role> validCrmRoles = EnumSet.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER, Role.CRM_SALES_REP,
+			EnumSet<Role> validCrmRoles = EnumSet.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER, Role.CRM_SALES_REPRESENTATIVE,
 					Role.CRM_NONE);
 			if (!validCrmRoles.contains(crmRole)) {
 				throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_CRM_ROLE,
@@ -594,7 +594,7 @@ public class RolesServiceImpl implements RolesService {
 			case CRM -> switch (roleLevel) {
 				case ADMIN -> Role.CRM_ADMIN;
 				case MANAGER -> Role.CRM_SALES_MANAGER;
-				case EMPLOYEE -> Role.CRM_SALES_REP;
+				case SALES_REPRESENTATIVE -> Role.CRM_SALES_REPRESENTATIVE;
 				case NONE -> Role.CRM_NONE;
 				default -> null;
 			};
