@@ -1214,7 +1214,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			Long currentEmployeeId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Query 1: Check manager relationship (uses index)
 		CriteriaQuery<Tuple> managerQuery = cb.createTupleQuery();
 		Root<EmployeeManager> root = managerQuery.from(EmployeeManager.class);
 
@@ -1238,7 +1237,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			isSecondaryManager = Boolean.TRUE.equals(managerResult.get(1, Boolean.class));
 		}
 
-		// Query 2: Check team supervisor (optimized JOIN)
 		CriteriaQuery<Long> teamQuery = cb.createQuery(Long.class);
 		Root<EmployeeTeam> supervisorRoot = teamQuery.from(EmployeeTeam.class);
 		Join<EmployeeTeam, Team> teamJoin = supervisorRoot.join(EmployeeTeam_.team);
