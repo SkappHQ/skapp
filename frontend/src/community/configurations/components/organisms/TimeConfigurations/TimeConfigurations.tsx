@@ -192,11 +192,13 @@ const TimeConfigurations = (): JSX.Element => {
   };
 
   const handleReset = async () => {
-    const workingDayArray =
+    const dayOrder = daysOfWeek.map((d) => d.toUpperCase());
+    const workingDayArray = (
       defaultCapacity?.map((item) => ({
         id: item.id,
         day: item?.day
-      })) || [];
+      })) || []
+    ).sort((a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day));
 
     const weekStartDay = defaultCapacity?.find(
       (item) => item.isWeekStartDay === true
@@ -275,10 +277,13 @@ const TimeConfigurations = (): JSX.Element => {
       totalHours: item?.totalHours
     }));
 
-    const workingDayArray = defaultCapacity.map((item) => ({
-      id: item.id,
-      day: item?.day
-    }));
+    const dayOrder = daysOfWeek.map((d) => d.toUpperCase());
+    const workingDayArray = defaultCapacity
+      .map((item) => ({
+        id: item.id,
+        day: item?.day
+      }))
+      .sort((a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day));
 
     const startDay = defaultCapacity.find(
       (item) => item.isWeekStartDay === true
