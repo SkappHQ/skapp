@@ -1,4 +1,5 @@
 export const USER_BULK_HEADERS = [
+  "title",
   "firstName",
   "middleName",
   "lastName",
