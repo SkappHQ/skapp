@@ -96,7 +96,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 		List<Tier> currentUserTiers = epUserService.getCurrentUserTiers();
 		if (!currentUserTiers.contains(Tier.CORE)) {
-			log.info("getEmployeeTimelineRecords: invalid tier. Completed by user: {}", currentUser.getUserId());
+			log.warn("getEmployeeTimelineRecords: rejected: invalid tier for user: {}", currentUser.getUserId());
 			return new ResponseEntityDto(false, new ArrayList<>());
 		}
 
