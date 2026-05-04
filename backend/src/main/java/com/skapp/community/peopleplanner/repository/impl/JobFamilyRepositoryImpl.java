@@ -70,6 +70,7 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 		List<JobFamily> jobFamilies = entityManager.createQuery(criteriaQuery).getResultList();
 
 		for (JobFamily jobFamily : jobFamilies) {
+			entityManager.detach(jobFamily);
 			jobFamily.setJobTitles(
 					jobFamily.getJobTitles().stream().filter(JobTitle::getIsActive).collect(Collectors.toSet()));
 		}
@@ -144,6 +145,29 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(criteriaQuery).getResultStream().findFirst().orElse(null);
+	}
+
+	@Override
+	public JobFamily getJobFamilyByIdWithJobTitles(Long jobFamilyId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<JobFamily> criteriaQuery = criteriaBuilder.createQuery(JobFamily.class);
+		Root<JobFamily> root = criteriaQuery.from(JobFamily.class);
+		root.fetch(JobFamily_.JOB_TITLES, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.equal(root.get(JobFamily_.jobFamilyId), jobFamilyId));
+		predicates.add(criteriaBuilder.equal(root.get(JobFamily_.isActive), true));
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.distinct(true);
+
+		JobFamily jobFamily = entityManager.createQuery(criteriaQuery).getResultStream().findFirst().orElse(null);
+		if (jobFamily != null) {
+			entityManager.detach(jobFamily);
+			jobFamily.setJobTitles(
+					jobFamily.getJobTitles().stream().filter(JobTitle::getIsActive).collect(Collectors.toSet()));
+		}
+		return jobFamily;
 	}
 
 	@Override

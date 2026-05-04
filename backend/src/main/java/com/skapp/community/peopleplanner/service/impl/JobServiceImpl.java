@@ -69,16 +69,14 @@ public class JobServiceImpl implements JobService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getJobFamilyById(Long id) {
 		log.info("getJobFamilyById: execution started");
 
-		Optional<JobFamily> optionalJobFamily = jobFamilyDao.findById(id);
-		if (optionalJobFamily.isEmpty() || !optionalJobFamily.get().isActive()) {
+		JobFamily jobFamily = jobFamilyDao.getJobFamilyByIdWithJobTitles(id);
+		if (jobFamily == null) {
 			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_JOB_FAMILY_NOT_FOUND);
 		}
-		JobFamily jobFamily = optionalJobFamily.get();
-		jobFamily.setJobTitles(filterActiveJobTitles(jobFamily.getJobTitles()));
 
 		JobFamilyResponseDetailDto jobFamilyResponseDetailDto = peopleMapper
 			.jobFamilyToJobFamilyResponseDetailDto(jobFamily);
