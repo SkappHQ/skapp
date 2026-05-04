@@ -60,9 +60,6 @@ public class JobServiceImpl implements JobService {
 		log.info("getAllJobFamilies: execution started");
 
 		List<JobFamily> jobFamilies = jobFamilyDao.getJobFamiliesByEmployeeCount();
-		for (JobFamily jobFamily : jobFamilies) {
-			jobFamily.setJobTitles(filterActiveJobTitles(jobFamily.getJobTitles()));
-		}
 
 		List<JobFamilyResponseDetailDto> jobFamilyResponseDetailDtos = peopleMapper
 			.jobFamilyListToJobFamilyResponseDetailDtoList(jobFamilies);
