@@ -21,25 +21,25 @@ import lombok.Setter;
 @Table(name = "crm_deal_stage")
 public class CrmDealStage extends Auditable<String> {
 
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-@Column(name = "id", nullable = false, updatable = false)
-private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
 
-@Column(name = "name", nullable = false)
-private String name;
+	@Column(name = "name", nullable = false)
+	private String name;
 
-@Column(name = "color", nullable = false)
-private String color;
+	@Column(name = "color", nullable = false)
+	private String color;
 
-@Column(name = "order_index", nullable = false)
-private Integer orderIndex;
+	@Column(name = "order_index", nullable = false)
+	private Integer orderIndex;
 
-@Enumerated(EnumType.STRING)
-@Column(name = "stage_type", nullable = false)
-private CrmDealStageType stageType;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "stage_type", nullable = false)
+	private CrmDealStageType stageType;
 
-@Column(name = "is_deleted", nullable = false)
-private Boolean isDeleted = false;
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
 
 }

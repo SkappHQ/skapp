@@ -24,48 +24,48 @@ import java.time.LocalDateTime;
 @Table(name = "crm_task")
 public class CrmTask extends Auditable<String> {
 
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-@Column(name = "id", nullable = false, updatable = false)
-private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
 
-@Column(name = "name", nullable = false)
-private String name;
+	@Column(name = "name", nullable = false)
+	private String name;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "type_id", nullable = false)
-private CrmTaskType type;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "type_id", nullable = false)
+	private CrmTaskType type;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "priority_id", nullable = false)
-private CrmPriority priority;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "priority_id", nullable = false)
+	private CrmPriority priority;
 
-@Column(name = "is_completed", nullable = false)
-private Boolean isCompleted = false;
+	@Column(name = "is_completed", nullable = false)
+	private Boolean isCompleted = false;
 
-@Column(name = "due_at")
-private LocalDateTime dueAt;
+	@Column(name = "due_at")
+	private LocalDateTime dueAt;
 
-@Column(name = "notes")
-private String notes;
+	@Column(name = "notes")
+	private String notes;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "owner_id", nullable = false)
-private Employee owner;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "owner_id", nullable = false)
+	private Employee owner;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "contact_id")
-private CrmContact contact;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "contact_id")
+	private CrmContact contact;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "company_id")
-private CrmCompany company;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "company_id")
+	private CrmCompany company;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "deal_id")
-private CrmDeal deal;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "deal_id")
+	private CrmDeal deal;
 
-@Column(name = "is_deleted", nullable = false)
-private Boolean isDeleted = false;
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
 
 }

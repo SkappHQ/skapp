@@ -24,32 +24,32 @@ import java.time.LocalDateTime;
 @Table(name = "crm_contact")
 public class CrmContact extends Auditable<String> {
 
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-@Column(name = "id", nullable = false, updatable = false)
-private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
 
-@Column(name = "name", nullable = false)
-private String name;
+	@Column(name = "name", nullable = false)
+	private String name;
 
-@Column(name = "email", nullable = false)
-private String email;
+	@Column(name = "email", nullable = false)
+	private String email;
 
-@Column(name = "contact_number")
-private String contactNumber;
+	@Column(name = "contact_number")
+	private String contactNumber;
 
-@Column(name = "last_contact_at")
-private LocalDateTime lastContactAt;
+	@Column(name = "last_contact_at")
+	private LocalDateTime lastContactAt;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "company_id")
-private CrmCompany company;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "company_id")
+	private CrmCompany company;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "owner_id", nullable = false)
-private Employee owner;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "owner_id", nullable = false)
+	private Employee owner;
 
-@Column(name = "is_deleted", nullable = false)
-private Boolean isDeleted = false;
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
 
 }

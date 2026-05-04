@@ -18,27 +18,27 @@ import lombok.Setter;
 @Table(name = "crm_company")
 public class CrmCompany extends Auditable<String> {
 
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-@Column(name = "id", nullable = false, updatable = false)
-private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
 
-@Column(name = "name", nullable = false)
-private String name;
+	@Column(name = "name", nullable = false)
+	private String name;
 
-@Column(name = "industry")
-private String industry;
+	@Column(name = "industry")
+	private String industry;
 
-@Column(name = "website")
-private String website;
+	@Column(name = "website")
+	private String website;
 
-@Column(name = "address")
-private String address;
+	@Column(name = "address")
+	private String address;
 
-@Column(name = "contact_number")
-private String contactNumber;
+	@Column(name = "contact_number")
+	private String contactNumber;
 
-@Column(name = "is_deleted", nullable = false)
-private Boolean isDeleted = false;
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
 
 }

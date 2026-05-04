@@ -24,44 +24,44 @@ import java.time.LocalDateTime;
 @Table(name = "crm_deal")
 public class CrmDeal extends Auditable<String> {
 
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-@Column(name = "id", nullable = false, updatable = false)
-private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
 
-@Column(name = "name", nullable = false)
-private String name;
+	@Column(name = "name", nullable = false)
+	private String name;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "stage_id", nullable = false)
-private CrmDealStage stage;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "stage_id", nullable = false)
+	private CrmDealStage stage;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "priority_id")
-private CrmPriority priority;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "priority_id")
+	private CrmPriority priority;
 
-@Column(name = "closing_at")
-private LocalDateTime closingAt;
+	@Column(name = "closing_at")
+	private LocalDateTime closingAt;
 
-@Column(name = "amount")
-private String amount;
+	@Column(name = "amount")
+	private String amount;
 
-@Column(name = "currency_code")
-private String currencyCode;
+	@Column(name = "currency_code")
+	private String currencyCode;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "company_id")
-private CrmCompany company;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "company_id")
+	private CrmCompany company;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "contact_id", nullable = false)
-private CrmContact contact;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "contact_id", nullable = false)
+	private CrmContact contact;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "owner_id", nullable = false)
-private Employee owner;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "owner_id", nullable = false)
+	private Employee owner;
 
-@Column(name = "is_deleted", nullable = false)
-private Boolean isDeleted = false;
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
 
 }

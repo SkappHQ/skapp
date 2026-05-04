@@ -708,23 +708,6 @@ CREATE TABLE IF NOT EXISTS `crm_task`
     CONSTRAINT `FK_crm_task_crm_deal_deal_id` FOREIGN KEY (`deal_id`) REFERENCES `crm_deal` (`id`)
 ) ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS `crm_deal_stage_log`
-(
-    `id`                 bigint NOT NULL AUTO_INCREMENT,
-    `created_by`         text   DEFAULT NULL,
-    `created_date`       datetime(6)  DEFAULT NULL,
-    `last_modified_by`   text   DEFAULT NULL,
-    `last_modified_date` datetime(6)  DEFAULT NULL,
-    `deal_id`            bigint NOT NULL,
-    `from_stage_id`      bigint       DEFAULT NULL,
-    `to_stage_id`        bigint NOT NULL,
-    PRIMARY KEY (`id`),
-    CONSTRAINT `FK_crm_deal_stage_log_crm_deal_deal_id` FOREIGN KEY (`deal_id`) REFERENCES `crm_deal` (`id`),
-    CONSTRAINT `FK_crm_deal_stage_log_crm_deal_stage_from_stage_id` FOREIGN KEY (`from_stage_id`) REFERENCES `crm_deal_stage` (`id`),
-    CONSTRAINT `FK_crm_deal_stage_log_crm_deal_stage_to_stage_id` FOREIGN KEY (`to_stage_id`) REFERENCES `crm_deal_stage` (`id`)
-) ENGINE = InnoDB;
-
--- rollback drop table crm_deal_stage_log;
 -- rollback drop table crm_task;
 -- rollback drop table crm_deal;
 -- rollback drop table crm_deal_stage;

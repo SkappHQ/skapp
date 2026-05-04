@@ -28,7 +28,5 @@ public class CrmTaskType {
 	@Column(name = "order_index")
 	private Integer orderIndex;
 
-
 }
-
 
