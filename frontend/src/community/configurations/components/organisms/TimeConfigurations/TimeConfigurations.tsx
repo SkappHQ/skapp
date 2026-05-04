@@ -128,6 +128,11 @@ const TimeConfigurations = (): JSX.Element => {
         (a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day)
       );
       setWorkingDays(sortedWorkingDays);
+      if (newNonWorkingDays.includes(day as daysTypes)) {
+        setNewNonWorkingDays(
+          newNonWorkingDays.filter((d) => d !== (day as daysTypes))
+        );
+      }
     }
     setWeekStartDay("");
   };
