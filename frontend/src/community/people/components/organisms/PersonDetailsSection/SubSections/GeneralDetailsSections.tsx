@@ -289,7 +289,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
             >
               <Grid size={{ xs: 12, md: 6, xl: 4 }}>
                 <div className="flex items-start gap-4">
-                  {/* <DropdownList
+                  <DropdownList
                     inputName="title"
                     label={translateText(["employeeTitle"])}
                     value={values.title ?? ""}
@@ -306,7 +306,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
                     checkSelected
                     readOnly={isReadOnly}
                     isDisabled={isInputsDisabled}
-                  /> */}
+                  />
                   <InputField
                     label={translateText(["firstName"])}
                     inputType="text"
