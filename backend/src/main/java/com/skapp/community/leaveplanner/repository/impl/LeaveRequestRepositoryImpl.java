@@ -1055,19 +1055,22 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			return Collections.emptyList();
 		}
 
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<LeaveRequest> cq = cb.createQuery(LeaveRequest.class);
-		Root<LeaveRequest> root = cq.from(LeaveRequest.class);
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
+		Root<LeaveRequest> leaveRequestRoot = criteriaQuery.from(LeaveRequest.class);
 
+		Join<LeaveRequest, Employee> employeeJoin = leaveRequestRoot.join(LeaveRequest_.employee);
 		List<Predicate> predicates = new ArrayList<>();
 
-		predicates.add(root.get(LeaveRequest_.employee).get(Employee_.employeeId).in(employeeIds));
-		predicates.add(cb.equal(root.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
-		predicates.add(cb.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), toDate));
-		predicates.add(cb.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), fromDate));
+		predicates.add(employeeJoin.get(Employee_.employeeId).in(employeeIds));
+		predicates.add(criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
+		predicates.add(criteriaBuilder.lessThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.startDate), toDate));
+		predicates.add(criteriaBuilder.greaterThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.endDate), fromDate));
 
-		cq.select(root).where(predicates.toArray(new Predicate[0]));
-		return entityManager.createQuery(cq).getResultList();
+		criteriaQuery.select(leaveRequestRoot)
+			.where(predicates.toArray(new Predicate[0]))
+			.orderBy(criteriaBuilder.asc(leaveRequestRoot.get(LeaveRequest_.startDate)));
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	public Optional<LeaveRequest> findAuthLeaveRequestById(Long id, User user, Boolean isManager) {
