@@ -4,6 +4,7 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EEO;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.Gender;
+import com.skapp.community.peopleplanner.type.Title;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,8 @@ import java.util.Set;
 @Getter
 @Setter
 public class EmployeeBulkDto {
+
+	private Title title;
 
 	private String identificationNo;
 
