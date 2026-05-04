@@ -7,6 +7,8 @@ public interface OkrConfigService {
 
 	ResponseEntityDto getOkrConfiguration();
 
+	ResponseEntityDto saveOkrConfiguration(OkrConfigDto okrConfigDto);
+
 	ResponseEntityDto updateOkrConfiguration(OkrConfigDto okrConfigDto);
 
 	void setOkrDefaultConfig();

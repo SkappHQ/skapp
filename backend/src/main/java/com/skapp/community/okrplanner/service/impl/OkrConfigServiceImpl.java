@@ -29,6 +29,16 @@ public class OkrConfigServiceImpl implements OkrConfigService {
 	}
 
 	@Override
+	public ResponseEntityDto saveOkrConfiguration(OkrConfigDto okrConfigDto) {
+		log.info("saveOkrConfiguration: execution started");
+		OkrConfig okrConfig = new OkrConfig();
+		okrConfig.setFrequency(okrConfigDto.getFrequency());
+		OkrConfig savedConfig = okrConfigDao.save(okrConfig);
+		log.info("saveOkrConfiguration: execution ended");
+		return new ResponseEntityDto(false, savedConfig);
+	}
+
+	@Override
 	public ResponseEntityDto updateOkrConfiguration(OkrConfigDto okrConfigDto) {
 		log.info("updateOkrConfiguration: execution started");
 		OkrConfig okrConfig = okrConfigDao.findFirstBy().orElse(null);

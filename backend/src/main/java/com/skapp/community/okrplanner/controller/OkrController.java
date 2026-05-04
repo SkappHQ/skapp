@@ -3,6 +3,7 @@ package com.skapp.community.okrplanner.controller;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.okrplanner.payload.OkrConfigDto;
 import com.skapp.community.okrplanner.service.OkrConfigService;
+import com.skapp.community.okrplanner.service.OkrOptionsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -12,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +27,8 @@ public class OkrController {
 
 	private final OkrConfigService okrConfigService;
 
+	private final OkrOptionsService okrOptionsService;
+
 	@Operation(summary = "Get OKR configuration",
 			description = "Retrieve the default / configured OKR configuration value")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
@@ -33,11 +37,25 @@ public class OkrController {
 		return new ResponseEntity<>(okrConfigService.getOkrConfiguration(), HttpStatus.OK);
 	}
 
+	@Operation(summary = "Save OKR configuration", description = "Save a new OKR configuration")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
+	@PostMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> saveOkrConfig(@Valid @RequestBody OkrConfigDto okrConfigDto) {
+		return new ResponseEntity<>(okrConfigService.saveOkrConfiguration(okrConfigDto), HttpStatus.CREATED);
+	}
+
 	@Operation(summary = "Update OKR configuration", description = "Update the OKR configuration")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
 	@PutMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> updateOkrConfig(@Valid @RequestBody OkrConfigDto okrConfigDto) {
 		return new ResponseEntity<>(okrConfigService.updateOkrConfiguration(okrConfigDto), HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get OKR frequencies", description = "Retrieve all available OKR frequency values")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_OKR_ADMIN')")
+	@GetMapping(value = "/frequencies", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getFrequencies() {
+		return new ResponseEntity<>(okrOptionsService.getOkrFrequency(), HttpStatus.OK);
 	}
 
 }
