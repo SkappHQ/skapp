@@ -15,6 +15,7 @@ import {
 } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { NetworkOfflineError } from "~community/common/types/ErrorTypes";
 
 import { useAuth } from "../../auth/providers/AuthProvider";
 import { useToast } from "./ToastProvider";
@@ -45,10 +46,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     return new QueryClient({
       mutationCache: new MutationCache({
         onError: (error) => {
-          if (
-            error instanceof Error &&
-            error.message === "Network error: No internet connection"
-          ) {
+          if (error instanceof NetworkOfflineError) {
             setTimeout(() => {
               showOfflineToastRef.current();
             }, 0);
@@ -60,7 +58,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
         mutations: {
           onMutate: async () => {
             if (!onlineManager.isOnline()) {
-              throw new Error("Network error: No internet connection");
+              throw new NetworkOfflineError();
             }
           }
         }
