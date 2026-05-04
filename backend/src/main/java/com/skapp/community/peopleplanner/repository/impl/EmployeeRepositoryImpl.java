@@ -1351,8 +1351,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		boolean hasPermissionsFilter = employeeFilterDto.getPermissions() != null
 				&& !employeeFilterDto.getPermissions().isEmpty();
 
-		buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates);
-
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
 			Subquery<Long> teamSubquery = criteriaQuery.subquery(Long.class);
 			Root<EmployeeTeam> teamRoot = teamSubquery.from(EmployeeTeam.class);
@@ -1400,28 +1398,39 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 				.in(employeeFilterDto.getPermissions());
 			Predicate leaveRolePredicate = roleRoot.get(EmployeeRole_.LEAVE_ROLE)
 				.in(employeeFilterDto.getPermissions());
-			Predicate esignRolePredicate = roleRoot.get(EmployeeRole_.ESIGN_ROLE)
-				.in(employeeFilterDto.getPermissions());
 
-			Predicate rolePredicate = criteriaBuilder.or(attendanceRolePredicate, peopleRolePredicate,
-					leaveRolePredicate, esignRolePredicate);
+			List<Predicate> rolePredicates = new ArrayList<>(
+					List.of(attendanceRolePredicate, peopleRolePredicate, leaveRolePredicate));
+			buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates, employeeFilterDto, roleRoot,
+					rolePredicates);
+
+			Predicate rolePredicate = criteriaBuilder.or(rolePredicates.toArray(new Predicate[0]));
 
 			roleSubquery.where(criteriaBuilder.equal(roleRoot.get(EmployeeRole_.employee), root), rolePredicate,
 					criteriaBuilder.equal(roleRoot.get(EmployeeRole_.IS_SUPER_ADMIN), false));
 			predicates.add(criteriaBuilder.exists(roleSubquery));
+		}
+		else {
+			buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates, employeeFilterDto, null,
+					null);
 		}
 
 		return predicates;
 	}
 
 	protected void buildEnterprisePredicatesV2(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
-			Root<Employee> root, List<Predicate> predicates) {
+			Root<Employee> root, List<Predicate> predicates, EmployeeFilterDtoV2 employeeFilterDto,
+			Root<EmployeeRole> roleRoot, List<Predicate> rolePredicates) {
 		Subquery<Long> roleSubquery = criteriaQuery.subquery(Long.class);
-		Root<EmployeeRole> roleRoot = roleSubquery.from(EmployeeRole.class);
+		Root<EmployeeRole> pmRoleRoot = roleSubquery.from(EmployeeRole.class);
 		roleSubquery.select(criteriaBuilder.literal(1L));
-		roleSubquery.where(criteriaBuilder.equal(roleRoot.get(EmployeeRole_.employee), root),
-				criteriaBuilder.notEqual(roleRoot.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+		roleSubquery.where(criteriaBuilder.equal(pmRoleRoot.get(EmployeeRole_.employee), root),
+				criteriaBuilder.notEqual(pmRoleRoot.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 		predicates.add(criteriaBuilder.exists(roleSubquery));
+
+		if (roleRoot != null && rolePredicates != null) {
+			rolePredicates.add(roleRoot.get(EmployeeRole_.ESIGN_ROLE).in(employeeFilterDto.getPermissions()));
+		}
 	}
 
 	private Predicate findByEmailName(String keyword, CriteriaBuilder criteriaBuilder, Root<Employee> employee,
