@@ -1,10 +1,12 @@
 package com.skapp.support;
 
+import com.skapp.enterprise.common.constant.EpAuthConstants;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class TestConstants {
 
+	// JSON-path constants
 	public static final String STATUS_PATH = "['status']";
 
 	public static final String RESULTS_PATH = "['results']";
@@ -13,8 +15,14 @@ public class TestConstants {
 
 	public static final String MESSAGE_PATH = "['message']";
 
+	// Status constants
 	public static final String STATUS_SUCCESSFUL = "successful";
 
 	public static final String STATUS_UNSUCCESSFUL = "unsuccessful";
+
+	// Auth constants (single source of truth: EpAuthConstants)
+	public static final String API_KEY_HEADER = EpAuthConstants.API_KEY_HEADER;
+
+	public static final String VALID_API_KEY = "test-api-key-12345";
 
 }

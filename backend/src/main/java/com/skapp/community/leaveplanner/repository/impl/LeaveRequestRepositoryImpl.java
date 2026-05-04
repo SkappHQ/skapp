@@ -72,6 +72,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1044,6 +1045,31 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		predicates.add(leaveStatusPredicate);
 
 		criteriaQuery.select(leaveRequestRoot).where(predicates.toArray(new Predicate[0]));
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate fromDate,
+			LocalDate toDate) {
+		if (employeeIds == null || employeeIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
+		Root<LeaveRequest> leaveRequestRoot = criteriaQuery.from(LeaveRequest.class);
+
+		Join<LeaveRequest, Employee> employeeJoin = leaveRequestRoot.join(LeaveRequest_.employee);
+		List<Predicate> predicates = new ArrayList<>();
+
+		predicates.add(employeeJoin.get(Employee_.employeeId).in(employeeIds));
+		predicates.add(criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
+		predicates.add(criteriaBuilder.lessThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.startDate), toDate));
+		predicates.add(criteriaBuilder.greaterThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.endDate), fromDate));
+
+		criteriaQuery.select(leaveRequestRoot)
+			.where(predicates.toArray(new Predicate[0]))
+			.orderBy(criteriaBuilder.asc(leaveRequestRoot.get(LeaveRequest_.startDate)));
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
