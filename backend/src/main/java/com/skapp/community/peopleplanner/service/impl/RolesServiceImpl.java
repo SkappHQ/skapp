@@ -278,7 +278,7 @@ public class RolesServiceImpl implements RolesService {
 		roles.put(ModuleType.OKR, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.INVOICE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
 		roles.put(ModuleType.PM, List.of(RoleLevel.ADMIN, RoleLevel.EMPLOYEE));
-		roles.put(ModuleType.CRM, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
+		roles.put(ModuleType.CRM, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE, RoleLevel.NONE));
 
 		return roles;
 	}
@@ -328,7 +328,7 @@ public class RolesServiceImpl implements RolesService {
 		defaultEmployeeRoles.setEsignRole(Role.ESIGN_EMPLOYEE);
 		defaultEmployeeRoles.setInvoiceRole(Role.INVOICE_NONE);
 		defaultEmployeeRoles.setPmRole(Role.PM_EMPLOYEE);
-		defaultEmployeeRoles.setCrmRole(Role.CRM_SALES_REP);
+		defaultEmployeeRoles.setCrmRole(Role.CRM_NONE);
 		return defaultEmployeeRoles;
 	}
 
@@ -453,6 +453,16 @@ public class RolesServiceImpl implements RolesService {
 			if (!validInvoiceRoles.contains(invoiceRole)) {
 				throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_INVOICE_ROLE,
 						new String[] { invoiceRole.name() });
+			}
+		}
+
+		if (userRoles != null && userRoles.getCrmRole() != null) {
+			Role crmRole = userRoles.getCrmRole();
+			EnumSet<Role> validCrmRoles = EnumSet.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER, Role.CRM_SALES_REP,
+					Role.CRM_NONE);
+			if (!validCrmRoles.contains(crmRole)) {
+				throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_CRM_ROLE,
+						new String[] { crmRole.name() });
 			}
 		}
 
@@ -585,6 +595,7 @@ public class RolesServiceImpl implements RolesService {
 				case ADMIN -> Role.CRM_ADMIN;
 				case MANAGER -> Role.CRM_SALES_MANAGER;
 				case EMPLOYEE -> Role.CRM_SALES_REP;
+				case NONE -> Role.CRM_NONE;
 				default -> null;
 			};
 			default -> null;
