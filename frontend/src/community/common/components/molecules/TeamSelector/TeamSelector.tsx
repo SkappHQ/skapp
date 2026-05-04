@@ -27,9 +27,6 @@ interface Props {
 
 const ALL_TEAMS_OPTION_ID = -1;
 
-const isDropdownOption = (v: DropdownValue | null): v is DropdownOption =>
-  v !== null && typeof v === "object";
-
 const TeamSelector = ({
   setTeamId,
   setTeamName,
@@ -104,16 +101,16 @@ const TeamSelector = ({
   }, [checkUserRole]);
 
   const handleChange = (value: DropdownValue | null): void => {
-    if (!isDropdownOption(value)) return;
+    const option = value as DropdownOption;
 
-    if (value.id === ALL_TEAMS_OPTION_ID) {
+    if (option.id === ALL_TEAMS_OPTION_ID) {
       setTeamId(-1);
       setTeamName && setTeamName(translateTexts(["allLabel"]));
     } else {
-      setTeamId(value.id);
-      setTeamName && setTeamName(value.label as string);
+      setTeamId(option.id);
+      setTeamName && setTeamName(option.label as string);
     }
-    setSelectedValue(value);
+    setSelectedValue(option);
   };
 
   return (
