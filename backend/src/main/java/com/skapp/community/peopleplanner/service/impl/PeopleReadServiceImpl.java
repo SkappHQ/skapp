@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
@@ -83,7 +84,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 
 	private boolean hasRole(Set<String> userRoles, Role... roles) {
 		for (Role role : roles) {
-			if (userRoles.contains(role.constructAuthority())) {
+			if (userRoles.contains(AuthConstants.AUTH_ROLE + role)) {
 				return true;
 			}
 		}

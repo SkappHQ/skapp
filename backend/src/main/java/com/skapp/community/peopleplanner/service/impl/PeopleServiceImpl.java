@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -2377,9 +2378,12 @@ public class PeopleServiceImpl implements PeopleService {
 	protected void applyRoleBasedRestrictionsToDetailedDto(EmployeeDetailedResponseDto dto) {
 		Set<String> userRoles = userService.getCurrentUserRoles();
 
-		if (userRoles.contains(Role.SUPER_ADMIN.constructAuthority())
-				|| userRoles.contains(Role.PEOPLE_ADMIN.constructAuthority())
-				|| userRoles.contains(Role.PEOPLE_MANAGER.constructAuthority())) {
+		String roleSuperAdmin = AuthConstants.AUTH_ROLE + Role.SUPER_ADMIN.name();
+		String rolePeopleAdmin = AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN.name();
+		String rolePeopleManager = AuthConstants.AUTH_ROLE + Role.PEOPLE_MANAGER.name();
+
+		if (userRoles.contains(roleSuperAdmin) || userRoles.contains(rolePeopleAdmin)
+				|| userRoles.contains(rolePeopleManager)) {
 			return;
 		}
 
