@@ -39,7 +39,6 @@ import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -1259,46 +1258,41 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Long employeeId) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
-		Root<EmployeeManager> root = criteriaQuery.from(EmployeeManager.class);
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		Predicate managerPredicate = criteriaBuilder.equal(root.get(EmployeeManager_.manager).get(Employee_.employeeId),
-				employeeId);
+		CriteriaQuery<Tuple> managerQuery = cb.createTupleQuery();
+		Root<EmployeeManager> root = managerQuery.from(EmployeeManager.class);
 
-		criteriaQuery.where(managerPredicate);
+		Expression<Boolean> isPrimary = cb.equal(root.get(EmployeeManager_.managerType), ManagerType.PRIMARY);
+		Expression<Boolean> isSecondary = cb.equal(root.get(EmployeeManager_.managerType), ManagerType.SECONDARY);
 
-		Expression<Boolean> isPrimaryManager = criteriaBuilder.equal(root.get(EmployeeManager_.managerType),
-				ManagerType.PRIMARY);
+		managerQuery
+			.select(cb.tuple(cb.selectCase().when(isPrimary, true).otherwise(false),
+					cb.selectCase().when(isSecondary, true).otherwise(false)))
+			.where(cb.equal(root.get(EmployeeManager_.manager).get(Employee_.employeeId), employeeId));
 
-		Expression<Boolean> isSecondaryManager = criteriaBuilder.equal(root.get(EmployeeManager_.managerType),
-				ManagerType.SECONDARY);
+		TypedQuery<Tuple> managerTypedQuery = entityManager.createQuery(managerQuery);
+		Tuple managerResult = managerTypedQuery.getResultList().stream().findFirst().orElse(null);
 
-		Subquery<Boolean> teamSupervisorSubquery = criteriaQuery.subquery(Boolean.class);
-		Root<EmployeeTeam> teamRoot = teamSupervisorSubquery.from(EmployeeTeam.class);
-		teamSupervisorSubquery.select(criteriaBuilder.literal(true))
-			.where(criteriaBuilder.equal(teamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), employeeId),
-					criteriaBuilder.isTrue(teamRoot.get(EmployeeTeam_.isSupervisor)));
+		boolean isPrimaryManager = false;
+		boolean isSecondaryManager = false;
 
-		criteriaQuery.select(criteriaBuilder.tuple(
-				criteriaBuilder.function("MAX", Boolean.class,
-						criteriaBuilder.selectCase().when(isPrimaryManager, true).otherwise(false)),
-				criteriaBuilder.function("MAX", Boolean.class,
-						criteriaBuilder.selectCase().when(isSecondaryManager, true).otherwise(false)),
-				criteriaBuilder.selectCase()
-					.when(criteriaBuilder.exists(teamSupervisorSubquery), true)
-					.otherwise(false)));
-
-		TypedQuery<Tuple> query = entityManager.createQuery(criteriaQuery);
-
-		try {
-			Tuple result = query.getSingleResult();
-			return new PrimarySecondaryOrTeamSupervisorResponseDto(result.get(0, Boolean.class),
-					result.get(1, Boolean.class), result.get(2, Boolean.class));
+		if (managerResult != null) {
+			isPrimaryManager = Boolean.TRUE.equals(managerResult.get(0, Boolean.class));
+			isSecondaryManager = Boolean.TRUE.equals(managerResult.get(1, Boolean.class));
 		}
-		catch (NoResultException e) {
-			return new PrimarySecondaryOrTeamSupervisorResponseDto(false, false, false);
-		}
+
+		CriteriaQuery<Long> teamQuery = cb.createQuery(Long.class);
+		Root<EmployeeTeam> teamRoot = teamQuery.from(EmployeeTeam.class);
+
+		teamQuery.select(cb.literal(1L))
+			.where(cb.equal(teamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), employeeId),
+					cb.isTrue(teamRoot.get(EmployeeTeam_.isSupervisor)));
+
+		TypedQuery<Long> teamTypedQuery = entityManager.createQuery(teamQuery);
+		boolean isTeamSupervisor = !teamTypedQuery.setMaxResults(1).getResultList().isEmpty();
+
+		return new PrimarySecondaryOrTeamSupervisorResponseDto(isPrimaryManager, isSecondaryManager, isTeamSupervisor);
 	}
 
 	@Override
