@@ -90,14 +90,14 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 		User currentUser = userService.getCurrentUser();
 		log.info("getEmployeeTimelineRecords: started by user: {}", currentUser.getUserId());
 
+		if (!employeeDao.existsById(id)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
+		}
+
 		List<Tier> currentUserTiers = epUserService.getCurrentUserTiers();
 		if (!currentUserTiers.contains(Tier.CORE)) {
 			log.info("getEmployeeTimelineRecords: invalid tier. Completed by user: {}", currentUser.getUserId());
 			return new ResponseEntityDto(false, new ArrayList<>());
-		}
-
-		if (!employeeDao.existsById(id)) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
 
 		List<EmployeeTimeline> employeeTimelines = epEmployeeTimelineDao.findAllByEmployeeIdWithRecordedBy(id);
