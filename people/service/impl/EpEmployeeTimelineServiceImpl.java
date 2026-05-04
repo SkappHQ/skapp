@@ -257,7 +257,7 @@ public class EpEmployeeTimelineServiceImpl implements EpEmployeeTimelineService 
 
 		return employeeTimelines.stream()
 			.filter(e -> e.getLastModifiedDate() != null)
-			.collect(Collectors.groupingBy(e -> YearMonth.from(e.getLastModifiedDate()), Collectors.toList()))
+			.collect(Collectors.groupingBy(e -> YearMonth.from(e.getLastModifiedDate())))
 			.entrySet()
 			.stream()
 			.map(entry -> {
