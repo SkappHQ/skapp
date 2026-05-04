@@ -25,8 +25,12 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
   const { user, checkAuth } = useAuth();
   const { setToastMessage } = useToast();
   const translateText = useTranslator("networkError");
+  const offlineToastShown = useRef(false);
 
   const showOfflineToast = useCallback(() => {
+    if (offlineToastShown.current) return;
+    offlineToastShown.current = true;
+    
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -34,6 +38,10 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
       description: translateText(["description"]),
       isIcon: true
     });
+
+    setTimeout(() => {
+      offlineToastShown.current = false;
+    }, 3000);
   }, [setToastMessage, translateText]);
 
   const showOfflineToastRef = useRef(showOfflineToast);
