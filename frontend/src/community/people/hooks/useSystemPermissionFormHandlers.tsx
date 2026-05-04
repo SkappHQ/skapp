@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -44,6 +44,7 @@ const useSystemPermissionFormHandlers = () => {
   const [permissions, setPermissions] = useState<L2SystemPermissionsType>(
     employee?.systemPermissions || {}
   );
+  const preSuperAdminPermissions = useRef<L2SystemPermissionsType | null>(null);
   const [roleLimits, setRoleLimits] = useState<EmployeeRoleLimit>({
     leaveAdminLimitExceeded: false,
     attendanceAdminLimitExceeded: false,
@@ -201,28 +202,39 @@ const useSystemPermissionFormHandlers = () => {
 
       setSuperAdminCount(newSuperAdminCount);
 
-      setPermissions({
-        isSuperAdmin: checked,
-        leaveRole: Role.LEAVE_ADMIN,
-        attendanceRole: Role.ATTENDANCE_ADMIN,
-        peopleRole: Role.PEOPLE_ADMIN,
-        esignRole: Role.ESIGN_ADMIN,
-        pmRole: Role.PM_ADMIN,
-        invoiceRole: Role.INVOICE_ADMIN
-      });
-      setSystemPermissions({
-        isSuperAdmin: checked,
-        leaveRole: Role.LEAVE_ADMIN,
-        attendanceRole: Role.ATTENDANCE_ADMIN,
-        peopleRole: Role.PEOPLE_ADMIN,
-        esignRole: Role.ESIGN_ADMIN,
-        pmRole: Role.PM_ADMIN,
-        invoiceRole: Role.INVOICE_ADMIN
-      });
+      if (checked) {
+        preSuperAdminPermissions.current = { ...permissions };
+        setPermissions({
+          isSuperAdmin: checked,
+          leaveRole: Role.LEAVE_ADMIN,
+          attendanceRole: Role.ATTENDANCE_ADMIN,
+          peopleRole: Role.PEOPLE_ADMIN,
+          esignRole: Role.ESIGN_ADMIN,
+          pmRole: Role.PM_ADMIN,
+          invoiceRole: Role.INVOICE_ADMIN
+        });
+        setSystemPermissions({
+          isSuperAdmin: checked,
+          leaveRole: Role.LEAVE_ADMIN,
+          attendanceRole: Role.ATTENDANCE_ADMIN,
+          peopleRole: Role.PEOPLE_ADMIN,
+          esignRole: Role.ESIGN_ADMIN,
+          pmRole: Role.PM_ADMIN,
+          invoiceRole: Role.INVOICE_ADMIN
+        });
+      } else {
+        const restored = preSuperAdminPermissions.current
+          ? { ...preSuperAdminPermissions.current, isSuperAdmin: false }
+          : { ...permissions, isSuperAdmin: false };
+        preSuperAdminPermissions.current = null;
+        setPermissions(restored);
+        setSystemPermissions(restored);
+      }
     },
     [
       superAdminCount,
       roleLimits,
+      permissions,
       setSystemPermissions,
       setToastMessage,
       translateText,
