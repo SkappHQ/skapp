@@ -41,12 +41,13 @@ public class EpTimeInternalServiceImpl implements EpTimeInternalService {
 			mappedConfigs.add(timeMapper.timeConfigToTimeConfigResponseDto(tc));
 		}
 
-		List<DayOfWeek> orderedDays = List.of(DayOfWeek.values());
 		List<TimeConfigResponseDto> sortedConfigs = new ArrayList<>();
-		orderedDays.forEach(day -> mappedConfigs.stream()
-			.filter(tc -> tc.getDay().equals(day))
-			.findFirst()
-			.ifPresent(sortedConfigs::add));
+		for (DayOfWeek day : DayOfWeek.values()) {
+			mappedConfigs.stream()
+				.filter(tc -> day.equals(tc.getDay()))
+				.findFirst()
+				.ifPresent(sortedConfigs::add);
+		}
 
 		log.info("getOrganizationTimeConfigs: returning {} time configs", sortedConfigs.size());
 		return sortedConfigs;

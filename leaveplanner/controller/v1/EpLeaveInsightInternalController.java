@@ -29,10 +29,9 @@ public class EpLeaveInsightInternalController {
 	@GetMapping(value = "/insight-context", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	@Operation(summary = "Get leave insight context",
-			description = "Returns pre-computed leave data for a set of employees within the warning window. The response is always wrapped in a ResponseEntityDto. When no relevant leave signals exist, the results field contains a single null element — the caller should treat this as a no-op and skip the AI model call.")
-	public ResponseEntity<ResponseEntityDto> getLeaveInsightContext(
-			@RequestParam(required = false) List<Long> employeeIds, @RequestParam int warningWindowDays,
-			@RequestParam int capacityDropThresholdPct) {
+			description = "Returns pre-computed leave data for a set of employees within the warning window. The response is always wrapped in a ResponseEntityDto. When no relevant leave signals exist, the results array is empty — the caller should treat this as a no-op and skip the AI model call.")
+	public ResponseEntity<ResponseEntityDto> getLeaveInsightContext(@RequestParam List<Long> employeeIds,
+			@RequestParam int warningWindowDays, @RequestParam int capacityDropThresholdPct) {
 		EpLeaveInsightContextResponseDto context = epLeaveInsightInternalService.getLeaveInsightContext(employeeIds,
 				warningWindowDays, capacityDropThresholdPct);
 		return new ResponseEntity<>(new ResponseEntityDto(false, context), HttpStatus.OK);

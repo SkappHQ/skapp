@@ -83,7 +83,8 @@ public class EPSecurityConfig {
 						"/internal/v1/ep/esign/migration/repair-document-hashes",
 						"/internal/v1/ep/esign/migration/repair-document-hashes/status", "/internal/v1/ep/user/guest",
 						"/internal/v1/ep/user/guest/requests", "/internal/v1/ep/ai/prompt-log",
-						"/internal/v1/ep/ai/prompt-log/message")
+						"/internal/v1/ep/ai/prompt-log/message", "/internal/v1/ep/leave/insight-context",
+						"/internal/v1/ep/time/config")
 				.hasRole(EpAuthConstants.INTERNAL_API)
 				.requestMatchers("/v1/auth/**", "/v3/api-docs/**", "/v3/api-docs", "/v3/api-docs.yaml",
 						"/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/favicon.ico",

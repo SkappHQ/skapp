@@ -1,5 +1,6 @@
 package com.skapp.enterprise.leaveplanner.payload.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,8 +10,9 @@ import java.time.LocalDate;
 @Setter
 public class EpLeaveInsightMemberDto {
 
-	private Long userId;
+	private Long employeeId;
 
+	@JsonProperty("isOnLeave")
 	private Boolean isOnLeave;
 
 	private LocalDate leaveStartDate;

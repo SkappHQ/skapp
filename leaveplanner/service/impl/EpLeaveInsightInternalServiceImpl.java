@@ -1,5 +1,6 @@
 package com.skapp.enterprise.leaveplanner.service.impl;
 
+import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.enterprise.leaveplanner.payload.response.EpLeaveInsightContextResponseDto;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,7 +26,11 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class EpLeaveInsightInternalServiceImpl implements EpLeaveInsightInternalService {
 
+	private static final int MAX_WARNING_WINDOW_DAYS = 365;
+
 	private final LeaveRequestDao leaveRequestDao;
+
+	private final OrganizationService organizationService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -34,12 +40,19 @@ public class EpLeaveInsightInternalServiceImpl implements EpLeaveInsightInternal
 				"getLeaveInsightContext: fetching leave insight context for {} employees, warningWindowDays={}, threshold={}",
 				employeeIds == null ? 0 : employeeIds.size(), warningWindowDays, capacityDropThresholdPct);
 
-		if (employeeIds == null || employeeIds.isEmpty() || warningWindowDays < 0) {
+		if (employeeIds == null || employeeIds.isEmpty()) {
 			return null;
 		}
 
-		LocalDate today = LocalDate.now();
+		if (warningWindowDays < 0 || warningWindowDays > MAX_WARNING_WINDOW_DAYS) {
+			return null;
+		}
+
+		ZoneId orgZone = ZoneId.of(organizationService.getOrganizationTimeZone());
+		LocalDate today = LocalDate.now(orgZone);
 		LocalDate windowEnd = today.plusDays(warningWindowDays);
+
+		int teamSize = new HashSet<>(employeeIds).size();
 
 		List<LeaveRequest> relevantLeaveRequests = leaveRequestDao
 			.findApprovedLeaveRequestsForEmployeesInRange(employeeIds, today, windowEnd);
@@ -80,7 +93,7 @@ public class EpLeaveInsightInternalServiceImpl implements EpLeaveInsightInternal
 			}
 
 			EpLeaveInsightMemberDto memberDto = new EpLeaveInsightMemberDto();
-			memberDto.setUserId(lr.getEmployee().getEmployeeId());
+			memberDto.setEmployeeId(lr.getEmployee().getEmployeeId());
 			memberDto.setIsOnLeave(isOnLeave);
 			memberDto.setLeaveStartDate(lr.getStartDate());
 			memberDto.setLeaveEndDate(lr.getEndDate());
@@ -90,9 +103,8 @@ public class EpLeaveInsightInternalServiceImpl implements EpLeaveInsightInternal
 			teamMembers.add(memberDto);
 		}
 
-		int teamSize = employeeIds.size();
 		int membersOnLeaveCount = onLeaveEmployeeIds.size();
-		int pctTeamOnLeave = teamSize > 0 ? (int) Math.round(100.0 * membersOnLeaveCount / teamSize) : 0;
+		int pctTeamOnLeave = (int) Math.round(100.0 * membersOnLeaveCount / teamSize);
 
 		EpLeaveInsightContextResponseDto response = new EpLeaveInsightContextResponseDto();
 		response.setLeaveWarningWindowDays(warningWindowDays);
