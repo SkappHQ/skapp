@@ -1,7 +1,5 @@
 package com.skapp.enterprise.pm.service.impl;
 
-import com.skapp.community.common.model.User;
-import com.skapp.community.common.service.UserService;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.constant.EpAuthConstants;
 import com.skapp.enterprise.common.payload.request.ProjectRequestDto;
@@ -25,7 +23,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -33,7 +30,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalService {
 
-	private final UserService userService;
+	private static final String GRAPHQL_QUERY_KEY = "query";
+
+	private static final String GRAPHQL_ERRORS_KEY = "errors";
+
+	private static final String GRAPHQL_DATA_KEY = "data";
+
+	private static final String GRAPHQL_VARIABLES_KEY = "variables";
 
 	@Value("${pm.service.url}")
 	private String pmServiceUrl;
@@ -45,16 +48,15 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 
 	@Override
 	@Transactional
-	public boolean assignGuestToProjects(Long userId, List<ProjectRequestDto> projects) {
+	public boolean assignGuestToProjects(Long userId, List<ProjectRequestDto> projects, Long adminUserId) {
 
 		if (projects == null || projects.isEmpty()) {
 			return true;
 		}
 
-		List<Long> projectIds = projects.stream().map(ProjectRequestDto::getProjectId).collect(Collectors.toList());
-		User currentUser = userService.getCurrentUser();
+		List<Long> projectIds = projects.stream().map(ProjectRequestDto::getProjectId).toList();
 
-		return callAssignGuestToProjectsMutation(userId, projectIds, currentUser.getUserId());
+		return callAssignGuestToProjectsMutation(userId, projectIds, adminUserId);
 	}
 
 	private boolean callAssignGuestToProjectsMutation(Long userId, List<Long> projectIds, Long adminUserId) {
@@ -74,8 +76,8 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		variables.put("input", input);
 
 		Map<String, Object> graphQLRequest = new HashMap<>();
-		graphQLRequest.put("query", mutation);
-		graphQLRequest.put("variables", variables);
+		graphQLRequest.put(GRAPHQL_QUERY_KEY, mutation);
+		graphQLRequest.put(GRAPHQL_VARIABLES_KEY, variables);
 
 		HttpHeaders headers = createHeaders();
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
@@ -85,12 +87,13 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		ObjectMapper objectMapper = new ObjectMapper();
 		JsonNode responseJsonNode = objectMapper.readTree(responseEntity.getBody());
 
-		if (responseJsonNode.has("errors") && !responseJsonNode.get("errors").isEmpty()) {
+		if (responseJsonNode.has(GRAPHQL_ERRORS_KEY) && !responseJsonNode.get(GRAPHQL_ERRORS_KEY).isEmpty()) {
 			return false;
 		}
 
-		if (responseJsonNode.has("data") && responseJsonNode.get("data").has("internalAssignGuestToProjects")) {
-			return responseJsonNode.get("data").get("internalAssignGuestToProjects").asBoolean();
+		if (responseJsonNode.has(GRAPHQL_DATA_KEY)
+				&& responseJsonNode.get(GRAPHQL_DATA_KEY).has("internalAssignGuestToProjects")) {
+			return responseJsonNode.get(GRAPHQL_DATA_KEY).get("internalAssignGuestToProjects").asBoolean();
 		}
 
 		return false;
@@ -99,16 +102,15 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 
 	@Override
 	@Transactional
-	public boolean updateGuestUserProjects(Long userId, List<ProjectRequestDto> projects) {
+	public boolean updateGuestUserProjects(Long userId, List<ProjectRequestDto> projects, Long adminUserId) {
 
 		if (projects == null) {
 			return true;
 		}
 
-		List<Long> projectIds = projects.stream().map(ProjectRequestDto::getProjectId).collect(Collectors.toList());
-		User currentUser = userService.getCurrentUser();
+		List<Long> projectIds = projects.stream().map(ProjectRequestDto::getProjectId).toList();
 
-		return callUpdateGuestUserProjectsMutation(userId, projectIds, currentUser.getUserId());
+		return callUpdateGuestUserProjectsMutation(userId, projectIds, adminUserId);
 	}
 
 	private boolean callUpdateGuestUserProjectsMutation(Long userId, List<Long> projectIds, Long adminUserId) {
@@ -127,8 +129,8 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		variables.put("input", input);
 
 		Map<String, Object> graphQLRequest = new HashMap<>();
-		graphQLRequest.put("query", mutation);
-		graphQLRequest.put("variables", variables);
+		graphQLRequest.put(GRAPHQL_QUERY_KEY, mutation);
+		graphQLRequest.put(GRAPHQL_VARIABLES_KEY, variables);
 
 		HttpHeaders headers = createHeaders();
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
@@ -138,12 +140,13 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 		ObjectMapper objectMapper = new ObjectMapper();
 		JsonNode responseJsonNode = objectMapper.readTree(responseEntity.getBody());
 
-		if (responseJsonNode.has("errors") && !responseJsonNode.get("errors").isEmpty()) {
+		if (responseJsonNode.has(GRAPHQL_ERRORS_KEY) && !responseJsonNode.get(GRAPHQL_ERRORS_KEY).isEmpty()) {
 			return false;
 		}
 
-		if (responseJsonNode.has("data") && responseJsonNode.get("data").has("internalUpdateGuestUserProjects")) {
-			return responseJsonNode.get("data").get("internalUpdateGuestUserProjects").asBoolean();
+		if (responseJsonNode.has(GRAPHQL_DATA_KEY)
+				&& responseJsonNode.get(GRAPHQL_DATA_KEY).has("internalUpdateGuestUserProjects")) {
+			return responseJsonNode.get(GRAPHQL_DATA_KEY).get("internalUpdateGuestUserProjects").asBoolean();
 		}
 
 		return false;
@@ -178,7 +181,7 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 					""";
 
 			Map<String, Object> graphQLRequest = new HashMap<>();
-			graphQLRequest.put("query", query);
+			graphQLRequest.put(GRAPHQL_QUERY_KEY, query);
 
 			HttpHeaders headers = createHeaders();
 			HttpEntity<Map<String, Object>> entity = new HttpEntity<>(graphQLRequest, headers);
@@ -188,14 +191,15 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode responseJsonNode = objectMapper.readTree(responseEntity.getBody());
 
-			if (responseJsonNode.has("errors") && !responseJsonNode.get("errors").isEmpty()) {
-				log.error("loadProjectsFromMicroservice: GraphQL errors: {}", responseJsonNode.get("errors"));
+			if (responseJsonNode.has(GRAPHQL_ERRORS_KEY) && !responseJsonNode.get(GRAPHQL_ERRORS_KEY).isEmpty()) {
+				log.error("loadProjectsFromMicroservice: GraphQL errors: {}", responseJsonNode.get(GRAPHQL_ERRORS_KEY));
 				return Collections.emptyList();
 			}
 
-			if (responseJsonNode.has("data")
-					&& responseJsonNode.get("data").has("internalLoadGuestUserProjectsToCache")) {
-				JsonNode projectsArray = responseJsonNode.get("data").get("internalLoadGuestUserProjectsToCache");
+			if (responseJsonNode.has(GRAPHQL_DATA_KEY)
+					&& responseJsonNode.get(GRAPHQL_DATA_KEY).has("internalLoadGuestUserProjectsToCache")) {
+				JsonNode projectsArray = responseJsonNode.get(GRAPHQL_DATA_KEY)
+					.get("internalLoadGuestUserProjectsToCache");
 
 				if (projectsArray != null && projectsArray.isArray()) {
 					List<JsonNode> projects = new ArrayList<>();
