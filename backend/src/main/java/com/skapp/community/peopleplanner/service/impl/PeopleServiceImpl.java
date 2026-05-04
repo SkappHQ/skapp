@@ -1391,11 +1391,12 @@ public class PeopleServiceImpl implements PeopleService {
 
 	@Override
 	public ResponseEntityDto isPrimarySecondaryOrTeamSupervisor(Long employeeId) {
-		User currentUser = userService.getCurrentUser();
 
 		if (!employeeDao.existsById(employeeId)) {
 			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
+
+		User currentUser = userService.getCurrentUser();
 
 		PrimarySecondaryOrTeamSupervisorResponseDto primarySecondaryOrTeamSupervisor = employeeDao
 			.isPrimarySecondaryOrTeamSupervisor(employeeId, currentUser.getEmployee().getEmployeeId());
