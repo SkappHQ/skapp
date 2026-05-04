@@ -63,3 +63,4 @@ backend/build/
 !**/src/test/**/build/
 
 .npmrc
+.github/
