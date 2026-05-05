@@ -9,7 +9,7 @@ import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
 import com.skapp.community.peopleplanner.type.Title;
-import com.skapp.enterprise.common.model.WorkLocation;
+import com.skapp.community.common.model.WorkLocation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
