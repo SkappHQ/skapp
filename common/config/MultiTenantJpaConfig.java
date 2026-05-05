@@ -22,13 +22,14 @@ import java.util.Map;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-@EnableJpaRepositories(basePackages = { "com.skapp.enterprise.common.masterrepository",
-		"com.skapp.enterprise.common.repository", "com.skapp.community.common.repository",
-		"com.skapp.community.leaveplanner.repository", "com.skapp.community.peopleplanner.repository",
-		"com.skapp.community.timeplanner.repository", "com.skapp.community.okrplanner.repository",
-		"com.skapp.enterprise.esignature.repository", "com.skapp.enterprise.leaveplanner.repository",
-		"com.skapp.enterprise.people.repository", "com.skapp.enterprise.invoice.repository",
-		"com.skapp.enterprise.ai.repository", "com.skapp.enterprise.pm.repository", "com.skapp.community.crmplanner.repository" })
+@EnableJpaRepositories(
+		basePackages = { "com.skapp.enterprise.common.masterrepository", "com.skapp.enterprise.common.repository",
+				"com.skapp.community.common.repository", "com.skapp.community.leaveplanner.repository",
+				"com.skapp.community.peopleplanner.repository", "com.skapp.community.timeplanner.repository",
+				"com.skapp.community.okrplanner.repository", "com.skapp.enterprise.esignature.repository",
+				"com.skapp.enterprise.leaveplanner.repository", "com.skapp.enterprise.people.repository",
+				"com.skapp.enterprise.invoice.repository", "com.skapp.enterprise.ai.repository",
+				"com.skapp.enterprise.pm.repository", "com.skapp.community.crmplanner.repository" })
 @EnableTransactionManagement
 public class MultiTenantJpaConfig {
 
@@ -48,7 +49,8 @@ public class MultiTenantJpaConfig {
 				"com.skapp.community.timeplanner.model", "com.skapp.community.okrplanner.model",
 				"com.skapp.enterprise.esignature.model", "com.skapp.enterprise.leaveplanner.model",
 				"com.skapp.enterprise.people.model", "com.skapp.enterprise.invoice.model",
-				"com.skapp.enterprise.ai.model", "com.skapp.enterprise.pm.model", "com.skapp.community.crmplanner.model");
+				"com.skapp.enterprise.ai.model", "com.skapp.enterprise.pm.model",
+				"com.skapp.community.crmplanner.model");
 
 		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		entityManagerFactoryBean.setJpaVendorAdapter(vendorAdapter);
