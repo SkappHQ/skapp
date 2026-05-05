@@ -127,7 +127,6 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_NO_HANDLER_FOUND("api.error.common.no-handler-found"),
 	COMMON_ERROR_MISSING_COOKIE_IN_TOKEN("api.error.common.missing-cookie-in-token"),
 
-	// Work Location message constants
 	COMMON_ERROR_WORK_LOCATION_NOT_FOUND("api.error.common.work-location-not-found"),
 	COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS("api.error.common.work-location-name-already-exists"),
 	COMMON_ERROR_WORK_LOCATION_NAME_REQUIRED("api.error.common.work-location-name-required"),

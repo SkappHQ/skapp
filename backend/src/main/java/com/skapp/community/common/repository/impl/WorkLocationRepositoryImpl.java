@@ -5,7 +5,6 @@ import com.skapp.community.common.model.WorkLocation_;
 import com.skapp.community.common.payload.request.WorkLocationFilterDto;
 import com.skapp.community.common.repository.WorkLocationRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -22,8 +21,11 @@ import java.util.List;
 @Repository
 public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 
-	@PersistenceContext
-	private EntityManager entityManager;
+	private final EntityManager entityManager;
+
+	public WorkLocationRepositoryImpl(EntityManager entityManager) {
+		this.entityManager = entityManager;
+	}
 
 	@Override
 	public Page<WorkLocation> findWorkLocations(WorkLocationFilterDto workLocationFilterDto, Pageable pageable) {

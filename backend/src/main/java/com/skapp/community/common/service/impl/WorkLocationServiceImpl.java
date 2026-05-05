@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,11 +49,10 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto createWorkLocation(WorkLocationRequestDto workLocationRequestDto) {
 		log.info("createWorkLocation: execution started");
 
-		String workLocationName = workLocationRequestDto.getName().trim();
+		String workLocationName = workLocationRequestDto.getName();
 
 		if (workLocationDao.existsByNameIgnoreCase(workLocationName)) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS,
-					new Object[] { workLocationName });
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
 		}
 
 		WorkLocation workLocation = new WorkLocation();
@@ -84,16 +82,14 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		log.info("updateWorkLocation: execution started");
 
 		WorkLocation workLocation = workLocationDao.findById(id)
-			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND,
-					new Object[] { id }));
+			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
-		String workLocationName = workLocationRequestDto.getName() != null ? workLocationRequestDto.getName().trim()
+		String workLocationName = workLocationRequestDto.getName() != null ? workLocationRequestDto.getName()
 				: null;
 
 		if (workLocationName != null
 				&& workLocationDao.existsByNameIgnoreCaseAndWorkLocationIdNot(workLocationName, id)) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS,
-					new Object[] { workLocationName });
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
 		}
 
 		if (workLocationName != null) {
@@ -137,8 +133,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		log.info("deleteWorkLocation: execution started");
 
 		WorkLocation workLocation = workLocationDao.findById(id)
-			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND,
-					new Object[] { id }));
+			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
 		clearWorkLocationFromEmployees(id);
 		workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
@@ -166,7 +161,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		Map<Long, WorkLocationGeofence> geofencesByWorkLocationId = workLocationGeofenceDao
 			.findByWorkLocationWorkLocationIdIn(workLocationIds)
 			.stream()
-			.collect(Collectors.toMap(g -> g.getWorkLocation().getWorkLocationId(), Function.identity()));
+			.collect(Collectors.toMap(geofence -> geofence.getWorkLocation().getWorkLocationId(),
+					geofence -> geofence));
 
 		List<WorkLocationResponseDto> workLocationResponseDtos = workLocationPage.getContent()
 			.stream()

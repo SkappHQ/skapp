@@ -12,7 +12,6 @@ import java.util.List;
 @Setter
 public class WorkLocationRequestDto {
 
-	@NotBlank
 	private String name;
 
 	private String address;
@@ -21,7 +20,6 @@ public class WorkLocationRequestDto {
 
 	private List<Long> employeeIds;
 
-	@Valid
 	private WorkLocationGeofenceRequestDto geofence;
 
 }

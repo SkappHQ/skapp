@@ -31,7 +31,7 @@ public class WorkLocationController {
 			description = "Retrieves a paginated and optionally filtered list of work locations, sorted alphabetically by name.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_ADMIN')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> getWorkLocations(@Valid WorkLocationFilterDto workLocationFilterDto) {
+	public ResponseEntity<ResponseEntityDto> getWorkLocations(WorkLocationFilterDto workLocationFilterDto) {
 
 		ResponseEntityDto response = workLocationService.getWorkLocations(workLocationFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -42,7 +42,7 @@ public class WorkLocationController {
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_ADMIN')")
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> createWorkLocation(
-			@Valid @RequestBody WorkLocationRequestDto workLocationRequestDto) {
+			@RequestBody WorkLocationRequestDto workLocationRequestDto) {
 
 		ResponseEntityDto response = workLocationService.createWorkLocation(workLocationRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -53,7 +53,7 @@ public class WorkLocationController {
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_ADMIN')")
 	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> updateWorkLocation(@PathVariable Long id,
-			@Valid @RequestBody WorkLocationRequestDto workLocationRequestDto) {
+			@RequestBody WorkLocationRequestDto workLocationRequestDto) {
 
 		ResponseEntityDto response = workLocationService.updateWorkLocation(id, workLocationRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
