@@ -29,4 +29,3 @@ public class CrmTaskType {
 	private Integer orderIndex;
 
 }
-

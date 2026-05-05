@@ -278,7 +278,8 @@ public class RolesServiceImpl implements RolesService {
 		roles.put(ModuleType.OKR, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.INVOICE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
 		roles.put(ModuleType.PM, List.of(RoleLevel.ADMIN, RoleLevel.EMPLOYEE));
-		roles.put(ModuleType.CRM, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.SALES_REPRESENTATIVE, RoleLevel.NONE));
+		roles.put(ModuleType.CRM,
+				List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.SALES_REPRESENTATIVE, RoleLevel.NONE));
 
 		return roles;
 	}
@@ -458,8 +459,8 @@ public class RolesServiceImpl implements RolesService {
 
 		if (userRoles != null && userRoles.getCrmRole() != null) {
 			Role crmRole = userRoles.getCrmRole();
-			EnumSet<Role> validCrmRoles = EnumSet.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER, Role.CRM_SALES_REPRESENTATIVE,
-					Role.CRM_NONE);
+			EnumSet<Role> validCrmRoles = EnumSet.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
+					Role.CRM_SALES_REPRESENTATIVE, Role.CRM_NONE);
 			if (!validCrmRoles.contains(crmRole)) {
 				throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_CRM_ROLE,
 						new String[] { crmRole.name() });
@@ -499,8 +500,8 @@ public class RolesServiceImpl implements RolesService {
 					new String[] { userRoles.getInvoiceRole().name() });
 		}
 
-		if (userRoles != null && hasOnlyPeopleAdminPermissions(currentUser) && Boolean.TRUE
-			.equals(validateRestrictedRoleAssignment(userRoles.getCrmRole(), ModuleType.CRM))) {
+		if (userRoles != null && hasOnlyPeopleAdminPermissions(currentUser)
+				&& Boolean.TRUE.equals(validateRestrictedRoleAssignment(userRoles.getCrmRole(), ModuleType.CRM))) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_CRM_RESTRICTED_ROLE_ACCESS,
 					new String[] { userRoles.getCrmRole().name() });
 		}
@@ -679,8 +680,8 @@ public class RolesServiceImpl implements RolesService {
 	private boolean isUserRoleDowngraded(EmployeeSystemPermissionsDto roleRequestDto) {
 		return roleRequestDto.getPeopleRole() == null || !roleRequestDto.getPeopleRole().equals(Role.PEOPLE_ADMIN)
 				|| !roleRequestDto.getAttendanceRole().equals(Role.ATTENDANCE_ADMIN)
-				|| !roleRequestDto.getLeaveRole().equals(Role.LEAVE_ADMIN)
-				|| roleRequestDto.getCrmRole() == null || !roleRequestDto.getCrmRole().equals(Role.CRM_ADMIN);
+				|| !roleRequestDto.getLeaveRole().equals(Role.LEAVE_ADMIN) || roleRequestDto.getCrmRole() == null
+				|| !roleRequestDto.getCrmRole().equals(Role.CRM_ADMIN);
 	}
 
 }
