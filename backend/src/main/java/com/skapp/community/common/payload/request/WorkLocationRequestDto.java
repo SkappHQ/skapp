@@ -13,7 +13,6 @@ import java.util.List;
 public class WorkLocationRequestDto {
 
 	@NotBlank
-	@Size(max = 50)
 	private String name;
 
 	private String address;
