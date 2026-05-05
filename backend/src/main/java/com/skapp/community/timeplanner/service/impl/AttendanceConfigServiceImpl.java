@@ -4,7 +4,6 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
-import com.skapp.community.timeplanner.event.GeoFencingDisabledEvent;
 import com.skapp.community.timeplanner.model.AttendanceConfig;
 import com.skapp.community.timeplanner.payload.request.AttendanceConfigRequestDto;
 import com.skapp.community.timeplanner.repository.AttendanceConfigDao;
@@ -13,7 +12,6 @@ import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,9 +31,6 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 
 	@NonNull
 	private final MessageUtil messageUtil;
-
-	@NonNull
-	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
 	public void setDefaultAttendanceConfig() {
@@ -68,23 +63,12 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		configMap.put(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES,
 				String.valueOf(attendanceConfigRequestDto.getIsAutoApprovalForChanges()));
 
-		boolean wasGeoFencingEnabled = false;
-		AttendanceConfig geoFencingConfig = attendanceConfigDao
-			.findByAttendanceConfigType(AttendanceConfigType.GEO_FENCING_ENABLED);
-		if (geoFencingConfig != null) {
-			wasGeoFencingEnabled = Boolean.parseBoolean(geoFencingConfig.getAttendanceConfigValue());
-		}
-
 		if (attendanceConfigRequestDto.getIsGeoFencingEnabled() != null) {
 			configMap.put(AttendanceConfigType.GEO_FENCING_ENABLED,
 					String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
 		}
 
 		configMap.forEach(this::updateOrCreateConfig);
-
-		if (wasGeoFencingEnabled && Boolean.FALSE.equals(attendanceConfigRequestDto.getIsGeoFencingEnabled())) {
-			applicationEventPublisher.publishEvent(new GeoFencingDisabledEvent(this));
-		}
 
 		log.info("updateAttendanceConfig: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(TimeMessageConstant.TIME_SUCCESS_ATTENDANCE_CONFIG_UPDATED),

@@ -72,8 +72,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		log.info("createWorkLocation: execution ended");
 
-		return new ResponseEntityDto(
-				messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_WORK_LOCATION_CREATED), false);
+		return new ResponseEntityDto(messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_WORK_LOCATION_CREATED),
+				false);
 	}
 
 	@Override
@@ -84,8 +84,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		WorkLocation workLocation = workLocationDao.findById(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
-		String workLocationName = workLocationRequestDto.getName() != null ? workLocationRequestDto.getName()
-				: null;
+		String workLocationName = workLocationRequestDto.getName() != null ? workLocationRequestDto.getName() : null;
 
 		if (workLocationName != null
 				&& workLocationDao.existsByNameIgnoreCaseAndWorkLocationIdNot(workLocationName, id)) {
@@ -123,8 +122,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		log.info("updateWorkLocation: execution ended");
 
-		return new ResponseEntityDto(
-				messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_WORK_LOCATION_UPDATED), false);
+		return new ResponseEntityDto(messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_WORK_LOCATION_UPDATED),
+				false);
 	}
 
 	@Override
@@ -141,8 +140,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		log.info("deleteWorkLocation: execution ended");
 
-		return new ResponseEntityDto(
-				messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_WORK_LOCATION_DELETED), false);
+		return new ResponseEntityDto(messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_WORK_LOCATION_DELETED),
+				false);
 	}
 
 	@Override
@@ -161,8 +160,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		Map<Long, WorkLocationGeofence> geofencesByWorkLocationId = workLocationGeofenceDao
 			.findByWorkLocationWorkLocationIdIn(workLocationIds)
 			.stream()
-			.collect(Collectors.toMap(geofence -> geofence.getWorkLocation().getWorkLocationId(),
-					geofence -> geofence));
+			.collect(
+					Collectors.toMap(geofence -> geofence.getWorkLocation().getWorkLocationId(), geofence -> geofence));
 
 		List<WorkLocationResponseDto> workLocationResponseDtos = workLocationPage.getContent()
 			.stream()
