@@ -176,6 +176,9 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_DTO_STRING_TRIMMER_REFLECTION_ERROR("ep.common.error.dto-string-trimmer-reflection-error"),
 	EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED("ep.common.error.guest-user-project-assignment-failed"),
 	EP_COMMON_ERROR_GUEST_USER_PROJECT_UPDATE_FAILED("ep.common.error.guest-user-project-update-failed"),
+	EP_COMMON_ERROR_GUEST_USER_REQUEST_ALREADY_EXISTS("ep.common.error.guest-user-request-already-exists"),
+	EP_COMMON_ERROR_INVALID_REQUESTER("ep.common.error.invalid-requester"),
+	EP_COMMON_ERROR_GUEST_USER_PROJECT_ACCESS_DENIED("ep.common.error.guest-user-project-access-denied"),
 	EP_COMMON_ERROR_INVALID_FILE_TYPE("ep.common.error.api.invalid-file-type"),
 	EP_COMMON_ERROR_FILE_SIZE_EXCEEDED("ep.common.error.api.file-size-exceeded"),
 	EP_COMMON_ERROR_MICROSOFT_AUTHORIZATION_CODE_EMPTY("ep.common.error.microsoft-authorization-code-empty"),
@@ -209,6 +212,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 			"ep.common.error.announcement-cta-link-required-when-label-set"),
 	EP_COMMON_ERROR_ANNOUNCEMENT_CUSTOM_FREQUENCY_DAYS_REQUIRED(
 			"ep.common.error.announcement-custom-frequency-days-required"),
+	EP_COMMON_ERROR_ANNOUNCEMENT_CTA_LINK_MUST_BE_RELATIVE("ep.common.error.announcement-cta-link-must-be-relative"),
 	EP_COMMON_SUCCESS_ANNOUNCEMENT_INTERACTION_RECORDED("ep.common.success.announcement-interaction-recorded");
 
 	private final String messageKey;

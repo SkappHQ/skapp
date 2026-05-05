@@ -15,14 +15,17 @@ import com.skapp.enterprise.esignature.model.AddressBook;
 import com.skapp.enterprise.esignature.model.AuditTrail;
 import com.skapp.enterprise.esignature.model.DocumentLink;
 import com.skapp.enterprise.esignature.model.Envelope;
+import com.skapp.enterprise.esignature.model.VerifiedIdentity;
 import com.skapp.enterprise.esignature.payload.response.AuditTrailResponseDto;
 import com.skapp.enterprise.esignature.payload.response.SignatureCertificateResponseDto;
 import com.skapp.enterprise.esignature.repository.AddressBookDao;
 import com.skapp.enterprise.esignature.repository.AuditTrailDao;
 import com.skapp.enterprise.esignature.repository.EnvelopeDao;
 import com.skapp.enterprise.esignature.repository.RecipientDao;
+import com.skapp.enterprise.esignature.repository.VerifiedIdentityDao;
 import com.skapp.enterprise.esignature.service.DocumentLinkService;
 import com.skapp.enterprise.esignature.service.SignatureCertificateService;
+import com.skapp.enterprise.esignature.type.AuditAction;
 import com.skapp.enterprise.esignature.util.EsignUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +44,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -63,6 +67,8 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 	private final RecipientDao recipientDao;
 
 	private final AddressBookDao addressBookDao;
+
+	private final VerifiedIdentityDao verifiedIdentityDao;
 
 	@Override
 	public byte[] generateCertificatePdfBytes(Long envelopeId, boolean isDocAccess, Envelope envelope)
@@ -97,6 +103,18 @@ public class SignatureCertificateServiceImpl implements SignatureCertificateServ
 				auditTrailResponseDto.setActionDoneByEmail(auditTrail.getRecipient().getAddressBook().getEmail());
 			}
 			auditTrailResponseDto.setTimestamp(auditTrail.getTimestamp());
+
+			Long documentId = envelope.getDocuments().isEmpty() ? null : envelope.getDocuments().getFirst().getId();
+
+			if (AuditAction.isIdentityVerifiedByBankIdAction(auditTrail.getAction())
+					&& auditTrail.getRecipient() != null && documentId != null) {
+				Optional<VerifiedIdentity> verifiedIdentity = verifiedIdentityDao
+					.findByRecipientIdAndDocumentId(auditTrail.getRecipient().getId(), documentId);
+
+				verifiedIdentity
+					.ifPresent(identity -> auditTrailResponseDto.setActionVerifiedByName(identity.getFullName()));
+			}
+
 			return auditTrailResponseDto;
 		}).toList();
 

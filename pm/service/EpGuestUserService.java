@@ -9,30 +9,35 @@ import com.skapp.enterprise.common.payload.request.EpGuestUserInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserReInviteRequestDto;
 import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
+import com.skapp.enterprise.pm.payload.EpGuestUserRequestInternalResponseDto;
+import com.skapp.enterprise.pm.payload.EpGuestUserRequestResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface EpGuestUserService {
 
-	EpUserResponseDto createGuestUser(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto);
+	ResponseEntityDto createGuestUser(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto);
 
-	List<EpUserResponseDto> createGuestUsers(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto);
+	ResponseEntityDto createGuestUsers(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto);
+
+	List<EpUserResponseDto> createGuestUsersInternal(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto);
 
 	User validateGuestUserEmail(String email);
 
 	List<EpGuestUserResponseDto> getAllGuestUsers(String email, List<AccountStatus> statuses, List<Long> projectIds);
 
+	List<EpGuestUserRequestResponseDto> getPendingGuestUserRequests(String email);
+
+	List<EpGuestUserRequestInternalResponseDto> getPendingGuestUserRequestsInternal(String email,
+			List<Long> projectIds);
+
 	EpUserResponseDto reInviteGuestUsers(EpGuestUserReInviteRequestDto epGuestUserReInviteRequestDto);
 
-	@Transactional
 	ResponseEntityDto deleteGuestUser(Long id);
 
-	@Transactional
 	ResponseEntityDto deactivateGuestUser(Long id);
 
-	@Transactional
 	ResponseEntityDto activateGuestUser(Long id);
 
 	ResponseEntityDto updateGuestUserApprovalStatus(EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto);
@@ -40,5 +45,7 @@ public interface EpGuestUserService {
 	EpUserResponseDto updateGuestUser(EpGuestUserUpdateRequestDto epGuestUserUpdateRequestDto);
 
 	ResponseEntityDto getPendingGuestUsersCount();
+
+	ResponseEntityDto revokeGuestUserRequest(Long requestId);
 
 }
