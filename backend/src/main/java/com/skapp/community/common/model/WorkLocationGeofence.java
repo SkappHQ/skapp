@@ -30,10 +30,10 @@ public class WorkLocationGeofence extends Auditable<String> {
 	private WorkLocation workLocation;
 
 	@Column(name = "latitude", nullable = false)
-	private double latitude;
+	private String latitude;
 
 	@Column(name = "longitude", nullable = false)
-	private double longitude;
+	private String longitude;
 
 	@Column(name = "radius_meters", nullable = false)
 	private int radiusMeters;

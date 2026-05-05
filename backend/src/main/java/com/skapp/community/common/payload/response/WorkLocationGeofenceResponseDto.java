@@ -9,9 +9,9 @@ public class WorkLocationGeofenceResponseDto {
 
 	private Long id;
 
-	private Double latitude;
+	private String latitude;
 
-	private Double longitude;
+	private String longitude;
 
 	private Integer radiusMeters;
 
