@@ -14,7 +14,7 @@ export function numberPattern(): RegExp {
 }
 
 export function phoneNumberPattern(): RegExp {
-  return /[\d\s-]/;
+  return /\d/;
 }
 
 export function isValidNameWithAccentsAndApostrophes(): RegExp {

@@ -243,7 +243,7 @@ const InputPhoneNumber: FC<Props> = ({
           }}
           inputType="text"
           error={error}
-          maxLength={characterLengths.PHONE_NUMBER_LENGTH_MAX}
+          maxLength={characterLengths.PHONE_NUMBER_LENGTH_MAX - countryCodeValue.length}
           inputMode="numeric"
           onKeyDown={(e) => {
             // TODO: move this to a separate file and write unit test cases
