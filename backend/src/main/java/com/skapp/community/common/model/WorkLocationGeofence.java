@@ -22,7 +22,7 @@ public class WorkLocationGeofence extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
+	@Column(name = "work_location_geofence_id", nullable = false, updatable = false)
 	private Long id;
 
 	@OneToOne(fetch = FetchType.LAZY)
