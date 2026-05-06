@@ -17,7 +17,9 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
 import {
   ErrorResponse,
-  ManagerTypes
+  ManagerTypes,
+  SortKeyTypes,
+  SortOrderTypes
 } from "~community/common/types/CommonTypes";
 import authFetch, {
   authFetchV2
@@ -45,6 +47,7 @@ import {
   EmployeeDataType,
   EmployeeDetails,
   EmployeeManagerType,
+  EmploymentStatusTypes,
   MyManagersType,
   QuickAddEmployeePayload,
   QuickAddEmployeeResponse
@@ -54,7 +57,13 @@ import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
-import { AllEmployeeDataResponse, L1EmployeeType } from "../types/PeopleTypes";
+import {
+  AllEmployeeDataResponse,
+  AllEmployeeDataType,
+  L1EmployeeType,
+  SupervisorRolesData,
+  TransferSupervisorsPayload
+} from "../types/PeopleTypes";
 
 const getBannerData = async (): Promise<number> => {
   const url = peoplesEndpoints.GET_PENDING_EMPLOYEE_COUNT;
@@ -817,5 +826,66 @@ export const useEditEmployee = (employeeId: string) => {
     onSettled: async () => {
       await queryClient.invalidateQueries();
     }
+  });
+};
+
+export const useGetSupervisorRoles = (
+  userId: number
+): UseQueryResult<SupervisorRolesData> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId),
+    queryFn: async () => {
+      const response = await authFetch.get(
+        peoplesEndpoints.GET_SUPERVISOR_ROLES(userId)
+      );
+      return response?.data?.results?.[0] as SupervisorRolesData;
+    },
+    enabled: !!userId,
+    staleTime: Infinity
+  });
+};
+
+export const useTransferSupervisors = (
+  userId: number,
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: TransferSupervisorsPayload) =>
+      authFetch.patch(peoplesEndpoints.TRANSFER_SUPERVISORS(userId), payload),
+    onSuccess: () => {
+      queryClient
+        .invalidateQueries({
+          queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId)
+        })
+        .catch(rejects);
+      onSuccess();
+    },
+    onError
+  });
+};
+
+export const useGetActiveEmployeesForReassignment = (
+  enabled: boolean = true
+): UseQueryResult<AllEmployeeDataType[]> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.ACTIVE_EMPLOYEES_FOR_REASSIGNMENT,
+    queryFn: async () => {
+      const response = await authFetch.get(peoplesEndpoints.GET_EMPLOYEES, {
+        params: {
+          page: 0,
+          sortOrder: SortOrderTypes.ASC,
+          sortKey: SortKeyTypes.NAME,
+          searchKeyword: "",
+          isExport: false,
+          accountStatus: EmploymentStatusTypes.ACTIVE
+        }
+      });
+      const pageData: AllEmployeeDataResponse =
+        response?.data?.results?.[0] ?? {};
+      return pageData?.items ?? [];
+    },
+    enabled
   });
 };
