@@ -14,3 +14,12 @@ export const userRolesQueryKeys = {
   },
   ALLOWED_GRANTABLE_PERMISSIONS: ["allowed-grantable-permissions"]
 };
+
+export const workLocationQueryKeys = {
+  ALL: ["work-locations"],
+  GET_WORK_LOCATIONS: (search: string, page: number) => [
+    "work-locations",
+    search,
+    page
+  ]
+};
