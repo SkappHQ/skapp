@@ -1256,75 +1256,79 @@ public class PeopleServiceImpl implements PeopleService {
 		if (requestDto.getPrimarySupervisors() != null && !requestDto.getPrimarySupervisors().isEmpty()) {
 			requestDto.getPrimarySupervisors().forEach(item -> {
 				Optional<Employee> optionalSubordinate = employeeDao.findById(item.getSubordinateEmployeeId());
+				if (optionalSubordinate.isEmpty()) {
+					throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
+				}
 				Optional<Employee> optionalNewSupervisor = employeeDao.findById(item.getNewSupervisorId());
-				if (optionalSubordinate.isPresent() && optionalNewSupervisor.isPresent()) {
-					Employee subordinate = optionalSubordinate.get();
-					Employee newSupervisor = optionalNewSupervisor.get();
-					if (!AccountStatus.ACTIVE.equals(newSupervisor.getAccountStatus())) {
-						throw new ModuleException(
-								PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
-					}
-					if (newSupervisor.getEmployeeId().equals(departingEmployee.getEmployeeId())) {
-						throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
-					}
-					Optional<EmployeeManager> optionalManagerRecord = employeeManagerDao
-						.findByManagerAndEmployeeAndManagerType(departingEmployee, subordinate, ManagerType.PRIMARY);
-					if (optionalManagerRecord.isPresent()) {
-						EmployeeManager managerRecord = optionalManagerRecord.get();
-						managerRecord.setManager(newSupervisor);
-						employeeManagerDao.save(managerRecord);
-					}
-					else {
-						throw new EntityNotFoundException(
-								PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_PRIMARY_SUPERVISOR_RECORD_NOT_FOUND);
-					}
+				if (optionalNewSupervisor.isEmpty()) {
+					throw new EntityNotFoundException(
+							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
+				}
+				Employee subordinate = optionalSubordinate.get();
+				Employee newSupervisor = optionalNewSupervisor.get();
+				if (!AccountStatus.ACTIVE.equals(newSupervisor.getAccountStatus())) {
+					throw new ModuleException(
+							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
+				}
+				if (newSupervisor.getEmployeeId().equals(departingEmployee.getEmployeeId())) {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
+				}
+				Optional<EmployeeManager> optionalManagerRecord = employeeManagerDao
+					.findByManagerAndEmployeeAndManagerType(departingEmployee, subordinate, ManagerType.PRIMARY);
+				if (optionalManagerRecord.isPresent()) {
+					EmployeeManager managerRecord = optionalManagerRecord.get();
+					managerRecord.setManager(newSupervisor);
+					employeeManagerDao.save(managerRecord);
 				}
 				else {
-					throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
+					throw new EntityNotFoundException(
+							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_PRIMARY_SUPERVISOR_RECORD_NOT_FOUND);
 				}
 			});
 		}
 		if (requestDto.getTeamSupervisors() != null && !requestDto.getTeamSupervisors().isEmpty()) {
 			requestDto.getTeamSupervisors().forEach(item -> {
 				Optional<Team> optionalTeam = teamDao.findById(item.getTeamId());
+				if (optionalTeam.isEmpty()) {
+					throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
+				}
 				Optional<Employee> optionalNewSupervisor = employeeDao.findById(item.getNewSupervisorId());
-				if (optionalTeam.isPresent() && optionalNewSupervisor.isPresent()) {
-					Team team = optionalTeam.get();
-					Employee newSupervisor = optionalNewSupervisor.get();
-					if (!AccountStatus.ACTIVE.equals(newSupervisor.getAccountStatus())) {
-						throw new ModuleException(
-								PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
-					}
-					if (newSupervisor.getEmployeeId().equals(departingEmployee.getEmployeeId())) {
-						throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
-					}
-					Optional<EmployeeTeam> optionalDepartingTeamRecord = employeeTeamDao
-						.findByTeamAndEmployee(team, departingEmployee);
-					if (optionalDepartingTeamRecord.isPresent()
-							&& Boolean.TRUE.equals(optionalDepartingTeamRecord.get().getIsSupervisor())) {
-						optionalDepartingTeamRecord.get().setIsSupervisor(false);
-						employeeTeamDao.save(optionalDepartingTeamRecord.get());
-						Optional<EmployeeTeam> optionalNewSupervisorTeamRecord = employeeTeamDao
-							.findByTeamAndEmployee(team, newSupervisor);
-						if (optionalNewSupervisorTeamRecord.isPresent()) {
-							optionalNewSupervisorTeamRecord.get().setIsSupervisor(true);
-							employeeTeamDao.save(optionalNewSupervisorTeamRecord.get());
-						}
-						else {
-							EmployeeTeam newTeamRecord = new EmployeeTeam();
-							newTeamRecord.setTeam(team);
-							newTeamRecord.setEmployee(newSupervisor);
-							newTeamRecord.setIsSupervisor(true);
-							employeeTeamDao.save(newTeamRecord);
-						}
+				if (optionalNewSupervisor.isEmpty()) {
+					throw new EntityNotFoundException(
+							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
+				}
+				Team team = optionalTeam.get();
+				Employee newSupervisor = optionalNewSupervisor.get();
+				if (!AccountStatus.ACTIVE.equals(newSupervisor.getAccountStatus())) {
+					throw new ModuleException(
+							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
+				}
+				if (newSupervisor.getEmployeeId().equals(departingEmployee.getEmployeeId())) {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
+				}
+				Optional<EmployeeTeam> optionalDepartingTeamRecord = employeeTeamDao
+					.findByTeamAndEmployee(team, departingEmployee);
+				if (optionalDepartingTeamRecord.isPresent()
+						&& Boolean.TRUE.equals(optionalDepartingTeamRecord.get().getIsSupervisor())) {
+					optionalDepartingTeamRecord.get().setIsSupervisor(false);
+					employeeTeamDao.save(optionalDepartingTeamRecord.get());
+					Optional<EmployeeTeam> optionalNewSupervisorTeamRecord = employeeTeamDao
+						.findByTeamAndEmployee(team, newSupervisor);
+					if (optionalNewSupervisorTeamRecord.isPresent()) {
+						optionalNewSupervisorTeamRecord.get().setIsSupervisor(true);
+						employeeTeamDao.save(optionalNewSupervisorTeamRecord.get());
 					}
 					else {
-						throw new EntityNotFoundException(
-								PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND);
+						EmployeeTeam newTeamRecord = new EmployeeTeam();
+						newTeamRecord.setTeam(team);
+						newTeamRecord.setEmployee(newSupervisor);
+						newTeamRecord.setIsSupervisor(true);
+						employeeTeamDao.save(newTeamRecord);
 					}
 				}
 				else {
-					throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
+					throw new EntityNotFoundException(
+							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND);
 				}
 			});
 		}
