@@ -126,6 +126,29 @@ const useSessionData = () => {
     [user?.roles]
   );
 
+  const isCrmAdmin = useMemo(
+    () => user?.roles?.includes(AdminTypes.CRM_ADMIN),
+    [user?.roles]
+  );
+
+  const isCrmSalesManager = useMemo(
+    () => user?.roles?.includes(AuthManagerType.CRM_SALES_MANAGER),
+    [user?.roles]
+  );
+
+  const isCrmSalesRepresentative = useMemo(
+    () => user?.roles?.includes(EmployeeTypes.CRM_SALES_REPRESENTATIVE),
+    [user?.roles]
+  );
+
+  const isCrmModuleEnabled = useMemo(
+    () =>
+      user?.roles?.includes(AdminTypes.CRM_ADMIN) ||
+      user?.roles?.includes(AuthManagerType.CRM_SALES_MANAGER) ||
+      user?.roles?.includes(EmployeeTypes.CRM_SALES_REPRESENTATIVE),
+    [user?.roles]
+  );
+
   return {
     isFreeTier,
     isProTier,
@@ -152,6 +175,10 @@ const useSessionData = () => {
     isESignSender,
     isPmAdmin,
     isInvoiceAdmin,
+    isCrmAdmin,
+    isCrmSalesManager,
+    isCrmSalesRepresentative,
+    isCrmModuleEnabled,
     tenantID
   };
 };
