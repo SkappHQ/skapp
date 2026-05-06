@@ -181,6 +181,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		employeeRole.setEsignRole(Role.ESIGN_EMPLOYEE);
 		employeeRole.setPmRole(Role.PM_EMPLOYEE);
 		employeeRole.setInvoiceRole(Role.INVOICE_NONE);
+		employeeRole.setCrmRole(Role.CRM_NONE);
 		return employeeRole;
 	}
 
@@ -210,7 +211,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 			roles.add(RoleLevel.SENDER.getDisplayName());
 		}
 		else if (moduleType == ModuleType.CRM) {
-			roles.add(RoleLevel.MANAGER.getDisplayName());
+			roles.add(RoleLevel.SALES_MANAGER.getDisplayName());
 			roles.add(RoleLevel.SALES_REPRESENTATIVE.getDisplayName());
 			roles.add(RoleLevel.NONE.getDisplayName());
 			return roles;
@@ -239,6 +240,7 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 				role.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 				role.setEsignRole(Role.ESIGN_EMPLOYEE);
 				role.setInvoiceRole(Role.INVOICE_ADMIN);
+				role.setCrmRole(Role.CRM_NONE);
 				rolesToUpdate.add(role);
 			}
 		}
@@ -294,6 +296,18 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 						Role.ESIGN_SENDER, validStatuses),
 				EpCommonConstants.ENTERPRISE_FREE_MAX_ESIGN_SENDER_COUNT,
 				role -> role.setEsignRole(Role.ESIGN_EMPLOYEE));
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByCrmRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.CRM_ADMIN, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_CRM_ADMIN_COUNT,
+				role -> role.setCrmRole(Role.CRM_NONE));
+
+		processRoleType(rolesToUpdate,
+				epEmployeeRoleDao.findEmployeeRoleByCrmRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
+						Role.CRM_SALES_MANAGER, validStatuses),
+				EpCommonConstants.ENTERPRISE_FREE_MAX_CRM_SALES_MANAGER_COUNT,
+				role -> role.setCrmRole(Role.CRM_NONE));
 	}
 
 	private void processRoleType(List<EmployeeRole> rolesToUpdate, List<EmployeeRole> roles, int maxAllowedCount,

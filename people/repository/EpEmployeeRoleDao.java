@@ -26,4 +26,7 @@ public interface EpEmployeeRoleDao extends JpaRepository<EmployeeRole, Long>, Ep
 	List<EmployeeRole> findEmployeeRoleByEsignRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(Role role,
 			List<AccountStatus> validStatuses);
 
+	List<EmployeeRole> findEmployeeRoleByCrmRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(Role role,
+			List<AccountStatus> validStatuses);
+
 }

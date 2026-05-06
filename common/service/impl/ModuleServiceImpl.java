@@ -40,7 +40,7 @@ public class ModuleServiceImpl implements ModuleService {
 		moduleConfig.setEsignModule(true);
 		moduleConfig.setInvoiceModule(true);
 		moduleConfig.setPmModule(true);
-		moduleConfig.setCrmModule(false);
+		moduleConfig.setCrmModule(true);
 
 		moduleDao.save(moduleConfig);
 		log.info("setDefaultModules: Default modules configuration set successfully");
