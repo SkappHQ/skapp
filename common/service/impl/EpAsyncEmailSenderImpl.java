@@ -23,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -36,6 +38,8 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Primary
+@ConditionalOnExpression("!'local'.equals('${environment.name:}')")
 public class EpAsyncEmailSenderImpl implements AsyncEmailSender, EpAsyncEmailSender {
 
 	@Value("${sendgrid.api.key}")
