@@ -105,7 +105,7 @@ const employeeEmploymentDetails: EmployeeEmploymentDetailsTypes = {
   probationStartDate: "",
   probationEndDate: "",
   workTimeZone: "",
-  workLocation: ""
+  workLocationId: undefined
 };
 const employeeCareerDetails: EmployeeCareerDetailsTypes = {
   positionDetails: []

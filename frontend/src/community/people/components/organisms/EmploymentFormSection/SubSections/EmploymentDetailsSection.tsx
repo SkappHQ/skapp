@@ -621,16 +621,20 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                 itemList={
                   workLocations?.map((location) => ({
                     label: location.name,
-                    value: location.name
+                    value: String(location.workLocationId)
                   })) ?? []
                 }
-                inputName="workLocation"
+                inputName="workLocationId"
                 label={translateText(["workLocation"])}
                 value={
-                  values?.workLocation
+                  values?.workLocationId
                     ? {
-                        label: values.workLocation,
-                        value: values.workLocation
+                        label:
+                          workLocations?.find(
+                            (loc) =>
+                              loc.workLocationId === values.workLocationId
+                          )?.name ?? "",
+                        value: String(values.workLocationId)
                       }
                     : undefined
                 }
@@ -638,7 +642,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                   isReadOnly ? "" : translateText(["selectWorkLocation"])
                 }
                 onChange={handleWorkLocationChange}
-                error={errors.workLocation ?? ""}
+                error={errors.workLocationId ?? ""}
                 componentStyle={{
                   mt: "0rem"
                 }}

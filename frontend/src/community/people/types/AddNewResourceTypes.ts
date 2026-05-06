@@ -113,7 +113,7 @@ export interface EmployeeEmploymentDetailsTypes {
   probationStartDate: string | undefined;
   probationEndDate: string | undefined;
   workTimeZone: string | null | undefined;
-  workLocation: string | null | undefined;
+  workLocationId: number | null | undefined;
 }
 
 export interface PositionDetailsType {
@@ -202,7 +202,7 @@ export interface EmployeeEmploymentDetailsFormTypes {
   probationStartDate: string;
   probationEndDate: string;
   workTimeZone: string;
-  workLocation: string;
+  workLocationId: number | null;
 }
 
 export interface SelectedFileTypes {

@@ -140,11 +140,11 @@ export const getEmploymentChanges = (
 
   if (
     isFieldDifferentAndValid(
-      newEmployment?.workLocation,
-      previousEmployement?.workLocation
+      newEmployment?.workLocationId,
+      previousEmployement?.workLocationId
     )
   ) {
-    changes.workLocation = newEmployment?.workLocation;
+    changes.workLocationId = newEmployment?.workLocationId;
   }
 
   return changes;

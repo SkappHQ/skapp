@@ -202,12 +202,13 @@ const useEmployeeDetailsFormHandler = ({
     e: SyntheticEvent,
     value: DropdownListType
   ): Promise<void> => {
-    setFieldError("workLocation", "");
-    await setFieldValue("workLocation", value.value);
+    const workLocationId = Number(value.value);
+    setFieldError("workLocationId", "");
+    await setFieldValue("workLocationId", workLocationId);
     setEmploymentDetails({
       employmentDetails: {
         ...employee?.employment?.employmentDetails,
-        workLocation: value.value as string
+        workLocationId: workLocationId
       } as L3EmploymentDetailsType
     });
   };
