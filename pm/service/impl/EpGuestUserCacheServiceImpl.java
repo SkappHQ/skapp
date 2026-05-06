@@ -231,15 +231,9 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 			if (projectInfo == null || !projectInfo.has("id")) {
 				continue;
 			}
-			try {
-				Long id = Long.parseLong(projectInfo.get("id").asString());
-				if (projectIds.contains(id)) {
-					result.add(createProjectDto(projectInfo));
-				}
-			}
-			catch (NumberFormatException e) {
-				log.warn("filterProjectsByIds: Skipping project node with non-numeric id: {}",
-						projectInfo.get("id").asString());
+			Long id = Long.parseLong(projectInfo.get("id").asString());
+			if (projectIds.contains(id)) {
+				result.add(createProjectDto(projectInfo));
 			}
 		}
 		return result;
