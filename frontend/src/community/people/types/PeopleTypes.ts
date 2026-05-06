@@ -240,3 +240,35 @@ export interface AllEmployeeDataResponse {
   totalItems?: number;
   pages?: any;
 }
+
+export interface SupervisedEmployee {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  authPic?: string;
+}
+
+export interface SupervisedTeam {
+  teamId: number;
+  teamName: string;
+}
+
+export interface SupervisorRolesData {
+  supervisedEmployees: SupervisedEmployee[];
+  supervisedTeams: SupervisedTeam[];
+}
+
+export interface PrimarySupervisorTransferItem {
+  subordinateEmployeeId: number;
+  newSupervisorId: number;
+}
+
+export interface TeamSupervisorTransferItem {
+  teamId: number;
+  newSupervisorId: number;
+}
+
+export interface TransferSupervisorsPayload {
+  primarySupervisors: PrimarySupervisorTransferItem[];
+  teamSupervisors: TeamSupervisorTransferItem[];
+}
