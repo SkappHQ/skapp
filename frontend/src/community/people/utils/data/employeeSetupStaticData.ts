@@ -7,7 +7,8 @@ import {
   EmploymentTypes,
   GenderEnum,
   MaritalStatusTypes,
-  RelationshipTypes
+  RelationshipTypes,
+  TitleEnum
 } from "~community/people/enums/PeopleEnums";
 import { SystemPermissionTypes } from "~community/people/types/AddNewResourceTypes";
 
@@ -20,6 +21,12 @@ export const EmployeeTypesList = [
   { label: "Intern", value: EmploymentTypes.INTERN },
   { label: "Contract", value: EmploymentTypes.CONTRACT },
   { label: "Permanent", value: EmploymentTypes.PERMANENT }
+];
+
+export const getTitleList = (translateText: (keys: string[]) => string) => [
+  { label: translateText(["titleMr"]), value: TitleEnum.MR },
+  { label: translateText(["titleMrs"]), value: TitleEnum.MRS },
+  { label: translateText(["titleMiss"]), value: TitleEnum.MISS }
 ];
 
 export const GenderList = [

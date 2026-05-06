@@ -203,7 +203,8 @@ public class HolidayServiceImpl implements HolidayService {
 		List<Long> deletedHolidayIds = holidays.stream().filter(this::canDeleteHoliday).map(Holiday::getId).toList();
 		holidayDao.deleteAllById(deletedHolidayIds);
 
-		return new ResponseEntityDto("holidays deleted successfully", false);
+		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_DELETE_HOLIDAYS),
+				false);
 	}
 
 	@Override
@@ -250,7 +251,8 @@ public class HolidayServiceImpl implements HolidayService {
 			}
 		}
 
-		return new ResponseEntityDto("Selected holidays deleted successfully.", false);
+		return new ResponseEntityDto(
+				messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_DELETE_SELECTED_HOLIDAYS), false);
 	}
 
 	private void updateLeaveRequestDueHoliday(Holiday holiday, LeaveRequest leaveRequest) {

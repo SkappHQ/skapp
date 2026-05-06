@@ -1,3 +1,9 @@
+export enum TitleEnum {
+  MR = "MR",
+  MRS = "MRS",
+  MISS = "MISS"
+}
+
 export enum GenderEnum {
   MALE = "MALE",
   FEMALE = "FEMALE",

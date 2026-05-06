@@ -204,6 +204,14 @@ const nextConfig = {
         destination: "/community/configurations/user-roles/projectmanagement"
       },
       {
+        source: "/configurations/work-location/create",
+        destination: "/enterprise/configurations/work-location/create"
+      },
+      {
+        source: "/configurations/work-location/:id",
+        destination: "/enterprise/configurations/work-location/:id"
+      },
+      {
         source: "/leave/analytics/:id",
         destination: "/community/leave/analytics/:id"
       },
@@ -350,6 +358,10 @@ const nextConfig = {
       {
         source: "/projects/guests",
         destination: "/enterprise/projects/guests"
+      },
+      {
+        source: "/projects/guest-requests",
+        destination: "/enterprise/projects/guest-requests"
       },
       {
         source: "/invoice",
