@@ -5,7 +5,6 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/material.css";
 
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
-import { characterLengths } from "~community/common/constants/stringConstants";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { phoneNumberPattern } from "~community/common/regex/regexPatterns";
@@ -16,6 +15,7 @@ import {
 } from "~community/common/utils/keyboardUtils";
 
 import InputField from "../InputField/InputField";
+import { getPhoneNumberMaxLength } from "~community/common/utils/commonUtil";
 
 interface Props {
   label: string;
@@ -243,7 +243,7 @@ const InputPhoneNumber: FC<Props> = ({
           }}
           inputType="text"
           error={error}
-          maxLength={characterLengths.PHONE_NUMBER_LENGTH_MAX - countryCodeValue.length}
+          maxLength={getPhoneNumberMaxLength(countryCodeValue)}
           inputMode="numeric"
           onKeyDown={(e) => {
             // TODO: move this to a separate file and write unit test cases
