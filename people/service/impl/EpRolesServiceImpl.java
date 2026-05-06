@@ -300,14 +300,12 @@ public class EpRolesServiceImpl extends RolesServiceImpl implements EpRolesServi
 		processRoleType(rolesToUpdate,
 				epEmployeeRoleDao.findEmployeeRoleByCrmRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
 						Role.CRM_ADMIN, validStatuses),
-				EpCommonConstants.ENTERPRISE_FREE_MAX_CRM_ADMIN_COUNT,
-				role -> role.setCrmRole(Role.CRM_NONE));
+				EpCommonConstants.ENTERPRISE_FREE_MAX_CRM_ADMIN_COUNT, role -> role.setCrmRole(Role.CRM_NONE));
 
 		processRoleType(rolesToUpdate,
 				epEmployeeRoleDao.findEmployeeRoleByCrmRoleAndIsSuperAdminFalseAndEmployeeAccountStatusIn(
 						Role.CRM_SALES_MANAGER, validStatuses),
-				EpCommonConstants.ENTERPRISE_FREE_MAX_CRM_SALES_MANAGER_COUNT,
-				role -> role.setCrmRole(Role.CRM_NONE));
+				EpCommonConstants.ENTERPRISE_FREE_MAX_CRM_SALES_MANAGER_COUNT, role -> role.setCrmRole(Role.CRM_NONE));
 	}
 
 	private void processRoleType(List<EmployeeRole> rolesToUpdate, List<EmployeeRole> roles, int maxAllowedCount,
