@@ -81,6 +81,7 @@ import IntegrationsIcon from "~community/common/assets/Icons/IntegrationsIcon";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
 import InvoiceIcon from "~community/common/assets/Icons/InvoiceIcon";
 import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon";
+import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
@@ -321,6 +322,7 @@ export const IconMapping: Partial<
   [IconName.INSTAGRAM_ICON]: InstagramIcon,
   [IconName.INVOICE_ICON]: InvoiceIcon,
   [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
+  [IconName.CRM_ICON]: HandshakeIcon,
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,

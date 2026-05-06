@@ -201,7 +201,7 @@ const routes = [
     id: "9",
     name: "CRM",
     url: ROUTES.CRM.BASE,
-    icon: IconName.PEOPLE_ICON,
+    icon: IconName.CRM_ICON,
     hasSubTree: true,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
