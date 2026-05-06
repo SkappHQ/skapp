@@ -32,4 +32,7 @@ public class ModuleConfig {
 	@Column(name = "pm_module")
 	private boolean pmModule;
 
+	@Column(name = "crm_module")
+	private boolean crmModule;
+
 }

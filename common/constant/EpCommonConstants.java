@@ -93,6 +93,10 @@ public class EpCommonConstants {
 
 	public static final int ENTERPRISE_FREE_MAX_PM_ADMIN_COUNT = 1;
 
+	public static final int ENTERPRISE_FREE_MAX_CRM_ADMIN_COUNT = 1;
+
+	public static final int ENTERPRISE_FREE_MAX_CRM_SALES_MANAGER_COUNT = 1;
+
 	public static final String ENTERPRISE_CALENDER_CONCAT_PATTERN_FOR_STATE = ":::---:::";
 
 	public static final String SUBSCRIPTION = "subscription";

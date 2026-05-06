@@ -66,6 +66,9 @@ public class EpAuthorityServiceImpl extends AuthorityServiceImpl {
 			if (auth.contains(ModuleType.INVOICE.name())) {
 				return moduleConfig.isInvoiceModule();
 			}
+			if (auth.contains(ModuleType.CRM.name())) {
+				return moduleConfig.isCrmModule();
+			}
 			return false;
 		}).toList();
 	}

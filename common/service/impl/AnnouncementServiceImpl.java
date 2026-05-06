@@ -159,6 +159,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 			case INVOICE_ADMIN, INVOICE_MANAGER, INVOICE_NONE -> employeeRole.getInvoiceRole() == role;
 			case PM_ADMIN, PM_EMPLOYEE, PM_GUEST_EMPLOYEE -> employeeRole.getPmRole() == role;
 			case OKR_ADMIN, OKR_MANAGER, OKR_EMPLOYEE -> employeeRole.getOkrRole() == role;
+			case CRM_ADMIN, CRM_SALES_MANAGER, CRM_SALES_REPRESENTATIVE, CRM_NONE -> employeeRole.getCrmRole() == role;
 		};
 	}
 
