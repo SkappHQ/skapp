@@ -194,9 +194,7 @@ public class RolesServiceImpl implements RolesService {
 				|| isRoleDemoted(employeeRole.getLeaveRole(), roleRequestDto.getLeaveRole(), Role.LEAVE_MANAGER,
 						Role.LEAVE_ADMIN, Role.LEAVE_EMPLOYEE)
 				|| isRoleDemoted(employeeRole.getInvoiceRole(), roleRequestDto.getInvoiceRole(), Role.INVOICE_MANAGER,
-						Role.INVOICE_ADMIN, Role.INVOICE_NONE)
-				|| isRoleDemoted(employeeRole.getCrmRole(), roleRequestDto.getCrmRole(), Role.CRM_SALES_MANAGER,
-						Role.CRM_ADMIN, Role.CRM_NONE);
+						Role.INVOICE_ADMIN, Role.INVOICE_NONE);
 	}
 
 	private boolean isRoleDemoted(Role currentRole, Role newRole, Role managerRole, Role adminRole, Role employeeRole) {
@@ -279,7 +277,7 @@ public class RolesServiceImpl implements RolesService {
 		roles.put(ModuleType.INVOICE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
 		roles.put(ModuleType.PM, List.of(RoleLevel.ADMIN, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.CRM,
-				List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.SALES_REPRESENTATIVE, RoleLevel.NONE));
+				List.of(RoleLevel.ADMIN, RoleLevel.SALES_MANAGER, RoleLevel.SALES_REPRESENTATIVE, RoleLevel.NONE));
 
 		return roles;
 	}
@@ -594,7 +592,7 @@ public class RolesServiceImpl implements RolesService {
 			};
 			case CRM -> switch (roleLevel) {
 				case ADMIN -> Role.CRM_ADMIN;
-				case MANAGER -> Role.CRM_SALES_MANAGER;
+				case SALES_MANAGER -> Role.CRM_SALES_MANAGER;
 				case SALES_REPRESENTATIVE -> Role.CRM_SALES_REPRESENTATIVE;
 				case NONE -> Role.CRM_NONE;
 				default -> null;
