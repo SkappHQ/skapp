@@ -668,7 +668,6 @@ CREATE TABLE IF NOT EXISTS `crm_deal`
     `priority_id`        bigint           DEFAULT NULL,
     `closing_at`         datetime(6)      DEFAULT NULL,
     `amount`             text             DEFAULT NULL,
-    `currency_code`      text             DEFAULT NULL,
     `company_id`         bigint           DEFAULT NULL,
     `contact_id`         bigint  NOT NULL,
     `owner_id`           bigint  NOT NULL,
@@ -716,7 +715,7 @@ CREATE TABLE IF NOT EXISTS `crm_task`
 -- rollback drop table crm_task_type;
 -- rollback drop table crm_priority;
 
--- changeset anusham:crm-ddl-script-v1-create-table-crm-config-drop-deal-currency-code
+-- changeset anusham:crm-ddl-script-v1-create-table-crm-config
 CREATE TABLE IF NOT EXISTS `crm_config`
 (
     `id`                 bigint NOT NULL AUTO_INCREMENT,
@@ -728,8 +727,5 @@ CREATE TABLE IF NOT EXISTS `crm_config`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB;
 
-ALTER TABLE `crm_deal`
-    DROP COLUMN `currency_code`;
-
--- rollback ALTER TABLE `crm_deal` ADD COLUMN `currency_code` text DEFAULT NULL;
 -- rollback DROP TABLE IF EXISTS `crm_config`;
+
