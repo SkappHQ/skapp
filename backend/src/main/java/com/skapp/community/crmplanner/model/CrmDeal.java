@@ -46,9 +46,6 @@ public class CrmDeal extends Auditable<String> {
 	@Column(name = "amount")
 	private String amount;
 
-	@Column(name = "currency_code")
-	private String currencyCode;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "company_id")
 	private CrmCompany company;
