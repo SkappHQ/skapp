@@ -16,8 +16,10 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @Primary
@@ -192,12 +194,13 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 			return Collections.emptyList();
 		}
 
+		Set<Long> projectIdSet = new HashSet<>(projectIds);
 		List<JsonNode> projectsData = loadAllProjectNodes();
 		if (projectsData.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		return filterProjectsByIds(projectsData, projectIds);
+		return filterProjectsByIds(projectsData, projectIdSet);
 	}
 
 	private List<JsonNode> loadAllProjectNodes() {
@@ -221,16 +224,22 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 		return projectsData;
 	}
 
-	private List<ProjectRequestDto> filterProjectsByIds(List<JsonNode> projectsData, List<Long> projectIds) {
+	private List<ProjectRequestDto> filterProjectsByIds(List<JsonNode> projectsData, Set<Long> projectIds) {
 		List<ProjectRequestDto> result = new ArrayList<>();
 		for (JsonNode projectNode : projectsData) {
 			JsonNode projectInfo = projectNode.get(PROJECT_INFO_KEY);
 			if (projectInfo == null || !projectInfo.has("id")) {
 				continue;
 			}
-			Long id = Long.parseLong(projectInfo.get("id").asString());
-			if (projectIds.contains(id)) {
-				result.add(createProjectDto(projectInfo));
+			try {
+				Long id = Long.parseLong(projectInfo.get("id").asString());
+				if (projectIds.contains(id)) {
+					result.add(createProjectDto(projectInfo));
+				}
+			}
+			catch (NumberFormatException e) {
+				log.warn("filterProjectsByIds: Skipping project node with non-numeric id: {}",
+						projectInfo.get("id").asString());
 			}
 		}
 		return result;

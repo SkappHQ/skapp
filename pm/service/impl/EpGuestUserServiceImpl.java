@@ -127,14 +127,17 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			}
 			return new ResponseEntityDto(false, requestDtos);
 		}
+		String adminName = currentUser.getEmployee() != null ? currentUser.getEmployee().getFirstName() : "";
 		List<EpUserResponseDto> responses = new ArrayList<>();
 		for (String email : uniqueEmails) {
-			responses.add(inviteSingleGuestUser(email, epGuestUserBulkInviteRequestDto.getProjects(), "",
+			responses.add(inviteSingleGuestUser(email, epGuestUserBulkInviteRequestDto.getProjects(), adminName,
 					currentUser.getUserId()));
 		}
 		return new ResponseEntityDto(false, responses);
 	}
 
+	@Transactional
+	@Transactional
 	@Override
 	public ResponseEntityDto createGuestUsersInternal(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto) {
 		if (epGuestUserBulkInviteRequestDto == null || epGuestUserBulkInviteRequestDto.getEmails() == null
@@ -362,6 +365,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_ACTIVATED), false);
 	}
 
+	@Transactional
 	@Override
 	public ResponseEntityDto updateGuestUserApprovalStatus(
 			EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {

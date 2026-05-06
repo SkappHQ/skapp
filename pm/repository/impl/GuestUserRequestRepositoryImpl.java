@@ -25,7 +25,7 @@ public class GuestUserRequestRepositoryImpl implements GuestUserRequestRepositor
 		root.fetch(GuestUserRequest_.requestedUser);
 		cq.where(cb.equal(root.get(GuestUserRequest_.id), id));
 
-		return entityManager.createQuery(cq).getResultStream().findFirst();
+		return entityManager.createQuery(cq).getResultList().stream().findFirst();
 	}
 
 }

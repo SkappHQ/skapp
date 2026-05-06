@@ -13,7 +13,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -47,7 +46,6 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 	private final RestTemplate restTemplate;
 
 	@Override
-	@Transactional
 	public boolean assignGuestToProjects(Long userId, List<ProjectRequestDto> projects, Long adminUserId) {
 
 		if (projects == null || projects.isEmpty()) {
@@ -101,7 +99,6 @@ public class EpGuestUserInternalServiceImpl implements EpGuestUserInternalServic
 	}
 
 	@Override
-	@Transactional
 	public boolean updateGuestUserProjects(Long userId, List<ProjectRequestDto> projects, Long adminUserId) {
 
 		if (projects == null) {
