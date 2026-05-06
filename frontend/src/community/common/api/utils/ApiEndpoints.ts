@@ -61,3 +61,7 @@ export const applicationVersionEndpoints = {
 export const storageAvailabilityEndpoints = {
   GET_STORAGE_AVAILABILITY: `/file/storage/availability`
 };
+
+export const workLocationEndpoints = {
+  WORK_LOCATIONS: `/work-location`
+};

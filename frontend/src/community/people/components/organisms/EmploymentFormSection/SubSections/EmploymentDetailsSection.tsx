@@ -138,6 +138,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       selectedProbationStartDate,
       selectedProbationEndDate,
       workTimeZoneDictionary,
+      workLocations,
       projectTeamList,
       primaryManagerSearchTerm,
       secondaryManagerSearchTerm,
@@ -155,6 +156,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       handleChange,
       dateOnChange,
       handleWorkTimeZoneChange,
+      handleWorkLocationChange,
       onPrimaryManagerSearchChange,
       onSecondaryManagerSearchChange,
       handlePrimaryManagerSelect,
@@ -615,28 +617,33 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
             </Grid>
 
             <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-              <DropdownList
+              <DropdownAutocomplete
+                itemList={
+                  workLocations?.map((location) => ({
+                    label: location.name,
+                    value: location.name
+                  })) ?? []
+                }
                 inputName="workLocation"
                 label={translateText(["workLocation"])}
-                value={values.workLocation ?? ""}
+                value={
+                  values?.workLocation
+                    ? {
+                        label: values.workLocation,
+                        value: values.workLocation
+                      }
+                    : undefined
+                }
                 placeholder={
                   isReadOnly ? "" : translateText(["selectWorkLocation"])
                 }
-                onChange={handleChange}
+                onChange={handleWorkLocationChange}
                 error={errors.workLocation ?? ""}
                 componentStyle={{
                   mt: "0rem"
-                }} 
-                errorFocusOutlineNeeded={false}
-                itemList={[
-                  { label: "Remote", value: "REMOTE" },
-                  { label: "Onsite", value: "ONSITE" },
-                  { label: "Hybrid", value: "HYBRID" }
-                ]} // TODO: Replace with work location API data
-                readOnly={isReadOnly || isProfileView}
+                }}
                 isDisabled={isInputsDisabled}
-                checkSelected
-                ariaLabel={translateAria(["selectWorkLocation"])}
+                readOnly={isReadOnly || isProfileView}
               />
             </Grid>
           </Grid>

@@ -10,6 +10,7 @@ import React, {
   useState
 } from "react";
 
+import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { allowsAlphaNumericWithHyphenAndUnderscore } from "~community/common/regex/regexPatterns";
 import { DropdownListType } from "~community/common/types/CommonTypes";
@@ -93,6 +94,8 @@ const useEmployeeDetailsFormHandler = ({
   );
 
   const { isProTier } = useSessionData();
+
+  const { data: workLocations } = useGetAllWorkLocations();
 
   const workTimeZoneDictionary: Record<string, string> = timeZonesList.reduce<
     Record<string, string>
@@ -191,6 +194,20 @@ const useEmployeeDetailsFormHandler = ({
       employmentDetails: {
         ...employee?.employment?.employmentDetails,
         workTimeZone: value.value as string
+      } as L3EmploymentDetailsType
+    });
+  };
+
+  const handleWorkLocationChange = async (
+    e: SyntheticEvent,
+    value: DropdownListType
+  ): Promise<void> => {
+    setFieldError("workLocation", "");
+    await setFieldValue("workLocation", value.value);
+    setEmploymentDetails({
+      employmentDetails: {
+        ...employee?.employment?.employmentDetails,
+        workLocation: value.value as string
       } as L3EmploymentDetailsType
     });
   };
@@ -497,6 +514,7 @@ const useEmployeeDetailsFormHandler = ({
     selectedProbationStartDate,
     selectedProbationEndDate,
     workTimeZoneDictionary,
+    workLocations,
     projectTeamList,
     primaryManagerSearchTerm,
     secondaryManagerSearchTerm,
@@ -514,6 +532,7 @@ const useEmployeeDetailsFormHandler = ({
     handleChange,
     dateOnChange,
     handleWorkTimeZoneChange,
+    handleWorkLocationChange,
     onPrimaryManagerSearchChange,
     onSecondaryManagerSearchChange,
     handlePrimaryManagerSelect,
