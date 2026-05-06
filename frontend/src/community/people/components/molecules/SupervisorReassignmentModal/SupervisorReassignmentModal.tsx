@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { FC, useEffect, useMemo, useState } from "react";
@@ -198,133 +198,153 @@ const SupervisorReassignmentModal: FC<Props> = ({
       : translateText(["proceedAndDeleteButton"]);
 
   const modalContent = (
-    <Stack spacing={2} sx={{ width: "100%" }}>
-      <Typography variant="body1">{translateText(["subtitle"])}</Typography>
+    <Stack spacing={3} sx={{ width: "100%" }}>
+      {/* Frame 1 — subtitle + scrollable sections */}
+      <Stack spacing={2}>
+        <p className="body1">{translateText(["subtitle"])}</p>
 
-      <Stack
-        sx={{
-          maxHeight: "22rem",
-          overflowY: "auto",
-          gap: "1rem"
-        }}
-      >
-        {supervisedEmployees.length > 0 && (
-          <Stack spacing={1.5}>
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              {translateText(["primarySupervisorsSection"])}
-            </Typography>
+        <Stack
+          sx={{
+            maxHeight: "22rem",
+            overflowY: "auto",
+            gap: "1rem"
+          }}
+        >
+          {supervisedEmployees.length > 0 && (
             <Stack spacing={1.5}>
-              {supervisedEmployees.map((emp) => (
-                <Stack
-                  key={emp.employeeId}
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ minHeight: "2.5625rem" }}
-                >
-                  <Box sx={{ minWidth: "7.8125rem" }}>
-                    <AvatarChip
-                      firstName={emp.firstName}
-                      lastName={emp.lastName}
-                      avatarUrl={emp.authPic}
-                    />
-                  </Box>
-                  <Box sx={{ width: "15.625rem" }}>
-                    <DropdownSearch
-                      label=""
-                      inputName={`primary-supervisor-${emp.employeeId}`}
-                      value={primaryAssignments[emp.employeeId] ?? ""}
-                      placeholder={translateText([
-                        "selectSupervisorPlaceholder"
-                      ])}
-                      itemList={employeeDropdownOptions}
-                      isDisabled={noActiveEmployeesAvailable}
-                      onChange={(val) => {
-                        setHasTouched(true);
-                        setPrimaryAssignments((prev) => ({
-                          ...prev,
-                          [emp.employeeId]: val as string | number
-                        }));
+              <p className="subtitle2">
+                {translateText(["primarySupervisorsSection"])}
+              </p>
+              <Stack spacing={1.5}>
+                {supervisedEmployees.map((emp) => (
+                  <Stack
+                    key={emp.employeeId}
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ minHeight: "2.5625rem" }}
+                  >
+                    <Box
+                      sx={{
+                        width: "7.8125rem",
+                        overflow: "hidden",
+                        flexShrink: 0
                       }}
-                      componentStyle={{ mt: "0" }}
-                    />
-                  </Box>
-                </Stack>
-              ))}
+                    >
+                      <AvatarChip
+                        firstName={emp.firstName}
+                        lastName={emp.lastName}
+                        avatarUrl={emp.authPic}
+                      />
+                    </Box>
+                    <Box sx={{ width: "15.625rem", flexShrink: 0 }}>
+                      <DropdownSearch
+                        label=""
+                        inputName={`primary-supervisor-${emp.employeeId}`}
+                        value={primaryAssignments[emp.employeeId] ?? ""}
+                        placeholder={translateText([
+                          "selectSupervisorPlaceholder"
+                        ])}
+                        itemList={employeeDropdownOptions}
+                        isDisabled={noActiveEmployeesAvailable}
+                        onChange={(val) => {
+                          setHasTouched(true);
+                          setPrimaryAssignments((prev) => ({
+                            ...prev,
+                            [emp.employeeId]: val as string | number
+                          }));
+                        }}
+                        componentStyle={{ mt: "0" }}
+                      />
+                    </Box>
+                  </Stack>
+                ))}
+              </Stack>
             </Stack>
-          </Stack>
-        )}
-
-        {supervisedTeams.length > 0 && (
-          <Stack spacing={1.5}>
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              {translateText(["teamSupervisorsSection"])}
-            </Typography>
-            <Stack spacing={1.5}>
-              {supervisedTeams.map((team) => (
-                <Stack
-                  key={team.teamId}
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ minHeight: "2.5625rem" }}
-                >
-                  <Box sx={{ minWidth: "7.8125rem" }}>
-                    <Typography variant="body2">{team.teamName}</Typography>
-                  </Box>
-                  <Box sx={{ width: "15.625rem" }}>
-                    <DropdownSearch
-                      label=""
-                      inputName={`team-supervisor-${team.teamId}`}
-                      value={teamAssignments[team.teamId] ?? ""}
-                      placeholder={translateText([
-                        "selectSupervisorPlaceholder"
-                      ])}
-                      itemList={employeeDropdownOptions}
-                      isDisabled={noActiveEmployeesAvailable}
-                      onChange={(val) => {
-                        setHasTouched(true);
-                        setTeamAssignments((prev) => ({
-                          ...prev,
-                          [team.teamId]: val as string | number
-                        }));
-                      }}
-                      componentStyle={{ mt: "0" }}
-                    />
-                  </Box>
-                </Stack>
-              ))}
-            </Stack>
-          </Stack>
-        )}
-
-        {noActiveEmployeesAvailable && (
-          <Typography
-            variant="body2"
-            sx={{ color: "var(--color-semantic-red-text)" }}
-          >
-            {translateText(["noActiveEmployeesMessage"])}
-          </Typography>
-        )}
-
-        {hasTouched &&
-          !isProceedEnabled &&
-          !noActiveEmployeesAvailable &&
-          (supervisedEmployees.length > 0 || supervisedTeams.length > 0) && (
-            <Typography
-              variant="body2"
-              sx={{ color: "var(--color-semantic-amber-text)" }}
-            >
-              {translateText(["allReassignedValidationMessage"])}
-            </Typography>
           )}
+
+          {supervisedTeams.length > 0 && (
+            <Stack spacing={1.5}>
+              <p className="subtitle2">
+                {translateText(["teamSupervisorsSection"])}
+              </p>
+              <Stack spacing={1.5}>
+                {supervisedTeams.map((team) => (
+                  <Stack
+                    key={team.teamId}
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ minHeight: "2.5625rem" }}
+                  >
+                    <Box
+                      sx={{
+                        width: "7.8125rem",
+                        overflow: "hidden",
+                        flexShrink: 0
+                      }}
+                    >
+                      <p
+                        className="body2"
+                        style={{
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis"
+                        }}
+                      >
+                        {team.teamName}
+                      </p>
+                    </Box>
+                    <Box sx={{ width: "15.625rem", flexShrink: 0 }}>
+                      <DropdownSearch
+                        label=""
+                        inputName={`team-supervisor-${team.teamId}`}
+                        value={teamAssignments[team.teamId] ?? ""}
+                        placeholder={translateText([
+                          "selectSupervisorPlaceholder"
+                        ])}
+                        itemList={employeeDropdownOptions}
+                        isDisabled={noActiveEmployeesAvailable}
+                        onChange={(val) => {
+                          setHasTouched(true);
+                          setTeamAssignments((prev) => ({
+                            ...prev,
+                            [team.teamId]: val as string | number
+                          }));
+                        }}
+                        componentStyle={{ mt: "0" }}
+                      />
+                    </Box>
+                  </Stack>
+                ))}
+              </Stack>
+            </Stack>
+          )}
+
+          {noActiveEmployeesAvailable && (
+            <p
+              className="body2"
+              style={{ color: "var(--color-semantic-red-text)" }}
+            >
+              {translateText(["noActiveEmployeesMessage"])}
+            </p>
+          )}
+
+          {hasTouched &&
+            !isProceedEnabled &&
+            !noActiveEmployeesAvailable &&
+            (supervisedEmployees.length > 0 || supervisedTeams.length > 0) && (
+              <p
+                className="body2"
+                style={{ color: "var(--color-semantic-amber-text)" }}
+              >
+                {translateText(["allReassignedValidationMessage"])}
+              </p>
+            )}
+        </Stack>
       </Stack>
 
-      <Stack
-        direction="row"
-        spacing={2}
-        sx={{ mt: "0.5rem", justifyContent: "flex-end" }}
-      >
+      <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
         <ButtonV2 variant="tertiary" onClick={onCancel}>
           {translateText(["cancelButton"])}
         </ButtonV2>
@@ -345,6 +365,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
       onClose={onCancel}
       modalHeader={translateText(["modalTitle"])}
       content={modalContent}
+      className="w-138.25 rounded-2xl!"
     />
   );
 };
