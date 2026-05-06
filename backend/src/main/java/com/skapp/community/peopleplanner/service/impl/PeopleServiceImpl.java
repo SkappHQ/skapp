@@ -12,6 +12,7 @@ import com.skapp.community.common.payload.response.NotificationSettingsResponseD
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
@@ -162,6 +163,8 @@ public class PeopleServiceImpl implements PeopleService {
 	private final JobFamilyDao jobFamilyDao;
 
 	private final JobTitleDao jobTitleDao;
+
+	private final WorkLocationDao workLocationDao;
 
 	private final EmployeePeriodDao employeePeriodDao;
 
@@ -341,6 +344,17 @@ public class PeopleServiceImpl implements PeopleService {
 				employee::setJoinDate);
 		CommonModuleUtils.setIfExists(() -> requestDto.getEmployment().getEmploymentDetails().getWorkTimeZone(),
 				employee::setTimeZone);
+
+		// Work Location
+		if (requestDto != null && requestDto.getEmployment() != null
+				&& requestDto.getEmployment().getEmploymentDetails() != null
+				&& requestDto.getEmployment().getEmploymentDetails().getWorkLocationId() != null) {
+			workLocationDao.findById(requestDto.getEmployment().getEmploymentDetails().getWorkLocationId())
+				.ifPresent(employee::setWorkLocation);
+		}
+		else {
+			employee.setWorkLocation(null);
+		}
 
 		// Identification and Diversity Details
 		CommonModuleUtils.setIfExists(
