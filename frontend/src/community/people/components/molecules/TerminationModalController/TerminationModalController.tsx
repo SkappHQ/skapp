@@ -3,6 +3,7 @@ import { FC } from "react";
 
 import { usePeopleStore } from "~community/people/store/store";
 
+import SupervisorReassignmentModal from "../SupervisorReassignmentModal/SupervisorReassignmentModal";
 import TerminateConfirmationModal from "../TerminateConfirmationModal/TerminateConfirmationModal";
 import TerminationWarningModal from "../TerminationWarningModal/TerminationWarningModal";
 
@@ -12,11 +13,27 @@ const TerminationModalController: FC = () => {
     alertMessage,
     setTerminationConfirmationModalOpen,
     setTerminationAlertModalOpen,
-    isTerminationAlertModalOpen
+    isTerminationAlertModalOpen,
+    selectedEmployeeId,
+    isSupervisorReassignmentModalOpen,
+    supervisorReassignmentActionType,
+    setIsSupervisorReassignmentModalOpen
   } = usePeopleStore((state) => state);
 
   return (
     <Box>
+      <SupervisorReassignmentModal
+        isOpen={
+          isSupervisorReassignmentModalOpen &&
+          supervisorReassignmentActionType === "terminate"
+        }
+        onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
+        employeeId={Number(selectedEmployeeId)}
+        actionType="terminate"
+        onActionSuccess={() => {
+          setIsSupervisorReassignmentModalOpen(false);
+        }}
+      />
       <TerminateConfirmationModal
         isOpen={isTerminationConfirmationModalOpen}
         onClose={() => setTerminationConfirmationModalOpen(false)}

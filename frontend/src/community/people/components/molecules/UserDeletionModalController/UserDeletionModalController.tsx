@@ -3,6 +3,7 @@ import { FC } from "react";
 
 import { usePeopleStore } from "~community/people/store/store";
 
+import SupervisorReassignmentModal from "../SupervisorReassignmentModal/SupervisorReassignmentModal";
 import UserDeletionConfirmationModal from "../UserDeletionConfirmationModal/UserDeletionConfirmationModal";
 import UserDeletionWarningModal from "../UserDeletionWarningModal/UserDeletionWarningModal";
 
@@ -12,11 +13,27 @@ const UserDeletionModalController: FC = () => {
     isDeletionAlertOpen,
     setDeletionConfirmationModalOpen,
     setDeletionAlertOpen,
-    deletionAlertMessage
+    deletionAlertMessage,
+    selectedEmployeeId,
+    isSupervisorReassignmentModalOpen,
+    supervisorReassignmentActionType,
+    setIsSupervisorReassignmentModalOpen
   } = usePeopleStore((state) => state);
 
   return (
     <Box>
+      <SupervisorReassignmentModal
+        isOpen={
+          isSupervisorReassignmentModalOpen &&
+          supervisorReassignmentActionType === "delete"
+        }
+        onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
+        employeeId={Number(selectedEmployeeId)}
+        actionType="delete"
+        onActionSuccess={() => {
+          setIsSupervisorReassignmentModalOpen(false);
+        }}
+      />
       <UserDeletionConfirmationModal
         isOpen={isDeletionConfirmationModalOpen}
         onClose={() => setDeletionConfirmationModalOpen(false)}
