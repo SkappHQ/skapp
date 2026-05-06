@@ -1,9 +1,16 @@
+import { TitleEnum } from "~community/people/enums/PeopleEnums";
 import {
   BloodGroupTypes,
   EEOJobCategoryTypes,
   EmploymentAllocationTypes,
   EthnicityTypes
 } from "~community/people/types/AddNewResourceTypes";
+
+export const TitleSelector: Record<string, string> = {
+  Mr: TitleEnum.MR,
+  Mrs: TitleEnum.MRS,
+  Miss: TitleEnum.MISS
+};
 
 export const BloodGroupSelector: Record<string, string> = {
   "(A+)": BloodGroupTypes.A_POSITIVE,
@@ -81,6 +88,7 @@ export const replaceEmptyStringsWithNull = (obj: any) => {
 
 export const convertUserBulkCsvHeaders = (header: string) => {
   const headerSelector: Record<string, string> = {
+    Title: "title",
     "First name*": "firstName",
     "Middle name": "middleName",
     "Last name*": "lastName",
