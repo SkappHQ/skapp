@@ -137,7 +137,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	}
 
 	@Transactional
-	@Transactional
 	@Override
 	public ResponseEntityDto createGuestUsersInternal(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto) {
 		if (epGuestUserBulkInviteRequestDto == null || epGuestUserBulkInviteRequestDto.getEmails() == null
