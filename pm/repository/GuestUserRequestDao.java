@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface GuestUserRequestDao extends JpaRepository<GuestUserRequest, Long> {
+public interface GuestUserRequestDao extends JpaRepository<GuestUserRequest, Long>, GuestUserRequestRepository {
 
 	List<GuestUserRequest> findByEmailContaining(String email);
 

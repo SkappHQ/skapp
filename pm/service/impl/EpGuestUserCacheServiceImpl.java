@@ -16,14 +16,18 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @Primary
 @RequiredArgsConstructor
 @Slf4j
 public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
+
+	private static final String PROJECT_INFO_KEY = "projectInfo";
 
 	private final CacheService cacheService;
 
@@ -59,7 +63,7 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 
 		JsonNode projectsMapNode = objectMapper.readTree(cachedData);
 
-		if (projectsMapNode != null && projectsMapNode.isObject()) {
+		if (projectsMapNode.isObject()) {
 			projectsMapNode.properties().forEach(entry -> {
 				JsonNode projectData = entry.getValue();
 
@@ -103,7 +107,7 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 
 		JsonNode projectsMapNode = objectMapper.readTree(cachedData);
 
-		if (projectsMapNode != null && projectsMapNode.isObject()) {
+		if (projectsMapNode.isObject()) {
 			projectsMapNode.properties().forEach(entry -> {
 				JsonNode projectData = entry.getValue();
 
@@ -119,7 +123,7 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 		Map<String, JsonNode> projectsMap = new HashMap<>();
 
 		for (JsonNode projectNode : projectsData) {
-			JsonNode projectInfo = projectNode.get("projectInfo");
+			JsonNode projectInfo = projectNode.get(PROJECT_INFO_KEY);
 			if (projectInfo != null && projectInfo.has("id")) {
 				String projectId = projectInfo.get("id").asString();
 				projectsMap.put(projectId, projectNode);
@@ -137,7 +141,7 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 			for (JsonNode member : membersNode) {
 				int memberUserId = member.get("userId").asInt();
 				if (memberUserId == userId) {
-					return createProjectDto(projectNode.get("projectInfo"));
+					return createProjectDto(projectNode.get(PROJECT_INFO_KEY));
 				}
 			}
 		}
@@ -149,7 +153,7 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 		JsonNode membersNode = projectNode.get("members");
 
 		if (membersNode != null && membersNode.isArray()) {
-			ProjectRequestDto projectDto = createProjectDto(projectNode.get("projectInfo"));
+			ProjectRequestDto projectDto = createProjectDto(projectNode.get(PROJECT_INFO_KEY));
 
 			if (projectDto != null) {
 				for (JsonNode member : membersNode) {
@@ -182,6 +186,57 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 		}
 
 		return dto;
+	}
+
+	@Override
+	public List<ProjectRequestDto> getProjectsByIds(List<Long> projectIds) {
+		if (projectIds == null || projectIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		Set<Long> projectIdSet = new HashSet<>(projectIds);
+		List<JsonNode> projectsData = loadAllProjectNodes();
+		if (projectsData.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return filterProjectsByIds(projectsData, projectIdSet);
+	}
+
+	private List<JsonNode> loadAllProjectNodes() {
+		EpCacheKeys cacheKey = EpCacheKeys.ALL_PROJECT_DETAILS_CACHE_KEY;
+		String cachedData = cacheService.get(cacheKey.getKey());
+
+		if (cachedData == null) {
+			List<JsonNode> projectsData = epGuestUserInternalService.loadProjectsFromMicroservice();
+			if (projectsData == null || projectsData.isEmpty()) {
+				return Collections.emptyList();
+			}
+			cacheProjects(projectsData);
+			return projectsData;
+		}
+
+		List<JsonNode> projectsData = new ArrayList<>();
+		JsonNode projectsMapNode = objectMapper.readTree(cachedData);
+		if (projectsMapNode.isObject()) {
+			projectsMapNode.properties().forEach(entry -> projectsData.add(entry.getValue()));
+		}
+		return projectsData;
+	}
+
+	private List<ProjectRequestDto> filterProjectsByIds(List<JsonNode> projectsData, Set<Long> projectIds) {
+		List<ProjectRequestDto> result = new ArrayList<>();
+		for (JsonNode projectNode : projectsData) {
+			JsonNode projectInfo = projectNode.get(PROJECT_INFO_KEY);
+			if (projectInfo == null || !projectInfo.has("id")) {
+				continue;
+			}
+			Long id = Long.parseLong(projectInfo.get("id").asString());
+			if (projectIds.contains(id)) {
+				result.add(createProjectDto(projectInfo));
+			}
+		}
+		return result;
 	}
 
 }

@@ -21,7 +21,7 @@ public interface EpGuestUserService {
 
 	ResponseEntityDto createGuestUsers(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto);
 
-	List<EpUserResponseDto> createGuestUsersInternal(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto);
+	ResponseEntityDto createGuestUsersInternal(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto);
 
 	User validateGuestUserEmail(String email);
 

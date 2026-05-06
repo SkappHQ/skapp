@@ -14,4 +14,6 @@ public class EpGuestUserBulkInviteRequestDto {
 
 	private List<ProjectRequestDto> projects;
 
+	private Long currentUserId;
+
 }

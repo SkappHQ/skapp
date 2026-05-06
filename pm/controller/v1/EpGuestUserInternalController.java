@@ -38,9 +38,7 @@ public class EpGuestUserInternalController {
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> createGuestUsers(
 			@RequestBody EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto) {
-		return new ResponseEntity<>(
-				new ResponseEntityDto(false,
-						epGuestUserService.createGuestUsersInternal(epGuestUserBulkInviteRequestDto)),
+		return new ResponseEntity<>(epGuestUserService.createGuestUsersInternal(epGuestUserBulkInviteRequestDto),
 				HttpStatus.CREATED);
 	}
 

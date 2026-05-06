@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface EpGuestUserInternalService {
 
-	boolean assignGuestToProjects(Long userId, List<ProjectRequestDto> projects);
+	boolean assignGuestToProjects(Long userId, List<ProjectRequestDto> projects, Long adminUserId);
 
-	boolean updateGuestUserProjects(Long userId, List<ProjectRequestDto> projects);
+	boolean updateGuestUserProjects(Long userId, List<ProjectRequestDto> projects, Long adminUserId);
 
 	List<JsonNode> loadProjectsFromMicroservice();
 
