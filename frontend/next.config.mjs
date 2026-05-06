@@ -391,6 +391,38 @@ const nextConfig = {
       {
         source: "/app-link",
         destination: "/enterprise/app-link"
+      },
+      {
+        source: "/crm",
+        destination: "/community/crm/contacts"
+      },
+      {
+        source: "/crm/contacts",
+        destination: "/community/crm/contacts"
+      },
+      {
+        source: "/crm/contacts/:id",
+        destination: "/community/crm/contacts/:id"
+      },
+      {
+        source: "/crm/companies",
+        destination: "/community/crm/companies"
+      },
+      {
+        source: "/crm/companies/:id",
+        destination: "/community/crm/companies/:id"
+      },
+      {
+        source: "/crm/deals",
+        destination: "/community/crm/deals"
+      },
+      {
+        source: "/crm/deals/:id",
+        destination: "/community/crm/deals/:id"
+      },
+      {
+        source: "/crm/tasks",
+        destination: "/community/crm/tasks"
       }
     ];
   },
