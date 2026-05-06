@@ -17,12 +17,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "work_location_geofence")
+@Table(name = "com_work_location_geofence")
 public class WorkLocationGeofence extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "work_location_geofence_id", nullable = false, updatable = false)
+	@Column(name = "id", nullable = false, updatable = false)
 	private Long id;
 
 	@OneToOne(fetch = FetchType.LAZY)

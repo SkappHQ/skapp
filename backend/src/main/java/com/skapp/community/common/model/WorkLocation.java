@@ -14,12 +14,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "work_location")
+@Table(name = "com_work_location")
 public class WorkLocation extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "work_location_id", nullable = false, updatable = false)
+	@Column(name = "id", nullable = false, updatable = false)
 	private Long workLocationId;
 
 	@Column(name = "name", nullable = false, unique = true)
