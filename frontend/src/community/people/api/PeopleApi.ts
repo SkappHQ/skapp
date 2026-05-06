@@ -840,8 +840,7 @@ export const useGetSupervisorRoles = (
       );
       return response?.data?.results?.[0] as SupervisorRolesData;
     },
-    enabled: !!userId,
-    staleTime: Infinity
+    enabled: !!userId
   });
 };
 
@@ -874,17 +873,14 @@ export const useGetActiveEmployeesForReassignment = (
     queryFn: async () => {
       const response = await authFetch.get(peoplesEndpoints.GET_EMPLOYEES, {
         params: {
-          page: 0,
           sortOrder: SortOrderTypes.ASC,
           sortKey: SortKeyTypes.NAME,
           searchKeyword: "",
-          isExport: false,
+          isExport: true,
           accountStatus: EmploymentStatusTypes.ACTIVE
         }
       });
-      const pageData: AllEmployeeDataResponse =
-        response?.data?.results?.[0] ?? {};
-      return pageData?.items ?? [];
+      return (response?.data?.results ?? []) as AllEmployeeDataType[];
     },
     enabled
   });

@@ -1,6 +1,8 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 import { type StylesConfig } from "react-select";
 
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+
 export const useGetSelectStyles = (error: string | string[]) => {
   const theme: Theme = useTheme();
 
@@ -112,7 +114,7 @@ export const useGetSelectStyles = (error: string | string[]) => {
     },
     menuPortal: (styles) => ({
       ...styles,
-      zIndex: 9999
+      zIndex: ZIndexEnums.NEWMODAL
     })
   };
 

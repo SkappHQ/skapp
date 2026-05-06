@@ -1,7 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import DropdownSearch from "~community/common/components/molecules/DropDownSearch/DropDownSearch";
@@ -50,6 +50,15 @@ const SupervisorReassignmentModal: FC<Props> = ({
   const [teamAssignments, setTeamAssignments] = useState<
     Record<number, string | number>
   >({});
+  const [hasTouched, setHasTouched] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setPrimaryAssignments({});
+      setTeamAssignments({});
+      setHasTouched(false);
+    }
+  }, [isOpen]);
 
   const { data: supervisorRoles } = useGetSupervisorRoles(
     isOpen ? employeeId : 0
@@ -136,6 +145,12 @@ const SupervisorReassignmentModal: FC<Props> = ({
   );
 
   const onTransferSuccess = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["transferSuccessTitle"]),
+      isIcon: true
+    });
     if (actionType === "terminate") {
       terminateEmployee();
     } else {
@@ -195,7 +210,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
       >
         {supervisedEmployees.length > 0 && (
           <Stack spacing={1.5}>
-            <Typography variant="subtitle3">
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>
               {translateText(["primarySupervisorsSection"])}
             </Typography>
             <Stack spacing={1.5}>
@@ -225,6 +240,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
                       itemList={employeeDropdownOptions}
                       isDisabled={noActiveEmployeesAvailable}
                       onChange={(val) => {
+                        setHasTouched(true);
                         setPrimaryAssignments((prev) => ({
                           ...prev,
                           [emp.employeeId]: val as string | number
@@ -241,7 +257,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
 
         {supervisedTeams.length > 0 && (
           <Stack spacing={1.5}>
-            <Typography variant="subtitle3">
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>
               {translateText(["teamSupervisorsSection"])}
             </Typography>
             <Stack spacing={1.5}>
@@ -267,6 +283,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
                       itemList={employeeDropdownOptions}
                       isDisabled={noActiveEmployeesAvailable}
                       onChange={(val) => {
+                        setHasTouched(true);
                         setTeamAssignments((prev) => ({
                           ...prev,
                           [team.teamId]: val as string | number
@@ -290,7 +307,8 @@ const SupervisorReassignmentModal: FC<Props> = ({
           </Typography>
         )}
 
-        {!isProceedEnabled &&
+        {hasTouched &&
+          !isProceedEnabled &&
           !noActiveEmployeesAvailable &&
           (supervisedEmployees.length > 0 || supervisedTeams.length > 0) && (
             <Typography
