@@ -92,6 +92,14 @@ const adminRoutes = {
     ROUTES.PROJECTS.BASE,
     ROUTES.PROJECTS.GUESTS,
     ROUTES.PROJECTS.GUEST_REQUESTS
+  ],
+  [AdminTypes.CRM_ADMIN]: [
+    ROUTES.CRM.BASE,
+    ROUTES.CRM.CONTACTS,
+    ROUTES.CRM.COMPANIES,
+    ROUTES.CRM.DEALS,
+    ROUTES.CRM.TASKS,
+    ROUTES.CONFIGURATIONS.BASE
   ]
 };
 
@@ -125,6 +133,13 @@ const managerRoutes = {
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE,
     ROUTES.INVOICE.CREATE.BASE
+  ],
+  [ManagerTypes.CRM_SALES_MANAGER]: [
+    ROUTES.CRM.BASE,
+    ROUTES.CRM.CONTACTS,
+    ROUTES.CRM.COMPANIES,
+    ROUTES.CRM.DEALS,
+    ROUTES.CRM.TASKS
   ]
 };
 
@@ -148,7 +163,15 @@ const employeeRoutes = {
     ...commonRoutes
   ],
   [EmployeeTypes.PM_EMPLOYEE]: [...commonRoutes],
-  [EmployeeTypes.PM_GUEST_EMPLOYEE]: [...commonRoutes]
+  [EmployeeTypes.PM_GUEST_EMPLOYEE]: [...commonRoutes],
+  [EmployeeTypes.CRM_SALES_REPRESENTATIVE]: [
+    ROUTES.CRM.BASE,
+    ROUTES.CRM.CONTACTS,
+    ROUTES.CRM.COMPANIES,
+    ROUTES.CRM.DEALS,
+    ROUTES.CRM.TASKS,
+    ...commonRoutes
+  ]
 };
 
 const senderRoutes = {
@@ -347,6 +370,8 @@ export const config = {
     // Invoice routes
     "/invoice",
     "/invoice/:path*",
-    "/invoice/create/:path*"
+    "/invoice/create/:path*",
+    // CRM module routes
+    "/crm/:path*"
   ]
 };
