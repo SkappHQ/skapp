@@ -207,6 +207,7 @@ const useDetectChange = ({ id, isProfile = false }: GetEmployeeParams) => {
       generalDetails: {
         authPic: employee?.authPic,
         thumbnail: "",
+        title: employee?.title,
         firstName: employee?.firstName,
         middleName: employee?.middleName,
         lastName: employee?.lastName,

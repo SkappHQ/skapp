@@ -38,4 +38,6 @@ public interface EmployeeDao
 
 	List<Employee> findByEmployeeIdInAndAccountStatusIn(List<Long> userIds, Set<AccountStatus> active);
 
+	List<Employee> findByWorkLocationWorkLocationId(Long workLocationId);
+
 }

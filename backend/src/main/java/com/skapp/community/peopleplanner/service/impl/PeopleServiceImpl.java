@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
@@ -317,6 +318,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private Employee createEmployeeEntity(Employee employee, CreateEmployeeRequestDto requestDto) {
 		// Personal General Information
+		CommonModuleUtils.setIfExists(() -> requestDto.getPersonal().getGeneral().getTitle(), employee::setTitle);
 		CommonModuleUtils.setIfExists(() -> requestDto.getPersonal().getGeneral().getFirstName(),
 				employee::setFirstName);
 		CommonModuleUtils.setIfExists(() -> requestDto.getPersonal().getGeneral().getMiddleName(),
@@ -2493,9 +2495,10 @@ public class PeopleServiceImpl implements PeopleService {
 	 */
 	protected void applyRoleBasedRestrictionsToDetailedDto(EmployeeDetailedResponseDto dto) {
 		Set<String> userRoles = userService.getCurrentUserRoles();
-		String roleSuperAdmin = "ROLE_" + Role.SUPER_ADMIN.name();
-		String rolePeopleAdmin = "ROLE_" + Role.PEOPLE_ADMIN.name();
-		String rolePeopleManager = "ROLE_" + Role.PEOPLE_MANAGER.name();
+
+		String roleSuperAdmin = AuthConstants.AUTH_ROLE + Role.SUPER_ADMIN.name();
+		String rolePeopleAdmin = AuthConstants.AUTH_ROLE + Role.PEOPLE_ADMIN.name();
+		String rolePeopleManager = AuthConstants.AUTH_ROLE + Role.PEOPLE_MANAGER.name();
 
 		if (userRoles.contains(roleSuperAdmin) || userRoles.contains(rolePeopleAdmin)
 				|| userRoles.contains(rolePeopleManager)) {

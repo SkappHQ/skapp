@@ -23,6 +23,7 @@ import { AdminTypes } from "~community/common/types/AuthTypes";
 
 import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
+import { characterLengths } from "~community/common/constants/stringConstants";
 
 export const getBlinkClass = (shouldBlink: boolean): string =>
   shouldBlink ? "animate-pulse" : "";
@@ -574,3 +575,7 @@ export const replaceTabQueryParam = (path: string, tabId: string): void => {
   params.set("tab", tabId);
   globalThis.history.replaceState(null, "", `${basePath}?${params.toString()}`);
 };
+
+export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
+  return characterLengths.PHONE_NUMBER_LENGTH_MAX - countryCodeValue.length;
+}
