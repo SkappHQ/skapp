@@ -17,6 +17,7 @@ import {
   projectTeamModalSlice,
   projectTeamSearchSlice
 } from "./slices/projectTeamSlice";
+import { supervisorReassignmentSlice } from "./slices/supervisorReassignmentSlice";
 import { terminationConfirmationModalSlice } from "./slices/terminateEmployeeSlice";
 import { terminationAlertModalSlice } from "./slices/terminationAlertSlice";
 import { userDeletionModalSlice } from "./slices/userDeletionSlice";
@@ -41,7 +42,7 @@ export const usePeopleStore = create<
       ...terminationConfirmationModalSlice(set),
       ...terminationAlertModalSlice(set),
       ...userDeletionModalSlice(set),
-      ...terminationAlertModalSlice(set),
+      ...supervisorReassignmentSlice(set),
       ...peopleSlice(set)
     }),
     { name: "peopleStore" }
