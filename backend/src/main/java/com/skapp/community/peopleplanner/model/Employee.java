@@ -9,6 +9,7 @@ import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
 import com.skapp.community.peopleplanner.type.Title;
+import com.skapp.community.common.model.WorkLocation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -162,6 +163,10 @@ public class Employee extends Auditable<String> {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "job_title_id")
 	private JobTitle jobTitle;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "work_location_id")
+	private WorkLocation workLocation;
 
 	public String getFullName() {
 		return firstName + " " + lastName;
