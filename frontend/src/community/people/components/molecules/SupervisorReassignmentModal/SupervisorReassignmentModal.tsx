@@ -62,7 +62,8 @@ const SupervisorReassignmentModal: FC<Props> = ({
   const { data: supervisorRoles } = useGetSupervisorRoles(
     isOpen ? employeeId : 0
   );
-  const { data: activeEmployees = [] } = useGetActiveEmployeesForReassignment();
+  const { data: activeEmployees = [] } =
+    useGetActiveEmployeesForReassignment(isOpen);
 
   const supervisedEmployees: SupervisedEmployee[] =
     supervisorRoles?.supervisedEmployees ?? [];
@@ -151,9 +152,9 @@ const SupervisorReassignmentModal: FC<Props> = ({
       isIcon: true
     });
     if (actionType === "terminate") {
-      terminateEmployee();
+      terminateEmployee(employeeId);
     } else {
-      deleteEmployee();
+      deleteEmployee(employeeId);
     }
   };
 

@@ -584,20 +584,19 @@ export const useTerminateUser = (
 
   const { selectedEmployeeId } = usePeopleStore((state) => state);
   return useMutation({
-    mutationFn: () => {
+    mutationFn: (explicitEmployeeId?: number) => {
+      const id = explicitEmployeeId ?? (selectedEmployeeId as number);
       const payload = {
-        userId: selectedEmployeeId,
+        userId: id,
         isActive: false
       };
 
-      return authFetch.patch(
-        peoplesEndpoints.TERMINATE_EMPLOYEE(selectedEmployeeId as number),
-        payload
-      );
+      return authFetch.patch(peoplesEndpoints.TERMINATE_EMPLOYEE(id), payload);
     },
-    onSuccess: () => {
+    onSuccess: (_data, explicitEmployeeId) => {
+      const id = explicitEmployeeId ?? Number(selectedEmployeeId);
       queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(selectedEmployeeId))
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(id)
       });
       onSuccess();
     },
@@ -693,14 +692,14 @@ export const useDeleteUser = (onSuccess: () => void, onError: () => void) => {
 
   const { selectedEmployeeId } = usePeopleStore((state) => state);
   return useMutation({
-    mutationFn: () => {
-      return authFetch.patch(
-        peoplesEndpoints.DELETE_USER(selectedEmployeeId as number)
-      );
+    mutationFn: (explicitEmployeeId?: number) => {
+      const id = explicitEmployeeId ?? (selectedEmployeeId as number);
+      return authFetch.patch(peoplesEndpoints.DELETE_USER(id));
     },
-    onSuccess: () => {
+    onSuccess: (_data, explicitEmployeeId) => {
+      const id = explicitEmployeeId ?? Number(selectedEmployeeId);
       queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(selectedEmployeeId))
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(id)
       });
       onSuccess();
     },

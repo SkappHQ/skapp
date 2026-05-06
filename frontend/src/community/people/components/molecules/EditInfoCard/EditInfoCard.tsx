@@ -124,6 +124,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
       setIsSupervisorReassignmentModalOpen(true);
       return;
     }
+    setSelectedEmployeeId(Number(employeeId));
     setTerminationConfirmationModalOpen(true);
   };
 
@@ -140,6 +141,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
       setIsSupervisorReassignmentModalOpen(true);
       return;
     }
+    setSelectedEmployeeId(Number(employeeId));
     setDeletionConfirmationModalOpen(true);
   };
 
