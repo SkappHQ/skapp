@@ -257,6 +257,7 @@
     "primarySupervisorsSection": "Reassign Primary Supervisors",
     "teamSupervisorsSection": "Reassign Team Supervisors",
     "selectSupervisorPlaceholder": "Select supervisor",
+    "closeModalAriaLabel": "Close change supervisors modal",
     "proceedAndTerminateButton": "Reassign and terminate user",
     "proceedAndDeleteButton": "Reassign and delete user",
     "cancelButton": "Cancel",

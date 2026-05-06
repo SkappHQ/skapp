@@ -347,6 +347,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
       modalHeader={translateText(["modalTitle"])}
       content={modalContent}
       className="w-138.25 rounded-2xl!"
+      closeButtonAriaLabel={translateText(["closeModalAriaLabel"])}
     />
   );
 };
