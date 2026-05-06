@@ -1,17 +1,17 @@
 package com.skapp.community.peopleplanner.payload.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class PrimarySupervisorTransferItemDto {
 
-	@NonNull
+	@NotNull
 	private Long subordinateEmployeeId;
 
-	@NonNull
+	@NotNull
 	private Long newSupervisorId;
 
 }

@@ -1260,6 +1260,10 @@ public class PeopleServiceImpl implements PeopleService {
 				if (optionalSubordinate.isPresent() && optionalNewSupervisor.isPresent()) {
 					Employee subordinate = optionalSubordinate.get();
 					Employee newSupervisor = optionalNewSupervisor.get();
+					if (!AccountStatus.ACTIVE.equals(newSupervisor.getAccountStatus())) {
+						throw new ModuleException(
+								PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
+					}
 					if (newSupervisor.getEmployeeId().equals(departingEmployee.getEmployeeId())) {
 						throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
 					}
@@ -1287,6 +1291,10 @@ public class PeopleServiceImpl implements PeopleService {
 				if (optionalTeam.isPresent() && optionalNewSupervisor.isPresent()) {
 					Team team = optionalTeam.get();
 					Employee newSupervisor = optionalNewSupervisor.get();
+					if (!AccountStatus.ACTIVE.equals(newSupervisor.getAccountStatus())) {
+						throw new ModuleException(
+								PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
+					}
 					if (newSupervisor.getEmployeeId().equals(departingEmployee.getEmployeeId())) {
 						throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
 					}
