@@ -17,4 +17,6 @@ public class AttendanceConfigRequestDto {
 
 	private Boolean isAutoApprovalForChanges;
 
+	private Boolean isGeoFencingEnabled;
+
 }
