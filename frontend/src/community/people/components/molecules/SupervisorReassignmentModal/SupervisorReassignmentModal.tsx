@@ -1,4 +1,3 @@
-import { Box, Stack } from "@mui/material";
 import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { FC, useEffect, useMemo, useState } from "react";
@@ -50,13 +49,13 @@ const SupervisorReassignmentModal: FC<Props> = ({
   const [teamAssignments, setTeamAssignments] = useState<
     Record<number, string | number>
   >({});
-  const [hasTouched, setHasTouched] = useState(false);
+  const [hasAttemptedProceed, setHasAttemptedProceed] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       setPrimaryAssignments({});
       setTeamAssignments({});
-      setHasTouched(false);
+      setHasAttemptedProceed(false);
     }
   }, [isOpen]);
 
@@ -198,46 +197,31 @@ const SupervisorReassignmentModal: FC<Props> = ({
       : translateText(["proceedAndDeleteButton"]);
 
   const modalContent = (
-    <Stack spacing={3} sx={{ width: "100%" }}>
-      {/* Frame 1 — subtitle + scrollable sections */}
-      <Stack spacing={2}>
+    <div className="flex flex-col gap-6 w-full">
+      <div className="flex flex-col gap-4">
         <p className="body1">{translateText(["subtitle"])}</p>
 
-        <Stack
-          sx={{
-            maxHeight: "22rem",
-            overflowY: "auto",
-            gap: "1rem"
-          }}
-        >
+        <div className="flex flex-col max-h-88 overflow-y-auto gap-4">
           {supervisedEmployees.length > 0 && (
-            <Stack spacing={1.5}>
+            <div className="flex flex-col gap-3">
               <p className="subtitle2">
                 {translateText(["primarySupervisorsSection"])}
               </p>
-              <Stack spacing={1.5}>
+              <div className="flex flex-col gap-3">
                 {supervisedEmployees.map((emp) => (
-                  <Stack
+                  <div
                     key={emp.employeeId}
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ minHeight: "2.5625rem" }}
+                    className="flex flex-row items-center justify-between gap-3 min-h-10.25"
                   >
-                    <Box
-                      sx={{
-                        width: "7.8125rem",
-                        overflow: "hidden",
-                        flexShrink: 0
-                      }}
-                    >
+                    <div className="flex-1 min-w-0 overflow-hidden">
                       <AvatarChip
                         firstName={emp.firstName}
                         lastName={emp.lastName}
                         avatarUrl={emp.authPic}
+                        chipStyles={{ justifyContent: "flex-start" }}
                       />
-                    </Box>
-                    <Box sx={{ width: "15.625rem", flexShrink: 0 }}>
+                    </div>
+                    <div className="w-62.5 shrink-0">
                       <DropdownSearch
                         label=""
                         inputName={`primary-supervisor-${emp.employeeId}`}
@@ -248,7 +232,6 @@ const SupervisorReassignmentModal: FC<Props> = ({
                         itemList={employeeDropdownOptions}
                         isDisabled={noActiveEmployeesAvailable}
                         onChange={(val) => {
-                          setHasTouched(true);
                           setPrimaryAssignments((prev) => ({
                             ...prev,
                             [emp.employeeId]: val as string | number
@@ -256,34 +239,25 @@ const SupervisorReassignmentModal: FC<Props> = ({
                         }}
                         componentStyle={{ mt: "0" }}
                       />
-                    </Box>
-                  </Stack>
+                    </div>
+                  </div>
                 ))}
-              </Stack>
-            </Stack>
+              </div>
+            </div>
           )}
 
           {supervisedTeams.length > 0 && (
-            <Stack spacing={1.5}>
+            <div className="flex flex-col gap-3">
               <p className="subtitle2">
                 {translateText(["teamSupervisorsSection"])}
               </p>
-              <Stack spacing={1.5}>
+              <div className="flex flex-col gap-3">
                 {supervisedTeams.map((team) => (
-                  <Stack
+                  <div
                     key={team.teamId}
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ minHeight: "2.5625rem" }}
+                    className="flex flex-row items-center justify-between min-h-10.25"
                   >
-                    <Box
-                      sx={{
-                        width: "7.8125rem",
-                        overflow: "hidden",
-                        flexShrink: 0
-                      }}
-                    >
+                    <div className="w-31.25 overflow-hidden shrink-0">
                       <p
                         className="body2"
                         style={{
@@ -294,8 +268,8 @@ const SupervisorReassignmentModal: FC<Props> = ({
                       >
                         {team.teamName}
                       </p>
-                    </Box>
-                    <Box sx={{ width: "15.625rem", flexShrink: 0 }}>
+                    </div>
+                    <div className="w-62.5 shrink-0">
                       <DropdownSearch
                         label=""
                         inputName={`team-supervisor-${team.teamId}`}
@@ -306,7 +280,6 @@ const SupervisorReassignmentModal: FC<Props> = ({
                         itemList={employeeDropdownOptions}
                         isDisabled={noActiveEmployeesAvailable}
                         onChange={(val) => {
-                          setHasTouched(true);
                           setTeamAssignments((prev) => ({
                             ...prev,
                             [team.teamId]: val as string | number
@@ -314,11 +287,11 @@ const SupervisorReassignmentModal: FC<Props> = ({
                         }}
                         componentStyle={{ mt: "0" }}
                       />
-                    </Box>
-                  </Stack>
+                    </div>
+                  </div>
                 ))}
-              </Stack>
-            </Stack>
+              </div>
+            </div>
           )}
 
           {noActiveEmployeesAvailable && (
@@ -330,7 +303,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
             </p>
           )}
 
-          {hasTouched &&
+          {hasAttemptedProceed &&
             !isProceedEnabled &&
             !noActiveEmployeesAvailable &&
             (supervisedEmployees.length > 0 || supervisedTeams.length > 0) && (
@@ -341,22 +314,30 @@ const SupervisorReassignmentModal: FC<Props> = ({
                 {translateText(["allReassignedValidationMessage"])}
               </p>
             )}
-        </Stack>
-      </Stack>
+        </div>
+      </div>
 
-      <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
+      <div className="flex flex-row gap-4 justify-end">
         <ButtonV2 variant="tertiary" onClick={onCancel}>
           {translateText(["cancelButton"])}
         </ButtonV2>
-        <ButtonV2
-          variant="primary"
-          onClick={handleProceed}
-          disabled={!isProceedEnabled || isPending}
+        <div
+          onClick={() => {
+            if (!isProceedEnabled && !noActiveEmployeesAvailable) {
+              setHasAttemptedProceed(true);
+            }
+          }}
         >
-          {proceedButtonLabel}
-        </ButtonV2>
-      </Stack>
-    </Stack>
+          <ButtonV2
+            variant="primary"
+            onClick={handleProceed}
+            disabled={!isProceedEnabled || isPending}
+          >
+            {proceedButtonLabel}
+          </ButtonV2>
+        </div>
+      </div>
+    </div>
   );
 
   return (
