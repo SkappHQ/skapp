@@ -1523,6 +1523,16 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 	}
 
+	public void setBulkEmployeeWorkLocation(EmployeeBulkDto employeeBulkDto, Employee employee) {
+		if (employeeBulkDto.getWorkLocation() != null && !employeeBulkDto.getWorkLocation().isBlank()) {
+			workLocationDao.findByNameIgnoreCase(employeeBulkDto.getWorkLocation())
+				.ifPresentOrElse(employee::setWorkLocation, () -> {
+					throw new EntityNotFoundException(
+							PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
+				});
+		}
+	}
+
 	public List<EmployeeDetailedResponseDto> fetchEmployeeSearchData(Page<Employee> employees) {
 		List<EmployeeDetailedResponseDto> responseDtos = new ArrayList<>();
 		for (Employee employee : employees.getContent()) {
@@ -1884,6 +1894,8 @@ public class PeopleServiceImpl implements PeopleService {
 
 		employee.setAccountStatus(employeeBulkDto.getAccountStatus());
 		employee.setEmploymentAllocation(employeeBulkDto.getEmploymentAllocation());
+
+		setBulkEmployeeWorkLocation(employeeBulkDto, employee);
 
 		UserSettings userSettings = createNotificationSettingsForBulkUser(user);
 		user.setSettings(userSettings);
