@@ -154,6 +154,7 @@ public class RolesServiceImpl implements RolesService {
 	private RoleLevel getSecondaryRestrictionRole(ModuleType module) {
 		return switch (module) {
 			case ESIGN -> RoleLevel.SENDER;
+			case CRM -> RoleLevel.SALES_MANAGER;
 			default -> RoleLevel.MANAGER;
 		};
 	}
@@ -262,7 +263,7 @@ public class RolesServiceImpl implements RolesService {
 	private boolean isRoleAllowed(RoleLevel roleLevel, boolean isAdminAllowed, boolean isManagerAllowed) {
 		return switch (roleLevel) {
 			case ADMIN -> isAdminAllowed;
-			case MANAGER, SENDER -> isManagerAllowed;
+			case MANAGER, SENDER, SALES_MANAGER -> isManagerAllowed;
 			default -> true; // other roles are always allowed
 		};
 	}
@@ -670,6 +671,12 @@ public class RolesServiceImpl implements RolesService {
 	protected List<String> getRoleDisplayNames(ModuleType moduleType) {
 		List<String> roles = new ArrayList<>();
 		roles.add(RoleLevel.ADMIN.getDisplayName());
+		if (moduleType == ModuleType.CRM) {
+			roles.add(RoleLevel.SALES_MANAGER.getDisplayName());
+			roles.add(RoleLevel.SALES_REPRESENTATIVE.getDisplayName());
+			roles.add(RoleLevel.NONE.getDisplayName());
+			return roles;
+		}
 		roles.add(RoleLevel.MANAGER.getDisplayName());
 		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
 		return roles;
