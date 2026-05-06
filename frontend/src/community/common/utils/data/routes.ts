@@ -198,6 +198,69 @@ const routes = [
     ]
   },
   {
+    id: "9",
+    name: "CRM",
+    url: ROUTES.CRM.BASE,
+    icon: IconName.PEOPLE_ICON,
+    hasSubTree: true,
+    requiredAuthLevel: [
+      AdminTypes.SUPER_ADMIN,
+      AdminTypes.CRM_ADMIN,
+      ManagerTypes.CRM_SALES_MANAGER,
+      EmployeeTypes.CRM_SALES_REPRESENTATIVE
+    ],
+    subTree: [
+      {
+        id: "9A",
+        name: "Contacts",
+        url: ROUTES.CRM.CONTACTS,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.CRM_ADMIN,
+          ManagerTypes.CRM_SALES_MANAGER,
+          EmployeeTypes.CRM_SALES_REPRESENTATIVE
+        ]
+      },
+      {
+        id: "9B",
+        name: "Companies",
+        url: ROUTES.CRM.COMPANIES,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.CRM_ADMIN,
+          ManagerTypes.CRM_SALES_MANAGER,
+          EmployeeTypes.CRM_SALES_REPRESENTATIVE
+        ]
+      },
+      {
+        id: "9C",
+        name: "Deals",
+        url: ROUTES.CRM.DEALS,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.CRM_ADMIN,
+          ManagerTypes.CRM_SALES_MANAGER,
+          EmployeeTypes.CRM_SALES_REPRESENTATIVE
+        ]
+      },
+      {
+        id: "9D",
+        name: "Tasks",
+        url: ROUTES.CRM.TASKS,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.CRM_ADMIN,
+          ManagerTypes.CRM_SALES_MANAGER,
+          EmployeeTypes.CRM_SALES_REPRESENTATIVE
+        ]
+      }
+    ]
+  },
+  {
     id: "4",
     name: "Sign",
     url: ROUTES.SIGN.BASE,
