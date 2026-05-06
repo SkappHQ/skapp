@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 import { JSX, useEffect } from "react";
 import { type MouseEventHandler, useCallback, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
 import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
 import MailIcon from "~community/common/assets/Icons/MailIcon";
@@ -26,6 +26,7 @@ import {
   getTimeElapsedSinceDate
 } from "~community/common/utils/dateTimeUtils";
 import { EIGHTY_PERCENT } from "~community/common/utils/getConstants";
+import { useGetSupervisorRoles } from "~community/people/api/PeopleApi";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
 import { AccountStatusEnums } from "~community/people/enums/DirectoryEnums";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
@@ -37,7 +38,6 @@ import generateThumbnail from "~community/people/utils/image/thumbnailGenerator"
 import { toPascalCase } from "~community/people/utils/jobFamilyUtils/commonUtils";
 import { getStatusStyle } from "~community/people/utils/terminationUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
-import { useGetSubscriptionCancelImpact } from "~enterprise/settings/api/Billing/subscriptionCancelImpactApi";
 
 interface Props {
   onClick?: MouseEventHandler<HTMLDivElement>;
@@ -75,11 +75,10 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
     setThumbnail,
     setCommonDetails,
     setTerminationConfirmationModalOpen,
-    setAlertMessage,
-    setTerminationAlertModalOpen,
-    setDeletionAlertMessage,
-    setDeletionAlertOpen,
-    setDeletionConfirmationModalOpen
+    setDeletionConfirmationModalOpen,
+    setIsSupervisorReassignmentModalOpen,
+    setSupervisorReassignmentActionType,
+    setSelectedEmployeeId
   } = usePeopleStore((state) => state);
 
   const { data: teamData } = useGetAllTeams();
@@ -99,9 +98,8 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
 
   const { setToastMessage } = useToast();
 
-  const { data: supervisoryData, refetch } = useGetSubscriptionCancelImpact([
-    Number(employeeId)
-  ]);
+  const { data: supervisorRolesData, refetch: refetchSupervisorRoles } =
+    useGetSupervisorRoles(Number(employeeId));
 
   const { data: storageAvailableData } = useStorageAvailability();
   const hasTerminationAbility =
@@ -114,80 +112,32 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   );
 
   const handleTermination = async () => {
-    await refetch();
-    if (
-      supervisoryData?.primaryManagers?.length ||
-      supervisoryData?.teamSupervisors?.length
-    ) {
-      const condition = {
-        managers: supervisoryData?.primaryManagers?.length || 0,
-        teams: supervisoryData?.teamSupervisors?.length || 0
-      };
-      const caseKey = `${condition.managers}-${condition.teams}`;
+    const result = await refetchSupervisorRoles();
+    const freshData = result.data;
+    const hasSupervisorRoles =
+      (freshData?.supervisedEmployees?.length ?? 0) > 0 ||
+      (freshData?.supervisedTeams?.length ?? 0) > 0;
 
-      switch (caseKey) {
-        case "1-0":
-          setAlertMessage(
-            translateTerminationText([
-              "terminateWarningModalDescriptionSingleEmployee"
-            ])
-          );
-          break;
-        case "0-1":
-          setAlertMessage(
-            translateTerminationText([
-              "terminateWarningModalDescriptionSingleTeam"
-            ])
-          );
-          break;
-        case "1-1":
-          setAlertMessage(
-            translateTerminationText([
-              "terminateWarningModalDescriptionSingleEmployee"
-            ])
-          );
-          break;
-        default:
-          if (condition.managers > 1) {
-            setAlertMessage(
-              translateTerminationText([
-                "terminateWarningModalDescriptionMultipleEmployees"
-              ])
-            );
-          } else if (condition.teams > 1) {
-            setAlertMessage(
-              translateTerminationText([
-                "terminateWarningModalDescriptionMultipleTeams"
-              ])
-            );
-          }
-      }
-      setTerminationAlertModalOpen(true);
+    if (hasSupervisorRoles) {
+      setSelectedEmployeeId(Number(employeeId));
+      setSupervisorReassignmentActionType("terminate");
+      setIsSupervisorReassignmentModalOpen(true);
       return;
     }
     setTerminationConfirmationModalOpen(true);
   };
 
   const handleDeletion = async () => {
-    await refetch();
-    if (
-      supervisoryData?.primaryManagers?.length ||
-      supervisoryData?.teamSupervisors?.length
-    ) {
-      const condition = {
-        managers: supervisoryData?.primaryManagers?.length || 0,
-        teams: supervisoryData?.teamSupervisors?.length || 0
-      };
-      if (condition.managers > 0) {
-        setDeletionAlertMessage(
-          deletionTranslateText(["deleteWarningPrimarySupervisorDescription"])
-        );
-      } else if (condition.teams > 0) {
-        setDeletionAlertMessage(
-          deletionTranslateText(["deleteWarningTeamSupervisorDescription"])
-        );
-      }
-      setDeletionAlertOpen(true);
+    const result = await refetchSupervisorRoles();
+    const freshData = result.data;
+    const hasSupervisorRoles =
+      (freshData?.supervisedEmployees?.length ?? 0) > 0 ||
+      (freshData?.supervisedTeams?.length ?? 0) > 0;
+
+    if (hasSupervisorRoles) {
+      setSelectedEmployeeId(Number(employeeId));
+      setSupervisorReassignmentActionType("delete");
+      setIsSupervisorReassignmentModalOpen(true);
       return;
     }
     setDeletionConfirmationModalOpen(true);

@@ -109,7 +109,11 @@ export const useGetSelectStyles = (error: string | string[]) => {
         justifyContent: "center",
         alignItems: "center"
       };
-    }
+    },
+    menuPortal: (styles) => ({
+      ...styles,
+      zIndex: 9999
+    })
   };
 
   return selectStyles;
