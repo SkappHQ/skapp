@@ -720,7 +720,7 @@ CREATE TABLE IF NOT EXISTS `crm_task`
 CREATE TABLE IF NOT EXISTS `crm_config`
 (
     `id`                 bigint NOT NULL AUTO_INCREMENT,
-    `currency_code`      TEXT   NOT NULL,
+    `currency`           TEXT   NOT NULL,
     `created_by`         TEXT        DEFAULT NULL,
     `created_date`       datetime(6) DEFAULT NULL,
     `last_modified_by`   TEXT        DEFAULT NULL,
