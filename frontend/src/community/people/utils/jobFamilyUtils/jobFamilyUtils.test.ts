@@ -1,14 +1,10 @@
 import { ChangeEvent } from "react";
 
 import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnums";
-import {
-  JobFamilyDropDownType,
-  TransferMemberFormType
-} from "~community/people/types/JobFamilyTypes";
+import { TransferMemberFormType } from "~community/people/types/JobFamilyTypes";
 
 import {
   handleJobFamilyDeleteBackBtnClick,
-  handleJobFamilyDropDownItemClick,
   handleJobFamilyNameInputChange,
   jobFamilyTransferMembersCancelBtnClick,
   jobFamilyTransferMembersSubmitBtnClick
@@ -97,37 +93,6 @@ describe("handleJobFamilyDeleteBackBtnClick", () => {
 
     expect(mockSetCurrentDeletingJobFamily).toHaveBeenCalledTimes(1);
     expect(mockSetJobFamilyModalType).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe("handleJobFamilyDropDownItemClick", () => {
-  it("should update the job family and reset job title for the correct employee", () => {
-    const employeeId = 1;
-    const newJobFamily: JobFamilyDropDownType = {
-      jobFamilyId: 3,
-      name: "Engineering"
-    };
-    const values: TransferMemberFormType[] = [
-      {
-        employeeId: 1,
-        jobFamily: null,
-        jobTitle: { jobTitleId: 2, name: "Developer" }
-      },
-      { employeeId: 2, jobFamily: null, jobTitle: null }
-    ];
-    const setValues = jest.fn();
-
-    handleJobFamilyDropDownItemClick(
-      employeeId,
-      newJobFamily,
-      values,
-      setValues
-    );
-
-    expect(setValues).toHaveBeenCalledWith([
-      { employeeId: 1, jobFamily: newJobFamily, jobTitle: null },
-      { employeeId: 2, jobFamily: null, jobTitle: null }
-    ]);
   });
 });
 

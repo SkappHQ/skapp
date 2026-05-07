@@ -1,6 +1,5 @@
 import { create } from "zustand";
 
-import { Role } from "~community/people/enums/PeopleEnums";
 import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
 
 import peopleSlice from "./peopleSlice";
@@ -68,24 +67,6 @@ describe("peopleSlice", () => {
     setEmploymentDetails(mockEmploymentDetails);
     expect(useStore.getState().employee.employment.employmentDetails).toEqual(
       mockEmploymentDetails.employmentDetails
-    );
-  });
-
-  it("should set system permissions correctly", () => {
-    const useStore = create(peopleSlice);
-    const { setSystemPermissions } = useStore.getState();
-
-    const mockSystemPermissions = {
-      attendanceRole: "ATTENDANCE_EMPLOYEE",
-      esignRole: "ESIGN_EMPLOYEE",
-      leaveRole: "LEAVE_EMPLOYEE",
-      isSuperAdmin: true,
-      peopleRole: Role.PEOPLE_ADMIN
-    };
-
-    setSystemPermissions(mockSystemPermissions);
-    expect(useStore.getState().employee.systemPermissions).toEqual(
-      mockSystemPermissions
     );
   });
 

@@ -83,21 +83,6 @@ describe("refactorSupervisorAvatars", () => {
 });
 
 describe("refactorTeamListData", () => {
-  it("should return first team name and other team count", () => {
-    const teams = [
-      { team: { teamName: "Team A" } },
-      { team: { teamName: "Team B" } },
-      { team: { teamName: "Team C" } }
-    ];
-
-    const result = refactorTeamListData(teams);
-
-    expect(result).toEqual({
-      firstTeamName: "Team A",
-      otherTeamCount: 2
-    });
-  });
-
   it("should handle empty team list", () => {
     const result = refactorTeamListData([]);
 

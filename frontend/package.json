@@ -11,6 +11,7 @@
     "check-format": "prettier --check .",
     "format": "prettier --write .",
     "test": "jest --clearCache && jest",
+    "test:people": "jest --testPathPattern=src/community/people --no-coverage",
     "test:coverage": "jest --coverage",
     "test-all": "npm run check-format & npm run check-lint & npm run test",
     "prepare": "husky",

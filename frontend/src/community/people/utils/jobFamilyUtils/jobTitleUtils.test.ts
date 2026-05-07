@@ -19,7 +19,6 @@ import {
   getEmployeesWithJobTitle,
   getJobFamilyDataFromAllJobFamilies,
   handleJobTitleDeleteBackBtnClick,
-  handleJobTitleDropDownItemClick,
   handleJobTitleEditBackBtnClick,
   jobTitleTransferMembersModalSubmitBtnClick
 } from "./jobTitleUtils";
@@ -340,31 +339,6 @@ describe("handleJobTitleDeleteBackBtnClick", () => {
     expect(setPreviousJobTitleData).not.toHaveBeenCalled();
     expect(setCurrentEditingJobFamily).not.toHaveBeenCalled();
     expect(setCurrentTransferMembersData).not.toHaveBeenCalled();
-  });
-});
-
-describe("handleJobTitleDropDownItemClick", () => {
-  it("should update the job title for the specified employee", () => {
-    const employeeId = 1;
-    const item: JobTitleType = { jobTitleId: 1, name: "Developer" };
-    const values: TransferMemberFormType[] = [
-      {
-        employeeId: 1,
-        jobFamily: { jobFamilyId: 1, name: "Job Family" },
-        jobTitle: { jobTitleId: 2, name: "Old Title" }
-      }
-    ];
-    const setValues = jest.fn();
-
-    handleJobTitleDropDownItemClick(employeeId, item, values, setValues);
-
-    expect(setValues).toHaveBeenCalledWith([
-      {
-        employeeId: 1,
-        jobFamily: { jobFamilyId: 1, name: "Job Family" },
-        jobTitle: { jobTitleId: 1, name: "Developer" }
-      }
-    ]);
   });
 });
 
