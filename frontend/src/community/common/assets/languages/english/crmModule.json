@@ -4,7 +4,30 @@
     "title": "Contacts",
     "addContactBtn": "Add Contact",
     "detailsPageHead": "Contact Details | Skapp",
-    "detailsTitle": "Contact Details"
+    "detailsTitle": "Contact Details",
+    "createContactModal": {
+      "title": "Create contact",
+      "contactName": "Contact name",
+      "enterContactName": "Enter contact name",
+      "email": "Email",
+      "enterEmail": "Enter email",
+      "company": "Company",
+      "enterCompany": "Enter company",
+      "searchCompany": "Search companies...",
+      "noCompanyFound": "No company found",
+      "addCompany": "Add company",
+      "contactNo": "Contact no.",
+      "enterContactNo": "Enter contact no.",
+      "contactOwner": "Contact owner",
+      "selectOwner": "Select owner",
+      "searchOwner": "Search owners...",
+      "noOwnerFound": "No owner found",
+      "cancel": "Cancel",
+      "save": "Save",
+      "contactNameRequired": "Contact name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address"
+    }
   },
   "companies": {
     "pageHead": "Companies | Skapp",
@@ -27,5 +50,9 @@
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task"
+  },
+  "popupTitles": {
+    "addCompanyPopup": "Add Company",
+    "addContactPopup": "Add Contact"
   }
 }
