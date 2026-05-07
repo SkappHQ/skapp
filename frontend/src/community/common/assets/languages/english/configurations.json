@@ -167,7 +167,10 @@
       "geofenceWaitingLocation": "Waiting for location permission...",
       "addLocationButton": "Add Location",
       "saveChangesButton": "Save Changes",
-      "cancelButton": "Cancel"
+      "editLocationTitle": "Edit Location",
+      "cancelButton": "Cancel",
+      "geocodeErrorTitle": "Oops! Something went wrong",
+      "geocodeErrorDescription": "Unable to retrieve address for the selected location. Please try again."
     },
     "validation": {
       "nameRequired": "Please enter work location name",

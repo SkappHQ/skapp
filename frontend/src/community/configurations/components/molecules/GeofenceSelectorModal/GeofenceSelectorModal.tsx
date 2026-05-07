@@ -2,75 +2,25 @@ import {
   APIProvider,
   Map,
   AdvancedMarker,
-  useMap,
   MapMouseEvent
 } from "@vis.gl/react-google-maps";
 import { EmptyDataView, LargeModal } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { Box, Typography } from "@mui/material";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { theme } from "~community/common/theme/theme";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
-
-const MIN_RADIUS = 0;
-const MAX_RADIUS = 300;
-
-const formatRadius = (meters: number): string => `${meters}m`;
-
-const reverseGeocode = async (
-  lat: number,
-  lng: number,
-  apiKey: string
-): Promise<string> => {
-  try {
-    const resp = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`
-    );
-    const json = await resp.json();
-    return json?.results?.[0]?.formatted_address ?? "";
-  } catch {
-    return "";
-  }
-};
-
-const RadiusCircle = ({
-  center,
-  radius
-}: {
-  center: google.maps.LatLngLiteral;
-  radius: number;
-}) => {
-  const map = useMap();
-  const circleRef = useRef<google.maps.Circle | null>(null);
-
-  useEffect(() => {
-    if (!map) return;
-    if (!circleRef.current) {
-      circleRef.current = new google.maps.Circle({
-        map,
-        center,
-        radius,
-        strokeColor: theme.palette.primary.dark,
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: theme.palette.primary.main,
-        fillOpacity: 0.15
-      });
-    } else {
-      circleRef.current.setCenter(center);
-      circleRef.current.setRadius(radius);
-    }
-    return () => {
-      circleRef.current?.setMap(null);
-      circleRef.current = null;
-    };
-  }, [map, center, radius]);
-
-  return null;
-};
+import {
+  MIN_RADIUS,
+  MAX_RADIUS,
+  formatRadius
+} from "~community/configurations/utils/geofenceUtils";
+import RadiusCircle from "./RadiusCircle";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -78,6 +28,7 @@ interface Props {
 
 const GeofenceSelectorModal = ({ formik }: Props) => {
   const translateText = useTranslator("configurations", "workLocation");
+  const { setToastMessage } = useToast();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
   const {
@@ -101,18 +52,39 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
     setTempGeofence(null);
   };
 
+  const reverseGeocode = useCallback(
+    async (lat: number, lng: number): Promise<string> => {
+      const resp = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`
+      );
+      const json = await resp.json();
+      return json?.results?.[0]?.formatted_address ?? "";
+    },
+    [apiKey]
+  );
+
   const handleMapClick = useCallback(
     async (e: MapMouseEvent) => {
       if (!e.detail.latLng) return;
       const newLat = e.detail.latLng.lat;
       const newLng = e.detail.latLng.lng;
       updateTempGeofence({ latitude: newLat, longitude: newLng });
-      const address = await reverseGeocode(newLat, newLng, apiKey);
-      if (address) {
-        updateTempGeofence({ address });
+      try {
+        const address = await reverseGeocode(newLat, newLng);
+        if (address) {
+          updateTempGeofence({ address });
+        }
+      } catch {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.ERROR,
+          title: translateText(["form.geocodeErrorTitle"]),
+          description: translateText(["form.geocodeErrorDescription"]),
+          isIcon: true
+        });
       }
     },
-    [apiKey, updateTempGeofence]
+    [reverseGeocode, updateTempGeofence, setToastMessage, translateText]
   );
 
   const handleRadiusChange = (value: number) => {
