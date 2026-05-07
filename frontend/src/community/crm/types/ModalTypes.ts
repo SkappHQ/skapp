@@ -1,0 +1,4 @@
+export enum CrmModalTypes {
+    NONE = "NONE",
+    ADD_COMPANY_MODAL = "ADD_COMPANY_MODAL"
+}
