@@ -204,14 +204,14 @@ if (-not $SkipUnitTests -and $feUnitModule) {
         $changedFeFiles = Get-ChangedFeFiles -Module $feUnitModule
 
         # Filter by feature
-        $featureFeFiles = $changedFeFiles | Where-Object {
+        $featureFeFiles = @($changedFeFiles | Where-Object {
             $_.RelativePath -match ($Feature -replace '-', '[-_]?')
-        }
+        })
         if (-not $featureFeFiles -or $featureFeFiles.Count -eq 0) {
             $featureFeFiles = $changedFeFiles
         }
 
-        $needTests = $featureFeFiles | Where-Object { -not $_.HasTest }
+        $needTests = @($featureFeFiles | Where-Object { -not $_.HasTest })
 
         Write-Host "  Changed FE files: $(if ($changedFeFiles) { $changedFeFiles.Count } else { 0 })"
         Write-Host "  Matching feature '$Feature': $(if ($featureFeFiles) { $featureFeFiles.Count } else { 0 })"
@@ -272,7 +272,7 @@ $totalTests = 0
 if (-not $FeatureName) { $FeatureName = $Feature }
 
 $moduleTestDir = Join-Path $automationRoot "src/modules/$Module/tests"
-$testGlob = "src/modules/$Module/tests/**/*.spec.ts"
+$testGlob = "src/modules/$Module/tests/"
 
 if (-not $SkipGenerate) {
     Write-StepHeader -Step 6 -Message "Generating UI tests for $Module/$Feature..."

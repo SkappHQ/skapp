@@ -336,9 +336,8 @@ function Get-AffectedSubmodules {
         }
     }
 
-    return $affected
+    return , $affected
 }
-
 function Get-FeatureBranchName {
     <#
     .SYNOPSIS
@@ -655,7 +654,7 @@ function Get-ChangedFeFiles {
         }
     }
 
-    return $testableFiles
+    return , $testableFiles
 }
 
 function Format-AffectedReposTable {

@@ -221,7 +221,7 @@ if ($frontendChanges -and $frontendChanges.Count -gt 0) {
     Write-Host "  Frontend changes: $($frontendChanges.Count) files"
     $relevantChanges = $frontendChanges | Where-Object { $_ -match $Module -or $_ -match ($Feature -replace '-', '') }
     if ($relevantChanges) {
-        Write-Host "  Relevant to $Module/$Feature:"
+        Write-Host "  Relevant to $Module/$($Feature):"
         $relevantChanges | Select-Object -First 10 | ForEach-Object { Write-Host "    - $_" -ForegroundColor White }
     }
 }

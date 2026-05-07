@@ -182,9 +182,9 @@ if (-not $BaseBranch) { $BaseBranch = $CONFIG.BaseBranch }
 $changedFiles = Get-ChangedFeFiles -Module $Module -BaseBranch $BaseBranch
 
 # Filter by feature name
-$featureFiles = $changedFiles | Where-Object {
+$featureFiles = @($changedFiles | Where-Object {
     $_.RelativePath -match ($Feature -replace '-', '[-_]?')
-}
+})
 
 # If feature filter returns nothing, use all changed files
 if (-not $featureFiles -or $featureFiles.Count -eq 0) {
@@ -199,14 +199,14 @@ if (-not $featureFiles -or $featureFiles.Count -eq 0) {
 }
 
 # Filter: skip files that already have tests (unless -Force)
-$filesToTest = if ($Force) {
+$filesToTest = @(if ($Force) {
     $featureFiles
 } else {
     $featureFiles | Where-Object { -not $_.HasTest }
-}
+})
 
 Write-Host "  Changed files: $($featureFiles.Count)"
-Write-Host "  Already have tests: $(($featureFiles | Where-Object { $_.HasTest }).Count)"
+Write-Host "  Already have tests: $(@($featureFiles | Where-Object { $_.HasTest }).Count)"
 Write-Host "  Need tests: $($filesToTest.Count)"
 Write-Host ""
 
