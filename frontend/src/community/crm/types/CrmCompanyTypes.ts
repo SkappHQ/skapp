@@ -14,3 +14,12 @@ export interface CrmCompaniesResponseType {
   currentPage: number;
   totalPages: number;
 }
+
+export interface CreateCrmCompanyPayload {
+  countryCode: string;
+  name: string;
+  industry: string | null;
+  website: string | null;
+  address: string | null;
+  contactNumber: string | null;
+}
