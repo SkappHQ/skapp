@@ -100,7 +100,8 @@ function Build-TestReportPrBody {
         [int]$TotalTests,
         [array]$GeneratedTests,
         [bool]$TestsPassed,
-        [string]$BaseUrl
+        [string]$BaseUrl,
+        [array]$AffectedRepos = @()
     )
 
     # Build file table rows
@@ -138,6 +139,26 @@ function Build-TestReportPrBody {
 
     $statusBadge = if ($TestsPassed) { "All tests passing" } else { "Some tests need review" }
 
+    # Build affected repos section (for cross-repo features)
+    $reposSection = ""
+    if ($AffectedRepos -and $AffectedRepos.Count -gt 0) {
+        $reposSection = @"
+
+---
+
+### Affected Repositories
+
+This feature spans **$($AffectedRepos.Count) repositories**:
+
+| Repository | Layer | Branch | Files |
+|-----------|-------|--------|:-----:|
+
+"@
+        foreach ($sub in $AffectedRepos) {
+            $reposSection += "| ``$($sub.Repo)`` | $($sub.Layer) | ``$($sub.Branch)`` | $($sub.ChangedFiles.Count) |`n"
+        }
+    }
+
     return @"
 ## E2E API Tests - Automated Generation
 
@@ -148,7 +169,7 @@ Automated Playwright E2E tests generated for source PR: [**$SourceRepo#$PrNumber
 > **Total Tests**: $TotalTests across $($GeneratedTests.Count) file(s)
 > **Framework**: Playwright + TypeScript
 > **Target**: $BaseUrl
-
+$reposSection
 ---
 
 ### Test Coverage Report
@@ -476,6 +497,19 @@ try {
     if (-not $SkipPr) {
         Write-StepHeader -Step 7 -Message "Opening PR in E2E repo..."
 
+        # Detect cross-repo context for the PR description
+        $featureBranch = Get-FeatureBranchName
+        $affectedRepos = @()
+        if ($featureBranch) {
+            $affectedRepos = Get-AffectedSubmodules -FeatureBranch $featureBranch
+            if ($affectedRepos.Count -gt 1) {
+                Write-Host "  Cross-repo feature detected ($($affectedRepos.Count) repos):"
+                foreach ($sub in $affectedRepos) {
+                    Write-Host "    - $($sub.Repo) ($($sub.Layer))" -ForegroundColor White
+                }
+            }
+        }
+
         # Build the rich PR body with test report
         $prTitle = "test(e2e): API tests for $SourceRepo#$PrNumber"
         $prBody = Build-TestReportPrBody `
@@ -485,7 +519,8 @@ try {
             -TotalTests $totalTests `
             -GeneratedTests $generatedTests `
             -TestsPassed $testsPassed `
-            -BaseUrl $API.BaseUrl
+            -BaseUrl $API.BaseUrl `
+            -AffectedRepos $affectedRepos
 
         # Check if gh CLI is available
         $ghAvailable = $null -ne (Get-Command gh -ErrorAction SilentlyContinue)

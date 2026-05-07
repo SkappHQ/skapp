@@ -97,16 +97,37 @@ if (-not (Test-Path $e2eHelpersDir)) {
 }
 
 # ==============================================================================
-# Step 2: Detect changed controllers
+# Step 2: Detect changed controllers (across all repos/submodules)
 # ==============================================================================
-Write-StepHeader -Step 2 -Message "Detecting changed controllers..."
+Write-StepHeader -Step 2 -Message "Detecting changed controllers across repos..."
 
-$allChanged = Get-ChangedJavaFiles -BaseBranch $BaseBranch
-$controllers = $allChanged | Where-Object { $_ -match "[\\/]controller[\\/]" }
+# Get cross-repo context (detects feature branch across all submodules)
+$featureBranch = Get-FeatureBranchName
+Write-Host "  Feature branch: $featureBranch"
+
+$crossRepoContext = Get-CrossRepoContext -FeatureBranch $featureBranch
+$controllers = $crossRepoContext.Controllers
+
+# Show affected repos
+$affectedSubs = $crossRepoContext.AffectedRepos
+if ($affectedSubs.Count -gt 0) {
+    Write-Host "  Affected repositories:"
+    foreach ($sub in $affectedSubs) {
+        Write-Host "    - $($sub.Repo) ($($sub.Layer)) [$($sub.ChangedFiles.Count) files]" -ForegroundColor White
+    }
+    Write-Host ""
+}
 
 if (-not $controllers -or $controllers.Count -eq 0) {
-    Write-Warning "No changed controllers found. E2E tests target controllers."
-    Write-Host "  Tip: Ensure you have commits ahead of origin/$BaseBranch"
+    # Fallback: try old method (main repo only)
+    $allChanged = Get-ChangedJavaFiles -BaseBranch $BaseBranch
+    $controllers = $allChanged | Where-Object { $_ -match "[\\/]controller[\\/]" }
+}
+
+if (-not $controllers -or $controllers.Count -eq 0) {
+    Write-Warning "No changed controllers found in any repo. E2E tests target controllers."
+    Write-Host "  Tip: Ensure submodules are on feature branch"
+    Write-Host "       git submodule foreach 'git checkout $featureBranch 2>/dev/null'"
     exit 0
 }
 
@@ -138,7 +159,19 @@ if ($existingTests) {
     $existingTestContent = Get-Content $existingTests.FullName -Raw
 }
 
-Write-Success "Context loaded (helpers: $($helperFiles.Count), reference test: $($existingTests.Count))"
+# Build cross-repo context summary for the prompt
+$crossRepoSummary = ""
+if ($affectedSubs.Count -gt 1) {
+    $crossRepoSummary = "`n=== CROSS-REPO CONTEXT ===`n"
+    $crossRepoSummary += "This feature spans $($affectedSubs.Count) repositories:`n"
+    foreach ($sub in $affectedSubs) {
+        $crossRepoSummary += "  - $($sub.Repo) ($($sub.Layer)/$($sub.Type)): $($sub.ChangedFiles.Count) files on branch $($sub.Branch)`n"
+    }
+    $crossRepoSummary += "`nBackend changes: $($crossRepoContext.BackendChanges.Count) files`n"
+    $crossRepoSummary += "Frontend changes: $($crossRepoContext.FrontendChanges.Count) files`n"
+}
+
+Write-Success "Context loaded (helpers: $($helperFiles.Count), reference test: $($existingTests.Count), repos: $($affectedSubs.Count))"
 
 # ==============================================================================
 # Step 4: Generate E2E tests for each controller

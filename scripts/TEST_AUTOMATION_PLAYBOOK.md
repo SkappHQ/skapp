@@ -19,14 +19,66 @@
 
 | Repository | Purpose | Local Path |
 |-----------|---------|------------|
-| `SkappHQ/skapp` | Main monorepo (backend + frontend) | `C:\Users\thusala.piyarisi_roo\Desktop\NewCloneSkap\skapp` |
+| `SkappHQ/skapp` | Main monorepo (parent + community code) | `C:\Users\thusala.piyarisi_roo\Desktop\NewCloneSkap\skapp` |
 | `thusala/skapp-pm-e2e` | Playwright E2E API tests | `C:\Users\thusala.piyarisi_roo\Desktop\Desktop\SkappPM\skapp-pm\skapp-pm-e2e` |
+
+### Submodules (enterprise code)
+
+| Submodule | Repository | Path in Monorepo | Layer |
+|-----------|-----------|-----------------|-------|
+| `backend-src` | `rootcodelabs/skapp-ep-be-src` | `backend/src/main/java/com/skapp/enterprise` | Backend |
+| `backend-resources` | `rootcodelabs/skapp-ep-be-resources` | `backend/src/main/resources/enterprise` | Backend |
+| `backend-config` | `rootcodelabs/skapp-ep-be-resources-config` | `backend/src/main/resources/config` | Backend |
+| `backend-test` | `rootcodelabs/skapp-ep-be-tests` | `backend/src/test/java/com/skapp/enterprise` | Backend |
+| `frontend-src` | `rootcodelabs/skapp-ep-fe-src` | `frontend/src/enterprise` | Frontend |
+| `frontend-pages` | `rootcodelabs/skapp-ep-fe-pages` | `frontend/pages/enterprise` | Frontend |
+| `frontend-api` | `rootcodelabs/skapp-ep-fe-routes` | `frontend/pages/api/enterprise` | Frontend |
+
+---
+
+## Multi-Repo Features
+
+Features often span multiple submodules. The automation scripts handle this automatically:
+
+### How it works
+
+1. **Detection**: `Get-AffectedSubmodules` checks which submodules are on a feature branch
+2. **Aggregation**: `Get-CrossRepoContext` collects changed files across all affected repos
+3. **Generation**: `Generate-E2eTests.ps1` reads controllers from both community code AND enterprise submodule
+4. **PR Linking**: `Push-E2ePr.ps1` includes an "Affected Repositories" table in the PR description
+
+### Example: `feat/1979-work-location-add`
+
+```
+Main repo (SkappHQ/skapp) ─── community code changes
+├── backend-src submodule ──── enterprise controller/service
+├── backend-resources ──────── enterprise SQL/config
+├── frontend-src ───────────── enterprise UI components
+└── frontend-pages ─────────── enterprise page routes
+```
+
+### Working with submodules
+
+```powershell
+# Check which submodules are on a feature branch
+git submodule foreach "echo $sm_path && git branch --show-current"
+
+# Switch all submodules to a feature branch
+git submodule foreach "git checkout feat/my-feature 2>$null || true"
+
+# The automation scripts detect this automatically:
+.\scripts\Generate-E2eTests.ps1  # Finds controllers in ALL affected repos
+```
 
 ---
 
 ## Quick Start
 
 ```powershell
+# === ONE COMMAND — runs the entire pipeline ===
+.\scripts\Run-TestPipeline.ps1 -PrNumber 1979 -FeatureName "work-location"
+
+# Or step by step:
 # 1. One-time setup
 .\scripts\Setup-TestAutomation.ps1
 
@@ -52,6 +104,7 @@
 
 | Script | Purpose |
 |--------|---------|
+| **`Run-TestPipeline.ps1`** | **Full pipeline — single command for everything** |
 | `Setup-TestAutomation.ps1` | One-time prerequisite validation |
 | `Link-E2eRepo.ps1` | Clone/validate/install the E2E repo |
 | `Generate-BeTests.ps1` | Generate JUnit unit + integration tests |
