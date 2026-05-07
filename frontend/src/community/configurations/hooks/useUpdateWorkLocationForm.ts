@@ -1,4 +1,5 @@
 import { useFormik } from "formik";
+import { useRef } from "react";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
@@ -10,16 +11,21 @@ import { AdminTypes } from "~community/common/types/AuthTypes";
 import ROUTES from "~community/common/constants/routes";
 import { useUpdateWorkLocation } from "~community/configurations/api/WorkLocationApi";
 import { WorkLocation, WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
+import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 
 const useUpdateWorkLocationForm = (workLocation: WorkLocation | undefined) => {
   const { user } = useAuth();
   const router = useRouter();
   const translateText = useTranslator("configurations", "workLocation");
   const { setToastMessage } = useToast();
+  const formikRef = useRef<ReturnType<typeof useFormik<WorkLocationFormValues>> | null>(null);
+
+  const { data: attendanceConfig } = useGetAttendanceConfiguration();
 
   const canSeeGeofence =
-    user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
-    user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN);
+    (user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+      user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN)) &&
+    attendanceConfig?.isGeoFencingEnabled === true;
 
   const validationSchema = Yup.object({
     name: Yup.string()
@@ -61,6 +67,7 @@ const useUpdateWorkLocationForm = (workLocation: WorkLocation | undefined) => {
         description: translateText(["toasts.updateSuccess.description"]),
         isIcon: true
       });
+      formikRef.current?.resetForm();
       router.push(ROUTES.CONFIGURATIONS.BASE);
     },
     () => {
@@ -87,6 +94,8 @@ const useUpdateWorkLocationForm = (workLocation: WorkLocation | undefined) => {
       updateWorkLocation({ id: workLocation.workLocationId, data: payload });
     }
   });
+
+  formikRef.current = formik;
 
   return { formik, isPending, canSeeGeofence };
 };

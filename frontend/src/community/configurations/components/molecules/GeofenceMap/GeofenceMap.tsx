@@ -5,7 +5,7 @@ import {
   useMap,
   MapMouseEvent
 } from "@vis.gl/react-google-maps";
-import { ButtonV2, IconButton, LargeModal, SearchIcon } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, EmptyDataView, IconButton, LargeModal } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -14,9 +14,11 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
-const DEFAULT_RADIUS = 200;
-const MIN_RADIUS = 50;
-const MAX_RADIUS = 5000;
+const DEFAULT_RADIUS = 100;
+const MIN_RADIUS = 0;
+const MAX_RADIUS = 300;
+
+const formatRadius = (meters: number): string => `${meters}m`;
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -155,6 +157,28 @@ const GeofenceMap = ({ formik }: Props) => {
 
   const modalContent = (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold">
+            {translateText(["form.radiusLabel"])}
+          </p>
+          <span className="text-sm text-gray-600">{formatRadius(tempRadius)}</span>
+        </div>
+        <input
+          type="range"
+          min={MIN_RADIUS}
+          max={MAX_RADIUS}
+          step={100}
+          value={tempRadius}
+          onChange={(e) => handleRadiusChange(Number(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+        />
+        <div className="flex justify-between text-xs text-gray-400">
+          <span>0m</span>
+          <span>300m</span>
+        </div>
+      </div>
+
       <APIProvider apiKey={apiKey}>
         {tempMarkerPosition ? (
           <Map
@@ -169,46 +193,14 @@ const GeofenceMap = ({ formik }: Props) => {
             <RadiusCircle center={tempMarkerPosition} radius={tempRadius} />
           </Map>
         ) : (
-          <div className="flex items-center justify-center w-full h-[22rem] bg-gray-100 rounded-md text-sm text-gray-500">
-            {translateText(["form.geofenceWaitingLocation"])}
-          </div>
+          <EmptyDataView
+            title={translateText(["form.geofenceWaitingLocation"])}
+            className={{
+              wrapper: "h-[22rem] bg-gray-50 rounded-md border-2 border-dashed border-gray-300"
+            }}
+          />
         )}
       </APIProvider>
-
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold">
-            {translateText(["form.radiusLabel"])}
-          </p>
-          <span className="text-sm text-gray-600">{tempRadius}m</span>
-        </div>
-        <input
-          type="range"
-          min={MIN_RADIUS}
-          max={MAX_RADIUS}
-          step={10}
-          value={tempRadius}
-          onChange={(e) => handleRadiusChange(Number(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-        />
-        <div className="flex justify-between text-xs text-gray-400">
-          <span>{MIN_RADIUS}m</span>
-          <span>{MAX_RADIUS}m</span>
-        </div>
-      </div>
-
-      <div>
-        <p className="text-sm font-semibold mb-1.5">
-          {translateText(["form.addressLabel"])}
-        </p>
-        <input
-          type="text"
-          className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={tempGeofence?.address ?? ""}
-          placeholder={translateText(["form.addressPlaceholder"])}
-          readOnly
-        />
-      </div>
     </div>
   );
 
@@ -217,40 +209,46 @@ const GeofenceMap = ({ formik }: Props) => {
       <p className="text-sm font-semibold">
         {translateText(["form.geofenceTitle"])}
       </p>
-      <p className="text-sm text-gray-500">
-        {translateText(["form.geofenceDescription"])}
-      </p>
-
       {hasGeofence ? (
         <div className="flex items-center justify-between border border-gray-200 rounded-lg p-4">
           <div className="flex flex-col gap-1">
-            <p className="text-sm font-medium">{geofence.address || "-"}</p>
+            <p className="text-sm font-medium">
+              {geofence.address ||
+                `${geofence.latitude.toFixed(5)}, ${geofence.longitude.toFixed(5)}`}
+            </p>
             <p className="text-xs text-gray-500">
-              {translateText(["form.radiusLabel"])}: {geofence.radiusMeters}m
+              {translateText(["form.radiusLabel"])}: {formatRadius(geofence.radiusMeters)}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <IconButton
               icon={<Icon name={IconName.EDIT_ICON} />}
+              type="button"
               onClick={handleOpenModal}
               aria-label={translateText(["form.geofenceEditButton"])}
             />
             <IconButton
               icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+              type="button"
               onClick={handleDeleteGeofence}
               aria-label={translateText(["form.geofenceDeleteButton"])}
             />
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-3 border border-dashed border-gray-300 rounded-lg py-8">
-          <SearchIcon />
-          <p className="text-sm text-gray-500">
-            {translateText(["form.geofenceEmptyState"])}
-          </p>
-          <ButtonV2 variant="primary" onClick={handleOpenModal}>
-            {translateText(["form.geofenceAddButton"])}
-          </ButtonV2>
+        <div className="flex flex-col items-center gap-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <EmptyDataView
+            title={translateText(["form.geofenceEmptyState"])}
+            description={translateText(["form.geofenceEmptyStateDescription"])}
+            className={{
+              wrapper: "p-8 pb-0 bg-transparent border-none"
+            }}
+          />
+          <div className="pb-8">
+            <ButtonV2 variant="primary" type="button" onClick={handleOpenModal}>
+              {translateText(["form.geofenceAddButton"])}
+            </ButtonV2>
+          </div>
         </div>
       )}
 

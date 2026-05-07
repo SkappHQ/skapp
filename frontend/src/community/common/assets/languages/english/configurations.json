@@ -113,6 +113,7 @@
     "organization": "Organization"
   },
   "workLocation": {
+    "areYouSureModalTitle": "Are you sure?",
     "pageHead": "Work Locations | Skapp",
     "pageTitle": "Work Locations",
     "table": {
@@ -152,12 +153,12 @@
         "searchClearedText": "Search cleared",
         "selectedSearchPlaceholder": "Search selected employees"
       },
-      "geofenceTitle": "Geo-fence",
-      "geofenceDescription": "Set a geographic boundary for this work location.",
+      "geofenceTitle": "Set geo-fence",
       "radiusLabel": "Radius (meters)",
       "addressLabel": "Address",
       "addressPlaceholder": "Address will be auto-filled on pin drop",
-      "geofenceEmptyState": "No geo-fence location has been set.",
+      "geofenceEmptyState": "No geo-fence set",
+      "geofenceEmptyStateDescription": "Set up a geo-fence to define the location boundary for employee check-ins",
       "geofenceAddButton": "Add Location",
       "geofenceEditButton": "Edit Location",
       "geofenceDeleteButton": "Delete Location",

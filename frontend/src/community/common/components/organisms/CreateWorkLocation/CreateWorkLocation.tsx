@@ -142,6 +142,7 @@ const CreateWorkLocation = () => {
   };
 
   return (
+    <>
     <form
       onSubmit={formik.handleSubmit}
       className="flex flex-col gap-6 max-w-[40rem]"
@@ -360,6 +361,7 @@ const CreateWorkLocation = () => {
       <div className="flex gap-3 justify-end">
         <ButtonV2
           variant="tertiary"
+          type="button"
           onClick={() => router.push(ROUTES.CONFIGURATIONS.BASE)}
           disabled={isPending}
         >
@@ -374,18 +376,20 @@ const CreateWorkLocation = () => {
         </ButtonV2>
       </div>
 
-      <Modal
-        isModalOpen={isUnsavedModalOpen}
-        onCloseModal={handleResume}
-        isClosable={false}
-        title=""
-      >
-        <AreYouSureModal
-          onPrimaryBtnClick={handleResume}
-          onSecondaryBtnClick={handleLeave}
-        />
-      </Modal>
     </form>
+
+    <Modal
+      isModalOpen={isUnsavedModalOpen}
+      onCloseModal={handleResume}
+      isClosable={false}
+      title={translateText(["areYouSureModalTitle"])}
+    >
+      <AreYouSureModal
+        onPrimaryBtnClick={handleResume}
+        onSecondaryBtnClick={handleLeave}
+      />
+    </Modal>
+    </>
   );
 };
 

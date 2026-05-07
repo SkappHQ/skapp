@@ -17,6 +17,8 @@ const WorkLocationEditPage: NextPage = () => {
       pageHead={translateText(["pageHead"])}
       title={translateText(["form.saveChangesButton"])}
       isDividerVisible
+      isBackButtonVisible
+      onBackClick={() => router.back()}
     >
       {locationId !== undefined && <UpdateWorkLocation id={locationId} />}
     </ContentLayout>
