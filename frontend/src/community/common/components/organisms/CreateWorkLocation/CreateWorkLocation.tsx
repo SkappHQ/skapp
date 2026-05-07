@@ -1,21 +1,28 @@
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { ButtonV2, InputField } from "@rootcodelabs/skapp-ui";
 import { Box, Checkbox as MuiCheckbox, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
 import Modal from "~community/common/components/organisms/Modal/Modal";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import ROUTES from "~community/common/constants/routes";
 import { theme } from "~community/common/theme/theme";
+import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
   AvatarPropTypes,
   MenuTypes
 } from "~community/common/types/MoleculeTypes";
+import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import {
   useGetSearchedEmployees,
   useGetEmployeeData
@@ -26,8 +33,9 @@ import {
   EmploymentStatusTypes
 } from "~community/people/types/EmployeeTypes";
 import { AllEmployeeDataType } from "~community/people/types/PeopleTypes";
+import { useCreateWorkLocation } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
-import useCreateWorkLocationForm from "~community/configurations/hooks/useCreateWorkLocationForm";
+import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 const CreateWorkLocation = () => {
   const router = useRouter();
@@ -40,7 +48,65 @@ const CreateWorkLocation = () => {
   const boxRef = useRef<HTMLDivElement>(null);
   const [boxWidth, setBoxWidth] = useState(0);
 
-  const { formik, isPending, canSeeGeofence } = useCreateWorkLocationForm();
+  const { user } = useAuth();
+  const { setToastMessage } = useToast();
+  const formikRef = useRef<ReturnType<typeof useFormik<WorkLocationFormValues>> | null>(null);
+
+  const { data: attendanceConfig } = useGetAttendanceConfiguration();
+
+  const canSeeGeofence =
+    (user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+      user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN)) &&
+    attendanceConfig?.isGeoFencingEnabled === true;
+
+  const validationSchema = Yup.object({
+    name: Yup.string()
+      .required(translateText(["validation.nameRequired"]))
+      .max(50, translateText(["validation.nameMaxLength"]))
+      .matches(/^[a-zA-Z0-9 ]+$/, translateText(["validation.nameInvalidChars"]))
+  });
+
+  const { mutate: createWorkLocation, isPending } = useCreateWorkLocation(
+    () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText(["toasts.createSuccess.title"]),
+        description: translateText(["toasts.createSuccess.description"]),
+        isIcon: true
+      });
+      formikRef.current?.resetForm();
+      router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
+    },
+    () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["toasts.createError.title"]),
+        description: translateText(["toasts.createError.description"]),
+        isIcon: true
+      });
+    }
+  );
+
+  const formik = useFormik<WorkLocationFormValues>({
+    initialValues: {
+      name: "",
+      isAllEmployees: false,
+      employeeIds: [],
+      geofence: null
+    },
+    validationSchema,
+    onSubmit: (values) => {
+      const payload = {
+        ...values,
+        geofence: canSeeGeofence ? values.geofence : null
+      };
+      createWorkLocation(payload);
+    }
+  });
+
+  formikRef.current = formik;
 
   const { setEmployeeDataParams } = usePeopleStore((state) => state);
 

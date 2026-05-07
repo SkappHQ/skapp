@@ -1,21 +1,28 @@
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { ButtonV2, InputField } from "@rootcodelabs/skapp-ui";
 import { Box, Checkbox as MuiCheckbox, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
 import Modal from "~community/common/components/organisms/Modal/Modal";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { theme } from "~community/common/theme/theme";
+import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
   AvatarPropTypes,
   MenuTypes
 } from "~community/common/types/MoleculeTypes";
+import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import {
   useGetSearchedEmployees,
   useGetEmployeeData
@@ -26,10 +33,9 @@ import {
   EmploymentStatusTypes
 } from "~community/people/types/EmployeeTypes";
 import { AllEmployeeDataType } from "~community/people/types/PeopleTypes";
-import { useGetWorkLocations } from "~community/configurations/api/WorkLocationApi";
+import { useGetWorkLocations, useUpdateWorkLocation } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
-import useUpdateWorkLocationForm from "~community/configurations/hooks/useUpdateWorkLocationForm";
-import { WorkLocation } from "~community/configurations/types/WorkLocationTypes";
+import { WorkLocation, WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 interface Props {
   id: number;
@@ -51,8 +57,76 @@ const UpdateWorkLocation = ({ id }: Props) => {
     (l: WorkLocation) => l.workLocationId === id
   );
 
-  const { formik, isPending, canSeeGeofence } =
-    useUpdateWorkLocationForm(workLocation);
+  const { user } = useAuth();
+  const { setToastMessage } = useToast();
+  const formikRef = useRef<ReturnType<typeof useFormik<WorkLocationFormValues>> | null>(null);
+
+  const { data: attendanceConfig } = useGetAttendanceConfiguration();
+
+  const canSeeGeofence =
+    (user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+      user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN)) &&
+    attendanceConfig?.isGeoFencingEnabled === true;
+
+  const validationSchema = Yup.object({
+    name: Yup.string()
+      .required(translateText(["validation.nameRequired"]))
+      .max(50, translateText(["validation.nameMaxLength"]))
+      .matches(/^[a-zA-Z0-9 ]+$/, translateText(["validation.nameInvalidChars"]))
+  });
+
+  const { mutate: updateWorkLocation, isPending } = useUpdateWorkLocation(
+    () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText(["toasts.updateSuccess.title"]),
+        description: translateText(["toasts.updateSuccess.description"]),
+        isIcon: true
+      });
+      formikRef.current?.resetForm();
+      router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
+    },
+    () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["toasts.updateError.title"]),
+        description: translateText(["toasts.updateError.description"]),
+        isIcon: true
+      });
+    }
+  );
+
+  const formik = useFormik<WorkLocationFormValues>({
+    initialValues: !workLocation
+      ? { name: "", isAllEmployees: false, employeeIds: [], geofence: null }
+      : {
+          name: workLocation.name,
+          isAllEmployees: workLocation.isAllEmployees,
+          employeeIds: workLocation.employees?.map((e) => e.employeeId) ?? [],
+          geofence: canSeeGeofence && workLocation.geofence
+            ? {
+                latitude: workLocation.geofence.latitude,
+                longitude: workLocation.geofence.longitude,
+                radiusMeters: workLocation.geofence.radiusMeters,
+                address: workLocation.geofence.address ?? ""
+              }
+            : null
+        },
+    enableReinitialize: true,
+    validationSchema,
+    onSubmit: (values) => {
+      if (!workLocation) return;
+      const payload = {
+        ...values,
+        geofence: canSeeGeofence ? values.geofence : null
+      };
+      updateWorkLocation({ id: workLocation.workLocationId, data: payload });
+    }
+  });
+
+  formikRef.current = formik;
 
   const { setEmployeeDataParams } = usePeopleStore((state) => state);
 
