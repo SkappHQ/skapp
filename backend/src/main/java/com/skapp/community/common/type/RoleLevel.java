@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum RoleLevel {
 
 	ADMIN("Admin"), MANAGER("Manager"), SENDER("Sender"), EMPLOYEE("Employee"), GUEST("Guest"), NONE("None"),
-	SALES_REPRESENTATIVE("Sales Representative");
+	SALES_MANAGER("Sales Manager"), SALES_REPRESENTATIVE("Sales Representative");
 
 	private final String displayName;
 
