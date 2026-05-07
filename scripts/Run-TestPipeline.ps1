@@ -271,6 +271,48 @@ $generatedTests = @()
 $totalTests = 0
 if (-not $FeatureName) { $FeatureName = $Feature }
 
+# --- Create matching branch in automation repo ---
+$automationBranchName = if ($FeatureName) {
+    "feat/$PrNumber-$FeatureName-e2e-tests"
+} else {
+    "feat/e2e-api-pr-$PrNumber"
+}
+
+Push-Location $automationRoot
+try {
+    Write-Host "  Setting up automation repo branch..."
+    git fetch origin 2>&1 | Out-Null
+
+    # Determine base branch
+    $autoBaseBranch = $CONFIG.DevelopBranch
+    $hasDevBranch = git branch -r --list "origin/$autoBaseBranch" 2>$null
+    if (-not $hasDevBranch) {
+        $autoBaseBranch = $CONFIG.DefaultBranch
+    }
+
+    # Check if branch already exists
+    $localBranch = git branch --list $automationBranchName 2>$null
+    $remoteBranch = git branch -r --list "origin/$automationBranchName" 2>$null
+
+    if ($localBranch) {
+        git checkout $automationBranchName 2>&1 | Out-Null
+        Write-Host "  Switched to existing branch: $automationBranchName"
+    }
+    elseif ($remoteBranch) {
+        git checkout -b $automationBranchName "origin/$automationBranchName" 2>&1 | Out-Null
+        Write-Host "  Checked out remote branch: $automationBranchName"
+    }
+    else {
+        git checkout -b $automationBranchName "origin/$autoBaseBranch" 2>&1 | Out-Null
+        Write-Host "  Created new branch: $automationBranchName (from origin/$autoBaseBranch)"
+    }
+
+    Write-Success "Automation repo on branch: $automationBranchName"
+}
+finally {
+    Pop-Location
+}
+
 $moduleTestDir = Join-Path $automationRoot "src/modules/$Module/tests"
 $testGlob = "src/modules/$Module/tests/"
 
@@ -423,6 +465,7 @@ Write-Host "  Unit tests pass: $(if ($SkipUnitTests) { 'skipped' } elseif ($unit
 Write-Host "  Committed to:    $(if ($SkipUnitTests) { 'N/A' } else { 'feature branch (in source PR)' })"
 Write-Host ""
 Write-Host "  --- E2E Tests ---" -ForegroundColor White
+Write-Host "  E2E branch:     $automationBranchName"
 Write-Host "  E2E test files:  $($generatedTests.Count)"
 Write-Host "  E2E test cases:  $totalTests"
 Write-Host "  E2E tests pass:  $(if ($SkipTests) { 'skipped' } elseif ($testsPassed) { 'YES' } else { 'SOME FAILED' })"
