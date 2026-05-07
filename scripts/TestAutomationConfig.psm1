@@ -78,8 +78,13 @@ $Script:PATTERNS = @{
     IntegrationTest  = "*IntegrationTest.java"
     UnitTest         = "*UnitTest.java"
     TypeScriptTest   = "*.gen.test.ts"
+    FeUnitTest       = "*.test.ts", "*.test.tsx"
     ExcludeDirs      = @("model", "payload", "type", "constant", "config", "mapper")
     TestablePackages = @("controller", "service", "util", "component", "repository")
+    # FE directories that are testable (utils, hooks, actions, store, validations)
+    FeTestablePatterns = @("utils", "hooks", "actions", "store", "helpers")
+    # FE files to skip (types, enums, constants, index barrels, styles)
+    FeExcludePatterns  = @("types", "enums", "constants", "index\.ts$", "\.css$", "\.scss$", "\.json$", "QueryKeys", "configs")
 }
 
 # --- Test Naming Conventions ---
@@ -554,6 +559,103 @@ function Get-CrossRepoContext {
     }
 
     return $context
+}
+
+function Get-ChangedFeFiles {
+    <#
+    .SYNOPSIS
+        Gets changed frontend source files for a module that may need unit tests
+    .PARAMETER Module
+        Module name (people, leave, etc.)
+    .PARAMETER BaseBranch
+        Branch to diff against (default: develop)
+    .OUTPUTS
+        Array of hashtables: { RelativePath, FullPath, HasTest, TestPath, Directory }
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [string]$Module,
+        [string]$BaseBranch = $Script:CONFIG.BaseBranch
+    )
+
+    $projectRoot = Get-ProjectRoot
+    $feRoot = Join-Path $projectRoot $Script:CONFIG.FrontendRoot
+
+    # Collect changed files from community FE code
+    Push-Location $projectRoot
+    $changedFiles = @()
+    try {
+        $gitDiff = git diff --name-only "origin/$BaseBranch" -- "frontend/src/community/$Module/**/*.ts" "frontend/src/community/$Module/**/*.tsx" 2>$null
+        if (-not $gitDiff) {
+            $gitDiff = git diff --name-only HEAD~10 -- "frontend/src/community/$Module/**/*.ts" "frontend/src/community/$Module/**/*.tsx" 2>$null
+        }
+        if ($gitDiff) { $changedFiles += $gitDiff }
+    }
+    finally { Pop-Location }
+
+    # Also check enterprise FE submodule
+    $epFeSub = $Script:SUBMODULES["frontend-src"]
+    if ($epFeSub) {
+        $subPath = Join-Path $projectRoot $epFeSub.Path
+        if (Test-Path $subPath) {
+            Push-Location $subPath
+            try {
+                $entFiles = git diff --name-only "origin/$BaseBranch" 2>$null
+                if ($entFiles) {
+                    $moduleFiles = $entFiles | Where-Object { $_ -match $Module -and ($_ -like "*.ts" -or $_ -like "*.tsx") }
+                    $changedFiles += $moduleFiles | ForEach-Object { "$($epFeSub.Path)/$_" }
+                }
+            }
+            finally { Pop-Location }
+        }
+    }
+
+    # Filter to testable files only
+    $testableFiles = @()
+    foreach ($file in $changedFiles) {
+        # Skip test files themselves
+        if ($file -match "\.test\.(ts|tsx)$") { continue }
+
+        # Skip excluded patterns
+        $isExcluded = $false
+        foreach ($pattern in $Script:PATTERNS.FeExcludePatterns) {
+            if ($file -match "[\\/]$pattern[\\/]" -or $file -match $pattern) {
+                $isExcluded = $true
+                break
+            }
+        }
+        if ($isExcluded) { continue }
+
+        # Check if it's in a testable directory
+        $isTestable = $false
+        foreach ($dir in $Script:PATTERNS.FeTestablePatterns) {
+            if ($file -match "[\\/]$dir[\\/]") {
+                $isTestable = $true
+                break
+            }
+        }
+        if (-not $isTestable) { continue }
+
+        # Determine if a test file already exists
+        $fullPath = Join-Path $projectRoot $file
+        $dir = Split-Path $fullPath -Parent
+        $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file)
+        # Handle .tsx -> .test.tsx and .ts -> .test.ts
+        $ext = [System.IO.Path]::GetExtension($file)
+        $testFileName = "$baseName.test$ext"
+        $testPath = Join-Path $dir $testFileName
+        $hasTest = Test-Path $testPath
+
+        $testableFiles += @{
+            RelativePath = $file
+            FullPath     = $fullPath
+            HasTest      = $hasTest
+            TestPath     = $testPath
+            Directory    = $dir
+        }
+    }
+
+    return $testableFiles
 }
 
 function Format-AffectedReposTable {

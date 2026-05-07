@@ -1,24 +1,25 @@
 <#
 .SYNOPSIS
-    Runs the full UI test automation pipeline end-to-end
+    Runs the full test automation pipeline end-to-end
 
 .DESCRIPTION
     Single script that orchestrates all workflow steps:
     1. Validates prerequisites (tools, repos, submodules)
     2. Detects cross-repo changes and affected submodules
-    3. Generates Playwright UI tests (Page Object + Spec)
-    4. Runs tests locally (optional)
-    5. Pushes tests to automation repo
-    6. Opens PR with rich test report
+    3. Generates Jest FE unit tests for changed source files (committed to feature PR)
+    4. Generates Playwright UI E2E tests (Page Object + Spec)
+    5. Runs tests locally (optional)
+    6. Pushes E2E tests to automation repo
+    7. Opens PR with rich test report
 
 .PARAMETER PrNumber
     Source PR number to link (required)
 
 .PARAMETER Module
-    Target module for UI tests (people, leave, project-management, authentication)
+    Target module for tests (people, leave, project-management, authentication)
 
 .PARAMETER Feature
-    Feature name for UI tests (e.g. "work-location", "quick-add")
+    Feature name for tests (e.g. "work-location", "quick-add")
 
 .PARAMETER FeatureBranch
     Feature branch name (auto-detected if not provided)
@@ -26,8 +27,11 @@
 .PARAMETER FeatureName
     Short name for the branch (e.g. "work-location")
 
+.PARAMETER SkipUnitTests
+    Skip FE unit test generation phase
+
 .PARAMETER SkipGenerate
-    Skip test generation (use existing test files)
+    Skip E2E test generation (use existing test files)
 
 .PARAMETER SkipTests
     Skip running Playwright tests before push
@@ -45,11 +49,14 @@
     Show what would happen without executing
 
 .EXAMPLE
-    # Full UI test pipeline
+    # Full pipeline (unit tests + E2E)
     .\Run-TestPipeline.ps1 -PrNumber 1979 -Module people -Feature "work-location"
 
-    # Generate + push (skip running tests)
-    .\Run-TestPipeline.ps1 -PrNumber 1979 -Module people -Feature "teams" -SkipTests
+    # Skip unit tests, only generate E2E
+    .\Run-TestPipeline.ps1 -PrNumber 1979 -Module people -Feature "teams" -SkipUnitTests
+
+    # Skip E2E, only generate unit tests
+    .\Run-TestPipeline.ps1 -PrNumber 1979 -Module people -Feature "add" -SkipGenerate -SkipPush
 
     # Dry run
     .\Run-TestPipeline.ps1 -PrNumber 1979 -Module people -Feature "teams" -DryRun
@@ -65,6 +72,7 @@ param(
     [string]$Feature,
     [string]$FeatureBranch,
     [string]$FeatureName,
+    [switch]$SkipUnitTests,
     [switch]$SkipGenerate,
     [switch]$SkipTests,
     [switch]$SkipPush,
@@ -166,10 +174,96 @@ if ($crossRepoContext.Controllers.Count -eq 0 -and -not $SkipGenerate) {
 }
 
 # ==============================================================================
-# Phase 2: Test Generation
+# Phase 2: FE Unit Test Generation
 # ==============================================================================
 Write-Host ""
-Write-Host "=== PHASE 2: Test Generation ===" -ForegroundColor Cyan
+Write-Host "=== PHASE 2: FE Unit Tests ===" -ForegroundColor Cyan
+Write-Host ""
+
+$unitTestsGenerated = 0
+$unitTestsPassed = $true
+
+# Map pipeline module to FE unit test module (project-management -> not applicable)
+$feUnitModule = switch ($Module) {
+    "people"              { "people" }
+    "leave"               { "leave" }
+    "authentication"      { $null }
+    "project-management"  { $null }
+    default               { $Module }
+}
+
+if (-not $SkipUnitTests -and $feUnitModule) {
+    Write-StepHeader -Step 4 -Message "Detecting changed FE files for unit tests..."
+
+    if ($DryRun) {
+        Write-Host "  [DRY RUN] Would detect changed files in frontend/src/community/$feUnitModule/"
+        Write-Host "  [DRY RUN] Would generate Jest unit tests and commit to feature branch"
+    }
+    else {
+        # Detect changed files that need unit tests
+        $changedFeFiles = Get-ChangedFeFiles -Module $feUnitModule
+
+        # Filter by feature
+        $featureFeFiles = $changedFeFiles | Where-Object {
+            $_.RelativePath -match ($Feature -replace '-', '[-_]?')
+        }
+        if (-not $featureFeFiles -or $featureFeFiles.Count -eq 0) {
+            $featureFeFiles = $changedFeFiles
+        }
+
+        $needTests = $featureFeFiles | Where-Object { -not $_.HasTest }
+
+        Write-Host "  Changed FE files: $(if ($changedFeFiles) { $changedFeFiles.Count } else { 0 })"
+        Write-Host "  Matching feature '$Feature': $(if ($featureFeFiles) { $featureFeFiles.Count } else { 0 })"
+        Write-Host "  Need unit tests: $(if ($needTests) { $needTests.Count } else { 0 })"
+
+        if ($needTests -and $needTests.Count -gt 0) {
+            Write-StepHeader -Step 5 -Message "Generating Jest unit tests..."
+
+            try {
+                & "$scriptDir\Generate-FeUnitTests.ps1" -Module $feUnitModule -Feature $Feature -SkipRun
+                $unitTestsGenerated = $needTests.Count
+            }
+            catch {
+                Write-Warning "Unit test generation encountered an error: $_"
+            }
+
+            # Run the unit tests to verify
+            Write-Host ""
+            Write-Host "  Validating generated unit tests..." -ForegroundColor Yellow
+            $feRoot = Join-Path $projectRoot $CONFIG.FrontendRoot
+            Push-Location $feRoot
+            try {
+                $jestResult = npx jest --testPathPattern="src/community/$feUnitModule" --no-coverage 2>&1 | Out-String
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Success "All $feUnitModule unit tests pass!"
+                }
+                else {
+                    $unitTestsPassed = $false
+                    Write-Warning "Some unit tests failed. Review output."
+                }
+            }
+            finally {
+                Pop-Location
+            }
+        }
+        else {
+            Write-Success "All changed files already have unit tests."
+        }
+    }
+}
+elseif ($SkipUnitTests) {
+    Write-StepHeader -Step 4 -Message "Skipping FE unit tests (-SkipUnitTests)"
+}
+else {
+    Write-StepHeader -Step 4 -Message "Skipping FE unit tests (not applicable for $Module)"
+}
+
+# ==============================================================================
+# Phase 3: E2E Test Generation
+# ==============================================================================
+Write-Host ""
+Write-Host "=== PHASE 3: E2E Test Generation ===" -ForegroundColor Cyan
 Write-Host ""
 
 $automationRoot = $CONFIG.AutomationLocalPath
@@ -181,7 +275,7 @@ $moduleTestDir = Join-Path $automationRoot "src/modules/$Module/tests"
 $testGlob = "src/modules/$Module/tests/**/*.spec.ts"
 
 if (-not $SkipGenerate) {
-    Write-StepHeader -Step 4 -Message "Generating UI tests for $Module/$Feature..."
+    Write-StepHeader -Step 6 -Message "Generating UI tests for $Module/$Feature..."
 
     if ($DryRun) {
         Write-Host "  [DRY RUN] Would generate Page Object + Spec for $Module/$Feature"
@@ -198,7 +292,7 @@ if (-not $SkipGenerate) {
     }
 }
 else {
-    Write-StepHeader -Step 4 -Message "Skipping generation (-SkipGenerate)"
+    Write-StepHeader -Step 6 -Message "Skipping generation (-SkipGenerate)"
 }
 
 # Find generated/existing spec files for this module
@@ -226,13 +320,13 @@ Write-Host "  Total: $totalTests test cases"
 # Phase 3: Test Execution (optional)
 # ==============================================================================
 Write-Host ""
-Write-Host "=== PHASE 3: Test Execution ===" -ForegroundColor Cyan
+Write-Host "=== PHASE 4: E2E Test Execution ===" -ForegroundColor Cyan
 Write-Host ""
 
 $testsPassed = $true
 
 if (-not $SkipTests) {
-    Write-StepHeader -Step 5 -Message "Running Playwright tests..."
+    Write-StepHeader -Step 7 -Message "Running Playwright tests..."
 
     if ($DryRun) {
         Write-Host "  [DRY RUN] Would run: npx playwright test $testGlob"
@@ -267,18 +361,18 @@ if (-not $SkipTests) {
     }
 }
 else {
-    Write-StepHeader -Step 5 -Message "Skipping test execution (-SkipTests)"
+    Write-StepHeader -Step 7 -Message "Skipping test execution (-SkipTests)"
 }
 
 # ==============================================================================
 # Phase 4: Push & PR
 # ==============================================================================
 Write-Host ""
-Write-Host "=== PHASE 4: Push & PR ===" -ForegroundColor Cyan
+Write-Host "=== PHASE 5: Push & PR ===" -ForegroundColor Cyan
 Write-Host ""
 
 if (-not $SkipPush) {
-    Write-StepHeader -Step 6 -Message "Pushing to automation repo and opening PR..."
+    Write-StepHeader -Step 8 -Message "Pushing to automation repo and opening PR..."
 
     if ($DryRun) {
         Write-Host "  [DRY RUN] Would push to: $($CONFIG.AutomationRepo)"
@@ -303,7 +397,7 @@ if (-not $SkipPush) {
     }
 }
 else {
-    Write-StepHeader -Step 6 -Message "Skipping push (-SkipPush)"
+    Write-StepHeader -Step 8 -Message "Skipping push (-SkipPush)"
     Write-Host "  Tests generated locally at: $automationRoot"
 }
 
@@ -322,9 +416,16 @@ Write-Host "  Module/Feature:  $Module/$Feature"
 Write-Host "  Duration:        $([math]::Round($duration.TotalSeconds, 1))s"
 Write-Host "  Feature:         $FeatureBranch"
 Write-Host "  Repos affected:  $($affectedSubs.Count)"
-Write-Host "  Test files:      $($generatedTests.Count)"
-Write-Host "  Test cases:      $totalTests"
-Write-Host "  Tests passed:    $(if ($SkipTests) { 'skipped' } elseif ($testsPassed) { 'YES' } else { 'SOME FAILED' })"
+Write-Host ""
+Write-Host "  --- FE Unit Tests ---" -ForegroundColor White
+Write-Host "  Unit tests gen:  $(if ($SkipUnitTests) { 'skipped' } else { $unitTestsGenerated })"
+Write-Host "  Unit tests pass: $(if ($SkipUnitTests) { 'skipped' } elseif ($unitTestsPassed) { 'YES' } else { 'SOME FAILED' })"
+Write-Host "  Committed to:    $(if ($SkipUnitTests) { 'N/A' } else { 'feature branch (in source PR)' })"
+Write-Host ""
+Write-Host "  --- E2E Tests ---" -ForegroundColor White
+Write-Host "  E2E test files:  $($generatedTests.Count)"
+Write-Host "  E2E test cases:  $totalTests"
+Write-Host "  E2E tests pass:  $(if ($SkipTests) { 'skipped' } elseif ($testsPassed) { 'YES' } else { 'SOME FAILED' })"
 Write-Host "  Pushed:          $(if ($SkipPush) { 'no' } else { 'yes' })"
 Write-Host "  PR:              $(if ($SkipPush -or $SkipPr) { 'skipped' } else { 'created/updated' })"
 Write-Host ""
@@ -332,11 +433,14 @@ Write-Host "  Automation Repo: https://github.com/$($CONFIG.AutomationRepo)" -Fo
 Write-Host ""
 
 Write-Host "  Next steps:" -ForegroundColor Yellow
+if (-not $unitTestsPassed) {
+    Write-Host "    - Fix failing unit tests and re-commit to feature branch"
+}
 if ($SkipTests) {
-    Write-Host "    - Run tests: cd '$automationRoot' && npx playwright test $testGlob --project=chromium"
+    Write-Host "    - Run E2E tests: cd '$automationRoot' && npx playwright test $testGlob --project=chromium"
 }
 if (-not $testsPassed) {
-    Write-Host "    - Fix failing tests and re-run pipeline"
+    Write-Host "    - Fix failing E2E tests and re-run pipeline"
 }
 if ($SkipPush) {
     Write-Host "    - Push: .\scripts\Push-E2ePr.ps1 -PrNumber $PrNumber -E2eDir `"$automationRoot`""
