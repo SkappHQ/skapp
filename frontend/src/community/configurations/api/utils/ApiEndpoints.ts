@@ -16,7 +16,7 @@ export const userRolesEndPoints = {
 
 export const workLocationEndpoints = {
   GET_WORK_LOCATIONS: (search: string, page: number, size: number) =>
-    `work-location?search=${encodeURIComponent(search)}&page=${page}&size=${size}`,
+    `work-location?searchKeyword=${encodeURIComponent(search)}&page=${page}&size=${size}`,
   CREATE_WORK_LOCATION: "work-location",
   UPDATE_WORK_LOCATION: (id: number) => `work-location/${id}`,
   DELETE_WORK_LOCATION: (id: number) => `work-location/${id}`
