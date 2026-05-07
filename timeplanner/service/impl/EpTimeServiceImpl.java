@@ -1,6 +1,7 @@
 package com.skapp.enterprise.timeplanner.service.impl;
 
 import com.skapp.community.common.mapper.CommonMapper;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.WorkLocationGeofence;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -31,8 +32,10 @@ import com.skapp.community.timeplanner.service.AttendanceConfigService;
 import com.skapp.community.timeplanner.service.AttendanceNotificationService;
 import com.skapp.community.timeplanner.service.TimeEmailService;
 import com.skapp.community.timeplanner.service.impl.TimeServiceImpl;
+import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
 import com.skapp.enterprise.leaveplanner.service.EpLeaveCalendarService;
+import com.skapp.enterprise.timeplanner.constant.EpTimeMessageConstant;
 import com.skapp.enterprise.timeplanner.model.TimeRecordLocation;
 import com.skapp.enterprise.timeplanner.payload.request.EpAddTimeRecordDto;
 import com.skapp.enterprise.timeplanner.repository.TimeRecordLocationDao;
@@ -60,6 +63,8 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 
 	private final TimeRecordLocationDao timeRecordLocationDao;
 
+	private final AttendanceConfigService attendanceConfigService;
+
 	public EpTimeServiceImpl(TimeConfigDao timeConfigDao, JsonMapper mapper, MessageUtil messageUtil,
 			UserService userService, TimeRecordDao timeRecordDao, TimeSlotDao timeSlotDao,
 			AttendanceConfigService attendanceConfigService, LeaveRequestDao leaveRequestDao, HolidayDao holidayDao,
@@ -79,6 +84,7 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 		this.timeRecordDao = timeRecordDao;
 		this.workLocationGeofenceDao = workLocationGeofenceDao;
 		this.timeRecordLocationDao = timeRecordLocationDao;
+		this.attendanceConfigService = attendanceConfigService;
 	}
 
 	@Override
@@ -95,6 +101,13 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 		User currentUser = userService.getCurrentUser();
 		Employee employee = currentUser.getEmployee();
 		log.info("addTimeRecordWithLocation: execution started by user: {}", currentUser.getUserId());
+
+		boolean isGeoFencingEnabled = attendanceConfigService
+			.getAttendanceConfigByType(AttendanceConfigType.GEO_FENCING_ENABLED);
+
+		if (!isGeoFencingEnabled) {
+			throw new ModuleException(EpTimeMessageConstant.EP_TIME_ERROR_GEO_FENCING_NOT_ENABLED);
+		}
 
 		ResponseEntityDto response = addTimeRecord(epAddTimeRecordDto);
 
