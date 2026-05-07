@@ -1,14 +1,13 @@
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { SetType } from "~community/common/types/CommonTypes";
 
-const crmSlice = (set: SetType<any>) => ({
+const companyModalSlice = (set: SetType<any>) => ({
     isAddCompanyModalOpen: false,
-    crmModalType: CrmModalTypes.NONE,
-
+    companyModalType: CrmModalTypes.NONE,
     setIsAddCompanyModalOpen: (isAddCompanyModalOpen: boolean) =>
         set({ isAddCompanyModalOpen: isAddCompanyModalOpen }),
-    setCrmModalType: (crmModalType: CrmModalTypes) =>
-        set({ crmModalType: crmModalType })
+    setCompanyModalType: (companyModalType: CrmModalTypes) =>
+        set({ companyModalType: companyModalType })
 });
 
-export default crmSlice;
+export default companyModalSlice;
