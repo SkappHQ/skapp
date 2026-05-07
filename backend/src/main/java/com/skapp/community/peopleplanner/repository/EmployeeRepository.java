@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -95,5 +96,7 @@ public interface EmployeeRepository {
 	Long findAllActiveAndPendingEmployeesCount();
 
 	Page<Employee> findEmployeesV2(EmployeeFilterDtoV2 employeeFilterDto, Pageable pageable);
+
+	Map<Long, Long> countByWorkLocationIds(List<Long> workLocationIds);
 
 }

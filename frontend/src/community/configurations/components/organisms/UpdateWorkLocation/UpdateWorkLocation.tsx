@@ -29,7 +29,7 @@ import { AllEmployeeDataType } from "~community/people/types/PeopleTypes";
 import { useGetWorkLocations } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import useUpdateWorkLocationForm from "~community/configurations/hooks/useUpdateWorkLocationForm";
-import { WorkLocation } from "~enterprise/configurations/types/WorkLocationTypes";
+import { WorkLocation } from "~community/configurations/types/WorkLocationTypes";
 
 interface Props {
   id: number;

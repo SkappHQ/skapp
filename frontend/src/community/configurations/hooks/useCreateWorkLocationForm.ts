@@ -9,7 +9,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import ROUTES from "~community/common/constants/routes";
 import { useCreateWorkLocation } from "~community/configurations/api/WorkLocationApi";
-import { WorkLocationFormValues } from "~enterprise/configurations/types/WorkLocationTypes";
+import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 const useCreateWorkLocationForm = () => {
   const { user } = useAuth();

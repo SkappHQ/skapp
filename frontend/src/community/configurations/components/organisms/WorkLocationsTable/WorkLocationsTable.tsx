@@ -16,8 +16,8 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import ROUTES from "~community/common/constants/routes";
 import { useGetWorkLocations } from "~community/configurations/api/WorkLocationApi";
-import { useWorkLocationStore } from "~enterprise/configurations/store/workLocationStore";
-import { WorkLocation } from "~enterprise/configurations/types/WorkLocationTypes";
+import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
+import { WorkLocation } from "~community/configurations/types/WorkLocationTypes";
 import DeleteWorkLocationModal from "~community/configurations/components/molecules/DeleteWorkLocationModal/DeleteWorkLocationModal";
 
 const WorkLocationsTable = () => {
@@ -140,7 +140,6 @@ const WorkLocationsTable = () => {
         data={tableData}
         emptyStateType={emptyStateType}
         isLoading={isLoading}
-        height="20rem"
         noDataState={{
           buttonText: translateText(["table.addButton"]),
           description: translateText(["table.emptyState"]),

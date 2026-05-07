@@ -12,7 +12,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { WorkLocationFormValues } from "~enterprise/configurations/types/WorkLocationTypes";
+import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 const DEFAULT_RADIUS = 200;
 const MIN_RADIUS = 50;

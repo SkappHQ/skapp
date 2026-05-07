@@ -40,6 +40,7 @@ import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -59,9 +60,15 @@ import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.model.WorkLocation_;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -1476,6 +1483,31 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		query.setMaxResults(page.getPageSize());
 
 		return new PageImpl<>(query.getResultList(), page, totalRows);
+	}
+
+	@Override
+	public Map<Long, Long> countByWorkLocationIds(List<Long> workLocationIds) {
+		if (workLocationIds == null || workLocationIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+
+		Join<Employee, WorkLocation> workLocationJoin = root.join(Employee_.workLocation, JoinType.INNER);
+
+		criteriaQuery.multiselect(
+				workLocationJoin.get(WorkLocation_.workLocationId),
+				criteriaBuilder.count(root));
+		criteriaQuery.where(workLocationJoin.get(WorkLocation_.workLocationId).in(workLocationIds));
+		criteriaQuery.groupBy(workLocationJoin.get(WorkLocation_.workLocationId));
+
+		Map<Long, Long> result = new HashMap<>();
+		for (Tuple tuple : entityManager.createQuery(criteriaQuery).getResultList()) {
+			result.put(tuple.get(0, Long.class), tuple.get(1, Long.class));
+		}
+		return result;
 	}
 
 }

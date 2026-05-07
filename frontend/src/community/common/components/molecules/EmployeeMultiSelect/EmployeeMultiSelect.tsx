@@ -8,7 +8,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { useGetEmployeeData } from "~community/people/api/PeopleApi";
 import { DataFilterEnums, EmploymentStatusTypes } from "~community/people/types/EmployeeTypes";
 import { AllEmployeeDataType } from "~community/people/types/PeopleTypes";
-import { WorkLocationFormValues } from "~enterprise/configurations/types/WorkLocationTypes";
+import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -90,20 +90,23 @@ const EmployeeMultiSelect = ({ formik }: Props) => {
     };
 
     const employeeOptions = displayEmployees
-      .filter((emp: AllEmployeeDataType) => !selectedIds.includes(Number(emp.employeeId)))
-      .map((emp: AllEmployeeDataType) => ({
-        chipContent: {
-          avatarProps: {
-            firstName: emp.firstName ?? "",
-            id: `avatar-emp-${emp.employeeId}`,
-            lastName: emp.lastName ?? "",
-            image: emp.authPic ?? undefined
+      .filter((emp) => !selectedIds.includes(Number(emp.employeeId)))
+      .map((emp) => {
+        const employee = emp as AllEmployeeDataType;
+        return {
+          chipContent: {
+            avatarProps: {
+              firstName: employee.firstName ?? "",
+              id: `avatar-emp-${employee.employeeId}`,
+              lastName: employee.lastName ?? "",
+              image: employee.authPic ?? undefined
+            },
+            label: `${employee.firstName ?? ""} ${employee.lastName ?? ""}`
           },
-          label: `${emp.firstName ?? ""} ${emp.lastName ?? ""}`
-        },
-        optionId: Number(emp.employeeId),
-        type: "employee"
-      }));
+          optionId: Number(employee.employeeId),
+          type: "employee"
+        };
+      });
 
     if (!isAllSelected && !selectedIds.length) {
       return [allEmployeesOption, ...employeeOptions];
@@ -138,14 +141,14 @@ const EmployeeMultiSelect = ({ formik }: Props) => {
         {translateText(["form.assignEmployeesLabel"])}
       </p>
       <AvatarChipsInput
-        ariaLabelClearButton="Clear search"
-        ariaLabelSearch="Search employees"
-        ariaLabelSearchResults="Search results"
+        ariaLabelClearButton={translateText(["form.employeeMultiSelect.ariaLabelClearButton"])}
+        ariaLabelSearch={translateText(["form.employeeMultiSelect.ariaLabelSearch"])}
+        ariaLabelSearchResults={translateText(["form.employeeMultiSelect.ariaLabelSearchResults"])}
         chipRemovedText={(label: string, count: number) =>
-          `${label} removed. ${count} item${count !== 1 ? "s" : ""} selected.`
+          `${label} ${translateText(["form.employeeMultiSelect.chipRemovedText"])}. ${count} ${count !== 1 ? translateText(["form.employeeMultiSelect.chipRemovedCountText"]) : translateText(["form.employeeMultiSelect.itemSelectedText"])}.`
         }
         chipSelectedText={(label: string, count: number) =>
-          `${label} selected. ${count} item${count !== 1 ? "s" : ""} selected.`
+          `${label} ${translateText(["form.employeeMultiSelect.chipSelectedText"])}. ${count} ${count !== 1 ? translateText(["form.employeeMultiSelect.chipSelectedCountText"]) : translateText(["form.employeeMultiSelect.itemSelectedText"])}.`
         }
         filteredResults={filteredResults}
         selectedChips={selectedChips}
@@ -153,16 +156,16 @@ const EmployeeMultiSelect = ({ formik }: Props) => {
         onChipSelect={handleChipSelect}
         onChipRemove={handleChipRemove}
         onSearchTextChange={setSearchText}
-        instructionText="Search and select employees"
-        itemSelectedText="selected"
-        noResultsText="No employees found"
-        regionAriaLabel="Employee selection"
+        instructionText={translateText(["form.employeeMultiSelect.instructionText"])}
+        itemSelectedText={translateText(["form.employeeMultiSelect.itemSelectedText"])}
+        noResultsText={translateText(["form.employeeMultiSelect.noResultsText"])}
+        regionAriaLabel={translateText(["form.employeeMultiSelect.regionAriaLabel"])}
         resultCountText={(current: number, total: number) =>
-          `Showing ${current} of ${total} results`
+          `${translateText(["form.employeeMultiSelect.resultCountText"])} ${current} ${translateText(["form.employeeMultiSelect.resultCountOfText"])} ${total} ${translateText(["form.employeeMultiSelect.resultCountResultsText"])}`
         }
-        searchClearedText="Search cleared"
+        searchClearedText={translateText(["form.employeeMultiSelect.searchClearedText"])}
         searchPlaceholder={translateText(["form.assignEmployeesLabel"])}
-        selectedSearchPlaceholder="Search selected employees"
+        selectedSearchPlaceholder={translateText(["form.employeeMultiSelect.selectedSearchPlaceholder"])}
         showAvatars={true}
       />
     </div>

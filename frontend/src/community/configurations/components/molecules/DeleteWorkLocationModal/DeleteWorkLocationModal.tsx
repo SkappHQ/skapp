@@ -6,7 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { useDeleteWorkLocation } from "~community/configurations/api/WorkLocationApi";
-import { useWorkLocationStore } from "~enterprise/configurations/store/workLocationStore";
+import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 
 const DeleteWorkLocationModal = () => {
   const translateText = useTranslator("configurations", "workLocation");
