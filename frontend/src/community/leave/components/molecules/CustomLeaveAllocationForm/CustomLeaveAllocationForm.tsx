@@ -35,7 +35,13 @@ interface Props {
   errors: FormikErrors<CustomLeaveAllocationType>;
   setFieldValue: (
     field: string,
-    value: CustomLeaveAllocationType | number | Date | EmployeeType | string
+    value:
+      | CustomLeaveAllocationType
+      | number
+      | Date
+      | EmployeeType
+      | string
+      | undefined
   ) => void;
   setFieldError: (field: string, message: string | undefined) => void;
   translateText: (keys: string[]) => string;
@@ -317,7 +323,14 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
         options={(suggestions ?? []) as EmployeeType[]}
         value={values.assignedTo}
         inputValue={searchTerm}
-        onInputChange={(value) => setSearchTerm(value)}
+        onInputChange={(value) => {
+          setSearchTerm(value);
+          if (values.employeeId) {
+            setFieldValue("employeeId", 0);
+            setFieldValue("name", value);
+            setFieldValue("assignedTo", undefined);
+          }
+        }}
         onChange={(value) => onSelectUser(value)}
         error={errors.employeeId}
         isDisabled={
