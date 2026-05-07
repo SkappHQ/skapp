@@ -1,16 +1,13 @@
 package com.skapp.community.peopleplanner.controller.v1;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
-import com.skapp.community.common.model.User;
 import com.skapp.community.common.security.AuthorityService;
-import com.skapp.community.common.security.SkappUserDetails;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeCommonDetailsDto;
@@ -26,6 +23,9 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EEO;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.Gender;
+import com.skapp.support.MockUserFactory;
+import com.skapp.support.SecurityTestUtils;
+import com.skapp.TestSkappApplication;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,39 +34,32 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.skapp.support.TestConstants.MESSAGE_PATH;
+import static com.skapp.support.TestConstants.RESULTS_0_PATH;
+import static com.skapp.support.TestConstants.STATUS_PATH;
+import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(classes = TestSkappApplication.class)
 @AutoConfigureMockMvc
+@Transactional
 @RequiredArgsConstructor
 @DisplayName("People Controller Integration Tests")
 class PeopleControllerIntegrationTest {
-
-	private static final String STATUS_PATH = "['status']";
-
-	private static final String RESULTS_0_PATH = "['results'][0]";
-
-	private static final String MESSAGE_PATH = "['message']";
-
-	private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
 
 	private final JsonMapper objectMapper;
 
@@ -93,9 +86,9 @@ class PeopleControllerIntegrationTest {
 		employeeEmploymentBasicDetailsPrimaryManagerDetailsDto.setLastName("Primary Manager Name 2");
 
 		EmployeeEmploymentBasicDetailsManagerDetailsDto employeeEmploymentBasicDetailsSecondaryManagerDetailsDto = new EmployeeEmploymentBasicDetailsManagerDetailsDto();
-		employeeEmploymentBasicDetailsSecondaryManagerDetailsDto.setEmployeeId(1L);
-		employeeEmploymentBasicDetailsSecondaryManagerDetailsDto.setFirstName("Primary Manager Name 1");
-		employeeEmploymentBasicDetailsSecondaryManagerDetailsDto.setLastName("Primary Manager Name 2");
+		employeeEmploymentBasicDetailsSecondaryManagerDetailsDto.setEmployeeId(2L);
+		employeeEmploymentBasicDetailsSecondaryManagerDetailsDto.setFirstName("Secondary Manager Name 1");
+		employeeEmploymentBasicDetailsSecondaryManagerDetailsDto.setLastName("Secondary Manager Name 2");
 
 		employeeEmploymentBasicDetailsDto.setPrimarySupervisor(employeeEmploymentBasicDetailsPrimaryManagerDetailsDto);
 		List<EmployeeEmploymentBasicDetailsManagerDetailsDto> otherSupervisorsList = new ArrayList<>();
@@ -105,10 +98,12 @@ class PeopleControllerIntegrationTest {
 		Long[] teamIds = { 1L };
 		employeeEmploymentBasicDetailsDto.setTeamIds(teamIds);
 
-		employeeEmploymentBasicDetailsDto.setProbationStartDate(LocalDate.parse("2021-10-10"));
-		employeeEmploymentBasicDetailsDto.setProbationEndDate(LocalDate.parse("2021-12-28"));
 		employeeEmploymentBasicDetailsDto
 			.setJoinedDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear() - 1, 1, 1));
+		employeeEmploymentBasicDetailsDto
+			.setProbationStartDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear() - 1, 2, 1));
+		employeeEmploymentBasicDetailsDto
+			.setProbationEndDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear() - 1, 4, 1));
 
 		employeeEmploymentBasicDetailsDto.setEmploymentAllocation(EmploymentAllocation.FULL_TIME);
 		return employeeEmploymentBasicDetailsDto;
@@ -128,19 +123,12 @@ class PeopleControllerIntegrationTest {
 
 	@BeforeEach
 	void setup() {
-		setupSecurityContext();
+		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createSuperAdminWithAllRoles());
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
 	}
 
-	private RequestPostProcessor bearerToken() {
-		return request -> {
-			request.addHeader("Authorization", "Bearer " + authToken);
-			return request;
-		};
-	}
-
 	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
-		return mvc.perform(request.with(bearerToken()));
+		return mvc.perform(request.with(SecurityTestUtils.bearerToken(authToken)));
 	}
 
 	private <T> ResultActions performPostRequest(T content) throws Exception {
@@ -153,45 +141,6 @@ class PeopleControllerIntegrationTest {
 		return performRequest(patch("/v1/people/employee/100").contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(content))
 			.accept(MediaType.APPLICATION_JSON));
-	}
-
-	private void setupSecurityContext() {
-		User mockUser = createMockUser();
-		SkappUserDetails userDetails = SkappUserDetails.builder()
-			.username(mockUser.getEmail())
-			.password(mockUser.getPassword())
-			.enabled(mockUser.getIsActive())
-			.authorities(authorityService.getAuthorities(mockUser))
-			.build();
-
-		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-				userDetails.getAuthorities());
-
-		SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-		securityContext.setAuthentication(authentication);
-		SecurityContextHolder.setContext(securityContext);
-	}
-
-	private User createMockUser() {
-		User mockUser = new User();
-		mockUser.setEmail("user1@gmail.com");
-		mockUser.setPassword("$2a$12$CGe4n75Yejv/O8dnOTD7R.x0LruTiKM22kcdc3YNl4RRw01srJsB6");
-		mockUser.setIsActive(true);
-
-		Employee mockEmployee = new Employee();
-		mockEmployee.setEmployeeId(1L);
-		mockEmployee.setFirstName("name");
-
-		EmployeeRole role = new EmployeeRole();
-		role.setAttendanceRole(Role.ATTENDANCE_ADMIN);
-		role.setPeopleRole(Role.PEOPLE_ADMIN);
-		role.setLeaveRole(Role.LEAVE_ADMIN);
-		role.setIsSuperAdmin(true);
-
-		mockEmployee.setEmployeeRole(role);
-		mockUser.setEmployee(mockEmployee);
-
-		return mockUser;
 	}
 
 	private CreateEmployeeRequestDto createEmployeeDetails() {
@@ -230,6 +179,7 @@ class PeopleControllerIntegrationTest {
 		employeeSystemPermissionsDto.setLeaveRole(Role.LEAVE_EMPLOYEE);
 		employeeSystemPermissionsDto.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 		employeeSystemPermissionsDto.setPeopleRole(Role.PEOPLE_EMPLOYEE);
+		employeeSystemPermissionsDto.setInvoiceRole(Role.INVOICE_NONE);
 		employeeSystemPermissionsDto.setIsSuperAdmin(false);
 
 		EmployeeCommonDetailsDto employeeCommonDetailsDto = new EmployeeCommonDetailsDto();
@@ -271,11 +221,13 @@ class PeopleControllerIntegrationTest {
 		void addEmployee_WithInvalidLastName_ReturnsBadRequest() throws Exception {
 
 			CreateEmployeeRequestDto createEmployeeRequestDto = createEmployeeDetails();
+			createEmployeeRequestDto.getEmployment().getEmploymentDetails().setEmail("lastname-test@gmail.com");
 			EmployeePersonalDetailsDto employeePersonalDetailsDto = new EmployeePersonalDetailsDto();
 
 			EmployeePersonalGeneralDetailsDto employeePersonalGeneralDetailsDto = new EmployeePersonalGeneralDetailsDto();
 			employeePersonalGeneralDetailsDto.setFirstName("first name");
-			employeePersonalGeneralDetailsDto.setLastName("last name 456");
+			employeePersonalGeneralDetailsDto
+				.setLastName("this is a very long last name that exceeds the maximum allowed length");
 
 			employeePersonalDetailsDto.setGeneral(employeePersonalGeneralDetailsDto);
 			createEmployeeRequestDto.setPersonal(employeePersonalDetailsDto);
@@ -284,17 +236,20 @@ class PeopleControllerIntegrationTest {
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_LAST_NAME)));
+					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_LAST_NAME_LENGTH,
+							new Object[] { PeopleConstants.MAX_NAME_LENGTH })));
 		}
 
 		@Test
 		@DisplayName("Add employee with invalid first name - Returns Bad Request")
 		void addEmployee_WithInvalidFirstName_ReturnsBadRequest() throws Exception {
 			CreateEmployeeRequestDto createEmployeeRequestDto = createEmployeeDetails();
+			createEmployeeRequestDto.getEmployment().getEmploymentDetails().setEmail("firstname-test@gmail.com");
 			EmployeePersonalDetailsDto employeePersonalDetailsDto = new EmployeePersonalDetailsDto();
 
 			EmployeePersonalGeneralDetailsDto employeePersonalGeneralDetailsDto = new EmployeePersonalGeneralDetailsDto();
-			employeePersonalGeneralDetailsDto.setFirstName("first name 123");
+			employeePersonalGeneralDetailsDto
+				.setFirstName("this is a very long first name that exceeds the maximum allowed length");
 			employeePersonalGeneralDetailsDto.setLastName("last name");
 
 			employeePersonalDetailsDto.setGeneral(employeePersonalGeneralDetailsDto);
@@ -304,7 +259,8 @@ class PeopleControllerIntegrationTest {
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_FIRST_NAME)));
+					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_FIRST_NAME_LENGTH,
+							new Object[] { PeopleConstants.MAX_NAME_LENGTH })));
 		}
 
 	}

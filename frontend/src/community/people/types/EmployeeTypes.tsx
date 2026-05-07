@@ -4,6 +4,7 @@ import {
   ManagerTypes
 } from "~community/common/types/CommonTypes";
 import { AccountStatus } from "~community/leave/types/LeaveTypes";
+import { TitleEnum } from "~community/people/enums/PeopleEnums";
 
 import {
   EmploymentAllocationTypes,
@@ -138,6 +139,7 @@ export interface JobLevel {
   name: string;
 }
 export interface BulkEmployeeDetails {
+  title: string | null;
   country: string | null;
   gender: string | null | undefined;
   identificationNo: string | null;
@@ -259,6 +261,7 @@ export interface EmployeeDetails {
   employeePermission?: EmployeePermission | null;
   managers?: [] | Array<EmployeeManagerType>;
   gender: string | null;
+  title: TitleEnum | null | undefined;
   identificationNo: string | null | undefined;
   jobFamily?: null | JobFamilies;
   jobTitle?: JobTitles | null;
@@ -414,7 +417,9 @@ export enum Role {
   ATTENDANCE_EMPLOYEE = "ATTENDANCE_EMPLOYEE",
   ESIGN_EMPLOYEE = "ESIGN_EMPLOYEE",
   ESIGN_SENDER = "ESIGN_SENDER",
-  ESIGN_ADMIN = "ESIGN_ADMIN"
+  ESIGN_ADMIN = "ESIGN_ADMIN",
+  PM_ADMIN = "PM_ADMIN",
+  PM_EMPLOYEE = "PM_EMPLOYEE"
 }
 
 export interface EmployeeRoleType {
@@ -423,6 +428,7 @@ export interface EmployeeRoleType {
   peopleRole: Role;
   leaveRole: Role;
   esignRole: Role;
+  pmRole: Role;
 }
 
 export interface EmployeeDataExists {

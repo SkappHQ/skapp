@@ -1,3 +1,4 @@
+import { useTheme } from "@mui/material/styles";
 import { useEffect } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
@@ -16,6 +17,7 @@ import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
 import { getLeaveRequestState } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 
 const OnLeaveModal = () => {
+  const theme = useTheme();
   const translateText = useTranslator(
     "leaveModule",
     "leaveRequests",

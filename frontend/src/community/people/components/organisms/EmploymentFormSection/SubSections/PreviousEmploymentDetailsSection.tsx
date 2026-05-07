@@ -62,10 +62,10 @@ const PreviousEmploymentDetailsSection = ({
   } = usePreviousEmploymentDetailsFormHandlers();
 
   const tableHeaders = [
-    translateText(["companyName"]),
-    translateText(["jobTitle"]),
-    translateText(["startDate"]),
-    translateText(["endDate"])
+    { label: translateText(["companyName"]) },
+    { label: translateText(["jobTitle"]) },
+    { label: translateText(["startDate"]) },
+    { label: translateText(["endDate"]) }
   ];
 
   return (

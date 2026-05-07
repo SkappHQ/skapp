@@ -1,5 +1,3 @@
-import { Box, Stack, Typography } from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
 import { JSX } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -8,6 +6,7 @@ import {
   notificationDefaultImage
 } from "~community/common/types/notificationTypes";
 import { fromDateToRelativeTime } from "~community/common/utils/dateTimeUtils";
+import { getNotificationIcon } from "~community/common/utils/notificationUtils";
 import i18n from "~i18n";
 
 import Avatar from "../Avatar/Avatar";
@@ -25,7 +24,6 @@ const NotificationContent = ({
   isAttendanceModuleDisabled,
   isEsignatureModuleDisabled
 }: Props): JSX.Element => {
-  const theme: Theme = useTheme();
   const translateText = useTranslator("notifications");
 
   const isViewed =
@@ -34,61 +32,43 @@ const NotificationContent = ({
     isAttendanceModuleDisabled === true ||
     isEsignatureModuleDisabled === true;
 
+  const IconComponent = getNotificationIcon(item.notificationType);
+
   return (
-    <Stack direction="row" spacing={2} sx={{ width: "100%" }}>
-      <Box>
-        <Avatar
-          firstName={""}
-          lastName={""}
-          alt={item.title}
-          src={item.authPic ?? notificationDefaultImage}
-        />
-      </Box>
-      <Box sx={{ flex: 1 }}>
-        <Typography
-          variant="body2"
-          sx={{
-            whiteSpace: "normal",
-            fontSize: "1rem",
-            fontWeight: 700,
-            lineHeight: "160%"
-          }}
-          color={!isViewed ? "primary.dark" : theme.palette.grey.A100}
-        >
+    <div className="flex flex-row gap-4 w-full py-3 border-b border-secondary-accent hover:cursor-pointer hover:bg-tertiary-background">
+      <div className="flex items-start gap-4">
+        <div className="flex items-center gap-4 h-9 w-2">
+          {!isViewed && (
+            <div className="size-2 bg-primary-accent rounded-full" />
+          )}
+        </div>
+        {IconComponent ? (
+          <div className="flex items-center justify-center size-9 rounded-full border-[0.38px] border-tertiary-background bg-white">
+            <IconComponent width="24" height="24" />
+          </div>
+        ) : (
+          <Avatar
+            firstName={""}
+            lastName={""}
+            alt={item.title}
+            src={item.authPic ?? notificationDefaultImage}
+            avatarStyles={{ width: 36, height: 36 }}
+          />
+        )}
+      </div>
+      <div className="flex flex-col gap-2">
+        <p className={`subtitle1 ${isViewed ? "text-secondary-icon" : ""}`}>
           {item?.body}
-        </Typography>
-        <Typography
-          variant="inherit"
-          color={!isViewed ? "primary.dark" : theme.palette.grey.A100}
-          sx={{ fontSize: "0.75rem", fontWeight: 700, mt: "1rem" }}
-        >
+        </p>
+        <p className="body3 text-secondary-icon">
           {fromDateToRelativeTime(
             item.createdDate,
             translateText,
             i18n.language
           )}
-        </Typography>
-      </Box>
-      {!isViewed && (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            minWidth: "3.625rem"
-          }}
-        >
-          <Box
-            sx={{
-              width: "0.688rem",
-              height: "0.688rem",
-              bgcolor: "primary.dark",
-              borderRadius: "3.125rem"
-            }}
-          ></Box>
-        </Box>
-      )}
-    </Stack>
+        </p>
+      </div>
+    </div>
   );
 };
 

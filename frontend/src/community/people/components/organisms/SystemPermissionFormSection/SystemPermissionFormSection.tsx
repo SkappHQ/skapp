@@ -133,7 +133,8 @@ const SystemPermissionFormSection = ({
         leaveRole: employee?.systemPermissions?.leaveRole,
         attendanceRole: employee?.systemPermissions?.attendanceRole,
         esignRole: employee?.systemPermissions?.esignRole,
-        invoiceRole: employee?.systemPermissions?.invoiceRole
+        invoiceRole: employee?.systemPermissions?.invoiceRole,
+        pmRole: employee?.systemPermissions?.pmRole
       };
 
       const errorsToShow = [];
@@ -170,14 +171,22 @@ const SystemPermissionFormSection = ({
         return;
       }
     }
+
+    const isLeaveDowngraded =
+      employee?.systemPermissions?.leaveRole === Role.LEAVE_EMPLOYEE &&
+      (initialEmployee?.systemPermissions?.leaveRole === Role.LEAVE_ADMIN ||
+        initialEmployee?.systemPermissions?.leaveRole === Role.LEAVE_MANAGER);
+
+    const isAttendanceDowngraded =
+      employee?.systemPermissions?.attendanceRole ===
+        Role.ATTENDANCE_EMPLOYEE &&
+      (initialEmployee?.systemPermissions?.attendanceRole ===
+        Role.ATTENDANCE_ADMIN ||
+        initialEmployee?.systemPermissions?.attendanceRole ===
+          Role.ATTENDANCE_MANAGER);
+
     if (
-      (employee?.systemPermissions?.peopleRole === Role.PEOPLE_EMPLOYEE ||
-        employee?.systemPermissions?.leaveRole === Role.LEAVE_EMPLOYEE ||
-        employee?.systemPermissions?.attendanceRole ===
-          Role.ATTENDANCE_EMPLOYEE) &&
-      (initialEmployee?.systemPermissions?.peopleRole === Role.PEOPLE_ADMIN ||
-        initialEmployee?.systemPermissions?.peopleRole ===
-          Role.PEOPLE_MANAGER) &&
+      (isLeaveDowngraded || isAttendanceDowngraded) &&
       (supervisedData?.isPrimaryManager || supervisedData?.isTeamSupervisor)
     ) {
       if (supervisedData?.isPrimaryManager) {
@@ -268,25 +277,25 @@ const SystemPermissionFormSection = ({
           )}
 
           <Stack sx={classes.dropdownContainer}>
-            {!isRoleMissing(RoleModuleEnum.PEOPLE, RoleNameEnum.ADMIN) &&
-              !isRoleMissing(RoleModuleEnum.PEOPLE, RoleNameEnum.MANAGER) && (
-                <DropdownList
-                  inputName={"peopleRole"}
-                  label={translateText(["people"])}
-                  itemList={grantablePermission?.people || []}
-                  value={permissions.peopleRole}
-                  componentStyle={classes.dropdownListComponentStyles}
-                  checkSelected
-                  onChange={(event) =>
-                    handleRoleDropdown("peopleRole", event.target.value as Role)
-                  }
-                  isDisabled={isPeopleDropdownDisabled}
-                />
-              )}
+            {(!isRoleMissing(RoleModuleEnum.PEOPLE, RoleNameEnum.ADMIN) ||
+              !isRoleMissing(RoleModuleEnum.PEOPLE, RoleNameEnum.MANAGER)) && (
+              <DropdownList
+                inputName={"peopleRole"}
+                label={translateText(["people"])}
+                itemList={grantablePermission?.people || []}
+                value={permissions.peopleRole}
+                componentStyle={classes.dropdownListComponentStyles}
+                checkSelected
+                onChange={(event) =>
+                  handleRoleDropdown("peopleRole", event.target.value as Role)
+                }
+                isDisabled={isPeopleDropdownDisabled}
+              />
+            )}
 
             {isLeaveModuleEnabled &&
-              !isRoleMissing(RoleModuleEnum.LEAVE, RoleNameEnum.ADMIN) &&
-              !isRoleMissing(RoleModuleEnum.LEAVE, RoleNameEnum.MANAGER) && (
+              (!isRoleMissing(RoleModuleEnum.LEAVE, RoleNameEnum.ADMIN) ||
+                !isRoleMissing(RoleModuleEnum.LEAVE, RoleNameEnum.MANAGER)) && (
                 <DropdownList
                   inputName={"leaveRole"}
                   label={translateText(["leave"])}
@@ -302,11 +311,11 @@ const SystemPermissionFormSection = ({
               )}
 
             {isAttendanceModuleEnabled &&
-              !isRoleMissing(RoleModuleEnum.ATTENDANCE, RoleNameEnum.ADMIN) &&
-              !isRoleMissing(
-                RoleModuleEnum.ATTENDANCE,
-                RoleNameEnum.MANAGER
-              ) && (
+              (!isRoleMissing(RoleModuleEnum.ATTENDANCE, RoleNameEnum.ADMIN) ||
+                !isRoleMissing(
+                  RoleModuleEnum.ATTENDANCE,
+                  RoleNameEnum.MANAGER
+                )) && (
                 <DropdownList
                   inputName={"attendanceRole"}
                   label={translateText(["attendance"])}
@@ -325,8 +334,8 @@ const SystemPermissionFormSection = ({
               )}
 
             {isEsignatureModuleEnabled &&
-              !isRoleMissing(RoleModuleEnum.ESIGN, RoleNameEnum.ADMIN) &&
-              !isRoleMissing(RoleModuleEnum.ESIGN, RoleNameEnum.SENDER) && (
+              (!isRoleMissing(RoleModuleEnum.ESIGN, RoleNameEnum.ADMIN) ||
+                !isRoleMissing(RoleModuleEnum.ESIGN, RoleNameEnum.SENDER)) && (
                 <DropdownList
                   inputName={"esignRole"}
                   label={translateText(["eSignature"])}
@@ -357,8 +366,7 @@ const SystemPermissionFormSection = ({
             )}
 
             {isInvoiceModuleEnabled &&
-              !isRoleMissing(RoleModuleEnum.INVOICE, RoleNameEnum.ADMIN) &&
-              !isRoleMissing(RoleModuleEnum.INVOICE, RoleNameEnum.MANAGER) && (
+              !isRoleMissing(RoleModuleEnum.INVOICE, RoleNameEnum.ADMIN) && (
                 <DropdownList
                   inputName={"invoiceRole"}
                   label={translateText(["invoice"])}

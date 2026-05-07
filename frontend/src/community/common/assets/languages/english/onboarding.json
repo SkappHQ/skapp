@@ -17,6 +17,7 @@
     "emailLengthError": "Please enter a value within the character limit of 50",
     "passwordRequiredError": "Please enter the password",
     "passwordLengthError": "Please enter a value within the character limit of 50",
+    "recaptchaError": "Validation failed. Please try again.",
     "continueBtnText": "Save and continue",
     "orgSetUpHeading": "Setup your organisation",
     "orgDetailsSubHeading": "Organisation Details",

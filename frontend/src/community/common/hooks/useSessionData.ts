@@ -58,6 +58,11 @@ const useSessionData = () => {
     [user?.roles]
   );
 
+  const isPmModuleEnabled = useMemo(
+    () => user?.roles?.includes(EmployeeTypes.PM_EMPLOYEE),
+    [user?.roles]
+  );
+
   const employeeDetails = useMemo(() => user?.employee, [user?.employee]);
 
   const isSuperAdmin = useMemo(
@@ -111,6 +116,11 @@ const useSessionData = () => {
     [user?.roles]
   );
 
+  const isPmAdmin = useMemo(
+    () => user?.roles?.includes(AdminTypes.PM_ADMIN),
+    [user?.roles]
+  );
+
   const isInvoiceAdmin = useMemo(
     () => user?.roles?.includes(AdminTypes.INVOICE_ADMIN),
     [user?.roles]
@@ -123,6 +133,7 @@ const useSessionData = () => {
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isInvoiceModuleEnabled,
+    isPmModuleEnabled,
     employeeDetails,
     isSuperAdmin,
     isPeopleAdmin,
@@ -139,6 +150,7 @@ const useSessionData = () => {
     isAttendanceEmployee,
     isAttendanceManager,
     isESignSender,
+    isPmAdmin,
     isInvoiceAdmin,
     tenantID
   };

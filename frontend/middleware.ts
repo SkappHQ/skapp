@@ -54,6 +54,7 @@ const superAdminRoutes = {
     ROUTES.REMOVE_PEOPLE,
     ROUTES.PROJECTS.BASE,
     ROUTES.PROJECTS.GUESTS,
+    ROUTES.PROJECTS.GUEST_REQUESTS,
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE
@@ -87,7 +88,11 @@ const adminRoutes = {
     ROUTES.CONFIGURATIONS.BASE,
     ROUTES.INVOICE.CREATE.BASE
   ],
-  [AdminTypes.PM_ADMIN]: [ROUTES.PROJECTS.BASE, ROUTES.PROJECTS.GUESTS]
+  [AdminTypes.PM_ADMIN]: [
+    ROUTES.PROJECTS.BASE,
+    ROUTES.PROJECTS.GUESTS,
+    ROUTES.PROJECTS.GUEST_REQUESTS
+  ]
 };
 
 const managerRoutes = {
@@ -141,7 +146,9 @@ const employeeRoutes = {
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
     ...commonRoutes
-  ]
+  ],
+  [EmployeeTypes.PM_EMPLOYEE]: [...commonRoutes],
+  [EmployeeTypes.PM_GUEST_EMPLOYEE]: [...commonRoutes]
 };
 
 const senderRoutes = {

@@ -68,7 +68,8 @@
       "selectJobFamily": "Select job family",
       "selectJobTitle": "Select job title",
       "selectCurrentEmploymentChecked": "Select current employment",
-      "careerProgressionTable": "Career progression table"
+      "careerProgressionTable": "Career progression table",
+      "currentPositionColumn": "Current position"
     },
     "diversityDetails": {
       "selectEthnicity": "Select ethnicity",
@@ -88,10 +89,19 @@
     }
   },
   "individualLeaveAnalytics": {
-    "leaveHistoryFilterButton": "Pressing enter on this button opens a menu where you can choose to filter by leave status and leave type"
+    "leaveHistoryFilterButton": "Pressing enter on this button opens a menu where you can choose to filter by leave status and leave type",
+    "leaveStatusChip": "Status:",
+    "leaveStatus": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "denied": "Denied",
+      "cancelled": "Cancelled",
+      "revoked": "Revoked"
+    }
   },
   "peopleFormTable": {
     "actionColumn": {
+      "header": "Actions",
       "editButton": "Select edit",
       "deleteButton": "Select delete"
     }

@@ -5,10 +5,16 @@
     "moduleHeader": "MODULE",
     "roleHeader": "ROLES",
     "timeAndAttendance": "Time & Attendance",
+    "people": "People",
+    "leave": "Leave",
+    "eSignature": "E-signature",
+    "invoice": "Invoice",
+    "projectManagement": "Project Management",
     "viewOnly": "(View Only)",
     "attendanceTitle": "Attendance Module Roles",
     "leaveTitle": "Leave Module Roles",
     "peopleTitle": "People Module Roles",
+    "invoiceTitle": "Invoice Module Roles",
     "adminHeader": "ADMIN",
     "managerHeader": "MANAGER",
     "employeeHeader": "EMPLOYEE",
@@ -23,7 +29,7 @@
     "successToastTitle": "Restriction Updated",
     "successToastDescription": "User role assignment restriction has been updated successfully.",
     "errorToastTitle": "Oops! Something went wrong",
-    "errorToastDescription": "Failed to update the restriction. Please try again.",
+    "errorToastDescription": "Failed to update restrictions.",
     "manageAttendanceSettings": "Manage Attendance Settings",
     "manageOrganizationTimesheet": "Manage Organization Timesheet",
     "manageTeamTimesheets": "Manage Team Timesheets",
@@ -52,7 +58,17 @@
     "createDocuments": "Create Documents",
     "manageContacts": "Manage the Contacts",
     "signOrDeclineDocuments": "Sign or Decline Documents",
-    "viewReceivedDocuments": "View Received Documents (Inbox)"
+    "viewReceivedDocuments": "View Received Documents (Inbox)",
+    "manageInvoiceSettings": "Manage Invoice Settings",
+    "addCustomers": "Add Customers",
+    "updateCustomerDetails": "Update Customer Details",
+    "createInvoices": "Create Invoices",
+    "projectmanagementTitle": "Project Management Module Roles",
+    "manageGuestUsers": "Manage Guest Users",
+    "viewProjects": "View Projects",
+    "createProjects": "Create Projects",
+    "allProjects": "(All projects)",
+    "assignedProjects": "(Assigned projects)"
   },
   "times": {
     "pageHead": "Time Configurations | Skapp",
@@ -93,6 +109,7 @@
     "attendance": "Attendance",
     "sign": "Sign",
     "userRoles": "User Roles",
-    "invoice": "Invoice"
+    "invoice": "Invoice",
+    "organization": "Organization"
   }
 }
