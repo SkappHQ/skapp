@@ -82,7 +82,7 @@ const UpdateWorkLocation = ({ id }: Props) => {
                 latitude: workLocation.geofence.latitude,
                 longitude: workLocation.geofence.longitude,
                 radiusMeters: workLocation.geofence.radiusMeters,
-                address: workLocation.geofence.address ?? ""
+                address: workLocation.address ?? ""
               }
             : null
         },
@@ -90,11 +90,23 @@ const UpdateWorkLocation = ({ id }: Props) => {
     validationSchema,
     onSubmit: (values) => {
       if (!workLocation) return;
-      const payload = {
-        ...values,
-        geofence: canSeeGeofence ? values.geofence : null
-      };
-      updateWorkLocation({ id: workLocation.workLocationId, data: payload });
+      const geofence = canSeeGeofence ? values.geofence : null;
+      updateWorkLocation({
+        id: workLocation.workLocationId,
+        data: {
+          name: values.name,
+          address: geofence?.address ?? "",
+          isAllEmployees: values.isAllEmployees,
+          employeeIds: values.employeeIds,
+          geofence: geofence
+            ? {
+                latitude: geofence.latitude,
+                longitude: geofence.longitude,
+                radiusMeters: geofence.radiusMeters
+              }
+            : null
+        }
+      });
     }
   });
 

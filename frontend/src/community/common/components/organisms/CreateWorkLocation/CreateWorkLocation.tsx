@@ -70,11 +70,20 @@ const CreateWorkLocation = () => {
     },
     validationSchema,
     onSubmit: (values) => {
-      const payload = {
-        ...values,
-        geofence: canSeeGeofence ? values.geofence : null
-      };
-      createWorkLocation(payload);
+      const geofence = canSeeGeofence ? values.geofence : null;
+      createWorkLocation({
+        name: values.name,
+        address: geofence?.address ?? "",
+        isAllEmployees: values.isAllEmployees,
+        employeeIds: values.employeeIds,
+        geofence: geofence
+          ? {
+              latitude: geofence.latitude,
+              longitude: geofence.longitude,
+              radiusMeters: geofence.radiusMeters
+            }
+          : null
+      });
     }
   });
 

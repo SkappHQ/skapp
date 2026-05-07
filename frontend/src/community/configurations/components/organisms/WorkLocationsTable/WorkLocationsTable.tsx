@@ -105,7 +105,7 @@ const WorkLocationsTable = () => {
   const tableData = locations.map((location) => ({
     id: location.workLocationId.toString(),
     name: location.name,
-    address: location.geofence?.address ?? "-",
+    address: location.address ?? "-",
     employeeCount: location.employeeCount,
     actions: {
       id: location.workLocationId

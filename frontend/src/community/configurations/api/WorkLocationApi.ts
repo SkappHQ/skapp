@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
+import { WorkLocationFormValues, WorkLocationRequestPayload } from "~community/configurations/types/WorkLocationTypes";
 
 import { workLocationEndpoints } from "~community/configurations/api/utils/ApiEndpoints";
 import { workLocationQueryKeys } from "./utils/QueryKeys";
@@ -22,7 +22,7 @@ export const useGetWorkLocations = (
   });
 };
 
-const createWorkLocationFn = async (data: WorkLocationFormValues) => {
+const createWorkLocationFn = async (data: WorkLocationRequestPayload) => {
   const response = await authFetch.post(
     workLocationEndpoints.CREATE_WORK_LOCATION,
     data
@@ -53,7 +53,7 @@ const updateWorkLocationFn = async ({
   data
 }: {
   id: number;
-  data: WorkLocationFormValues;
+  data: WorkLocationRequestPayload;
 }) => {
   const response = await authFetch.patch(
     workLocationEndpoints.UPDATE_WORK_LOCATION(id),
