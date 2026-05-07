@@ -6,8 +6,9 @@
 # --- Repository Configuration ---
 $Script:CONFIG = @{
     SourceRepo       = "SkappHQ/skapp"
-    E2eRepo          = "thusala/skapp-pm-e2e"
-    E2eLocalPath     = "C:\Users\thusala.piyarisi_roo\Desktop\Desktop\SkappPM\skapp-pm\skapp-pm-e2e"
+    AutomationRepo   = "thusala/skapp-automation"
+    AutomationLocalPath = "C:\Users\thusala.piyarisi_roo\Desktop\NewCloneSkap\skapp-automation"
+    AutomationBranch = "develop"
     DefaultBranch    = "main"
     DevelopBranch    = "develop"
     BaseBranch       = "develop"
@@ -17,8 +18,10 @@ $Script:CONFIG = @{
     JavaSrcRoot      = "backend/src/main/java/com/skapp"
     JavaTestRoot     = "backend/src/test/java/com/skapp"
     TestSupportPkg   = "backend/src/test/java/com/skapp/support"
-    E2eTestDir       = "tests/api"
-    E2eHelpersDir    = "tests/helpers"
+    # UI test paths (in automation repo)
+    UiTestModulesDir = "src/modules"
+    UiTestSharedDir  = "src/shared"
+    UiTestSetupDir   = "src/setup"
 }
 
 # --- Submodule Mapping ---

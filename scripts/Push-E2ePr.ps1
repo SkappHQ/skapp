@@ -229,20 +229,19 @@ $fileList
 
 # --- Configuration ---
 $SourceRepo = $CONFIG.SourceRepo
-$E2eRepo = $CONFIG.E2eRepo
-$E2eTestSubdir = $CONFIG.E2eTestDir
+$AutomationRepo = $CONFIG.AutomationRepo
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " Push E2E Tests to Repo" -ForegroundColor Cyan
+Write-Host " Push Tests to Automation Repo" -ForegroundColor Cyan
 Write-Host " PR: $SourceRepo#$PrNumber" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # ==============================================================================
-# Step 1: Locate E2E repository
+# Step 1: Locate automation repository
 # ==============================================================================
-Write-StepHeader -Step 1 -Message "Locating E2E repository..."
+Write-StepHeader -Step 1 -Message "Locating automation repository..."
 
 $projectRoot = Get-ProjectRoot
 
@@ -250,45 +249,33 @@ if ($E2eDir) {
     $e2eRoot = Resolve-Path $E2eDir
 }
 else {
-    $candidatePaths = @(
-        $CONFIG.E2eLocalPath,
-        (Join-Path $projectRoot "skapp-pm-e2e"),
-        (Join-Path (Split-Path $projectRoot) "skapp-pm-e2e")
-    )
-
-    $e2eRoot = $null
-    foreach ($path in $candidatePaths) {
-        if ($path -and (Test-Path $path)) {
-            $e2eRoot = $path
-            break
-        }
-    }
+    $e2eRoot = $CONFIG.AutomationLocalPath
 }
 
 if (-not $e2eRoot -or -not (Test-Path $e2eRoot)) {
-    Write-Failure "E2E repository not found."
-    Write-Host "  Configured path: $($CONFIG.E2eLocalPath)"
-    Write-Host "  Run: .\scripts\Link-E2eRepo.ps1 -Clone"
+    Write-Failure "Automation repository not found."
+    Write-Host "  Configured path: $($CONFIG.AutomationLocalPath)"
+    Write-Host "  Clone: git clone https://github.com/$AutomationRepo $($CONFIG.AutomationLocalPath)"
     exit 1
 }
 
-Write-Success "E2E repo: $e2eRoot"
+Write-Success "Automation repo: $e2eRoot"
 
 # ==============================================================================
-# Step 2: Detect generated test files
+# Step 2: Detect test files
 # ==============================================================================
-Write-StepHeader -Step 2 -Message "Detecting generated test files..."
+Write-StepHeader -Step 2 -Message "Detecting test files..."
 
-$e2eTestDir = Join-Path $e2eRoot $E2eTestSubdir
-$generatedTests = Get-ChildItem -Path $e2eTestDir -Filter "*.gen.test.ts" -ErrorAction SilentlyContinue
+$modulesDir = Join-Path $e2eRoot $CONFIG.UiTestModulesDir
+$generatedTests = Get-ChildItem -Path $modulesDir -Filter "*.spec.ts" -Recurse -ErrorAction SilentlyContinue
 
 if (-not $generatedTests -or $generatedTests.Count -eq 0) {
-    Write-Warning "No .gen.test.ts files found in $e2eTestDir"
-    Write-Host "  Run Generate-E2eTests.ps1 first."
+    Write-Warning "No .spec.ts files found in $modulesDir"
+    Write-Host "  Run Generate-UiTests.ps1 first."
     exit 0
 }
 
-Write-Host "  Found $($generatedTests.Count) generated test file(s):"
+Write-Host "  Found $($generatedTests.Count) test file(s):"
 foreach ($t in $generatedTests) {
     Write-Host "    - $($t.Name)" -ForegroundColor White
 }
@@ -344,21 +331,16 @@ if ($RunTests) {
 
     Push-Location $e2eRoot
     try {
-        # Set API base URL from config
-        $env:API_BASE_URL = $API.BaseUrl
-
-        # Check if node_modules exists
         if (-not (Test-Path "node_modules")) {
             Write-Host "  Installing dependencies..."
             npm install 2>&1 | Out-Null
         }
 
-        # Run tests and capture output
-        Write-Host "  Running: npx playwright test $E2eTestSubdir/*.gen.test.ts"
-        $testRunOutput = npx playwright test "$E2eTestSubdir/*.gen.test.ts" --reporter=list 2>&1 | Out-String
+        Write-Host "  Running: npx playwright test --project=chromium"
+        $testRunOutput = npx playwright test --project=chromium --reporter=list 2>&1 | Out-String
 
         if ($LASTEXITCODE -eq 0) {
-            Write-Success "All E2E tests passed!"
+            Write-Success "All tests passed!"
         }
         else {
             Write-Warning "Some tests failed (exit code: $LASTEXITCODE). Continuing with push..."
@@ -418,45 +400,31 @@ try {
 
     Write-Success "On branch: $branchName"
 
-    # Stage generated test files individually
+    # Stage all changes in modules and shared dirs
     Write-Host "  Staging test files..."
-    foreach ($tf in $generatedTests) {
-        $relativePath = "$E2eTestSubdir/$($tf.Name)"
-        git add $relativePath 2>&1 | Out-Null
-        Write-Host "    + $relativePath"
-    }
-
-    # Also stage helpers if they were created/modified
-    $helpersDir = Join-Path $e2eRoot $CONFIG.E2eHelpersDir
-    if (Test-Path $helpersDir) {
-        $helperChanges = git diff --name-only -- "$($CONFIG.E2eHelpersDir)/" 2>$null
-        $untrackedHelpers = git ls-files --others --exclude-standard -- "$($CONFIG.E2eHelpersDir)/" 2>$null
-        if ($helperChanges -or $untrackedHelpers) {
-            git add "$($CONFIG.E2eHelpersDir)/*" 2>&1 | Out-Null
-            Write-Host "    + helpers (modified/new)"
-        }
-    }
+    git add "$($CONFIG.UiTestModulesDir)/" 2>&1 | Out-Null
+    git add "$($CONFIG.UiTestSharedDir)/" 2>&1 | Out-Null
 
     # Check if there are staged changes to commit
     $stagedChanges = git diff --cached --name-only 2>$null
     if ($stagedChanges) {
         # Build a descriptive commit message
-        $commitMsg = "test(e2e): add API tests for PR #$PrNumber`n`nGenerated $totalTests test cases across $($generatedTests.Count) file(s):`n"
+        $commitMsg = "test(ui): add Playwright tests for PR #$PrNumber`n`nGenerated $totalTests test cases across $($generatedTests.Count) file(s):`n"
         foreach ($tf in $generatedTests) {
             $commitMsg += "  - $($tf.Name)`n"
         }
 
         git commit -m $commitMsg 2>&1 | Out-Null
-        Write-Success "Committed: test(e2e): add API tests for PR #$PrNumber"
+        Write-Success "Committed: test(ui): add Playwright tests for PR #$PrNumber"
     }
     else {
-        # Check if there are untracked generated files
-        $untrackedGenTests = git ls-files --others --exclude-standard -- "$E2eTestSubdir/*.gen.test.ts" 2>$null
-        if ($untrackedGenTests) {
-            git add $untrackedGenTests 2>&1 | Out-Null
-            $commitMsg = "test(e2e): add API tests for PR #$PrNumber"
+        # Check if there are untracked test files
+        $untrackedTests = git ls-files --others --exclude-standard -- "$($CONFIG.UiTestModulesDir)/" 2>$null
+        if ($untrackedTests) {
+            git add $untrackedTests 2>&1 | Out-Null
+            $commitMsg = "test(ui): add Playwright tests for PR #$PrNumber"
             git commit -m $commitMsg 2>&1 | Out-Null
-            Write-Success "Committed new untracked test files"
+            Write-Success "Committed new test files"
         }
         else {
             Write-Warning "No new changes to commit. Files may already be committed."
@@ -511,7 +479,7 @@ try {
         }
 
         # Build the rich PR body with test report
-        $prTitle = "test(e2e): API tests for $SourceRepo#$PrNumber"
+        $prTitle = "test(ui): Playwright tests for $SourceRepo#$PrNumber"
         $prBody = Build-TestReportPrBody `
             -SourceRepo $SourceRepo `
             -PrNumber $PrNumber `
@@ -519,7 +487,7 @@ try {
             -TotalTests $totalTests `
             -GeneratedTests $generatedTests `
             -TestsPassed $testsPassed `
-            -BaseUrl $API.BaseUrl `
+            -BaseUrl "https://{tenant}.skapp.dev" `
             -AffectedRepos $affectedRepos
 
         # Check if gh CLI is available
@@ -527,23 +495,21 @@ try {
 
         if ($ghAvailable) {
             # Check if PR already exists for this branch
-            $existingPrJson = gh pr list --repo $E2eRepo --head $branchName --json number,url 2>$null
+            $existingPrJson = gh pr list --repo $AutomationRepo --head $branchName --json number,url 2>$null
             $existingPr = if ($existingPrJson) { $existingPrJson | ConvertFrom-Json } else { $null }
 
             if ($existingPr -and $existingPr.Count -gt 0) {
                 Write-Host "  PR already exists: #$($existingPr[0].number)"
-                # Update the PR body with latest report
-                gh pr edit $existingPr[0].number --repo $E2eRepo --body $prBody 2>&1 | Out-Null
+                gh pr edit $existingPr[0].number --repo $AutomationRepo --body $prBody 2>&1 | Out-Null
                 Write-Success "Updated existing PR #$($existingPr[0].number) with latest test report"
                 Write-Host "  URL: $($existingPr[0].url)"
             }
             else {
-                # Try to create PR (try develop first, then main)
                 $baseBranchForPr = $baseBranch
-                $prCreateOutput = gh pr create --repo $E2eRepo --base $baseBranchForPr --head $branchName --title $prTitle --body $prBody 2>&1
+                $prCreateOutput = gh pr create --repo $AutomationRepo --base $baseBranchForPr --head $branchName --title $prTitle --body $prBody 2>&1
                 if ($LASTEXITCODE -ne 0 -and $baseBranchForPr -ne $CONFIG.DefaultBranch) {
                     Write-Host "  Retrying with base=$($CONFIG.DefaultBranch)..."
-                    $prCreateOutput = gh pr create --repo $E2eRepo --base $CONFIG.DefaultBranch --head $branchName --title $prTitle --body $prBody 2>&1
+                    $prCreateOutput = gh pr create --repo $AutomationRepo --base $CONFIG.DefaultBranch --head $branchName --title $prTitle --body $prBody 2>&1
                 }
 
                 if ($LASTEXITCODE -eq 0) {
@@ -551,14 +517,14 @@ try {
                 }
                 else {
                     Write-Warning "gh pr create failed. Opening browser instead."
-                    Open-PrManually -E2eRepo $E2eRepo -BaseBranch $baseBranch -BranchName $branchName -PrBody $prBody -E2eRoot $e2eRoot
+                    Open-PrManually -E2eRepo $AutomationRepo -BaseBranch $baseBranch -BranchName $branchName -PrBody $prBody -E2eRoot $e2eRoot
                 }
             }
         }
         else {
             Write-Warning "GitHub CLI (gh) not found in PATH."
             Write-Host "  Install: winget install --id GitHub.cli" -ForegroundColor DarkGray
-            Open-PrManually -E2eRepo $E2eRepo -BaseBranch $baseBranch -BranchName $branchName -PrBody $prBody -E2eRoot $e2eRoot
+            Open-PrManually -E2eRepo $AutomationRepo -BaseBranch $baseBranch -BranchName $branchName -PrBody $prBody -E2eRoot $e2eRoot
         }
     }
     else {
@@ -580,6 +546,6 @@ Write-Host ""
 Write-Host "  Branch:   $branchName"
 Write-Host "  Files:    $($generatedTests.Count) test file(s)"
 Write-Host "  Tests:    $totalTests test cases"
-Write-Host "  Repo:     https://github.com/$E2eRepo"
+Write-Host "  Repo:     https://github.com/$AutomationRepo"
 Write-Host "  Status:   $(if ($testsPassed) { 'Ready to merge' } else { 'Some tests need review' })"
 Write-Host ""
