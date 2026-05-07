@@ -24,5 +24,8 @@
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task"
+  },
+  "popupTitles": {
+    "addCompanyPopup": "Add Company"
   }
 }
