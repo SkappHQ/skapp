@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 public class HolidayRequestDto {
@@ -16,5 +18,8 @@ public class HolidayRequestDto {
 
 	@NotNull
 	private String holidayDuration;
+
+	@NotNull
+	private List<Long> workLocationIds;
 
 }

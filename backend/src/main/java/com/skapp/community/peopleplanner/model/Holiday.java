@@ -1,20 +1,16 @@
 package com.skapp.community.peopleplanner.model;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -40,5 +36,10 @@ public class Holiday extends Auditable<String> {
 
 	@Column(name = "is_active")
 	private boolean isActive = true;
+
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "holiday_work_location", joinColumns = @JoinColumn(name = "holiday_id"),
+			inverseJoinColumns = @JoinColumn(name = "work_location_id"))
+	private Set<WorkLocation> workLocations = new HashSet<>();
 
 }

@@ -107,6 +107,7 @@ class HolidayControllerIntegrationTest {
 		holidayDto.setDate(date);
 		holidayDto.setName(name);
 		holidayDto.setHolidayDuration(HolidayControllerIntegrationTest.FULL_DAY);
+		holidayDto.setWorkLocationIds(List.of(1L));
 		return holidayDto;
 	}
 

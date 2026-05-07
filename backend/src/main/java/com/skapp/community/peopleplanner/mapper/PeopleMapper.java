@@ -52,6 +52,7 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeRoleResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
+import com.skapp.community.peopleplanner.payload.response.HolidayWorkLocationResponseDto;
 import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDetailDto;
 import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDto;
 import com.skapp.community.peopleplanner.payload.response.JobTitleResponseDetailDto;
@@ -78,11 +79,18 @@ public interface PeopleMapper {
 
 	List<TeamResponseDto> teamListToTeamResponseDtoList(List<Team> teams);
 
+	@Mapping(target = "workLocations", ignore = true)
 	Holiday holidayDtoToHoliday(HolidayRequestDto holidayRequestDto);
 
 	HolidayResponseDto holidayToHolidayResponseDto(Holiday holiday);
 
 	List<HolidayResponseDto> holidaysToHolidayResponseDtoList(List<Holiday> holidays);
+
+	HolidayWorkLocationResponseDto workLocationToHolidayWorkLocationResponseDto(
+			com.skapp.community.common.model.WorkLocation workLocation);
+
+	List<HolidayWorkLocationResponseDto> workLocationsToHolidayWorkLocationResponseDtoList(
+			java.util.Set<com.skapp.community.common.model.WorkLocation> workLocations);
 
 	List<JobFamilyResponseDetailDto> jobFamilyListToJobFamilyResponseDetailDtoList(List<JobFamily> jobFamilies);
 

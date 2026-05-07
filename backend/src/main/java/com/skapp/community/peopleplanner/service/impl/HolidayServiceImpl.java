@@ -1,9 +1,11 @@
 package com.skapp.community.peopleplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -24,6 +26,7 @@ import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.payload.request.HolidayBulkRequestDto;
 import com.skapp.community.peopleplanner.payload.request.HolidayFilterDto;
+import com.skapp.community.peopleplanner.payload.request.HolidayRequestDto;
 import com.skapp.community.peopleplanner.payload.request.HolidaysDeleteRequestDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayBulkSaveResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayDtoStatusResponseDto;
@@ -51,8 +54,10 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -81,6 +86,8 @@ public class HolidayServiceImpl implements HolidayService {
 	private final PeopleNotificationService peopleNotificationService;
 
 	private final OrganizationService organizationService;
+
+	private final WorkLocationDao workLocationDao;
 
 	@Override
 	public ResponseEntityDto getAllHolidays(HolidayFilterDto holidayFilterDto) {
@@ -120,11 +127,14 @@ public class HolidayServiceImpl implements HolidayService {
 				LocalDate holidayDate = DateTimeUtils.parseUtcDate(holidayDto.getDate());
 				List<Holiday> systemHolidays = holidayDao.findAllByIsActiveTrueAndDate(holidayDate);
 
-				validateHolidayDto(holidayDto.getName(), holidayDate, holidayDto.getHolidayDuration(),
-						systemHolidays.size(), holidaysOnCurrentDate, holidaysOnPastDates,
-						holidayBulkRequestDto.getYear());
+				validateHolidayDto(holidayDto, holidayDate, systemHolidays.size(), holidaysOnCurrentDate,
+						holidaysOnPastDates, holidayBulkRequestDto.getYear());
 
 				Holiday holiday = peopleMapper.holidayDtoToHoliday(holidayDto);
+
+				Set<WorkLocation> workLocations = resolveWorkLocations(holidayDto.getWorkLocationIds());
+				holiday.setWorkLocations(workLocations);
+
 				savableHolidays.add(holiday);
 
 				LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
@@ -368,8 +378,8 @@ public class HolidayServiceImpl implements HolidayService {
 		}
 	}
 
-	private void validateHolidayDto(String holidayName, LocalDate holidayDate, String holidayDuration,
-			int existingHolidays, AtomicInteger holidaysOnCurrentDate, AtomicInteger holidaysOnPastDates, int year) {
+	private void validateHolidayDto(HolidayRequestDto holidayDto, LocalDate holidayDate, int existingHolidays,
+			AtomicInteger holidaysOnCurrentDate, AtomicInteger holidaysOnPastDates, int year) {
 
 		if (existingHolidays >= PeopleConstants.MAXIMUM_HOLIDAYS_PER_DAY) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_MAXIMUM_PER_DAY);
@@ -393,19 +403,19 @@ public class HolidayServiceImpl implements HolidayService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_PAST_DATE_NOT_ALLOWED);
 		}
 
-		if (holidayName == null || holidayName.isEmpty()) {
+		if (holidayDto.getName() == null || holidayDto.getName().isEmpty()) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_NAME_REQUIRED);
 		}
-		if (holidayName.length() > PeopleConstants.HOLIDAY_NAME_MAX_LENGTH) {
+		if (holidayDto.getName().length() > PeopleConstants.HOLIDAY_NAME_MAX_LENGTH) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_NAME_CHAR_LIMIT);
 		}
-		if (!holidayName.matches(PeopleConstants.HOLIDAY_NAME_REGEX_PATTERN)) {
+		if (!holidayDto.getName().matches(PeopleConstants.HOLIDAY_NAME_REGEX_PATTERN)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_NAME_SPECIAL_CHAR);
 		}
 
 		HolidayDuration duration;
 		try {
-			duration = HolidayDuration.valueOf(holidayDuration);
+			duration = HolidayDuration.valueOf(holidayDto.getHolidayDuration());
 		}
 		catch (IllegalArgumentException ex) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_DURATION_INVALID);
@@ -414,6 +424,10 @@ public class HolidayServiceImpl implements HolidayService {
 		if (!EnumSet.of(HolidayDuration.FULL_DAY, HolidayDuration.HALF_DAY_MORNING, HolidayDuration.HALF_DAY_EVENING)
 			.contains(duration)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_DURATION_INVALID);
+		}
+
+		if (holidayDto.getWorkLocationIds() == null || holidayDto.getWorkLocationIds().isEmpty()) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION);
 		}
 	}
 
@@ -468,6 +482,14 @@ public class HolidayServiceImpl implements HolidayService {
 	private boolean canDeleteHoliday(Holiday holiday) {
 		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 		return holiday.getDate().isAfter(currentDate);
+	}
+
+	private Set<WorkLocation> resolveWorkLocations(List<Long> workLocationIds) {
+		List<WorkLocation> workLocations = workLocationDao.findAllById(workLocationIds);
+		if (workLocations.size() != workLocationIds.size()) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION);
+		}
+		return new HashSet<>(workLocations);
 	}
 
 }
