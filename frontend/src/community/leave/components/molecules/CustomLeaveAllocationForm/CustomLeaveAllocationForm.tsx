@@ -311,13 +311,12 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
         placeholder={translateText(["searchEmployeePlaceholder"])}
         options={(suggestions ?? []) as EmployeeType[]}
         inputValue={searchTerm}
-        onInputChange={(value) => {
+        onInputChange={(value, reason) => {
+          if (reason === "reset") return;
           setSearchTerm(value);
-          if (!value) {
-            setFieldValue("employeeId", 0);
-            setFieldValue("name", "");
-            setFieldValue("assignedTo", undefined);
-          }
+          setFieldValue("name", value);
+          setFieldValue("employeeId", 0);
+          setFieldValue("assignedTo", undefined);
         }}
         onChange={(value) => onSelectUser(value)}
         error={errors.employeeId}
