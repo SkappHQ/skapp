@@ -13,15 +13,15 @@ const CrmCompanies: NextPage = () => {
 
   const {
     setIsAddCompaniesModalOpen,
-    setCrmCompanyModalType
+    setCompanyModalType
   } = useCrmStore((store) => ({
     setIsAddCompaniesModalOpen: store.setIsAddCompanyModalOpen,
-    setCrmCompanyModalType: store.setCrmModalType
+    setCompanyModalType: store.setCompanyModalType
   }))
 
   const onPrimaryButtonClick = () => {
     setIsAddCompaniesModalOpen(true);
-    setCrmCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL)
+    setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL)
   };
 
   return (

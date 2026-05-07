@@ -11,7 +11,10 @@
     "title": "Companies",
     "addCompanyBtn": "Add Company",
     "detailsPageHead": "Company Details | Skapp",
-    "detailsTitle": "Company Details"
+    "detailsTitle": "Company Details",
+    "addCompanyModal": {
+      "title": "Add Company"
+    }
   },
   "deals": {
     "pageHead": "Deals | Skapp",
@@ -24,8 +27,5 @@
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task"
-  },
-  "popupTitles": {
-    "addCompanyPopup": "Add Company"
   }
 }

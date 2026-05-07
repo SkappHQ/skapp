@@ -6,7 +6,7 @@ import AddCompanyModal from "../../molecules/AddCompanyModal/AddCompanyModal";
 import { ReactNode } from "react";
 
 const CompanyPopupController = () => {
-    const translateText = useTranslator("crmModule", "popupTitles");
+    const translateText = useTranslator("crmModule", "companies");
 
     const {
         isAddCompaniesModalOpen,
@@ -15,9 +15,9 @@ const CompanyPopupController = () => {
         setCrmModalType
     } = useCrmStore((store) => ({
         isAddCompaniesModalOpen: store.isAddCompanyModalOpen,
-        crmModalType: store.crmModalType,
+        crmModalType: store.companyModalType,
         setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen,
-        setCrmModalType: store.setCrmModalType
+        setCrmModalType: store.setCompanyModalType
     }))
 
     const handleCloseModal = (): void => {
@@ -28,7 +28,7 @@ const CompanyPopupController = () => {
     const getModalTitle = (modalType: CrmModalTypes) => {
         switch (modalType) {
             case CrmModalTypes.ADD_COMPANY_MODAL:
-                return translateText(["addCompanyPopup"]);
+                return translateText(["addCompanyModal", "title"]);
             default:
                 return "Unknown";
         }

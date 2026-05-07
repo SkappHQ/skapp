@@ -8,7 +8,7 @@ const AddCompanyModal: React.FC = () => {
     } = useCrmStore((store) => {
         return {
             setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen,
-            setCrmModalType: store.setCrmModalType
+            setCrmModalType: store.setCompanyModalType
         }
     })
 
