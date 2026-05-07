@@ -86,6 +86,12 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		WorkLocation workLocation = workLocationDao.findById(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
+		if (Boolean.TRUE.equals(workLocationRequestDto.getIsAllEmployees())
+				&& workLocationRequestDto.getEmployeeIds() != null
+				&& !workLocationRequestDto.getEmployeeIds().isEmpty()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_EMPLOYEE_ASSIGNMENT_CONFLICT);
+		}
+
 		String workLocationName = workLocationRequestDto.getName() != null ? workLocationRequestDto.getName() : null;
 
 		if (workLocationName != null

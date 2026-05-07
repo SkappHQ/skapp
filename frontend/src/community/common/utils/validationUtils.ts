@@ -36,3 +36,16 @@ export const confirmPasswordValidation = (
     .oneOf([Yup.ref(password)], translateText(["passwordMatchError"]))
     .required(translateText(["confirmPasswordRequiredError"]));
 };
+
+export const buildWorkLocationValidationSchema = (
+  translateText: (keys: string[]) => string
+) =>
+  Yup.object({
+    name: Yup.string()
+      .required(translateText(["validation.nameRequired"]))
+      .max(50, translateText(["validation.nameMaxLength"]))
+      .matches(
+        /^[a-zA-Z0-9 ]+$/,
+        translateText(["validation.nameInvalidChars"])
+      )
+  });

@@ -17,9 +17,11 @@ export const userRolesQueryKeys = {
 
 export const workLocationQueryKeys = {
   ALL: ["work-locations"],
-  GET_WORK_LOCATIONS: (search: string, page: number) => [
+  GET_WORK_LOCATIONS: (search: string, page: number, size: number) => [
     "work-locations",
     search,
-    page
-  ]
+    page,
+    size
+  ],
+  GET_WORK_LOCATION_BY_ID: (id: number) => ["work-location", id]
 };

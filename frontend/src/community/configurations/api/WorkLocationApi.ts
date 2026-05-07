@@ -12,7 +12,7 @@ export const useGetWorkLocations = (
   size: number
 ) => {
   return useQuery({
-    queryKey: workLocationQueryKeys.GET_WORK_LOCATIONS(search, page),
+    queryKey: workLocationQueryKeys.GET_WORK_LOCATIONS(search, page, size),
     queryFn: async () => {
       const response = await authFetch.get(
         workLocationEndpoints.GET_WORK_LOCATIONS(search, page, size)

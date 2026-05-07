@@ -9,10 +9,9 @@ import { IconName } from "~community/common/types/IconTypes";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import GeofenceSelectorModal from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceSelectorModal";
+import { formatRadius } from "~community/configurations/utils/geofenceUtils";
 
 const DEFAULT_RADIUS = 100;
-
-const formatRadius = (meters: number): string => `${meters}m`;
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -24,7 +23,10 @@ const GeofenceMap = ({ formik }: Props) => {
   const { setIsGeofenceModalOpen, setTempGeofence } = useWorkLocationStore();
 
   const geofence = formik.values.geofence;
-  const hasGeofence = !!geofence && geofence.latitude !== 0;
+  const hasGeofence =
+    geofence != null &&
+    geofence.latitude != null &&
+    geofence.longitude != null;
 
   const handleOpenModal = () => {
     if (geofence) {
