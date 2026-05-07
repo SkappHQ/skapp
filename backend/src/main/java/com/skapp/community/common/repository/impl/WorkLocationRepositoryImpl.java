@@ -40,8 +40,10 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		query.orderBy(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
 
 		TypedQuery<WorkLocation> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
+		if (pageable.isPaged()) {
+			typedQuery.setFirstResult((int) pageable.getOffset());
+			typedQuery.setMaxResults(pageable.getPageSize());
+		}
 		List<WorkLocation> results = typedQuery.getResultList();
 
 		Long total = getTotalCount(cb, workLocationFilterDto);

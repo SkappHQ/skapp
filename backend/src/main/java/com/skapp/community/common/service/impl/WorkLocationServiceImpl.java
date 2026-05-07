@@ -149,7 +149,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto getWorkLocations(WorkLocationFilterDto workLocationFilterDto) {
 		log.info("getWorkLocations: execution started");
 
-		Pageable pageable = PageRequest.of(workLocationFilterDto.getPage(), workLocationFilterDto.getSize());
+		Pageable pageable = workLocationFilterDto.getSize() <= 0 ? Pageable.unpaged()
+				: PageRequest.of(workLocationFilterDto.getPage(), workLocationFilterDto.getSize());
 		Page<WorkLocation> workLocationPage = workLocationDao.findWorkLocations(workLocationFilterDto, pageable);
 
 		List<Long> workLocationIds = workLocationPage.getContent()
