@@ -428,6 +428,15 @@ try {
         }
         else {
             Write-Warning "No new changes to commit. Files may already be committed."
+            # Check if we have any commits ahead of base branch
+            $commitsAhead = git rev-list --count "origin/$baseBranch..HEAD" 2>$null
+            if (-not $commitsAhead -or $commitsAhead -eq "0") {
+                Write-Warning "No new test files to push. Skipping push and PR."
+                Write-Host "  E2E test generation may have failed. Check Copilot CLI output above."
+                Write-Host "  Existing tests are already on the $baseBranch branch."
+                Pop-Location
+                return
+            }
         }
     }
 

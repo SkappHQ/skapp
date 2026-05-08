@@ -350,13 +350,21 @@ $prompt = Get-UiTestPrompt `
 Write-Host "  Sending to Copilot CLI ($($CONFIG.CopilotModel))..." -NoNewline
 
 try {
-    $output = copilot -p $prompt --model $CONFIG.CopilotModel --yolo 2>&1
-    if ($LASTEXITCODE -eq 0) {
+    # Save prompt to file for reference
+    $promptFile = Join-Path $automationRoot "GENERATION_PROMPT.md"
+    $prompt | Out-File -FilePath $promptFile -Encoding utf8
+
+    # Call node.exe directly to avoid copilot.ps1 wrapper's StandardOutputEncoding error
+    $nodeExe = (Get-Command node).Source
+    $copilotModule = Join-Path (Split-Path $nodeExe -Parent) "node_modules\@github\copilot\npm-loader.js"
+    & $nodeExe $copilotModule -p $prompt --model $CONFIG.CopilotModel --yolo
+    $copilotExit = $LASTEXITCODE
+
+    if ($copilotExit -eq 0) {
         Write-Host " OK" -ForegroundColor Green
     }
     else {
-        Write-Host " FAILED" -ForegroundColor Red
-        Write-Host "  Output: $($output | Select-Object -First 10 | Out-String)"
+        Write-Host " FAILED (exit $copilotExit)" -ForegroundColor Red
     }
 }
 catch {
