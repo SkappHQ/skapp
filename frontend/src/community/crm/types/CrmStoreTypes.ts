@@ -1,11 +1,11 @@
 import { CrmModalTypes } from "./ModalTypes";
 
-interface ActionsTypes {
+interface ActionTypes {
     setIsAddCompanyModalOpen: (isAddCompanyModalOpen: boolean) => void;
     setCompanyModalType: (companyModalType: CrmModalTypes) => void;
 }
 
-export interface CrmStore extends ActionsTypes {
+export interface CrmStore extends ActionTypes {
     isAddCompanyModalOpen: boolean;
     companyModalType: CrmModalTypes;
 }

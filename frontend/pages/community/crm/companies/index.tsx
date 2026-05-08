@@ -8,17 +8,12 @@ import { IconName } from "~community/common/types/IconTypes";
 const CrmCompanies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
 
-  const onPrimaryButtonClick = () => {
-    return
-  };
-
   return (
     <ContentLayout
       pageHead={translateText(["pageHead"])}
       title={translateText(["title"])}
       primaryButtonText={translateText(["addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <Box>
         Company page contents go here
