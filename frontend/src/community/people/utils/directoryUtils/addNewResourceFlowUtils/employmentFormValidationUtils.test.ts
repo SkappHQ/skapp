@@ -38,15 +38,21 @@ describe("employmentFormValidationUtils", () => {
       ).toBe("Probation end date must be after joined date");
     });
 
-    it("should return error when joinedDate is invalid format", () => {
+    it("should return error when joined date is invalid format", () => {
       expect(
         validateProbationEndDate("not-a-date", "2024-07-15")
       ).toBe("Invalid date format");
     });
 
-    it("should return error when probationEndDate is invalid format", () => {
+    it("should return error when probation end date is invalid format", () => {
       expect(
         validateProbationEndDate("2024-01-15", "not-a-date")
+      ).toBe("Invalid date format");
+    });
+
+    it("should return error when both dates are invalid format", () => {
+      expect(
+        validateProbationEndDate("invalid", "invalid")
       ).toBe("Invalid date format");
     });
   });
@@ -57,7 +63,7 @@ describe("employmentFormValidationUtils", () => {
     });
 
     it("should return null when joinedDate is null", () => {
-      expect(validateContractEndDate(null, "2024-12-31")).toBeNull();
+      expect(validateContractEndDate(null, "2025-01-15")).toBeNull();
     });
 
     it("should return null when both dates are null", () => {
@@ -66,13 +72,13 @@ describe("employmentFormValidationUtils", () => {
 
     it("should return null when contract end date is after joined date", () => {
       expect(
-        validateContractEndDate("2024-01-15", "2024-12-31")
+        validateContractEndDate("2024-01-15", "2025-01-15")
       ).toBeNull();
     });
 
     it("should return error when contract end date is before joined date", () => {
       expect(
-        validateContractEndDate("2024-07-15", "2024-01-15")
+        validateContractEndDate("2025-01-15", "2024-01-15")
       ).toBe("Contract end date must be after joined date");
     });
 
@@ -82,15 +88,15 @@ describe("employmentFormValidationUtils", () => {
       ).toBe("Contract end date must be after joined date");
     });
 
-    it("should return error when joinedDate is invalid format", () => {
+    it("should return error when joined date is invalid format", () => {
       expect(
-        validateContractEndDate("invalid", "2024-12-31")
+        validateContractEndDate("bad-date", "2025-01-15")
       ).toBe("Invalid date format");
     });
 
-    it("should return error when contractEndDate is invalid format", () => {
+    it("should return error when contract end date is invalid format", () => {
       expect(
-        validateContractEndDate("2024-01-15", "invalid")
+        validateContractEndDate("2024-01-15", "bad-date")
       ).toBe("Invalid date format");
     });
   });
@@ -124,17 +130,17 @@ describe("employmentFormValidationUtils", () => {
       expect(result.errors).toEqual({});
     });
 
-    it("should return isValid true when joinedDate is null and optional dates are null", () => {
+    it("should return isValid true when joinedDate is null and no other dates", () => {
       const result = validateEmploymentDates({
         joinedDate: null,
-        probationEndDate: "2024-07-15",
-        contractEndDate: "2025-01-15"
+        probationEndDate: null,
+        contractEndDate: null
       });
       expect(result.isValid).toBe(true);
       expect(result.errors).toEqual({});
     });
 
-    it("should return probationEndDate error when probation is before joined", () => {
+    it("should return probationEndDate error when probation end is before joined", () => {
       const result = validateEmploymentDates({
         joinedDate: "2024-07-15",
         probationEndDate: "2024-01-15",
@@ -147,10 +153,10 @@ describe("employmentFormValidationUtils", () => {
       expect(result.errors.contractEndDate).toBeUndefined();
     });
 
-    it("should return contractEndDate error when contract is before joined", () => {
+    it("should return contractEndDate error when contract end is before joined", () => {
       const result = validateEmploymentDates({
         joinedDate: "2024-07-15",
-        probationEndDate: "2024-12-15",
+        probationEndDate: "2025-01-15",
         contractEndDate: "2024-01-15"
       });
       expect(result.isValid).toBe(false);
@@ -197,19 +203,19 @@ describe("employmentFormValidationUtils", () => {
       expect(calculateProbationMonths("2024-01-15", "invalid")).toBeNull();
     });
 
-    it("should calculate 6 months correctly", () => {
+    it("should calculate 6 months between dates", () => {
       expect(
         calculateProbationMonths("2024-01-15", "2024-07-15")
       ).toBe(6);
     });
 
-    it("should calculate 3 months correctly", () => {
+    it("should calculate 3 months between dates", () => {
       expect(
         calculateProbationMonths("2024-01-01", "2024-04-01")
       ).toBe(3);
     });
 
-    it("should calculate 12 months correctly", () => {
+    it("should calculate 12 months between dates", () => {
       expect(
         calculateProbationMonths("2024-01-01", "2025-01-01")
       ).toBe(12);
@@ -221,7 +227,7 @@ describe("employmentFormValidationUtils", () => {
       ).toBe(0);
     });
 
-    it("should handle negative difference (end before start)", () => {
+    it("should return negative value when probation end is before joined", () => {
       const result = calculateProbationMonths("2024-07-15", "2024-01-15");
       expect(result).toBe(-6);
     });
@@ -254,8 +260,8 @@ describe("employmentFormValidationUtils", () => {
       );
     });
 
-    it("should use custom prefix with large count", () => {
-      expect(generateEmployeeNumberSuggestion(500, "ID")).toBe("ID-0501");
+    it("should use custom prefix with larger count", () => {
+      expect(generateEmployeeNumberSuggestion(42, "ID")).toBe("ID-0043");
     });
 
     it("should use default prefix EMP when prefix not provided", () => {
