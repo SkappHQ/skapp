@@ -103,8 +103,7 @@ const adminRoutes = {
     ROUTES.CRM.CONTACTS,
     ROUTES.CRM.COMPANIES,
     ROUTES.CRM.DEALS,
-    ROUTES.CRM.TASKS,
-    ROUTES.CONFIGURATIONS.BASE
+    ROUTES.CRM.TASKS
   ]
 };
 
@@ -377,6 +376,7 @@ export const config = {
     "/invoice/:path*",
     "/invoice/create/:path*",
     // CRM module routes
+    "/crm",
     "/crm/:path*"
   ]
 };

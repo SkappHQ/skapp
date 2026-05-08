@@ -1,4 +1,4 @@
-export enum CrmDealStageType {
+export enum CrmDealStageEnum {
   INITIAL = "INITIAL",
   OPEN = "OPEN",
   WON = "WON",
