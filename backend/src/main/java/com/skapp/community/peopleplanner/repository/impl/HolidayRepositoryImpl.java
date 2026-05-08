@@ -70,20 +70,20 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 			}
 			Integer year = holidayFilterDto.getYear();
 			LocalDate date = holidayFilterDto.getDate();
-			Predicate dateBetween;
+			Predicate datePredicate;
 			if (year != null) {
-				dateBetween = criteriaBuilder.between(root.get(Holiday_.DATE),
+				datePredicate = criteriaBuilder.between(root.get(Holiday_.DATE),
 						DateTimeUtils.getUtcLocalDate(year, 1, 1), DateTimeUtils.getUtcLocalDate(year, 12, 31));
 			}
 			else if (date != null) {
-				dateBetween = criteriaBuilder.equal(root.get(Holiday_.DATE), date);
+				datePredicate = criteriaBuilder.equal(root.get(Holiday_.DATE), date);
 			}
 			else {
-				dateBetween = criteriaBuilder.between(root.get(Holiday_.DATE),
+				datePredicate = criteriaBuilder.between(root.get(Holiday_.DATE),
 						DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 1, 1),
 						DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 12, 31));
 			}
-			predicates.add(dateBetween);
+			predicates.add(datePredicate);
 		}
 
 		return predicates;
