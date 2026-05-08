@@ -18,7 +18,8 @@ const styles = (theme: Theme) => ({
     alignItems: "center",
     bgcolor: theme.palette.grey[100],
     border: "none",
-    boxShadow: "none"
+    boxShadow: "none",
+    px: "0.75rem"
   },
   inputBase: {
     flex: 1,
@@ -33,7 +34,6 @@ const styles = (theme: Theme) => ({
     }
   },
   searchIconWrapper: {
-    pr: "0.75rem",
     display: "flex",
     alignItems: "center",
     cursor: "pointer"

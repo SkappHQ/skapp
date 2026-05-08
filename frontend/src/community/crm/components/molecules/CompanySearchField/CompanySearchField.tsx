@@ -16,17 +16,19 @@ import { mergeSx } from "~community/common/utils/commonUtil";
 import styles from "./styles";
 
 interface CompanySearchFieldProps {
+  id?: string;
   label?: string;
   placeholder?: string;
   value: string;
-  onChange: (value: string) => void;
-  options: string[];
+  onChange: (name: string, id: number | null) => void;
+  options: { id: number; name: string }[];
   onAddCompany?: () => void;
   addCompanyLabel?: string;
   noResultsText?: string;
 }
 
 const CompanySearchField = ({
+  id = "company-search",
   label,
   placeholder,
   value,
@@ -41,21 +43,22 @@ const CompanySearchField = ({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listboxId = `${id}-listbox`;
 
   const filtered = options.filter((o) =>
-    o.toLowerCase().includes(search.toLowerCase())
+    o.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
     setSearch(v);
-    onChange(v);
+    onChange(v, null);
     setOpen(true);
   };
 
-  const handleSelect = (option: string) => {
-    setSearch(option);
-    onChange(option);
+  const handleSelect = (option: { id: number; name: string }) => {
+    setSearch(option.name);
+    onChange(option.name, option.id);
     setOpen(false);
   };
 
@@ -74,13 +77,14 @@ const CompanySearchField = ({
     <ClickAwayListener onClickAway={() => setOpen(false)}>
       <Box sx={classes.wrapper}>
         {label && (
-          <Typography component="label" sx={classes.label}>
+          <Typography component="label" htmlFor={id} sx={classes.label}>
             {label}
           </Typography>
         )}
 
         <Paper elevation={0} sx={classes.inputPaper}>
           <InputBase
+            id={id}
             inputRef={inputRef}
             value={search}
             onChange={handleInputChange}
@@ -88,24 +92,50 @@ const CompanySearchField = ({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             sx={classes.inputBase}
+            role="combobox"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+            aria-controls={open ? listboxId : undefined}
+            aria-autocomplete="list"
           />
-          <Box sx={classes.searchIconWrapper} onClick={handleSearchIconClick}>
+          <Box
+            component="button"
+            type="button"
+            aria-label="Search companies"
+            sx={mergeSx([classes.searchIconWrapper, { background: "none", border: "none", cursor: "pointer", p: 0 }])}
+            onClick={handleSearchIconClick}
+          >
             <SearchIcon fill={theme.palette.text.secondary} />
           </Box>
         </Paper>
 
         {open && (
-          <Paper elevation={3} sx={mergeSx([classes.dropdownPaper])}>
+          <Paper
+            elevation={3}
+            id={listboxId}
+            role="listbox"
+            aria-label={label ?? "Company options"}
+            sx={mergeSx([classes.dropdownPaper])}
+          >
             {filtered.length === 0 ? (
-              <Typography sx={classes.noResultsText}>{noResultsText}</Typography>
+              <Typography role="status" sx={classes.noResultsText}>{noResultsText}</Typography>
             ) : (
               filtered.map((option) => (
                 <Box
-                  key={option}
+                  key={option.id}
+                  role="option"
+                  aria-selected={value === option.name}
+                  tabIndex={0}
                   onClick={() => handleSelect(option)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelect(option);
+                    }
+                  }}
                   sx={classes.optionItem}
                 >
-                  {option}
+                  {option.name}
                 </Box>
               ))
             )}
@@ -115,9 +145,18 @@ const CompanySearchField = ({
                 direction="row"
                 alignItems="center"
                 gap={0.75}
+                role="button"
+                tabIndex={0}
                 onClick={() => {
                   onAddCompany();
                   setOpen(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onAddCompany();
+                    setOpen(false);
+                  }
                 }}
                 sx={classes.addCompanyRow}
               >
