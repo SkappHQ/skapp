@@ -1,4 +1,4 @@
-import { CrmDealStageType } from "../enums/CrmDealEnums";
+import { CrmDealStageEnum } from "../enums/CrmDealEnums";
 import { CrmCompanyType } from "./CrmCompanyTypes";
 import { CrmContactType, CrmOwnerType } from "./CrmContactTypes";
 
@@ -8,18 +8,18 @@ export interface CrmPriorityType {
   orderIndex: number;
 }
 
-export interface CrmDealStageModel {
+export interface CrmDealStageType {
   id: number;
   name: string;
   color: string;
   orderIndex: number;
-  stageType: CrmDealStageType;
+  stageType: CrmDealStageEnum;
 }
 
 export interface CrmDealType {
   id: number;
   name: string;
-  stage: CrmDealStageModel;
+  stage: CrmDealStageType;
   priority: CrmPriorityType | null;
   closingAt: string | null;
   amount: string | null;
