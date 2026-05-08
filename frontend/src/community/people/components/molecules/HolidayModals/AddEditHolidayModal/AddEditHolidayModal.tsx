@@ -2,9 +2,11 @@ import { debounce } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
+import { useRouter } from "next/router";
 import {
   ChangeEvent,
   JSX,
+  SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -16,6 +18,7 @@ import DropdownAutocomplete from "~community/common/components/molecules/Dropdow
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
+import ROUTES from "~community/common/constants/routes";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -55,6 +58,7 @@ const AddEditHolidayModal = ({
 }: Props): JSX.Element => {
   const translateText = useTranslator("peopleModule", "holidays");
   const translateAria = useTranslator("peopleAria", "holiday");
+  const router = useRouter();
 
   const { setToastMessage } = useToast();
 
@@ -83,29 +87,61 @@ const AddEditHolidayModal = ({
     isFetchingNextPage
   } = useGetWorkLocations();
 
+  const ALL_LOCATIONS_OPTION = {
+    value: "All locations",
+    label: "All locations"
+  };
+
   const workLocationDropDownList = useMemo(() => {
     if (workLocationData === undefined) {
-      return [];
+      return [ALL_LOCATIONS_OPTION];
     }
-
-    console.log("workLocationData full:", JSON.stringify(workLocationData));
-    console.log(
-      "workLocationData.pages:",
-      JSON.stringify((workLocationData as any)?.pages)
-    );
 
     const pages = (workLocationData as any)?.pages ?? [];
 
-    const result = pages.flatMap(
-      (page: { items?: { workLocationId: number; name: string }[] }) =>
+    const locations = pages
+      .flatMap((page: { items?: { workLocationId: number; name: string }[] }) =>
         (page?.items ?? []).map((workLocation) => ({
           value: workLocation.name,
           label: workLocation.name
         }))
-    );
-    console.log("workLocationDropDownList:", JSON.stringify(result));
-    return result;
+      )
+      .sort((a: { label: string }, b: { label: string }) =>
+        a.label.localeCompare(b.label)
+      );
+
+    return [ALL_LOCATIONS_OPTION, ...locations];
   }, [workLocationData]);
+
+  const [selectedWorkLocations, setSelectedWorkLocations] = useState<
+    { value: string; label: string }[]
+  >([]);
+
+  const handleWorkLocationChange = (
+    _e: SyntheticEvent,
+    newValue: { value: string; label: string }[]
+  ): void => {
+    if (!Array.isArray(newValue)) return;
+
+    const wasAllLocationsSelected = selectedWorkLocations.some(
+      (v) => v.value === ALL_LOCATIONS_OPTION.value
+    );
+    const isAllLocationsInNew = newValue.some(
+      (v) => v.value === ALL_LOCATIONS_OPTION.value
+    );
+
+    if (!wasAllLocationsSelected && isAllLocationsInNew) {
+      setSelectedWorkLocations([ALL_LOCATIONS_OPTION]);
+    } else if (wasAllLocationsSelected && newValue.length > 1) {
+      setSelectedWorkLocations(
+        newValue.filter((v) => v.value !== ALL_LOCATIONS_OPTION.value)
+      );
+    } else if (newValue.length === 0) {
+      setSelectedWorkLocations([ALL_LOCATIONS_OPTION]);
+    } else {
+      setSelectedWorkLocations(newValue);
+    }
+  };
 
   const [duration, setDuration] = useState<string>(
     newHolidayDetails?.duration || ""
@@ -398,6 +434,15 @@ const AddEditHolidayModal = ({
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
           isDisableOptionFilter
+          multiple
+          value={selectedWorkLocations}
+          onChange={handleWorkLocationChange as any}
+          actionItem={{
+            label: "Add work location +",
+            onClick: () => {
+              void router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=attendance`);
+            }
+          }}
         />
         <DurationSelector
           label={translateText(["duration"])}

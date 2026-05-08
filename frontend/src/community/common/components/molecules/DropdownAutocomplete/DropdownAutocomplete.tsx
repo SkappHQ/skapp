@@ -1,6 +1,7 @@
 import {
   Autocomplete,
   Box,
+  Chip,
   CircularProgress,
   InputBase,
   Paper,
@@ -29,10 +30,10 @@ interface Props {
   label?: string;
   placeholder?: string;
   inputStyle?: Record<string, string>;
-  value?: DropDownType;
+  value?: DropDownType | DropDownType[];
   onChange?: (
     e: SyntheticEvent,
-    value: DropDownType | DropdownListType
+    value: DropDownType | DropdownListType | DropDownType[]
   ) => void | Promise<void>;
   onInput?: () => void;
   onClose?: () => void;
@@ -65,6 +66,11 @@ interface Props {
   fetchNextPage?: () => void;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
+  multiple?: boolean;
+  actionItem?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 const DropdownAutocomplete: FC<Props> = ({
@@ -87,7 +93,9 @@ const DropdownAutocomplete: FC<Props> = ({
   labelStyles,
   fetchNextPage,
   hasNextPage,
-  isFetchingNextPage
+  isFetchingNextPage,
+  multiple = false,
+  actionItem
 }) => {
   const theme: Theme = useTheme();
 
@@ -141,6 +149,8 @@ const DropdownAutocomplete: FC<Props> = ({
 
       <Autocomplete
         disablePortal
+        multiple={multiple}
+        disableCloseOnSelect={multiple}
         id={inputName}
         options={itemList}
         getOptionLabel={(option) => option.label ?? ""}
@@ -157,7 +167,7 @@ const DropdownAutocomplete: FC<Props> = ({
             : "none",
           boxShadow: "none",
           borderRadius: ".5rem",
-          height: "3rem",
+          minHeight: "3rem",
           padding: "0rem",
           ":hover": {
             border: error
@@ -166,20 +176,30 @@ const DropdownAutocomplete: FC<Props> = ({
           },
           "& .MuiAutocomplete-popupIndicator": {
             mr: ".3125rem",
-            display: readOnly ? "none" : "block"
+            display: readOnly ? "none" : "block",
+            alignSelf: "center"
+          },
+          "& .MuiAutocomplete-clearIndicator": {
+            display: "none"
           },
           "&.Mui-focused, &:focus-visible": {
             outline: `0.125rem solid ${theme.palette.common.black}`,
             outlineOffset: "-0.125rem"
           },
+          "& .MuiAutocomplete-tag": {
+            margin: "0.125rem"
+          },
           ...selectStyles
         }}
         renderInput={(params) => {
           const { InputProps, ...rest } = params;
+          const hasSelection = multiple
+            ? Array.isArray(value) && value.length > 0
+            : !!value;
 
           return (
             <InputBase
-              placeholder={placeholder}
+              placeholder={hasSelection ? "" : placeholder}
               readOnly={readOnly}
               {...InputProps}
               {...rest}
@@ -197,7 +217,7 @@ const DropdownAutocomplete: FC<Props> = ({
             />
           );
         }}
-        renderOption={(props, option) => (
+        renderOption={(props, option, { selected }) => (
           <li
             {...props}
             style={{
@@ -212,7 +232,11 @@ const DropdownAutocomplete: FC<Props> = ({
               <Typography>{option.label}</Typography>
             </Box>
             <Box>
-              {value && option.value === value.value && (
+              {(selected ||
+                (!multiple &&
+                  value &&
+                  !Array.isArray(value) &&
+                  option.value === value.value)) && (
                 <Icon
                   name={IconName.RIGHT_COLORED_ICON}
                   fill={theme.palette.primary.dark}
@@ -221,7 +245,26 @@ const DropdownAutocomplete: FC<Props> = ({
             </Box>
           </li>
         )}
-        disableClearable={true}
+        renderTags={
+          multiple
+            ? (tagValue) => (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    pl: "0.75rem"
+                  }}
+                >
+                  <Chip label={tagValue[0]?.label} size="small" />
+                  {tagValue.length > 1 && (
+                    <Chip label={`+ ${tagValue.length - 1}`} size="small" />
+                  )}
+                </Box>
+              )
+            : undefined
+        }
+        disableClearable={!multiple}
         PopperComponent={(props) => (
           <Popper {...props} placement={popperPosition} />
         )}
@@ -237,7 +280,40 @@ const DropdownAutocomplete: FC<Props> = ({
               boxShadow: "none",
               border: `.0625rem solid ${theme.palette.grey[300]}`
             }}
-          />
+          >
+            {props.children}
+            {actionItem && (
+              <Box
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  actionItem.onClick();
+                }}
+                sx={{
+                  p: "0.5rem 1rem",
+                  cursor: "pointer",
+                  borderTop: `.0625rem solid ${theme.palette.grey[300]}`,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  "&:hover": {
+                    backgroundColor: theme.palette.grey[100]
+                  }
+                }}
+              >
+                <Typography
+                  sx={{
+                    color: theme.palette.primary.dark,
+                    fontSize: "1rem",
+                    fontWeight: 400,
+                    fontStyle: "normal",
+                    textAlign: "center"
+                  }}
+                >
+                  {actionItem.label}
+                </Typography>
+              </Box>
+            )}
+          </Paper>
         )}
         filterOptions={
           isDisableOptionFilter
@@ -262,8 +338,8 @@ const DropdownAutocomplete: FC<Props> = ({
           </Box>
         }
         disabled={readOnly || isDisabled}
-        onChange={onChange}
-        value={value ?? null}
+        onChange={onChange as any}
+        value={multiple ? (Array.isArray(value) ? value : []) : (value ?? null)}
         isOptionEqualToValue={(option, val) => option.value === val.value}
       />
       {!!error && (

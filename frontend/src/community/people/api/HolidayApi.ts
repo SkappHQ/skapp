@@ -235,7 +235,7 @@ export const useGetWorkLocations = (
   searchKeyword?: string
 ): UseInfiniteQueryResult<WorkLocationDataResponse> => {
   const params = {
-    size: 4,
+    size: 3,
     searchKeyword: searchKeyword ?? ""
   };
 
