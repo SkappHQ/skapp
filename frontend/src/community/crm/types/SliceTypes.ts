@@ -1,10 +1,9 @@
 import { CrmStore } from "./CrmStoreTypes";
 
-export interface crmCompanyModalSliceTypes
-    extends Pick<
-        CrmStore,
-        | "isAddCompanyModalOpen"
-        | "setIsAddCompanyModalOpen"
-        | "companyModalType"
-        | "setCompanyModalType"
-    > { }
+export interface CrmCompanyModalSliceTypes extends Pick<
+  CrmStore,
+  | "isAddCompanyModalOpen"
+  | "setIsAddCompanyModalOpen"
+  | "companyModalType"
+  | "setCompanyModalType"
+> {}
