@@ -24,10 +24,11 @@ const CrmContacts: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
+      secondaryBtnText={translateText(["exportDataBtn"])}
+      secondaryBtnIconName={IconName.FILE_UPLOAD_ICON}
       onPrimaryButtonClick={handleAddContact}
     >
       <>
-        {/* CRM Contacts content */}
         <CrmContactsModalController />
       </>
     </ContentLayout>
