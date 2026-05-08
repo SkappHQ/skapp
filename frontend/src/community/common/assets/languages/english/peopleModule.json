@@ -886,7 +886,6 @@
       "projectManagement": "Project Management",
       "invoice": "Invoice",
       "crm": "CRM",
-      "none": "None",
       "selectRole": "Select role"
     },
     "credentials": {
