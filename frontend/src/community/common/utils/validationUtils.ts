@@ -44,8 +44,4 @@ export const buildWorkLocationValidationSchema = (
     name: Yup.string()
       .required(translateText(["validation.nameRequired"]))
       .max(50, translateText(["validation.nameMaxLength"]))
-      .matches(
-        /^[a-zA-Z0-9 ]+$/,
-        translateText(["validation.nameInvalidChars"])
-      )
   });
