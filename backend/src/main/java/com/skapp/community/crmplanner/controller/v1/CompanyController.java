@@ -1,0 +1,59 @@
+package com.skapp.community.crmplanner.controller.v1;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.service.CompanyService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/v1/company")
+@Tag(name = "CRM Companies Controller", description = "Operations related to CRM Companies")
+public class CompanyController {
+
+  @NonNull
+  private final CompanyService companyService;
+
+  @Operation(summary = "Get all companies", description = "Get all registered companies in the database")
+  @GetMapping
+  public ResponseEntity<ResponseEntityDto> getAllCompanies() {
+    ResponseEntityDto responseDto = companyService.getAllCompanies();
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
+  }
+
+  @Operation(summary = "Create a new company", description = "Create a new company")
+  @PostMapping
+  public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CrmCompany crmCompany) {
+    ResponseEntityDto responseDto = companyService.createCompany(crmCompany);
+    return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+  }
+
+  @Operation(summary = "Get a company by ID", description = "Get a company by ID")
+  @GetMapping("/{id}")
+  public ResponseEntity<ResponseEntityDto> getCompany(@PathVariable Long id) {
+    ResponseEntityDto responseDto = companyService.getCompany(id);
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
+  }
+
+  @Operation(summary = "Delete a company by ID", description = "Delete a company by ID")
+  @DeleteMapping("/{id}")
+  public ResponseEntity<ResponseEntityDto> deleteCompany(@PathVariable Long id) {
+    ResponseEntityDto responseDto = companyService.deleteCompany(id);
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
+  }
+}
