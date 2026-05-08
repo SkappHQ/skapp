@@ -91,6 +91,7 @@ public class PeopleUtil {
 				|| !Objects.equals(oldRole.getPmRole(), newRole.getPmRole())
 				|| !Objects.equals(oldRole.getOkrRole(), newRole.getOkrRole())
 				|| !Objects.equals(oldRole.getInvoiceRole(), newRole.getInvoiceRole())
+				|| !Objects.equals(oldRole.getCrmRole(), newRole.getCrmRole())
 				|| !Objects.equals(oldRole.getIsSuperAdmin(), newRole.getIsSuperAdmin());
 	}
 
