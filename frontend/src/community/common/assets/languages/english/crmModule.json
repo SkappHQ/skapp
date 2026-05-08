@@ -2,9 +2,44 @@
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",
-    "addContactBtn": "Add Contact",
+    "addContactBtn": "Create contact",
+    "exportDataBtn": "Export data",
     "detailsPageHead": "Contact Details | Skapp",
     "detailsTitle": "Contact Details",
+    "search": {
+      "placeholder": "Search contacts",
+      "ariaLabel": "Search contacts",
+      "clearAriaLabel": "Clear contact search"
+    },
+    "companyFilter": {
+      "allCompanies": "All companies",
+      "ariaLabel": "Filter contacts by company"
+    },
+    "table": {
+      "ariaLabel": "Contacts table",
+      "ariaDescription": "Table displaying contacts with company, email, phone number, deal value, open tasks, and contact owner.",
+      "rowAriaLabel": "Open contact details for {{name}}",
+      "columns": {
+        "contact": "Contact",
+        "email": "EMAIL",
+        "contactNo": "CONTACT NO.",
+        "dealValue": "DEAL VALUE",
+        "openTasks": "OPEN TASKS",
+        "contactOwner": "CONTACT OWNER"
+      }
+    },
+    "emptyStates": {
+      "noContactsTitle": "No contacts",
+      "noContactsDescription": "No contacts have been added yet. Once you add contacts, they will be displayed here.",
+      "noResultsTitle": "No results found",
+      "noResultsDescription": "We couldn't find any matches for your search. Please try using a different term."
+    },
+    "sidePanel": {
+      "defaultTitle": "Contact details",
+      "title": "Contact details for {{name}}",
+      "moreActionsAriaLabel": "More contact actions",
+      "closeAriaLabel": "Close contact details"
+    },
     "createContactModal": {
       "title": "Create contact",
       "contactName": "Contact name",
@@ -26,7 +61,11 @@
       "save": "Save",
       "contactNameRequired": "Contact name is required",
       "emailRequired": "Email is required",
-      "emailInvalid": "Enter a valid email address"
+      "emailInvalid": "Enter a valid email address",
+      "createContactSuccess": "Contact has been created successfully.",
+      "createContactSuccessTitle": "Contact created",
+      "createContactError": "Failed to create contact. Please try again.",
+      "createContactErrorTitle": "Error"
     }
   },
   "companies": {
@@ -53,6 +92,6 @@
   },
   "popupTitles": {
     "addCompanyPopup": "Add Company",
-    "addContactPopup": "Add Contact"
+    "addContactPopup": "Create contact"
   }
 }
