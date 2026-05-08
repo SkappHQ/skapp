@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.mapper;
 
+import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.EmployeeSignInResponseDto;
 import com.skapp.community.leaveplanner.payload.EmployeeLeaveEntitlementsDto;
@@ -42,28 +43,12 @@ import com.skapp.community.peopleplanner.payload.request.employee.employment.Emp
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentVisaDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalEducationalDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalFamilyDetailsDto;
-import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
-import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
-import com.skapp.community.peopleplanner.payload.response.EmployeeDataExportResponseDto;
-import com.skapp.community.peopleplanner.payload.response.EmployeeDetailedResponseDto;
-import com.skapp.community.peopleplanner.payload.response.EmployeeJobFamilyDto;
-import com.skapp.community.peopleplanner.payload.response.EmployeePeriodResponseDto;
-import com.skapp.community.peopleplanner.payload.response.EmployeeResponseDto;
-import com.skapp.community.peopleplanner.payload.response.EmployeeRoleResponseDto;
-import com.skapp.community.peopleplanner.payload.response.HolidayBasicDetailsResponseDto;
-import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
-import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDetailDto;
-import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDto;
-import com.skapp.community.peopleplanner.payload.response.JobTitleResponseDetailDto;
-import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionResponseDto;
-import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
-import com.skapp.community.peopleplanner.payload.response.TeamDetailResponseDto;
-import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDto;
-import com.skapp.community.peopleplanner.payload.response.TeamResponseDto;
+import com.skapp.community.peopleplanner.payload.response.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface PeopleMapper {
@@ -78,11 +63,19 @@ public interface PeopleMapper {
 
 	List<TeamResponseDto> teamListToTeamResponseDtoList(List<Team> teams);
 
+	@Mapping(target = "workLocations", ignore = true)
 	Holiday holidayDtoToHoliday(HolidayRequestDto holidayRequestDto);
 
 	HolidayResponseDto holidayToHolidayResponseDto(Holiday holiday);
 
 	List<HolidayResponseDto> holidaysToHolidayResponseDtoList(List<Holiday> holidays);
+
+	// HolidayWorkLocationResponseDto workLocationToHolidayWorkLocationResponseDto(
+	// com.skapp.community.common.model.WorkLocation workLocation);
+	//
+	// List<HolidayWorkLocationResponseDto>
+	// workLocationsToHolidayWorkLocationResponseDtoList(
+	// Set<WorkLocation> workLocations);
 
 	List<JobFamilyResponseDetailDto> jobFamilyListToJobFamilyResponseDetailDtoList(List<JobFamily> jobFamilies);
 
