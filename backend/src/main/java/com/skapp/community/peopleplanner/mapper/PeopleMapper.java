@@ -70,12 +70,10 @@ public interface PeopleMapper {
 
 	List<HolidayResponseDto> holidaysToHolidayResponseDtoList(List<Holiday> holidays);
 
-	// HolidayWorkLocationResponseDto workLocationToHolidayWorkLocationResponseDto(
-	// com.skapp.community.common.model.WorkLocation workLocation);
-	//
-	// List<HolidayWorkLocationResponseDto>
-	// workLocationsToHolidayWorkLocationResponseDtoList(
-	// Set<WorkLocation> workLocations);
+	HolidayWorkLocationResponseDto workLocationToHolidayWorkLocationResponseDto(WorkLocation workLocation);
+
+	List<HolidayWorkLocationResponseDto> workLocationsToHolidayWorkLocationResponseDtoList(
+			Set<WorkLocation> workLocations);
 
 	List<JobFamilyResponseDetailDto> jobFamilyListToJobFamilyResponseDetailDtoList(List<JobFamily> jobFamilies);
 

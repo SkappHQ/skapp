@@ -31,6 +31,7 @@ import com.skapp.community.peopleplanner.payload.request.HolidaysDeleteRequestDt
 import com.skapp.community.peopleplanner.payload.response.HolidayBulkSaveResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayDtoStatusResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
+import com.skapp.community.peopleplanner.payload.response.HolidayWorkLocationResponseDto;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.service.HolidayService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
@@ -100,6 +101,10 @@ public class HolidayServiceImpl implements HolidayService {
 		PageDto pageDto = pageTransformer.transform(holidays);
 		List<HolidayResponseDto> list = peopleMapper
 			.holidaysToHolidayResponseDtoList(holidays.hasContent() ? holidays.getContent() : Collections.emptyList());
+
+		long totalWorkLocationCount = workLocationDao.count();
+		list.forEach(holidayResponseDto -> normalizeWorkLocations(holidayResponseDto, totalWorkLocationCount));
+
 		pageDto.setItems(list);
 
 		log.info("getAllHolidays: execution ended");
@@ -494,6 +499,15 @@ public class HolidayServiceImpl implements HolidayService {
 		List<WorkLocation> workLocations = workLocationDao.findAllByNameIn(workLocationList);
 
 		return new HashSet<>(workLocations);
+	}
+
+	private void normalizeWorkLocations(HolidayResponseDto holidayResponseDto, long totalWorkLocationCount) {
+		List<HolidayWorkLocationResponseDto> workLocations = holidayResponseDto.getWorkLocations();
+		if (workLocations == null || workLocations.isEmpty() || workLocations.size() == totalWorkLocationCount) {
+			HolidayWorkLocationResponseDto allLocations = new HolidayWorkLocationResponseDto();
+			allLocations.setName("All locations");
+			holidayResponseDto.setWorkLocations(Collections.singletonList(allLocations));
+		}
 	}
 
 }
