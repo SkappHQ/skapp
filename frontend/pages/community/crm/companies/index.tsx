@@ -15,10 +15,7 @@ const CrmCompanies: NextPage = () => {
       primaryButtonText={translateText(["addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
     >
-      <Box>
-        Company page contents go here
-        {/* CompanyData */}
-      </Box>
+      <Box></Box>
     </ContentLayout>
   );
 };
