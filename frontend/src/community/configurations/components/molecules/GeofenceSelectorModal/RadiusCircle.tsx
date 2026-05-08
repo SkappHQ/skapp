@@ -15,7 +15,10 @@ const RadiusCircle = ({ center, radius }: Props) => {
 
   useEffect(() => {
     if (!map) return;
-    if (!circleRef.current) {
+    if (circleRef.current) {
+      circleRef.current.setCenter(center);
+      circleRef.current.setRadius(radius);
+    } else {
       circleRef.current = new google.maps.Circle({
         map,
         center,
@@ -26,9 +29,6 @@ const RadiusCircle = ({ center, radius }: Props) => {
         fillColor: theme.palette.primary.main,
         fillOpacity: 0.15
       });
-    } else {
-      circleRef.current.setCenter(center);
-      circleRef.current.setRadius(radius);
     }
     return () => {
       circleRef.current?.setMap(null);

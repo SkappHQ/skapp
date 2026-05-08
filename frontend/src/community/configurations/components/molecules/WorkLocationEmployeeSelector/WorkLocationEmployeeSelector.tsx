@@ -2,16 +2,12 @@ import { Box, Checkbox as MuiCheckbox, Typography } from "@mui/material";
 import { FormikProps } from "formik";
 import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
+import { AvatarChip, AvatarGroup } from "@rootcodelabs/skapp-ui";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
-import {
-  AvatarPropTypes,
-  MenuTypes
-} from "~community/common/types/MoleculeTypes";
+import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import {
   useGetEmployeeData,
   useGetSearchedEmployees
@@ -107,6 +103,63 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
     }
   };
 
+  const renderTriggerContent = () => {
+    if (selectedCount === 0) {
+      return (
+        <Typography
+          variant="placeholder"
+          sx={{ color: theme.palette.text.secondary, ml: "0.5rem" }}
+        >
+          {translateText(["form.assignEmployeesLabel"])}
+        </Typography>
+      );
+    }
+
+    if (isAllSelected) {
+      return (
+        <AvatarChip
+          label={translateText(["form.allEmployees"])}
+          showAvatar={false}
+        />
+      );
+    }
+
+    if (selectedCount <= 2) {
+      return (
+        <Box sx={{ display: "flex", gap: "0.5rem" }}>
+          {selectedEmployees.map((emp) => (
+            <AvatarChip
+              key={emp.employeeId}
+              label={
+                selectedCount === 1
+                  ? `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()
+                  : (emp.firstName ?? "")
+              }
+              avatarProps={{
+                id: String(emp.employeeId),
+                firstName: emp.firstName,
+                lastName: emp.lastName,
+                src: emp.authPic
+              }}
+            />
+          ))}
+        </Box>
+      );
+    }
+
+    return (
+      <AvatarGroup
+        avatars={selectedEmployees.map((emp) => ({
+          id: String(emp.employeeId),
+          firstName: emp.firstName,
+          lastName: emp.lastName,
+          src: emp.authPic
+        }))}
+        maxVisible={3}
+      />
+    );
+  };
+
   return (
     <div>
       <Typography
@@ -149,63 +202,7 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
           }
         }}
       >
-        {selectedCount === 0 ? (
-          <Typography
-            variant="placeholder"
-            sx={{ color: theme.palette.text.secondary, ml: "0.5rem" }}
-          >
-            {translateText(["form.assignEmployeesLabel"])}
-          </Typography>
-        ) : isAllSelected ? (
-          <AvatarChip
-            firstName="All"
-            lastName="Employees"
-            avatarUrl={undefined}
-            chipStyles={{
-              backgroundColor: "common.white",
-              color: "common.black",
-              height: "2.5rem"
-            }}
-          />
-        ) : selectedCount <= 2 ? (
-          <Box sx={{ display: "flex", gap: "0.5rem" }}>
-            {selectedEmployees.map((emp) => (
-              <AvatarChip
-                key={emp.employeeId}
-                firstName={emp.firstName ?? ""}
-                lastName={selectedCount === 1 ? (emp.lastName ?? "") : ""}
-                avatarUrl={emp.authPic}
-                chipStyles={{
-                  backgroundColor: "common.white",
-                  color: "common.black",
-                  height: "2.5rem"
-                }}
-              />
-            ))}
-          </Box>
-        ) : (
-          <AvatarGroup
-            componentStyles={{
-              ".MuiAvatarGroup-avatar": {
-                bgcolor: theme.palette.grey[100],
-                color: theme.palette.primary.dark,
-                fontSize: "0.875rem",
-                height: "2.5rem",
-                width: "2.5rem",
-                fontWeight: 400
-              }
-            }}
-            avatars={selectedEmployees.map(
-              (emp) =>
-                ({
-                  firstName: emp.firstName,
-                  lastName: emp.lastName,
-                  image: emp.authPic
-                }) as AvatarPropTypes
-            )}
-            max={3}
-          />
-        )}
+        {renderTriggerContent()}
       </Box>
 
       <Popper
@@ -215,7 +212,6 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
         menuType={MenuTypes.FILTER}
         id={popperOpen ? "employee-select-popper" : undefined}
         handleClose={handlePopperClose}
-        timeout={300}
         containerStyles={{
           maxHeight: "20.25rem",
           width: `${boxWidth}px`,
@@ -250,16 +246,8 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
               sx={{ p: "0.25rem" }}
             />
             <AvatarChip
-              firstName="All"
-              lastName="Employees"
-              avatarUrl={undefined}
-              chipStyles={{
-                backgroundColor: "transparent",
-                color: "common.black",
-                height: "2.5rem",
-                border: "none",
-                boxShadow: "none"
-              }}
+              label={translateText(["form.allEmployees"])}
+              showAvatar={false}
             />
           </Box>
 
@@ -286,15 +274,12 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
                     sx={{ p: "0.25rem" }}
                   />
                   <AvatarChip
-                    firstName={emp.firstName ?? ""}
-                    lastName={emp.lastName ?? ""}
-                    avatarUrl={emp.authPic}
-                    chipStyles={{
-                      backgroundColor: "transparent",
-                      color: "common.black",
-                      height: "2.5rem",
-                      border: "none",
-                      boxShadow: "none"
+                    label={`${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()}
+                    avatarProps={{
+                      id: String(emp.employeeId),
+                      firstName: emp.firstName,
+                      lastName: emp.lastName,
+                      src: emp.authPic
                     }}
                   />
                 </Box>

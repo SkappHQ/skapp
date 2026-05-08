@@ -71,9 +71,8 @@ const UpdateWorkLocation = ({ id }: Props) => {
   );
 
   const formik = useFormik<WorkLocationFormValues>({
-    initialValues: !workLocation
-      ? { name: "", isAllEmployees: false, employeeIds: [], geofence: null }
-      : {
+    initialValues: workLocation
+      ? {
           name: workLocation.name,
           isAllEmployees: workLocation.isAllEmployees,
           employeeIds: workLocation.employees?.map((e) => e.employeeId) ?? [],
@@ -85,7 +84,8 @@ const UpdateWorkLocation = ({ id }: Props) => {
                 address: workLocation.address ?? ""
               }
             : null
-        },
+        }
+      : { name: "", isAllEmployees: false, employeeIds: [], geofence: null },
     enableReinitialize: true,
     validationSchema,
     onSubmit: (values) => {

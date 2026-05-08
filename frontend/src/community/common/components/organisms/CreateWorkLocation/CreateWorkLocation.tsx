@@ -104,10 +104,7 @@ const CreateWorkLocation = () => {
           label={translateText(["form.nameLabel"])}
           placeholder={translateText(["form.namePlaceholder"])}
           value={formik.values.name}
-          onChange={(e) => {
-            e.target.value = e.target.value.replace(/[^a-zA-Z0-9 ]/g, "");
-            formik.handleChange(e);
-          }}
+          onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           state={
             formik.touched.name && formik.errors.name ? "error" : "default"

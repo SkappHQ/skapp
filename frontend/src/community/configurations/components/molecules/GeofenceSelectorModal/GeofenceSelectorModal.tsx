@@ -46,7 +46,7 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
 
   const handleConfirm = () => {
     if (tempGeofence) {
-      void formik.setFieldValue("geofence", tempGeofence);
+      formik.setFieldValue("geofence", tempGeofence);
     }
     setIsGeofenceModalOpen(false);
     setTempGeofence(null);

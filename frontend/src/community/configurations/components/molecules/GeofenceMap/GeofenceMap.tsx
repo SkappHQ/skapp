@@ -24,9 +24,7 @@ const GeofenceMap = ({ formik }: Props) => {
 
   const geofence = formik.values.geofence;
   const hasGeofence =
-    geofence != null &&
-    geofence.latitude != null &&
-    geofence.longitude != null;
+    geofence?.latitude != null && geofence?.longitude != null;
 
   const handleOpenModal = () => {
     if (geofence) {
@@ -35,7 +33,6 @@ const GeofenceMap = ({ formik }: Props) => {
       return;
     }
 
-    // Open immediately — geolocation will update the position in the background
     setIsGeofenceModalOpen(true);
 
     if (navigator.geolocation) {
@@ -51,12 +48,12 @@ const GeofenceMap = ({ formik }: Props) => {
   };
 
   const handleDeleteGeofence = () => {
-    void formik.setFieldValue("geofence", null);
+    formik.setFieldValue("geofence", null);
   };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+      <Typography variant="body1">
         {translateText(["form.geofenceTitle"])}
       </Typography>
 
@@ -72,7 +69,7 @@ const GeofenceMap = ({ formik }: Props) => {
           }}
         >
           <Box sx={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            <Typography variant="body2">
               {geofence.address ||
                 `${geofence.latitude.toFixed(5)}, ${geofence.longitude.toFixed(5)}`}
             </Typography>

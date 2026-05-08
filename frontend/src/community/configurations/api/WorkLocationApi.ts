@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { WorkLocationFormValues, WorkLocationRequestPayload } from "~community/configurations/types/WorkLocationTypes";
+import { WorkLocationRequestPayload } from "~community/configurations/types/WorkLocationTypes";
 
 import { workLocationEndpoints } from "~community/configurations/api/utils/ApiEndpoints";
 import { workLocationQueryKeys } from "./utils/QueryKeys";

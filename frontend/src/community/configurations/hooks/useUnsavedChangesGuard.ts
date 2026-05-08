@@ -26,7 +26,7 @@ export const useUnsavedChangesGuard = (
         setPendingUrl(url);
         setIsUnsavedModalOpen(true);
         router.events.emit("routeChangeError");
-        throw "routeChange aborted";
+        throw new Error("routeChange aborted");
       }
     };
     router.events.on("routeChangeStart", handleRouteChangeStart);
