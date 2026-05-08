@@ -71,5 +71,14 @@ export const getSystemPermissionsDetailsChanges = (
     changes.invoiceRole = newSystemPermissions?.invoiceRole;
   }
 
+  if (
+    isFieldDifferentAndValid(
+      newSystemPermissions?.crmRole,
+      previousSystemPermissions?.crmRole
+    )
+  ) {
+    changes.crmRole = newSystemPermissions?.crmRole;
+  }
+
   return changes;
 };
