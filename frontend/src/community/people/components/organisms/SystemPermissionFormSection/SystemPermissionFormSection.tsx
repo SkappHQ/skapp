@@ -101,7 +101,8 @@ const SystemPermissionFormSection = ({
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isSuperAdmin,
-    isInvoiceModuleEnabled
+    isInvoiceModuleEnabled,
+    isCrmModuleEnabled
   } = useSessionData();
 
   const hasOtherSuperAdmins = isSuperAdmin && superAdminCount > 1;
@@ -134,7 +135,8 @@ const SystemPermissionFormSection = ({
         attendanceRole: employee?.systemPermissions?.attendanceRole,
         esignRole: employee?.systemPermissions?.esignRole,
         invoiceRole: employee?.systemPermissions?.invoiceRole,
-        pmRole: employee?.systemPermissions?.pmRole
+        pmRole: employee?.systemPermissions?.pmRole,
+        crmRole: employee?.systemPermissions?.crmRole
       };
 
       const errorsToShow = [];
@@ -171,22 +173,14 @@ const SystemPermissionFormSection = ({
         return;
       }
     }
-
-    const isLeaveDowngraded =
-      employee?.systemPermissions?.leaveRole === Role.LEAVE_EMPLOYEE &&
-      (initialEmployee?.systemPermissions?.leaveRole === Role.LEAVE_ADMIN ||
-        initialEmployee?.systemPermissions?.leaveRole === Role.LEAVE_MANAGER);
-
-    const isAttendanceDowngraded =
-      employee?.systemPermissions?.attendanceRole ===
-        Role.ATTENDANCE_EMPLOYEE &&
-      (initialEmployee?.systemPermissions?.attendanceRole ===
-        Role.ATTENDANCE_ADMIN ||
-        initialEmployee?.systemPermissions?.attendanceRole ===
-          Role.ATTENDANCE_MANAGER);
-
     if (
-      (isLeaveDowngraded || isAttendanceDowngraded) &&
+      (employee?.systemPermissions?.peopleRole === Role.PEOPLE_EMPLOYEE ||
+        employee?.systemPermissions?.leaveRole === Role.LEAVE_EMPLOYEE ||
+        employee?.systemPermissions?.attendanceRole ===
+          Role.ATTENDANCE_EMPLOYEE) &&
+      (initialEmployee?.systemPermissions?.peopleRole === Role.PEOPLE_ADMIN ||
+        initialEmployee?.systemPermissions?.peopleRole ===
+          Role.PEOPLE_MANAGER) &&
       (supervisedData?.isPrimaryManager || supervisedData?.isTeamSupervisor)
     ) {
       if (supervisedData?.isPrimaryManager) {
@@ -384,6 +378,26 @@ const SystemPermissionFormSection = ({
                       "invoiceRole",
                       event.target.value as Role
                     )
+                  }
+                  isDisabled={isDropdownDisabled}
+                />
+              )}
+
+            {isCrmModuleEnabled &&
+              (!isRoleMissing(RoleModuleEnum.CRM, RoleNameEnum.ADMIN) ||
+                !isRoleMissing(
+                  RoleModuleEnum.CRM,
+                  RoleNameEnum.SALES_MANAGER
+                )) && (
+                <DropdownList
+                  inputName={"crmRole"}
+                  label={translateText(["crm"])}
+                  itemList={grantablePermission?.crm || []}
+                  value={permissions.crmRole}
+                  componentStyle={classes.dropdownListComponentStyles}
+                  checkSelected
+                  onChange={(event) =>
+                    handleRoleDropdown("crmRole", event.target.value as Role)
                   }
                   isDisabled={isDropdownDisabled}
                 />
