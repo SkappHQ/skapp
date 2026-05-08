@@ -4,7 +4,7 @@ import { EmployeeType } from "~community/people/types/EmployeeTypes";
 
 export interface CustomLeaveAllocationType {
   entitlementId: number;
-  employeeId: number;
+  employeeId?: number;
   name?: string;
   numberOfDaysOff: number;
   typeId: number;
