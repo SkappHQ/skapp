@@ -22,6 +22,18 @@ export const useGetWorkLocations = (
   });
 };
 
+export const useGetWorkLocationById = (id: number) => {
+  return useQuery({
+    queryKey: workLocationQueryKeys.GET_WORK_LOCATION_BY_ID(id),
+    queryFn: async () => {
+      const response = await authFetch.get(
+        workLocationEndpoints.GET_WORK_LOCATION_BY_ID(id)
+      );
+      return response.data.results[0];
+    },
+  });
+};
+
 const createWorkLocationFn = async (data: WorkLocationRequestPayload) => {
   const response = await authFetch.post(
     workLocationEndpoints.CREATE_WORK_LOCATION,

@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import { ChangeEvent, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -20,10 +21,13 @@ import { useWorkLocationStore } from "~community/configurations/stores/workLocat
 import { WorkLocation } from "~community/configurations/types/WorkLocationTypes";
 import DeleteWorkLocationModal from "~community/configurations/components/molecules/DeleteWorkLocationModal/DeleteWorkLocationModal";
 
+const PAGE_SIZE = 4;
+
 const WorkLocationsTable = () => {
   const router = useRouter();
   const translateText = useTranslator("configurations", "workLocation");
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
   const [emptyStateType, setEmptyStateType] = useState<EmptyStateType>(
     "noData" as EmptyStateType
   );
@@ -31,8 +35,9 @@ const WorkLocationsTable = () => {
   const { setIsDeleteModalOpen, setSelectedLocationId } = useWorkLocationStore();
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data, isLoading } = useGetWorkLocations(debouncedSearch, 0, 100);
+  const { data, isLoading } = useGetWorkLocations(debouncedSearch, currentPage, PAGE_SIZE);
   const locations: WorkLocation[] = data?.items ?? [];
+  const totalPages: number = data?.totalPages ?? 0;
 
   const handleEditClick = (id: number) => {
     router.push(ROUTES.CONFIGURATIONS.WORK_LOCATION_EDIT(id));
@@ -45,6 +50,7 @@ const WorkLocationsTable = () => {
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
+    setCurrentPage(0);
     if (event.target.value.trim() === "") {
       setEmptyStateType("noData" as EmptyStateType);
     } else {
@@ -154,6 +160,16 @@ const WorkLocationsTable = () => {
           title: translateText(["table.emptyState"])
         }}
       />
+      {totalPages > 1 && (
+        <Pagination
+          tableName="Work locations"
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onChange={(_event: ChangeEvent<unknown>, value: number) =>
+            setCurrentPage(value - 1)
+          }
+        />
+      )}
       <DeleteWorkLocationModal />
     </div>
   );

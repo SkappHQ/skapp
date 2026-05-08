@@ -3,6 +3,9 @@ package com.skapp.community.common.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.payload.response.WorkLocationDetailResponseDto;
+import com.skapp.community.common.payload.response.WorkLocationEmployeeResponseDto;
+import com.skapp.community.common.payload.response.WorkLocationGeofenceResponseDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -181,6 +184,49 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		log.info("getWorkLocations: execution ended");
 
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getWorkLocationById(Long id) {
+		log.info("getWorkLocationById: execution started");
+
+		WorkLocation workLocation = workLocationDao.findById(id)
+			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
+
+		List<Employee> employees = employeeDao.findByWorkLocationWorkLocationId(id);
+		Optional<WorkLocationGeofence> geofence = workLocationGeofenceDao.findByWorkLocationWorkLocationId(id);
+
+		List<Employee> allActiveEmployees = employeeDao
+			.findByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+		boolean isAllEmployees = !employees.isEmpty() && employees.size() == allActiveEmployees.size();
+
+		WorkLocationDetailResponseDto responseDto = new WorkLocationDetailResponseDto();
+		responseDto.setWorkLocationId(workLocation.getWorkLocationId());
+		responseDto.setName(workLocation.getName());
+		responseDto.setAddress(workLocation.getAddress());
+		responseDto.setEmployeeCount((long) employees.size());
+		responseDto.setIsAllEmployees(isAllEmployees);
+		responseDto.setEmployees(isAllEmployees ? null : employees.stream().map(emp -> {
+			WorkLocationEmployeeResponseDto empDto = new WorkLocationEmployeeResponseDto();
+			empDto.setEmployeeId(emp.getEmployeeId());
+			empDto.setFirstName(emp.getFirstName());
+			empDto.setLastName(emp.getLastName());
+			empDto.setAuthPic(emp.getAuthPic());
+			return empDto;
+		}).toList());
+		responseDto.setGeofence(geofence.map(g -> {
+			WorkLocationGeofenceResponseDto geoDto = new WorkLocationGeofenceResponseDto();
+			geoDto.setId(g.getId());
+			geoDto.setLatitude(g.getLatitude());
+			geoDto.setLongitude(g.getLongitude());
+			geoDto.setRadiusMeters(g.getRadiusMeters());
+			return geoDto;
+		}).orElse(null));
+
+		log.info("getWorkLocationById: execution ended");
+
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	private WorkLocationGeofence createGeofence(WorkLocationRequestDto workLocationRequestDto,

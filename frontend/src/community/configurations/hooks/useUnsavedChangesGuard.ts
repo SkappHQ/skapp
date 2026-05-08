@@ -43,6 +43,7 @@ export const useUnsavedChangesGuard = (
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);
     if (pendingUrl) {
+      bypassRef.current = true;
       router.push(pendingUrl);
     }
   };

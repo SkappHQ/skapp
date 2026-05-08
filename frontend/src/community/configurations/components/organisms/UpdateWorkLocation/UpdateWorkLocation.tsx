@@ -12,7 +12,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
-import { useGetWorkLocations, useUpdateWorkLocation } from "~community/configurations/api/WorkLocationApi";
+import { useGetWorkLocationById, useUpdateWorkLocation } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import WorkLocationEmployeeSelector from "~community/configurations/components/molecules/WorkLocationEmployeeSelector/WorkLocationEmployeeSelector";
 import { useUnsavedChangesGuard } from "~community/configurations/hooks/useUnsavedChangesGuard";
@@ -27,10 +27,10 @@ const UpdateWorkLocation = ({ id }: Props) => {
   const router = useRouter();
   const translateText = useTranslator("configurations", "workLocation");
 
-  const { data: locationsPage, isLoading } = useGetWorkLocations("", 0, 100);
-  const workLocation: WorkLocation | undefined = locationsPage?.items?.find(
-    (l: WorkLocation) => l.workLocationId === id
-  );
+  const { data: workLocation, isLoading } = useGetWorkLocationById(id) as {
+    data: WorkLocation | undefined;
+    isLoading: boolean;
+  };
 
   const { user } = useAuth();
   const { setToastMessage } = useToast();
