@@ -54,7 +54,10 @@ const useSystemPermissionFormHandlers = () => {
     superAdminLimitExceeded: false,
     esignAdminLimitExceeded: false,
     esignSenderLimitExceeded: false,
-    pmAdminLimitExceeded: false
+    pmAdminLimitExceeded: false,
+    crmAdminLimitExceeded: false,
+    crmSalesManagerLimitExceeded: false,
+    crmSalesRepresentativeLimitExceeded: false
   });
 
   const { data: superAdminCountData } = useGetSuperAdminCount();
