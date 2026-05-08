@@ -17,6 +17,7 @@ import {
   BulkHolidayUploadParams,
   Holiday,
   HolidayDataResponse,
+  WorkLocationDataResponse,
   holidayBulkUploadResponse,
   holidayIndividualAddParams
 } from "~community/people/types/HolidayTypes";
@@ -227,5 +228,48 @@ export const useGetHolidayByDate = (date: string) => {
     queryKey: [holidayQueryKeys.GET_HOLIDAY_BY_DATE, date],
     queryFn: () =>
       authFetch.get(`$${holidayEndpoints.GET_HOLIDAY_BY_DATE}?date=${date}`)
+  });
+};
+
+export const useGetWorkLocations = (
+  searchKeyword?: string
+): UseInfiniteQueryResult<WorkLocationDataResponse> => {
+  const params = {
+    size: 4,
+    searchKeyword: searchKeyword ?? ""
+  };
+
+  return useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: holidayQueryKeys.WORK_LOCATIONS(params),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await authFetch.get(
+        holidayEndpoints.GET_WORK_LOCATIONS,
+        {
+          params: {
+            page: pageParam,
+            ...params
+          }
+        }
+      );
+
+      return response?.data?.results?.[0];
+    },
+    getPreviousPageParam: (firstPage) => {
+      if (firstPage?.currentPage && firstPage?.currentPage > 0) {
+        return firstPage?.currentPage - 1;
+      }
+      return undefined;
+    },
+    getNextPageParam: (lastPage) => {
+      if (
+        lastPage?.currentPage !== undefined &&
+        lastPage?.totalPages !== undefined &&
+        lastPage?.currentPage < lastPage?.totalPages - 1
+      ) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
+    }
   });
 };

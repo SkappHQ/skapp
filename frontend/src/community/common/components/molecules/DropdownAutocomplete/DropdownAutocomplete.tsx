@@ -1,6 +1,7 @@
 import {
   Autocomplete,
   Box,
+  CircularProgress,
   InputBase,
   Paper,
   Popper,
@@ -9,7 +10,7 @@ import {
 } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { type SxProps } from "@mui/system";
-import { FC, SyntheticEvent } from "react";
+import React, { FC, SyntheticEvent, useCallback } from "react";
 
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { DropdownListType } from "~community/common/types/CommonTypes";
@@ -61,6 +62,9 @@ interface Props {
     | "top";
   isDisableOptionFilter?: boolean;
   required?: boolean;
+  fetchNextPage?: () => void;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
 }
 
 const DropdownAutocomplete: FC<Props> = ({
@@ -80,9 +84,34 @@ const DropdownAutocomplete: FC<Props> = ({
   popperPosition,
   isDisableOptionFilter = false,
   required,
-  labelStyles
+  labelStyles,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage
 }) => {
   const theme: Theme = useTheme();
+
+  const handleListboxScroll = useCallback(
+    (event: React.UIEvent<HTMLUListElement>) => {
+      const listbox = event.currentTarget;
+      console.log("scroll:", {
+        scrollTop: listbox.scrollTop,
+        clientHeight: listbox.clientHeight,
+        scrollHeight: listbox.scrollHeight,
+        hasNextPage,
+        isFetchingNextPage
+      });
+      if (!hasNextPage || isFetchingNextPage) return;
+
+      if (
+        listbox.scrollTop + listbox.clientHeight >=
+        listbox.scrollHeight - 10
+      ) {
+        fetchNextPage?.();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  );
 
   return (
     <Box
@@ -114,6 +143,7 @@ const DropdownAutocomplete: FC<Props> = ({
         disablePortal
         id={inputName}
         options={itemList}
+        getOptionLabel={(option) => option.label ?? ""}
         sx={{
           width: "100%",
           backgroundColor: isDisabled
@@ -211,7 +241,7 @@ const DropdownAutocomplete: FC<Props> = ({
         )}
         filterOptions={
           isDisableOptionFilter
-            ? undefined
+            ? (options) => options
             : (options, state) =>
                 options.filter((option) =>
                   option.label
@@ -219,10 +249,22 @@ const DropdownAutocomplete: FC<Props> = ({
                     .startsWith(state.inputValue.trimStart().toLowerCase())
                 )
         }
+        slotProps={{
+          listbox: {
+            onScroll: handleListboxScroll,
+            style: { maxHeight: 150, overflow: "auto" }
+          }
+        }}
+        loading={isFetchingNextPage}
+        loadingText={
+          <Box sx={{ display: "flex", justifyContent: "center", p: 1 }}>
+            <CircularProgress size={20} />
+          </Box>
+        }
         disabled={readOnly || isDisabled}
         onChange={onChange}
-        value={value}
-        isOptionEqualToValue={(option, value) => option.value === value.value}
+        value={value ?? null}
+        isOptionEqualToValue={(option, val) => option.value === val.value}
       />
       {!!error && (
         <Typography

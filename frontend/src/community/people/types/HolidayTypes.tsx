@@ -159,3 +159,18 @@ export type holidayIndividualAddParams = {
   holidayData: HolidayDataType;
   selectedYear: string;
 };
+
+export interface WorkLocationType {
+  workLocationId: number;
+  name: string;
+  address: string;
+  geofence: string | null;
+}
+
+export type WorkLocationDataResponse = {
+  currentPage?: number;
+  items: WorkLocationType[];
+  totalItems?: number;
+  totalPages?: number;
+  pages: any;
+};

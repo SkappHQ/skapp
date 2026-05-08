@@ -2,9 +2,17 @@ import { debounce } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  JSX,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import DropdownAutocomplete from "~community/common/components/molecules/DropdownAutocomplete/DropdownAutocomplete";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
@@ -17,7 +25,10 @@ import { LeaveStates } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { formatDate } from "~community/common/utils/commonUtil";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
-import { useAddIndividualHoliday } from "~community/people/api/HolidayApi";
+import {
+  useAddIndividualHoliday,
+  useGetWorkLocations
+} from "~community/people/api/HolidayApi";
 import {
   CONCURRENT_HOLIDAY,
   MAX_HOLIDAY_COUNT_PER_DAY,
@@ -64,6 +75,37 @@ const AddEditHolidayModal = ({
     resetHolidayDetails: state.resetHolidayDetails,
     setIsHolidayModalOpen: state.setIsHolidayModalOpen
   }));
+
+  const {
+    data: workLocationData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetWorkLocations();
+
+  const workLocationDropDownList = useMemo(() => {
+    if (workLocationData === undefined) {
+      return [];
+    }
+
+    console.log("workLocationData full:", JSON.stringify(workLocationData));
+    console.log(
+      "workLocationData.pages:",
+      JSON.stringify((workLocationData as any)?.pages)
+    );
+
+    const pages = (workLocationData as any)?.pages ?? [];
+
+    const result = pages.flatMap(
+      (page: { items?: { workLocationId: number; name: string }[] }) =>
+        (page?.items ?? []).map((workLocation) => ({
+          value: workLocation.name,
+          label: workLocation.name
+        }))
+    );
+    console.log("workLocationDropDownList:", JSON.stringify(result));
+    return result;
+  }, [workLocationData]);
 
   const [duration, setDuration] = useState<string>(
     newHolidayDetails?.duration || ""
@@ -345,6 +387,17 @@ const AddEditHolidayModal = ({
           accessibility={{
             ariaLabel: translateAria(["selectDateField"])
           }}
+        />
+        <DropdownAutocomplete
+          inputName="workLocation"
+          label={translateText(["workLocation"])}
+          placeholder={translateText(["workLocationPlaceholder"])}
+          itemList={workLocationDropDownList}
+          required
+          fetchNextPage={fetchNextPage}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          isDisableOptionFilter
         />
         <DurationSelector
           label={translateText(["duration"])}

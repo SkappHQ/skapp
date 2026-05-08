@@ -72,7 +72,8 @@ export const holidayEndpoints = {
   ADD_INDIVIDUAL_HOLIDAY: "/holiday/bulk",
   DELETE_SELECTED_HOLIDAYS: "/holiday/selected",
   DELETE_ALL_HOLIDAYS: (currentYear: number) => `/holiday/${currentYear}`,
-  GET_HOLIDAY_BY_DATE: "/holiday"
+  GET_HOLIDAY_BY_DATE: "/holiday",
+  GET_WORK_LOCATIONS: "/work-location"
 };
 
 export const peopleDashboardEndpoints = {

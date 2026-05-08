@@ -101,7 +101,9 @@ export const holidayQueryKeys = {
   ADD_INDIVIDUAL_HOLIDAY: ["add-individual-holiday"],
   DELETE_SELECTED_HOLIDAYS: ["delete-selected-holidays"],
   DELETE_ALL_HOLIDAYS: ["delete-all-holidays"],
-  GET_HOLIDAY_BY_DATE: ["get-holiday-by-date"]
+  GET_HOLIDAY_BY_DATE: ["get-holiday-by-date"],
+  WORK_LOCATIONS: (params?: { searchKeyword?: string }) =>
+    ["work-locations", params].filter((val) => val !== undefined)
 };
 
 export const managerQueryKeys = {
