@@ -88,10 +88,10 @@ public interface EmployeeRepository {
 
 	List<Employee> findEmployeeByName(String keyword);
 
-	PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Employee employee,
-			Employee currentEmployee);
+	PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Long employeeId,
+			Long currentEmployeeId);
 
-	PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Employee employee);
+	PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Long employeeId);
 
 	Long findAllActiveAndPendingEmployeesCount();
 
