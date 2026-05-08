@@ -4,23 +4,12 @@ import { NextPage } from "next";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { useCrmStore } from "~community/crm/store/crmStore";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const CrmCompanies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
 
-  const {
-    setIsAddCompaniesModalOpen,
-    setCompanyModalType
-  } = useCrmStore((store) => ({
-    setIsAddCompaniesModalOpen: store.setIsAddCompanyModalOpen,
-    setCompanyModalType: store.setCompanyModalType
-  }))
-
   const onPrimaryButtonClick = () => {
-    setIsAddCompaniesModalOpen(true);
-    setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL)
+    return
   };
 
   return (
