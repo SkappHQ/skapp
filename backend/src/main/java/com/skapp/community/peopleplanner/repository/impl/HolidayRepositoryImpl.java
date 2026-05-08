@@ -57,7 +57,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 		return new PageImpl<>(query.getResultList(), page, totalRows);
 	}
 
-	private List<Predicate> buildPredicates(CriteriaBuilder criteriaBuilder, HolidayFilterDto holidayFilterDto,
+	private static List<Predicate> buildPredicates(CriteriaBuilder criteriaBuilder, HolidayFilterDto holidayFilterDto,
 			Root<Holiday> root) {
 
 		List<Predicate> predicates = new ArrayList<>();
