@@ -57,7 +57,8 @@ const UserRolesTable = (): JSX.Element => {
             [Modules.LEAVE]: translateText(["leave"]),
             [Modules.ESIGN]: translateText(["eSignature"]),
             [Modules.INVOICE]: translateText(["invoice"]),
-            [Modules.PM]: translateText(["projectManagement"])
+            [Modules.PM]: translateText(["projectManagement"]),
+            [Modules.CRM]: translateText(["crm"])
           };
 
           return {
