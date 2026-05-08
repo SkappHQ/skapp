@@ -64,7 +64,8 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 		Root<JobFamily> root = criteriaQuery.from(JobFamily.class);
 		root.fetch(JobFamily_.jobTitles, JoinType.LEFT);
 
-		criteriaQuery.where(root.get(JobFamily_.jobFamilyId).in(orderedIds));
+		criteriaQuery.where(root.get(JobFamily_.jobFamilyId).in(orderedIds),
+				criteriaBuilder.equal(root.get(JobFamily_.isActive), true));
 		criteriaQuery.distinct(true);
 
 		List<JobFamily> jobFamilies = entityManager.createQuery(criteriaQuery).getResultList();
