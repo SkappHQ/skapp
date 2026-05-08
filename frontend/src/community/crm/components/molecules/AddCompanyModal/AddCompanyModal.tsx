@@ -70,7 +70,9 @@ const AddCompanyModal: React.FC = () => {
       countryCode: values.countryCode
     };
 
-    console.log("Payload", payload);
+    console.log("payload", payload);
+    // TODO: Implement this
+    // addNewCompany(payload);
     handleCloseModal();
   };
 
