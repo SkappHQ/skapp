@@ -350,14 +350,19 @@ $prompt = Get-UiTestPrompt `
 Write-Host "  Sending to Copilot CLI ($($CONFIG.CopilotModel))..." -NoNewline
 
 try {
-    # Save prompt to file for reference
+    # Save full prompt to file (avoids Windows command-line length limit of 32767 chars)
     $promptFile = Join-Path $automationRoot "GENERATION_PROMPT.md"
     $prompt | Out-File -FilePath $promptFile -Encoding utf8
+    Write-Host ""
+    Write-Host "    Prompt saved to: $promptFile"
+
+    # Use a short meta-prompt that references the saved file
+    $metaPrompt = "Read the complete instructions from the file at path: $promptFile -- Execute ALL instructions in that file exactly as written. The file contains the full prompt with context, references, and requirements for generating Playwright page objects and spec files."
 
     # Call node.exe directly to avoid copilot.ps1 wrapper's StandardOutputEncoding error
     $nodeExe = (Get-Command node).Source
     $copilotModule = Join-Path (Split-Path $nodeExe -Parent) "node_modules\@github\copilot\npm-loader.js"
-    & $nodeExe $copilotModule -p $prompt --model $CONFIG.CopilotModel --yolo
+    & $nodeExe $copilotModule -p $metaPrompt --model $CONFIG.CopilotModel --yolo
     $copilotExit = $LASTEXITCODE
 
     if ($copilotExit -eq 0) {
