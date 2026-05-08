@@ -99,16 +99,13 @@ const AddEditHolidayModal = ({
 
     const pages = (workLocationData as any)?.pages ?? [];
 
-    const locations = pages
-      .flatMap((page: { items?: { workLocationId: number; name: string }[] }) =>
+    const locations = pages.flatMap(
+      (page: { items?: { workLocationId: number; name: string }[] }) =>
         (page?.items ?? []).map((workLocation) => ({
           value: workLocation.name,
           label: workLocation.name
         }))
-      )
-      .sort((a: { label: string }, b: { label: string }) =>
-        a.label.localeCompare(b.label)
-      );
+    );
 
     return [ALL_LOCATIONS_OPTION, ...locations];
   }, [workLocationData]);
