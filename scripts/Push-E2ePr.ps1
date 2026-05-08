@@ -141,21 +141,21 @@ function Build-TestReportPrBody {
 
     # Build affected repos section (for cross-repo features)
     $reposSection = ""
-    if ($AffectedRepos -and $AffectedRepos.Count -gt 0) {
+    if ($AffectedRepos -and @($AffectedRepos).Count -gt 0) {
         $reposSection = @"
 
 ---
 
 ### Affected Repositories
 
-This feature spans **$($AffectedRepos.Count) repositories**:
+This feature spans **$(@($AffectedRepos).Count) repositories**:
 
 | Repository | Layer | Branch | Files |
 |-----------|-------|--------|:-----:|
 
 "@
         foreach ($sub in $AffectedRepos) {
-            $reposSection += "| ``$($sub.Repo)`` | $($sub.Layer) | ``$($sub.Branch)`` | $($sub.ChangedFiles.Count) |`n"
+            $reposSection += "| ``$($sub.Repo)`` | $($sub.Layer) | ``$($sub.Branch)`` | $(@($sub.ChangedFiles).Count) |`n"
         }
     }
 
@@ -505,9 +505,13 @@ try {
         if ($ghAvailable) {
             # Check if PR already exists for this branch
             $existingPrJson = gh pr list --repo $AutomationRepo --head $branchName --json number,url 2>$null
-            $existingPr = if ($existingPrJson) { $existingPrJson | ConvertFrom-Json } else { $null }
+            $existingPr = @()
+            if ($existingPrJson) {
+                $parsed = $existingPrJson | ConvertFrom-Json
+                if ($parsed) { $existingPr = @($parsed) }
+            }
 
-            if ($existingPr -and $existingPr.Count -gt 0) {
+            if ($existingPr.Count -gt 0) {
                 Write-Host "  PR already exists: #$($existingPr[0].number)"
                 gh pr edit $existingPr[0].number --repo $AutomationRepo --body $prBody 2>&1 | Out-Null
                 Write-Success "Updated existing PR #$($existingPr[0].number) with latest test report"
