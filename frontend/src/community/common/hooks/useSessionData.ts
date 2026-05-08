@@ -142,10 +142,7 @@ const useSessionData = () => {
   );
 
   const isCrmModuleEnabled = useMemo(
-    () =>
-      user?.roles?.includes(AdminTypes.CRM_ADMIN) ||
-      user?.roles?.includes(AuthManagerType.CRM_SALES_MANAGER) ||
-      user?.roles?.includes(EmployeeTypes.CRM_SALES_REPRESENTATIVE),
+    () => isCrmAdmin || isCrmSalesManager || isCrmSalesRepresentative,
     [user?.roles]
   );
 
