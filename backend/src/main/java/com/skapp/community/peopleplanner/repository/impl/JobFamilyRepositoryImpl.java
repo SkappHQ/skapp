@@ -46,13 +46,13 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 
 		CriteriaQuery<Long> idQuery = criteriaBuilder.createQuery(Long.class);
 		Root<JobFamily> idRoot = idQuery.from(JobFamily.class);
-		Join<JobFamily, Employee> employeeJoin = idRoot.join(JobFamily_.EMPLOYEES, JoinType.LEFT);
+		Join<JobFamily, Employee> employeeJoin = idRoot.join(JobFamily_.employees, JoinType.LEFT);
 
-		idQuery.select(idRoot.get(JobFamily_.JOB_FAMILY_ID));
+		idQuery.select(idRoot.get(JobFamily_.jobFamilyId));
 		idQuery.where(criteriaBuilder.equal(idRoot.get(JobFamily_.isActive), true));
-		idQuery.groupBy(idRoot.get(JobFamily_.JOB_FAMILY_ID));
+		idQuery.groupBy(idRoot.get(JobFamily_.jobFamilyId));
 		idQuery.orderBy(criteriaBuilder
-			.desc(criteriaBuilder.coalesce(criteriaBuilder.count(employeeJoin.get(Employee_.EMPLOYEE_ID)), 0)));
+			.desc(criteriaBuilder.coalesce(criteriaBuilder.count(employeeJoin.get(Employee_.employeeId)), 0)));
 
 		List<Long> orderedIds = entityManager.createQuery(idQuery).getResultList();
 
@@ -62,9 +62,9 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 
 		CriteriaQuery<JobFamily> criteriaQuery = criteriaBuilder.createQuery(JobFamily.class);
 		Root<JobFamily> root = criteriaQuery.from(JobFamily.class);
-		root.fetch(JobFamily_.JOB_TITLES, JoinType.LEFT);
+		root.fetch(JobFamily_.jobTitles, JoinType.LEFT);
 
-		criteriaQuery.where(root.get(JobFamily_.JOB_FAMILY_ID).in(orderedIds));
+		criteriaQuery.where(root.get(JobFamily_.jobFamilyId).in(orderedIds));
 		criteriaQuery.distinct(true);
 
 		List<JobFamily> jobFamilies = entityManager.createQuery(criteriaQuery).getResultList();
