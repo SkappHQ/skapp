@@ -68,7 +68,16 @@
     "viewProjects": "View Projects",
     "createProjects": "Create Projects",
     "allProjects": "(All projects)",
-    "assignedProjects": "(Assigned projects)"
+    "assignedProjects": "(Assigned projects)",
+    "crm": "CRM",
+    "crmTitle": "CRM Module Roles",
+    "salesManagerHeader": "SALES MANAGER",
+    "salesRepresentativeHeader": "SALES REPRESENTATIVE",
+    "viewContactsAndCompanies": "View Contacts & Companies",
+    "manageContactsAndCompanies": "Manage Contacts & Companies",
+    "manageDeals": "Manage Deals",
+    "manageTasks": "Manage Tasks",
+    "viewReports": "View Reports"
   },
   "times": {
     "pageHead": "Time Configurations | Skapp",
@@ -109,7 +118,6 @@
     "attendance": "Attendance",
     "sign": "Sign",
     "userRoles": "User Roles",
-    "invoice": "Invoice",
-    "organization": "Organization"
+    "invoice": "Invoice"
   }
 }
