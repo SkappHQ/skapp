@@ -18,6 +18,7 @@ import { CrmOwnerType } from "~community/crm/types/CrmContactTypes";
 import styles from "./styles";
 
 interface OwnerSearchFieldProps {
+  id?: string;
   label?: string;
   placeholder?: string;
   selectedOwner: CrmOwnerType | null;
@@ -31,6 +32,7 @@ const getFullName = (owner: CrmOwnerType) =>
   [owner.firstName, owner.lastName].filter(Boolean).join(" ");
 
 const OwnerSearchField = ({
+  id = "owner-search",
   label,
   placeholder,
   selectedOwner,
@@ -44,6 +46,7 @@ const OwnerSearchField = ({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const listboxId = `${id}-listbox`;
 
   const filtered = options.filter((o) =>
     getFullName(o).toLowerCase().includes(search.toLowerCase())
@@ -78,7 +81,7 @@ const OwnerSearchField = ({
     <ClickAwayListener onClickAway={() => setOpen(false)}>
       <Box sx={classes.wrapper}>
         {label && (
-          <Typography component="label" sx={classes.label}>
+          <Typography component="label" htmlFor={!selectedOwner ? id : undefined} sx={classes.label}>
             {label}
           </Typography>
         )}
@@ -90,6 +93,8 @@ const OwnerSearchField = ({
               direction="row"
               alignItems="center"
               gap={0.75}
+              role="group"
+              aria-label={`Selected owner: ${getFullName(selectedOwner)}`}
               sx={classes.selectedChip}
             >
               <Avatar
@@ -118,6 +123,7 @@ const OwnerSearchField = ({
             /* Empty: search input */
             <>
               <InputBase
+                id={id}
                 inputRef={inputRef}
                 value={search}
                 onChange={handleInputChange}
@@ -125,9 +131,17 @@ const OwnerSearchField = ({
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
                 sx={classes.inputBase}
+                role="combobox"
+                aria-haspopup="listbox"
+                aria-expanded={open}
+                aria-controls={open ? listboxId : undefined}
+                aria-autocomplete="list"
               />
               <Box
-                sx={classes.searchIconWrapper}
+                component="button"
+                type="button"
+                aria-label="Search owners"
+                sx={{ background: "none", border: "none", cursor: "pointer", p: 0, display: "flex", alignItems: "center" }}
                 onClick={() => inputRef.current?.focus()}
               >
                 <SearchIcon fill={theme.palette.text.secondary} />
@@ -137,9 +151,15 @@ const OwnerSearchField = ({
         </Paper>
 
         {open && !selectedOwner && (
-          <Paper elevation={3} sx={classes.dropdownPaper}>
+          <Paper
+            elevation={3}
+            id={listboxId}
+            role="listbox"
+            aria-label={label ?? "Owner options"}
+            sx={classes.dropdownPaper}
+          >
             {filtered.length === 0 ? (
-              <Typography sx={classes.noResultsText}>
+              <Typography role="status" sx={classes.noResultsText}>
                 {noResultsText}
               </Typography>
             ) : (
@@ -149,7 +169,16 @@ const OwnerSearchField = ({
                   direction="row"
                   alignItems="center"
                   gap={1.25}
+                  role="option"
+                  aria-selected={false}
+                  tabIndex={0}
                   onClick={() => handleSelect(owner)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelect(owner);
+                    }
+                  }}
                   sx={classes.ownerRow}
                 >
                   <Avatar
