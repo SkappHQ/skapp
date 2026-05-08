@@ -326,8 +326,10 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
         onInputChange={(value, reason) => {
           if (reason === "reset") return;
           setSearchTerm(value);
-          setFieldValue("employeeId", 0);
-          setFieldValue("assignedTo", undefined);
+          if (values.employeeId !== 0 || values.assignedTo !== undefined) {
+            setFieldValue("employeeId", 0);
+            setFieldValue("assignedTo", undefined);
+          }
         }}
         onChange={(value) => onSelectUser(value)}
         error={errors.employeeId}
