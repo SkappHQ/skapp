@@ -63,12 +63,9 @@
 #>
 
 param(
-    [Parameter(Mandatory = $true)]
     [string]$PrNumber,
-    [Parameter(Mandatory = $true)]
     [ValidateSet("people", "leave", "project-management", "authentication")]
     [string]$Module,
-    [Parameter(Mandatory = $true)]
     [string]$Feature,
     [string]$FeatureBranch,
     [string]$FeatureName,
@@ -83,6 +80,16 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $startTime = Get-Date
+
+# --- Auto-detect missing parameters ---
+if (-not $PrNumber -or -not $Module -or -not $Feature) {
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+    Write-Host "  Auto-detecting pipeline parameters..." -ForegroundColor Yellow
+    $detected = & "$scriptDir\Detect-PipelineParams.ps1"
+    if (-not $PrNumber)  { $PrNumber = $detected.PrNumber }
+    if (-not $Module)    { $Module   = $detected.Module }
+    if (-not $Feature)   { $Feature  = $detected.Feature }
+}
 
 # Import shared config
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
