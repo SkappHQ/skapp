@@ -4,7 +4,7 @@ import {
   AdvancedMarker,
   MapMouseEvent
 } from "@vis.gl/react-google-maps";
-import { EmptyDataView, LargeModal } from "@rootcodelabs/skapp-ui";
+import { LargeModal } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { useCallback } from "react";
 import { Box, Typography } from "@mui/material";
@@ -18,9 +18,11 @@ import { useWorkLocationStore } from "~community/configurations/stores/workLocat
 import {
   MIN_RADIUS,
   MAX_RADIUS,
-  formatRadius
+  formatRadius,
+  reverseGeocode
 } from "~community/configurations/utils/geofenceUtils";
 import RadiusCircle from "./RadiusCircle";
+import AddressSearch from "./AddressSearch";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -52,25 +54,23 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
     setTempGeofence(null);
   };
 
-  const reverseGeocode = useCallback(
-    async (lat: number, lng: number): Promise<string> => {
-      const resp = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`
-      );
-      const json = await resp.json();
-      return json?.results?.[0]?.formatted_address ?? "";
-    },
-    [apiKey]
-  );
-
   const handleMapClick = useCallback(
     async (e: MapMouseEvent) => {
       if (!e.detail.latLng) return;
       const newLat = e.detail.latLng.lat;
       const newLng = e.detail.latLng.lng;
-      updateTempGeofence({ latitude: newLat, longitude: newLng });
+      if (!tempGeofence) {
+        setTempGeofence({
+          latitude: newLat,
+          longitude: newLng,
+          radiusMeters: MIN_RADIUS,
+          address: ""
+        });
+      } else {
+        updateTempGeofence({ latitude: newLat, longitude: newLng });
+      }
       try {
-        const address = await reverseGeocode(newLat, newLng);
+        const address = await reverseGeocode(newLat, newLng, apiKey);
         if (address) {
           updateTempGeofence({ address });
         }
@@ -84,7 +84,39 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
         });
       }
     },
-    [reverseGeocode, updateTempGeofence, setToastMessage, translateText]
+    [apiKey, tempGeofence, setTempGeofence, updateTempGeofence, setToastMessage, translateText]
+  );
+
+  const handleSearchResult = useCallback(
+    (lat: number, lng: number, address: string) => {
+      if (!tempGeofence) {
+        setTempGeofence({
+          latitude: lat,
+          longitude: lng,
+          radiusMeters: MIN_RADIUS,
+          address
+        });
+      } else {
+        updateTempGeofence({ latitude: lat, longitude: lng, address });
+      }
+    },
+    [tempGeofence, setTempGeofence, updateTempGeofence]
+  );
+
+  const handleSearchError = useCallback(
+    (reason: string) => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["form.geocodeErrorTitle"]),
+        description:
+          reason === "noResults"
+            ? translateText(["form.geocodeNoResultsDescription"])
+            : translateText(["form.geocodeErrorDescription"]),
+        isIcon: true
+      });
+    },
+    [setToastMessage, translateText]
   );
 
   const handleRadiusChange = (value: number) => {
@@ -99,81 +131,112 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
       ? { lat: tempLat, lng: tempLng }
       : null;
 
-  const modalContent = (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between"
-          }}
-        >
-          <Typography variant="body1" sx={{ fontWeight: 600 }}>
-            {translateText(["form.radiusLabel"])}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{ color: theme.palette.text.secondary }}
-          >
-            {formatRadius(tempRadius)}
-          </Typography>
-        </Box>
-        <input
-          type="range"
-          min={MIN_RADIUS}
-          max={MAX_RADIUS}
-          step={10}
-          value={tempRadius}
-          onChange={(e) => handleRadiusChange(Number(e.target.value))}
-          style={{
-            width: "100%",
-            height: "0.5rem",
-            borderRadius: "0.5rem",
-            appearance: "none",
-            cursor: "pointer",
-            accentColor: theme.palette.primary.dark
-          }}
-        />
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between"
-          }}
-        >
-          <Typography variant="caption" sx={{ color: theme.palette.grey[700] }}>
-            {formatRadius(MIN_RADIUS)}
-          </Typography>
-          <Typography variant="caption" sx={{ color: theme.palette.grey[700] }}>
-            {formatRadius(MAX_RADIUS)}
-          </Typography>
-        </Box>
-      </Box>
+  const defaultCenter = { lat: 20, lng: 0 };
 
-      <APIProvider apiKey={apiKey}>
-        {tempMarkerPosition ? (
-          <Map
-            style={{ width: "100%", height: "22rem" }}
-            defaultCenter={tempMarkerPosition}
-            defaultZoom={14}
-            center={tempMarkerPosition}
-            mapId="geofence-map"
-            onClick={handleMapClick}
+  const modalContent = (
+    <APIProvider apiKey={apiKey}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {/* Radius slider */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
+            }}
           >
-            <AdvancedMarker position={tempMarkerPosition} />
-            <RadiusCircle center={tempMarkerPosition} radius={tempRadius} />
-          </Map>
-        ) : (
-          <EmptyDataView
-            title={translateText(["form.geofenceWaitingLocation"])}
-            description={translateText(["form.geofenceEmptyStateDescription"])}
-            className={{
-              wrapper: "h-[22rem] rounded-md border-2 border-dashed"
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+              {translateText(["form.radiusLabel"])}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: theme.palette.text.secondary }}
+            >
+              {formatRadius(tempRadius)}
+            </Typography>
+          </Box>
+          <input
+            type="range"
+            min={MIN_RADIUS}
+            max={MAX_RADIUS}
+            step={10}
+            value={tempRadius}
+            onChange={(e) => handleRadiusChange(Number(e.target.value))}
+            style={{
+              width: "100%",
+              height: "0.5rem",
+              borderRadius: "0.5rem",
+              appearance: "none",
+              cursor: "pointer",
+              accentColor: theme.palette.primary.dark
             }}
           />
-        )}
-      </APIProvider>
-    </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography variant="caption" sx={{ color: theme.palette.grey[700] }}>
+              {formatRadius(MIN_RADIUS)}
+            </Typography>
+            <Typography variant="caption" sx={{ color: theme.palette.grey[700] }}>
+              {formatRadius(MAX_RADIUS)}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Map with search overlay */}
+        <Box sx={{ position: "relative" }}>
+          {tempMarkerPosition ? (
+            <Map
+              style={{ width: "100%", height: "22rem" }}
+              defaultCenter={tempMarkerPosition}
+              defaultZoom={14}
+              center={tempMarkerPosition}
+              mapId="geofence-map"
+              onClick={handleMapClick}
+            >
+              <AdvancedMarker position={tempMarkerPosition} />
+              <RadiusCircle center={tempMarkerPosition} radius={tempRadius} />
+            </Map>
+          ) : (
+            <Map
+              style={{ width: "100%", height: "22rem" }}
+              defaultCenter={defaultCenter}
+              defaultZoom={2}
+              mapId="geofence-map"
+              onClick={handleMapClick}
+            />
+          )}
+
+          {/* Search overlay — top-left corner of the map */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: "0.75rem",
+              left: "0.75rem",
+              width: "18rem",
+              p: "0.75rem"
+            }}
+          >
+            <AddressSearch
+              apiKey={apiKey}
+              onResult={handleSearchResult}
+              onError={handleSearchError}
+              searchPlaceholder={translateText(["form.addressSearchPlaceholder"])}
+            />
+            {tempGeofence?.address && (
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  mt: "0.5rem",
+                  color: theme.palette.text.secondary
+                }}
+              >
+                {tempGeofence.address}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      </Box>
+    </APIProvider>
   );
 
   return (

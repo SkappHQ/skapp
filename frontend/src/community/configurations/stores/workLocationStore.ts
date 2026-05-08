@@ -11,14 +11,10 @@ export interface GeofenceTempState {
 interface WorkLocationState {
   isDeleteModalOpen: boolean;
   selectedLocationId: number | null;
-  isUnsavedChangesModalOpen: boolean;
-  pendingNavigation: (() => void) | null;
   isGeofenceModalOpen: boolean;
   tempGeofence: GeofenceTempState | null;
   setIsDeleteModalOpen: (open: boolean) => void;
   setSelectedLocationId: (id: number | null) => void;
-  setIsUnsavedChangesModalOpen: (open: boolean) => void;
-  setPendingNavigation: (fn: (() => void) | null) => void;
   setIsGeofenceModalOpen: (open: boolean) => void;
   setTempGeofence: (geofence: GeofenceTempState | null) => void;
   updateTempGeofence: (partial: Partial<GeofenceTempState>) => void;
@@ -32,15 +28,10 @@ export const useWorkLocationStore = create<
     (set) => ({
       isDeleteModalOpen: false,
       selectedLocationId: null,
-      isUnsavedChangesModalOpen: false,
-      pendingNavigation: null,
       isGeofenceModalOpen: false,
       tempGeofence: null,
       setIsDeleteModalOpen: (open) => set({ isDeleteModalOpen: open }),
       setSelectedLocationId: (id) => set({ selectedLocationId: id }),
-      setIsUnsavedChangesModalOpen: (open) =>
-        set({ isUnsavedChangesModalOpen: open }),
-      setPendingNavigation: (fn) => set({ pendingNavigation: fn }),
       setIsGeofenceModalOpen: (open) => set({ isGeofenceModalOpen: open }),
       setTempGeofence: (geofence) => set({ tempGeofence: geofence }),
       updateTempGeofence: (partial) =>

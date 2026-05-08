@@ -11,8 +11,6 @@ import { useWorkLocationStore } from "~community/configurations/stores/workLocat
 import GeofenceSelectorModal from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceSelectorModal";
 import { formatRadius } from "~community/configurations/utils/geofenceUtils";
 
-const DEFAULT_RADIUS = 100;
-
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
 }
@@ -29,22 +27,8 @@ const GeofenceMap = ({ formik }: Props) => {
   const handleOpenModal = () => {
     if (geofence) {
       setTempGeofence({ ...geofence });
-      setIsGeofenceModalOpen(true);
-      return;
     }
-
     setIsGeofenceModalOpen(true);
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        setTempGeofence({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          radiusMeters: DEFAULT_RADIUS,
-          address: ""
-        });
-      });
-    }
   };
 
   const handleDeleteGeofence = () => {

@@ -162,7 +162,7 @@
       "geofenceAddButton": "Add Location",
       "geofenceEditButton": "Edit Location",
       "geofenceDeleteButton": "Delete Location",
-      "geofenceModalTitle": "Select Geo-fence Location",
+      "geofenceModalTitle": "Select Geo-fence",
       "geofenceConfirmButton": "Confirm Location",
       "geofenceWaitingLocation": "Waiting for location permission...",
       "addLocationButton": "Add Location",
@@ -170,7 +170,11 @@
       "editLocationTitle": "Edit Location",
       "cancelButton": "Cancel",
       "geocodeErrorTitle": "Oops! Something went wrong",
-      "geocodeErrorDescription": "Unable to retrieve address for the selected location. Please try again."
+      "geocodeErrorDescription": "Unable to retrieve address for the selected location. Please try again.",
+      "geocodeNoResultsDescription": "No results found for the entered address. Please try a different search.",
+      "addressSearchLabel": "Search address",
+      "addressSearchPlaceholder": "Search Location",
+      "selectedAddressLabel": "Selected address"
     },
     "validation": {
       "nameRequired": "Please enter work location name",
