@@ -154,6 +154,7 @@ public class RolesServiceImpl implements RolesService {
 	private RoleLevel getSecondaryRestrictionRole(ModuleType module) {
 		return switch (module) {
 			case ESIGN -> RoleLevel.SENDER;
+			case CRM -> RoleLevel.SALES_MANAGER;
 			default -> RoleLevel.MANAGER;
 		};
 	}
@@ -194,9 +195,7 @@ public class RolesServiceImpl implements RolesService {
 				|| isRoleDemoted(employeeRole.getLeaveRole(), roleRequestDto.getLeaveRole(), Role.LEAVE_MANAGER,
 						Role.LEAVE_ADMIN, Role.LEAVE_EMPLOYEE)
 				|| isRoleDemoted(employeeRole.getInvoiceRole(), roleRequestDto.getInvoiceRole(), Role.INVOICE_MANAGER,
-						Role.INVOICE_ADMIN, Role.INVOICE_NONE)
-				|| isRoleDemoted(employeeRole.getCrmRole(), roleRequestDto.getCrmRole(), Role.CRM_SALES_MANAGER,
-						Role.CRM_ADMIN, Role.CRM_NONE);
+						Role.INVOICE_ADMIN, Role.INVOICE_NONE);
 	}
 
 	private boolean isRoleDemoted(Role currentRole, Role newRole, Role managerRole, Role adminRole, Role employeeRole) {
@@ -264,7 +263,7 @@ public class RolesServiceImpl implements RolesService {
 	private boolean isRoleAllowed(RoleLevel roleLevel, boolean isAdminAllowed, boolean isManagerAllowed) {
 		return switch (roleLevel) {
 			case ADMIN -> isAdminAllowed;
-			case MANAGER, SENDER -> isManagerAllowed;
+			case MANAGER, SENDER, SALES_MANAGER -> isManagerAllowed;
 			default -> true; // other roles are always allowed
 		};
 	}
@@ -279,7 +278,7 @@ public class RolesServiceImpl implements RolesService {
 		roles.put(ModuleType.INVOICE, List.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
 		roles.put(ModuleType.PM, List.of(RoleLevel.ADMIN, RoleLevel.EMPLOYEE));
 		roles.put(ModuleType.CRM,
-				List.of(RoleLevel.ADMIN, RoleLevel.MANAGER, RoleLevel.SALES_REPRESENTATIVE, RoleLevel.NONE));
+				List.of(RoleLevel.ADMIN, RoleLevel.SALES_MANAGER, RoleLevel.SALES_REPRESENTATIVE, RoleLevel.NONE));
 
 		return roles;
 	}
@@ -594,7 +593,7 @@ public class RolesServiceImpl implements RolesService {
 			};
 			case CRM -> switch (roleLevel) {
 				case ADMIN -> Role.CRM_ADMIN;
-				case MANAGER -> Role.CRM_SALES_MANAGER;
+				case SALES_MANAGER -> Role.CRM_SALES_MANAGER;
 				case SALES_REPRESENTATIVE -> Role.CRM_SALES_REPRESENTATIVE;
 				case NONE -> Role.CRM_NONE;
 				default -> null;
@@ -672,6 +671,12 @@ public class RolesServiceImpl implements RolesService {
 	protected List<String> getRoleDisplayNames(ModuleType moduleType) {
 		List<String> roles = new ArrayList<>();
 		roles.add(RoleLevel.ADMIN.getDisplayName());
+		if (moduleType == ModuleType.CRM) {
+			roles.add(RoleLevel.SALES_MANAGER.getDisplayName());
+			roles.add(RoleLevel.SALES_REPRESENTATIVE.getDisplayName());
+			roles.add(RoleLevel.NONE.getDisplayName());
+			return roles;
+		}
 		roles.add(RoleLevel.MANAGER.getDisplayName());
 		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
 		return roles;
