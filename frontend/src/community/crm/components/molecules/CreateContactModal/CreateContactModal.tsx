@@ -9,7 +9,16 @@ import { ChangeEvent, useState } from "react";
 import * as Yup from "yup";
 
 import InputField from "~community/common/components/molecules/InputField/InputField";
+import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
+import {
+  useCreateContact,
+  useGetCrmCompanies,
+  useGetCrmOwners
+} from "~community/crm/api/CrmContactsApi";
 import CompanySearchField from "~community/crm/components/molecules/CompanySearchField/CompanySearchField";
 import OwnerSearchField from "~community/crm/components/molecules/OwnerSearchField/OwnerSearchField";
 import { useCrmStore } from "~community/crm/store/crmStore";
@@ -20,24 +29,11 @@ interface CreateContactFormValues {
   name: string;
   email: string;
   company: string;
+  companyId: number | null;
   contactNumber: string;
+  countryCode: string;
   ownerId: number | null;
 }
-
-const MOCK_OWNERS: CrmOwnerType[] = [
-  { employeeId: 1, firstName: "Alice", lastName: "Johnson", authPic: null },
-  { employeeId: 2, firstName: "Bob", lastName: "Smith", authPic: null },
-  { employeeId: 3, firstName: "Carol", lastName: "Williams", authPic: null },
-  { employeeId: 4, firstName: "David", lastName: "Brown", authPic: null }
-];
-
-const MOCK_COMPANIES = [
-  "Acme Corp",
-  "Globex Corporation",
-  "Initech",
-  "Umbrella Corp",
-  "Wayne Enterprises"
-];
 
 const CreateContactModal = () => {
   const translateText = useTranslator(
@@ -45,10 +41,27 @@ const CreateContactModal = () => {
     "contacts",
     "createContactModal"
   );
+  const countryCode = useGetDefaultCountryCode();
+  const { setToastMessage } = useToast();
 
   const { setIsAddContactModalOpen, setCrmModalType } = useCrmStore((state) => state);
 
   const [selectedOwner, setSelectedOwner] = useState<CrmOwnerType | null>(null);
+
+  const { data: companiesData } = useGetCrmCompanies({ page: 0, size: 100 });
+  const { data: ownersData } = useGetCrmOwners({ page: 0, size: 100 });
+
+  const companyOptions = (companiesData?.items ?? []).map((c) => ({
+    id: c.id,
+    name: c.name
+  }));
+
+  const ownerOptions: CrmOwnerType[] = (ownersData?.items ?? []).map((o) => ({
+    employeeId: o.employeeId,
+    firstName: o.firstName,
+    lastName: o.lastName,
+    authPic: null
+  }));
 
   const validationSchema = Yup.object({
     name: Yup.string().required(translateText(["contactNameRequired"])),
@@ -57,20 +70,51 @@ const CreateContactModal = () => {
       .email(translateText(["emailInvalid"]))
   });
 
+  const { mutate, isPending } = useCreateContact({
+    onSuccess: () => {
+      setIsAddContactModalOpen(false);
+      setCrmModalType(CrmModalTypes.NONE);
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText(["createContactSuccessTitle"]),
+        description: translateText(["createContactSuccess"])
+      });
+    },
+    onError: (message: string) => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["createContactErrorTitle"]),
+        description: message
+      });
+    }
+  });
+
   const formik = useFormik<CreateContactFormValues>({
     initialValues: {
       name: "",
       email: "",
       company: "",
+      companyId: null,
       contactNumber: "",
+      countryCode,
       ownerId: null
     },
     validationSchema,
     validateOnChange: false,
     validateOnBlur: true,
-    onSubmit: (_values) => {
-      setIsAddContactModalOpen(false);
-      setCrmModalType(CrmModalTypes.NONE);
+    onSubmit: (values) => {
+      mutate({
+        name: values.name,
+        email: values.email,
+        companyId: values.companyId || undefined,
+        contactNumber:
+          values.contactNumber
+            ? `+${values.countryCode}${values.contactNumber}`
+            : undefined,
+        ownerId: values.ownerId || undefined
+      });
     }
   });
 
@@ -80,6 +124,22 @@ const CreateContactModal = () => {
     const { name, value } = e.target;
     setFieldValue(name, value);
     setFieldError(name, "");
+  };
+
+  const handleContactNumber = async (
+    phone: ChangeEvent<HTMLInputElement>
+  ): Promise<void> => {
+    const contactNumber = phone.target.value;
+    await setFieldValue("contactNumber", contactNumber);
+    setFieldError("contactNumber", "");
+
+    if (!values.countryCode) {
+      await setFieldValue("countryCode", countryCode);
+    }
+  };
+
+  const handleCountryChange = async (selectedCountryCode: string): Promise<void> => {
+    await setFieldValue("countryCode", selectedCountryCode);
   };
 
   const handleOwnerSelect = (owner: CrmOwnerType) => {
@@ -121,20 +181,26 @@ const CreateContactModal = () => {
         label={translateText(["company"])}
         placeholder={translateText(["enterCompany"])}
         value={values.company}
-        onChange={(v) => setFieldValue("company", v)}
-        options={MOCK_COMPANIES}
+        onChange={(name, id) => {
+          setFieldValue("company", name);
+          setFieldValue("companyId", id);
+        }}
+        options={companyOptions}
         onAddCompany={() => {}}
         addCompanyLabel={translateText(["addCompany"])}
         noResultsText={translateText(["noCompanyFound"])}
       />
 
-      <InputField
+      <InputPhoneNumber
         inputName="contactNumber"
         label={translateText(["contactNo"])}
         placeHolder={translateText(["enterContactNo"])}
         value={values.contactNumber}
-        onChange={handleChange}
-        labelStyles={{ fontWeight: 500 }}
+        countryCodeValue={values.countryCode}
+        onChange={handleContactNumber}
+        onChangeCountry={handleCountryChange}
+        labelStyles={{ fontWeight: 500}}
+        fullComponentStyle={{ mt: "0rem", mb: "0rem" }}
       />
 
       <OwnerSearchField
@@ -143,7 +209,7 @@ const CreateContactModal = () => {
         selectedOwner={selectedOwner}
         onSelect={handleOwnerSelect}
         onClear={handleOwnerClear}
-        options={MOCK_OWNERS}
+        options={ownerOptions}
         noResultsText={translateText(["noOwnerFound"])}
       />
 
@@ -152,6 +218,7 @@ const CreateContactModal = () => {
           variant="tertiary"
           icon={<CloseIcon />}
           iconPosition="end"
+          type="button"
           onClick={() => { setIsAddContactModalOpen(false); setCrmModalType(CrmModalTypes.NONE); }}
         >
           {translateText(["cancel"])}
@@ -160,6 +227,8 @@ const CreateContactModal = () => {
           variant="primary"
           icon={<EastArrowIcon />}
           iconPosition="end"
+          type="button"
+          disabled={isPending}
           onClick={() => handleSubmit()}
         >
           {translateText(["save"])}
