@@ -63,6 +63,14 @@ const useSessionData = () => {
     [user?.roles]
   );
 
+  const isCrmModuleEnabled = useMemo(
+    () =>
+      user?.roles?.includes(AdminTypes.CRM_ADMIN) ||
+      user?.roles?.includes(AuthManagerType.CRM_SALES_MANAGER) ||
+      user?.roles?.includes(EmployeeTypes.CRM_SALES_REPRESENTATIVE),
+    [user?.roles]
+  );
+
   const employeeDetails = useMemo(() => user?.employee, [user?.employee]);
 
   const isSuperAdmin = useMemo(
@@ -134,6 +142,7 @@ const useSessionData = () => {
     isEsignatureModuleEnabled,
     isInvoiceModuleEnabled,
     isPmModuleEnabled,
+    isCrmModuleEnabled,
     employeeDetails,
     isSuperAdmin,
     isPeopleAdmin,
