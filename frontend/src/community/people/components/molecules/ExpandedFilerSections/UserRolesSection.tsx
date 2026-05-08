@@ -3,7 +3,7 @@ import { RefObject } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { EmployeeTypes } from "~community/common/types/AuthTypes";
+import { AdminTypes, EmployeeTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { usePeopleStore } from "~community/people/store/store";
 import {
   EmployeeDataFilterTypes,
@@ -55,6 +55,15 @@ const UserRolesSection = ({
     { label: translateText(["sender"]), value: Role.ESIGN_SENDER },
     { label: translateText(["employee"]), value: Role.ESIGN_EMPLOYEE }
   ];
+
+  const crmRoles = [
+    { label: translateText(["admin"]), value: Role.CRM_ADMIN },
+    { label: translateText(["salesManager"]), value: Role.CRM_SALES_MANAGER },
+    {
+      label: translateText(["salesRepresentative"]),
+      value: Role.CRM_SALES_REPRESENTATIVE
+    }
+  ];
   const filterData = [
     ...(user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [
@@ -89,6 +98,18 @@ const UserRolesSection = ({
             filterKey: "permission",
             accessibilityKey: "esign",
             roles: esignRoles
+          }
+        ]
+      : []),
+    ...(user?.roles?.includes(EmployeeTypes.CRM_SALES_REPRESENTATIVE) ||
+      user?.roles?.includes(ManagerTypes.CRM_SALES_MANAGER) ||
+      user?.roles?.includes(AdminTypes.CRM_ADMIN)
+      ? [
+          {
+            title: translateText(["crmModule"]),
+            filterKey: "permission",
+            accessibilityKey: "crm",
+            roles: crmRoles
           }
         ]
       : [])

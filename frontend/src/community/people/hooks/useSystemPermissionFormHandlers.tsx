@@ -54,7 +54,10 @@ const useSystemPermissionFormHandlers = () => {
     superAdminLimitExceeded: false,
     esignAdminLimitExceeded: false,
     esignSenderLimitExceeded: false,
-    pmAdminLimitExceeded: false
+    pmAdminLimitExceeded: false,
+    crmAdminLimitExceeded: false,
+    crmSalesManagerLimitExceeded: false,
+    crmSalesRepresentativeLimitExceeded: false
   });
 
   const { data: superAdminCountData } = useGetSuperAdminCount();
@@ -133,6 +136,23 @@ const useSystemPermissionFormHandlers = () => {
         limitExceeded: roleLimits.pmAdminLimitExceeded,
         title: "pmAdminLimitationTitle",
         description: "pmAdminLimitationDescription"
+      }
+    },
+    crmRole: {
+      [Role.CRM_ADMIN]: {
+        limitExceeded: roleLimits.crmAdminLimitExceeded,
+        title: "crmAdminLimitationTitle",
+        description: "crmAdminLimitationDescription"
+      },
+      [Role.CRM_SALES_MANAGER]: {
+        limitExceeded: roleLimits.crmSalesManagerLimitExceeded,
+        title: "crmSalesManagerLimitationTitle",
+        description: "crmSalesManagerLimitationDescription"
+      },
+      [Role.CRM_SALES_REPRESENTATIVE]: {
+        limitExceeded: roleLimits.crmSalesRepresentativeLimitExceeded,
+        title: "crmSalesRepresentativeLimitationTitle",
+        description: "crmSalesRepresentativeLimitationDescription"
       }
     }
   };
@@ -216,7 +236,8 @@ const useSystemPermissionFormHandlers = () => {
         peopleRole: Role.PEOPLE_ADMIN,
         esignRole: Role.ESIGN_ADMIN,
         pmRole: Role.PM_ADMIN,
-        invoiceRole: Role.INVOICE_ADMIN
+        invoiceRole: Role.INVOICE_ADMIN,
+        crmRole: Role.CRM_ADMIN
       });
       setSystemPermissions({
         isSuperAdmin: checked,
@@ -225,7 +246,8 @@ const useSystemPermissionFormHandlers = () => {
         peopleRole: Role.PEOPLE_ADMIN,
         esignRole: Role.ESIGN_ADMIN,
         pmRole: Role.PM_ADMIN,
-        invoiceRole: Role.INVOICE_ADMIN
+        invoiceRole: Role.INVOICE_ADMIN,
+        crmRole: Role.CRM_ADMIN
       });
     },
     [
