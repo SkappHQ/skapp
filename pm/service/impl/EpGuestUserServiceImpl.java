@@ -136,7 +136,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		return new ResponseEntityDto(false, responses);
 	}
 
-	@Transactional
 	@Override
 	public ResponseEntityDto createGuestUsersInternal(EpGuestUserBulkInviteRequestDto epGuestUserBulkInviteRequestDto) {
 		if (epGuestUserBulkInviteRequestDto == null || epGuestUserBulkInviteRequestDto.getEmails() == null
@@ -364,7 +363,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_ACTIVATED), false);
 	}
 
-	@Transactional
 	@Override
 	public ResponseEntityDto updateGuestUserApprovalStatus(
 			EpGuestUserApprovalRequestDto epGuestUserApprovalRequestDto) {
@@ -424,7 +422,6 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	}
 
 	@Override
-	@Transactional
 	public EpUserResponseDto updateGuestUser(EpGuestUserUpdateRequestDto epGuestUserUpdateRequestDto) {
 		User user = userDao.findById(epGuestUserUpdateRequestDto.getId())
 			.filter(this::isValidGuestEmployee)
