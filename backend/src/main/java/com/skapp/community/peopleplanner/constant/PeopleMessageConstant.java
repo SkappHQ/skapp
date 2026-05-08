@@ -208,7 +208,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 			"api.error.people.validation-only-one-current-employment-allowed"),
 	PEOPLE_ERROR_VALIDATION_CANNOT_ADD_OTHER_SUPERVISORS_WITHOUT_PRIMARY_SUPERVISOR(
 			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),
-	PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND("api.error.people.validation.work-location-not-found"),;
+	PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND("api.error.people.validation-work-location-not-found");
 
 	private final String messageKey;
 

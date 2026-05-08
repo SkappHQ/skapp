@@ -349,11 +349,10 @@ public class PeopleServiceImpl implements PeopleService {
 		if (requestDto != null && requestDto.getEmployment() != null
 				&& requestDto.getEmployment().getEmploymentDetails() != null
 				&& requestDto.getEmployment().getEmploymentDetails().getWorkLocationId() != null) {
-			workLocationDao.findById(requestDto.getEmployment().getEmploymentDetails().getWorkLocationId())
-				.ifPresent(employee::setWorkLocation);
-		}
-		else {
-			employee.setWorkLocation(null);
+			employee.setWorkLocation(
+					workLocationDao.findById(requestDto.getEmployment().getEmploymentDetails().getWorkLocationId())
+						.orElseThrow(() -> new EntityNotFoundException(
+								PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND)));
 		}
 
 		// Identification and Diversity Details
@@ -1614,6 +1613,13 @@ public class PeopleServiceImpl implements PeopleService {
 					new Object[] { PeopleConstants.MAX_SSN_LENGTH, "First Name" }));
 	}
 
+	public void validateWorkLocationInBulk(String workLocation, List<String> errors) {
+		if (workLocation != null && !workLocation.isBlank()
+				&& workLocationDao.findByNameIgnoreCase(workLocation.trim()).isEmpty()) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND));
+		}
+	}
+
 	public void validateAddressInBulk(String addressLine, List<String> errors) {
 		if (!addressLine.trim().matches(Validation.ADDRESS_REGEX))
 			errors.add(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ADDRESS));
@@ -2248,6 +2254,8 @@ public class PeopleServiceImpl implements PeopleService {
 		if (employeeBulkDto.getEmployeePersonalInfo().getSsn() != null) {
 			validateSocialSecurityNumber(employeeBulkDto.getEmployeePersonalInfo().getSsn(), errors);
 		}
+
+		validateWorkLocationInBulk(employeeBulkDto.getWorkLocation(), errors);
 
 		return errors;
 	}

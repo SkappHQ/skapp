@@ -646,6 +646,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                 componentStyle={{
                   mt: "0rem"
                 }}
+                listboxMaxHeight="154px"
                 isDisabled={isInputsDisabled}
                 readOnly={isReadOnly || isProfileView}
               />

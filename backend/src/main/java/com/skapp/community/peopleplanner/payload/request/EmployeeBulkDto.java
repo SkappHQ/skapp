@@ -67,6 +67,8 @@ public class EmployeeBulkDto {
 
 	private EmploymentAllocation employmentAllocation;
 
+	// Name-based lookup for bulk CSV ingestion (not ID-based like
+	// EmployeeEmploymentBasicDetailsDto)
 	private String workLocation;
 
 }

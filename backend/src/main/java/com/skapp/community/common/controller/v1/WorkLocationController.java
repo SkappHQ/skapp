@@ -29,7 +29,7 @@ public class WorkLocationController {
 
 	@Operation(summary = "Get all work locations",
 			description = "Retrieves a paginated and optionally filtered list of work locations, sorted alphabetically by name.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getWorkLocations(WorkLocationFilterDto workLocationFilterDto) {
 
