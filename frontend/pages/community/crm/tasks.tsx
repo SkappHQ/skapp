@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -14,7 +15,7 @@ const CrmTasks: NextPage = () => {
       primaryButtonText={translateText(["addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
     >
-      {/* CRM Tasks content */}
+      <Box></Box>
     </ContentLayout>
   );
 };
