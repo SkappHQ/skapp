@@ -272,13 +272,23 @@ Use this template for the comment body:
 
 If `gh` CLI is not available, print the comment body so the user can post it manually.
 
-#### 6f: Commit unit tests
+#### 6f: Commit and push unit tests
+
+Stage, commit, and push the unit test files to the current feature branch on the main monorepo:
 
 ```
 cd <main-repo>
 git add frontend/src/community/<MODULE>/**/*.test.ts frontend/src/community/<MODULE>/**/*.test.tsx
 git commit -m "test: add unit tests for <MODULE>/<FEATURE>"
+git push origin HEAD
 ```
+
+If push fails because the branch has no upstream, use:
+```
+git push --set-upstream origin <CURRENT_BRANCH>
+```
+
+Verify the push succeeded before proceeding to Step 7.
 
 ### Step 7: Build and start the local environment
 
