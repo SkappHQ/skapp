@@ -8,14 +8,12 @@ import { IconName } from "~community/common/types/IconTypes";
 import { forwardGeocode } from "~community/configurations/utils/geofenceUtils";
 
 export interface AddressSearchProps {
-  apiKey: string;
   onResult: (lat: number, lng: number, address: string) => void;
   onError: (msg: string) => void;
   searchPlaceholder: string;
 }
 
 const AddressSearch = ({
-  apiKey,
   onResult,
   onError,
   searchPlaceholder
@@ -29,7 +27,7 @@ const AddressSearch = ({
     if (!trimmed) return;
     setIsSearching(true);
     try {
-      const result = await forwardGeocode(trimmed, apiKey);
+      const result = await forwardGeocode(trimmed);
       if (result) {
         onResult(result.lat, result.lng, result.formattedAddress);
         map?.panTo({ lat: result.lat, lng: result.lng });
@@ -42,7 +40,7 @@ const AddressSearch = ({
     } finally {
       setIsSearching(false);
     }
-  }, [query, apiKey, map, onResult, onError]);
+  }, [query, map, onResult, onError]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {

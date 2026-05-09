@@ -70,7 +70,7 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
         updateTempGeofence({ latitude: newLat, longitude: newLng });
       }
       try {
-        const address = await reverseGeocode(newLat, newLng, apiKey);
+        const address = await reverseGeocode(newLat, newLng);
         if (address) {
           updateTempGeofence({ address });
         }
@@ -84,7 +84,7 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
         });
       }
     },
-    [apiKey, tempGeofence, setTempGeofence, updateTempGeofence, setToastMessage, translateText]
+    [tempGeofence, setTempGeofence, updateTempGeofence, setToastMessage, translateText]
   );
 
   const handleSearchResult = useCallback(
@@ -216,7 +216,6 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
             }}
           >
             <AddressSearch
-              apiKey={apiKey}
               onResult={handleSearchResult}
               onError={handleSearchError}
               searchPlaceholder={translateText(["form.addressSearchPlaceholder"])}
