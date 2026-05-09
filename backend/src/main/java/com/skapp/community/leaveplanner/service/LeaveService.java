@@ -11,6 +11,9 @@ import com.skapp.community.leaveplanner.payload.request.PendingLeaveRequestFilte
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
 import jakarta.validation.Valid;
 
+import java.time.LocalDate;
+import java.util.List;
+
 public interface LeaveService {
 
 	ResponseEntityDto applyLeaveRequest(LeaveRequestDto leaveRequestDTO);
@@ -40,5 +43,7 @@ public interface LeaveService {
 	ResponseEntityDto leaveRequestAvailability(@Valid LeaveRequestAvailabilityFilterDto requestAvailabilityDto);
 
 	LeaveNotificationNudgeResponseDto getLeaveRequestIsNudge(@Valid Long leaveRequestId);
+
+	ResponseEntityDto getEmployeesLeaveStatus(LocalDate date, List<Long> employeeIds);
 
 }

@@ -34,6 +34,7 @@ import com.skapp.community.leaveplanner.payload.request.LeaveRequestByIdResponse
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PendingLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.response.GenericLeaveResponse;
+import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveStatusResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestManagerResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
@@ -94,6 +95,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -651,6 +653,61 @@ public class LeaveServiceImpl implements LeaveService {
 		log.info("getLeaveRequestIsNudge: returned {}  for user ID: {} and {}",
 				leaveNotificationNudgeResponseDto.getIsNudge(), userId, leaveRequestId);
 		return leaveNotificationNudgeResponseDto;
+	}
+
+	@Override
+	public ResponseEntityDto getEmployeesLeaveStatus(LocalDate date, List<Long> employeeIds) {
+		LocalDate targetDate = date != null ? date : LocalDate.now();
+		log.info("getEmployeesLeaveStatus: execution started for date: {}", targetDate);
+
+		List<LeaveRequest> requests = leaveRequestDao.findLeaveStatusProjectionsForDate(targetDate, employeeIds);
+
+		Map<Long, List<LeaveRequest>> requestsByEmployee = requests.stream()
+			.collect(Collectors.groupingBy(r -> r.getEmployee().getEmployeeId()));
+
+		List<EmployeeLeaveStatusResponseDto> result = requestsByEmployee.entrySet()
+			.stream()
+			.map(entry -> resolveLeaveStatus(entry.getKey(), entry.getValue()))
+			.collect(Collectors.toList());
+
+		log.info("getEmployeesLeaveStatus: returning status for {} employees", result.size());
+		return new ResponseEntityDto(false, result);
+	}
+
+	private EmployeeLeaveStatusResponseDto resolveLeaveStatus(Long employeeId, List<LeaveRequest> requests) {
+		boolean hasFullDay = requests.stream().anyMatch(r -> r.getLeaveState() == LeaveState.FULLDAY);
+		if (hasFullDay) {
+			LeaveRequest fullDay = requests.stream()
+				.filter(r -> r.getLeaveState() == LeaveState.FULLDAY)
+				.findFirst()
+				.orElseThrow();
+			return new EmployeeLeaveStatusResponseDto(employeeId, LeaveState.FULLDAY, fullDay.getStartDate(),
+					fullDay.getEndDate());
+		}
+
+		boolean hasMorning = requests.stream().anyMatch(r -> r.getLeaveState() == LeaveState.HALFDAY_MORNING);
+		boolean hasEvening = requests.stream().anyMatch(r -> r.getLeaveState() == LeaveState.HALFDAY_EVENING);
+
+		if (hasMorning && hasEvening) {
+			return new EmployeeLeaveStatusResponseDto(employeeId, LeaveState.FULLDAY,
+					requests.getFirst().getStartDate(), requests.getFirst().getEndDate());
+		}
+
+		if (hasMorning) {
+			LeaveRequest morning = requests.stream()
+				.filter(r -> r.getLeaveState() == LeaveState.HALFDAY_MORNING)
+				.findFirst()
+				.orElseThrow();
+			return new EmployeeLeaveStatusResponseDto(employeeId, LeaveState.HALFDAY_MORNING, morning.getStartDate(),
+					morning.getEndDate());
+		}
+
+		LeaveRequest evening = requests.stream()
+			.filter(r -> r.getLeaveState() == LeaveState.HALFDAY_EVENING)
+			.findFirst()
+			.orElseThrow();
+		return new EmployeeLeaveStatusResponseDto(employeeId, LeaveState.HALFDAY_EVENING, evening.getStartDate(),
+				evening.getEndDate());
 	}
 
 	private void sendLeaveUpdateEmailsAndNotifications(LeaveRequest leaveRequest) {
