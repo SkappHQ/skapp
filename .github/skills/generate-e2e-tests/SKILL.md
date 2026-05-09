@@ -49,6 +49,21 @@ Also check enterprise submodules by navigating into `frontend/src/enterprise/` a
 
 Read the relevant changed frontend source files to understand the UI being tested.
 
+#### Component-level discovery
+
+In addition to the top-level feature flow, scan for **individual UI sections/components** added or changed as part of the feature. These are typically:
+- Files ending in `Section.tsx`, `Form.tsx`, or `Panel.tsx` inside a feature folder
+- New utility files that define form fields, validation, types, or constants consumed by those components
+- Components that render distinct form groups (dropdowns, inputs) within a larger step/page
+
+For each discovered section component, note:
+1. The field names, types (dropdown, input, textarea), labels, and placeholders from the JSX
+2. The validation logic (from `validate` prop or imported validators)
+3. Whether fields are required or optional
+4. The dropdown option lists (imported constants)
+
+This information drives per-section spec file generation in Step 5.
+
 ### Step 3: Load existing patterns
 
 Read these files from the automation repo for style reference:
@@ -78,9 +93,48 @@ If creating from scratch, the Page Object must:
 - Have small focused methods: navigate, fill, click, verify
 - Have one high-level orchestrator method (e.g. `addFullProfile`, `deleteUser`)
 
-### Step 5: Generate or update Spec file
+### Step 5: Generate or update Spec files
 
-Create or update the spec file at `src/modules/<module>/tests/super-admin/<feature-name>.spec.ts`.
+Generate **one spec file per logical UI section** within the feature:
+
+| Scope | File path | Example |
+|-------|-----------|----------|
+| Main flow | `<feature-name>.spec.ts` | `people-add-validation.spec.ts` |
+| Per-section | `<feature-name>-<section>.spec.ts` | `people-add-work-preferences.spec.ts` |
+
+#### When to create separate section specs
+
+Create a separate spec file for a UI section when it has **any** of:
+- Its own form fields (inputs, dropdowns, textareas) with distinct labels/placeholders
+- Its own validation logic (inline or imported validator function)
+- A dedicated `*Section.tsx`, `*Form.tsx`, or `*Panel.tsx` component file
+
+Examples: `WorkPreferencesSection`, `EmergencyContactForm`, `EmploymentDetailsPanel`.
+
+#### Section spec test cases (auto-generate all of these)
+
+For each section with form fields, generate tests covering:
+1. **Visibility** — section heading/title is visible on the correct step
+2. **Dropdown selection** — one test per dropdown field, selecting an option and verifying the value
+3. **Text input** — one test per text/number input, filling a value and verifying
+4. **Validation: invalid input** — one test per validated field with an invalid value, verify error appears on blur
+5. **Validation: error clears** — enter invalid → fix → verify error disappears
+6. **All fields filled** — fill all section fields + required parent fields, click Next, verify step advances
+7. **Optional skip** — if all section fields are optional, verify proceeding without filling them
+8. **Value persistence** — change dropdown selections and verify updated values stick
+9. **Boundary: max length** — if a field has `maxLength`, fill to limit and verify acceptance
+10. **Block navigation** — if a field has validation, fill invalid value and verify Next is blocked
+
+Skip test categories that don't apply (e.g., skip dropdown tests if the section has no dropdowns).
+
+#### Section Page Object additions
+
+When generating section specs, also add to the Page Object:
+- Locators for every field in the section (dropdown: `getByLabel`, input: `getByPlaceholder`, section title: `getByText`)
+- Locators for section-specific error messages
+- Methods: `select<Field>(option)`, `fill<Field>(value)`, `clear<Field>()`, `verify<Field>Value(expected)`, `verify<Section>Visible()`, `verify<Field>Error()`, `verifyNo<Field>Error()`, `fillAll<Section>(...args)`
+
+#### General spec rules
 
 If the spec file already exists:
 - Read the existing file fully
@@ -92,7 +146,7 @@ The spec must:
 - Import `{ test, expect }` from `@playwright/test`
 - Import the Page Object class from `../../pages/<FeatureName>Page`
 - Import helpers: `getTenantUrl`, `generateRandomEmail`, `ROUTES`, test data
-- Use `test.describe` block per feature
+- Use `test.describe` block per feature/section
 - Navigate via `page.goto(getTenantUrl(ROUTES.DASHBOARD))`
 - Use page object methods exclusively (never raw locators in specs)
 - Follow AAA pattern: Arrange → Act → Assert
