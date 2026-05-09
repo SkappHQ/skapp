@@ -6,6 +6,7 @@ import com.skapp.community.leaveplanner.payload.ResourceAvailabilityCalendarFilt
 import com.skapp.community.leaveplanner.payload.request.LeavePatchRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestDto;
+import com.skapp.community.leaveplanner.payload.request.EmployeeLeaveStatusRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PendingLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
 import com.skapp.community.leaveplanner.service.LeaveService;
@@ -137,6 +138,17 @@ public class LeaveController {
 	public ResponseEntity<ResponseEntityDto> getLeaveRequestAvailability(
 			@Valid LeaveRequestAvailabilityFilterDto requestAvailabilityDto) {
 		ResponseEntityDto response = leaveService.leaveRequestAvailability(requestAvailabilityDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get employees leave status for a given date",
+			description = "Returns the leave state (FULLDAY, HALFDAY_MORNING, HALFDAY_EVENING) for every employee who has an approved or pending leave on the given date.")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE', 'ROLE_PM_GUEST_EMPLOYEE')")
+	@PostMapping(value = "/employees-leave-status", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getEmployeesLeaveStatus(
+			@RequestBody EmployeeLeaveStatusRequestDto requestDto) {
+		ResponseEntityDto response = leaveService.getEmployeesLeaveStatus(requestDto.getDate(),
+				requestDto.getEmployeeIds());
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
