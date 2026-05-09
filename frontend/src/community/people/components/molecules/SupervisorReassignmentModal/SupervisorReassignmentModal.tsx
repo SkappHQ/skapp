@@ -61,9 +61,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
     }
   }, [isOpen]);
 
-  const { data: supervisorRoles } = useGetSupervisorRoles(
-    isOpen ? employeeId : 0
-  );
+  const { data: supervisorRoles } = useGetSupervisorRoles(employeeId, isOpen);
   const { data: activeEmployees = [] } =
     useGetActiveEmployeesForReassignment(isOpen);
 

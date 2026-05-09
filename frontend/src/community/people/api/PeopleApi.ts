@@ -608,6 +608,11 @@ export const useTerminateUser = (
           queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
         })
         .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: [peopleQueryKeys.SUPERVISED_BY_ME]
+        })
+        .catch(rejects);
       onSuccess();
     },
     onError
@@ -719,6 +724,11 @@ export const useDeleteUser = (onSuccess: () => void, onError: () => void) => {
       queryClient
         .invalidateQueries({
           queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: [peopleQueryKeys.SUPERVISED_BY_ME]
         })
         .catch(rejects);
       onSuccess();
@@ -849,7 +859,8 @@ export const useEditEmployee = (employeeId: string) => {
 };
 
 export const useGetSupervisorRoles = (
-  userId: number
+  userId: number,
+  enabled: boolean = true
 ): UseQueryResult<SupervisorRolesData> => {
   return useQuery({
     queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId),
@@ -859,7 +870,7 @@ export const useGetSupervisorRoles = (
       );
       return response?.data?.results?.[0] as SupervisorRolesData;
     },
-    enabled: !!userId
+    enabled: !!userId && enabled
   });
 };
 

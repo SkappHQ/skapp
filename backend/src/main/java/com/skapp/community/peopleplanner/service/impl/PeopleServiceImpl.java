@@ -1233,10 +1233,14 @@ public class PeopleServiceImpl implements PeopleService {
 		List<EmployeeManager> primaryManagerRecords = employeeManagerDao.findByManagerAndManagerType(employee,
 				ManagerType.PRIMARY);
 		List<SupervisedEmployeeResponseDto> supervisedEmployees = primaryManagerRecords.stream()
-			.map(record -> peopleMapper.employeeToSupervisedEmployeeResponseDto(record.getEmployee()))
+			.map(EmployeeManager::getEmployee)
+			.filter(emp -> AccountStatus.ACTIVE.equals(emp.getAccountStatus())
+					|| AccountStatus.PENDING.equals(emp.getAccountStatus()))
+			.map(peopleMapper::employeeToSupervisedEmployeeResponseDto)
 			.toList();
 		List<EmployeeTeam> supervisorTeamRecords = employeeTeamDao.findByEmployeeAndIsSupervisor(employee, true);
 		List<SupervisedTeamResponseDto> supervisedTeams = supervisorTeamRecords.stream()
+			.filter(record -> record.getTeam().isActive())
 			.map(record -> peopleMapper.teamToSupervisedTeamResponseDto(record.getTeam()))
 			.toList();
 		SupervisorRolesResponseDto responseDto = new SupervisorRolesResponseDto();
