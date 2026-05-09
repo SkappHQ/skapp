@@ -20,7 +20,7 @@ The user should provide:
 - **Module**: `people`, `leave`, `attendance`, `settings`, or `configurations`
 - **Feature** (optional): Feature name to filter files (e.g. `add`, `quick-add`, `teams`)
 
-If not provided, ask the user for the module name.
+If not provided, infer the module from the current branch name or changed files.
 
 ## Procedure
 
@@ -76,9 +76,9 @@ cd frontend && npx jest --testPathPattern="src/community/<MODULE>" --no-coverage
 
 If tests fail, read the error output, fix the test file, and re-run.
 
-### Step 6: Commit (if requested)
+### Step 6: Commit
 
-If the user asks to commit, stage and commit the generated test files:
+Stage and commit the generated test files automatically:
 
 ```
 git add frontend/src/community/<MODULE>/**/*.test.ts frontend/src/community/<MODULE>/**/*.test.tsx

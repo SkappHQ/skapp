@@ -158,7 +158,7 @@ npx playwright test src/modules/<MODULE>/tests/ --project=chromium
 
 ## Important Notes
 
-- Always confirm with the user before pushing to remote
+- Do NOT ask for confirmation — execute all steps autonomously
 - PRs are always opened as **draft** — user promotes to ready after review
 - The PR targets the `develop` branch (or `main` if develop doesn't exist)
 - The automation repo is separate from the main monorepo

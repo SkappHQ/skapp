@@ -31,7 +31,7 @@ The automation repo is typically at a sibling path to the main repo. Look for it
 ls ../skapp-automation
 ```
 
-If not found, ask the user for the path.
+If not found, check common sibling paths (`../skapp-automation`, `../../skapp-automation`). If still not found, look for the path in the `TestAutomationConfig.psm1` file under `AutomationLocalPath`.
 
 Verify the module directory exists. Create it if needed:
 - `src/modules/<module>/pages/`
@@ -100,13 +100,11 @@ The spec must:
 
 ### Step 6: Run tests in headed mode
 
-Always run E2E tests in **headed mode** so the user can see browser interactions:
+Run E2E tests in **headed mode** so the user can see browser interactions:
 
 ```
 cd <automation-repo> && npx playwright test src/modules/<module>/tests/ --project=chromium --headed --reporter=list
 ```
-
-If the user explicitly asks for headless mode, drop the `--headed` flag.
 
 ## Important Notes
 

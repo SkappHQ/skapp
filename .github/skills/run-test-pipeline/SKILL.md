@@ -105,7 +105,7 @@ Invoke the **push-e2e-pr** skill procedure:
 2. Push to remote
 3. Create **draft PR** with detailed test coverage report
 
-**Always ask user for confirmation before pushing.**
+Do NOT ask for confirmation — execute all steps autonomously.
 
 ### Phase 6: Summary
 
@@ -127,8 +127,9 @@ Print a final summary:
 
 ## Important Notes
 
+- Execute the entire pipeline autonomously — do NOT ask for confirmation at any step
 - This skill orchestrates the other skills — it follows the same conventions
 - FE unit tests are committed to the **feature branch** (same PR)
 - E2E tests are committed to the **automation repo** (separate PR)
 - Always verify tests pass before pushing
-- Confirm with user before any push/PR operations
+- Infer module, feature, and PR number from the branch name and git context if not provided
