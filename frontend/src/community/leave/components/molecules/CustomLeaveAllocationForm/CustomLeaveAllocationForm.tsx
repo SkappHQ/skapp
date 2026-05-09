@@ -129,7 +129,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
   }, [leaveTypesData]);
 
   useEffect(() => {
-    if (values.employeeId && suggestions) {
+    if (values.employeeId && values.assignedTo && suggestions) {
       const selectedUser = suggestions.find(
         (user) => user.employeeId === values.employeeId
       );
@@ -137,7 +137,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
         setSearchTerm(`${selectedUser.firstName} ${selectedUser.lastName}`);
       }
     }
-  }, [values.employeeId, suggestions]);
+  }, [values.employeeId, values.assignedTo, suggestions]);
 
   const onSelectUser = async (user: EmployeeType): Promise<void> => {
     if (user) {
@@ -326,8 +326,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
         onInputChange={(value, reason) => {
           if (reason === "reset") return;
           setSearchTerm(value);
-          if (values.employeeId !== undefined || values.assignedTo !== undefined) {
-            setFieldValue("employeeId", undefined);
+          if (values.assignedTo !== undefined) {
             setFieldValue("assignedTo", undefined);
           }
         }}
