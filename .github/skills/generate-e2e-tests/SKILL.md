@@ -152,7 +152,54 @@ The spec must:
 - Follow AAA pattern: Arrange → Act → Assert
 - Test naming: `should <behavior> when <condition>`
 
-### Step 6: Build and start the local environment
+### Step 6: Generate and run frontend unit tests
+
+Before running E2E tests, generate and verify unit tests for the changed frontend utility/hook files. This ensures the underlying logic is correct before testing it in the browser.
+
+#### 6a: Filter testable changed files
+
+From the files detected in Step 2, filter to files in testable directories (`utils`, `hooks`, `actions`, `store`, `helpers`). Exclude non-testable patterns (`types`, `enums`, `constants`, `index.ts`, `.css`, `.json`, `QueryKeys`, `configs`).
+
+For each testable file, check whether a co-located `.test.ts` / `.test.tsx` already exists:
+- **No test file** → generate from scratch
+- **Test file exists** → read existing tests, add new cases for changed/added code, preserve all existing passing tests
+
+#### 6b: Load unit test patterns
+
+Read an existing `.test.ts` file in the same module for style reference. Follow the conventions in the [jest-conventions.md](../generate-fe-unit-tests/references/jest-conventions.md) reference.
+
+#### 6c: Generate unit test files
+
+For each source file:
+1. Read the full source file
+2. Read imported local modules (starting with `.` or `~`) to understand dependencies for mocking
+3. If an existing test file exists, read it fully and preserve passing tests
+4. Generate the test file next to the source: `<source>.test.ts`
+
+Follow these critical mocking rules:
+- If the source imports `commonUtil`, mock it to avoid `Request is not defined` errors
+- Mock external modules (`next-auth`, `axios`, API modules)
+- Mock Zustand stores
+- Use AAA pattern (Arrange → Act → Assert)
+- Test naming: `should <behavior> when <condition>`
+
+#### 6d: Run unit tests
+
+```
+cd <main-repo>/frontend && npx jest --testPathPattern="src/community/<MODULE>" --no-coverage
+```
+
+If tests fail, read the error output, fix the test file, and re-run. Do NOT proceed to E2E steps until unit tests pass.
+
+#### 6e: Commit unit tests
+
+```
+cd <main-repo>
+git add frontend/src/community/<MODULE>/**/*.test.ts frontend/src/community/<MODULE>/**/*.test.tsx
+git commit -m "test: add unit tests for <MODULE>/<FEATURE>"
+```
+
+### Step 7: Build and start the local environment
 
 Before running E2E tests, ensure the frontend is built and served locally:
 
@@ -168,7 +215,7 @@ cd <main-repo>/frontend && npm run start
 ```
 The server must be running and ready before executing tests.
 
-### Step 7: Run tests in headed mode
+### Step 8: Run E2E tests in headed mode
 
 Run E2E tests in **headed mode** so the user can see browser interactions:
 
