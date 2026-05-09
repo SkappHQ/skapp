@@ -598,6 +598,16 @@ export const useTerminateUser = (
       queryClient.invalidateQueries({
         queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(id)
       });
+      queryClient
+        .invalidateQueries({
+          queryKey: peopleQueryKeys.ACTIVE_EMPLOYEES_FOR_REASSIGNMENT
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
+        })
+        .catch(rejects);
       onSuccess();
     },
     onError
@@ -701,6 +711,16 @@ export const useDeleteUser = (onSuccess: () => void, onError: () => void) => {
       queryClient.invalidateQueries({
         queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(id)
       });
+      queryClient
+        .invalidateQueries({
+          queryKey: peopleQueryKeys.ACTIVE_EMPLOYEES_FOR_REASSIGNMENT
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
+        })
+        .catch(rejects);
       onSuccess();
     },
     onError
@@ -856,6 +876,11 @@ export const useTransferSupervisors = (
       queryClient
         .invalidateQueries({
           queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId)
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
         })
         .catch(rejects);
       onSuccess();

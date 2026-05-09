@@ -264,9 +264,12 @@
     "allReassignedValidationMessage": "Please reassign all supervisors before proceeding.",
     "noActiveEmployeesMessage": "There are no active employees to assign as supervisor. Please add an active employee before proceeding.",
     "noActiveEmployeesPlaceholder": "No active employees available",
-    "transferSuccessTitle": "Transfer Successful",
-    "transferErrorTitle": "Oops! Something went wrong",
-    "transferErrorDescription": "Failed to complete the action. Please try again."
+    "terminateSuccessTitle": "User Terminated",
+    "terminateSuccessDescription": "{{name}} has been successfully terminated and all supervisor assignments have been reassigned.",
+    "deleteSuccessTitle": "User Deleted",
+    "deleteSuccessDescription": "{{name}} has been successfully deleted and all supervisor assignments have been reassigned.",
+    "actionErrorTitle": "Oops! Something went wrong",
+    "actionErrorDescription": "Failed to complete the action. Please try again."
   },
 
   "discardChangesModal": {

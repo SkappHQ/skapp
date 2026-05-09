@@ -98,8 +98,9 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
 
   const { setToastMessage } = useToast();
 
-  const { data: supervisorRolesData, refetch: refetchSupervisorRoles } =
-    useGetSupervisorRoles(Number(employeeId));
+  const { refetch: refetchSupervisorRoles } = useGetSupervisorRoles(
+    Number(employeeId)
+  );
 
   const { data: storageAvailableData } = useStorageAvailability();
   const hasTerminationAbility =

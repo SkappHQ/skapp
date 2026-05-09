@@ -26,6 +26,7 @@ interface Props {
   isOpen: boolean;
   onCancel: () => void;
   employeeId: number;
+  employeeName: string;
   actionType: "terminate" | "delete";
   onActionSuccess: () => void;
 }
@@ -34,12 +35,11 @@ const SupervisorReassignmentModal: FC<Props> = ({
   isOpen,
   onCancel,
   employeeId,
+  employeeName,
   actionType,
   onActionSuccess
 }) => {
   const translateText = useTranslator("peopleModule", "supervisorReassignment");
-  const terminationText = useTranslator("peopleModule", "termination");
-  const deletionText = useTranslator("peopleModule", "deletion");
   const { setToastMessage } = useToast();
   const router = useRouter();
 
@@ -50,12 +50,14 @@ const SupervisorReassignmentModal: FC<Props> = ({
     Record<number, string | number>
   >({});
   const [hasAttemptedProceed, setHasAttemptedProceed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       setPrimaryAssignments({});
       setTeamAssignments({});
       setHasAttemptedProceed(false);
+      setIsSubmitting(false);
     }
   }, [isOpen]);
 
@@ -92,65 +94,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
   const isProceedEnabled =
     allPrimaryAssigned && allTeamAssigned && !noActiveEmployeesAvailable;
 
-  const onTerminateSuccess = () => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: terminationText(["terminateSuccessTitle"]),
-      description: terminationText(["terminateSuccessDescription"]),
-      isIcon: true
-    });
-    onActionSuccess();
-  };
-
-  const onTerminateError = () => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: terminationText(["terminateErrorTitle"]),
-      description: terminationText(["terminateErrorDescription"]),
-      isIcon: true
-    });
-  };
-
-  const onDeleteSuccess = () => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: deletionText(["deleteSuccessTitle"]),
-      description: deletionText(["deleteSuccessDescription"]),
-      isIcon: true
-    });
-    router.push(ROUTES.PEOPLE.DIRECTORY);
-    onActionSuccess();
-  };
-
-  const onDeleteError = () => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: deletionText(["deleteErrorTitle"]),
-      description: deletionText(["deleteErrorDescription"]),
-      isIcon: true
-    });
-  };
-
-  const { mutate: terminateEmployee } = useTerminateUser(
-    onTerminateSuccess,
-    onTerminateError
-  );
-  const { mutate: deleteEmployee } = useDeleteUser(
-    onDeleteSuccess,
-    onDeleteError
-  );
-
   const onTransferSuccess = () => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText(["transferSuccessTitle"]),
-      isIcon: true
-    });
     if (actionType === "terminate") {
       terminateEmployee(employeeId);
     } else {
@@ -158,23 +102,62 @@ const SupervisorReassignmentModal: FC<Props> = ({
     }
   };
 
-  const onTransferError = () => {
+  const onTerminateSuccess = () => {
+    setIsSubmitting(false);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["terminateSuccessTitle"]),
+      description: translateText(["terminateSuccessDescription"], {
+        name: employeeName
+      }),
+      isIcon: true
+    });
+    onActionSuccess();
+  };
+
+  const onDeleteSuccess = () => {
+    setIsSubmitting(false);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["deleteSuccessTitle"]),
+      description: translateText(["deleteSuccessDescription"], {
+        name: employeeName
+      }),
+      isIcon: true
+    });
+    router.push(ROUTES.PEOPLE.DIRECTORY);
+    onActionSuccess();
+  };
+
+  const onActionError = () => {
+    setIsSubmitting(false);
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["transferErrorTitle"]),
-      description: translateText(["transferErrorDescription"]),
+      title: translateText(["actionErrorTitle"]),
+      description: translateText(["actionErrorDescription"]),
       isIcon: true
     });
   };
 
-  const { mutate: transferSupervisors, isPending } = useTransferSupervisors(
+  const { mutate: transferSupervisors } = useTransferSupervisors(
     employeeId,
     onTransferSuccess,
-    onTransferError
+    onActionError
+  );
+  const { mutate: terminateEmployee } = useTerminateUser(
+    onTerminateSuccess,
+    onActionError
+  );
+  const { mutate: deleteEmployee } = useDeleteUser(
+    onDeleteSuccess,
+    onActionError
   );
 
   const handleProceed = () => {
+    setIsSubmitting(true);
     const payload: TransferSupervisorsPayload = {
       primarySupervisors: supervisedEmployees
         .filter((emp) => !!primaryAssignments[emp.employeeId])
@@ -228,7 +211,9 @@ const SupervisorReassignmentModal: FC<Props> = ({
                         inputName={`primary-supervisor-${emp.employeeId}`}
                         value={primaryAssignments[emp.employeeId] ?? ""}
                         placeholder={translateText([
-                          "selectSupervisorPlaceholder"
+                          noActiveEmployeesAvailable
+                            ? "noActiveEmployeesPlaceholder"
+                            : "selectSupervisorPlaceholder"
                         ])}
                         itemList={employeeDropdownOptions}
                         isDisabled={noActiveEmployeesAvailable}
@@ -276,7 +261,9 @@ const SupervisorReassignmentModal: FC<Props> = ({
                         inputName={`team-supervisor-${team.teamId}`}
                         value={teamAssignments[team.teamId] ?? ""}
                         placeholder={translateText([
-                          "selectSupervisorPlaceholder"
+                          noActiveEmployeesAvailable
+                            ? "noActiveEmployeesPlaceholder"
+                            : "selectSupervisorPlaceholder"
                         ])}
                         itemList={employeeDropdownOptions}
                         isDisabled={noActiveEmployeesAvailable}
@@ -319,7 +306,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
       </div>
 
       <div className="flex flex-row gap-4 justify-end">
-        <ButtonV2 variant="tertiary" onClick={onCancel}>
+        <ButtonV2 variant="tertiary" onClick={onCancel} disabled={isSubmitting}>
           {translateText(["cancelButton"])}
         </ButtonV2>
         <div
@@ -332,7 +319,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
           <ButtonV2
             variant="primary"
             onClick={handleProceed}
-            disabled={!isProceedEnabled || isPending}
+            disabled={!isProceedEnabled || isSubmitting}
           >
             {proceedButtonLabel}
           </ButtonV2>

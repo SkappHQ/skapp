@@ -5,20 +5,20 @@ import { usePeopleStore } from "~community/people/store/store";
 
 import SupervisorReassignmentModal from "../SupervisorReassignmentModal/SupervisorReassignmentModal";
 import TerminateConfirmationModal from "../TerminateConfirmationModal/TerminateConfirmationModal";
-import TerminationWarningModal from "../TerminationWarningModal/TerminationWarningModal";
 
 const TerminationModalController: FC = () => {
   const {
     isTerminationConfirmationModalOpen,
-    alertMessage,
     setTerminationConfirmationModalOpen,
-    setTerminationAlertModalOpen,
-    isTerminationAlertModalOpen,
     selectedEmployeeId,
     isSupervisorReassignmentModalOpen,
     supervisorReassignmentActionType,
-    setIsSupervisorReassignmentModalOpen
+    setIsSupervisorReassignmentModalOpen,
+    employee
   } = usePeopleStore((state) => state);
+
+  const employeeName =
+    `${employee?.personal?.general?.firstName ?? ""} ${employee?.personal?.general?.lastName ?? ""}`.trim();
 
   return (
     <Box>
@@ -29,20 +29,13 @@ const TerminationModalController: FC = () => {
         }
         onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
         employeeId={Number(selectedEmployeeId)}
+        employeeName={employeeName}
         actionType="terminate"
-        onActionSuccess={() => {
-          setIsSupervisorReassignmentModalOpen(false);
-        }}
+        onActionSuccess={() => setIsSupervisorReassignmentModalOpen(false)}
       />
       <TerminateConfirmationModal
         isOpen={isTerminationConfirmationModalOpen}
         onClose={() => setTerminationConfirmationModalOpen(false)}
-      />
-      <TerminationWarningModal
-        message={alertMessage}
-        isOpen={isTerminationAlertModalOpen}
-        onClose={() => setTerminationAlertModalOpen(false)}
-        onClick={() => setTerminationAlertModalOpen(false)}
       />
     </Box>
   );
