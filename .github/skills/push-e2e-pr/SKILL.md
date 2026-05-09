@@ -48,12 +48,32 @@ cd <automation-repo> && npx playwright test src/modules/<module>/tests/ --projec
 
 ```
 git fetch origin
-git checkout -b feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests origin/develop
 ```
 
-If `origin/develop` doesn't exist, use `origin/main` as the base.
+Determine the branch name: `feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests`
 
-If the branch already exists locally or remotely, switch to it instead of creating a new one.
+Check if the branch already exists locally or on the remote:
+
+```
+git branch --list "feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests"
+git ls-remote --heads origin "feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests"
+```
+
+- If the branch **does not exist** locally or remotely, create it:
+  ```
+  git checkout -b feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests origin/develop
+  ```
+- If the branch **already exists**, append an incrementing numeric suffix and retry:
+  ```
+  feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests-2
+  feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests-3
+  ```
+  Keep incrementing until a name is found that does not exist locally or remotely, then create it:
+  ```
+  git checkout -b feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests-<N> origin/develop
+  ```
+
+If `origin/develop` doesn't exist, use `origin/main` as the base.
 
 ### Step 4: Stage and commit
 
