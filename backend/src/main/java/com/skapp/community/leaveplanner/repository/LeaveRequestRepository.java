@@ -74,6 +74,8 @@ public interface LeaveRequestRepository {
 	List<LeaveRequest> getEmployeesOnLeaveByTeamAndDate(List<Long> teams, LocalDate current, Long currentUserId,
 			boolean isLeaveAdmin);
 
+	List<LeaveRequest> findLeaveStatusProjectionsForDate(LocalDate date, List<Long> employeeIds);
+
 	List<EmployeeLeaveRequestReportExportDto> generateLeaveRequestDetailedReport(List<Long> leaveTypeIds,
 			LocalDate startDate, LocalDate endDate, Long jobFamilyId, Long teamId, List<String> statuses);
 

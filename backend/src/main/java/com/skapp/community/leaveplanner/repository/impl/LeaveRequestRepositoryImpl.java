@@ -31,6 +31,7 @@ import com.skapp.community.leaveplanner.repository.projection.ManagerLeaveTrend;
 import com.skapp.community.leaveplanner.repository.projection.OrganizationLeaveTrendForTheYear;
 import com.skapp.community.leaveplanner.repository.projection.TeamLeaveCountByType;
 import com.skapp.community.leaveplanner.repository.projection.TeamLeaveTrendForTheYear;
+import com.skapp.community.leaveplanner.type.LeaveDuration;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
@@ -376,6 +377,30 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		TypedQuery<LeaveRequest> typedQuery = entityManager.createQuery(criteriaQuery);
 		return typedQuery.getResultList();
+	}
+
+	@Override
+	public List<LeaveRequest> findLeaveStatusProjectionsForDate(LocalDate date, List<Long> employeeIds) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
+		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
+
+		Join<LeaveRequest, Employee> employeeJoin = root.join(LeaveRequest_.employee);
+		Join<LeaveRequest, LeaveType> leaveTypeJoin = root.join(LeaveRequest_.leaveType);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), date));
+		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), date));
+		predicates.add(root.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+		predicates.add(criteriaBuilder.notEqual(leaveTypeJoin.get(LeaveType_.leaveDuration), LeaveDuration.HALF_DAY));
+
+		if (employeeIds != null && !employeeIds.isEmpty()) {
+			predicates.add(employeeJoin.get(Employee_.employeeId).in(employeeIds));
+		}
+
+		criteriaQuery.select(root).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	@Override
