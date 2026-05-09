@@ -99,6 +99,7 @@ import com.skapp.community.timeplanner.type.SlotType;
 import com.skapp.community.timeplanner.type.TimeBlocks;
 import com.skapp.community.timeplanner.type.TimeConfigFieldName;
 import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
+import com.skapp.community.timeplanner.event.AttendanceClockEvent;
 import com.skapp.community.timeplanner.util.TimeUtil;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
@@ -108,6 +109,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -191,6 +193,8 @@ public class TimeServiceImpl implements TimeService {
 	private final LeaveEntitlementDao leaveEntitlementDao;
 
 	private final OrganizationService organizationService;
+
+	private final ApplicationEventPublisher eventPublisher;
 
 	public static JsonNode createTimeConfigJsonNode(Map<String, Float> hoursMap) {
 		ObjectMapper mapper = new ObjectMapper();
@@ -1981,6 +1985,8 @@ public class TimeServiceImpl implements TimeService {
 			Employee currentEmployee = currentUser.getEmployee();
 			currentEmployee.setLastClockInDate(DateTimeUtils.epochMillisToUtcLocalDate(timeInMillis));
 			employeeDao.save(currentEmployee);
+			eventPublisher.publishEvent(new AttendanceClockEvent(this, currentEmployee.getEmployeeId(),
+					newTimeRecord.getTimeRecordId(), TimeRecordActionTypes.START, timeInMillis));
 		}
 		else {
 			if (timeRecord.isEmpty()) {
@@ -1991,6 +1997,9 @@ public class TimeServiceImpl implements TimeService {
 			timeRecord.get().setCompleted(true);
 			timeRecordDao.save(timeRecord.get());
 			createTimeSlot(timeRecord.get(), timeInMillis, TimeRecordActionTypes.END);
+			eventPublisher.publishEvent(new AttendanceClockEvent(this,
+					timeRecord.get().getEmployee().getEmployeeId(), timeRecord.get().getTimeRecordId(),
+					TimeRecordActionTypes.END, timeInMillis));
 		}
 	}
 
