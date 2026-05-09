@@ -87,12 +87,14 @@ If applicable, invoke the **generate-fe-unit-tests** skill procedure:
 
 3. Count generated test files and test cases.
 
-### Phase 4: Test Execution
+### Phase 4: Test Execution (headed mode)
 
 Run Playwright tests in **headed mode** so the user can see browser interactions:
 ```
 cd <automation-repo> && npx playwright test src/modules/<MODULE>/tests/ --project=chromium --headed --reporter=list
 ```
+
+This is the only step that uses headed mode. All other test runs (e.g. pre-push verification) use headless.
 
 If the user explicitly requests headless mode, drop the `--headed` flag.
 

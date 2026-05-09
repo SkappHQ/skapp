@@ -36,12 +36,12 @@ git status --porcelain -- "src/modules/**/*.spec.ts" "src/modules/**/*.ts"
 
 Count test cases in each spec file by counting occurrences of `test(` and `it(`.
 
-### Step 2: Run tests (optional)
+### Step 2: Run tests before push (headless)
 
-If the user wants to verify before pushing, run in **headed mode**:
+If the user wants to verify before pushing, run in **headless** mode (fast, no UI):
 
 ```
-cd <automation-repo> && npx playwright test src/modules/<module>/tests/ --project=chromium --headed --reporter=list
+cd <automation-repo> && npx playwright test src/modules/<module>/tests/ --project=chromium --reporter=list
 ```
 
 ### Step 3: Create feature branch
