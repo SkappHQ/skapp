@@ -1255,6 +1255,9 @@ public class PeopleServiceImpl implements PeopleService {
 			throw new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		Employee departingEmployee = optionalUser.get().getEmployee();
+		if (departingEmployee == null) {
+			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
+		}
 		if (requestDto.getPrimarySupervisors() != null && !requestDto.getPrimarySupervisors().isEmpty()) {
 			requestDto.getPrimarySupervisors().forEach(item -> {
 				Optional<Employee> optionalSubordinate = employeeDao.findById(item.getSubordinateEmployeeId());
