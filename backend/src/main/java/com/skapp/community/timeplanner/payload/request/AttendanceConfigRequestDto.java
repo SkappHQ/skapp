@@ -19,4 +19,4 @@ public class AttendanceConfigRequestDto {
 
 	private Boolean isGeoFencingEnabled;
 
-}
+	private Boolean isNotifyManagerOnLateArrival;
