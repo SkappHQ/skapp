@@ -2,22 +2,27 @@ import { Stack } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { ChangeEvent } from "react";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import { useCreateNewCompany } from "~community/crm/api/CompanyApi";
 import { useCrmStore } from "~community/crm/store/crmStore";
 import { CreateCrmCompanyPayload } from "~community/crm/types/CrmCompanyTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
-import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 
 const AddCompanyModal: React.FC = () => {
+  const { setToastMessage } = useToast();
+
   const translateAria = useTranslator("crmModule", "addCompanyForm");
 
   const translateLabelText = useTranslator(
@@ -43,6 +48,11 @@ const AddCompanyModal: React.FC = () => {
     "companies",
     "addCompanyValidations"
   );
+  const translateToasts = useTranslator(
+    "crmModule",
+    "companies",
+    "companyToastMessages"
+  );
 
   const { setIsAddCompanyModalOpen, setCompanyModalType } = useCrmStore(
     (store) => ({
@@ -51,34 +61,64 @@ const AddCompanyModal: React.FC = () => {
     })
   );
 
+  const { userId } = useSessionData();
+
   const initialValues: CreateCrmCompanyPayload = {
     name: "",
     industry: "",
     website: "",
     address: "",
     contactNumber: "",
-    countryCode: useGetDefaultCountryCode()
+    createdBy: userId,
+    lastModifiedBy: userId
   };
 
-  const addCompany = (values: CreateCrmCompanyPayload) => {
+  const handleSuccess = () => {
+    handleCloseModal();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateToasts(["successTitle"]),
+      description: translateToasts(["successDescription"])
+    });
+  };
+
+  const handleError = (error: Error) => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateToasts(["errorTitle"]),
+      description: translateToasts(["errorDescription"])
+    });
+  };
+
+  const handleCloseModal = (): void => {
+    setIsAddCompanyModalOpen(false);
+    setCompanyModalType(CrmModalTypes.NONE);
+  };
+
+  const { mutate: createNewCompany, isPending: isCreatingNewCompany } =
+    useCreateNewCompany(handleSuccess, (error: Error) => {
+      handleError(error);
+    });
+
+  const createCompany = (values: CreateCrmCompanyPayload) => {
     const payload: CreateCrmCompanyPayload = {
       name: values.name.trim(),
       industry: values.industry?.trim() || null,
       website: values.website?.trim() || null,
       address: values.address?.trim() || null,
       contactNumber: values.contactNumber?.trim() || null,
-      countryCode: values.countryCode
+      createdBy: userId,
+      lastModifiedBy: userId
     };
 
-    console.log("payload", payload);
-    // TODO: Implement this
-    // addNewCompany(payload);
-    handleCloseModal();
+    createNewCompany(payload);
   };
 
   const formik = useFormik({
     initialValues,
-    onSubmit: addCompany,
+    onSubmit: createCompany,
     validationSchema: addCompanyValidations(translateValidations),
     validateOnChange: false,
     validateOnBlur: false,
@@ -94,11 +134,6 @@ const AddCompanyModal: React.FC = () => {
     isSubmitting
   } = formik;
 
-  const handleCloseModal = (): void => {
-    setIsAddCompanyModalOpen(false);
-    setCompanyModalType(CrmModalTypes.NONE);
-  };
-
   return (
     <Form onSubmit={handleSubmit}>
       <Stack
@@ -110,7 +145,7 @@ const AddCompanyModal: React.FC = () => {
         role="form"
         aria-label={translateAria(["addCompanyForm"])}
       >
-        < InputField
+        <InputField
           inputName="name"
           value={values.name}
           error={errors.name || ""}
@@ -122,28 +157,17 @@ const AddCompanyModal: React.FC = () => {
           maxLength={characterLengths.NAME_LENGTH}
         />
 
-        <InputPhoneNumber
+        <InputField
           inputName="contactNumber"
           value={values.contactNumber || ""}
-          countryCodeValue={values.countryCode as string}
-          error={errors.contactNumber || ""}
           label={translateLabelText(["contactNumber"])}
           placeHolder={translateInputText(["contactNumber"])}
-          onChangeCountry={async (countryCode: string) => {
-            const syntheticEvent = {
-              target: { name: "countryCode", value: countryCode }
-            } as ChangeEvent<HTMLInputElement>;
-            handleChange(syntheticEvent);
-          }}
-          onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-            handleChange(e);
-          }}
-          fullComponentStyle={{
-            mt: "1rem"
-          }}
+          onChange={handleChange}
+          onBlur={handleBlur as any}
+          maxLength={characterLengths.PHONE_NUMBER_LENGTH_MAX}
         />
 
-        < InputField
+        <InputField
           inputName="website"
           value={values.website || ""}
           error={errors.website || ""}
@@ -154,7 +178,7 @@ const AddCompanyModal: React.FC = () => {
           maxLength={characterLengths.CHARACTER_LENGTH}
         />
 
-        < InputField
+        <InputField
           inputName="address"
           value={values.address || ""}
           error={errors.address || ""}
@@ -165,7 +189,7 @@ const AddCompanyModal: React.FC = () => {
           maxLength={characterLengths.CHARACTER_LENGTH}
         />
 
-        < InputField
+        <InputField
           inputName="industry"
           value={values.industry || ""}
           error={errors.industry || ""}

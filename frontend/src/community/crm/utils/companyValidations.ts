@@ -10,35 +10,30 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
       .required(translator(["name"]))
       .max(
         characterLengths.COMPANY_NAME_LENGTH,
-        `Maximum ${characterLengths.COMPANY_NAME_LENGTH} characters allowed`
+        translator(["companyNameLength"])
       ),
     contactNumber: Yup.string()
       .nullable()
       .optional()
+      .min(
+        characterLengths.PHONE_NUMBER_LENGTH_MIN,
+        translator(["contactNumberMin"])
+      )
       .max(
         characterLengths.PHONE_NUMBER_LENGTH_MAX,
-        `Maximum ${characterLengths.PHONE_NUMBER_LENGTH_MAX} characters allowed`
+        translator(["contactNumberMax"])
       ),
     website: Yup.string()
       .nullable()
       .optional()
       .url(translator(["website"]))
-      .max(
-        characterLengths.CHARACTER_LENGTH,
-        `Maximum ${characterLengths.CHARACTER_LENGTH} characters allowed`
-      ),
+      .max(characterLengths.CHARACTER_LENGTH, translator(["characterLength"])),
     address: Yup.string()
       .nullable()
       .optional()
-      .max(
-        characterLengths.ADDRESS_LENGTH,
-        `Maximum ${characterLengths.ADDRESS_LENGTH} characters allowed`
-      ),
+      .max(characterLengths.ADDRESS_LENGTH, translator(["addressLength"])),
     industry: Yup.string()
       .nullable()
       .optional()
-      .max(
-        characterLengths.CHARACTER_LENGTH,
-        `Maximum ${characterLengths.CHARACTER_LENGTH} characters allowed`
-      )
+      .max(characterLengths.CHARACTER_LENGTH, translator(["characterLength"]))
   });

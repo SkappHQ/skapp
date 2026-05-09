@@ -16,10 +16,11 @@ export interface CrmCompaniesResponseType {
 }
 
 export interface CreateCrmCompanyPayload {
-  countryCode: string;
   name: string;
   industry: string | null;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
+  createdBy: number | undefined;
+  lastModifiedBy: number | undefined;
 }

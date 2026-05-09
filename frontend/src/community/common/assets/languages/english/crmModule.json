@@ -36,6 +36,12 @@
       "name": "Company name is required",
       "companyExists": "A company with this name already exists",
       "website": "Please enter a valid website URL"
+    },
+    "companyToastMessages": {
+      "successTitle": "Company added successfully",
+      "successDescription": "Company added successfully",
+      "errorTitle": "Failed to add company",
+      "errorDescription": "Failed to add company"
     }
   },
   "deals": {

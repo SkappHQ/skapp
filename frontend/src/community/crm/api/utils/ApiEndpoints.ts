@@ -1,3 +1,3 @@
 export const companyEndpoints = {
-    CREATE_COMPANY: "/crm/company"
-}
+  CREATE_COMPANY: "/company"
+};
