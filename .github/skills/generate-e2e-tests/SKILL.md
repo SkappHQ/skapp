@@ -37,6 +37,36 @@ Verify the module directory exists. Create it if needed:
 - `src/modules/<module>/pages/`
 - `src/modules/<module>/tests/super-admin/`
 
+### Step 1b: Create a feature branch in the automation repo
+
+Before generating or modifying any test files, create a dedicated branch in the automation repo:
+
+```
+cd <automation-repo>
+git fetch origin
+```
+
+Determine the branch name: `feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests`
+
+Check if it already exists locally or remotely:
+```
+git branch --list "feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests"
+git ls-remote --heads origin "feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests"
+```
+
+- If the branch **does not exist**, create it:
+  ```
+  git checkout -b feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests origin/develop
+  ```
+- If it **already exists**, append an incrementing suffix (`-2`, `-3`, …) until a free name is found:
+  ```
+  git checkout -b feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests-<N> origin/develop
+  ```
+
+If `origin/develop` doesn't exist, use `origin/main` as the base.
+
+All subsequent Page Object and spec file changes (Steps 4–5) must be made on this branch.
+
 ### Step 2: Detect frontend changes for context
 
 Run git diff to find changed frontend pages/components related to the feature:
@@ -81,9 +111,9 @@ Follow the conventions in [playwright-conventions.md](./references/playwright-co
 
 If the Page Object file already exists:
 - Read the existing file fully
-- Preserve all existing locators and methods
-- Add new locators and methods for the changed/added UI elements
-- Update existing methods only if the source UI changed
+- **Do NOT edit, rename, or remove any existing locators or methods** — they may be used by other specs
+- Only **append** new locators and methods for the changed/added UI elements
+- If a new locator conflicts with an existing one, give it a distinct name (e.g. suffix with section name)
 
 If creating from scratch, the Page Object must:
 - Import `{ Page, Locator, expect }` from `@playwright/test`
@@ -152,9 +182,11 @@ The spec must:
 - Follow AAA pattern: Arrange → Act → Assert
 - Test naming: `should <behavior> when <condition>`
 
-### Step 6: Generate and run frontend unit tests
+### Step 6: Generate and run frontend unit tests (MUST complete before E2E)
 
-Before running E2E tests, generate and verify unit tests for the changed frontend utility/hook files. This ensures the underlying logic is correct before testing it in the browser.
+**Gate**: Do NOT proceed to Steps 7–8 (build, start, E2E) until all unit tests pass.
+
+Generate and verify unit tests for the changed frontend utility/hook files. This ensures the underlying logic is correct before testing it in the browser.
 
 #### 6a: Filter testable changed files
 
@@ -189,7 +221,7 @@ Follow these critical mocking rules:
 cd <main-repo>/frontend && npx jest --testPathPattern="src/community/<MODULE>" --no-coverage
 ```
 
-If tests fail, read the error output, fix the test file, and re-run. Do NOT proceed to E2E steps until unit tests pass.
+If tests fail, read the error output, fix the test file, and re-run. **Repeat until all unit tests pass. Do NOT proceed to Step 7 (build) or Step 8 (E2E) until every unit test is green.**
 
 #### 6e: Commit unit tests
 
@@ -217,17 +249,34 @@ The server must be running and ready before executing tests.
 
 ### Step 8: Run E2E tests in headed mode
 
-Run E2E tests in **headed mode** so the user can see browser interactions:
+Run **only the spec files that were created or modified** in this session — do NOT run the entire module test suite. Pass each spec file path explicitly:
 
 ```
-cd <automation-repo> && npx playwright test src/modules/<module>/tests/ --project=chromium --headed --reporter=list
+cd <automation-repo> && npx playwright test <path/to/spec1.spec.ts> <path/to/spec2.spec.ts> --project=chromium --headed --reporter=list
 ```
+
+For example:
+```
+cd <automation-repo> && npx playwright test \
+  src/modules/people/tests/super-admin/people-add-validation.spec.ts \
+  src/modules/people/tests/super-admin/people-add-work-preferences.spec.ts \
+  --project=chromium --headed --reporter=list
+```
+
+Build the file list from `git status --porcelain -- "src/modules/**/*.spec.ts"` to identify exactly which specs are new or changed.
 
 ## Important Notes
 
+- Everything runs on **localhost** — builds, server start, and E2E tests will be slower than CI. Use generous timeouts:
+  - `npm run build`: allow up to **5 minutes** (timeout ~300000ms)
+  - `npm run start`: run in **async/background** mode; wait for the server to be ready before proceeding
+  - Playwright config should have `timeout: 60_000` (per test), `actionTimeout: 15_000`, `navigationTimeout: 30_000`, and the `setup` project should have `timeout: 90_000` for auth login
+  - When running Playwright via the terminal, set a sync timeout of at least **120000ms** (2 min) per spec file to account for local latency
+- **Unit tests** are generated and committed to the **main monorepo** feature branch (same PR as feature code)
+- Unit tests must pass before proceeding to E2E test generation
 - E2E tests go in the **separate automation repo**, not the main monorepo
 - Auth is pre-handled via `storageState` (login handled by setup project)
-- The local environment must be running (`npm run start`) before executing tests
+- The local environment must be running (`npm run start`) before executing E2E tests
 - Base URL is environment-based: `https://{tenant}.skapp.dev`
 - Navigation uses `getTenantUrl(ROUTES.DASHBOARD)` then POM methods
 - Do NOT use `page.waitForTimeout()` — use `waitFor({ state: 'visible' })` or `expect().toBeVisible()`
