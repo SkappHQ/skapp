@@ -42,6 +42,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		configMap.put(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS, DEFAULT_CONFIG_VALUE);
 		configMap.put(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES, DEFAULT_CONFIG_VALUE);
 		configMap.put(AttendanceConfigType.GEO_FENCING_ENABLED, DEFAULT_CONFIG_VALUE);
+		configMap.put(AttendanceConfigType.NOTIFY_MANAGER_ON_LATE_ARRIVAL, DEFAULT_CONFIG_VALUE);
 
 		configMap.forEach(this::updateOrCreateConfig);
 
@@ -68,6 +69,11 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 					String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
 		}
 
+		if (attendanceConfigRequestDto.getIsNotifyManagerOnLateArrival() != null) {
+			configMap.put(AttendanceConfigType.NOTIFY_MANAGER_ON_LATE_ARRIVAL,
+					String.valueOf(attendanceConfigRequestDto.getIsNotifyManagerOnLateArrival()));
+		}
+
 		configMap.forEach(this::updateOrCreateConfig);
 
 		log.info("updateAttendanceConfig: execution ended");
@@ -91,7 +97,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	public ResponseEntityDto getAllAttendanceConfigs() {
 		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
-		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
+		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false, false);
 
 		for (AttendanceConfig config : attendanceConfigs) {
 			boolean value = Boolean.parseBoolean(config.getAttendanceConfigValue());
@@ -101,6 +107,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				case CLOCK_IN_ON_LEAVE_DAYS -> dto.setIsClockInOnLeaveDays(value);
 				case AUTO_APPROVAL_FOR_CHANGES -> dto.setIsAutoApprovalForChanges(value);
 				case GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
+				case NOTIFY_MANAGER_ON_LATE_ARRIVAL -> dto.setIsNotifyManagerOnLateArrival(value);
 			}
 		}
 
