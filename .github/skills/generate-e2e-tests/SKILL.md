@@ -152,7 +152,23 @@ The spec must:
 - Follow AAA pattern: Arrange → Act → Assert
 - Test naming: `should <behavior> when <condition>`
 
-### Step 6: Run tests in headed mode
+### Step 6: Build and start the local environment
+
+Before running E2E tests, ensure the frontend is built and served locally:
+
+1. **Build the frontend**:
+```
+cd <main-repo>/frontend && npm run build
+```
+Wait for the build to complete successfully before proceeding.
+
+2. **Start the production server** (in async/background mode so it keeps running):
+```
+cd <main-repo>/frontend && npm run start
+```
+The server must be running and ready before executing tests.
+
+### Step 7: Run tests in headed mode
 
 Run E2E tests in **headed mode** so the user can see browser interactions:
 
@@ -164,6 +180,7 @@ cd <automation-repo> && npx playwright test src/modules/<module>/tests/ --projec
 
 - E2E tests go in the **separate automation repo**, not the main monorepo
 - Auth is pre-handled via `storageState` (login handled by setup project)
+- The local environment must be running (`npm run start`) before executing tests
 - Base URL is environment-based: `https://{tenant}.skapp.dev`
 - Navigation uses `getTenantUrl(ROUTES.DASHBOARD)` then POM methods
 - Do NOT use `page.waitForTimeout()` — use `waitFor({ state: 'visible' })` or `expect().toBeVisible()`
