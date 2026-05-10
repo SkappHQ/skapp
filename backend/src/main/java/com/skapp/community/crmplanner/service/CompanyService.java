@@ -1,8 +1,8 @@
 package com.skapp.community.crmplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CompanyUpdateDto;
 
 public interface CompanyService {
 
@@ -10,7 +10,7 @@ public interface CompanyService {
 
   ResponseEntityDto createCompany(CompanyCreateDto crmCompany);
 
-  ResponseEntityDto updateCompany(Long id, CrmCompany crmCompany);
+  ResponseEntityDto updateCompany(Long id, CompanyUpdateDto crmCompany);
 
   ResponseEntityDto getCompany(Long id);
 

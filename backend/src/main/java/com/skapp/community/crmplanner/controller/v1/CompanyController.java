@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CompanyUpdateDto;
 import com.skapp.community.crmplanner.service.CompanyService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,6 +64,14 @@ public class CompanyController {
   @DeleteMapping("/{id}")
   public ResponseEntity<ResponseEntityDto> deleteCompany(@PathVariable Long id) {
     ResponseEntityDto responseDto = companyService.deleteCompany(id);
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
+  }
+
+  @Operation(summary = "Update company", description = "Update company details")
+  @PutMapping("/{id}")
+  public ResponseEntity<ResponseEntityDto> updateCompany(@PathVariable Long id,
+      @Valid @RequestBody CompanyUpdateDto updatedCompany) {
+    ResponseEntityDto responseDto = companyService.updateCompany(id, updatedCompany);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 }
