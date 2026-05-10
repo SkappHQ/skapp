@@ -669,7 +669,7 @@ public class LeaveServiceImpl implements LeaveService {
 		List<EmployeeLeaveStatusResponseDto> result = requestsByEmployee.entrySet()
 			.stream()
 			.map(entry -> resolveLeaveStatus(entry.getKey(), entry.getValue()))
-			.collect(Collectors.toList());
+			.toList();
 
 		log.info("getEmployeesLeaveStatus: returning status for {} employees", result.size());
 		return new ResponseEntityDto(false, result);
