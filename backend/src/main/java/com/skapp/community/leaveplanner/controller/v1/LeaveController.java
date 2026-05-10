@@ -3,10 +3,10 @@ package com.skapp.community.leaveplanner.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.payload.LeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.ResourceAvailabilityCalendarFilter;
+import com.skapp.community.leaveplanner.payload.request.EmployeeLeaveStatusRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePatchRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestDto;
-import com.skapp.community.leaveplanner.payload.request.EmployeeLeaveStatusRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PendingLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
 import com.skapp.community.leaveplanner.service.LeaveService;
@@ -146,7 +146,7 @@ public class LeaveController {
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE', 'ROLE_PM_GUEST_EMPLOYEE')")
 	@PostMapping(value = "/employees-leave-status", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getEmployeesLeaveStatus(
-			@RequestBody EmployeeLeaveStatusRequestDto requestDto) {
+			@Valid @RequestBody EmployeeLeaveStatusRequestDto requestDto) {
 		ResponseEntityDto response = leaveService.getEmployeesLeaveStatus(requestDto.getDate(),
 				requestDto.getEmployeeIds());
 		return new ResponseEntity<>(response, HttpStatus.OK);

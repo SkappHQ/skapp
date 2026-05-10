@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.payload.request;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,7 @@ public class EmployeeLeaveStatusRequestDto {
 
 	private LocalDate date;
 
+	@NotEmpty
 	private List<Long> employeeIds;
 
 }

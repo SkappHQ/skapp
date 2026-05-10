@@ -656,6 +656,7 @@ public class LeaveServiceImpl implements LeaveService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeesLeaveStatus(LocalDate date, List<Long> employeeIds) {
 		LocalDate targetDate = date != null ? date : LocalDate.now();
 		log.info("getEmployeesLeaveStatus: execution started for date: {}", targetDate);
@@ -689,8 +690,16 @@ public class LeaveServiceImpl implements LeaveService {
 		boolean hasEvening = requests.stream().anyMatch(r -> r.getLeaveState() == LeaveState.HALFDAY_EVENING);
 
 		if (hasMorning && hasEvening) {
-			return new EmployeeLeaveStatusResponseDto(employeeId, LeaveState.FULLDAY,
-					requests.getFirst().getStartDate(), requests.getFirst().getEndDate());
+			LeaveRequest morning = requests.stream()
+				.filter(r -> r.getLeaveState() == LeaveState.HALFDAY_MORNING)
+				.findFirst()
+				.orElseThrow();
+			LeaveRequest evening = requests.stream()
+				.filter(r -> r.getLeaveState() == LeaveState.HALFDAY_EVENING)
+				.findFirst()
+				.orElseThrow();
+			return new EmployeeLeaveStatusResponseDto(employeeId, LeaveState.FULLDAY, morning.getStartDate(),
+					evening.getEndDate());
 		}
 
 		if (hasMorning) {

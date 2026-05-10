@@ -393,10 +393,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), date));
 		predicates.add(root.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
 		predicates.add(criteriaBuilder.notEqual(leaveTypeJoin.get(LeaveType_.leaveDuration), LeaveDuration.HALF_DAY));
-
-		if (employeeIds != null && !employeeIds.isEmpty()) {
-			predicates.add(employeeJoin.get(Employee_.employeeId).in(employeeIds));
-		}
+		predicates.add(employeeJoin.get(Employee_.employeeId).in(employeeIds));
 
 		criteriaQuery.select(root).where(predicates.toArray(new Predicate[0]));
 
