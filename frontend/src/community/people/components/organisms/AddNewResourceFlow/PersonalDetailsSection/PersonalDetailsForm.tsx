@@ -27,6 +27,7 @@ import FamilyDetailsSection from "./FamilyDetailsSection";
 import GeneralDetailsSection from "./GeneralDetailsSection";
 import HealthAndOtherDetailsSection from "./HealthAndOtherDetailsSection";
 import SocialMediaDetailsSection from "./SocialMediaDetailsSection";
+import WorkPreferencesSection from "./WorkPreferencesSection";
 
 interface Props {
   onNext: () => void;
@@ -190,6 +191,9 @@ const PersonalDetailsForm = ({
         ref={healthAndOtherDetailsRef as any}
         isInputsDisabled={isInputsDisabled}
       />
+
+      <WorkPreferencesSection isInputsDisabled={isInputsDisabled} />
+      
       {!isInputsDisabled && (
         <Stack
           direction="row"

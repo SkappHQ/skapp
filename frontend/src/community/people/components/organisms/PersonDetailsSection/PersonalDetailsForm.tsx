@@ -17,6 +17,7 @@ import FamilyDetailsSection from "./SubSections/FamilyDetailsSection";
 import GeneralDetailsSection from "./SubSections/GeneralDetailsSections";
 import HealthAndOtherDetailsSection from "./SubSections/HealthAndOtherDetailsSection";
 import SocialMediaDetailsSection from "./SubSections/SocialMediaDetailsSection";
+import WorkPreferencesSection from "../AddNewResourceFlow/PersonalDetailsSection/WorkPreferencesSection";
 
 interface Props {
   isAddFlow?: boolean;
@@ -168,6 +169,8 @@ const PersonalDetailsForm = ({
         isInputsDisabled={isTerminatedEmployee}
         isReadOnly={isReadOnly}
       />
+
+      <WorkPreferencesSection />
 
       {!isTerminatedEmployee &&
         (isAddFlow ? (
