@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { rejects } from "assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
@@ -38,5 +38,18 @@ export const useCreateNewCompany = (
       onSuccess();
     },
     onError: onError
+  });
+};
+
+export const useCheckCompanyNameExists = (name: string) => {
+  return useQuery({
+    queryKey: [...companyQueryKeys.CHECK_COMPANY_NAME_EXISTS, name],
+    queryFn: async () => {
+      const response = await authFetch.get(
+        companyEndpoints.CHECK_COMPANY_NAME_EXISTS(name)
+      );
+      return response?.data?.results[0] as boolean;
+    },
+    enabled: false
   });
 };

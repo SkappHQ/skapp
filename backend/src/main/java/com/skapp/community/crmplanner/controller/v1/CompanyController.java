@@ -8,10 +8,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.payload.request.CompanyCreateDto;
 import com.skapp.community.crmplanner.service.CompanyService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +30,13 @@ public class CompanyController {
   @NonNull
   private final CompanyService companyService;
 
+  @Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
+  @GetMapping("/exists")
+  public ResponseEntity<ResponseEntityDto> checkCompanyNameExists(@RequestParam String name) {
+    ResponseEntityDto responseDto = companyService.checkCompanyNameExists(name);
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
+  }
+
   @Operation(summary = "Get all companies", description = "Get all registered companies in the database")
   @GetMapping
   public ResponseEntity<ResponseEntityDto> getAllCompanies() {
@@ -38,7 +46,7 @@ public class CompanyController {
 
   @Operation(summary = "Create a new company", description = "Create a new company")
   @PostMapping
-  public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CrmCompany crmCompany) {
+  public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CompanyCreateDto crmCompany) {
     ResponseEntityDto responseDto = companyService.createCompany(crmCompany);
     return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
   }

@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, useEffect } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Form from "~community/common/components/molecules/Form/Form";
@@ -14,7 +14,10 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { useCreateNewCompany } from "~community/crm/api/CompanyApi";
+import {
+  useCheckCompanyNameExists,
+  useCreateNewCompany
+} from "~community/crm/api/CompanyApi";
 import { useCrmStore } from "~community/crm/store/crmStore";
 import { CreateCrmCompanyPayload } from "~community/crm/types/CrmCompanyTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
@@ -103,6 +106,11 @@ const AddCompanyModal: React.FC = () => {
     });
 
   const createCompany = (values: CreateCrmCompanyPayload) => {
+    if (companyNameExists === true) {
+      setFieldError("name", translateValidations(["companyExists"]));
+      return;
+    }
+
     const payload: CreateCrmCompanyPayload = {
       name: values.name.trim(),
       industry: values.industry?.trim() || null,
@@ -131,8 +139,28 @@ const AddCompanyModal: React.FC = () => {
     handleSubmit,
     handleChange,
     handleBlur,
-    isSubmitting
+    isSubmitting,
+    setFieldError
   } = formik;
+
+  const { data: companyNameExists, refetch: refetchCompanyNameExists } =
+    useCheckCompanyNameExists(values.name);
+
+  useEffect(() => {
+    if (values.name && values.name.trim() !== "") {
+      const timeoutId = setTimeout(() => {
+        refetchCompanyNameExists().then(() => {
+          if (companyNameExists === true) {
+            setFieldError("name", translateValidations(["companyExists"]));
+          } else {
+            setFieldError("name", "");
+          }
+        });
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [values.name, refetchCompanyNameExists, companyNameExists]);
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -204,7 +232,7 @@ const AddCompanyModal: React.FC = () => {
           <ButtonV2
             variant="primary"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || companyNameExists === true}
             icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
             iconPosition="end"
           >
