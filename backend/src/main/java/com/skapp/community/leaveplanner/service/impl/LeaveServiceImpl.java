@@ -661,7 +661,7 @@ public class LeaveServiceImpl implements LeaveService {
 		LocalDate targetDate = date != null ? date : LocalDate.now();
 		log.info("getEmployeesLeaveStatus: execution started for date: {}", targetDate);
 
-		List<LeaveRequest> requests = leaveRequestDao.findLeaveStatusProjectionsForDate(targetDate, employeeIds);
+		List<LeaveRequest> requests = leaveRequestDao.findLeaveRequestsByEmployeesAndDate(targetDate, employeeIds);
 
 		Map<Long, List<LeaveRequest>> requestsByEmployee = requests.stream()
 			.collect(Collectors.groupingBy(r -> r.getEmployee().getEmployeeId()));

@@ -380,7 +380,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	@Override
-	public List<LeaveRequest> findLeaveStatusProjectionsForDate(LocalDate date, List<Long> employeeIds) {
+	public List<LeaveRequest> findLeaveRequestsByEmployeesAndDate(LocalDate date, List<Long> employeeIds) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
 		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
