@@ -5,7 +5,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/crmStore";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-import AddCompanyModal from "../molecules/AddCompanyModal/AddCompanyModal";
+import AddCompanyModal from "../../molecules/AddCompanyModal/AddCompanyModal";
 
 const CompanyPopupController = () => {
   const translateText = useTranslator("crmModule", "companies");
