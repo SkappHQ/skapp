@@ -1,6 +1,6 @@
 ---
 name: generate-e2e-tests
-description: 'Generate Playwright E2E UI tests with Page Object Model. Use when: creating E2E tests, generating Playwright specs, UI testing, end-to-end testing, creating page objects for Skapp features.'
+description: 'Generate Playwright E2E UI tests with Page Object Model (happy-path first). Use when: creating E2E tests, generating Playwright specs, UI testing, end-to-end testing, creating page objects for Skapp features.'
 argument-hint: 'Module and feature name, e.g. "people work-location" or "leave apply"'
 ---
 
@@ -145,15 +145,23 @@ Create a separate spec file for a UI section when it has **any** of:
 
 Examples: `WorkPreferencesSection`, `EmergencyContactForm`, `EmploymentDetailsPanel`.
 
+#### Test priority: Happy path first
+
+**Always generate happy-path tests first.** These cover the primary user journey end-to-end with valid data and are the highest-value tests for demo and regression purposes. Only after happy-path specs pass should additional edge-case or validation specs be generated.
+
 #### Section spec test cases (auto-generate all of these)
 
-For each section with form fields, generate tests covering:
-1. **Visibility** — section heading/title is visible on the correct step
-2. **Dropdown selection** — one test per dropdown field, selecting an option and verifying the value
-3. **Text input** — one test per text/number input, filling a value and verifying
-4. **Validation: invalid input** — one test per validated field with an invalid value, verify error appears on blur
-5. **Validation: error clears** — enter invalid → fix → verify error disappears
-6. **All fields filled** — fill all section fields + required parent fields, click Next, verify step advances
+For each section with form fields, generate tests in the following priority order:
+
+**Priority 1 — Happy path (generate first, must pass before others):**
+1. **All fields filled** — fill all section fields + required parent fields, click Next, verify step advances
+2. **Dropdown selection** — one test per dropdown field, selecting a valid option and verifying the value
+3. **Text input** — one test per text/number input, filling a valid value and verifying
+4. **Visibility** — section heading/title is visible on the correct step
+
+**Priority 2 — Validation & edge cases (generate after happy path passes):**
+5. **Validation: invalid input** — one test per validated field with an invalid value, verify error appears on blur
+6. **Validation: error clears** — enter invalid → fix → verify error disappears
 7. **Optional skip** — if all section fields are optional, verify proceeding without filling them
 8. **Value persistence** — change dropdown selections and verify updated values stick
 9. **Boundary: max length** — if a field has `maxLength`, fill to limit and verify acceptance
@@ -354,6 +362,100 @@ cd <automation-repo> && npx playwright test \
 ```
 
 Build the file list from `git status --porcelain -- "src/modules/**/*.spec.ts"` to identify exactly which specs are new or changed.
+
+### Step 9: Retry policy — fix failures and open PR
+
+After running E2E tests in Step 8, apply the following retry-and-PR workflow:
+
+#### Phase 1: Fix locally (up to 3 attempts)
+
+If any tests fail after the initial run:
+
+1. Read the Playwright error output (assertion messages, locator timeouts, screenshots)
+2. Diagnose the root cause (wrong locator, missing wait, incorrect test data, flow change)
+3. Fix the Page Object and/or spec file accordingly
+4. Re-run **only the failing spec files**
+5. Repeat up to **3 attempts total** (initial run + 2 retries)
+
+Track each attempt:
+```
+Attempt 1/3 — <N> failing → fix applied → re-run
+Attempt 2/3 — <N> failing → fix applied → re-run
+Attempt 3/3 — <N> failing → fix applied → re-run
+```
+
+#### Phase 2: Open PR regardless (after attempt 3)
+
+After the 3rd attempt, **open a PR in the automation repo whether tests pass or not**:
+
+1. Revert `config/testConfig.ts` timeout overrides (Step 7b revert)
+2. Stage and commit all Page Object and spec files:
+   ```
+   cd <automation-repo>
+   git add src/modules/<module>/pages/ src/modules/<module>/tests/
+   git commit -m "test: add E2E tests for <MODULE>/<FEATURE>"
+   git push origin HEAD
+   ```
+3. Create the PR using `gh` CLI:
+   ```
+   gh pr create --repo <AUTOMATION_REPO> \
+     --base develop \
+     --title "test: E2E tests for <MODULE>/<FEATURE> (PR #<SOURCE_PR>)" \
+     --body "<PR_BODY>"
+   ```
+4. In the PR body, clearly indicate the current test status:
+   - If all tests pass: `✅ All E2E tests passing`
+   - If some tests still fail: `⚠️ <N> test(s) still failing after 3 auto-fix attempts — manual fix needed`
+   - List the failing test names and last error messages
+
+#### Phase 3: Continue fixing on the PR branch (up to 2 more attempts)
+
+If tests are still failing after the PR is opened:
+
+1. Continue diagnosing and fixing on the **same branch**
+2. Push fixes and re-run failing specs
+3. Repeat for up to **2 more attempts** (attempts 4 and 5)
+4. After each fix, push to the branch and update the PR body/comment with the new status:
+   ```
+   gh pr comment <PR_NUMBER> --repo <AUTOMATION_REPO> --body "Attempt <N>/5: <PASS/FAIL summary>"
+   ```
+
+#### Phase 4: Hand off to QA (after attempt 5)
+
+If tests still fail after all 5 attempts:
+
+1. Post a final comment on the PR listing all remaining failures with error details:
+   ```
+   gh pr comment <PR_NUMBER> --repo <AUTOMATION_REPO> --body "$(cat <<'EOF'
+   ## 🔧 Manual Fix Required
+
+   After 5 automated fix attempts, the following tests still fail:
+
+   | Test | Last Error |
+   |------|------------|
+   | `should <test-name>` | <error message> |
+
+   **Suggested fixes**: <brief diagnosis per failure>
+
+   Leaving for QA engineers to resolve manually.
+   EOF
+   )"
+   ```
+2. Add the label `needs-manual-fix` to the PR (if labels are available):
+   ```
+   gh pr edit <PR_NUMBER> --repo <AUTOMATION_REPO> --add-label "needs-manual-fix"
+   ```
+3. **Stop retrying** — do not continue further automated fix attempts
+4. Inform the user that the PR is open with failing tests and needs manual QA intervention
+
+#### Retry summary
+
+| Attempt | Action | PR status |
+|---------|--------|-----------|
+| 1–3 | Fix locally, re-run failing specs | No PR yet |
+| After 3 | Open PR with current state | PR created |
+| 4–5 | Fix on PR branch, push & re-run | PR updated |
+| After 5 | Add `needs-manual-fix`, hand off to QA | PR left open |
 
 ## Important Notes
 
