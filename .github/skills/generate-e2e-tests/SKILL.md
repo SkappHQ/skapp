@@ -39,12 +39,16 @@ Verify the module directory exists. Create it if needed:
 
 ### Step 1b: Create a feature branch in the automation repo
 
-Before generating or modifying any test files, create a dedicated branch in the automation repo:
+Before generating or modifying any test files, stash any uncommitted changes in the automation repo, then create a dedicated branch:
 
 ```
 cd <automation-repo>
+git stash
 git fetch origin
 ```
+
+If `git stash` reports "No local changes to save", that is fine — continue.
+Record the stash reference (e.g. `stash@{0}`) in case it needs to be restored later.
 
 Determine the branch name: `feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests`
 
@@ -305,6 +309,33 @@ Wait for the build to complete successfully before proceeding.
 cd <main-repo>/frontend && npm run start
 ```
 The server must be running and ready before executing tests.
+
+### Step 7b: Temporarily increase TEST_CONFIG timeouts for local runs
+
+**Before running E2E tests**, update `config/testConfig.ts` in the automation repo to multiply all timeout and wait values by **100x**. This prevents flakiness when tests run against a locally-served frontend.
+
+```typescript
+// config/testConfig.ts — temporary local overrides (DO NOT COMMIT)
+timeout: {
+  default: 3000000,      // was 30000
+  navigation: 1000000,   // was 10000
+  assertion: 500000,     // was 5000
+},
+wait: {
+  short: 100000,         // was 1000
+  medium: 200000,        // was 2000
+  long: 300000,          // was 3000
+},
+```
+
+**After all E2E tests pass, revert `config/testConfig.ts` to its original values before committing:**
+
+```
+cd <automation-repo>
+git checkout config/testConfig.ts
+```
+
+Verify the revert with `git diff config/testConfig.ts` (should show no changes) before staging any files.
 
 ### Step 8: Run E2E tests in headed mode
 
