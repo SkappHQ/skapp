@@ -19,7 +19,7 @@ import {
 } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import WorkLocationEmployeeSelector from "~community/configurations/components/molecules/WorkLocationEmployeeSelector/WorkLocationEmployeeSelector";
-import { WorkLocation, WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
+import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
 
 interface Props {
@@ -32,8 +32,9 @@ const WorkLocationForm = ({ id }: Props) => {
   const translateText = useTranslator("configurations", "workLocation");
 
   const { data: workLocation, isLoading } = useGetWorkLocationById(
-    isEditMode ? id : 0
-  ) as { data: WorkLocation | undefined; isLoading: boolean };
+    id as number,
+    isEditMode
+  );
 
   const { user } = useAuth();
   const { setToastMessage } = useToast();
@@ -135,7 +136,7 @@ const WorkLocationForm = ({ id }: Props) => {
               ? (values.geofence?.address ?? "")
               : (workLocation.address ?? ""),
             isAllEmployees: values.isAllEmployees,
-            employeeIds: values.employeeIds
+            employeeIds: values.isAllEmployees ? [] : values.employeeIds
           }
         };
         if (canSeeGeofence) {
@@ -153,7 +154,7 @@ const WorkLocationForm = ({ id }: Props) => {
           name: values.name,
           address: geofence?.address ?? "",
           isAllEmployees: values.isAllEmployees,
-          employeeIds: values.employeeIds,
+          employeeIds: values.isAllEmployees ? [] : values.employeeIds,
           geofence: geofence
             ? {
                 latitude: geofence.latitude.toString(),
@@ -165,14 +166,6 @@ const WorkLocationForm = ({ id }: Props) => {
       }
     }
   });
-
-  const handleCancel = () => {
-    if (!isLoading && formik.dirty) {
-      setIsUnsavedModalOpen(true);
-    } else {
-      navigateBack();
-    }
-  };
 
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);
@@ -220,15 +213,7 @@ const WorkLocationForm = ({ id }: Props) => {
 
         {canSeeGeofence && <GeofenceMap formik={formik} />}
 
-        <div className="flex gap-3 justify-end">
-          <ButtonV2
-            variant="tertiary"
-            type="button"
-            onClick={handleCancel}
-            disabled={isFormDisabled}
-          >
-            {translateText(["form.cancelButton"])}
-          </ButtonV2>
+        <div className="flex justify-start">
           <ButtonV2
             variant="primary"
             type="submit"

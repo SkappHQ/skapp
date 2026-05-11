@@ -22,7 +22,7 @@ export const useGetWorkLocations = (
   });
 };
 
-export const useGetWorkLocationById = (id: number) => {
+export const useGetWorkLocationById = (id: number, enabled = true) => {
   return useQuery({
     queryKey: workLocationQueryKeys.GET_WORK_LOCATION_BY_ID(id),
     queryFn: async () => {
@@ -31,6 +31,7 @@ export const useGetWorkLocationById = (id: number) => {
       );
       return response.data.results[0];
     },
+    enabled
   });
 };
 
