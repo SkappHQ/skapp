@@ -189,6 +189,10 @@ public class HolidayServiceImpl implements HolidayService {
 			holidayResponseDtos.addAll(peopleMapper.holidaysToHolidayResponseDtoList(holidayList));
 		}
 
+		long totalWorkLocationCount = workLocationDao.count();
+		holidayResponseDtos
+			.forEach(holidayResponseDto -> normalizeWorkLocations(holidayResponseDto, totalWorkLocationCount));
+
 		log.info("getHolidayByDate: execution ended");
 		return new ResponseEntityDto(false, holidayResponseDtos);
 	}
