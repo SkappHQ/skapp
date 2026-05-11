@@ -120,6 +120,8 @@ public class HolidayServiceImpl implements HolidayService {
 		AtomicInteger holidaysOnCurrentDate = new AtomicInteger();
 		AtomicInteger holidaysOnPastDates = new AtomicInteger();
 
+		List<String> validWorkLocationNames = workLocationDao.findAll().stream().map(WorkLocation::getName).toList();
+
 		holidayBulkRequestDto.getHolidayDtoList().forEach(holidayDto -> {
 			try {
 
@@ -127,7 +129,7 @@ public class HolidayServiceImpl implements HolidayService {
 				List<Holiday> systemHolidays = holidayDao.findAllByIsActiveTrueAndDate(holidayDate);
 
 				validateHolidayDto(holidayDto, holidayDate, systemHolidays.size(), holidaysOnCurrentDate,
-						holidaysOnPastDates, holidayBulkRequestDto.getYear());
+						holidaysOnPastDates, holidayBulkRequestDto.getYear(), validWorkLocationNames);
 
 				Holiday holiday = peopleMapper.holidayDtoToHoliday(holidayDto);
 
@@ -170,10 +172,7 @@ public class HolidayServiceImpl implements HolidayService {
 	public ResponseEntityDto getHolidaysByDate(LocalDate date) {
 		log.info("getHolidayByDate: execution started");
 
-		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrue()
-			.stream()
-			.filter(holiday -> holiday.getDate().equals(date))
-			.toList();
+		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrueAndDate(date);
 		List<TimeConfig> workingDays = timeConfigDao.findAll();
 
 		List<HolidayResponseDto> holidayResponseDtos = new ArrayList<>();
@@ -186,12 +185,12 @@ public class HolidayServiceImpl implements HolidayService {
 		}
 
 		if (!holidayList.isEmpty()) {
-			holidayResponseDtos.addAll(peopleMapper.holidaysToHolidayResponseDtoList(holidayList));
+			List<HolidayResponseDto> mappedHolidays = peopleMapper.holidaysToHolidayResponseDtoList(holidayList);
+			long totalWorkLocationCount = workLocationDao.count();
+			mappedHolidays
+				.forEach(holidayResponseDto -> normalizeWorkLocations(holidayResponseDto, totalWorkLocationCount));
+			holidayResponseDtos.addAll(mappedHolidays);
 		}
-
-		long totalWorkLocationCount = workLocationDao.count();
-		holidayResponseDtos
-			.forEach(holidayResponseDto -> normalizeWorkLocations(holidayResponseDto, totalWorkLocationCount));
 
 		log.info("getHolidayByDate: execution ended");
 		return new ResponseEntityDto(false, holidayResponseDtos);
@@ -382,7 +381,8 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	private void validateHolidayDto(HolidayRequestDto holidayDto, LocalDate holidayDate, int existingHolidays,
-			AtomicInteger holidaysOnCurrentDate, AtomicInteger holidaysOnPastDates, int year) {
+			AtomicInteger holidaysOnCurrentDate, AtomicInteger holidaysOnPastDates, int year,
+			List<String> validWorkLocationNames) {
 
 		if (existingHolidays >= PeopleConstants.MAXIMUM_HOLIDAYS_PER_DAY) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_MAXIMUM_PER_DAY);
@@ -433,12 +433,10 @@ public class HolidayServiceImpl implements HolidayService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION);
 		}
 
-		validateWorkLocations(holidayDto.getWorkLocations());
+		validateWorkLocations(holidayDto.getWorkLocations(), validWorkLocationNames);
 	}
 
-	private void validateWorkLocations(List<String> workLocationNames) {
-		List<String> validWorkLocationNames = workLocationDao.findAll().stream().map(WorkLocation::getName).toList();
-
+	private void validateWorkLocations(List<String> workLocationNames, List<String> validWorkLocationNames) {
 		workLocationNames.forEach(wrkLocation -> {
 			if (!validWorkLocationNames.contains(wrkLocation)) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION);
@@ -499,9 +497,16 @@ public class HolidayServiceImpl implements HolidayService {
 		return holiday.getDate().isAfter(currentDate);
 	}
 
-	private Set<WorkLocation> resolveWorkLocations(List<String> workLocationList) {
-		List<WorkLocation> workLocations = workLocationDao.findAllByNameIn(workLocationList);
+	private Set<WorkLocation> resolveWorkLocations(List<String> workLocationNames) {
+		if (workLocationNames == null || workLocationNames.isEmpty()) {
+			return Collections.emptySet();
+		}
 
+		if (workLocationNames.stream().anyMatch(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS::equalsIgnoreCase)) {
+			return Collections.emptySet();
+		}
+
+		List<WorkLocation> workLocations = workLocationDao.findAllByNameIn(workLocationNames);
 		return new HashSet<>(workLocations);
 	}
 
