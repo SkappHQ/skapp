@@ -62,11 +62,8 @@ import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDt
 import com.skapp.community.peopleplanner.payload.response.TeamResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface PeopleMapper {
@@ -87,10 +84,8 @@ public interface PeopleMapper {
 
 	List<HolidayResponseDto> holidaysToHolidayResponseDtoList(List<Holiday> holidays);
 
-	@Mapping(target = "jobTitles", source = "jobTitles", qualifiedByName = "activeJobTitlesOnly")
 	List<JobFamilyResponseDetailDto> jobFamilyListToJobFamilyResponseDetailDtoList(List<JobFamily> jobFamilies);
 
-	@Mapping(target = "jobTitles", source = "jobTitles", qualifiedByName = "activeJobTitlesOnly")
 	JobFamilyResponseDetailDto jobFamilyToJobFamilyResponseDetailDto(JobFamily jobFamily);
 
 	JobTitleResponseDetailDto jobTitleToJobTitleResponseDetailDto(JobTitle jobTitle);
@@ -287,16 +282,5 @@ public interface PeopleMapper {
 	@Mapping(source = "issuedDate", target = "issuedDate")
 	@Mapping(source = "expiryDate", target = "expirationDate")
 	EmployeeVisa visaDetailsDtoToEmployeeVisa(EmployeeEmploymentVisaDetailsDto dto);
-
-	@Named("activeJobTitlesOnly")
-	default List<JobTitleDto> mapActiveJobTitles(Set<JobTitle> jobTitles) {
-		if (jobTitles == null) {
-			return null;
-		}
-		return jobTitles.stream()
-			.filter(JobTitle::getIsActive)
-			.map(this::jobTitleToJobTitleDto)
-			.collect(Collectors.toList());
-	}
 
 }
