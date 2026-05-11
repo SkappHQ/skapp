@@ -17,6 +17,8 @@ import com.skapp.community.common.payload.response.WorkLocationResponseDto;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.repository.WorkLocationGeofenceDao;
 import com.skapp.community.common.service.WorkLocationService;
+import com.skapp.community.peopleplanner.model.Holiday;
+import com.skapp.community.peopleplanner.repository.HolidayDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,6 +43,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	private final WorkLocationGeofenceDao workLocationGeofenceDao;
 
 	private final EmployeeDao employeeDao;
+
+	private final HolidayDao holidayDao;
 
 	private final MessageUtil messageUtil;
 
@@ -133,6 +137,15 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		WorkLocation workLocation = workLocationDao.findById(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
+
+		List<Holiday> affectedHolidays = holidayDao.findAllByIsActiveTrueAndWorkLocationsWorkLocationId(id);
+		for (Holiday holiday : affectedHolidays) {
+			holiday.getWorkLocations().remove(workLocation);
+			if (holiday.getWorkLocations().isEmpty()) {
+				log.warn("Holiday '{}' (ID: {}) lost its only work location '{}' and will now apply to all locations",
+						holiday.getName(), holiday.getId(), workLocation.getName());
+			}
+		}
 
 		clearWorkLocationFromEmployees(id);
 		workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
