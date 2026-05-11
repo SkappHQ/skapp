@@ -2,7 +2,7 @@ import { CrmCompanyType } from "./CrmCompanyTypes";
 import { CrmContactType, CrmOwnerType } from "./CrmContactTypes";
 import { CrmDealType, CrmPriorityType } from "./CrmDealTypes";
 
-export interface CrmTaskTypeModel {
+export interface CrmTaskCategory {
   id: number;
   name: string;
   orderIndex: number;
@@ -11,7 +11,7 @@ export interface CrmTaskTypeModel {
 export interface CrmTaskType {
   id: number;
   name: string;
-  type: CrmTaskTypeModel;
+  type: CrmTaskCategory;
   priority: CrmPriorityType;
   isCompleted: boolean;
   dueAt: string | null;

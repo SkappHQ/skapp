@@ -27,8 +27,7 @@ export enum EmployeeTypes {
   ATTENDANCE_EMPLOYEE = "ROLE_ATTENDANCE_EMPLOYEE",
   ESIGN_EMPLOYEE = "ROLE_ESIGN_EMPLOYEE",
   PM_EMPLOYEE = "ROLE_PM_EMPLOYEE",
-  PM_GUEST_EMPLOYEE = "ROLE_PM_GUEST_EMPLOYEE",
-  CRM_SALES_REPRESENTATIVE = "ROLE_CRM_SALES_REPRESENTATIVE"
+  PM_GUEST_EMPLOYEE = "ROLE_PM_GUEST_EMPLOYEE"
 }
 
 export enum ManagerTypes {
@@ -41,6 +40,10 @@ export enum ManagerTypes {
 
 export enum SenderTypes {
   ESIGN_SENDER = "ROLE_ESIGN_SENDER"
+}
+
+export enum RepresentativeTypes {
+  CRM_SALES_REPRESENTATIVE = "ROLE_CRM_SALES_REPRESENTATIVE"
 }
 
 export type AuthEmployeeType = {

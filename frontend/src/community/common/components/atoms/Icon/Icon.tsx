@@ -322,7 +322,7 @@ export const IconMapping: Partial<
   [IconName.INSTAGRAM_ICON]: InstagramIcon,
   [IconName.INVOICE_ICON]: InvoiceIcon,
   [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
-  [IconName.CRM_ICON]: HandshakeIcon,
+  [IconName.HAND_SHAKE_ICON]: HandshakeIcon,
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,

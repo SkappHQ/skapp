@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
 import { CrmStore } from "../types/CrmStoreTypes";
-import CrmCompanyModalSlice from "./slices/CrmCompanyModalSlice";
+import CrmCompanyModalSlice from "./slices/crmCompanyModalSlice";
 
 export const useCrmStore = create<
   CrmStore,
@@ -12,6 +12,9 @@ export const useCrmStore = create<
     (set) => ({
       ...CrmCompanyModalSlice(set)
     }),
-    { name: "crmStore" }
+    {
+      name: "crmStore",
+      enabled: process.env.NODE_ENV !== "production"
+    }
   )
 );
