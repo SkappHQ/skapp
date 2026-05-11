@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.crmplanner.payload.request.CompanyCreateDto;
-import com.skapp.community.crmplanner.payload.request.CompanyUpdateDto;
-import com.skapp.community.crmplanner.service.CompanyService;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyUpdateDto;
+import com.skapp.community.crmplanner.service.CrmCompanyService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,10 +28,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/v1/company")
 @Tag(name = "CRM Companies Controller", description = "Operations related to CRM Companies")
-public class CompanyController {
+public class CrmCompanyController {
 
   @NonNull
-  private final CompanyService companyService;
+  private final CrmCompanyService companyService;
 
   @Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
   @GetMapping("/exists")
@@ -52,7 +52,7 @@ public class CompanyController {
   @Operation(summary = "Create a new company", description = "Create a new company")
   @PostMapping
   @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
-  public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CompanyCreateDto crmCompany) {
+  public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CrmCompanyCreateDto crmCompany) {
     ResponseEntityDto responseDto = companyService.createCompany(crmCompany);
     return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
   }
@@ -77,7 +77,7 @@ public class CompanyController {
   @PutMapping("/{id}")
   @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER')")
   public ResponseEntity<ResponseEntityDto> updateCompany(@PathVariable Long id,
-      @Valid @RequestBody CompanyUpdateDto updatedCompany) {
+      @Valid @RequestBody CrmCompanyUpdateDto updatedCompany) {
     ResponseEntityDto responseDto = companyService.updateCompany(id, updatedCompany);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }

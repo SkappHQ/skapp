@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,11 +16,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.crmplanner.model.CrmCompany;
-import com.skapp.community.crmplanner.payload.request.CompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 
 @ExtendWith(MockitoExtension.class)
-class CompanyServiceTest {
+class CrmCompanyServiceTest {
 
   @Mock
   private CrmCompanyDao crmCompanyDao;
@@ -30,13 +29,13 @@ class CompanyServiceTest {
   private UserService userService;
 
   @InjectMocks
-  private CompanyServiceImpl companyService;
+  private CrmCompanyServiceImpl companyService;
 
-  private CompanyCreateDto mockCompanyCreateDto;
+  private CrmCompanyCreateDto mockCompanyCreateDto;
 
   @BeforeEach
   void setUp() {
-    mockCompanyCreateDto = new CompanyCreateDto();
+    mockCompanyCreateDto = new CrmCompanyCreateDto();
     mockCompanyCreateDto.setName("Test Company");
     mockCompanyCreateDto.setAddress("Test Address");
   }
