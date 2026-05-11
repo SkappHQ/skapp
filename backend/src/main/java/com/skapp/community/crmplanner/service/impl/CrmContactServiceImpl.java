@@ -7,13 +7,12 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanySummaryResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
@@ -53,6 +52,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final UserService userService;
 
+	private final CrmMapper crmMapper;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto createContact(CrmContactCreateRequestDto requestDto) {
@@ -75,7 +76,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmContact savedContact = crmContactDao.save(contact);
 
 		log.info("createContact: execution ended");
-		return new ResponseEntityDto(false, mapContactToResponseDto(savedContact));
+		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
 	}
 
 	@Override
@@ -88,7 +89,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		List<CrmContactOwnerResponseDto> ownerResponseDtos = contactOwnerPage.getContent()
 			.stream()
-			.map(this::mapOwnerToResponseDto)
+			.map(crmMapper::employeeToCrmContactOwnerResponseDto)
 			.toList();
 
 		PageDto pageDto = new PageDto();
@@ -157,42 +158,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private String normalizeNullableText(String value) {
 		return value == null || value.trim().isEmpty() ? null : value.trim();
-	}
-
-	private CrmContactResponseDto mapContactToResponseDto(CrmContact contact) {
-		CrmContactResponseDto responseDto = new CrmContactResponseDto();
-		responseDto.setId(contact.getId());
-		responseDto.setName(contact.getName());
-		responseDto.setEmail(contact.getEmail());
-		responseDto.setContactNumber(contact.getContactNumber());
-
-		if (contact.getCompany() != null) {
-			responseDto.setCompany(mapCompanyToSummaryResponseDto(contact.getCompany()));
-		}
-
-		responseDto.setOwner(mapOwnerToResponseDto(contact.getOwner()));
-		return responseDto;
-	}
-
-	private CrmCompanySummaryResponseDto mapCompanyToSummaryResponseDto(CrmCompany company) {
-		CrmCompanySummaryResponseDto responseDto = new CrmCompanySummaryResponseDto();
-		responseDto.setId(company.getId());
-		responseDto.setName(company.getName());
-		return responseDto;
-	}
-
-	private CrmContactOwnerResponseDto mapOwnerToResponseDto(Employee owner) {
-		CrmContactOwnerResponseDto responseDto = new CrmContactOwnerResponseDto();
-		responseDto.setEmployeeId(owner.getEmployeeId());
-		responseDto.setFirstName(owner.getFirstName());
-		responseDto.setLastName(owner.getLastName());
-		if (owner.getUser() != null) {
-			responseDto.setEmail(owner.getUser().getEmail());
-		}
-		if (owner.getEmployeeRole() != null) {
-			responseDto.setCrmRole(owner.getEmployeeRole().getCrmRole());
-		}
-		return responseDto;
 	}
 
 }

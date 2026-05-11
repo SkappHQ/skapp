@@ -15,7 +15,7 @@ public class CrmContactResponseDto {
 
 	private String contactNumber;
 
-	private CrmCompanySummaryResponseDto company;
+	private CrmCompanyLookupResponseDto company;
 
 	private CrmContactOwnerResponseDto owner;
 

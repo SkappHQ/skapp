@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
@@ -24,6 +25,8 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
+	private final CrmMapper crmMapper;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getCompanies(CrmCompanyFilterDto filterDto) {
@@ -34,7 +37,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		List<CrmCompanyLookupResponseDto> companyResponseDtos = companyPage.getContent()
 			.stream()
-			.map(this::mapCompanyToLookupResponseDto)
+			.map(crmMapper::crmCompanyToCrmCompanyLookupResponseDto)
 			.toList();
 
 		PageDto pageDto = new PageDto();
@@ -45,13 +48,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		log.info("getCompanies: execution ended");
 		return new ResponseEntityDto(false, pageDto);
-	}
-
-	private CrmCompanyLookupResponseDto mapCompanyToLookupResponseDto(CrmCompany company) {
-		CrmCompanyLookupResponseDto responseDto = new CrmCompanyLookupResponseDto();
-		responseDto.setId(company.getId());
-		responseDto.setName(company.getName());
-		return responseDto;
 	}
 
 }
