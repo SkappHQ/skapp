@@ -260,14 +260,12 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
           backgroundColor: "var(--color-tertiary-background)"
         }}
       >
-        <div className="p-2">
-          <SearchBox
-            placeHolder={translateText(["form.assignEmployeesLabel"])}
-            value={employeeSearchText}
-            setSearchTerm={setEmployeeSearchText}
-            autoFocus
-          />
-        </div>
+      <SearchBox
+        placeHolder={translateText(["form.assignEmployeesLabel"])}
+        value={employeeSearchText}
+        setSearchTerm={setEmployeeSearchText}
+        autoFocus
+      />
         <div ref={listInnerRef} className="max-h-56 overflow-y-auto">
           <div
             className="flex items-center px-3 py-1 cursor-pointer hover:bg-secondary-background"
