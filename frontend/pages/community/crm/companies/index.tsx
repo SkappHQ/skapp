@@ -5,6 +5,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CompanyPopupController from "~community/crm/components/organisms/CompanyPopupController/CompanyPopupController";
+import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/crmStore";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -33,6 +34,7 @@ const CrmCompanies: NextPage = () => {
     >
       <Box>
         <CompanyPopupController />
+        <CompanyTable />
       </Box>
     </ContentLayout>
   );

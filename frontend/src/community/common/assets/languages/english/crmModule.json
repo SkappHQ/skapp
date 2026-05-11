@@ -32,6 +32,25 @@
         "addCompany": "Add Company"
       }
     },
+    "table": {
+      "clearButtonAriaLabel": "Clear search",
+      "search": "Enter name of a company to search",
+      "emptyDataState": {
+        "title": "No companies available.",
+        "description": "Create a company to get started."
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
+      },
+      "columns": {
+        "nameHeader": "Company Name",
+        "phoneHeader": "Contact Number",
+        "tasksHeader": "Tasks",
+        "pipelineHeader": "Pipeline",
+        "accountValueHeader": "Account Value"
+      }
+    },
     "addCompanyValidations": {
       "name": "Company name is required",
       "companyExists": "A company with this name already exists",

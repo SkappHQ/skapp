@@ -3,9 +3,21 @@ import { rejects } from "assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
-import { CreateCrmCompanyPayload } from "../types/CrmCompanyTypes";
+import { CrmCompanyType, CreateCrmCompanyPayload } from "../types/CrmCompanyTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
+
+export const useGetAllCompanies = (searchTerm: string = "") => {
+  return useQuery({
+    queryKey: [...companyQueryKeys.GET_COMPANY_TABLE_DATA, searchTerm],
+    queryFn: async () => {
+      const response = await authFetch.get(
+        companyEndpoints.GET_ALL_COMPANIES
+      );
+      return response?.data?.results as CrmCompanyType[];
+    }
+  });
+};
 
 const createNewCompany = async (companyDetails: CreateCrmCompanyPayload) => {
   try {
