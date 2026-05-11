@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CrmCompanySummaryResponseDto {
+public class CrmCompanyLookupResponseDto {
 
 	private Long id;
 

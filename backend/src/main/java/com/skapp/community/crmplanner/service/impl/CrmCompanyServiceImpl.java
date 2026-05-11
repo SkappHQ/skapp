@@ -4,7 +4,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanySummaryResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +32,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<CrmCompany> companyPage = crmCompanyDao.findCompanies(filterDto, pageable);
 
-		List<CrmCompanySummaryResponseDto> companyResponseDtos = companyPage.getContent()
+		List<CrmCompanyLookupResponseDto> companyResponseDtos = companyPage.getContent()
 			.stream()
-			.map(this::mapCompanyToSummaryResponseDto)
+			.map(this::mapCompanyToLookupResponseDto)
 			.toList();
 
 		PageDto pageDto = new PageDto();
@@ -47,8 +47,8 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
-	private CrmCompanySummaryResponseDto mapCompanyToSummaryResponseDto(CrmCompany company) {
-		CrmCompanySummaryResponseDto responseDto = new CrmCompanySummaryResponseDto();
+	private CrmCompanyLookupResponseDto mapCompanyToLookupResponseDto(CrmCompany company) {
+		CrmCompanyLookupResponseDto responseDto = new CrmCompanyLookupResponseDto();
 		responseDto.setId(company.getId());
 		responseDto.setName(company.getName());
 		return responseDto;
