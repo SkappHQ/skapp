@@ -1,9 +1,4 @@
-import {
-  Box,
-  Checkbox as MuiCheckbox,
-  CircularProgress,
-  Typography
-} from "@mui/material";
+import { Checkbox as MuiCheckbox, CircularProgress } from "@mui/material";
 import { FormikProps } from "formik";
 import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
@@ -11,7 +6,6 @@ import { AvatarChip, AvatarGroup } from "@rootcodelabs/skapp-ui";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { theme } from "~community/common/theme/theme";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import { testPassiveEventSupport } from "~community/common/utils/commonUtil";
 import {
@@ -40,7 +34,7 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
   const [popperOpen, setPopperOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
-  const listInnerRef = useRef<HTMLDivElement>();
+  const listInnerRef = useRef<HTMLDivElement>(null);
   const supportsPassive = testPassiveEventSupport();
   const [boxWidth, setBoxWidth] = useState(0);
 
@@ -157,12 +151,9 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
   const renderTriggerContent = () => {
     if (selectedCount === 0) {
       return (
-        <Typography
-          variant="placeholder"
-          sx={{ color: theme.palette.text.secondary, ml: "0.5rem" }}
-        >
+        <span className="body3 text-secondary-text ml-2">
           {translateText(["form.assignEmployeesLabel"])}
-        </Typography>
+        </span>
       );
     }
 
@@ -177,7 +168,7 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
 
     if (selectedCount <= 2) {
       return (
-        <Box sx={{ display: "flex", gap: "0.5rem" }}>
+        <div className="flex gap-2">
           {selectedEmployees.map((emp) => (
             <AvatarChip
               key={emp.employeeId}
@@ -194,7 +185,7 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
               }}
             />
           ))}
-        </Box>
+        </div>
       );
     }
 
@@ -213,34 +204,17 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
 
   return (
     <div>
-      <Typography
-        variant="placeholder"
-        gutterBottom
-        sx={{ color: "common.black" }}
-      >
+      <span className="body3 text-black mb-1 block">
         {translateText(["form.assignEmployeesLabel"])}
-      </Typography>
-      <Box
+      </span>
+      <div
         ref={boxRef}
         tabIndex={0}
         role="combobox"
         aria-expanded={popperOpen}
         aria-haspopup="listbox"
         aria-label={translateText(["form.assignEmployeesLabel"])}
-        sx={{
-          backgroundColor: theme.palette.grey[100],
-          height: "3rem",
-          borderRadius: "0.5rem",
-          display: "flex",
-          alignItems: "center",
-          width: "100%",
-          cursor: "pointer",
-          px: "0.75rem",
-          "&:focus": {
-            outline: `0.125rem solid ${theme.palette.common.black}`,
-            outlineOffset: "-0.125rem"
-          }
-        }}
+        className="bg-secondary-background h-12 rounded-lg flex items-center w-full cursor-pointer px-3 focus:outline-2 focus:outline-black focus:-outline-offset-[2px]"
         onClick={handleTriggerClick}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -257,7 +231,7 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
         }}
       >
         {renderTriggerContent()}
-      </Box>
+      </div>
 
       <Popper
         anchorEl={anchorEl}
@@ -269,29 +243,21 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
         containerStyles={{
           maxHeight: "20.25rem",
           width: `${boxWidth}px`,
-          backgroundColor: theme.palette.notifyBadge.contrastText,
-          boxShadow: theme.shadows[1],
+          boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
           overflow: "hidden"
         }}
       >
-        <Box sx={{ p: "0.5rem" }}>
+        <div className="p-2">
           <SearchBox
             placeHolder={translateText(["form.assignEmployeesLabel"])}
             value={employeeSearchText}
             setSearchTerm={setEmployeeSearchText}
             autoFocus
           />
-        </Box>
-        <Box ref={listInnerRef} sx={{ maxHeight: "14rem", overflowY: "auto" }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              px: "0.75rem",
-              py: "0.25rem",
-              cursor: "pointer",
-              "&:hover": { backgroundColor: theme.palette.grey[100] }
-            }}
+        </div>
+        <div ref={listInnerRef} className="max-h-56 overflow-y-auto">
+          <div
+            className="flex items-center px-3 py-1 cursor-pointer hover:bg-secondary-background"
             onClick={toggleAllEmployees}
           >
             <MuiCheckbox
@@ -303,23 +269,16 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
               label={translateText(["form.allEmployees"])}
               showAvatar={false}
             />
-          </Box>
+          </div>
 
           {!isAllSelected &&
             displayEmployees.map((emp) => {
               const empId = Number(emp.employeeId);
               const isSelected = selectedIds.includes(empId);
               return (
-                <Box
+                <div
                   key={empId}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    px: "0.75rem",
-                    py: "0.25rem",
-                    cursor: "pointer",
-                    "&:hover": { backgroundColor: theme.palette.grey[100] }
-                  }}
+                  className="flex items-center px-3 py-1 cursor-pointer hover:bg-secondary-background"
                   onClick={() => toggleEmployee(empId)}
                 >
                   <MuiCheckbox
@@ -336,22 +295,16 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
                       src: emp.authPic
                     }}
                   />
-                </Box>
+                </div>
               );
             })}
 
           {isFetchingNextPage && (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                py: "0.5rem"
-              }}
-            >
+            <div className="flex justify-center py-2">
               <CircularProgress size={20} />
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
       </Popper>
     </div>
   );

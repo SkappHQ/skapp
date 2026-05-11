@@ -1,10 +1,8 @@
 import { ButtonV2, EmptyDataView, IconButton } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { Box, Typography } from "@mui/material";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { theme } from "~community/common/theme/theme";
 import { IconName } from "~community/common/types/IconTypes";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
@@ -36,35 +34,23 @@ const GeofenceMap = ({ formik }: Props) => {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <Typography variant="body1">
+    <div className="flex flex-col gap-4">
+      <p className="body1">
         {translateText(["form.geofenceTitle"])}
-      </Typography>
+      </p>
 
       {hasGeofence ? (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            border: `1px solid ${theme.palette.grey[200]}`,
-            borderRadius: "0.5rem",
-            p: "1rem"
-          }}
-        >
-          <Box sx={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-            <Typography variant="body2">
+        <div className="flex items-center justify-between border border-secondary-accent rounded-lg p-4">
+          <div className="flex flex-col gap-1">
+            <span className="body2">
               {geofence.address ||
                 `${geofence.latitude.toFixed(5)}, ${geofence.longitude.toFixed(5)}`}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: theme.palette.text.secondary }}
-            >
+            </span>
+            <span className="body3 text-secondary-text">
               {translateText(["form.radiusLabel"])}: {formatRadius(geofence.radiusMeters)}
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
             <IconButton
               icon={<Icon name={IconName.EDIT_ICON} />}
               type="button"
@@ -77,35 +63,25 @@ const GeofenceMap = ({ formik }: Props) => {
               onClick={handleDeleteGeofence}
               aria-label={translateText(["form.geofenceDeleteButton"])}
             />
-          </Box>
-        </Box>
+          </div>
+        </div>
       ) : (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "0.75rem",
-            backgroundColor: theme.palette.grey[50],
-            borderRadius: "0.5rem",
-            border: `2px dashed ${theme.palette.grey[300]}`
-          }}
-        >
+        <div className="flex flex-col items-center gap-3 bg-tertiary-background rounded-lg border-2 border-dashed border-secondary-accent">
           <EmptyDataView
             title={translateText(["form.geofenceEmptyState"])}
             description={translateText(["form.geofenceEmptyStateDescription"])}
             className={{ wrapper: "p-8 pb-0 bg-transparent border-none" }}
           />
-          <Box sx={{ pb: "2rem" }}>
+          <div className="pb-8">
             <ButtonV2 variant="primary" type="button" onClick={handleOpenModal}>
               {translateText(["form.geofenceAddButton"])}
             </ButtonV2>
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       <GeofenceSelectorModal formik={formik} />
-    </Box>
+    </div>
   );
 };
 
