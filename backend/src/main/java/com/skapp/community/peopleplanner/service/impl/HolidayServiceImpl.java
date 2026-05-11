@@ -443,6 +443,10 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	private void validateWorkLocations(List<String> workLocationNames, List<String> validWorkLocationNames) {
+		if (workLocationNames.stream().anyMatch(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS::equalsIgnoreCase)) {
+			return;
+		}
+
 		workLocationNames.forEach(wrkLocation -> {
 			if (!validWorkLocationNames.contains(wrkLocation)) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION);
