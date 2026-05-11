@@ -3,11 +3,11 @@ import { rejects } from "assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
-import { CreateCrmCompanyPayload } from "../types/CrmCompanyTypes";
+import { CrmCompanyCreatePayload } from "../types/CrmCompanyTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
-const createNewCompany = async (companyDetails: CreateCrmCompanyPayload) => {
+const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
   try {
     const response = await authFetch.post(
       companyEndpoints.CREATE_COMPANY,

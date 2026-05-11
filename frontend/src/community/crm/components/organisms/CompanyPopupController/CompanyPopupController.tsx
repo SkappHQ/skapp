@@ -51,6 +51,7 @@ const CompanyPopupController = () => {
       onClose={handleCloseModal}
       modalHeader={getModalTitle(crmModalType)}
       content={getModalContent()}
+      className="w-auto"
     />
   );
 };

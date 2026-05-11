@@ -19,9 +19,13 @@ import {
   useCreateNewCompany
 } from "~community/crm/api/CompanyApi";
 import { useCrmStore } from "~community/crm/store/crmStore";
-import { CreateCrmCompanyPayload } from "~community/crm/types/CrmCompanyTypes";
+import {
+  CrmCompanyAddFormTypes,
+  CrmCompanyCreatePayload
+} from "~community/crm/types/CrmCompanyTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 
 const AddCompanyModal: React.FC = () => {
   const { setToastMessage } = useToast();
@@ -66,14 +70,13 @@ const AddCompanyModal: React.FC = () => {
 
   const { userId } = useSessionData();
 
-  const initialValues: CreateCrmCompanyPayload = {
+  const initialValues: CrmCompanyAddFormTypes = {
     name: "",
     industry: "",
     website: "",
     address: "",
-    contactNumber: "",
-    createdBy: userId,
-    lastModifiedBy: userId
+    countryCode: useGetDefaultCountryCode(),
+    contactNumber: ""
   };
 
   const handleSuccess = () => {
@@ -105,18 +108,20 @@ const AddCompanyModal: React.FC = () => {
       handleError(error);
     });
 
-  const createCompany = (values: CreateCrmCompanyPayload) => {
+  const createCompany = (values: CrmCompanyAddFormTypes) => {
     if (companyNameExists === true) {
       setFieldError("name", translateValidations(["companyExists"]));
       return;
     }
 
-    const payload: CreateCrmCompanyPayload = {
+    const payload: CrmCompanyCreatePayload = {
       name: values.name.trim(),
       industry: values.industry?.trim() || null,
       website: values.website?.trim() || null,
       address: values.address?.trim() || null,
-      contactNumber: values.contactNumber?.trim() || null,
+      contactNumber: values.contactNumber
+        ? values.countryCode + values.contactNumber?.trim()
+        : null,
       createdBy: userId,
       lastModifiedBy: userId
     };
@@ -185,14 +190,26 @@ const AddCompanyModal: React.FC = () => {
           maxLength={characterLengths.NAME_LENGTH}
         />
 
-        <InputField
-          inputName="contactNumber"
-          value={values.contactNumber || ""}
+        <InputPhoneNumber
           label={translateLabelText(["contactNumber"])}
+          value={values.contactNumber || ""}
+          countryCodeValue={values.countryCode as string}
           placeHolder={translateInputText(["contactNumber"])}
-          onChange={handleChange}
-          onBlur={handleBlur as any}
-          maxLength={characterLengths.PHONE_NUMBER_LENGTH_MAX}
+          onChangeCountry={async (countryCode: string) => {
+            const syntheticEvent = {
+              target: { name: "countryCode", value: countryCode }
+            } as ChangeEvent<HTMLInputElement>;
+            handleChange(syntheticEvent);
+          }}
+          onChange={async (e: ChangeEvent<HTMLInputElement>) => {
+            handleChange(e);
+          }}
+          error={errors.contactNumber || ""}
+          inputName="contactNumber"
+          fullComponentStyle={{
+            mt: "0rem",
+            mb: "0rem"
+          }}
         />
 
         <InputField

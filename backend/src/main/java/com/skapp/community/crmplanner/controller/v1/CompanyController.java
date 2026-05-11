@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +35,7 @@ public class CompanyController {
 
   @Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
   @GetMapping("/exists")
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
   public ResponseEntity<ResponseEntityDto> checkCompanyNameExists(@RequestParam String name) {
     ResponseEntityDto responseDto = companyService.checkCompanyNameExists(name);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
@@ -41,6 +43,7 @@ public class CompanyController {
 
   @Operation(summary = "Get all companies", description = "Get all registered companies in the database")
   @GetMapping
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
   public ResponseEntity<ResponseEntityDto> getAllCompanies() {
     ResponseEntityDto responseDto = companyService.getAllCompanies();
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
@@ -48,6 +51,7 @@ public class CompanyController {
 
   @Operation(summary = "Create a new company", description = "Create a new company")
   @PostMapping
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
   public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CompanyCreateDto crmCompany) {
     ResponseEntityDto responseDto = companyService.createCompany(crmCompany);
     return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
@@ -55,6 +59,7 @@ public class CompanyController {
 
   @Operation(summary = "Get a company by ID", description = "Get a company by ID")
   @GetMapping("/{id}")
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
   public ResponseEntity<ResponseEntityDto> getCompany(@PathVariable Long id) {
     ResponseEntityDto responseDto = companyService.getCompany(id);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
@@ -62,6 +67,7 @@ public class CompanyController {
 
   @Operation(summary = "Delete a company by ID", description = "Delete a company by ID")
   @DeleteMapping("/{id}")
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER')")
   public ResponseEntity<ResponseEntityDto> deleteCompany(@PathVariable Long id) {
     ResponseEntityDto responseDto = companyService.deleteCompany(id);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
@@ -69,6 +75,7 @@ public class CompanyController {
 
   @Operation(summary = "Update company", description = "Update company details")
   @PutMapping("/{id}")
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER')")
   public ResponseEntity<ResponseEntityDto> updateCompany(@PathVariable Long id,
       @Valid @RequestBody CompanyUpdateDto updatedCompany) {
     ResponseEntityDto responseDto = companyService.updateCompany(id, updatedCompany);

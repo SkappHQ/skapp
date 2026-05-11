@@ -1,6 +1,7 @@
 import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
+import { isValidPhoneNumber } from "~community/common/regex/regexPatterns";
 
 type TranslatorFunctionType = (suffixes: string[]) => string;
 
@@ -15,13 +16,19 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
     contactNumber: Yup.string()
       .nullable()
       .optional()
-      .min(
-        characterLengths.PHONE_NUMBER_LENGTH_MIN,
-        translator(["contactNumberMin"])
-      )
-      .max(
-        characterLengths.PHONE_NUMBER_LENGTH_MAX,
-        translator(["contactNumberMax"])
+      .test(
+        "valid-contact-number",
+        translator(["contactNumber"]),
+        function (inputContactNumber) {
+          if (!inputContactNumber || inputContactNumber === "") {
+            return true;
+          }
+          const { countryCode } = this.parent;
+
+          const phoneNumber = countryCode + inputContactNumber;
+
+          return isValidPhoneNumber().test(phoneNumber);
+        }
       ),
     website: Yup.string()
       .nullable()
