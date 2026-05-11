@@ -1,6 +1,9 @@
 package com.skapp.community.peopleplanner.repository.impl;
 
+import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.model.WorkLocation_;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.Holiday_;
 import com.skapp.community.peopleplanner.payload.request.HolidayFilterDto;
@@ -9,8 +12,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,7 +41,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
 		Root<Holiday> countRoot = countQuery.from(Holiday.class);
-		List<Predicate> countPredicates = buildPredicates(criteriaBuilder, holidayFilterDto, countRoot);
+		List<Predicate> countPredicates = buildPredicates(criteriaBuilder, countQuery, holidayFilterDto, countRoot);
 		countQuery.select(criteriaBuilder.count(countRoot));
 		countQuery.where(countPredicates.toArray(new Predicate[0]));
 		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
@@ -46,7 +52,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
 		Root<Holiday> root = criteriaQuery.from(Holiday.class);
-		List<Predicate> dataPredicates = buildPredicates(criteriaBuilder, holidayFilterDto, root);
+		List<Predicate> dataPredicates = buildPredicates(criteriaBuilder, criteriaQuery, holidayFilterDto, root);
 		criteriaQuery.where(dataPredicates.toArray(new Predicate[0]));
 		criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
 
@@ -57,33 +63,51 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 		return new PageImpl<>(query.getResultList(), page, totalRows);
 	}
 
-	private static List<Predicate> buildPredicates(CriteriaBuilder criteriaBuilder, HolidayFilterDto holidayFilterDto,
-			Root<Holiday> root) {
+	private static List<Predicate> buildPredicates(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
+			HolidayFilterDto holidayFilterDto, Root<Holiday> root) {
 
 		List<Predicate> predicates = new ArrayList<>();
 
-		predicates.add(criteriaBuilder.equal(root.get(Holiday_.IS_ACTIVE), true));
+		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
 
 		if (holidayFilterDto != null) {
 			if (!CollectionUtils.isEmpty(holidayFilterDto.getHolidayDurations())) {
-				predicates.add(root.get(Holiday_.HOLIDAY_DURATION).in(holidayFilterDto.getHolidayDurations()));
+				predicates.add(root.get(Holiday_.holidayDuration).in(holidayFilterDto.getHolidayDurations()));
 			}
 			Integer year = holidayFilterDto.getYear();
 			LocalDate date = holidayFilterDto.getDate();
 			Predicate datePredicate;
 			if (year != null) {
-				datePredicate = criteriaBuilder.between(root.get(Holiday_.DATE),
+				datePredicate = criteriaBuilder.between(root.get(Holiday_.date),
 						DateTimeUtils.getUtcLocalDate(year, 1, 1), DateTimeUtils.getUtcLocalDate(year, 12, 31));
 			}
 			else if (date != null) {
-				datePredicate = criteriaBuilder.equal(root.get(Holiday_.DATE), date);
+				datePredicate = criteriaBuilder.equal(root.get(Holiday_.date), date);
 			}
 			else {
-				datePredicate = criteriaBuilder.between(root.get(Holiday_.DATE),
+				datePredicate = criteriaBuilder.between(root.get(Holiday_.date),
 						DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 1, 1),
 						DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 12, 31));
 			}
 			predicates.add(datePredicate);
+
+			String workLocation = holidayFilterDto.getWorkLocation();
+			if (workLocation != null && !workLocation.trim().isEmpty()
+					&& !PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS.equalsIgnoreCase(workLocation.trim())) {
+
+				Subquery<Long> workLocationExistsSubquery = criteriaQuery.subquery(Long.class);
+				Root<Holiday> subRoot = workLocationExistsSubquery.from(Holiday.class);
+				subRoot.join(Holiday_.workLocations);
+				workLocationExistsSubquery.select(criteriaBuilder.literal(1L))
+					.where(criteriaBuilder.equal(subRoot.get(Holiday_.id), root.get(Holiday_.id)));
+
+				Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
+				predicates.add(criteriaBuilder.or(
+						criteriaBuilder.equal(criteriaBuilder.lower(workLocationJoin.get(WorkLocation_.name)),
+								workLocation.trim().toLowerCase()),
+						criteriaBuilder.not(criteriaBuilder.exists(workLocationExistsSubquery))));
+				criteriaQuery.distinct(true);
+			}
 		}
 
 		return predicates;
