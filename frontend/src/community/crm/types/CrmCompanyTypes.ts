@@ -8,14 +8,23 @@ export interface CrmCompanyType {
   isDeleted: boolean;
 }
 
-export interface CrmCompaniesResponseType {
+export interface CrmCompanyResponseType {
   items: CrmCompanyType[];
   totalItems: number;
   currentPage: number;
   totalPages: number;
 }
 
-export interface CreateCrmCompanyPayload {
+export interface CrmCompanyAddFormTypes {
+  name: string;
+  industry: string | null;
+  website: string | null;
+  address: string | null;
+  countryCode: string | null;
+  contactNumber: string | null;
+}
+
+export interface CrmCompanyCreatePayload {
   name: string;
   industry: string | null;
   website: string | null;
