@@ -267,7 +267,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	}
 
 	private void clearWorkLocationFromEmployees(Long workLocationId) {
-		List<Employee> employees = employeeDao.findByWorkLocationWorkLocationId(workLocationId);
+		List<Employee> employees = employeeDao.findByWorkLocationWorkLocationIdAndAccountStatusIn(workLocationId,
+				Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		for (Employee employee : employees) {
 			employee.setWorkLocation(null);
 		}

@@ -1518,7 +1518,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, WorkLocation> workLocationJoin = root.join(Employee_.workLocation, JoinType.INNER);
 
 		criteriaQuery.multiselect(workLocationJoin.get(WorkLocation_.workLocationId), criteriaBuilder.count(root));
-		criteriaQuery.where(workLocationJoin.get(WorkLocation_.workLocationId).in(workLocationIds));
+		criteriaQuery.where(workLocationJoin.get(WorkLocation_.workLocationId).in(workLocationIds),
+				root.get(Employee_.accountStatus).in(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		criteriaQuery.groupBy(workLocationJoin.get(WorkLocation_.workLocationId));
 
 		Map<Long, Long> result = new HashMap<>();
