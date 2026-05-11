@@ -76,7 +76,8 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 				Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
 				predicates.add(criteriaBuilder.or(
-						criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.name), workLocation.trim()),
+						criteriaBuilder.equal(criteriaBuilder.lower(workLocationJoin.get(WorkLocation_.name)),
+								workLocation.trim().toLowerCase()),
 						criteriaBuilder.not(criteriaBuilder.exists(workLocationExistsSubquery))));
 				criteriaQuery.distinct(true);
 			}
