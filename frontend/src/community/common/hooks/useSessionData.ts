@@ -5,6 +5,7 @@ import {
   AdminTypes,
   ManagerTypes as AuthManagerType,
   EmployeeTypes,
+  RepresentativeTypes,
   SenderTypes
 } from "~community/common/types/AuthTypes";
 import { ManagerTypes } from "~community/common/types/CommonTypes";
@@ -137,12 +138,12 @@ const useSessionData = () => {
   );
 
   const isCrmSalesRepresentative = useMemo(
-    () => user?.roles?.includes(EmployeeTypes.CRM_SALES_REPRESENTATIVE),
+    () => user?.roles?.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE),
     [user?.roles]
   );
 
   const isCrmModuleEnabled = useMemo(
-    () => isCrmAdmin || isCrmSalesManager || isCrmSalesRepresentative,
+    () => isCrmSalesRepresentative,
     [user?.roles]
   );
 
