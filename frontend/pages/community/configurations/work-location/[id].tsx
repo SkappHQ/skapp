@@ -20,7 +20,9 @@ const WorkLocationEditPage: NextPage = () => {
       isBackButtonVisible
       onBackClick={() => router.back()}
     >
-      {locationId !== undefined && <WorkLocationForm id={locationId} />}
+      <>
+        {locationId !== undefined && <WorkLocationForm id={locationId} />}
+      </>
     </ContentLayout>
   );
 };
