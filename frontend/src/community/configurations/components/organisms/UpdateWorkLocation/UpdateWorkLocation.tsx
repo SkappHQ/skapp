@@ -78,8 +78,8 @@ const UpdateWorkLocation = ({ id }: Props) => {
           employeeIds: workLocation.employees?.map((e) => e.employeeId) ?? [],
           geofence: canSeeGeofence && workLocation.geofence
             ? {
-                latitude: parseFloat(workLocation.geofence.latitude),
-                longitude: parseFloat(workLocation.geofence.longitude),
+                latitude: Number.parseFloat(workLocation.geofence.latitude),
+                longitude: Number.parseFloat(workLocation.geofence.longitude),
                 radiusMeters: workLocation.geofence.radiusMeters,
                 address: workLocation.address ?? ""
               }
