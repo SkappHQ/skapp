@@ -12,6 +12,9 @@ export const useCrmStore = create<
     (set) => ({
       ...CrmCompanyModalSlice(set)
     }),
-    { name: "crmStore" }
+    {
+      name: "crmStore",
+      enabled: process.env.NODE_ENV !== "production"
+    }
   )
 );
