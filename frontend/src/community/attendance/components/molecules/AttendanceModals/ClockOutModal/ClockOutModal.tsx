@@ -9,17 +9,22 @@ import {
   calculateWorkedDuration,
   calculateWorkedDurationInHoursAndMinutes
 } from "~community/attendance/utils/CalculateWorkedDuration";
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { appModes } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { convertDateToUTC } from "~community/common/utils/dateTimeUtils";
+import { useUpdateEmployeeStatusWithLocation } from "~enterprise/attendance/api/AttendanceApi";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 import styles from "./styles";
 
 interface Props {
   closeModal: () => void;
 }
+
+// TODO: Replace with actual config API when available
+const isGeoFencingEnabled = true;
 
 const ClockOutModal: FC<Props> = ({ closeModal }) => {
   const theme = useTheme();
@@ -37,9 +42,28 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
   const translateText = useTranslator("attendanceModule", "timeWidget");
 
   const { isPending, mutate } = useUpdateEmployeeStatus();
+  const { mutate: mutateWithLocation, isPending: isEpPending } =
+    useUpdateEmployeeStatusWithLocation();
+
+  const environment = useGetEnvironment();
+  const isEnterprise = environment === appModes.ENTERPRISE;
 
   const handleProceedHome = (): void => {
-    mutate(setSlotType(AttendanceSlotType.END));
+    const slotType = setSlotType(AttendanceSlotType.END);
+
+    if (isGeoFencingEnabled && isEnterprise) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        mutateWithLocation({
+          recordActionType: slotType,
+          time: convertDateToUTC(new Date().toISOString()) as string,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+      });
+    } else {
+      mutate(slotType);
+    }
+
     closeModal();
   };
 
@@ -96,7 +120,7 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
             <ButtonV2
               onClick={handleProceedHome}
               aria-label={translateText(["confirm"])}
-              isLoading={isPending}
+              isLoading={isPending || isEpPending}
               variant={"primary"}
               icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
               iconPosition="end"
