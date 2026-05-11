@@ -1,8 +1,8 @@
-import { Checkbox as MuiCheckbox, CircularProgress } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import { FormikProps } from "formik";
 import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { AvatarChip, AvatarGroup } from "@rootcodelabs/skapp-ui";
+import { AvatarChip, AvatarGroup, Checkbox } from "@rootcodelabs/skapp-ui";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -204,7 +204,7 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
 
   return (
     <div>
-      <span className="body3 text-black mb-1 block">
+      <span className="subtitle1 mb-2 block">
         {translateText(["form.assignEmployeesLabel"])}
       </span>
       <div
@@ -244,7 +244,8 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
           maxHeight: "20.25rem",
           width: `${boxWidth}px`,
           boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
-          overflow: "hidden"
+          overflow: "hidden",
+          backgroundColor: "var(--color-tertiary-background)"
         }}
       >
         <div className="p-2">
@@ -260,10 +261,8 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
             className="flex items-center px-3 py-1 cursor-pointer hover:bg-secondary-background"
             onClick={toggleAllEmployees}
           >
-            <MuiCheckbox
+            <Checkbox
               checked={isAllSelected}
-              size="small"
-              sx={{ p: "0.25rem" }}
             />
             <AvatarChip
               label={translateText(["form.allEmployees"])}
@@ -281,10 +280,8 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
                   className="flex items-center px-3 py-1 cursor-pointer hover:bg-secondary-background"
                   onClick={() => toggleEmployee(empId)}
                 >
-                  <MuiCheckbox
+                  <Checkbox
                     checked={isSelected}
-                    size="small"
-                    sx={{ p: "0.25rem" }}
                   />
                   <AvatarChip
                     label={`${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()}

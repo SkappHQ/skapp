@@ -34,8 +34,8 @@ const GeofenceMap = ({ formik }: Props) => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="body1">
+    <div className="flex flex-col gap-2">
+      <p className="subtitle1">
         {translateText(["form.geofenceTitle"])}
       </p>
 
@@ -43,8 +43,7 @@ const GeofenceMap = ({ formik }: Props) => {
         <div className="flex items-center justify-between border border-secondary-accent rounded-lg p-4">
           <div className="flex flex-col gap-1">
             <span className="body2">
-              {geofence.address ||
-                `${geofence.latitude.toFixed(5)}, ${geofence.longitude.toFixed(5)}`}
+              {geofence.address}
             </span>
             <span className="body3 text-secondary-text">
               {translateText(["form.radiusLabel"])}: {formatRadius(geofence.radiusMeters)}
