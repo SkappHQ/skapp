@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -447,8 +448,12 @@ public class HolidayServiceImpl implements HolidayService {
 			return;
 		}
 
+		Set<String> validNamesLower = validWorkLocationNames.stream()
+			.map(name -> name.toLowerCase().trim())
+			.collect(Collectors.toSet());
+
 		workLocationNames.forEach(wrkLocation -> {
-			if (!validWorkLocationNames.contains(wrkLocation)) {
+			if (!validNamesLower.contains(wrkLocation.toLowerCase().trim())) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION);
 			}
 		});
