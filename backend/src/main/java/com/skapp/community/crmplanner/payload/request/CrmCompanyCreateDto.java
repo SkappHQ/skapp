@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class CompanyCreateDto {
+public class CrmCompanyCreateDto {
 
   @NotBlank(message = "Company name is required")
   private String name;

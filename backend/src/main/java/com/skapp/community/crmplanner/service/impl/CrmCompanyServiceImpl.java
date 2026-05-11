@@ -5,10 +5,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.model.CrmCompany;
-import com.skapp.community.crmplanner.payload.request.CompanyCreateDto;
-import com.skapp.community.crmplanner.payload.request.CompanyUpdateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyUpdateDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
-import com.skapp.community.crmplanner.service.CompanyService;
+import com.skapp.community.crmplanner.service.CrmCompanyService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class CompanyServiceImpl implements CompanyService {
+public class CrmCompanyServiceImpl implements CrmCompanyService {
 
   private final CrmCompanyDao crmCompanyDao;
 
@@ -50,7 +50,7 @@ public class CompanyServiceImpl implements CompanyService {
 
   @Override
   @Transactional
-  public ResponseEntityDto createCompany(CompanyCreateDto crmCompany) {
+  public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) {
     log.info("createCompany: execution started");
     CrmCompany newCompany = new CrmCompany();
     newCompany = createCompanyEntity(crmCompany, newCompany);
@@ -60,7 +60,7 @@ public class CompanyServiceImpl implements CompanyService {
     return new ResponseEntityDto(false, "Company created successfully");
   }
 
-  private CrmCompany createCompanyEntity(CompanyCreateDto crmCompany, CrmCompany newCompany) {
+  private CrmCompany createCompanyEntity(CrmCompanyCreateDto crmCompany, CrmCompany newCompany) {
     newCompany.setName(crmCompany.getName());
     newCompany.setIndustry(crmCompany.getIndustry());
     newCompany.setWebsite(crmCompany.getWebsite());
@@ -72,7 +72,7 @@ public class CompanyServiceImpl implements CompanyService {
 
   @Override
   @Transactional
-  public ResponseEntityDto updateCompany(Long id, CompanyUpdateDto crmCompany) {
+  public ResponseEntityDto updateCompany(Long id, CrmCompanyUpdateDto crmCompany) {
     log.info("updateCompany: execution started for id: {}", id);
     CrmCompany existingCompany = crmCompanyDao.findById(id)
         .orElseThrow(() -> new RuntimeException("Company not found with id: " + id));
@@ -83,7 +83,7 @@ public class CompanyServiceImpl implements CompanyService {
     return new ResponseEntityDto(false, "Company updated successfully");
   }
 
-  private CrmCompany updateCompanyEntity(CompanyUpdateDto crmCompany, CrmCompany existingCompany) {
+  private CrmCompany updateCompanyEntity(CrmCompanyUpdateDto crmCompany, CrmCompany existingCompany) {
     existingCompany.setName(crmCompany.getName());
     existingCompany.setIndustry(crmCompany.getIndustry());
     existingCompany.setWebsite(crmCompany.getWebsite());
