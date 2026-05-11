@@ -148,7 +148,7 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<JobFamily> criteriaQuery = criteriaBuilder.createQuery(JobFamily.class);
 		Root<JobFamily> root = criteriaQuery.from(JobFamily.class);
-		root.fetch(JobFamily_.JOB_TITLES, JoinType.LEFT);
+		root.fetch(JobFamily_.jobTitles, JoinType.LEFT);
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(criteriaBuilder.equal(root.get(JobFamily_.jobFamilyId), jobFamilyId));
