@@ -20,6 +20,7 @@ interface Props {
     buttonStyle?: ButtonStyle;
     startIcon?: IconName;
     endIcon?: IconName;
+    iconFill?: string;
     className?: string;
   };
   secondaryBtn?: {
@@ -29,15 +30,17 @@ interface Props {
     buttonStyle?: ButtonStyle;
     startIcon?: IconName;
     endIcon?: IconName;
+    iconFill?: string;
     className?: string;
   };
 }
 
 const getVariant = (
   style?: ButtonStyle
-): "primary" | "secondary" | "tertiary" => {
+): "primary" | "secondary" | "tertiary" | "error" => {
   if (style === ButtonStyle.TERTIARY) return "tertiary";
   if (style === ButtonStyle.SECONDARY) return "secondary";
+  if (style === ButtonStyle.ERROR) return "error";
   return "primary";
 };
 
@@ -64,12 +67,12 @@ const UserPromptModal = ({
             disabled={secondaryBtn.isDisabled ?? false}
             className={secondaryBtn.className}
             {...(secondaryBtn.startIcon && {
-              icon: <Icon name={secondaryBtn.startIcon} />,
+              icon: <Icon name={secondaryBtn.startIcon} fill={secondaryBtn.iconFill} />,
               iconPosition: "start"
             })}
             {...(secondaryBtn.endIcon &&
               !secondaryBtn.startIcon && {
-                icon: <Icon name={secondaryBtn.endIcon} />,
+                icon: <Icon name={secondaryBtn.endIcon} fill={secondaryBtn.iconFill} />,
                 iconPosition: "end"
               })}
           >
@@ -82,12 +85,12 @@ const UserPromptModal = ({
           disabled={primaryBtn.isDisabled ?? false}
           className={primaryBtn.className}
           {...(primaryBtn.startIcon && {
-            icon: <Icon name={primaryBtn.startIcon} />,
+            icon: <Icon name={primaryBtn.startIcon} fill={primaryBtn.iconFill} />,
             iconPosition: "start"
           })}
           {...(primaryBtn.endIcon &&
             !primaryBtn.startIcon && {
-              icon: <Icon name={primaryBtn.endIcon} />,
+              icon: <Icon name={primaryBtn.endIcon} fill={primaryBtn.iconFill} />,
               iconPosition: "end"
             })}
         >

@@ -3,8 +3,13 @@ import { useTheme } from "@mui/material/styles";
 import React from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
+import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { IconName } from "~community/common/types/IconTypes";
+import DeleteCompanyConfirmationModal from "~community/crm/components/molecules/DeleteCompanyConfirmationModal/DeleteCompanyConfirmationModal";
+import { useCrmStore } from "~community/crm/store/crmStore";
 import { CrmCompanyType } from "~community/crm/types/CrmCompanyTypes";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 interface Props {
   company: CrmCompanyType;
@@ -13,6 +18,7 @@ interface Props {
 
 const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
   const theme = useTheme();
+  const { companyModalType, setCompanyModalType } = useCrmStore();
 
   const infoItems = [
     {
@@ -49,7 +55,9 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: "0.75rem"
+          gap: "0.75rem",
+          flex: 1,
+          minWidth: 0
         }}
       >
         <Typography variant="h1">{company.name}</Typography>
@@ -60,6 +68,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
+            width: "757px",
             gap: "0.75rem"
           }}
         >
@@ -127,22 +136,74 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
       </Box>
 
       <Box sx={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-        <IconButton
-          size="small"
-          sx={{
-            width: "2.25rem",
-            height: "2.25rem",
-            backgroundColor: "#e4e4e7",
-            "&:hover": { backgroundColor: "#d4d4d8" }
+        <KebabMenu
+          id="company-detail-kebab"
+          menuItems={[
+            {
+              id: "delete-company",
+              icon: (
+                <Icon
+                  name={IconName.BIN_ICON}
+                  width="1.25rem"
+                  height="1.25rem"
+                  fill="#82181A"
+                />
+              ),
+              text: "Delete company",
+              onClickHandler: () => {
+                setCompanyModalType(CrmModalTypes.DELETE_COMPANY_CONFIRMATION);
+              }
+            }
+          ]}
+          icon={
+            <Icon
+              name={IconName.THREE_DOTS_ICON}
+              width="1rem"
+              height="1rem"
+              fill={theme.palette.text.mouseGrey}
+            />
+          }
+          menuAlign={{
+            anchorOrigin: { vertical: "bottom", horizontal: "right" },
+            transformOrigin: { vertical: "top", horizontal: "right" }
           }}
-        >
-          <Icon
-            name={IconName.THREE_DOTS_ICON}
-            width="1rem"
-            height="1rem"
-            fill={theme.palette.text.mouseGrey}
-          />
-        </IconButton>
+          customStyles={{
+            menuIcon: {
+              width: "2.25rem",
+              height: "2.25rem",
+              backgroundColor: "#e4e4e7",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              "&:hover": { backgroundColor: "#d4d4d8" }
+            },
+            menu: {
+              "& .MuiPaper-root": {
+                width: "227px",
+                backgroundColor: "transparent",
+                boxShadow: "none",
+                borderRadius: "0.75rem"
+              }
+            },
+            menuItem: {
+              width: "227px",
+              height: "48px",
+              backgroundColor: "#FFE2E2",
+              borderRadius: "12px",
+              border: "0.8px solid #F3F4F6",
+              px: "0.75rem",
+              boxShadow: "none",
+              "&:hover": { backgroundColor: "#FFE2E2" }
+            },
+            menuItemText: {
+              color: "#82181A",
+              fontSize: "1rem",
+              lineHeight: "1.5rem",
+              letterSpacing: "0.03125rem"
+            }
+          }}
+        />
         <IconButton
           size="small"
           onClick={onClose}
@@ -161,6 +222,17 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
           />
         </IconButton>
       </Box>
+
+      <ModalController
+        isModalOpen={
+          companyModalType === CrmModalTypes.DELETE_COMPANY_CONFIRMATION
+        }
+        handleCloseModal={() => setCompanyModalType(CrmModalTypes.NONE)}
+        modalTitle="Are you sure?"
+        isDividerVisible={false}
+      >
+        <DeleteCompanyConfirmationModal />
+      </ModalController>
     </Box>
   );
 };
