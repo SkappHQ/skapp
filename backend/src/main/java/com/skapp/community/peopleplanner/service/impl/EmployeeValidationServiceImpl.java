@@ -74,11 +74,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 					}
 				}
 
-				if (employmentDetailsDto.getEmploymentDetails().getWorkLocationId() != null && !workLocationDao
-					.existsById(employmentDetailsDto.getEmploymentDetails().getWorkLocationId())) {
-					throw new ValidationException(
-							PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
-				}
+				Validations.validateWorkLocation(employmentDetailsDto.getEmploymentDetails().getWorkLocationId(),
+						workLocationDao);
 
 				if (employmentDetailsDto.getEmploymentDetails() != null) {
 					// Check if a primary supervisor exists

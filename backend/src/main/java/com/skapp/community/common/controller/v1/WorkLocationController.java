@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/work-location")
+@RequestMapping("/v1/com/work-location")
 public class WorkLocationController {
 
 	private final WorkLocationService workLocationService;

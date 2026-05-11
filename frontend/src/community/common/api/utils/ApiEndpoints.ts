@@ -63,5 +63,5 @@ export const storageAvailabilityEndpoints = {
 };
 
 export const workLocationEndpoints = {
-  WORK_LOCATIONS: `/work-location`
+  WORK_LOCATIONS: `${moduleAPIPath.COMMON}/work-location`
 };
