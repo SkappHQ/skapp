@@ -21,13 +21,14 @@ import {
   AllEmployeeDataResponse,
   AllEmployeeDataType
 } from "~community/people/types/PeopleTypes";
-import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
+import { WorkLocationEmployee, WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
+  preloadedEmployees?: WorkLocationEmployee[];
 }
 
-const WorkLocationEmployeeSelector = ({ formik }: Props) => {
+const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props) => {
   const translateText = useTranslator("configurations", "workLocation");
 
   const [employeeSearchText, setEmployeeSearchText] = useState("");
@@ -103,10 +104,21 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
   const isAllSelected = formik.values.isAllEmployees;
 
   const selectedEmployees = useMemo(() => {
-    return selectedIds
-      .map((id) => allEmployees.find((e) => Number(e.employeeId) === id))
-      .filter(Boolean) as AllEmployeeDataType[];
-  }, [selectedIds, allEmployees]);
+    return selectedIds.map((id) => {
+      const fromList = allEmployees.find((e) => Number(e.employeeId) === id);
+      if (fromList) return fromList;
+      const fromPreloaded = preloadedEmployees.find((e) => e.employeeId === id);
+      if (fromPreloaded) {
+        return {
+          employeeId: fromPreloaded.employeeId,
+          firstName: fromPreloaded.firstName,
+          lastName: fromPreloaded.lastName ?? "",
+          authPic: fromPreloaded.authPic ?? ""
+        } as AllEmployeeDataType;
+      }
+      return undefined;
+    }).filter(Boolean) as AllEmployeeDataType[];
+  }, [selectedIds, allEmployees, preloadedEmployees]);
 
   const selectedCount = isAllSelected ? allEmployees.length : selectedIds.length;
 

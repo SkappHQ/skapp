@@ -8,14 +8,14 @@ export interface WorkLocationGeofence {
 export interface WorkLocationEmployee {
   employeeId: number;
   firstName: string;
-  lastName: string;
-  authPic: string;
+  lastName: string | null;
+  authPic: string | null;
 }
 
 export interface WorkLocation {
   workLocationId: number;
   name: string;
-  address: string;
+  address: string | null;
   employeeCount: number;
   isAllEmployees?: boolean;
   employees?: WorkLocationEmployee[];

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import UpdateWorkLocation from "~community/configurations/components/organisms/UpdateWorkLocation/UpdateWorkLocation";
+import WorkLocationForm from "~community/configurations/components/organisms/WorkLocationForm/WorkLocationForm";
 
 const WorkLocationEditPage: NextPage = () => {
   const router = useRouter();
@@ -20,7 +20,7 @@ const WorkLocationEditPage: NextPage = () => {
       isBackButtonVisible
       onBackClick={() => router.back()}
     >
-      {locationId !== undefined && <UpdateWorkLocation id={locationId} />}
+      {locationId !== undefined && <WorkLocationForm id={locationId} />}
     </ContentLayout>
   );
 };
