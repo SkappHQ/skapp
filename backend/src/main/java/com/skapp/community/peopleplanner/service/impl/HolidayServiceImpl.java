@@ -505,7 +505,7 @@ public class HolidayServiceImpl implements HolidayService {
 		List<HolidayWorkLocationResponseDto> workLocations = holidayResponseDto.getWorkLocations();
 		if (workLocations == null || workLocations.isEmpty() || workLocations.size() == totalWorkLocationCount) {
 			HolidayWorkLocationResponseDto allLocations = new HolidayWorkLocationResponseDto();
-			allLocations.setName("All locations");
+			allLocations.setName(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS);
 			holidayResponseDto.setWorkLocations(Collections.singletonList(allLocations));
 		}
 	}
