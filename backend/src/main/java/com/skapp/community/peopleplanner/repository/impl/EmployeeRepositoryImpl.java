@@ -38,6 +38,8 @@ import com.skapp.community.peopleplanner.type.EmployeeSort;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
+import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.model.WorkLocation_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Tuple;
@@ -60,8 +62,6 @@ import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import com.skapp.community.common.model.WorkLocation;
-import com.skapp.community.common.model.WorkLocation_;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
