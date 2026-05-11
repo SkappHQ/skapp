@@ -121,6 +121,7 @@ const AddLeaveAllocationModal: React.FC<Props> = ({
   }, [values, setCurrentLeaveAllocationFormData]);
 
   const isSaveDisabled =
+    !values.assignedTo ||
     !values.employeeId ||
     !values.typeId ||
     !values.numberOfDaysOff ||

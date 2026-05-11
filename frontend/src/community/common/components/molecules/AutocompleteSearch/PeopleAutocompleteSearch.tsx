@@ -1,4 +1,5 @@
 import { SxProps, Theme } from "@mui/material";
+import { AutocompleteInputChangeReason } from "@mui/material/Autocomplete";
 import { useMemo } from "react";
 
 import { EmployeeType } from "~community/people/types/EmployeeTypes";
@@ -14,7 +15,7 @@ interface Props {
   options: EmployeeType[];
   value?: EmployeeType;
   inputValue: string;
-  onInputChange: (value: string, reason: string) => void;
+  onInputChange: (value: string, reason: AutocompleteInputChangeReason) => void;
   onChange: (value: EmployeeType) => void;
   placeholder: string;
   isLoading?: boolean;
