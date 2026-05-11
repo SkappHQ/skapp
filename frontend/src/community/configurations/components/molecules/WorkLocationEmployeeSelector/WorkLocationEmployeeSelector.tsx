@@ -1,4 +1,9 @@
-import { Box, Checkbox as MuiCheckbox, Typography } from "@mui/material";
+import {
+  Box,
+  Checkbox as MuiCheckbox,
+  CircularProgress,
+  Typography
+} from "@mui/material";
 import { FormikProps } from "formik";
 import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
@@ -8,6 +13,7 @@ import SearchBox from "~community/common/components/molecules/SearchBox/SearchBo
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
+import { testPassiveEventSupport } from "~community/common/utils/commonUtil";
 import {
   useGetEmployeeData,
   useGetSearchedEmployees
@@ -17,7 +23,10 @@ import {
   DataFilterEnums,
   EmploymentStatusTypes
 } from "~community/people/types/EmployeeTypes";
-import { AllEmployeeDataType } from "~community/people/types/PeopleTypes";
+import {
+  AllEmployeeDataResponse,
+  AllEmployeeDataType
+} from "~community/people/types/PeopleTypes";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 interface Props {
@@ -31,6 +40,8 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
   const [popperOpen, setPopperOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+  const listInnerRef = useRef<HTMLDivElement>();
+  const supportsPassive = testPassiveEventSupport();
   const [boxWidth, setBoxWidth] = useState(0);
 
   const { setEmployeeDataParams } = usePeopleStore((state) => state);
@@ -42,17 +53,57 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
     ]);
   }, [setEmployeeDataParams]);
 
-  const { data: employeePages } = useGetEmployeeData();
+  const {
+    data: employeePages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetEmployeeData();
   const { data: searchResults } = useGetSearchedEmployees(employeeSearchText);
 
   const allEmployees: AllEmployeeDataType[] =
-    employeePages?.pages?.flatMap((page: any) => page?.items ?? []) ?? [];
+    employeePages?.pages?.flatMap(
+      (page: AllEmployeeDataResponse) => page?.items ?? []
+    ) ?? [];
 
   const displayEmployees = useMemo(() => {
     return employeeSearchText.length > 0
       ? ((searchResults ?? []) as AllEmployeeDataType[])
       : allEmployees;
   }, [employeeSearchText, searchResults, allEmployees]);
+
+  useEffect(() => {
+    const listInnerElement = listInnerRef.current;
+
+    const onScroll = () => {
+      if (listInnerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = listInnerRef.current;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight;
+        if (isNearBottom && !isFetchingNextPage && hasNextPage) {
+          fetchNextPage();
+        }
+      }
+    };
+
+    if (!isFetchingNextPage && listInnerElement) {
+      listInnerElement.addEventListener(
+        "touchmove",
+        onScroll,
+        supportsPassive ? { passive: true } : false
+      );
+
+      listInnerElement.addEventListener(
+        "wheel",
+        onScroll,
+        supportsPassive ? { passive: true } : false
+      );
+
+      return () => {
+        listInnerElement.removeEventListener("touchmove", onScroll);
+        listInnerElement.removeEventListener("wheel", onScroll);
+      };
+    }
+  }, [isFetchingNextPage, hasNextPage, supportsPassive, fetchNextPage]);
 
   const selectedIds: number[] = formik.values.employeeIds ?? [];
   const isAllSelected = formik.values.isAllEmployees;
@@ -198,7 +249,10 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
           }
           if (event.key === "Escape") {
             event.preventDefault();
-            boxRef.current?.blur();
+            handlePopperClose();
+          }
+          if (event.key === "Tab") {
+            handlePopperClose();
           }
         }}
       >
@@ -228,7 +282,7 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
             autoFocus
           />
         </Box>
-        <Box sx={{ maxHeight: "14rem", overflowY: "auto" }}>
+        <Box ref={listInnerRef} sx={{ maxHeight: "14rem", overflowY: "auto" }}>
           <Box
             sx={{
               display: "flex",
@@ -285,6 +339,18 @@ const WorkLocationEmployeeSelector = ({ formik }: Props) => {
                 </Box>
               );
             })}
+
+          {isFetchingNextPage && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                py: "0.5rem"
+              }}
+            >
+              <CircularProgress size={20} />
+            </Box>
+          )}
         </Box>
       </Popper>
     </div>

@@ -78,8 +78,8 @@ const CreateWorkLocation = () => {
         employeeIds: values.employeeIds,
         geofence: geofence
           ? {
-              latitude: geofence.latitude,
-              longitude: geofence.longitude,
+              latitude: geofence.latitude.toString(),
+              longitude: geofence.longitude.toString(),
               radiusMeters: geofence.radiusMeters
             }
           : null

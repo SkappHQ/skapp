@@ -1,7 +1,7 @@
 export interface WorkLocationGeofence {
   id: number;
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
   radiusMeters: number;
 }
 
@@ -17,9 +17,9 @@ export interface WorkLocation {
   name: string;
   address: string;
   employeeCount: number;
-  isAllEmployees: boolean;
-  employees: WorkLocationEmployee[];
-  geofence: WorkLocationGeofence | null;
+  isAllEmployees?: boolean;
+  employees?: WorkLocationEmployee[];
+  geofence?: WorkLocationGeofence | null;
 }
 
 export interface WorkLocationGeofenceFormValues {
@@ -38,8 +38,8 @@ export interface WorkLocationFormValues {
 
 /** Shape sent to the backend — address is top-level, geofence has no address field. */
 export interface WorkLocationGeofencePayload {
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
   radiusMeters: number;
 }
 
@@ -48,7 +48,7 @@ export interface WorkLocationRequestPayload {
   address: string;
   isAllEmployees: boolean;
   employeeIds: number[];
-  geofence: WorkLocationGeofencePayload | null;
+  geofence?: WorkLocationGeofencePayload | null;
 }
 
 export interface WorkLocationsPage {

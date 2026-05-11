@@ -74,12 +74,12 @@ const UpdateWorkLocation = ({ id }: Props) => {
     initialValues: workLocation
       ? {
           name: workLocation.name,
-          isAllEmployees: workLocation.isAllEmployees,
+          isAllEmployees: workLocation.isAllEmployees ?? false,
           employeeIds: workLocation.employees?.map((e) => e.employeeId) ?? [],
           geofence: canSeeGeofence && workLocation.geofence
             ? {
-                latitude: workLocation.geofence.latitude,
-                longitude: workLocation.geofence.longitude,
+                latitude: parseFloat(workLocation.geofence.latitude),
+                longitude: parseFloat(workLocation.geofence.longitude),
                 radiusMeters: workLocation.geofence.radiusMeters,
                 address: workLocation.address ?? ""
               }
@@ -90,39 +90,35 @@ const UpdateWorkLocation = ({ id }: Props) => {
     validationSchema,
     onSubmit: (values) => {
       if (!workLocation) return;
-      const geofence = canSeeGeofence ? values.geofence : null;
-      updateWorkLocation({
+      const payload: Parameters<typeof updateWorkLocation>[0] = {
         id: workLocation.workLocationId,
         data: {
           name: values.name,
-          address: geofence?.address ?? "",
+          address: canSeeGeofence ? (values.geofence?.address ?? "") : (workLocation.address ?? ""),
           isAllEmployees: values.isAllEmployees,
-          employeeIds: values.employeeIds,
-          geofence: geofence
-            ? {
-                latitude: geofence.latitude,
-                longitude: geofence.longitude,
-                radiusMeters: geofence.radiusMeters
-              }
-            : null
+          employeeIds: values.employeeIds
         }
-      });
+      };
+      if (canSeeGeofence) {
+        payload.data.geofence = values.geofence
+          ? {
+              latitude: values.geofence.latitude.toString(),
+              longitude: values.geofence.longitude.toString(),
+              radiusMeters: values.geofence.radiusMeters
+            }
+          : null;
+      }
+      updateWorkLocation(payload);
     }
   });
 
   formikRef.current = formik;
 
   const { isUnsavedModalOpen, handleResume, handleLeave, skipNextGuard } =
-    useUnsavedChangesGuard(formik.dirty, router);
+    useUnsavedChangesGuard(!isLoading && formik.dirty, router);
   skipGuardRef.current = skipNextGuard;
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center p-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-      </div>
-    );
-  }
+  const isFormDisabled = isLoading || isPending;
 
   return (
     <form
@@ -142,22 +138,23 @@ const UpdateWorkLocation = ({ id }: Props) => {
           helperText={formik.touched.name ? formik.errors.name : ""}
           name="name"
           className="w-full"
+          disabled={isFormDisabled}
         />
       </div>
 
-      <WorkLocationEmployeeSelector formik={formik} />
+      {!isLoading && <WorkLocationEmployeeSelector formik={formik} />}
 
-      {canSeeGeofence && <GeofenceMap formik={formik} />}
+      {!isLoading && canSeeGeofence && <GeofenceMap formik={formik} />}
 
       <div className="flex gap-3 justify-end">
         <ButtonV2
           variant="tertiary"
           onClick={() => router.push(ROUTES.CONFIGURATIONS.BASE)}
-          disabled={isPending}
+          disabled={isFormDisabled}
         >
           {translateText(["form.cancelButton"])}
         </ButtonV2>
-        <ButtonV2 variant="primary" type="submit" disabled={isPending}>
+        <ButtonV2 variant="primary" type="submit" disabled={isFormDisabled}>
           {translateText(["form.saveChangesButton"])}
         </ButtonV2>
       </div>
