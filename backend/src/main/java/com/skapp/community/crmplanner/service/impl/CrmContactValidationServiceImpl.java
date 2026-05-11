@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class CrmContactValidationServiceImpl implements CrmContactValidationService {
 
+	private static final Pattern CONTACT_NAME_PATTERN = Pattern.compile(CrmConstants.CONTACT_NAME_REGEX);
+
 	private final CrmContactDao crmContactDao;
 
 	@Override
@@ -36,7 +38,7 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 					new Object[] { CrmConstants.CONTACT_NAME_MAX_LENGTH });
 		}
 
-		if (!Pattern.matches(CrmConstants.CONTACT_NAME_REGEX, trimmedName)) {
+		if (!CONTACT_NAME_PATTERN.matcher(trimmedName).matches()) {
 			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID);
 		}
 	}

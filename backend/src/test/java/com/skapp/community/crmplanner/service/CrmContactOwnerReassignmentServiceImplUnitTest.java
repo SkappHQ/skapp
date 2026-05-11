@@ -58,7 +58,8 @@ class CrmContactOwnerReassignmentServiceImplUnitTest {
 
 		crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(List.of(deactivatedUser));
 
-		ArgumentCaptor<List<CrmContact>> contactsCaptor = ArgumentCaptor.forClass(List.class);
+		@SuppressWarnings("unchecked")
+		ArgumentCaptor<List<CrmContact>> contactsCaptor = ArgumentCaptor.forClass((Class<List<CrmContact>>) (Class<?>) List.class);
 		verify(crmContactDao).saveAll(contactsCaptor.capture());
 
 		List<CrmContact> savedContacts = contactsCaptor.getValue();

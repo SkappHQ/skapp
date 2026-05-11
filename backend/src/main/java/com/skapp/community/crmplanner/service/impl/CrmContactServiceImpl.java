@@ -148,8 +148,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		EmployeeRole ownerRole = owner.getEmployeeRole();
+		boolean isOwnerSuperAdmin = ownerRole != null && Boolean.TRUE.equals(ownerRole.getIsSuperAdmin());
 		Role ownerCrmRole = ownerRole != null ? ownerRole.getCrmRole() : null;
-		if (!ASSIGNABLE_CRM_ROLES.contains(ownerCrmRole)) {
+		if (!isOwnerSuperAdmin && !ASSIGNABLE_CRM_ROLES.contains(ownerCrmRole)) {
 			throw new ValidationException(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE);
 		}
 
