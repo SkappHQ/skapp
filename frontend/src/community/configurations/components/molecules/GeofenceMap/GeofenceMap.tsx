@@ -4,10 +4,11 @@ import { FormikProps } from "formik";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
+import GeofenceMapView from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceMapView";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
-import GeofenceSelectorModal from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceSelectorModal";
+import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import { formatRadius } from "~community/configurations/utils/geofenceUtils";
+import GeofenceSelectorModal from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceSelectorModal";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -40,28 +41,40 @@ const GeofenceMap = ({ formik }: Props) => {
       </p>
 
       {hasGeofence ? (
-        <div className="flex items-center justify-between border border-secondary-accent rounded-lg p-4">
-          <div className="flex flex-col gap-1">
-            <span className="body2">
-              {geofence.address}
-            </span>
-            <span className="body3 text-secondary-text">
-              {translateText(["form.radiusLabel"])}: {formatRadius(geofence.radiusMeters)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <IconButton
-              icon={<Icon name={IconName.EDIT_ICON} />}
-              type="button"
-              onClick={handleOpenModal}
-              aria-label={translateText(["form.geofenceEditButton"])}
-            />
-            <IconButton
-              icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-              type="button"
-              onClick={handleDeleteGeofence}
-              aria-label={translateText(["form.geofenceDeleteButton"])}
-            />
+        <div className="flex flex-col border border-secondary-accent rounded-lg overflow-hidden">
+          {/* Read-only map preview */}
+          <GeofenceMapView
+            center={{ lat: geofence.latitude, lng: geofence.longitude }}
+            radius={geofence.radiusMeters}
+            height="16rem"
+            mapId="geofence-preview-map"
+            interactive={false}
+          />
+
+          {/* Info row */}
+          <div className="flex items-center justify-between p-4">
+            <div className="flex flex-col gap-1">
+              <span className="body2">
+                {geofence.address}
+              </span>
+              <span className="body3 text-secondary-text">
+                {translateText(["form.radiusLabel"])}: {formatRadius(geofence.radiusMeters)}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <IconButton
+                icon={<Icon name={IconName.EDIT_ICON} />}
+                type="button"
+                onClick={handleOpenModal}
+                aria-label={translateText(["form.geofenceEditButton"])}
+              />
+              <IconButton
+                icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+                type="button"
+                onClick={handleDeleteGeofence}
+                aria-label={translateText(["form.geofenceDeleteButton"])}
+              />
+            </div>
           </div>
         </div>
       ) : (

@@ -1,9 +1,4 @@
-import {
-  APIProvider,
-  Map,
-  AdvancedMarker,
-  MapMouseEvent
-} from "@vis.gl/react-google-maps";
+import { MapMouseEvent } from "@vis.gl/react-google-maps";
 import { LargeModal } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { useCallback } from "react";
@@ -19,8 +14,8 @@ import {
   formatRadius,
   reverseGeocode
 } from "~community/configurations/utils/geofenceUtils";
-import RadiusCircle from "./RadiusCircle";
 import AddressSearch from "./AddressSearch";
+import GeofenceMapView from "./GeofenceMapView";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -29,7 +24,6 @@ interface Props {
 const GeofenceSelectorModal = ({ formik }: Props) => {
   const translateText = useTranslator("configurations", "workLocation");
   const { setToastMessage } = useToast();
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
   const {
     isGeofenceModalOpen,
@@ -129,80 +123,60 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
       ? { lat: tempLat, lng: tempLng }
       : null;
 
-  const defaultCenter = { lat: 20, lng: 0 };
-
   const modalContent = (
-    <APIProvider apiKey={apiKey}>
-      <div className="flex flex-col gap-4">
-        {/* Radius slider */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="subtitle2">
-              {translateText(["form.radiusLabel"])}
-            </span>
-            <span className="body2 text-secondary-text">
-              {formatRadius(tempRadius)}
-            </span>
-          </div>
-          <input
-            type="range"
-            min={MIN_RADIUS}
-            max={MAX_RADIUS}
-            step={10}
-            value={tempRadius}
-            onChange={(e) => handleRadiusChange(Number(e.target.value))}
-            className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-accent"
-          />
-          <div className="flex justify-between">
-            <span className="body3 text-secondary-icon">
-              {formatRadius(MIN_RADIUS)}
-            </span>
-            <span className="body3 text-secondary-icon">
-              {formatRadius(MAX_RADIUS)}
-            </span>
-          </div>
+    <div className="flex flex-col gap-4">
+      {/* Radius slider */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="subtitle2">
+            {translateText(["form.radiusLabel"])}
+          </span>
+          <span className="body2 text-secondary-text">
+            {formatRadius(tempRadius)}
+          </span>
         </div>
-
-        {/* Map with search overlay */}
-        <div className="relative">
-          {tempMarkerPosition ? (
-            <Map
-              style={{ width: "100%", height: "22rem" }}
-              defaultCenter={tempMarkerPosition}
-              defaultZoom={14}
-              center={tempMarkerPosition}
-              mapId="geofence-map"
-              onClick={handleMapClick}
-            >
-              <AdvancedMarker position={tempMarkerPosition} />
-              <RadiusCircle center={tempMarkerPosition} radius={tempRadius} />
-            </Map>
-          ) : (
-            <Map
-              style={{ width: "100%", height: "22rem" }}
-              defaultCenter={defaultCenter}
-              defaultZoom={2}
-              mapId="geofence-map"
-              onClick={handleMapClick}
-            />
-          )}
-
-          {/* Search overlay — top-left corner of the map */}
-          <div className="absolute top-3 left-3 w-72 p-3">
-            <AddressSearch
-              onResult={handleSearchResult}
-              onError={handleSearchError}
-              searchPlaceholder={translateText(["form.addressSearchPlaceholder"])}
-            />
-            {tempGeofence?.address && (
-              <span className="body3 block mt-2 text-secondary-text">
-                {tempGeofence.address}
-              </span>
-            )}
-          </div>
+        <input
+          type="range"
+          min={MIN_RADIUS}
+          max={MAX_RADIUS}
+          step={10}
+          value={tempRadius}
+          onChange={(e) => handleRadiusChange(Number(e.target.value))}
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-accent"
+        />
+        <div className="flex justify-between">
+          <span className="body3 text-secondary-icon">
+            {formatRadius(MIN_RADIUS)}
+          </span>
+          <span className="body3 text-secondary-icon">
+            {formatRadius(MAX_RADIUS)}
+          </span>
         </div>
       </div>
-    </APIProvider>
+
+      {/* Map with search overlay */}
+      <GeofenceMapView
+        center={tempMarkerPosition}
+        radius={tempRadius}
+        height="22rem"
+        mapId="geofence-map"
+        onClick={handleMapClick}
+      >
+        {/* Search overlay — top-left corner of the map */}
+        <div className="absolute top-3 left-3 w-72 p-3">
+          <AddressSearch
+            onResult={handleSearchResult}
+            onError={handleSearchError}
+            searchPlaceholder={translateText(["form.addressSearchPlaceholder"])}
+          />
+          {tempGeofence?.address && (
+            <span className="body3 block mt-2 text-secondary-text">
+              {tempGeofence.address}
+            </span>
+          )}
+        </div>
+      </GeofenceMapView>
+    </div>
   );
 
   return (
