@@ -36,9 +36,27 @@ const GeofenceMap = ({ formik }: Props) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="subtitle1">
-        {translateText(["form.geofenceTitle"])}
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="subtitle1">
+          {translateText(["form.geofenceTitle"])}
+        </p>
+        {hasGeofence && (
+          <div className="flex items-center gap-2">
+            <IconButton
+              icon={<Icon name={IconName.EDIT_ICON} />}
+              type="button"
+              onClick={handleOpenModal}
+              aria-label={translateText(["form.geofenceEditButton"])}
+            />
+            <IconButton
+              icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
+              type="button"
+              onClick={handleDeleteGeofence}
+              aria-label={translateText(["form.geofenceDeleteButton"])}
+            />
+          </div>
+        )}
+      </div>
 
       {hasGeofence ? (
         <div className="flex flex-col border border-secondary-accent rounded-lg overflow-hidden">
@@ -50,32 +68,6 @@ const GeofenceMap = ({ formik }: Props) => {
             mapId="geofence-preview-map"
             interactive={false}
           />
-
-          {/* Info row */}
-          <div className="flex items-center justify-between p-4">
-            <div className="flex flex-col gap-1">
-              <span className="body2">
-                {geofence.address}
-              </span>
-              <span className="body3 text-secondary-text">
-                {translateText(["form.radiusLabel"])}: {formatRadius(geofence.radiusMeters)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <IconButton
-                icon={<Icon name={IconName.EDIT_ICON} />}
-                type="button"
-                onClick={handleOpenModal}
-                aria-label={translateText(["form.geofenceEditButton"])}
-              />
-              <IconButton
-                icon={<Icon name={IconName.DELETE_BUTTON_ICON} />}
-                type="button"
-                onClick={handleDeleteGeofence}
-                aria-label={translateText(["form.geofenceDeleteButton"])}
-              />
-            </div>
-          </div>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-3 bg-tertiary-background rounded-lg border-2 border-dashed border-secondary-accent">
