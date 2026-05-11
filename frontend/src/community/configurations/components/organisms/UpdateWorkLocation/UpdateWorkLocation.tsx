@@ -1,7 +1,7 @@
 import { useFormik } from "formik";
-import { ButtonV2, InputField } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, InputField, Spinner } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { useRef } from "react";
+import { useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
@@ -15,7 +15,6 @@ import { useGetAttendanceConfiguration } from "~community/attendance/api/Attenda
 import { useGetWorkLocationById, useUpdateWorkLocation } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import WorkLocationEmployeeSelector from "~community/configurations/components/molecules/WorkLocationEmployeeSelector/WorkLocationEmployeeSelector";
-import { useUnsavedChangesGuard } from "~community/configurations/hooks/useUnsavedChangesGuard";
 import { WorkLocation, WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
 
@@ -34,8 +33,7 @@ const UpdateWorkLocation = ({ id }: Props) => {
 
   const { user } = useAuth();
   const { setToastMessage } = useToast();
-  const formikRef = useRef<ReturnType<typeof useFormik<WorkLocationFormValues>> | null>(null);
-  const skipGuardRef = useRef<(() => void) | null>(null);
+  const [isUnsavedModalOpen, setIsUnsavedModalOpen] = useState(false);
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
 
@@ -55,8 +53,6 @@ const UpdateWorkLocation = ({ id }: Props) => {
         description: translateText(["toasts.updateSuccess.description"]),
         isIcon: true
       });
-      formikRef.current?.resetForm();
-      skipGuardRef.current?.();
       router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
     },
     () => {
@@ -112,13 +108,28 @@ const UpdateWorkLocation = ({ id }: Props) => {
     }
   });
 
-  formikRef.current = formik;
+  const handleCancel = () => {
+    if (!isLoading && formik.dirty) {
+      setIsUnsavedModalOpen(true);
+    } else {
+      router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
+    }
+  };
 
-  const { isUnsavedModalOpen, handleResume, handleLeave, skipNextGuard } =
-    useUnsavedChangesGuard(!isLoading && formik.dirty, router);
-  skipGuardRef.current = skipNextGuard;
+  const handleLeave = () => {
+    setIsUnsavedModalOpen(false);
+    router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
+  };
+
+  const handleResume = () => {
+    setIsUnsavedModalOpen(false);
+  };
 
   const isFormDisabled = isLoading || isPending;
+
+  if (isLoading) {
+    <Spinner />;
+  }
 
   return (
     <form
@@ -142,14 +153,14 @@ const UpdateWorkLocation = ({ id }: Props) => {
         />
       </div>
 
-      {!isLoading && <WorkLocationEmployeeSelector formik={formik} />}
+       <WorkLocationEmployeeSelector formik={formik} />
 
-      {!isLoading && canSeeGeofence && <GeofenceMap formik={formik} />}
+      {canSeeGeofence && <GeofenceMap formik={formik} />}
 
       <div className="flex gap-3 justify-end">
         <ButtonV2
           variant="tertiary"
-          onClick={() => router.push(ROUTES.CONFIGURATIONS.BASE)}
+          onClick={handleCancel}
           disabled={isFormDisabled}
         >
           {translateText(["form.cancelButton"])}

@@ -59,15 +59,15 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
       if (!e.detail.latLng) return;
       const newLat = e.detail.latLng.lat;
       const newLng = e.detail.latLng.lng;
-      if (!tempGeofence) {
+      if (tempGeofence) {
+        updateTempGeofence({ latitude: newLat, longitude: newLng });
+      } else {
         setTempGeofence({
           latitude: newLat,
           longitude: newLng,
           radiusMeters: MIN_RADIUS,
           address: ""
         });
-      } else {
-        updateTempGeofence({ latitude: newLat, longitude: newLng });
       }
       try {
         const address = await reverseGeocode(newLat, newLng);
@@ -89,15 +89,15 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
 
   const handleSearchResult = useCallback(
     (lat: number, lng: number, address: string) => {
-      if (!tempGeofence) {
+      if (tempGeofence) {
+        updateTempGeofence({ latitude: lat, longitude: lng, address });
+      } else {
         setTempGeofence({
           latitude: lat,
           longitude: lng,
           radiusMeters: MIN_RADIUS,
           address
         });
-      } else {
-        updateTempGeofence({ latitude: lat, longitude: lng, address });
       }
     },
     [tempGeofence, setTempGeofence, updateTempGeofence]
