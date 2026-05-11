@@ -7,12 +7,10 @@ import {
 import { LargeModal } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { useCallback } from "react";
-import { Box, Typography } from "@mui/material";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import { theme } from "~community/common/theme/theme";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import {
@@ -135,26 +133,17 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
 
   const modalContent = (
     <APIProvider apiKey={apiKey}>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div className="flex flex-col gap-4">
         {/* Radius slider */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between"
-            }}
-          >
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="subtitle2">
               {translateText(["form.radiusLabel"])}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: theme.palette.text.secondary }}
-            >
+            </span>
+            <span className="body2 text-secondary-text">
               {formatRadius(tempRadius)}
-            </Typography>
-          </Box>
+            </span>
+          </div>
           <input
             type="range"
             min={MIN_RADIUS}
@@ -162,27 +151,20 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
             step={10}
             value={tempRadius}
             onChange={(e) => handleRadiusChange(Number(e.target.value))}
-            style={{
-              width: "100%",
-              height: "0.5rem",
-              borderRadius: "0.5rem",
-              appearance: "none",
-              cursor: "pointer",
-              accentColor: theme.palette.primary.dark
-            }}
+            className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-accent"
           />
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Typography variant="caption" sx={{ color: theme.palette.grey[700] }}>
+          <div className="flex justify-between">
+            <span className="body3 text-secondary-icon">
               {formatRadius(MIN_RADIUS)}
-            </Typography>
-            <Typography variant="caption" sx={{ color: theme.palette.grey[700] }}>
+            </span>
+            <span className="body3 text-secondary-icon">
               {formatRadius(MAX_RADIUS)}
-            </Typography>
-          </Box>
-        </Box>
+            </span>
+          </div>
+        </div>
 
         {/* Map with search overlay */}
-        <Box sx={{ position: "relative" }}>
+        <div className="relative">
           {tempMarkerPosition ? (
             <Map
               style={{ width: "100%", height: "22rem" }}
@@ -206,35 +188,20 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
           )}
 
           {/* Search overlay — top-left corner of the map */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: "0.75rem",
-              left: "0.75rem",
-              width: "18rem",
-              p: "0.75rem"
-            }}
-          >
+          <div className="absolute top-3 left-3 w-72 p-3">
             <AddressSearch
               onResult={handleSearchResult}
               onError={handleSearchError}
               searchPlaceholder={translateText(["form.addressSearchPlaceholder"])}
             />
             {tempGeofence?.address && (
-              <Typography
-                variant="caption"
-                sx={{
-                  display: "block",
-                  mt: "0.5rem",
-                  color: theme.palette.text.secondary
-                }}
-              >
+              <span className="body3 block mt-2 text-secondary-text">
                 {tempGeofence.address}
-              </Typography>
+              </span>
             )}
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
     </APIProvider>
   );
 
