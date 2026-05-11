@@ -62,7 +62,6 @@ import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
