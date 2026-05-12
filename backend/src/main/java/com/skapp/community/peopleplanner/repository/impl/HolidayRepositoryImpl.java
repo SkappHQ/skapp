@@ -16,7 +16,6 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -95,16 +94,10 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 			if (workLocation != null && !workLocation.trim().isEmpty()
 					&& !PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS.equals(workLocation.trim())) {
 
-				Subquery<Long> workLocationExistsSubquery = criteriaQuery.subquery(Long.class);
-				Root<Holiday> subRoot = workLocationExistsSubquery.from(Holiday.class);
-				subRoot.join(Holiday_.workLocations);
-				workLocationExistsSubquery.select(criteriaBuilder.literal(1L))
-					.where(criteriaBuilder.equal(subRoot.get(Holiday_.id), root.get(Holiday_.id)));
-
 				Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
 				predicates.add(criteriaBuilder.or(
 						criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.name), workLocation.trim()),
-						criteriaBuilder.not(criteriaBuilder.exists(workLocationExistsSubquery))));
+						criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
 				criteriaQuery.distinct(true);
 			}
 		}
