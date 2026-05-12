@@ -331,6 +331,9 @@ export interface EmployeeDetails {
   };
   userRoles: EmployeeRoleType;
   accountStatus?: string | null;
+  employment?: {
+    employmentDetails?: { workLocationId?: number };
+  };
 }
 
 export interface FamilyMemberResponseType {

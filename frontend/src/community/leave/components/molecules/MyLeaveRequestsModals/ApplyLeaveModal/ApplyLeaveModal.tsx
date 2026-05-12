@@ -144,13 +144,8 @@ const ApplyLeaveModal = () => {
         : undefined
     );
 
-  const workLocationId = (
-    employeeData as unknown as {
-      employment?: {
-        employmentDetails?: { workLocationId?: number };
-      };
-    }
-  )?.employment?.employmentDetails?.workLocationId;
+  const workLocationId =
+    employeeData?.employment?.employmentDetails?.workLocationId;
 
   const { data: allHolidays } = useGetAllHolidays(
     currentYear.toString(),
