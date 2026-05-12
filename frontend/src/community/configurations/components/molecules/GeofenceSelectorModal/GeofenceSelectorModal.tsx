@@ -10,7 +10,9 @@ import { WorkLocationFormValues } from "~community/configurations/types/WorkLoca
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import {
   MIN_RADIUS,
-  MAX_RADIUS,
+  MAX_RADIUS
+} from "~community/configurations/constants/geofenceConstants";
+import {
   formatRadius,
   reverseGeocode
 } from "~community/configurations/utils/geofenceUtils";

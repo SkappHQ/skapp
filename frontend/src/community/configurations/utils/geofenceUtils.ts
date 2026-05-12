@@ -1,6 +1,3 @@
-export const MIN_RADIUS = 100;
-export const MAX_RADIUS = 2000;
-
 export const formatRadius = (meters: number): string => `${meters}m`;
 
 export const forwardGeocode = async (
