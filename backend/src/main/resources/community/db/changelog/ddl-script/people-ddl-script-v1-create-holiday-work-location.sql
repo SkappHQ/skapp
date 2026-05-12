@@ -12,3 +12,4 @@ CREATE TABLE IF NOT EXISTS `holiday_work_location`
 ) ENGINE = InnoDB;
 
 -- rollback drop table holiday_work_location;
+
