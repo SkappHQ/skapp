@@ -513,11 +513,11 @@ public class HolidayServiceImpl implements HolidayService {
 
 	private Set<WorkLocation> resolveWorkLocations(List<String> workLocationNames) {
 		if (workLocationNames == null || workLocationNames.isEmpty()) {
-			return Collections.emptySet();
+			return new HashSet<>();
 		}
 
 		if (workLocationNames.stream().anyMatch(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS::equals)) {
-			return Collections.emptySet();
+			return new HashSet<>();
 		}
 
 		List<WorkLocation> workLocations = workLocationDao.findAllByNameIn(workLocationNames);
