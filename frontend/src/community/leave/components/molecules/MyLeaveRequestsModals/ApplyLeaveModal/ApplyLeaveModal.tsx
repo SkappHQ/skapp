@@ -46,6 +46,10 @@ import {
   getDurationSelectorDisabledOptions
 } from "~community/leave/utils/myRequests/applyLeaveModalUtils";
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
+import {
+  useGetEmployeeById,
+  useGetUserPersonalDetails
+} from "~community/people/api/PeopleApi";
 import { useGetMyTeams } from "~community/people/api/TeamApi";
 import {
   useIsGoogleCalendarConnected,
@@ -56,8 +60,6 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 import { FileCategories } from "~enterprise/common/types/s3Types";
 import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFunctions";
-
-import styles from "./styles";
 
 const ApplyLeaveModal = () => {
   const { setToastMessage } = useToast();
@@ -133,7 +135,30 @@ const ApplyLeaveModal = () => {
 
   const { data: myLeaveRequests } = useGetMyRequests({ isExport: true });
 
-  const { data: allHolidays } = useGetAllHolidays(currentYear.toString(), true);
+  const { data: currentEmployee } = useGetUserPersonalDetails();
+
+  const { data: employeeData, isLoading: isEmployeeDataLoading } =
+    useGetEmployeeById(
+      currentEmployee?.employeeId
+        ? Number(currentEmployee.employeeId)
+        : undefined
+    );
+
+  const workLocationId = (
+    employeeData as unknown as {
+      employment?: {
+        employmentDetails?: { workLocationId?: number };
+      };
+    }
+  )?.employment?.employmentDetails?.workLocationId;
+
+  const { data: allHolidays } = useGetAllHolidays(
+    currentYear.toString(),
+    true,
+    undefined,
+    workLocationId,
+    !isEmployeeDataLoading
+  );
 
   const { data: leaveEntitlementBalance } = useGetLeaveEntitlementBalance(
     selectedLeaveAllocationData.leaveType.typeId
