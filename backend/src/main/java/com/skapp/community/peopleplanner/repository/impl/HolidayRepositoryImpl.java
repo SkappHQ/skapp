@@ -3,6 +3,7 @@ package com.skapp.community.peopleplanner.repository.impl;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocation_;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.Holiday_;
 import com.skapp.community.peopleplanner.payload.request.HolidayFilterDto;
@@ -109,7 +110,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 			predicates.add(datePredicate);
 
 			Long workLocationId = holidayFilterDto.getWorkLocationId();
-			if (workLocationId != null && workLocationId != 0) {
+			if (workLocationId != null && !workLocationId.equals(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS_ID)) {
 				Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
 				predicates.add(criteriaBuilder.or(
 						criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
