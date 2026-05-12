@@ -24,6 +24,9 @@ interface Props {
   pendingLeaveCount?: number;
   pendingTimesheetCount?: number;
   pendingSignCount?: number;
+  notificationLeaveCount?: number;
+  notificationTimesheetCount?: number;
+  notificationSignCount?: number;
 }
 
 const getDrawerRoutes = ({
@@ -36,7 +39,10 @@ const getDrawerRoutes = ({
   organizationCalendarMicrosoftStatus,
   pendingLeaveCount = 0,
   pendingTimesheetCount = 0,
-  pendingSignCount = 0
+  pendingSignCount = 0,
+  notificationLeaveCount = 0,
+  notificationTimesheetCount = 0,
+  notificationSignCount = 0
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
@@ -294,7 +300,10 @@ const getDrawerRoutes = ({
             url: ROUTES.SIGN.INBOX,
             icon: route?.icon,
             hasSubTree: false,
-            badge: route?.badge
+            badge:
+              notificationSignCount > 0
+                ? notificationSignCount.toString()
+                : route?.badge
           };
         }
       }
@@ -309,26 +318,26 @@ const getDrawerRoutes = ({
             if (!isSubRouteAuthorized) return null;
 
             // Add badge to "All Requests" if there are pending requests
-            if (subRoute.id === "2B" && pendingLeaveCount > 0) {
+            if (subRoute.id === "2B" && notificationLeaveCount > 0) {
               return {
                 ...subRoute,
-                badge: pendingLeaveCount.toString()
+                badge: notificationLeaveCount.toString()
               };
             }
 
             // Add badge to "All Timesheets" if there are pending timesheets
-            if (subRoute.id === "1B" && pendingTimesheetCount > 0) {
+            if (subRoute.id === "1B" && notificationTimesheetCount > 0) {
               return {
                 ...subRoute,
-                badge: pendingTimesheetCount.toString()
+                badge: notificationTimesheetCount.toString()
               };
             }
 
             // Add badge to "Inbox" if there are pending documents to sign
-            if (subRoute.id === "4A" && pendingSignCount > 0) {
+            if (subRoute.id === "4A" && notificationSignCount > 0) {
               return {
                 ...subRoute,
-                badge: pendingSignCount.toString()
+                badge: notificationSignCount.toString()
               };
             }
 

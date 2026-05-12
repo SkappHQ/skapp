@@ -120,3 +120,33 @@ export const useGetUnreadNotificationsCount = () => {
     }
   });
 };
+
+export const useGetNotificationSummary = () => {
+  return useQuery({
+    queryKey: notificationsQueryKeys.GET_NOTIFICATION_SUMMARY,
+    queryFn: async () => {
+      const { data } = await authFetch.get(
+        notificationsEndpoints.GET_NOTIFICATION_SUMMARY
+      );
+      return data;
+    }
+  });
+};
+
+export const useMarkNotificationSummaryAsRead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (notificationType: string) => {
+      await authFetch.patch(
+        notificationsEndpoints.MARK_NOTIFICATION_SUMMARY_AS_READ,
+        { notificationType }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: notificationsQueryKeys.GET_NOTIFICATION_SUMMARY
+      });
+    }
+  });
+};

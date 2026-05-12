@@ -2,8 +2,9 @@ import { Box } from "@mui/material";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
+import { useMarkNotificationSummaryAsRead } from "~community/common/api/notificationsApi";
 import PeopleAndTeamAutocompleteSearch, {
   OptionType
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
@@ -64,6 +65,12 @@ const LeaveRequests: NextPage = () => {
   useEffect(() => {
     setLeaveRequestParams("status", ["PENDING"]);
   }, [setLeaveRequestParams]);
+
+  const { mutate: markLeaveNotificationsAsRead } =
+    useMarkNotificationSummaryAsRead();
+  useEffect(() => {
+    markLeaveNotificationsAsRead("LEAVE_REQUEST");
+  }, []);
 
   const options = useMemo(() => {
     const individualSuggestions = suggestions?.employeeResponseDtoList?.map(

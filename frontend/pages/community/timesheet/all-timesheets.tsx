@@ -1,11 +1,12 @@
 import { Stack } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import ManagerTimesheet from "~community/attendance/components/organisms/ManagerTimesheet/ManagerTImesheet";
 import { TimeSheetSearchBarCategories } from "~community/attendance/enums/timesheetEnums";
 import { useAuth } from "~community/auth/providers/AuthProvider";
+import { useMarkNotificationSummaryAsRead } from "~community/common/api/notificationsApi";
 import PeopleAndTeamAutocompleteSearch, {
   OptionType
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
@@ -28,6 +29,12 @@ const AllTimesheetsPage: NextPage = () => {
 
   const { setIsFromPeopleDirectory, setViewEmployeeId, setSelectedEmployeeId } =
     usePeopleStore((state) => state);
+
+  const { mutate: markTimesheetNotificationsAsRead } =
+    useMarkNotificationSummaryAsRead();
+  useEffect(() => {
+    markTimesheetNotificationsAsRead("TIME_ENTRY");
+  }, []);
 
   const { data: suggestions, isPending: isSuggestionsPending } =
     useGetEmployeesAndTeamsForAnalytics(searchTerm || " ");

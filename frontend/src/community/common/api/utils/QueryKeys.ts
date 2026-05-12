@@ -18,7 +18,8 @@ export const notificationsQueryKeys = {
   GET_NOTIFICATIONS: ["notifications"],
   MARK_NOTIFICATION_AS_READ: ["mark-notification-as-read"],
   MARK_ALL_NOTIFICATION_AS_READ: ["mark-all-notification-as-read"],
-  GET_NOTIFICATIONS_COUNT: ["notifications-count"]
+  GET_NOTIFICATIONS_COUNT: ["notifications-count"],
+  GET_NOTIFICATION_SUMMARY: ["notification-summary"]
 };
 
 export const applicationVersionInfoQueryKeys = {

@@ -19,6 +19,7 @@ import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
+import { useGetNotificationSummary } from "~community/common/api/notificationsApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import NotificationBadge from "~community/common/components/atoms/NotificationBadge/NotificationBadge";
 import NotificationDot from "~community/common/components/atoms/NotificationDot/NotificationDot";
@@ -126,6 +127,23 @@ const Drawer = (): JSX.Element => {
     pendingCountsData?.pendingTimeEntryRequestsCount || 0;
   const pendingSignCount = pendingCountsData?.pendingDocumentsToSignCount || 0;
 
+  const { data: notificationSummaryData } = useGetNotificationSummary();
+  const notificationLeaveCount =
+    notificationSummaryData?.results?.find?.(
+      (item: { notificationType: string; notificationCount: number }) =>
+        item.notificationType === "LEAVE_REQUEST"
+    )?.notificationCount || 0;
+  const notificationTimesheetCount =
+    notificationSummaryData?.results?.find?.(
+      (item: { notificationType: string; notificationCount: number }) =>
+        item.notificationType === "TIME_ENTRY"
+    )?.notificationCount || 0;
+  const notificationSignCount =
+    notificationSummaryData?.results?.find?.(
+      (item: { notificationType: string; notificationCount: number }) =>
+        item.notificationType === "ESIGN"
+    )?.notificationCount || 0;
+
   const [orgLogo, setOrgLogo] = useState<string | null>(null);
 
   const isEnterprise = environment === appModes.ENTERPRISE;
@@ -144,7 +162,10 @@ const Drawer = (): JSX.Element => {
           organizationCalendarStatusData?.isMicrosoftCalendarEnabled ?? false,
         pendingLeaveCount,
         pendingTimesheetCount,
-        pendingSignCount
+        pendingSignCount,
+        notificationLeaveCount,
+        notificationTimesheetCount,
+        notificationSignCount
       }),
     [
       user,
@@ -153,7 +174,10 @@ const Drawer = (): JSX.Element => {
       organizationCalendarStatusData,
       pendingLeaveCount,
       pendingTimesheetCount,
-      pendingSignCount
+      pendingSignCount,
+      notificationLeaveCount,
+      notificationTimesheetCount,
+      notificationSignCount
     ]
   );
 
@@ -302,28 +326,30 @@ const Drawer = (): JSX.Element => {
                               route?.url ?? null
                             )}
                           />
-                          {/* Feature flagged: Notification red dots temporarily disabled */}
-                          {/* <NotificationDot
+                          <NotificationDot
                             show={
                               route.id === "1" &&
-                              pendingTimesheetCount > 0 &&
+                              hasSubTree &&
+                              notificationTimesheetCount > 0 &&
                               !isExpanded
                             }
-                          /> */}
-                          {/* <NotificationDot
+                          />
+                          <NotificationDot
                             show={
                               route.id === "2" &&
-                              pendingLeaveCount > 0 &&
+                              hasSubTree &&
+                              notificationLeaveCount > 0 &&
                               !isExpanded
                             }
-                          /> */}
-                          {/* <NotificationDot
+                          />
+                          <NotificationDot
                             show={
                               route.id === "4" &&
-                              pendingSignCount > 0 &&
+                              hasSubTree &&
+                              notificationSignCount > 0 &&
                               !isExpanded
                             }
-                          /> */}
+                          />
                         </Box>
                       )}
                     </ListItemIcon>
@@ -338,7 +364,9 @@ const Drawer = (): JSX.Element => {
                           )
                         )}
                       />
-                      {route?.badge && <Badge text={route.badge} />}
+                      {route?.badge && !hasSubTree && (
+                        <NotificationBadge count={route.badge} />
+                      )}
                       <ListItemIcon
                         sx={classes.chevronIcons(
                           expandedDrawerListItem,
@@ -430,10 +458,9 @@ const Drawer = (): JSX.Element => {
                                     )
                                   )}
                                 />
-                                {/* Feature flagged: Notification badge count temporarily disabled */}
-                                {/* {subRoute?.badge && (
+                                {subRoute?.badge && (
                                   <NotificationBadge count={subRoute.badge} />
-                                )} */}
+                                )}
                               </ListItemButton>
                             </ListItem>
                           );
