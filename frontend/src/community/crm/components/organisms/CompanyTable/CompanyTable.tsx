@@ -9,6 +9,8 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, useMemo, useState } from "react";
 
+import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllCompanies } from "~community/crm/api/CompanyApi";
 import { EmptyStateTypeEnum } from "~community/crm/enums/CrmCompanyEnums";
@@ -22,22 +24,23 @@ export const CompanyTable: React.FC = () => {
     EmptyStateTypeEnum.NO_DATA
   );
 
-  const { data: companies, isLoading } = useGetAllCompanies();
+  const debouncedSearch = useDebounce(searchTerm, 300);
 
-  const allCompanies = useMemo(() => {
-    const list = companies ?? [];
-    if (!searchTerm.trim()) return list;
-    const lower = searchTerm.toLowerCase();
-    return list.filter((c) => c.name.toLowerCase().includes(lower));
-  }, [companies, searchTerm]);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useGetAllCompanies(debouncedSearch, 12);
+
+  const companies = useMemo(() => {
+    return data?.pages.flatMap((page) => page?.items ?? []) ?? [];
+  }, [data]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    if (event.target.value.trim() === "") {
-      setEmptyStateType(EmptyStateTypeEnum.NO_DATA);
-    } else {
-      setEmptyStateType(EmptyStateTypeEnum.NO_SEARCH_RESULTS);
-    }
+    const value = event.target.value;
+    setSearchTerm(value);
+    setEmptyStateType(
+      value.trim() === ""
+        ? EmptyStateTypeEnum.NO_DATA
+        : EmptyStateTypeEnum.NO_SEARCH_RESULTS
+    );
   };
 
   const columns: TableColumn<CrmCompanyType>[] = [
@@ -77,39 +80,69 @@ export const CompanyTable: React.FC = () => {
     }
   ];
 
-  const tableData = allCompanies.map((company) => ({
+  const tableData = companies.map((company: CrmCompanyType) => ({
     id: company.id.toString(),
     name: company.name,
-    industry: company.industry ?? "-",
-    website: company.website ?? "-",
-    contactNumber: company.contactNumber ?? "-",
-    address: company.address ?? "-"
+    tasks: company.industry ?? "-",
+    pipeline: company.website ?? "-",
+    contactNumber: company.contactNumber ?? "-"
   }));
+
+  const loadMore = async () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextPage();
+    }
+  };
 
   return (
     <Box display={"flex"} flexDirection="column" gap={1} width="100%">
-      <InputField
-        ariaLabelClearButton={translateText(["table", "clearButtonAriaLabel"])}
-        className="w-full"
-        placeholder={translateText(["table", "search"])}
-        rightIcon={<SearchIcon />}
-        state="default"
-        type="search"
-        value={searchTerm}
-        onChange={handleSearchChange}
-      />
+      <Box
+        display={"flex"}
+        flexDirection="row"
+        gap={1}
+        width="100%"
+        justifyContent={"space-between"}
+      >
+        <InputField
+          ariaLabelClearButton={translateText([
+            "table",
+            "clearButtonAriaLabel"
+          ])}
+          className="w-full"
+          placeholder={translateText(["table", "search"])}
+          rightIcon={<SearchIcon />}
+          state="default"
+          type="search"
+          value={searchTerm}
+          onChange={handleSearchChange}
+        />
+        <FilterButton
+          id={""}
+          position={"bottom-end"}
+          handleApplyBtnClick={function (): void {
+            throw new Error("Function not implemented.");
+          }}
+          handleResetBtnClick={function (): void {
+            throw new Error("Function not implemented.");
+          }}
+          children={undefined}
+          selectedFilters={[]}
+          isResetBtnDisabled={true}
+        />
+      </Box>
+
       <Table
         columns={columns as TableColumn<any>[]}
         data={tableData}
         emptyStateType={emptyStateType}
-        isLoading={isLoading}
+        isLoading={isLoading && companies.length === 0}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="35.3125rem"
-        hasMore={false}
-        onRowClick={(row) => {
+        hasMore={hasNextPage}
+        onRowClick={() => {
           return;
         }}
-        onLoadMore={() => {}}
+        onLoadMore={loadMore}
         infiniteScrollLoadingMessage={translateText([
           "table",
           "infiniteScrollLoadingMessage"
@@ -121,13 +154,13 @@ export const CompanyTable: React.FC = () => {
           description: translateText(["table", "emptyDataState", "description"])
         }}
         noSearchResultsState={{
+          icon: <SearchIcon />,
           title: translateText(["table", "emptySearchState", "title"]),
           description: translateText([
             "table",
             "emptySearchState",
             "description"
-          ]),
-          icon: <SearchIcon />
+          ])
         }}
       />
     </Box>

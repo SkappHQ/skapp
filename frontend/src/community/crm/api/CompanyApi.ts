@@ -1,21 +1,62 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
 import { rejects } from "assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 import {
   CrmCompanyCreatePayload,
-  CrmCompanyType
+  CrmCompanyResponseType
 } from "../types/CrmCompanyTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
-export const useGetAllCompanies = (searchTerm: string = "") => {
-  return useQuery({
-    queryKey: [...companyQueryKeys.GET_COMPANY_TABLE_DATA, searchTerm],
-    queryFn: async () => {
-      const response = await authFetch.get(companyEndpoints.GET_ALL_COMPANIES);
-      return response?.data?.results as CrmCompanyType[];
+interface GetAllCompaniesParams {
+  page?: number;
+  size?: number;
+  searchKeyword?: string;
+}
+
+const fetchCompanies = async ({
+  page,
+  size,
+  searchKeyword
+}: GetAllCompaniesParams) => {
+  try {
+    const response = await authFetch.get(companyEndpoints.GET_ALL_COMPANIES, {
+      params: {
+        page,
+        size,
+        ...(searchKeyword ? { searchKeyword } : {})
+      }
+    });
+    return response?.data as CrmCompanyResponseType;
+  } catch (error) {
+    console.error("Error fetching companies:", error);
+    throw error;
+  }
+};
+
+export const useGetAllCompanies = (
+  searchKeyword: string,
+  limit: number = 8
+) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: companyQueryKeys.GET_COMPANY_TABLE_DATA,
+    queryFn: ({ pageParam }) =>
+      fetchCompanies({
+        page: pageParam,
+        size: limit,
+        searchKeyword
+      }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
+      return lastPage.currentPage + 1;
     }
   });
 };

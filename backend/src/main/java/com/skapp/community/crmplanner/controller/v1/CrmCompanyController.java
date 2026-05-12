@@ -1,5 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyUpdateDto;
@@ -44,8 +47,12 @@ public class CrmCompanyController {
   @Operation(summary = "Get all companies", description = "Get all registered companies in the database")
   @GetMapping
   @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
-  public ResponseEntity<ResponseEntityDto> getAllCompanies() {
-    ResponseEntityDto responseDto = companyService.getAllCompanies();
+  public ResponseEntity<PageDto> getAllCompanies(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "8") int size,
+      @RequestParam(required = false) String searchKeyword) {
+    Pageable pageable = PageRequest.of(page, size);
+    PageDto responseDto = companyService.getAllCompanies(searchKeyword, pageable);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
