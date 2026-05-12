@@ -137,6 +137,23 @@ const useSystemPermissionFormHandlers = () => {
         title: "pmAdminLimitationTitle",
         description: "pmAdminLimitationDescription"
       }
+    },
+    crmRole: {
+      [Role.CRM_ADMIN]: {
+        limitExceeded: roleLimits.crmAdminLimitExceeded,
+        title: "crmAdminLimitationTitle",
+        description: "crmAdminLimitationDescription"
+      },
+      [Role.CRM_SALES_MANAGER]: {
+        limitExceeded: roleLimits.crmSalesManagerLimitExceeded,
+        title: "crmSalesManagerLimitationTitle",
+        description: "crmSalesManagerLimitationDescription"
+      },
+      [Role.CRM_SALES_REPRESENTATIVE]: {
+        limitExceeded: roleLimits.crmSalesRepresentativeLimitExceeded,
+        title: "crmSalesRepresentativeLimitationTitle",
+        description: "crmSalesRepresentativeLimitationDescription"
+      }
     }
   };
 
