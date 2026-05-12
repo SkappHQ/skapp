@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.payload.request;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +20,7 @@ public class HolidayRequestDto {
 	@NotNull
 	private String holidayDuration;
 
-	@NotNull
+	@NotEmpty
 	private List<String> workLocations;
 
 }
