@@ -13,6 +13,4 @@ public interface WorkLocationDao extends JpaRepository<WorkLocation, Long>, Work
 
 	boolean existsByNameIgnoreCaseAndWorkLocationIdNot(String name, Long workLocationId);
 
-	List<WorkLocation> findAllByNameIn(List<String> workLocations);
-
 }
