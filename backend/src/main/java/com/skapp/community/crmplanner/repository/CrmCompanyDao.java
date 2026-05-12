@@ -15,4 +15,6 @@ public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long>, JpaSpeci
 
   boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 
+  Optional<CrmCompany> findByIdAndIsDeletedFalse(Long id);
+
 }

@@ -18,4 +18,5 @@ public interface CrmCompanyService {
 
   ResponseEntityDto getAllCompanies();
 
+  ResponseEntityDto getCompanies(CrmCompanyFilterDto filterDto);
 }
