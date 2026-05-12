@@ -14,6 +14,7 @@ import com.skapp.community.common.payload.request.WorkLocationFilterDto;
 import com.skapp.community.common.payload.request.WorkLocationRequestDto;
 import com.skapp.community.common.payload.response.WorkLocationGeofenceResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationResponseDto;
+import com.skapp.community.common.payload.response.WorkLocationSummaryResponseDto;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.repository.WorkLocationGeofenceDao;
 import com.skapp.community.common.service.WorkLocationService;
@@ -149,8 +150,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto getWorkLocations(WorkLocationFilterDto workLocationFilterDto) {
 		log.info("getWorkLocations: execution started");
 
-		Pageable pageable = workLocationFilterDto.getSize() <= 0 ? Pageable.unpaged()
-				: PageRequest.of(workLocationFilterDto.getPage(), workLocationFilterDto.getSize());
+		Pageable pageable = PageRequest.of(workLocationFilterDto.getPage(), workLocationFilterDto.getSize());
 		Page<WorkLocation> workLocationPage = workLocationDao.findWorkLocations(workLocationFilterDto, pageable);
 
 		List<Long> workLocationIds = workLocationPage.getContent()
@@ -178,6 +178,29 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		log.info("getWorkLocations: execution ended");
 
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getAllWorkLocations() {
+		log.info("getAllWorkLocations: execution started");
+
+		List<WorkLocation> workLocations = workLocationDao.findAll();
+
+		List<WorkLocationSummaryResponseDto> workLocationResponseDtos = workLocations.stream()
+			.map(this::mapWorkLocationToSummaryResponseDto)
+			.toList();
+
+		log.info("getAllWorkLocations: execution ended");
+
+		return new ResponseEntityDto(false, workLocationResponseDtos);
+	}
+
+	private WorkLocationSummaryResponseDto mapWorkLocationToSummaryResponseDto(WorkLocation workLocation) {
+		WorkLocationSummaryResponseDto dto = new WorkLocationSummaryResponseDto();
+		dto.setWorkLocationId(workLocation.getWorkLocationId());
+		dto.setName(workLocation.getName());
+		return dto;
 	}
 
 	private WorkLocationGeofence createGeofence(WorkLocationRequestDto workLocationRequestDto,

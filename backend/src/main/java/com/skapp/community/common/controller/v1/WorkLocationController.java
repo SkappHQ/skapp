@@ -29,11 +29,21 @@ public class WorkLocationController {
 
 	@Operation(summary = "Get all work locations",
 			description = "Retrieves a paginated and optionally filtered list of work locations, sorted alphabetically by name.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_ADMIN')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getWorkLocations(WorkLocationFilterDto workLocationFilterDto) {
 
 		ResponseEntityDto response = workLocationService.getWorkLocations(workLocationFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get all work locations without pagination",
+			description = "Retrieves all work locations without pagination.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
+	@GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getAllWorkLocations() {
+
+		ResponseEntityDto response = workLocationService.getAllWorkLocations();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

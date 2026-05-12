@@ -10,12 +10,9 @@ export const useGetAllWorkLocations = (): UseQueryResult<
 > => {
   return useQuery({
     queryKey: workLocationQueryKeys.ALL_WORK_LOCATIONS,
-    queryFn: () =>
-      authFetch.get(workLocationEndpoints.WORK_LOCATIONS, {
-        params: { size: -1 }
-      }),
+    queryFn: () => authFetch.get(workLocationEndpoints.ALL_WORK_LOCATIONS),
     select: (data) => {
-      return data?.data?.results?.[0]?.items ?? [];
+      return data?.data?.results ?? [];
     }
   });
 };

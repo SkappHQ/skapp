@@ -14,4 +14,6 @@ public interface WorkLocationService {
 
 	ResponseEntityDto getWorkLocations(WorkLocationFilterDto workLocationFilterDto);
 
+	ResponseEntityDto getAllWorkLocations();
+
 }
