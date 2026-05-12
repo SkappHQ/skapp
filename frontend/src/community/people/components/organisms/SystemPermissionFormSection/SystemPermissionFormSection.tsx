@@ -388,12 +388,21 @@ const SystemPermissionFormSection = ({
                 !isRoleMissing(
                   RoleModuleEnum.CRM,
                   RoleNameEnum.SALES_MANAGER
+                ) ||
+                !isRoleMissing(
+                  RoleModuleEnum.CRM,
+                  RoleNameEnum.SALES_REPRESENTATIVE
                 )) && (
                 <DropdownList
                   inputName={"crmRole"}
                   label={translateText(["crm"])}
                   itemList={grantablePermission?.crm || []}
-                  value={permissions.crmRole}
+                  placeholder={translateText(["selectRole"])}
+                  value={
+                    permissions.crmRole === Role.CRM_NONE
+                      ? ""
+                      : permissions.crmRole
+                  }
                   componentStyle={classes.dropdownListComponentStyles}
                   checkSelected
                   onChange={(event) =>

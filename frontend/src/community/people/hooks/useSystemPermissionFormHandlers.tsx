@@ -236,7 +236,8 @@ const useSystemPermissionFormHandlers = () => {
         peopleRole: Role.PEOPLE_ADMIN,
         esignRole: Role.ESIGN_ADMIN,
         pmRole: Role.PM_ADMIN,
-        invoiceRole: Role.INVOICE_ADMIN
+        invoiceRole: Role.INVOICE_ADMIN,
+        crmRole: Role.CRM_ADMIN
       });
       setSystemPermissions({
         isSuperAdmin: checked,
@@ -245,7 +246,8 @@ const useSystemPermissionFormHandlers = () => {
         peopleRole: Role.PEOPLE_ADMIN,
         esignRole: Role.ESIGN_ADMIN,
         pmRole: Role.PM_ADMIN,
-        invoiceRole: Role.INVOICE_ADMIN
+        invoiceRole: Role.INVOICE_ADMIN,
+        crmRole: Role.CRM_ADMIN
       });
     },
     [

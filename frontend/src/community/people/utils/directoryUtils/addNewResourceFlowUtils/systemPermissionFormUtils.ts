@@ -198,7 +198,9 @@ export const handleCustomChangeEnterprise = ({
       open: true,
       toastType: ToastType.ERROR,
       title: roleLimitationText(["crmSalesManagerLimitationTitle"]),
-      description: roleLimitationText(["crmSalesManagerLimitationDescription"]),
+      description: roleLimitationText([
+        "crmSalesManagerLimitationDescription"
+      ]),
       isIcon: true
     });
     return;
@@ -213,7 +215,9 @@ export const handleCustomChangeEnterprise = ({
       open: true,
       toastType: ToastType.ERROR,
       title: roleLimitationText(["crmSalesRepresentativeLimitationTitle"]),
-      description: roleLimitationText(["crmSalesRepresentativeLimitationDescription"]),
+      description: roleLimitationText([
+        "crmSalesRepresentativeLimitationDescription"
+      ]),
       isIcon: true
     });
     return;
@@ -485,6 +489,7 @@ export const handleSystemPermissionFormSubmit = ({
   setUserRoles("leaveRole", values.leaveRole);
   setUserRoles("esignRole", values.esignRole);
   setUserRoles("pmRole", values.pmRole);
+  setUserRoles("crmRole", values.crmRole);
 };
 
 interface HandleModalClose {
@@ -513,7 +518,8 @@ export const handleModalClose = ({
       "leaveRole",
       "attendanceRole",
       "esignRole",
-      "pmRole"
+      "pmRole",
+      "crmRole"
     ] as const;
 
     roles.forEach((role) => {
