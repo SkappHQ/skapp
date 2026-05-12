@@ -11,7 +11,7 @@ import { useWorkLocationStore } from "~community/configurations/stores/workLocat
 import {
   MIN_RADIUS,
   MAX_RADIUS
-} from "~community/configurations/constants/geofenceConstants";
+} from "~community/configurations/constants/workLocationConstants";
 import {
   formatRadius,
   reverseGeocode

@@ -20,8 +20,10 @@ import { useGetWorkLocations } from "~community/configurations/api/WorkLocationA
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import { WorkLocation } from "~community/configurations/types/WorkLocationTypes";
 import DeleteWorkLocationModal from "~community/configurations/components/molecules/DeleteWorkLocationModal/DeleteWorkLocationModal";
-
-const PAGE_SIZE = 4;
+import {
+  WORK_LOCATION_PAGE_SIZE,
+  WORK_LOCATION_SEARCH_DEBOUNCE_MS
+} from "~community/configurations/constants/workLocationConstants";
 
 const WorkLocationsTable = () => {
   const router = useRouter();
@@ -33,9 +35,9 @@ const WorkLocationsTable = () => {
   );
 
   const { setIsDeleteModalOpen, setSelectedLocationId } = useWorkLocationStore();
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSearch = useDebounce(search, WORK_LOCATION_SEARCH_DEBOUNCE_MS);
 
-  const { data, isLoading } = useGetWorkLocations(debouncedSearch, currentPage, PAGE_SIZE);
+  const { data, isLoading } = useGetWorkLocations(debouncedSearch, currentPage, WORK_LOCATION_PAGE_SIZE);
   const locations: WorkLocation[] = data?.items ?? [];
   const totalPages: number = data?.totalPages ?? 0;
 
