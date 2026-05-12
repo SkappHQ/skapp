@@ -378,7 +378,8 @@ const SystemPermissionForm = ({
               inputName={"crmRole"}
               label={systemPermissionsText(["crm"])}
               itemList={grantablePermission?.crm || []}
-              value={values.crmRole}
+              placeholder={systemPermissionsText(["selectRole"])}
+              value={values.crmRole === Role.CRM_NONE ? "" : values.crmRole}
               componentStyle={classes.dropdownListComponentStyles}
               checkSelected
               onChange={(event) =>
