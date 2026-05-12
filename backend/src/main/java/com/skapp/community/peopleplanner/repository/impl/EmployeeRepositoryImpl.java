@@ -38,7 +38,10 @@ import com.skapp.community.peopleplanner.type.EmployeeSort;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
+import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.model.WorkLocation_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -61,7 +64,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -1496,6 +1502,30 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		query.setMaxResults(page.getPageSize());
 
 		return new PageImpl<>(query.getResultList(), page, totalRows);
+	}
+
+	@Override
+	public Map<Long, Long> countByWorkLocationIds(List<Long> workLocationIds) {
+		if (workLocationIds == null || workLocationIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+
+		Join<Employee, WorkLocation> workLocationJoin = root.join(Employee_.workLocation, JoinType.INNER);
+
+		criteriaQuery.multiselect(workLocationJoin.get(WorkLocation_.workLocationId), criteriaBuilder.count(root));
+		criteriaQuery.where(workLocationJoin.get(WorkLocation_.workLocationId).in(workLocationIds),
+				root.get(Employee_.accountStatus).in(AccountStatus.ACTIVE, AccountStatus.PENDING));
+		criteriaQuery.groupBy(workLocationJoin.get(WorkLocation_.workLocationId));
+
+		Map<Long, Long> result = new HashMap<>();
+		for (Tuple tuple : entityManager.createQuery(criteriaQuery).getResultList()) {
+			result.put(tuple.get(0, Long.class), tuple.get(1, Long.class));
+		}
+		return result;
 	}
 
 }

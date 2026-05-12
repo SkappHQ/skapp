@@ -3,9 +3,11 @@ package com.skapp.community.common.payload.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
-public class WorkLocationResponseDto {
+public class WorkLocationDetailResponseDto {
 
 	private Long workLocationId;
 
@@ -14,5 +16,11 @@ public class WorkLocationResponseDto {
 	private String address;
 
 	private Long employeeCount;
+
+	private Boolean isAllEmployees;
+
+	private List<WorkLocationEmployeeResponseDto> employees;
+
+	private WorkLocationGeofenceResponseDto geofence;
 
 }
