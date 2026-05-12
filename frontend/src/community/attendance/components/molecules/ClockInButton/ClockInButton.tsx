@@ -1,6 +1,7 @@
 import { JSX, useCallback, useMemo } from "react";
 
 import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
+import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import Button from "~community/common/components/atoms/Button/Button";
@@ -23,9 +24,6 @@ interface Props {
   disabled?: boolean;
 }
 
-// TODO: Replace with actual config API when available
-const isGeoFencingEnabled = true;
-
 const ClockInButton = ({ disabled }: Props): JSX.Element => {
   const {
     attendanceParams,
@@ -47,6 +45,9 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
 
+  const { data: attendanceConfig } = useGetAttendanceConfiguration();
+  const isGeoFencingEnabled = attendanceConfig?.isGeoFencingEnabled ?? false;
+
   const isClockedIn = useMemo(() => {
     return (
       status === AttendanceSlotType.READY ||
@@ -59,14 +60,24 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
 
   const clockInWithLocation = useCallback(
     (slotType: AttendanceSlotType) => {
-      navigator.geolocation.getCurrentPosition((position) => {
-        mutateWithLocation({
-          recordActionType: slotType,
-          time: convertDateToUTC(new Date().toISOString()) as string,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        });
-      });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          mutateWithLocation({
+            recordActionType: slotType,
+            time: convertDateToUTC(new Date().toISOString()) as string,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        () => {
+          mutateWithLocation({
+            recordActionType: slotType,
+            time: convertDateToUTC(new Date().toISOString()) as string,
+            latitude: null,
+            longitude: null
+          });
+        }
+      );
     },
     [mutateWithLocation]
   );

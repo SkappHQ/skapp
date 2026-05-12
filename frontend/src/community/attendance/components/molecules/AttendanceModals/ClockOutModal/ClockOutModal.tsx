@@ -3,6 +3,7 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
+import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
@@ -22,9 +23,6 @@ import styles from "./styles";
 interface Props {
   closeModal: () => void;
 }
-
-// TODO: Replace with actual config API when available
-const isGeoFencingEnabled = true;
 
 const ClockOutModal: FC<Props> = ({ closeModal }) => {
   const theme = useTheme();
@@ -48,18 +46,31 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
 
+  const { data: attendanceConfig } = useGetAttendanceConfiguration();
+  const isGeoFencingEnabled = attendanceConfig?.isGeoFencingEnabled ?? false;
+
   const handleProceedHome = (): void => {
     const slotType = setSlotType(AttendanceSlotType.END);
 
     if (isGeoFencingEnabled && isEnterprise) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        mutateWithLocation({
-          recordActionType: slotType,
-          time: convertDateToUTC(new Date().toISOString()) as string,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        });
-      });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          mutateWithLocation({
+            recordActionType: slotType,
+            time: convertDateToUTC(new Date().toISOString()) as string,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        () => {
+          mutateWithLocation({
+            recordActionType: slotType,
+            time: convertDateToUTC(new Date().toISOString()) as string,
+            latitude: null,
+            longitude: null
+          });
+        }
+      );
     } else {
       mutate(slotType);
     }
