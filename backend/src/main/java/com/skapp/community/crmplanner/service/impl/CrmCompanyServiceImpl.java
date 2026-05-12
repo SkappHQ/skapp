@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.service.impl;
 
+import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,9 @@ import java.util.List;
 public class CrmCompanyServiceImpl implements CrmCompanyService {
 
   private final CrmCompanyDao crmCompanyDao;
-  
+
+  private final CrmCompanyRepository crmCompanyRepository;
+
   private final CrmMapper crmMapper;
   
   @Override
@@ -131,7 +134,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		log.info("getCompanies: execution started");
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmCompany> companyPage = crmCompanyDao.findCompanies(filterDto, pageable);
+		Page<CrmCompany> companyPage = crmCompanyRepository.findCompanies(filterDto, pageable);
 
 		List<CrmCompanyLookupResponseDto> companyResponseDtos = companyPage.getContent()
 			.stream()
