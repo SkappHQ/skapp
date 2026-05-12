@@ -46,7 +46,7 @@ const Configurations: NextPage = () => {
     if (tabParam && visibleTabs.some((tab) => tab.id === tabParam)) {
       setActiveTab(tabParam);
     }
-  }, [router.isReady]);
+  }, [router.isReady, router.query.tab]);
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);
