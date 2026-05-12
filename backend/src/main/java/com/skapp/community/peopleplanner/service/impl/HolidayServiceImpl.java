@@ -450,8 +450,8 @@ public class HolidayServiceImpl implements HolidayService {
 
 		Set<String> validNames = validWorkLocationNames.stream().map(String::trim).collect(Collectors.toSet());
 
-		workLocationNames.forEach(wrkLocation -> {
-			if (!validNames.contains(wrkLocation.trim())) {
+		workLocationNames.forEach(workLocation -> {
+			if (!validNames.contains(workLocation.trim())) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION);
 			}
 		});
