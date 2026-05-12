@@ -91,14 +91,17 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 			predicates.add(datePredicate);
 
 			String workLocation = holidayFilterDto.getWorkLocation();
-			if (workLocation != null && !workLocation.trim().isEmpty()
-					&& !PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS.equals(workLocation.trim())) {
+			if (workLocation != null) {
+				String trimmedWorkLocation = workLocation.trim();
+				if (!trimmedWorkLocation.isEmpty()
+						&& !PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS.equals(trimmedWorkLocation)) {
 
-				Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
-				predicates.add(criteriaBuilder.or(
-						criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.name), workLocation.trim()),
-						criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
-				criteriaQuery.distinct(true);
+					Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
+					predicates.add(criteriaBuilder.or(
+							criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.name), trimmedWorkLocation),
+							criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
+					criteriaQuery.distinct(true);
+				}
 			}
 		}
 
