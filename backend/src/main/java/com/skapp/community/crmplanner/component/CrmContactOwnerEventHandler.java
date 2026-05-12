@@ -5,11 +5,13 @@ import com.skapp.community.common.util.event.UserDeactivatedEvent;
 import com.skapp.community.common.util.event.UsersDeactivatedEvent;
 import com.skapp.community.crmplanner.service.CrmContactOwnerReassignmentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CrmContactOwnerEventHandler {
@@ -18,12 +20,22 @@ public class CrmContactOwnerEventHandler {
 
 	@EventListener
 	public void handleUserDeactivation(UserDeactivatedEvent event) {
-		crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(List.of(event.getUser()));
+		try {
+			crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(List.of(event.getUser()));
+		}
+		catch (IllegalStateException e) {
+			log.error("handleUserDeactivation: failed to reassign CRM contacts - {}", e.getMessage());
+		}
 	}
 
 	@EventListener
 	public void handleUsersDeactivation(UsersDeactivatedEvent event) {
-		crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(event.getUsers());
+		try {
+			crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(event.getUsers());
+		}
+		catch (IllegalStateException e) {
+			log.error("handleUsersDeactivation: failed to reassign CRM contacts - {}", e.getMessage());
+		}
 	}
 
 }

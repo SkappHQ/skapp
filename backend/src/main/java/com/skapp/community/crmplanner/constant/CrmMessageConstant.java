@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CrmMessageConstant implements MessageConstant {
 
-	CRM_SUCCESS_CONTACT_CREATED("api.success.crm.contact-created"),
-
 	CRM_ERROR_CONTACT_NAME_REQUIRED("api.error.crm.contact-name-required"),
 	CRM_ERROR_CONTACT_EMAIL_REQUIRED("api.error.crm.contact-email-required"),
 	CRM_ERROR_CONTACT_NAME_LENGTH_EXCEEDED("api.error.crm.contact-name-length-exceeded"),

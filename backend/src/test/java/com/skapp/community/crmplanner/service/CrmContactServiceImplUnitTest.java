@@ -4,8 +4,11 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
+import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
@@ -25,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,10 +55,13 @@ class CrmContactServiceImplUnitTest {
 	@Mock
 	private UserService userService;
 
+	@Mock
+	private CrmMapper crmMapper;
+
 	@BeforeEach
 	void setup() {
 		crmContactService = Mockito.spy(new CrmContactServiceImpl(crmContactDao, crmCompanyDao, employeeDao,
-				crmContactOwnerRepository, crmContactValidationService, userService));
+				crmContactOwnerRepository, crmContactValidationService, userService, crmMapper));
 	}
 
 	@Test
@@ -64,15 +71,23 @@ class CrmContactServiceImplUnitTest {
 		requestDto.setEmail("  JANE@MAIL.COM ");
 		requestDto.setContactNumber("  +94770000000  ");
 
-		Employee currentEmployee = createEmployee(100L, true, Role.CRM_ADMIN);
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_ADMIN, false);
 		User currentUser = new User();
 		currentUser.setEmployee(currentEmployee);
 
 		when(userService.getCurrentUser()).thenReturn(currentUser);
-		when(crmContactDao.save(Mockito.any(CrmContact.class))).thenAnswer(invocation -> {
+		when(crmContactDao.save(any(CrmContact.class))).thenAnswer(invocation -> {
 			CrmContact contact = invocation.getArgument(0);
 			contact.setId(1L);
 			return contact;
+		});
+		when(crmMapper.crmContactToCrmContactResponseDto(any(CrmContact.class))).thenAnswer(invocation -> {
+			CrmContact c = invocation.getArgument(0);
+			CrmContactResponseDto dto = new CrmContactResponseDto();
+			CrmContactOwnerResponseDto ownerDto = new CrmContactOwnerResponseDto();
+			ownerDto.setEmployeeId(c.getOwner().getEmployeeId());
+			dto.setOwner(ownerDto);
+			return dto;
 		});
 
 		ResponseEntityDto response = crmContactService.createContact(requestDto);
@@ -98,15 +113,16 @@ class CrmContactServiceImplUnitTest {
 		requestDto.setEmail("alex@mail.com");
 		requestDto.setOwnerId(200L);
 
-		Employee currentEmployee = createEmployee(100L, true, Role.CRM_SALES_MANAGER);
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_SALES_MANAGER, false);
 		User currentUser = new User();
 		currentUser.setEmployee(currentEmployee);
 
-		Employee requestedOwner = createEmployee(200L, true, Role.CRM_SALES_REPRESENTATIVE);
+		Employee requestedOwner = createEmployee(200L, true, Role.CRM_SALES_REPRESENTATIVE, false);
 
 		when(userService.getCurrentUser()).thenReturn(currentUser);
 		when(employeeDao.findById(200L)).thenReturn(Optional.of(requestedOwner));
-		when(crmContactDao.save(Mockito.any(CrmContact.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(crmContactDao.save(any(CrmContact.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(crmMapper.crmContactToCrmContactResponseDto(any(CrmContact.class))).thenReturn(new CrmContactResponseDto());
 
 		crmContactService.createContact(requestDto);
 
@@ -115,12 +131,231 @@ class CrmContactServiceImplUnitTest {
 		Assertions.assertEquals(requestedOwner, contactCaptor.getValue().getOwner());
 	}
 
-	private Employee createEmployee(Long employeeId, boolean active, Role crmRole) {
+	@Test
+	void createContact_whenSuperAdminAssignsOwner_succeeds() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Bob");
+		requestDto.setEmail("bob@mail.com");
+		requestDto.setOwnerId(300L);
+
+		Employee currentEmployee = createEmployee(100L, true, null, true);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		Employee targetOwner = createEmployee(300L, true, Role.CRM_SALES_REPRESENTATIVE, false);
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+		when(employeeDao.findById(300L)).thenReturn(Optional.of(targetOwner));
+		when(crmContactDao.save(any(CrmContact.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(crmMapper.crmContactToCrmContactResponseDto(any(CrmContact.class))).thenReturn(new CrmContactResponseDto());
+
+		crmContactService.createContact(requestDto);
+
+		ArgumentCaptor<CrmContact> contactCaptor = ArgumentCaptor.forClass(CrmContact.class);
+		verify(crmContactDao).save(contactCaptor.capture());
+		Assertions.assertEquals(targetOwner, contactCaptor.getValue().getOwner());
+	}
+
+	@Test
+	void createContact_whenSalesRepProvidesNoOwnerId_autoAssignsSelf() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Carol");
+		requestDto.setEmail("carol@mail.com");
+
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_SALES_REPRESENTATIVE, false);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+		when(crmContactDao.save(any(CrmContact.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(crmMapper.crmContactToCrmContactResponseDto(any(CrmContact.class))).thenReturn(new CrmContactResponseDto());
+
+		crmContactService.createContact(requestDto);
+
+		ArgumentCaptor<CrmContact> contactCaptor = ArgumentCaptor.forClass(CrmContact.class);
+		verify(crmContactDao).save(contactCaptor.capture());
+		Assertions.assertEquals(currentEmployee, contactCaptor.getValue().getOwner());
+	}
+
+	@Test
+	void createContact_whenSalesRepProvidesSelfAsOwnerId_assignsSelf() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Dave");
+		requestDto.setEmail("dave@mail.com");
+		requestDto.setOwnerId(100L);
+
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_SALES_REPRESENTATIVE, false);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+		when(crmContactDao.save(any(CrmContact.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(crmMapper.crmContactToCrmContactResponseDto(any(CrmContact.class))).thenReturn(new CrmContactResponseDto());
+
+		crmContactService.createContact(requestDto);
+
+		ArgumentCaptor<CrmContact> contactCaptor = ArgumentCaptor.forClass(CrmContact.class);
+		verify(crmContactDao).save(contactCaptor.capture());
+		Assertions.assertEquals(currentEmployee, contactCaptor.getValue().getOwner());
+	}
+
+	@Test
+	void createContact_whenSalesRepTriesToAssignDifferentOwner_throwsException() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Eve");
+		requestDto.setEmail("eve@mail.com");
+		requestDto.setOwnerId(999L);
+
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_SALES_REPRESENTATIVE, false);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+
+		Assertions.assertThrows(RuntimeException.class, () -> crmContactService.createContact(requestDto));
+	}
+
+	@Test
+	void createContact_whenCurrentUserHasNoEmployee_throwsException() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Frank");
+		requestDto.setEmail("frank@mail.com");
+
+		User currentUser = new User();
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+
+		Assertions.assertThrows(RuntimeException.class, () -> crmContactService.createContact(requestDto));
+	}
+
+	@Test
+	void createContact_whenAssignedOwnerNotFound_throwsException() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Grace");
+		requestDto.setEmail("grace@mail.com");
+		requestDto.setOwnerId(999L);
+
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_ADMIN, false);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+		when(employeeDao.findById(999L)).thenReturn(Optional.empty());
+
+		Assertions.assertThrows(RuntimeException.class, () -> crmContactService.createContact(requestDto));
+	}
+
+	@Test
+	void createContact_whenAssignedOwnerIsInactive_throwsException() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Hank");
+		requestDto.setEmail("hank@mail.com");
+		requestDto.setOwnerId(200L);
+
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_ADMIN, false);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		Employee inactiveOwner = createEmployee(200L, false, Role.CRM_SALES_REPRESENTATIVE, false);
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+		when(employeeDao.findById(200L)).thenReturn(Optional.of(inactiveOwner));
+
+		Assertions.assertThrows(RuntimeException.class, () -> crmContactService.createContact(requestDto));
+	}
+
+	@Test
+	void createContact_whenAssignedOwnerHasNoCrmRole_throwsException() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Iris");
+		requestDto.setEmail("iris@mail.com");
+		requestDto.setOwnerId(200L);
+
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_ADMIN, false);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		Employee noRoleOwner = createEmployee(200L, true, null, false);
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+		when(employeeDao.findById(200L)).thenReturn(Optional.of(noRoleOwner));
+
+		Assertions.assertThrows(RuntimeException.class, () -> crmContactService.createContact(requestDto));
+	}
+
+	@Test
+	void createContact_whenNullContactNumber_savesWithNullContactNumber() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Jack");
+		requestDto.setEmail("jack@mail.com");
+		requestDto.setContactNumber(null);
+
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_ADMIN, false);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+		when(crmContactDao.save(any(CrmContact.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(crmMapper.crmContactToCrmContactResponseDto(any(CrmContact.class))).thenReturn(new CrmContactResponseDto());
+
+		crmContactService.createContact(requestDto);
+
+		ArgumentCaptor<CrmContact> contactCaptor = ArgumentCaptor.forClass(CrmContact.class);
+		verify(crmContactDao).save(contactCaptor.capture());
+		Assertions.assertNull(contactCaptor.getValue().getContactNumber());
+	}
+
+	@Test
+	void createContact_whenCompanyProvided_savesContactWithCompany() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Karen");
+		requestDto.setEmail("karen@mail.com");
+		requestDto.setCompanyId(10L);
+
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_ADMIN, false);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		CrmCompany company = new CrmCompany();
+		company.setId(10L);
+		company.setName("Acme Corp");
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+		when(crmCompanyDao.findByIdAndIsDeletedFalse(10L)).thenReturn(Optional.of(company));
+		when(crmContactDao.save(any(CrmContact.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(crmMapper.crmContactToCrmContactResponseDto(any(CrmContact.class))).thenReturn(new CrmContactResponseDto());
+
+		crmContactService.createContact(requestDto);
+
+		ArgumentCaptor<CrmContact> contactCaptor = ArgumentCaptor.forClass(CrmContact.class);
+		verify(crmContactDao).save(contactCaptor.capture());
+		Assertions.assertEquals(company, contactCaptor.getValue().getCompany());
+	}
+
+	@Test
+	void createContact_whenCompanyNotFound_throwsException() {
+		CrmContactCreateRequestDto requestDto = new CrmContactCreateRequestDto();
+		requestDto.setName("Leo");
+		requestDto.setEmail("leo@mail.com");
+		requestDto.setCompanyId(999L);
+
+		Employee currentEmployee = createEmployee(100L, true, Role.CRM_ADMIN, false);
+		User currentUser = new User();
+		currentUser.setEmployee(currentEmployee);
+
+		when(userService.getCurrentUser()).thenReturn(currentUser);
+		when(crmCompanyDao.findByIdAndIsDeletedFalse(999L)).thenReturn(Optional.empty());
+
+		Assertions.assertThrows(RuntimeException.class, () -> crmContactService.createContact(requestDto));
+	}
+
+	private Employee createEmployee(Long employeeId, boolean active, Role crmRole, boolean isSuperAdmin) {
 		User user = new User();
 		user.setIsActive(active);
 
 		EmployeeRole employeeRole = new EmployeeRole();
 		employeeRole.setCrmRole(crmRole);
+		employeeRole.setIsSuperAdmin(isSuperAdmin);
 
 		Employee employee = new Employee();
 		employee.setEmployeeId(employeeId);

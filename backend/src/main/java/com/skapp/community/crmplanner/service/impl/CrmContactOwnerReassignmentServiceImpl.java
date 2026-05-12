@@ -42,7 +42,10 @@ public class CrmContactOwnerReassignmentServiceImpl implements CrmContactOwnerRe
 				contact.setOwner(fallbackOwner);
 			}
 			crmContactDao.saveAll(contacts);
-		}, () -> log.error("reassignContactsOwnedByDeactivatedUsers: no active CRM admin owner found"));
+		}, () -> {
+			throw new IllegalStateException(
+					"No active CRM admin or super admin found to reassign contacts from deactivated user(s). Manual reassignment is required.");
+		});
 	}
 
 }

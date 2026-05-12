@@ -59,12 +59,48 @@ class CrmContactOwnerReassignmentServiceImplUnitTest {
 		crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(List.of(deactivatedUser));
 
 		@SuppressWarnings("unchecked")
-		ArgumentCaptor<List<CrmContact>> contactsCaptor = ArgumentCaptor.forClass((Class<List<CrmContact>>) (Class<?>) List.class);
+		ArgumentCaptor<List<CrmContact>> contactsCaptor = ArgumentCaptor
+			.forClass((Class<List<CrmContact>>) (Class<?>) List.class);
 		verify(crmContactDao).saveAll(contactsCaptor.capture());
 
 		List<CrmContact> savedContacts = contactsCaptor.getValue();
+		Assertions.assertEquals(2, savedContacts.size());
 		Assertions.assertEquals(fallbackOwner, savedContacts.get(0).getOwner());
 		Assertions.assertEquals(fallbackOwner, savedContacts.get(1).getOwner());
+	}
+
+	@Test
+	void reassignContactsOwnedByDeactivatedUsers_withMultipleDeactivatedOwners_reassignsAllContacts() {
+		Employee firstOwner = createEmployee(10L);
+		Employee secondOwner = createEmployee(20L);
+
+		User firstUser = new User();
+		firstUser.setEmployee(firstOwner);
+		User secondUser = new User();
+		secondUser.setEmployee(secondOwner);
+
+		CrmContact firstContact = new CrmContact();
+		firstContact.setOwner(firstOwner);
+		CrmContact secondContact = new CrmContact();
+		secondContact.setOwner(secondOwner);
+
+		Employee fallbackOwner = createEmployee(99L);
+
+		when(crmContactDao.findByOwnerInAndIsDeletedFalse(List.of(firstOwner, secondOwner)))
+			.thenReturn(List.of(firstContact, secondContact));
+		when(crmContactOwnerRepository.findFallbackAdminOwner()).thenReturn(Optional.of(fallbackOwner));
+
+		crmContactOwnerReassignmentService
+			.reassignContactsOwnedByDeactivatedUsers(List.of(firstUser, secondUser));
+
+		@SuppressWarnings("unchecked")
+		ArgumentCaptor<List<CrmContact>> contactsCaptor = ArgumentCaptor
+			.forClass((Class<List<CrmContact>>) (Class<?>) List.class);
+		verify(crmContactDao).saveAll(contactsCaptor.capture());
+
+		List<CrmContact> savedContacts = contactsCaptor.getValue();
+		Assertions.assertEquals(2, savedContacts.size());
+		savedContacts.forEach(c -> Assertions.assertEquals(fallbackOwner, c.getOwner()));
 	}
 
 	@Test
@@ -72,6 +108,46 @@ class CrmContactOwnerReassignmentServiceImplUnitTest {
 		User userWithoutEmployee = new User();
 
 		crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(List.of(userWithoutEmployee));
+
+		verify(crmContactDao, never()).findByOwnerInAndIsDeletedFalse(Mockito.anyList());
+		verify(crmContactOwnerRepository, never()).findFallbackAdminOwner();
+	}
+
+	@Test
+	void reassignContactsOwnedByDeactivatedUsers_whenNoContactsOwnedByDeactivatedUser_doesNotSave() {
+		Employee deactivatedOwner = createEmployee(10L);
+		User deactivatedUser = new User();
+		deactivatedUser.setEmployee(deactivatedOwner);
+
+		when(crmContactDao.findByOwnerInAndIsDeletedFalse(List.of(deactivatedOwner))).thenReturn(List.of());
+
+		crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(List.of(deactivatedUser));
+
+		verify(crmContactOwnerRepository, never()).findFallbackAdminOwner();
+		verify(crmContactDao, never()).saveAll(Mockito.anyList());
+	}
+
+	@Test
+	void reassignContactsOwnedByDeactivatedUsers_whenNoFallbackAdminFound_throwsIllegalStateException() {
+		Employee deactivatedOwner = createEmployee(10L);
+		User deactivatedUser = new User();
+		deactivatedUser.setEmployee(deactivatedOwner);
+
+		CrmContact contact = new CrmContact();
+		contact.setOwner(deactivatedOwner);
+
+		when(crmContactDao.findByOwnerInAndIsDeletedFalse(List.of(deactivatedOwner))).thenReturn(List.of(contact));
+		when(crmContactOwnerRepository.findFallbackAdminOwner()).thenReturn(Optional.empty());
+
+		Assertions.assertThrows(IllegalStateException.class, () -> crmContactOwnerReassignmentService
+			.reassignContactsOwnedByDeactivatedUsers(List.of(deactivatedUser)));
+
+		verify(crmContactDao, never()).saveAll(Mockito.anyList());
+	}
+
+	@Test
+	void reassignContactsOwnedByDeactivatedUsers_whenEmptyUserList_doesNotQueryContacts() {
+		crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(List.of());
 
 		verify(crmContactDao, never()).findByOwnerInAndIsDeletedFalse(Mockito.anyList());
 		verify(crmContactOwnerRepository, never()).findFallbackAdminOwner();
