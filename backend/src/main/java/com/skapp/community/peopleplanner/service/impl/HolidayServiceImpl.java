@@ -444,16 +444,14 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	private void validateWorkLocations(List<String> workLocationNames, List<String> validWorkLocationNames) {
-		if (workLocationNames.stream().anyMatch(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS::equalsIgnoreCase)) {
+		if (workLocationNames.stream().anyMatch(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS::equals)) {
 			return;
 		}
 
-		Set<String> validNamesLower = validWorkLocationNames.stream()
-			.map(name -> name.toLowerCase().trim())
-			.collect(Collectors.toSet());
+		Set<String> validNames = validWorkLocationNames.stream().map(String::trim).collect(Collectors.toSet());
 
 		workLocationNames.forEach(wrkLocation -> {
-			if (!validNamesLower.contains(wrkLocation.toLowerCase().trim())) {
+			if (!validNames.contains(wrkLocation.trim())) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION);
 			}
 		});
@@ -517,7 +515,7 @@ public class HolidayServiceImpl implements HolidayService {
 			return Collections.emptySet();
 		}
 
-		if (workLocationNames.stream().anyMatch(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS::equalsIgnoreCase)) {
+		if (workLocationNames.stream().anyMatch(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS::equals)) {
 			return Collections.emptySet();
 		}
 

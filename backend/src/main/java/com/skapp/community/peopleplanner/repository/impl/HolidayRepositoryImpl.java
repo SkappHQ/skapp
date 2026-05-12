@@ -93,7 +93,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 			String workLocation = holidayFilterDto.getWorkLocation();
 			if (workLocation != null && !workLocation.trim().isEmpty()
-					&& !PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS.equalsIgnoreCase(workLocation.trim())) {
+					&& !PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS.equals(workLocation.trim())) {
 
 				Subquery<Long> workLocationExistsSubquery = criteriaQuery.subquery(Long.class);
 				Root<Holiday> subRoot = workLocationExistsSubquery.from(Holiday.class);
@@ -103,8 +103,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 				Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
 				predicates.add(criteriaBuilder.or(
-						criteriaBuilder.equal(criteriaBuilder.lower(workLocationJoin.get(WorkLocation_.name)),
-								workLocation.trim().toLowerCase()),
+						criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.name), workLocation.trim()),
 						criteriaBuilder.not(criteriaBuilder.exists(workLocationExistsSubquery))));
 				criteriaQuery.distinct(true);
 			}
