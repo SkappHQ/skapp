@@ -1,11 +1,9 @@
 import { useFormik } from "formik";
-import { ButtonV2, InputField, Spinner } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, InputField, SmallModal, Spinner } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
-import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
-import Modal from "~community/common/components/organisms/Modal/Modal";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -30,6 +28,11 @@ const WorkLocationForm = ({ id }: Props) => {
   const isEditMode = id !== undefined;
   const router = useRouter();
   const translateText = useTranslator("configurations", "workLocation");
+  const translateCommon = useTranslator(
+    "commonComponents",
+    "userPromptModal",
+    "unsavedChangesModal"
+  );
 
   const { data: workLocation, isLoading } = useGetWorkLocationById(
     id as number,
@@ -230,17 +233,24 @@ const WorkLocationForm = ({ id }: Props) => {
         </div>
       </form>
 
-      <Modal
-        isModalOpen={isUnsavedModalOpen}
-        onCloseModal={handleResume}
-        isClosable={false}
-        title={translateText(["areYouSureModalTitle"])}
-      >
-        <AreYouSureModal
-          onPrimaryBtnClick={handleResume}
-          onSecondaryBtnClick={handleLeave}
-        />
-      </Modal>
+      <SmallModal
+        isOpen={isUnsavedModalOpen}
+        onClose={handleResume}
+        modalHeader={translateText(["areYouSureModalTitle"])}
+        content={
+          <div>
+            <p>{translateCommon(["description"])}</p>
+            <div className="flex flex-row justify-end gap-3">
+              <ButtonV2 variant="tertiary" onClick={handleLeave}>
+                {translateCommon(["leaveAnywayBtn"])}
+              </ButtonV2>
+              <ButtonV2 variant="primary" onClick={handleResume}>
+                {translateCommon(["resumeTaskBtn"])}
+              </ButtonV2>
+            </div>
+          </div>
+        }
+      />
     </>
   );
 };

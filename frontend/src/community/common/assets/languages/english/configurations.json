@@ -205,6 +205,10 @@
       "updateError": {
         "title": "Oops! Something went wrong",
         "description": "Failed to update work location"
+      },
+      "mapUnavailable": {
+        "title": "Map unavailable",
+        "description": "The map could not be loaded. Please try again later."
       }
     },
     "deleteModal": {

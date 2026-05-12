@@ -1,6 +1,9 @@
 import { APIProvider, AdvancedMarker, Map, MapMouseEvent } from "@vis.gl/react-google-maps";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import RadiusCircle from "./RadiusCircle";
 
 interface Props {
@@ -25,6 +28,22 @@ const GeofenceMapView = ({
   interactive = true,
   children
 }: Props) => {
+  const { setToastMessage } = useToast();
+  const translateText = useTranslator("configurations", "workLocation");
+
+  useEffect(() => {
+    if (!apiKey) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["toasts", "mapUnavailable", "title"]),
+        description: translateText(["toasts", "mapUnavailable", "description"]),
+        isIcon: true
+      });
+    }
+  }, []);
+
+  if (!apiKey) return null;
   const mapContent = center ? (
     <Map
       style={{ width: "100%", height }}
