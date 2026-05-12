@@ -183,7 +183,7 @@ public class HolidayServiceImpl implements HolidayService {
 	public ResponseEntityDto getHolidaysByDate(LocalDate date) {
 		log.info("getHolidayByDate: execution started");
 
-		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrueAndDate(date);
+		List<Holiday> holidayList = holidayDao.findAllActiveHolidaysByDateWithWorkLocations(date);
 		List<TimeConfig> workingDays = timeConfigDao.findAll();
 
 		List<HolidayResponseDto> holidayResponseDtos = new ArrayList<>();
