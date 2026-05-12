@@ -109,8 +109,7 @@ public class HolidayServiceImpl implements HolidayService {
 		List<HolidayResponseDto> list = peopleMapper
 			.holidaysToHolidayResponseDtoList(holidays.hasContent() ? holidays.getContent() : Collections.emptyList());
 
-		long totalWorkLocationCount = workLocationDao.count();
-		list.forEach(holidayResponseDto -> normalizeWorkLocations(holidayResponseDto, totalWorkLocationCount));
+		list.forEach(this::normalizeWorkLocations);
 
 		pageDto.setItems(list);
 
@@ -193,9 +192,7 @@ public class HolidayServiceImpl implements HolidayService {
 
 		if (!holidayList.isEmpty()) {
 			List<HolidayResponseDto> mappedHolidays = peopleMapper.holidaysToHolidayResponseDtoList(holidayList);
-			long totalWorkLocationCount = workLocationDao.count();
-			mappedHolidays
-				.forEach(holidayResponseDto -> normalizeWorkLocations(holidayResponseDto, totalWorkLocationCount));
+			mappedHolidays.forEach(this::normalizeWorkLocations);
 			holidayResponseDtos.addAll(mappedHolidays);
 		}
 
@@ -524,9 +521,9 @@ public class HolidayServiceImpl implements HolidayService {
 		return new HashSet<>(workLocations);
 	}
 
-	private void normalizeWorkLocations(HolidayResponseDto holidayResponseDto, long totalWorkLocationCount) {
+	private void normalizeWorkLocations(HolidayResponseDto holidayResponseDto) {
 		List<HolidayWorkLocationResponseDto> workLocations = holidayResponseDto.getWorkLocations();
-		if (workLocations == null || workLocations.isEmpty() || workLocations.size() == totalWorkLocationCount) {
+		if (workLocations == null || workLocations.isEmpty()) {
 			HolidayWorkLocationResponseDto allLocations = new HolidayWorkLocationResponseDto();
 			allLocations.setName(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS);
 			holidayResponseDto.setWorkLocations(Collections.singletonList(allLocations));
