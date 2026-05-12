@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useEffect, useState } from "react";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -51,7 +51,7 @@ const Holidays: NextPage = () => {
     if (selectedYear) {
       refetch();
     }
-  }, [selectedYear, refetch, holidays]);
+  }, [selectedYear, refetch]);
 
   const primaryButtonText =
     Boolean(holidays?.pages[0]?.items?.length ?? 0) &&

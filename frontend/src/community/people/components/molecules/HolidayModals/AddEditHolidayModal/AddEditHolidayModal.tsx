@@ -2,12 +2,16 @@ import { debounce } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
+import { useRouter } from "next/router";
 import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
 
+import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
+import MultivalueDropdownList from "~community/common/components/molecules/MultiValueDropdownList/MultivalueDropdownList";
+import ROUTES from "~community/common/constants/routes";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -33,6 +37,9 @@ import {
 import { holidayDatePreprocessor } from "~community/people/utils/holidayUtils/commonUtils";
 import { addHolidayValidation } from "~community/people/utils/validation";
 
+const ALL_LOCATIONS_ID = 0;
+const ALL_LOCATIONS_LABEL = "All locations";
+
 type Props = {
   holidays: holiday[] | undefined;
   holidayRefetch: () => void;
@@ -44,6 +51,7 @@ const AddEditHolidayModal = ({
 }: Props): JSX.Element => {
   const translateText = useTranslator("peopleModule", "holidays");
   const translateAria = useTranslator("peopleAria", "holiday");
+  const router = useRouter();
 
   const { setToastMessage } = useToast();
 
@@ -74,36 +82,43 @@ const AddEditHolidayModal = ({
   const [holidayData, setHolidayData] = useState<holiday[] | undefined>(
     holidays
   );
+  const [selectedWorkLocationIds, setSelectedWorkLocationIds] = useState<
+    number[]
+  >([]);
 
   const currentYear = DateTime.now().year;
   const numericSelectedYear = parseInt(selectedYear, 10);
 
-  const onSuccess = useCallback(
-    (response: holidayBulkUploadResponse): void => {
-      if (
-        response?.bulkRecordErrorLogs[0]?.errorMessage?.includes(
-          CONCURRENT_HOLIDAY
-        )
-      ) {
-        setToastMessage({
-          toastType: ToastType.WARN,
-          title: translateText(["maxholidayWarningTitle"]),
-          description: translateText(["maxholidayWarningDescription"]),
-          open: true
-        });
-      } else {
-        setToastMessage({
-          toastType: ToastType.SUCCESS,
-          title: translateText(["addholidaySuccessTitle"]),
-          description: translateText(["addholidaySuccessDescription"]),
-          open: true
-        });
-        resetHolidayDetails();
-        setIsHolidayModalOpen(false);
-      }
-    },
-    [resetHolidayDetails, setIsHolidayModalOpen]
-  );
+  const { data: workLocations } = useGetAllWorkLocations();
+  const workLocationList = [
+    { label: ALL_LOCATIONS_LABEL, value: ALL_LOCATIONS_ID },
+    ...(workLocations ?? []).map((wl) => ({
+      label: wl.name,
+      value: wl.workLocationId
+    }))
+  ];
+
+  const onSuccess = useCallback((response: holidayBulkUploadResponse): void => {
+    if (
+      response?.bulkRecordErrorLogs[0]?.errorMessage?.includes(
+        CONCURRENT_HOLIDAY
+      )
+    ) {
+      setToastMessage({
+        toastType: ToastType.WARN,
+        title: translateText(["maxholidayWarningTitle"]),
+        description: translateText(["maxholidayWarningDescription"]),
+        open: true
+      });
+    } else {
+      setToastMessage({
+        toastType: ToastType.SUCCESS,
+        title: translateText(["addholidaySuccessTitle"]),
+        description: translateText(["addholidaySuccessDescription"]),
+        open: true
+      });
+    }
+  }, []);
 
   const onError = useCallback((): void => {
     setToastMessage({
@@ -130,22 +145,40 @@ const AddEditHolidayModal = ({
     holidayDate: newHolidayDetails?.holidayDate || "",
     holidayColor:
       newHolidayDetails?.holidayColor || theme.palette.text.blackText,
-    duration: newHolidayDetails?.duration || ""
+    duration: newHolidayDetails?.duration || "",
+    workLocation: [] as number[]
   };
 
   const handleAddNewHoliday = useCallback(async (): Promise<void> => {
     const dateFormatted = formatDate(newHolidayDetails?.holidayDate);
 
+    const selectedLocationNames = selectedWorkLocationIds.includes(
+      ALL_LOCATIONS_ID
+    )
+      ? [ALL_LOCATIONS_LABEL]
+      : selectedWorkLocationIds.map(
+          (id) =>
+            workLocationList.find((wl) => wl.value === id)?.label as string
+        );
+
     const payload = {
       date: dateFormatted ?? "",
       name: newHolidayDetails?.holidayReason,
-      holidayDuration: newHolidayDetails?.duration
+      holidayDuration: newHolidayDetails?.duration,
+      workLocations: selectedLocationNames
     };
 
     mutate({ holidayData: payload, selectedYear });
     resetHolidayDetails();
     setIsHolidayModalOpen(false);
-  }, [newHolidayDetails, mutate]);
+  }, [
+    newHolidayDetails,
+    mutate,
+    selectedWorkLocationIds,
+    workLocationList,
+    resetHolidayDetails,
+    setIsHolidayModalOpen
+  ]);
 
   const {
     values,
@@ -160,6 +193,32 @@ const AddEditHolidayModal = ({
     onSubmit: handleAddNewHoliday,
     validateOnChange: false
   });
+
+  const handleWorkLocationChange = useCallback(
+    (value: (string | number)[]) => {
+      const numericValues = value as number[];
+      const wasAllSelected = selectedWorkLocationIds.includes(ALL_LOCATIONS_ID);
+      const isAllNowSelected = numericValues.includes(ALL_LOCATIONS_ID);
+
+      let newSelection: number[];
+      if (!wasAllSelected && isAllNowSelected) {
+        newSelection = [ALL_LOCATIONS_ID];
+      } else if (wasAllSelected && numericValues.length > 1) {
+        newSelection = numericValues.filter((id) => id !== ALL_LOCATIONS_ID);
+      } else if (numericValues.length === 0) {
+        newSelection = [];
+      } else {
+        newSelection = numericValues;
+      }
+
+      setSelectedWorkLocationIds(newSelection);
+      void setFieldValue("workLocation", newSelection);
+      if (newSelection.length > 0) {
+        void setFieldError("workLocation", "");
+      }
+    },
+    [selectedWorkLocationIds, setFieldValue, setFieldError]
+  );
 
   const findHolidayAvailability = useCallback(
     (date: string | undefined): boolean | undefined => {
@@ -215,10 +274,6 @@ const AddEditHolidayModal = ({
   useEffect(() => {
     setHolidayData(Array.isArray(holidays) ? holidays : []);
   }, [holidays]);
-
-  useEffect(() => {
-    holidayRefetch();
-  }, []);
 
   useEffect(() => {
     if (values.holidayDate) {
@@ -345,6 +400,28 @@ const AddEditHolidayModal = ({
           accessibility={{
             ariaLabel: translateAria(["selectDateField"])
           }}
+        />
+
+        <MultivalueDropdownList
+          inputName="workLocationId"
+          label={translateText(["workLocation"])}
+          isMultiValue
+          value={selectedWorkLocationIds}
+          placeholder={translateText(["workLocationPlaceholder"])}
+          onChange={handleWorkLocationChange}
+          componentStyle={{
+            mt: "0rem"
+          }}
+          isCheckSelected
+          isErrorFocusOutlineNeeded={false}
+          itemList={workLocationList}
+          maxVisibleItems={4}
+          isRequired
+          onAddNewClickBtn={() => {
+            router.push(`${ROUTES.SETTINGS.BASE}?tab=organization`);
+          }}
+          addNewClickBtnText={translateText(["addNewWorkLocation"])}
+          error={errors.workLocation as string}
         />
         <DurationSelector
           label={translateText(["duration"])}

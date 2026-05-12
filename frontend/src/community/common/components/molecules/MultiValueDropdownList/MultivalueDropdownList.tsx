@@ -50,6 +50,7 @@ interface Props {
   labelStyles?: SxProps;
   isCheckSelected?: boolean;
   ariaLabel?: string;
+  maxVisibleItems?: number;
 }
 
 // TODO: fix name
@@ -80,11 +81,18 @@ const MultivalueDropdownList: FC<Props> = ({
   isErrorFocusOutlineNeeded: errorFocusOutlineNeeded = true,
   labelStyles,
   isCheckSelected: checkSelected,
-  ariaLabel
+  ariaLabel,
+  maxVisibleItems
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
   const [open, setOpen] = useState(false);
+
+  const getMenuMaxHeight = () => {
+    if (!maxVisibleItems) return 300;
+    const addBtnHeight = addNewClickBtnText ? 58 : 16;
+    return `${maxVisibleItems * 42 + addBtnHeight}px`;
+  };
 
   // TODO: move to separate file and write unit test cases for this
   const handleChange = (event: SelectChangeEvent<(string | number)[]>) => {
@@ -135,7 +143,7 @@ const MultivalueDropdownList: FC<Props> = ({
               // TODO: move styles to styles.ts
               <Typography
                 component="span"
-                style={{ color: theme.palette.error.light }}
+                style={{ color: theme.palette.error.contrastText }}
               >
                 *
               </Typography>
@@ -172,7 +180,12 @@ const MultivalueDropdownList: FC<Props> = ({
             name={inputName}
             disabled={isDisabled}
             MenuProps={{
-              style: { maxHeight: 300, zIndex: ZIndexEnums.DEFAULT }
+              style: { zIndex: ZIndexEnums.MAX },
+              PaperProps: {
+                sx: {
+                  maxHeight: getMenuMaxHeight()
+                }
+              }
             }}
             sx={{
               ...classes.selectStyle(theme, isDisabled, readOnly),
@@ -221,7 +234,17 @@ const MultivalueDropdownList: FC<Props> = ({
             {addNewClickBtnText && (
               <MenuItem
                 onClick={handleAddNewClick}
-                sx={classes.addNewClickBtnStyle}
+                sx={{
+                  ...classes.addNewClickBtnStyle,
+                  position: "sticky",
+                  bottom: 0,
+                  backgroundColor: theme.palette.background.paper,
+                  borderTop: `1px solid ${theme.palette.divider}`,
+                  zIndex: 1,
+                  "&:hover": {
+                    backgroundColor: theme.palette.grey[100]
+                  }
+                }}
               >
                 <Icon
                   name={IconName.ADD_ICON}
