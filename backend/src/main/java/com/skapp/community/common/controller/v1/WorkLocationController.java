@@ -37,7 +37,7 @@ public class WorkLocationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-  @Operation(summary = "Get all work locations without pagination",
+	@Operation(summary = "Get all work locations without pagination",
 			description = "Retrieves all work locations without pagination.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
 	@GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
