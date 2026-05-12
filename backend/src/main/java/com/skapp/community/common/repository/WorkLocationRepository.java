@@ -5,12 +5,8 @@ import com.skapp.community.common.payload.request.WorkLocationFilterDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface WorkLocationRepository {
 
 	Page<WorkLocation> findWorkLocations(WorkLocationFilterDto workLocationFilterDto, Pageable pageable);
-
-	List<String> findAllWorkLocationNames();
 
 }
