@@ -7,7 +7,7 @@ import {
 import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { companyEndpoints } from "~community/crm/api/utils/ApiEndpoints";
+import { contactEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { companyQueryKeys } from "~community/crm/api/utils/QueryKeys";
 import { CrmCompanyResponseType } from "~community/crm/types/CrmCompanyTypes";
 import {
@@ -35,7 +35,7 @@ export const useGetCrmCompanies = (
   return useQuery({
     queryKey: companyQueryKeys.CRM_COMPANIES(params),
     queryFn: () =>
-      authFetch.get(companyEndpoints.GET_COMPANIES, {
+      authFetch.get(contactEndpoints.COMPANIES_LOOKUP, {
         params: {
           page,
           size,
@@ -55,7 +55,7 @@ export const useGetCrmOwners = (
   return useQuery({
     queryKey: companyQueryKeys.CRM_OWNERS(params),
     queryFn: () =>
-      authFetch.get(companyEndpoints.GET_OWNERS, {
+      authFetch.get(contactEndpoints.GET_OWNERS, {
         params: {
           page,
           size,
@@ -78,7 +78,7 @@ export const useCreateContact = ({
 
   return useMutation({
     mutationFn: (payload: CreateContactPayload) =>
-      authFetch.post(companyEndpoints.CREATE_CONTACT, payload),
+      authFetch.post(contactEndpoints.CREATE_CONTACT, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: companyQueryKeys.CRM_CONTACTS
