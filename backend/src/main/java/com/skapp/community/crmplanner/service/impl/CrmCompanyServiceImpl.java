@@ -10,7 +10,9 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyUpdateDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyTableViewDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 public class CrmCompanyServiceImpl implements CrmCompanyService {
 
   private final CrmCompanyDao crmCompanyDao;
+
+  private final CrmCompanyRepository crmCompanyRepository;
 
   @Override
   public PageDto getAllCompanies(String searchKeyword, Pageable pageable) {
@@ -105,6 +109,21 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
     log.info("deleteCompany: execution ended for id: {}", id);
 
     return new ResponseEntityDto(false, "Company deleted successfully");
+  }
+
+  @Override
+  public PageDto getCompanyTableView(String searchKeyword, Pageable pageable) {
+    log.info("getAllCompanies: execution started");
+    Page<CrmCompanyTableViewDto> page = crmCompanyRepository.getCompanyTableViewDetails(pageable, searchKeyword);
+
+    PageDto response = new PageDto();
+    response.setItems(page.getContent());
+    response.setCurrentPage(page.getNumber());
+    response.setTotalItems(page.getTotalElements());
+    response.setTotalPages(page.getTotalPages());
+    log.info("getAllCompanies: execution ended");
+
+    return response;
   }
 
 }

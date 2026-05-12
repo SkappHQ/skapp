@@ -15,6 +15,22 @@ export interface CrmCompanyResponseType {
   totalPages: number;
 }
 
+export interface CrmCompanyTableDataResponseType {
+  items: CrmCompanyTableDataType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface CrmCompanyTableDataType {
+  id: string;
+  name: string;
+  contactNumber: string;
+  tasks: number;
+  openValue: number;
+  accountValue: number;
+}
+
 export interface CrmCompanyAddFormTypes {
   name: string;
   industry: string | null;

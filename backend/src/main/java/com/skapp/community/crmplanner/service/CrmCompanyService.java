@@ -21,4 +21,6 @@ public interface CrmCompanyService {
 
   PageDto getAllCompanies(String searchKeyword, Pageable pageable);
 
+  PageDto getCompanyTableView(String searchKeyword, Pageable pageable);
+
 }

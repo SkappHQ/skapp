@@ -12,9 +12,9 @@ import { ChangeEvent, useMemo, useState } from "react";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetAllCompanies } from "~community/crm/api/CompanyApi";
+import { useGetCompanyTableData } from "~community/crm/api/CompanyApi";
 import { EmptyStateTypeEnum } from "~community/crm/enums/CrmCompanyEnums";
-import { CrmCompanyType } from "~community/crm/types/CrmCompanyTypes";
+import { CrmCompanyTableDataType } from "~community/crm/types/CrmCompanyTypes";
 
 export const CompanyTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -27,7 +27,7 @@ export const CompanyTable: React.FC = () => {
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetAllCompanies(debouncedSearch, 12);
+    useGetCompanyTableData(debouncedSearch, 12);
 
   const companies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []) ?? [];
@@ -43,7 +43,7 @@ export const CompanyTable: React.FC = () => {
     );
   };
 
-  const columns: TableColumn<CrmCompanyType>[] = [
+  const columns: TableColumn<CrmCompanyTableDataType>[] = [
     {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
@@ -65,7 +65,7 @@ export const CompanyTable: React.FC = () => {
     {
       columnAriaLabel: translateText(["table", "columns", "pipelineAriaLabel"]),
       header: translateText(["table", "columns", "pipelineHeader"]),
-      key: "pipeline",
+      key: "openValue",
       width: "20%"
     },
     {
@@ -80,12 +80,13 @@ export const CompanyTable: React.FC = () => {
     }
   ];
 
-  const tableData = companies.map((company: CrmCompanyType) => ({
+  const tableData = companies.map((company: CrmCompanyTableDataType) => ({
     id: company.id.toString(),
     name: company.name,
-    tasks: company.industry ?? "-",
-    pipeline: company.website ?? "-",
-    contactNumber: company.contactNumber ?? "-"
+    contactNumber: company.contactNumber ?? "-",
+    tasks: company.tasks ?? "-",
+    openValue: company.openValue ?? "-",
+    accountValue: company.accountValue ?? "-"
   }));
 
   const loadMore = async () => {

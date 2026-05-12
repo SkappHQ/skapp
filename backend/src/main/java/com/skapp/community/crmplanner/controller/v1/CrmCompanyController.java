@@ -88,4 +88,16 @@ public class CrmCompanyController {
     ResponseEntityDto responseDto = companyService.updateCompany(id, updatedCompany);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
+
+  @Operation(summary = "Get company table view", description = "Get company table view")
+  @GetMapping("/table-view")
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
+  public ResponseEntity<PageDto> getCompanyTableView(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "8") int size,
+      @RequestParam(required = false) String searchKeyword) {
+    Pageable pageable = PageRequest.of(page, size);
+    PageDto responseDto = companyService.getCompanyTableView(searchKeyword, pageable);
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
+  }
 }

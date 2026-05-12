@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -44,7 +45,7 @@ public class CrmDeal extends Auditable<String> {
 	private LocalDateTime closingAt;
 
 	@Column(name = "amount")
-	private String amount;
+	private BigDecimal amount;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "company_id")
