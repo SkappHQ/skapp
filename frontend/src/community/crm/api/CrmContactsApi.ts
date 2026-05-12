@@ -7,9 +7,9 @@ import {
 import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { crmEndpoints } from "~community/crm/api/utils/ApiEndpoints";
-import { crmQueryKeys } from "~community/crm/api/utils/QueryKeys";
-import { CrmCompaniesResponseType } from "~community/crm/types/CrmCompanyTypes";
+import { companyEndpoints } from "~community/crm/api/utils/ApiEndpoints";
+import { companyQueryKeys } from "~community/crm/api/utils/QueryKeys";
+import { CrmCompanyResponseType } from "~community/crm/types/CrmCompanyTypes";
 import {
   CreateContactPayload,
   CrmOwnersResponseType
@@ -29,20 +29,20 @@ interface OwnersParams {
 
 export const useGetCrmCompanies = (
   params: CompaniesParams = {}
-): UseQueryResult<CrmCompaniesResponseType> => {
+): UseQueryResult<CrmCompanyResponseType> => {
   const { page = 0, size = 100, searchKeyword } = params;
 
   return useQuery({
-    queryKey: crmQueryKeys.CRM_COMPANIES(params),
+    queryKey: companyQueryKeys.CRM_COMPANIES(params),
     queryFn: () =>
-      authFetch.get(crmEndpoints.GET_COMPANIES, {
+      authFetch.get(companyEndpoints.GET_COMPANIES, {
         params: {
           page,
           size,
           ...(searchKeyword ? { searchKeyword } : {})
         }
       }),
-    select: (data) => data?.data?.results?.[0] as CrmCompaniesResponseType,
+    select: (data) => data?.data?.results?.[0] as CrmCompanyResponseType,
     enabled: true
   });
 };
@@ -53,9 +53,9 @@ export const useGetCrmOwners = (
   const { page = 0, size = 100, searchKeyword } = params;
 
   return useQuery({
-    queryKey: crmQueryKeys.CRM_OWNERS(params),
+    queryKey: companyQueryKeys.CRM_OWNERS(params),
     queryFn: () =>
-      authFetch.get(crmEndpoints.GET_OWNERS, {
+      authFetch.get(companyEndpoints.GET_OWNERS, {
         params: {
           page,
           size,
@@ -78,9 +78,11 @@ export const useCreateContact = ({
 
   return useMutation({
     mutationFn: (payload: CreateContactPayload) =>
-      authFetch.post(crmEndpoints.CREATE_CONTACT, payload),
+      authFetch.post(companyEndpoints.CREATE_CONTACT, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: crmQueryKeys.CRM_CONTACTS });
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKeys.CRM_CONTACTS
+      });
       onSuccess();
     },
     onError: (error: AxiosError<{ results: Array<{ message: string }> }>) => {
