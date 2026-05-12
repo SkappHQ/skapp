@@ -74,4 +74,13 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 
+	@Override
+	public List<String> findAllWorkLocationNames() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<String> query = cb.createQuery(String.class);
+		Root<WorkLocation> root = query.from(WorkLocation.class);
+		query.select(root.get(WorkLocation_.name));
+		return entityManager.createQuery(query).getResultList();
+	}
+
 }

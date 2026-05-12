@@ -127,7 +127,7 @@ public class HolidayServiceImpl implements HolidayService {
 		AtomicInteger holidaysOnCurrentDate = new AtomicInteger();
 		AtomicInteger holidaysOnPastDates = new AtomicInteger();
 
-		List<String> validWorkLocationNames = workLocationDao.findAll().stream().map(WorkLocation::getName).toList();
+		List<String> validWorkLocationNames = workLocationDao.findAllWorkLocationNames();
 
 		holidayBulkRequestDto.getHolidayDtoList().forEach(holidayDto -> {
 			try {
