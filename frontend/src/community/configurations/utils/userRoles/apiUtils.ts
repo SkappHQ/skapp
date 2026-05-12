@@ -14,7 +14,8 @@ export const transformRolesToDropdownFormat = (
     attendance: [],
     esign: [],
     pm: [],
-    invoice: []
+    invoice: [],
+    crm: []
   };
 
   rolesData.forEach((moduleData) => {
@@ -43,7 +44,8 @@ const apiModuleToEnumMap: Record<string, Modules> = {
   esignature: Modules.ESIGN,
   okr: Modules.OKR,
   invoice: Modules.INVOICE,
-  projectmanagement: Modules.PM
+  projectmanagement: Modules.PM,
+  crm: Modules.CRM
 };
 
 export const mapApiModuleToEnum = (apiModule?: string): Modules => {

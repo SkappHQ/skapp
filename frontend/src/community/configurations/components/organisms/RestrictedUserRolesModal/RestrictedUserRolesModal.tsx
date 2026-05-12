@@ -102,6 +102,8 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
       case Modules.INVOICE:
       case Modules.PM:
         return ["isAdmin"];
+      case Modules.CRM:
+        return ["isAdmin", "isManager"];
       default:
         return [];
     }
@@ -137,7 +139,11 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
             )}
             {restrictableRoles.includes("isManager") && (
               <Checkbox
-                label="Manager"
+                label={
+                  moduleType === Modules.CRM
+                    ? translateText(["salesManagerHeader"])
+                    : "Manager"
+                }
                 name="isManager"
                 checked={values.isManager}
                 onChange={() => setFieldValue("isManager", !values.isManager)}
