@@ -1,11 +1,9 @@
-import { JSX, useCallback, useMemo } from "react";
+import { JSX, useMemo } from "react";
 
-import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
-import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
+import { useAttendanceAction } from "~community/attendance/hooks/useAttendanceAction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import Button from "~community/common/components/atoms/Button/Button";
-import { appModes } from "~community/common/constants/configs";
 import {
   ButtonSizes,
   ButtonStyle
@@ -16,9 +14,6 @@ import {
 } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { convertDateToUTC } from "~community/common/utils/dateTimeUtils";
-import { useUpdateEmployeeStatusWithLocation } from "~enterprise/attendance/api/AttendanceApi";
-import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 interface Props {
   disabled?: boolean;
@@ -38,15 +33,7 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
 
   const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
 
-  const { isPending, mutate } = useUpdateEmployeeStatus();
-  const { mutate: mutateWithLocation, isPending: isEpPending } =
-    useUpdateEmployeeStatusWithLocation();
-
-  const environment = useGetEnvironment();
-  const isEnterprise = environment === appModes.ENTERPRISE;
-
-  const { data: attendanceConfig } = useGetAttendanceConfiguration();
-  const isGeoFencingEnabled = attendanceConfig?.isGeoFencingEnabled ?? false;
+  const { recordAttendance, isPending } = useAttendanceAction();
 
   const isClockedIn = useMemo(() => {
     return (
@@ -58,39 +45,10 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
     );
   }, [status]);
 
-  const clockInWithLocation = useCallback(
-    (slotType: AttendanceSlotType) => {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          mutateWithLocation({
-            recordActionType: slotType,
-            time: convertDateToUTC(new Date().toISOString()) as string,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-        },
-        () => {
-          mutateWithLocation({
-            recordActionType: slotType,
-            time: convertDateToUTC(new Date().toISOString()) as string,
-            latitude: null,
-            longitude: null
-          });
-        }
-      );
-    },
-    [mutateWithLocation]
-  );
-
   const onClick = () => {
     if (status === AttendanceSlotType.READY && !attendanceLeaveStatus.onLeave) {
       const slotType = setSlotType(AttendanceSlotType.START);
-
-      if (isGeoFencingEnabled && isEnterprise) {
-        clockInWithLocation(slotType);
-      } else {
-        mutate(slotType);
-      }
+      recordAttendance(slotType);
     } else {
       setIsAttendanceModalOpen(true);
     }
@@ -117,7 +75,7 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
       ariaLabel={
         isClockedIn ? translateText(["clockIn"]) : translateText(["clockOut"])
       }
-      isLoading={isPending || isEpPending}
+      isLoading={isPending}
       disabled={disabled}
       ariaDisabled={disabled}
       dataTestId={isClockedIn ? "clock-in-button" : "clock-out-button"}
