@@ -39,6 +39,7 @@ import com.skapp.enterprise.timeplanner.constant.EpTimeMessageConstant;
 import com.skapp.enterprise.timeplanner.model.TimeRecordLocation;
 import com.skapp.enterprise.timeplanner.payload.request.EpAddTimeRecordDto;
 import com.skapp.enterprise.timeplanner.repository.TimeRecordLocationDao;
+import com.skapp.enterprise.timeplanner.type.RecordLocationStatus;
 import com.skapp.enterprise.timeplanner.util.GeoFenceUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -111,17 +112,22 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 
 		ResponseEntityDto response = addTimeRecord(epAddTimeRecordDto);
 
-		if (epAddTimeRecordDto.getLatitude() != null && epAddTimeRecordDto.getLongitude() != null) {
+		RecordLocationStatus locationStatus;
+		if (epAddTimeRecordDto.getLatitude() == null || epAddTimeRecordDto.getLongitude() == null) {
+			locationStatus = RecordLocationStatus.UNAVAILABLE;
+		}
+		else {
 			boolean isWithinLocation = determineIfWithinGeofence(employee, epAddTimeRecordDto.getLatitude(),
 					epAddTimeRecordDto.getLongitude());
+			locationStatus = isWithinLocation ? RecordLocationStatus.INSIDE : RecordLocationStatus.OUTSIDE;
+		}
 
-			TimeRecord timeRecord = timeRecordDao
-				.findByEmployeeAndDate(employee, epAddTimeRecordDto.getTime().toLocalDate())
-				.orElse(null);
+		TimeRecord timeRecord = timeRecordDao
+			.findByEmployeeAndDate(employee, epAddTimeRecordDto.getTime().toLocalDate())
+			.orElse(null);
 
-			if (timeRecord != null) {
-				saveLocationStatus(timeRecord, epAddTimeRecordDto.getRecordActionType(), isWithinLocation);
-			}
+		if (timeRecord != null) {
+			saveLocationStatus(timeRecord, epAddTimeRecordDto.getRecordActionType(), locationStatus);
 		}
 
 		return response;
@@ -150,23 +156,24 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 		return distance <= fence.getRadiusMeters();
 	}
 
-	private void saveLocationStatus(TimeRecord timeRecord, TimeRecordActionTypes actionType, boolean isWithinLocation) {
+	private void saveLocationStatus(TimeRecord timeRecord, TimeRecordActionTypes actionType,
+			RecordLocationStatus locationStatus) {
 		if (actionType == TimeRecordActionTypes.START) {
 			TimeRecordLocation recordLocation = new TimeRecordLocation();
 			recordLocation.setTimeRecord(timeRecord);
-			recordLocation.setClockInWithinLocation(isWithinLocation);
+			recordLocation.setClockInLocationStatus(locationStatus);
 			timeRecordLocationDao.save(recordLocation);
 		}
 		else if (actionType == TimeRecordActionTypes.END) {
 			Optional<TimeRecordLocation> existingLocation = timeRecordLocationDao.findByTimeRecord(timeRecord);
 			if (existingLocation.isPresent()) {
-				existingLocation.get().setClockOutWithinLocation(isWithinLocation);
+				existingLocation.get().setClockOutLocationStatus(locationStatus);
 				timeRecordLocationDao.save(existingLocation.get());
 			}
 			else {
 				TimeRecordLocation recordLocation = new TimeRecordLocation();
 				recordLocation.setTimeRecord(timeRecord);
-				recordLocation.setClockOutWithinLocation(isWithinLocation);
+				recordLocation.setClockOutLocationStatus(locationStatus);
 				timeRecordLocationDao.save(recordLocation);
 			}
 		}

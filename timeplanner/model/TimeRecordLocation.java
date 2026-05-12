@@ -1,8 +1,11 @@
 package com.skapp.enterprise.timeplanner.model;
 
 import com.skapp.community.timeplanner.model.TimeRecord;
+import com.skapp.enterprise.timeplanner.type.RecordLocationStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,10 +33,12 @@ public class TimeRecordLocation {
 	@JoinColumn(name = "time_record_id", nullable = false)
 	private TimeRecord timeRecord;
 
-	@Column(name = "is_clock_in_within_location", nullable = false)
-	private boolean isClockInWithinLocation;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "clock_in_location_status")
+	private RecordLocationStatus clockInLocationStatus;
 
-	@Column(name = "is_clock_out_within_location", nullable = false)
-	private boolean isClockOutWithinLocation;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "clock_out_location_status")
+	private RecordLocationStatus clockOutLocationStatus;
 
 }
