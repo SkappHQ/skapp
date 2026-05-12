@@ -3,7 +3,7 @@ import { RefObject } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { AdminTypes, EmployeeTypes, ManagerTypes } from "~community/common/types/AuthTypes";
+import { AdminTypes, EmployeeTypes, ManagerTypes, RepresentativeTypes } from "~community/common/types/AuthTypes";
 import { usePeopleStore } from "~community/people/store/store";
 import {
   EmployeeDataFilterTypes,
@@ -101,7 +101,7 @@ const UserRolesSection = ({
           }
         ]
       : []),
-    ...(user?.roles?.includes(EmployeeTypes.CRM_SALES_REPRESENTATIVE) ||
+    ...(user?.roles?.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE) ||
       user?.roles?.includes(ManagerTypes.CRM_SALES_MANAGER) ||
       user?.roles?.includes(AdminTypes.CRM_ADMIN)
       ? [
