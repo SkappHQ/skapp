@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -126,7 +127,10 @@ public class HolidayServiceImpl implements HolidayService {
 		AtomicInteger holidaysOnCurrentDate = new AtomicInteger();
 		AtomicInteger holidaysOnPastDates = new AtomicInteger();
 
-		List<String> validWorkLocationNames = workLocationDao.findAllWorkLocationNames();
+		List<WorkLocation> allWorkLocations = workLocationDao.findAll();
+		List<String> validWorkLocationNames = allWorkLocations.stream().map(WorkLocation::getName).toList();
+		Map<String, WorkLocation> workLocationsByName = allWorkLocations.stream()
+			.collect(Collectors.toMap(wl -> wl.getName().trim(), wl -> wl, (a, b) -> a));
 
 		holidayBulkRequestDto.getHolidayDtoList().forEach(holidayDto -> {
 			try {
@@ -139,7 +143,8 @@ public class HolidayServiceImpl implements HolidayService {
 
 				Holiday holiday = peopleMapper.holidayDtoToHoliday(holidayDto);
 
-				Set<WorkLocation> workLocations = resolveWorkLocations(holidayDto.getWorkLocations());
+				Set<WorkLocation> workLocations = resolveWorkLocations(holidayDto.getWorkLocations(),
+						workLocationsByName);
 				holiday.setWorkLocations(workLocations);
 
 				savableHolidays.add(holiday);
@@ -508,7 +513,8 @@ public class HolidayServiceImpl implements HolidayService {
 		return holiday.getDate().isAfter(currentDate);
 	}
 
-	private Set<WorkLocation> resolveWorkLocations(List<String> workLocationNames) {
+	private Set<WorkLocation> resolveWorkLocations(List<String> workLocationNames,
+			Map<String, WorkLocation> workLocationsByName) {
 		if (workLocationNames == null || workLocationNames.isEmpty()) {
 			return new HashSet<>();
 		}
@@ -517,8 +523,14 @@ public class HolidayServiceImpl implements HolidayService {
 			return new HashSet<>();
 		}
 
-		List<WorkLocation> workLocations = workLocationDao.findAllByNameIn(workLocationNames);
-		return new HashSet<>(workLocations);
+		Set<WorkLocation> resolved = new HashSet<>();
+		for (String name : workLocationNames) {
+			WorkLocation wl = workLocationsByName.get(name.trim());
+			if (wl != null) {
+				resolved.add(wl);
+			}
+		}
+		return resolved;
 	}
 
 	private void normalizeWorkLocations(HolidayResponseDto holidayResponseDto) {
