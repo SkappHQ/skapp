@@ -16,4 +16,6 @@ public interface WorkLocationService {
 
 	ResponseEntityDto getAllWorkLocations();
 
+	ResponseEntityDto getWorkLocationById(Long id);
+
 }

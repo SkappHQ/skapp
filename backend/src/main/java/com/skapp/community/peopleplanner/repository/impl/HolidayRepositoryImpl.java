@@ -29,12 +29,39 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 	private final EntityManager entityManager;
 
+	@Override
 	public Page<Holiday> findAllHolidays(HolidayFilterDto holidayFilterDto, Pageable page) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+		Root<Holiday> countRoot = countQuery.from(Holiday.class);
+		List<Predicate> countPredicates = buildPredicates(criteriaBuilder, holidayFilterDto, countRoot);
+		countQuery.select(criteriaBuilder.count(countRoot));
+		countQuery.where(countPredicates.toArray(new Predicate[0]));
+		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
+
+		if (totalRows == 0) {
+			return new PageImpl<>(List.of(), page, 0);
+		}
+
 		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
 		Root<Holiday> root = criteriaQuery.from(Holiday.class);
+		List<Predicate> dataPredicates = buildPredicates(criteriaBuilder, holidayFilterDto, root);
+		criteriaQuery.where(dataPredicates.toArray(new Predicate[0]));
+		criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+
+		TypedQuery<Holiday> query = entityManager.createQuery(criteriaQuery);
+		query.setFirstResult((int) page.getOffset());
+		query.setMaxResults(page.getPageSize());
+
+		return new PageImpl<>(query.getResultList(), page, totalRows);
+	}
+
+	private static List<Predicate> buildPredicates(CriteriaBuilder criteriaBuilder, HolidayFilterDto holidayFilterDto,
+			Root<Holiday> root) {
 
 		List<Predicate> predicates = new ArrayList<>();
+
 		predicates.add(criteriaBuilder.equal(root.get(Holiday_.IS_ACTIVE), true));
 
 		if (holidayFilterDto != null) {
@@ -43,34 +70,23 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 			}
 			Integer year = holidayFilterDto.getYear();
 			LocalDate date = holidayFilterDto.getDate();
-			Predicate dateBetween;
+			Predicate datePredicate;
 			if (year != null) {
-				dateBetween = criteriaBuilder.between(root.get(Holiday_.DATE),
+				datePredicate = criteriaBuilder.between(root.get(Holiday_.DATE),
 						DateTimeUtils.getUtcLocalDate(year, 1, 1), DateTimeUtils.getUtcLocalDate(year, 12, 31));
 			}
 			else if (date != null) {
-				dateBetween = criteriaBuilder.between(root.get(Holiday_.DATE), date, date);
+				datePredicate = criteriaBuilder.equal(root.get(Holiday_.DATE), date);
 			}
 			else {
-				dateBetween = criteriaBuilder.between(root.get(Holiday_.DATE),
+				datePredicate = criteriaBuilder.between(root.get(Holiday_.DATE),
 						DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 1, 1),
 						DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 12, 31));
 			}
-			predicates.add(dateBetween);
+			predicates.add(datePredicate);
 		}
 
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		criteriaQuery.where(predArray);
-		criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
-
-		TypedQuery<Holiday> query = entityManager.createQuery(criteriaQuery);
-
-		int totalRows = query.getResultList().size();
-		query.setFirstResult(page.getPageNumber() * page.getPageSize());
-		query.setMaxResults(page.getPageSize());
-
-		return new PageImpl<>(query.getResultList(), page, totalRows);
+		return predicates;
 	}
 
 }

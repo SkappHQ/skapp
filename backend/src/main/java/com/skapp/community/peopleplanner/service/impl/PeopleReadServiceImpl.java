@@ -325,6 +325,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			dto.setOkrRole(role.getOkrRole());
 			dto.setInvoiceRole(role.getInvoiceRole());
 			dto.setPmRole(role.getPmRole());
+			dto.setCrmRole(role.getCrmRole());
 		});
 
 		return dto;

@@ -37,13 +37,23 @@ public class WorkLocationController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get all work locations without pagination",
+  @Operation(summary = "Get all work locations without pagination",
 			description = "Retrieves all work locations without pagination.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
 	@GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getAllWorkLocations() {
 
 		ResponseEntityDto response = workLocationService.getAllWorkLocations();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get a work location by ID",
+			description = "Retrieves a single work location with its employees and geo-fence details.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_ADMIN')")
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getWorkLocationById(@PathVariable Long id) {
+
+		ResponseEntityDto response = workLocationService.getWorkLocationById(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
