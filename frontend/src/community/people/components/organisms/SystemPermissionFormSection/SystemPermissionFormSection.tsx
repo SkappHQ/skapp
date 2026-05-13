@@ -101,8 +101,7 @@ const SystemPermissionFormSection = ({
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isSuperAdmin,
-    isInvoiceModuleEnabled,
-    isCrmModuleEnabled
+    isInvoiceModuleEnabled
   } = useSessionData();
 
   const hasOtherSuperAdmins = isSuperAdmin && superAdminCount > 1;
