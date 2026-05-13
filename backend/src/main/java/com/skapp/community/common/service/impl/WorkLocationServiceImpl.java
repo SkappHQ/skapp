@@ -20,8 +20,6 @@ import com.skapp.community.common.payload.response.WorkLocationSummaryResponseDt
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.repository.WorkLocationGeofenceDao;
 import com.skapp.community.common.service.WorkLocationService;
-import com.skapp.community.peopleplanner.model.Holiday;
-import com.skapp.community.peopleplanner.repository.HolidayDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
