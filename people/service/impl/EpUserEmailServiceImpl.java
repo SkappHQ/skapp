@@ -2,11 +2,11 @@ package com.skapp.enterprise.people.service.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.EmailService;
-import com.skapp.community.common.type.EmailButtonText;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.email.PeopleEmailDynamicFields;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
+import com.skapp.enterprise.common.type.EpEmailButtonText;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import com.skapp.enterprise.people.payload.email.GuestUserEmailDynamicFields;
 import com.skapp.enterprise.people.service.EpUserEmailService;
@@ -53,7 +53,7 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 		emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName());
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setProjectName(projectName);
-		emailDynamicFields.setButtonText(EmailButtonText.GO_TO_PROJECT.name());
+		emailDynamicFields.setButtonText(EpEmailButtonText.GO_TO_PROJECT.name());
 		emailDynamicFields.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com");
 
 		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
@@ -67,7 +67,7 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 		emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName());
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setProjectName(projectName);
-		emailDynamicFields.setButtonText(EmailButtonText.GO_TO_PROJECT.name());
+		emailDynamicFields.setButtonText(EpEmailButtonText.GO_TO_PROJECT.name());
 		emailDynamicFields.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com");
 
 		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
