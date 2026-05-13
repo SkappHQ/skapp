@@ -406,8 +406,9 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				.map(ProjectRequestDto::getProjectName)
 				.filter(name -> name != null && !name.isBlank())
 				.collect(Collectors.joining(", "));
+			String firstProjectKey = getFirstProjectKey(projects);
 			if (requester != null) {
-				epUserEmailService.sendGuestUserRequestApprovedEmail(requester, projectNames);
+				epUserEmailService.sendGuestUserRequestApprovedEmail(requester, projectNames, firstProjectKey);
 			}
 
 			return new ResponseEntityDto(
@@ -419,9 +420,10 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			.map(ProjectRequestDto::getProjectName)
 			.filter(name -> name != null && !name.isBlank())
 			.collect(Collectors.joining(", "));
+		String firstProjectKey = getFirstProjectKey(projects);
 		guestUserRequestDao.delete(request);
 		if (requester != null) {
-			epUserEmailService.sendGuestUserRequestDeclinedEmail(requester, projectNames);
+			epUserEmailService.sendGuestUserRequestDeclinedEmail(requester, projectNames, firstProjectKey);
 		}
 		return new ResponseEntityDto(
 				messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_DECLINED), false);
@@ -605,6 +607,14 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private String buildInvitationUrl(User user) {
 		return String.format(EpCommonConstants.GUEST_USER_BASE_INVITE_URL, TenantContext.getCurrentTenant(),
 				user.getEmail());
+	}
+
+	private String getFirstProjectKey(List<ProjectRequestDto> projects) {
+		return projects.stream()
+			.map(ProjectRequestDto::getProjectKey)
+			.filter(key -> key != null && !key.isBlank())
+			.findFirst()
+			.orElse("");
 	}
 
 }

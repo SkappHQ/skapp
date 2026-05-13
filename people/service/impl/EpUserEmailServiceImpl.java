@@ -48,13 +48,14 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 	}
 
 	@Override
-	public void sendGuestUserRequestApprovedEmail(Employee employee, String projectName) {
+	public void sendGuestUserRequestApprovedEmail(Employee employee, String projectName, String projectKey) {
 		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
 		emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName());
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setProjectName(projectName);
 		emailDynamicFields.setButtonText(EpEmailButtonText.GO_TO_PROJECT.name());
-		emailDynamicFields.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com");
+		emailDynamicFields
+			.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com/pm/projects/" + projectKey);
 
 		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_APPROVED, emailDynamicFields,
@@ -62,13 +63,14 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 	}
 
 	@Override
-	public void sendGuestUserRequestDeclinedEmail(Employee employee, String projectName) {
+	public void sendGuestUserRequestDeclinedEmail(Employee employee, String projectName, String projectKey) {
 		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
 		emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName());
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setProjectName(projectName);
 		emailDynamicFields.setButtonText(EpEmailButtonText.GO_TO_PROJECT.name());
-		emailDynamicFields.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com");
+		emailDynamicFields
+			.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com/pm/projects/" + projectKey);
 
 		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_DECLINED, emailDynamicFields,
