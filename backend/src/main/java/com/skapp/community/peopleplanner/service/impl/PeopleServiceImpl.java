@@ -1238,27 +1238,36 @@ public class PeopleServiceImpl implements PeopleService {
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getSupervisorRoles(Long userId) {
 		log.info("getSupervisorRoles: execution started");
+
 		Optional<Employee> optionalEmployee = employeeDao.findById(userId);
 		if (optionalEmployee.isEmpty()) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
+
 		Employee employee = optionalEmployee.get();
+
 		List<EmployeeManager> primaryManagerRecords = employeeManagerDao
 			.findByManagerAndManagerTypeAndEmployeeAccountStatusIn(employee, ManagerType.PRIMARY,
 					List.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+					
 		List<EmployeeBasicDetailsResponseDto> supervisedEmployees = primaryManagerRecords.stream()
 			.map(EmployeeManager::getEmployee)
 			.map(peopleMapper::employeeToEmployeeBasicDetailsResponseDto)
 			.toList();
+
 		List<EmployeeTeam> supervisorTeamRecords = employeeTeamDao
 			.findByEmployeeAndIsSupervisorTrueAndTeamIsActiveTrue(employee);
+
 		List<TeamBasicDetailsResponseDto> supervisedTeams = supervisorTeamRecords.stream()
 			.map(record -> peopleMapper.teamToTeamBasicDetailsResponseDto(record.getTeam()))
 			.toList();
+
 		SupervisorRolesResponseDto responseDto = new SupervisorRolesResponseDto();
 		responseDto.setSupervisedEmployees(supervisedEmployees);
 		responseDto.setSupervisedTeams(supervisedTeams);
+
 		log.info("getSupervisorRoles: execution ended");
+
 		return new ResponseEntityDto(false, responseDto);
 	}
 
@@ -1266,32 +1275,41 @@ public class PeopleServiceImpl implements PeopleService {
 	@Transactional
 	public ResponseEntityDto transferSupervisors(Long userId, TransferSupervisorsRequestDto requestDto) {
 		log.info("transferSupervisors: execution started");
+
 		Optional<Employee> optionalDepartingEmployee = employeeDao.findById(userId);
 		if (optionalDepartingEmployee.isEmpty()) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
+
 		Employee departingEmployee = optionalDepartingEmployee.get();
+
 		if (requestDto.getPrimarySupervisors() != null && !requestDto.getPrimarySupervisors().isEmpty()) {
 			requestDto.getPrimarySupervisors().forEach(item -> {
 				if (item.getSubordinateEmployeeId() == null) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL);
 				}
+
 				if (item.getNewSupervisorId() == null) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL);
 				}
+
 				Optional<Employee> optionalSubordinate = employeeDao.findById(item.getSubordinateEmployeeId());
 				if (optionalSubordinate.isEmpty()) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 				}
+
 				Optional<Employee> optionalNewSupervisor = employeeDao.findById(item.getNewSupervisorId());
 				if (optionalNewSupervisor.isEmpty()) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
 				}
+
 				Employee subordinate = optionalSubordinate.get();
 				Employee newSupervisor = optionalNewSupervisor.get();
+
 				if (newSupervisor.getEmployeeId().equals(subordinate.getEmployeeId())) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
 				}
+
 				Optional<EmployeeManager> optionalManagerRecord = employeeManagerDao
 					.findByManagerAndEmployeeAndManagerType(departingEmployee, subordinate, ManagerType.PRIMARY);
 				if (optionalManagerRecord.isPresent()) {
@@ -1310,22 +1328,28 @@ public class PeopleServiceImpl implements PeopleService {
 				if (item.getTeamId() == null) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_MEMBER_IDS_CANNOT_NULL);
 				}
+
 				if (item.getNewSupervisorId() == null) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL);
 				}
+
 				Optional<Team> optionalTeam = teamDao.findById(item.getTeamId());
 				if (optionalTeam.isEmpty()) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
 				}
+
 				Optional<Employee> optionalNewSupervisor = employeeDao.findById(item.getNewSupervisorId());
 				if (optionalNewSupervisor.isEmpty()) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
 				}
+
 				Team team = optionalTeam.get();
 				Employee newSupervisor = optionalNewSupervisor.get();
+
 				if (newSupervisor.getEmployeeId().equals(departingEmployee.getEmployeeId())) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
 				}
+
 				Optional<EmployeeTeam> optionalDepartingTeamRecord = employeeTeamDao.findByTeamAndEmployee(team,
 						departingEmployee);
 				if (optionalDepartingTeamRecord.isPresent()
