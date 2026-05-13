@@ -13,6 +13,8 @@ import { TierEnum } from "~enterprise/common/enums/Common";
 
 type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
 
+type RouteWithBadge = { badge?: string };
+
 interface Props {
   userRoles: Role[] | undefined;
   tiers: TierEnum[];
@@ -21,9 +23,6 @@ interface Props {
   tenantID?: string;
   organizationCalendarGoogleStatus?: boolean;
   organizationCalendarMicrosoftStatus?: boolean;
-  pendingLeaveCount?: number;
-  pendingTimesheetCount?: number;
-  pendingSignCount?: number;
   notificationLeaveCount?: number;
   notificationTimesheetCount?: number;
   notificationSignCount?: number;
@@ -37,9 +36,6 @@ const getDrawerRoutes = ({
   tenantID,
   organizationCalendarGoogleStatus,
   organizationCalendarMicrosoftStatus,
-  pendingLeaveCount = 0,
-  pendingTimesheetCount = 0,
-  pendingSignCount = 0,
   notificationLeaveCount = 0,
   notificationTimesheetCount = 0,
   notificationSignCount = 0
@@ -50,10 +46,7 @@ const getDrawerRoutes = ({
         globalLoginMethod,
         tenantID,
         organizationCalendarGoogleStatus,
-        organizationCalendarMicrosoftStatus,
-        pendingLeaveCount,
-        pendingTimesheetCount,
-        pendingSignCount
+        organizationCalendarMicrosoftStatus
       })
     : routes;
 
@@ -95,7 +88,7 @@ const getDrawerRoutes = ({
               url: ROUTES.DASHBOARD.BASE,
               icon: route?.icon,
               hasSubTree: false,
-              badge: route?.badge
+              featureBadge: (route as RouteWithBadge)?.badge
             };
           }
 
@@ -120,7 +113,7 @@ const getDrawerRoutes = ({
             url: ROUTES.PEOPLE.DIRECTORY,
             icon: route?.icon,
             hasSubTree: false,
-            badge: route?.badge
+            featureBadge: (route as RouteWithBadge)?.badge
           };
         }
       }
@@ -147,7 +140,7 @@ const getDrawerRoutes = ({
             url: ROUTES.TIMESHEET.MY_TIMESHEET,
             icon: route?.icon,
             hasSubTree: false,
-            badge: route?.badge
+            featureBadge: (route as RouteWithBadge)?.badge
           };
         }
       }
@@ -183,7 +176,7 @@ const getDrawerRoutes = ({
               url: ROUTES.LEAVE.MY_REQUESTS,
               icon: route?.icon,
               hasSubTree: false,
-              badge: route?.badge
+              featureBadge: (route as RouteWithBadge)?.badge
             };
           }
 
@@ -218,7 +211,7 @@ const getDrawerRoutes = ({
             icon: route?.icon,
             hasSubTree: true,
             subTree: subRoutes,
-            badge: route?.badge
+            featureBadge: (route as RouteWithBadge)?.badge
           };
         }
 
@@ -228,7 +221,7 @@ const getDrawerRoutes = ({
           url: ROUTES.PROJECTS.BASE,
           icon: route?.icon,
           hasSubTree: false,
-          badge: route?.badge
+          featureBadge: (route as RouteWithBadge)?.badge
         };
       }
 
@@ -265,7 +258,7 @@ const getDrawerRoutes = ({
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
             subTree: subRoutes,
-            badge: route?.badge
+            featureBadge: (route as RouteWithBadge)?.badge
           };
         }
 
@@ -276,7 +269,7 @@ const getDrawerRoutes = ({
             url: ROUTES.SETTINGS.BASE,
             icon: route?.icon,
             hasSubTree: false,
-            badge: route?.badge
+            featureBadge: (route as RouteWithBadge)?.badge
           };
         }
       }
@@ -300,10 +293,10 @@ const getDrawerRoutes = ({
             url: ROUTES.SIGN.INBOX,
             icon: route?.icon,
             hasSubTree: false,
-            badge:
+            notificationCount:
               notificationSignCount > 0
                 ? notificationSignCount.toString()
-                : route?.badge
+                : undefined
           };
         }
       }
@@ -317,27 +310,27 @@ const getDrawerRoutes = ({
 
             if (!isSubRouteAuthorized) return null;
 
-            // Add badge to "All Requests" if there are pending requests
+            // Add notification count to "All Requests" if there are pending requests
             if (subRoute.id === "2B" && notificationLeaveCount > 0) {
               return {
                 ...subRoute,
-                badge: notificationLeaveCount.toString()
+                notificationCount: notificationLeaveCount.toString()
               };
             }
 
-            // Add badge to "All Timesheets" if there are pending timesheets
+            // Add notification count to "All Timesheets" if there are pending timesheets
             if (subRoute.id === "1B" && notificationTimesheetCount > 0) {
               return {
                 ...subRoute,
-                badge: notificationTimesheetCount.toString()
+                notificationCount: notificationTimesheetCount.toString()
               };
             }
 
-            // Add badge to "Inbox" if there are pending documents to sign
+            // Add notification count to "Inbox" if there are pending documents to sign
             if (subRoute.id === "4A" && notificationSignCount > 0) {
               return {
                 ...subRoute,
-                badge: notificationSignCount.toString()
+                notificationCount: notificationSignCount.toString()
               };
             }
 
@@ -356,7 +349,7 @@ const getDrawerRoutes = ({
             icon: route?.icon,
             hasSubTree: route?.hasSubTree,
             subTree: subRoutes,
-            badge: route?.badge
+            featureBadge: (route as RouteWithBadge)?.badge
           };
         }
       } else if (isAuthorized) {
@@ -366,7 +359,7 @@ const getDrawerRoutes = ({
           url: route?.url,
           icon: route?.icon,
           hasSubTree: route?.hasSubTree,
-          badge: route?.badge
+          featureBadge: (route as RouteWithBadge)?.badge
         };
       }
     })

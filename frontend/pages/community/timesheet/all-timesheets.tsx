@@ -34,7 +34,7 @@ const AllTimesheetsPage: NextPage = () => {
     useMarkNotificationSummaryAsRead();
   useEffect(() => {
     markTimesheetNotificationsAsRead("TIME_ENTRY");
-  }, []);
+  }, [markTimesheetNotificationsAsRead]);
 
   const { data: suggestions, isPending: isSuggestionsPending } =
     useGetEmployeesAndTeamsForAnalytics(searchTerm || " ");

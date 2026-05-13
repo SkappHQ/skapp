@@ -46,11 +46,8 @@ import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
-import { useGetPendingLeaveRequests } from "~community/leave/api/LeaveApi";
-import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
-import { useGetPendingCounts } from "~enterprise/common/api/DashboardApi";
 import Badge from "~enterprise/common/components/atoms/Badge/Badge";
 import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
 import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
@@ -119,30 +116,24 @@ const Drawer = (): JSX.Element => {
     setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
   }));
 
-  const { data: pendingLeavesData } = useGetPendingLeaveRequests("");
-  const pendingLeaveCount = pendingLeavesData?.length || 0;
-
-  const { data: pendingCountsData } = useGetPendingCounts();
-  const pendingTimesheetCount =
-    pendingCountsData?.pendingTimeEntryRequestsCount || 0;
-  const pendingSignCount = pendingCountsData?.pendingDocumentsToSignCount || 0;
-
   const { data: notificationSummaryData } = useGetNotificationSummary();
-  const notificationLeaveCount =
-    notificationSummaryData?.results?.find?.(
-      (item: { notificationType: string; notificationCount: number }) =>
-        item.notificationType === "LEAVE_REQUEST"
-    )?.notificationCount || 0;
-  const notificationTimesheetCount =
-    notificationSummaryData?.results?.find?.(
-      (item: { notificationType: string; notificationCount: number }) =>
-        item.notificationType === "TIME_ENTRY"
-    )?.notificationCount || 0;
-  const notificationSignCount =
-    notificationSummaryData?.results?.find?.(
-      (item: { notificationType: string; notificationCount: number }) =>
-        item.notificationType === "ESIGN"
-    )?.notificationCount || 0;
+  const {
+    notificationLeaveCount,
+    notificationTimesheetCount,
+    notificationSignCount
+  } = useMemo(() => {
+    const counts: Record<string, number> = {};
+    notificationSummaryData?.results?.forEach(
+      (item: { notificationType: string; notificationCount: number }) => {
+        counts[item.notificationType] = item.notificationCount;
+      }
+    );
+    return {
+      notificationLeaveCount: counts["LEAVE_REQUEST"] || 0,
+      notificationTimesheetCount: counts["TIME_ENTRY"] || 0,
+      notificationSignCount: counts["ESIGN"] || 0
+    };
+  }, [notificationSummaryData?.results]);
 
   const [orgLogo, setOrgLogo] = useState<string | null>(null);
 
@@ -160,9 +151,6 @@ const Drawer = (): JSX.Element => {
           organizationCalendarStatusData?.isGoogleCalendarEnabled ?? false,
         organizationCalendarMicrosoftStatus:
           organizationCalendarStatusData?.isMicrosoftCalendarEnabled ?? false,
-        pendingLeaveCount,
-        pendingTimesheetCount,
-        pendingSignCount,
         notificationLeaveCount,
         notificationTimesheetCount,
         notificationSignCount
@@ -172,9 +160,6 @@ const Drawer = (): JSX.Element => {
       isEnterprise,
       globalLoginMethod,
       organizationCalendarStatusData,
-      pendingLeaveCount,
-      pendingTimesheetCount,
-      pendingSignCount,
       notificationLeaveCount,
       notificationTimesheetCount,
       notificationSignCount
@@ -329,25 +314,25 @@ const Drawer = (): JSX.Element => {
                           <NotificationDot
                             show={
                               route.id === "1" &&
-                              hasSubTree &&
                               notificationTimesheetCount > 0 &&
-                              !isExpanded
+                              ((hasSubTree && !isExpanded) ||
+                                (!hasSubTree && !isDrawerExpanded))
                             }
                           />
                           <NotificationDot
                             show={
                               route.id === "2" &&
-                              hasSubTree &&
                               notificationLeaveCount > 0 &&
-                              !isExpanded
+                              ((hasSubTree && !isExpanded) ||
+                                (!hasSubTree && !isDrawerExpanded))
                             }
                           />
                           <NotificationDot
                             show={
                               route.id === "4" &&
-                              hasSubTree &&
                               notificationSignCount > 0 &&
-                              !isExpanded
+                              ((hasSubTree && !isExpanded) ||
+                                (!hasSubTree && !isDrawerExpanded))
                             }
                           />
                         </Box>
@@ -364,8 +349,11 @@ const Drawer = (): JSX.Element => {
                           )
                         )}
                       />
-                      {route?.badge && !hasSubTree && (
-                        <NotificationBadge count={route.badge} />
+                      {route?.featureBadge && (
+                        <Badge text={route.featureBadge} />
+                      )}
+                      {route?.notificationCount && !hasSubTree && (
+                        <NotificationBadge count={route.notificationCount} />
                       )}
                       <ListItemIcon
                         sx={classes.chevronIcons(
@@ -412,7 +400,7 @@ const Drawer = (): JSX.Element => {
                           if (!subTreeRoute) return null;
                           const subRoute =
                             subTreeRoute as typeof subTreeRoute & {
-                              badge?: string;
+                              notificationCount?: string;
                             };
 
                           return (
@@ -458,8 +446,10 @@ const Drawer = (): JSX.Element => {
                                     )
                                   )}
                                 />
-                                {subRoute?.badge && (
-                                  <NotificationBadge count={subRoute.badge} />
+                                {subRoute?.notificationCount && (
+                                  <NotificationBadge
+                                    count={subRoute.notificationCount}
+                                  />
                                 )}
                               </ListItemButton>
                             </ListItem>

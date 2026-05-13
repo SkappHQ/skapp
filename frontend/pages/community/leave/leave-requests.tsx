@@ -70,7 +70,7 @@ const LeaveRequests: NextPage = () => {
     useMarkNotificationSummaryAsRead();
   useEffect(() => {
     markLeaveNotificationsAsRead("LEAVE_REQUEST");
-  }, []);
+  }, [markLeaveNotificationsAsRead]);
 
   const options = useMemo(() => {
     const individualSuggestions = suggestions?.employeeResponseDtoList?.map(

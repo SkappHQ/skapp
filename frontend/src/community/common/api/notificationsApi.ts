@@ -147,6 +147,9 @@ export const useMarkNotificationSummaryAsRead = () => {
       queryClient.invalidateQueries({
         queryKey: notificationsQueryKeys.GET_NOTIFICATION_SUMMARY
       });
+    },
+    onError: (error) => {
+      console.error("Failed to mark notification summary as read:", error);
     }
   });
 };
