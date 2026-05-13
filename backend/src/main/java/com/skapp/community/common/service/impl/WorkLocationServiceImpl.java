@@ -46,8 +46,6 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 	private final EmployeeDao employeeDao;
 
-	private final HolidayDao holidayDao;
-
 	private final MessageUtil messageUtil;
 
 	@Override
@@ -136,15 +134,6 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		WorkLocation workLocation = workLocationDao.findById(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
-
-		List<Holiday> affectedHolidays = holidayDao.findAllByIsActiveTrueAndWorkLocationsWorkLocationId(id);
-		for (Holiday holiday : affectedHolidays) {
-			holiday.getWorkLocations().remove(workLocation);
-			if (holiday.getWorkLocations().isEmpty()) {
-				log.warn("Holiday '{}' (ID: {}) lost its only work location '{}' and will now apply to all locations",
-						holiday.getName(), holiday.getId(), workLocation.getName());
-			}
-		}
 
 		clearWorkLocationFromEmployees(id);
 		workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
