@@ -30,5 +30,5 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/common-dml-script-v1-update-employee-role-set-crm-role.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create_ppl_holiday_com_work_location_table.sql
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create_ppl_com_holiday_work_location_table.sql
 
