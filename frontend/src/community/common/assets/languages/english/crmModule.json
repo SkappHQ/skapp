@@ -1,0 +1,31 @@
+{
+  "contacts": {
+    "pageHead": "Contacts | Skapp",
+    "title": "Contacts",
+    "addContactBtn": "Add Contact",
+    "detailsPageHead": "Contact Details | Skapp",
+    "detailsTitle": "Contact Details"
+  },
+  "companies": {
+    "pageHead": "Companies | Skapp",
+    "title": "Companies",
+    "addCompanyBtn": "Add Company",
+    "detailsPageHead": "Company Details | Skapp",
+    "detailsTitle": "Company Details",
+    "addCompanyModal": {
+      "title": "Add Company"
+    }
+  },
+  "deals": {
+    "pageHead": "Deals | Skapp",
+    "title": "Deals",
+    "addDealBtn": "Add Deal",
+    "detailsPageHead": "Deal Details | Skapp",
+    "detailsTitle": "Deal Details"
+  },
+  "tasks": {
+    "pageHead": "Tasks | Skapp",
+    "title": "Tasks",
+    "addTaskBtn": "Add Task"
+  }
+}

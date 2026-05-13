@@ -6,6 +6,7 @@ import {
   AuthEmployeeType,
   EmployeeTypes,
   ManagerTypes,
+  RepresentativeTypes,
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
@@ -72,6 +73,7 @@ export interface User {
     | EmployeeTypes
     | SuperAdminType
     | SenderTypes
+    | RepresentativeTypes
   )[];
   accessToken?: string;
   refreshToken?: string;
