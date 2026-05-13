@@ -138,6 +138,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       selectedProbationStartDate,
       selectedProbationEndDate,
       workTimeZoneDictionary,
+      workLocations,
       projectTeamList,
       primaryManagerSearchTerm,
       secondaryManagerSearchTerm,
@@ -155,6 +156,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       handleChange,
       dateOnChange,
       handleWorkTimeZoneChange,
+      handleWorkLocationChange,
       onPrimaryManagerSearchChange,
       onSecondaryManagerSearchChange,
       handlePrimaryManagerSelect,
@@ -611,6 +613,42 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                 }}
                 isDisabled={isInputsDisabled}
                 readOnly={isReadOnly}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+              <DropdownAutocomplete
+                itemList={
+                  workLocations?.map((location) => ({
+                    label: location.name,
+                    value: String(location.workLocationId)
+                  })) ?? []
+                }
+                inputName="workLocationId"
+                label={translateText(["workLocation"])}
+                value={
+                  values?.workLocationId
+                    ? {
+                        label:
+                          workLocations?.find(
+                            (loc) =>
+                              loc.workLocationId === values.workLocationId
+                          )?.name ?? "",
+                        value: String(values.workLocationId)
+                      }
+                    : undefined
+                }
+                placeholder={
+                  isReadOnly ? "" : translateText(["selectWorkLocation"])
+                }
+                onChange={handleWorkLocationChange}
+                error={errors.workLocationId ?? ""}
+                componentStyle={{
+                  mt: "0rem"
+                }}
+                listboxMaxHeight="154px"
+                isDisabled={isInputsDisabled}
+                readOnly={isReadOnly || isProfileView}
               />
             </Grid>
           </Grid>

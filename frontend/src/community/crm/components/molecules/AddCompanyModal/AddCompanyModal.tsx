@@ -18,11 +18,11 @@ import {
   useCheckCompanyNameExists,
   useCreateNewCompany
 } from "~community/crm/api/CompanyApi";
-import { useCrmStore } from "~community/crm/store/crmStore";
+import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompanyAddFormTypes,
   CrmCompanyCreatePayload
-} from "~community/crm/types/CrmCompanyTypes";
+} from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
 import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
@@ -100,7 +100,6 @@ const AddCompanyModal: React.FC = () => {
 
   const handleCloseModal = (): void => {
     setIsAddCompanyModalOpen(false);
-    setCompanyModalType(CrmModalTypes.NONE);
   };
 
   const { mutate: createNewCompany, isPending: isCreatingNewCompany } =

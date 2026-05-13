@@ -2,7 +2,7 @@ import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useCrmStore } from "~community/crm/store/crmStore";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import AddCompanyModal from "../../molecules/AddCompanyModal/AddCompanyModal";
@@ -24,7 +24,6 @@ const CompanyPopupController = () => {
 
   const handleCloseModal = (): void => {
     setIsAddCompanyModalOpen(false);
-    setCrmModalType(CrmModalTypes.NONE);
   };
 
   const getModalTitle = (modalType: CrmModalTypes) => {

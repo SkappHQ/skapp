@@ -1,15 +1,13 @@
-import { Box } from "@mui/material";
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CompanyPopupController from "~community/crm/components/organisms/CompanyPopupController/CompanyPopupController";
-import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
-import { useCrmStore } from "~community/crm/store/crmStore";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-const CrmCompanies: NextPage = () => {
+const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const { setIsAddCompaniesModalOpen, setCompanyModalType } = useCrmStore(
@@ -32,12 +30,12 @@ const CrmCompanies: NextPage = () => {
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
-      <Box>
+      <>
         <CompanyPopupController />
         <CompanyTable />
-      </Box>
+      </>
     </ContentLayout>
   );
 };
 
-export default CrmCompanies;
+export default Companies;

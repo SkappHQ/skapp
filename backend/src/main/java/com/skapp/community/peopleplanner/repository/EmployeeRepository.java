@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -87,13 +88,15 @@ public interface EmployeeRepository {
 
 	List<Employee> findEmployeeByName(String keyword);
 
-	PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Employee employee,
-			Employee currentEmployee);
+	PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Long employeeId,
+			Long currentEmployeeId);
 
-	PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Employee employee);
+	PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Long employeeId);
 
 	Long findAllActiveAndPendingEmployeesCount();
 
 	Page<Employee> findEmployeesV2(EmployeeFilterDtoV2 employeeFilterDto, Pageable pageable);
+
+	Map<Long, Long> countByWorkLocationIds(List<Long> workLocationIds);
 
 }
