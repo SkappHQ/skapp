@@ -134,6 +134,7 @@ export interface holidayBulkUploadResponse {
 
 export type Holiday = {
   id: number;
+  workLocation?: string[];
   date: string;
   name: string;
   holidayDuration:

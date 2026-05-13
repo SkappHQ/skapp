@@ -1,6 +1,6 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useState } from "react";
 
-import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
 import AddCalendar from "~community/people/components/molecules/HolidayModals/AddCalendar/AddCalendar";
@@ -29,7 +29,8 @@ const HolidayModalController: FC = () => {
     selectedYear,
     setIsHolidayModalOpen,
     setHolidayModalType,
-    setIsBulkUpload
+    setIsBulkUpload,
+    selectedWorkLocationId
   } = usePeopleStore((state) => ({
     newCalenderDetails: state.newCalenderDetails,
     newHolidayDetails: state.newHolidayDetails,
@@ -38,7 +39,8 @@ const HolidayModalController: FC = () => {
     selectedYear: state.selectedYear,
     setIsHolidayModalOpen: state.setIsHolidayModalOpen,
     setHolidayModalType: state.setHolidayModalType,
-    setIsBulkUpload: state.setIsBulkUpload
+    setIsBulkUpload: state.setIsBulkUpload,
+    selectedWorkLocationId: state.selectedWorkLocationId
   }));
 
   const {
@@ -55,7 +57,11 @@ const HolidayModalController: FC = () => {
     holidayBulkUploadResponse | undefined
   >();
 
-  const { data: holidays, refetch } = useGetAllHolidaysInfinite(selectedYear);
+  const { data: holidays, refetch } = useGetAllHolidaysInfinite(
+    selectedYear,
+    undefined,
+    selectedWorkLocationId
+  );
 
   const getModalTitle = (): string => {
     switch (holidayModalType) {
@@ -174,9 +180,7 @@ const HolidayModalController: FC = () => {
 
   return (
     <SmallModal
-      isOpen={
-        isHolidayModalOpen && holidayModalType !== holidayModalTypes.NONE
-      }
+      isOpen={isHolidayModalOpen && holidayModalType !== holidayModalTypes.NONE}
       onClose={handleCloseModal}
       modalHeader={getModalTitle()}
       content={modalContent()}

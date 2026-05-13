@@ -1,6 +1,7 @@
 import { SelectChangeEvent, Stack, Typography } from "@mui/material";
 import { MutableRefObject, useEffect } from "react";
 
+import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
@@ -27,13 +28,31 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
   );
   const classes = styles();
 
-  const { selectedYear, setSelectedYear, holidayDataSort } = usePeopleStore(
-    (state) => ({
-      selectedYear: state.selectedYear,
-      setSelectedYear: state.setSelectedYear,
-      holidayDataSort: state.holidayDataParams.sortOrder
-    })
-  );
+  const {
+    selectedYear,
+    setSelectedYear,
+    holidayDataSort,
+    selectedWorkLocationId,
+    setSelectedWorkLocationId
+  } = usePeopleStore((state) => ({
+    selectedYear: state.selectedYear,
+    setSelectedYear: state.setSelectedYear,
+    holidayDataSort: state.holidayDataParams.sortOrder,
+    selectedWorkLocationId: state.selectedWorkLocationId,
+    setSelectedWorkLocationId: state.setSelectedWorkLocationId
+  }));
+
+  const ALL_LOCATIONS_ID = 0;
+  const ALL_LOCATIONS_LABEL = "All locations";
+
+  const { data: workLocations } = useGetAllWorkLocations();
+  const workLocationList = [
+    { label: ALL_LOCATIONS_LABEL, value: ALL_LOCATIONS_ID },
+    ...(workLocations ?? []).map((wl) => ({
+      label: wl.name,
+      value: wl.workLocationId
+    }))
+  ];
 
   useEffect(() => {
     setSelectedYear(currentYear.toString());
@@ -115,6 +134,35 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
         }}
         accessibility={{
           label: translateAria(["yearSelector"])
+        }}
+      />
+      <RoundedSelect
+        id="holiday-work-location-sort"
+        value={
+          workLocationList.find((loc) => loc.value === selectedWorkLocationId)
+            ?.label ?? ALL_LOCATIONS_LABEL
+        }
+        options={workLocationList.map((loc) => ({
+          ...loc,
+          value: loc.label
+        }))}
+        onChange={(event) => {
+          const selected = workLocationList.find(
+            (loc) => loc.label === event?.target.value
+          );
+          setSelectedWorkLocationId(selected?.value ?? ALL_LOCATIONS_ID);
+        }}
+        renderValue={(selectedValue: string) => {
+          return (
+            <Typography
+              aria-label={`${translateAria(["currentSelection"])} ${selectedValue}`}
+            >
+              {selectedValue}
+            </Typography>
+          );
+        }}
+        accessibility={{
+          label: translateAria(["workLocationSelector"])
         }}
       />
     </Stack>

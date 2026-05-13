@@ -42,12 +42,14 @@ export const useGetAllHolidays = (
 
 export const useGetAllHolidaysInfinite = (
   year?: string | undefined,
-  sortOrder?: string | undefined
+  sortOrder?: string | undefined,
+  workLocationId?: number
 ): UseInfiniteQueryResult<HolidayDataResponse> => {
   const params = {
     year: year,
     sortOrder: sortOrder,
-    isExport: false
+    isExport: false,
+    workLocationId: workLocationId
   };
 
   return useInfiniteQuery({

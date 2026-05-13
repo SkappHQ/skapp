@@ -30,7 +30,8 @@ const Holidays: NextPage = () => {
     setIsHolidayModalOpen,
     setHolidayModalType,
     selectedYear,
-    holidayDataParams
+    holidayDataParams,
+    selectedWorkLocationId
   } = usePeopleStore((state) => state);
 
   const {
@@ -41,7 +42,11 @@ const Holidays: NextPage = () => {
     fetchNextPage,
     isFetchingNextPage,
     isLoading: isHolidayDataLoading
-  } = useGetAllHolidaysInfinite(selectedYear, holidayDataParams.sortOrder);
+  } = useGetAllHolidaysInfinite(
+    selectedYear,
+    holidayDataParams.sortOrder,
+    selectedWorkLocationId
+  );
 
   const handleAddHoliday = () => {
     setHolidayModalType(holidayModalTypes.ADD_EDIT_HOLIDAY);

@@ -99,6 +99,7 @@ interface actionsTypes {
   setIndividualDeleteId: (value: number) => void;
   setSelectedDeleteIds: (value: number[]) => void;
   setSelectedYear: (value: string) => void;
+  setSelectedWorkLocationId: (value: number) => void;
 
   //holidaySlice
   setIsBulkUpload: (value: boolean) => void;
@@ -305,6 +306,7 @@ export interface Store extends actionsTypes {
   individualDeleteId: number;
   selectedDeleteIds: number[];
   selectedYear: string;
+  selectedWorkLocationId: number;
 
   //holidaySlice
   newHolidayDetails: {

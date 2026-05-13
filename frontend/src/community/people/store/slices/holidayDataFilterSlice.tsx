@@ -16,6 +16,7 @@ const holidayDataFiltersSlice = (
   individualDeleteId: 0,
   selectedDeleteIds: [],
   selectedYear: "2024",
+  selectedWorkLocationId: 0,
 
   handleHolidayDataSort: (key: string, value: string) => {
     set((state: HolidayDataFiltersSliceTypes) => ({
@@ -100,6 +101,12 @@ const holidayDataFiltersSlice = (
     set((state: HolidayDataFiltersSliceTypes) => ({
       ...state,
       selectedYear: selectedYear
+    }));
+  },
+  setSelectedWorkLocationId: (selectedWorkLocationId: number) => {
+    set((state: HolidayDataFiltersSliceTypes) => ({
+      ...state,
+      selectedWorkLocationId: selectedWorkLocationId
     }));
   }
 });

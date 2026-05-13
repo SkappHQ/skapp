@@ -30,7 +30,12 @@ const validateHeaders = async (file: File): Promise<boolean> => {
   };
 
   const includesInvalidHeaders = (headers: string[]): boolean => {
-    const predefinedHeaders = ["Date", "Name", "Holiday Duration"];
+    const predefinedHeaders = [
+      "Date",
+      "Work Location",
+      "Name",
+      "Holiday Duration"
+    ];
     return headers?.some((header) => !predefinedHeaders?.includes(header));
   };
 

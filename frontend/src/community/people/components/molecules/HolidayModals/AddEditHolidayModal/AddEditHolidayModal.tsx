@@ -422,6 +422,7 @@ const AddEditHolidayModal = ({
           }}
           addNewClickBtnText={translateText(["addNewWorkLocation"])}
           error={errors.workLocation as string}
+          ariaLabel={translateAria(["selectWorkLocation"])}
         />
         <DurationSelector
           label={translateText(["duration"])}
