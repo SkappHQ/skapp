@@ -1,11 +1,10 @@
-import { Box } from "@mui/material";
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
-const CrmContacts: NextPage = () => {
+const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   return (
@@ -15,9 +14,9 @@ const CrmContacts: NextPage = () => {
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
     >
-      <Box></Box>
+      <></>
     </ContentLayout>
   );
 };
 
-export default CrmContacts;
+export default Contacts;
