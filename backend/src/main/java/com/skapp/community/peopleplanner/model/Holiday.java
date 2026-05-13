@@ -49,7 +49,7 @@ public class Holiday extends Auditable<String> {
 	private boolean isActive = true;
 
 	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "holiday_work_location", joinColumns = @JoinColumn(name = "holiday_id"),
+	@JoinTable(name = "ppl_holiday_work_location", joinColumns = @JoinColumn(name = "holiday_id"),
 			inverseJoinColumns = @JoinColumn(name = "work_location_id"))
 	private Set<WorkLocation> workLocations = new HashSet<>();
 
