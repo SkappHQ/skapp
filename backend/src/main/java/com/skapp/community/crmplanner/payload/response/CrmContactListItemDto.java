@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class CrmContactResponseDto {
+public class CrmContactListItemDto {
 
 	private Long id;
 
@@ -24,5 +24,18 @@ public class CrmContactResponseDto {
 	private CrmCompanyLookupResponseDto company;
 
 	private CrmContactOwnerResponseDto owner;
+
+	// Aggregate fields for list view only
+	private Double closedDealValue;
+
+	private Long closedDealCount;
+
+	private Double pipelineDealValue;
+
+	private Long activeDealCount;
+
+	private Long openTaskCount;
+
+	private Long overdueTaskCount;
 
 }
