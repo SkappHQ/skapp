@@ -1,6 +1,8 @@
+import { EpAddTimeRecordDto } from "~enterprise/attendance/api/AttendanceApi";
+
 export const useUpdateEmployeeStatusWithLocation = () => {
   return {
-    mutate: () => {},
+    mutate: (_: EpAddTimeRecordDto) => {},
     isPending: false
   };
 };
