@@ -9,8 +9,8 @@ import java.util.List;
 @Setter
 public class TransferSupervisorsRequestDto {
 
-	private List<PrimarySupervisorTransferItemDto> primarySupervisors;
+	private List<PrimarySupervisorTransferDto> primarySupervisors;
 
-	private List<TeamSupervisorTransferItemDto> teamSupervisors;
+	private List<TeamSupervisorTransferDto> teamSupervisors;
 
 }

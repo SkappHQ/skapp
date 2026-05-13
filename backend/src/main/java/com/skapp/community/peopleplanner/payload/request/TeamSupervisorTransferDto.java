@@ -5,10 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TeamSupervisorTransferItemDto {
+public class TeamSupervisorTransferDto {
 
 	private Long teamId;
 
-	private Long newSupervisorId;
+	private Long newTeamSupervisorId;
 
 }

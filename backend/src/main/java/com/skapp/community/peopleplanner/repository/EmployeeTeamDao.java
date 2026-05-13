@@ -23,8 +23,6 @@ public interface EmployeeTeamDao extends JpaRepository<EmployeeTeam, Long>, Empl
 
 	void deleteAllByIdIn(List<Long> employeeTeamIds);
 
-	List<EmployeeTeam> findByEmployeeAndIsSupervisor(Employee employee, Boolean isSupervisor);
-
 	List<EmployeeTeam> findByEmployeeAndIsSupervisorTrueAndTeamIsActiveTrue(Employee employee);
 
 	Optional<EmployeeTeam> findByTeamAndEmployee(Team team, Employee employee);

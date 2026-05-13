@@ -5,10 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PrimarySupervisorTransferItemDto {
+public class PrimarySupervisorTransferDto {
 
-	private Long subordinateEmployeeId;
+	private Long employeeId;
 
-	private Long newSupervisorId;
+	private Long newPrimarySupervisorId;
 
 }
