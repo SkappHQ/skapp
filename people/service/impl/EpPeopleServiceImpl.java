@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.CacheService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
@@ -155,9 +156,9 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	public EpPeopleServiceImpl(UserService userService, MessageUtil messageUtil, PeopleMapper peopleMapper,
 			UserDao userDao, TeamDao teamDao, EmployeeDao employeeDao, JobFamilyDao jobFamilyDao,
-			JobTitleDao jobTitleDao, EmployeePeriodDao employeePeriodDao, EmployeeTeamDao employeeTeamDao,
-			EmployeeManagerDao employeeManagerDao, PasswordEncoder passwordEncoder, RolesService rolesService,
-			PageTransformer pageTransformer, PlatformTransactionManager transactionManager,
+			JobTitleDao jobTitleDao, WorkLocationDao workLocationDao, EmployeePeriodDao employeePeriodDao,
+			EmployeeTeamDao employeeTeamDao, EmployeeManagerDao employeeManagerDao, PasswordEncoder passwordEncoder,
+			RolesService rolesService, PageTransformer pageTransformer, PlatformTransactionManager transactionManager,
 			PeopleEmailService peopleEmailService, JsonMapper mapper,
 			EncryptionDecryptionService encryptionDecryptionService, BulkContextService bulkContextService,
 			AsyncEmailServiceImpl asyncEmailServiceImpl, ApplicationEventPublisher applicationEventPublisher,
@@ -173,10 +174,10 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 			EnvelopeService envelopeService, CacheService cacheService, EpOrganizationDao epOrganizationDao,
 			EmployeeExportMapperService employeeExportMapperService) {
 		super(userService, messageUtil, peopleMapper, userDao, teamDao, employeeDao, jobFamilyDao, jobTitleDao,
-				employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService, pageTransformer,
-				transactionManager, peopleEmailService, mapper, encryptionDecryptionService, bulkContextService,
-				asyncEmailServiceImpl, applicationEventPublisher, userVersionService, employeeValidationService,
-				employeeExportMapperService);
+				workLocationDao, employeePeriodDao, employeeTeamDao, employeeManagerDao, passwordEncoder, rolesService,
+				pageTransformer, transactionManager, peopleEmailService, mapper, encryptionDecryptionService,
+				bulkContextService, asyncEmailServiceImpl, applicationEventPublisher, userVersionService,
+				employeeValidationService, employeeExportMapperService);
 		this.employeeDao = employeeDao;
 		this.epEmployeeDao = epEmployeeDao;
 		this.employeeRoleDao = employeeRoleDao;
