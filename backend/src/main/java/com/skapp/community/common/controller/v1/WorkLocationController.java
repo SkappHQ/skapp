@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/work-location")
+@RequestMapping("/v1/com/work-location")
 public class WorkLocationController {
 
 	private final WorkLocationService workLocationService;
@@ -34,6 +34,16 @@ public class WorkLocationController {
 	public ResponseEntity<ResponseEntityDto> getWorkLocations(WorkLocationFilterDto workLocationFilterDto) {
 
 		ResponseEntityDto response = workLocationService.getWorkLocations(workLocationFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get all work locations without pagination",
+			description = "Retrieves all work locations without pagination.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
+	@GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getAllWorkLocations() {
+
+		ResponseEntityDto response = workLocationService.getAllWorkLocations();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

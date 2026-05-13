@@ -31,3 +31,7 @@ export const applicationVersionInfoQueryKeys = {
 export const storageAvailabilityQueryKeys = {
   GET_STORAGE_AVAILABILITY: ["storage-availability"]
 };
+
+export const workLocationQueryKeys = {
+  ALL_WORK_LOCATIONS: ["all-work-locations"]
+};

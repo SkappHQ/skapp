@@ -67,4 +67,6 @@ public class EmployeeBulkDto {
 
 	private EmploymentAllocation employmentAllocation;
 
+	private String workLocation;
+
 }
