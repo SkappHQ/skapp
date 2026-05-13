@@ -17,7 +17,13 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_OWNER_NOT_FOUND("api.error.crm.owner-not-found"),
 	CRM_ERROR_OWNER_INACTIVE("api.error.crm.owner-inactive"),
 	CRM_ERROR_OWNER_INVALID_ROLE("api.error.crm.owner-invalid-role"),
-	CRM_ERROR_OWNER_ASSIGNMENT_DENIED("api.error.crm.owner-assignment-denied");
+	CRM_ERROR_OWNER_ASSIGNMENT_DENIED("api.error.crm.owner-assignment-denied"),
+	CRM_ERROR_CONTACT_NOT_FOUND("api.error.crm.contact-not-found"),
+	CRM_ERROR_CONTACT_ALREADY_DELETED("api.error.crm.contact-already-deleted"),
+	CRM_ERROR_CONTACT_EDIT_DENIED("api.error.crm.contact-edit-denied"),
+	CRM_SUCCESS_CONTACT_CREATED("api.success.crm.contact-created"),
+	CRM_SUCCESS_CONTACT_DELETED("api.success.crm.contact-deleted"),
+	CRM_SUCCESS_CONTACT_UPDATED("api.success.crm.contact-updated");
 
 	private final String messageKey;
 

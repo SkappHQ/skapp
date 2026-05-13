@@ -1,23 +1,29 @@
 package com.skapp.community.crmplanner.service.impl;
 
+import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
-import com.skapp.community.crmplanner.repository.CrmCompanyDao;
-import com.skapp.community.crmplanner.repository.CrmContactDao;
-import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
+import com.skapp.community.crmplanner.payload.request.CrmContactUpdateRequestDto;
+import com.skapp.community.crmplanner.payload.response.*;
+import com.skapp.community.crmplanner.repository.*;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.service.CrmContactValidationService;
+import com.skapp.community.crmplanner.type.CrmActiveDealSummary;
+import com.skapp.community.crmplanner.type.CrmDealSummary;
+import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -29,8 +35,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -44,15 +54,29 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
+	private final CrmDealDao crmDealDao;
+
+	private final CrmTaskDao crmTaskDao;
+
+	private final CrmDealRepository crmDealRepository;
+
+	private final CrmTaskRepository crmTaskRepository;
+
 	private final EmployeeDao employeeDao;
 
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
+
+	private final CrmContactRepository crmContactRepository;
 
 	private final CrmContactValidationService crmContactValidationService;
 
 	private final UserService userService;
 
 	private final CrmMapper crmMapper;
+
+	private final PageTransformer pageTransformer;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional
@@ -81,6 +105,181 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getContacts(CrmContactFilterDto filterDto) {
+		log.info("getContacts: execution started");
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+
+		Page<CrmContact> contactPage = crmContactRepository.findContacts(filterDto, pageable);
+		PageDto pageDto = pageTransformer.transform(contactPage);
+
+		List<CrmContact> contacts = contactPage.getContent();
+		List<CrmContactListItemDto> contactDtos;
+
+		if (contacts.isEmpty()) {
+			contactDtos = Collections.emptyList();
+		}
+		else {
+			List<Long> contactIds = contacts.stream().map(CrmContact::getId).toList();
+			Map<Long, CrmDealSummary> closedDealSummary = buildClosedDealSummaryMap(contactIds);
+			Map<Long, CrmActiveDealSummary> activeDealSummary = buildActiveDealSummaryMap(contactIds);
+			Map<Long, CrmTaskSummary> taskSummary = buildTaskSummaryMap(contactIds);
+
+			contactDtos = contacts.stream().map(c -> {
+				CrmContactListItemDto dto = crmMapper.crmContactToCrmContactListItemDto(c);
+				
+				CrmDealSummary closedDeals = closedDealSummary.get(c.getId());
+				dto.setClosedDealValue(closedDeals != null ? closedDeals.getTotalClosedValue() : 0.0);
+				dto.setClosedDealCount(closedDeals != null ? closedDeals.getClosedDealCount() : 0L);
+				
+				CrmActiveDealSummary activeDeals = activeDealSummary.get(c.getId());
+				dto.setPipelineDealValue(activeDeals != null ? activeDeals.getTotalPipelineValue() : 0.0);
+				dto.setActiveDealCount(activeDeals != null ? activeDeals.getActiveDealsCount() : 0L);
+				
+				CrmTaskSummary tasks = taskSummary.get(c.getId());
+				dto.setOpenTaskCount(tasks != null ? tasks.getOpenTaskCount() : 0L);
+				dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
+				
+				return dto;
+			}).toList();
+		}
+
+		pageDto.setItems(contactDtos);
+
+		log.info("getContacts: execution ended");
+		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactById(Long id) {
+		log.info("getContactById: execution started for id: {}", id);
+
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		CrmContactResponseDto dto = crmMapper.crmContactToCrmContactResponseDto(contact);
+
+		// No aggregates - basic contact info only for detail panel header
+		// Frontend will call /contacts/{id}/metrics separately for metrics
+
+		log.info("getContactById: execution ended");
+		return new ResponseEntityDto(false, dto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactMetrics(Long id) {
+		log.info("getContactMetrics: execution started for id: {}", id);
+
+		// Verify contact exists and is not deleted
+		crmContactDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		// Fetch closed deal summary (Total Revenue)
+		List<CrmDealSummary> closedDeals = crmDealRepository.findClosedDealSummaryByContactIds(List.of(id));
+		CrmDealSummary closedDeal = closedDeals.isEmpty() ? null : closedDeals.get(0);
+
+		// Fetch active deal summary (Revenue on Pipeline + Active Deals Count)
+		List<CrmActiveDealSummary> activeDeals = crmDealRepository.findActiveDealSummaryByContactIds(List.of(id));
+		CrmActiveDealSummary activeDeal = activeDeals.isEmpty() ? null : activeDeals.get(0);
+
+		// Fetch task summary (Open Tasks + Overdue Tasks)
+		List<CrmTaskSummary> tasks = crmTaskRepository.findOpenTaskSummaryByContactIds(List.of(id));
+		CrmTaskSummary task = tasks.isEmpty() ? null : tasks.get(0);
+
+		CrmContactMetricsResponseDto metrics = new CrmContactMetricsResponseDto();
+		metrics.setTotalRevenue(closedDeal != null ? closedDeal.getTotalClosedValue() : 0.0);
+		metrics.setRevenueOnPipeline(activeDeal != null ? activeDeal.getTotalPipelineValue() : 0.0);
+		metrics.setActiveDealsCount(activeDeal != null ? activeDeal.getActiveDealsCount() : 0L);
+		metrics.setOpenTasksCount(task != null ? task.getOpenTaskCount() : 0L);
+		metrics.setOverdueTasksCount(task != null ? task.getOverdueTaskCount() : 0L);
+
+		log.info("getContactMetrics: execution ended");
+		return new ResponseEntityDto(false, metrics);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto updateContact(Long id, CrmContactUpdateRequestDto requestDto) {
+		log.info("updateContact: execution started for id: {}", id);
+
+		User currentUser = userService.getCurrentUser();
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		enforceEditPermission(contact, currentUser);
+		crmContactValidationService.validateUpdateContactRequest(requestDto, id);
+
+		contact.setName(requestDto.getName().trim());
+		contact.setEmail(requestDto.getEmail().trim().toLowerCase());
+		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
+		contact.setCompany(resolveCompany(requestDto.getCompanyId()));
+
+		if (requestDto.getOwnerId() != null) {
+			Employee newOwner = resolveOwner(requestDto.getOwnerId(), currentUser);
+			contact.setOwner(newOwner);
+		}
+
+		crmContactDao.save(contact);
+
+		log.info("updateContact: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_CONTACT_UPDATED), false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactDeals(Long contactId) {
+		log.info("getContactDeals: execution started for contactId: {}", contactId);
+
+		// Verify contact exists and is not deleted
+		crmContactDao.findByIdAndIsDeletedFalse(contactId)
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		List<CrmDealResponseDto> deals = crmDealDao.findByContactIdAndIsDeletedFalse(contactId)
+			.stream()
+			.map(crmMapper::crmDealToCrmDealResponseDto)
+			.toList();
+
+		log.info("getContactDeals: execution ended with {} deals", deals.size());
+		return new ResponseEntityDto(false, deals);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactTasks(Long contactId) {
+		log.info("getContactTasks: execution started for contactId: {}", contactId);
+
+		// Verify contact exists and is not deleted
+		crmContactDao.findByIdAndIsDeletedFalse(contactId)
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		List<CrmTaskResponseDto> tasks = crmTaskDao.findByContactIdAndIsDeletedFalse(contactId)
+			.stream()
+			.map(crmMapper::crmTaskToCrmTaskResponseDto)
+			.toList();
+
+		log.info("getContactTasks: execution ended with {} tasks", tasks.size());
+		return new ResponseEntityDto(false, tasks);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteContact(Long id) {
+		log.info("deleteContact: execution started for id: {}", id);
+
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		contact.setIsDeleted(true);
+		crmContactDao.save(contact);
+
+		log.info("deleteContact: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_CONTACT_DELETED), false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getContactOwners(CrmContactOwnerFilterDto filterDto) {
 		log.info("getContactOwners: execution started");
 
@@ -102,6 +301,51 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
+	private void enforceEditPermission(CrmContact contact, User currentUser) {
+		Employee currentEmployee = currentUser.getEmployee();
+		if (currentEmployee == null) {
+			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
+		}
+
+		EmployeeRole currentEmployeeRole = currentEmployee.getEmployeeRole();
+		boolean isSuperAdmin = currentEmployeeRole != null
+				&& Boolean.TRUE.equals(currentEmployeeRole.getIsSuperAdmin());
+		Role currentCrmRole = currentEmployeeRole != null ? currentEmployeeRole.getCrmRole() : null;
+
+		// Super admins, CRM admins and sales managers can edit any contact
+		if (isSuperAdmin || currentCrmRole == Role.CRM_ADMIN || currentCrmRole == Role.CRM_SALES_MANAGER) {
+			return;
+		}
+
+		// Sales reps can only edit contacts they own
+		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE) {
+			if (contact.getOwner() != null
+					&& contact.getOwner().getEmployeeId().equals(currentEmployee.getEmployeeId())) {
+				return;
+			}
+		}
+
+		throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
+	}
+
+	private Map<Long, CrmDealSummary> buildClosedDealSummaryMap(List<Long> contactIds) {
+		return crmDealRepository.findClosedDealSummaryByContactIds(contactIds)
+			.stream()
+			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
+	}
+
+	private Map<Long, CrmActiveDealSummary> buildActiveDealSummaryMap(List<Long> contactIds) {
+		return crmDealRepository.findActiveDealSummaryByContactIds(contactIds)
+			.stream()
+			.collect(Collectors.toMap(CrmActiveDealSummary::getContactId, Function.identity()));
+	}
+
+	private Map<Long, CrmTaskSummary> buildTaskSummaryMap(List<Long> contactIds) {
+		return crmTaskRepository.findOpenTaskSummaryByContactIds(contactIds)
+			.stream()
+			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
+	}
+
 	private CrmCompany resolveCompany(Long companyId) {
 		if (companyId == null) {
 			return null;
@@ -118,7 +362,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		EmployeeRole currentEmployeeRole = currentEmployee.getEmployeeRole();
-		boolean isSuperAdmin = currentEmployeeRole != null && Boolean.TRUE.equals(currentEmployeeRole.getIsSuperAdmin());
+		boolean isSuperAdmin = currentEmployeeRole != null
+				&& Boolean.TRUE.equals(currentEmployeeRole.getIsSuperAdmin());
 		Role currentCrmRole = currentEmployeeRole != null ? currentEmployeeRole.getCrmRole() : null;
 
 		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE) {
