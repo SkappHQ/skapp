@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -8,7 +7,7 @@ import CompanyPopupController from "~community/crm/components/organisms/CompanyP
 import { useCrmStore } from "~community/crm/store/crmStore";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-const CrmCompanies: NextPage = () => {
+const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const { setIsAddCompaniesModalOpen, setCompanyModalType } = useCrmStore(
@@ -38,4 +37,4 @@ const CrmCompanies: NextPage = () => {
   );
 };
 
-export default CrmCompanies;
+export default Companies;
