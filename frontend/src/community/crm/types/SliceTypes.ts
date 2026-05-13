@@ -1,4 +1,4 @@
-import { CrmStore } from "./CrmStoreTypes";
+import { CrmStore } from "./StoreTypes";
 
 export interface CrmCompanyModalSliceTypes extends Pick<
   CrmStore,
