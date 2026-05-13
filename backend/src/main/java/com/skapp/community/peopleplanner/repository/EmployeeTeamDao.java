@@ -25,6 +25,8 @@ public interface EmployeeTeamDao extends JpaRepository<EmployeeTeam, Long>, Empl
 
 	List<EmployeeTeam> findByEmployeeAndIsSupervisor(Employee employee, Boolean isSupervisor);
 
+	List<EmployeeTeam> findByEmployeeAndIsSupervisorTrueAndTeamIsActiveTrue(Employee employee);
+
 	Optional<EmployeeTeam> findByTeamAndEmployee(Team team, Employee employee);
 
 }

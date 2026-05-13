@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.payload.response;
 
+import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,8 +10,8 @@ import java.util.List;
 @Setter
 public class SupervisorRolesResponseDto {
 
-	private List<SupervisedEmployeeResponseDto> supervisedEmployees;
+	private List<EmployeeBasicDetailsResponseDto> supervisedEmployees;
 
-	private List<SupervisedTeamResponseDto> supervisedTeams;
+	private List<TeamBasicDetailsResponseDto> supervisedTeams;
 
 }

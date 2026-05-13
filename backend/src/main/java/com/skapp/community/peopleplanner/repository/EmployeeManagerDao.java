@@ -3,6 +3,7 @@ package com.skapp.community.peopleplanner.repository;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,6 +22,9 @@ public interface EmployeeManagerDao extends JpaRepository<EmployeeManager, Long>
 	List<EmployeeManager> findByManagerInAndManagerType(List<Employee> employees, ManagerType managerType);
 
 	List<EmployeeManager> findByManagerAndManagerType(Employee manager, ManagerType managerType);
+
+	List<EmployeeManager> findByManagerAndManagerTypeAndEmployeeAccountStatusIn(Employee manager,
+			ManagerType managerType, List<AccountStatus> accountStatuses);
 
 	Optional<EmployeeManager> findByManagerAndEmployeeAndManagerType(Employee manager, Employee employee,
 			ManagerType managerType);

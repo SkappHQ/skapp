@@ -202,7 +202,7 @@ public class PeopleController {
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
 	@PatchMapping("/user/{userId}/transfer-supervisors")
 	public ResponseEntity<ResponseEntityDto> transferSupervisors(@PathVariable Long userId,
-			@RequestBody @Valid TransferSupervisorsRequestDto requestDto) {
+			@RequestBody TransferSupervisorsRequestDto requestDto) {
 		ResponseEntityDto response = peopleService.transferSupervisors(userId, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

@@ -48,6 +48,7 @@ import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
+import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDataValidationDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDetailsDto;
@@ -88,9 +89,8 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeManagerRespons
 import com.skapp.community.peopleplanner.payload.response.EmployeePeriodResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeTeamDto;
 import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
-import com.skapp.community.peopleplanner.payload.response.SupervisedEmployeeResponseDto;
-import com.skapp.community.peopleplanner.payload.response.SupervisedTeamResponseDto;
 import com.skapp.community.peopleplanner.payload.response.SupervisorRolesResponseDto;
+import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.export.EmployeeDataExportDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -1240,21 +1240,20 @@ public class PeopleServiceImpl implements PeopleService {
 		log.info("getSupervisorRoles: execution started");
 		Optional<Employee> optionalEmployee = employeeDao.findById(userId);
 		if (optionalEmployee.isEmpty()) {
-			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
 		Employee employee = optionalEmployee.get();
-		List<EmployeeManager> primaryManagerRecords = employeeManagerDao.findByManagerAndManagerType(employee,
-				ManagerType.PRIMARY);
-		List<SupervisedEmployeeResponseDto> supervisedEmployees = primaryManagerRecords.stream()
+		List<EmployeeManager> primaryManagerRecords = employeeManagerDao
+			.findByManagerAndManagerTypeAndEmployeeAccountStatusIn(employee, ManagerType.PRIMARY,
+					List.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+		List<EmployeeBasicDetailsResponseDto> supervisedEmployees = primaryManagerRecords.stream()
 			.map(EmployeeManager::getEmployee)
-			.filter(emp -> AccountStatus.ACTIVE.equals(emp.getAccountStatus())
-					|| AccountStatus.PENDING.equals(emp.getAccountStatus()))
-			.map(peopleMapper::employeeToSupervisedEmployeeResponseDto)
+			.map(peopleMapper::employeeToEmployeeBasicDetailsResponseDto)
 			.toList();
-		List<EmployeeTeam> supervisorTeamRecords = employeeTeamDao.findByEmployeeAndIsSupervisor(employee, true);
-		List<SupervisedTeamResponseDto> supervisedTeams = supervisorTeamRecords.stream()
-			.filter(record -> record.getTeam().isActive())
-			.map(record -> peopleMapper.teamToSupervisedTeamResponseDto(record.getTeam()))
+		List<EmployeeTeam> supervisorTeamRecords = employeeTeamDao
+			.findByEmployeeAndIsSupervisorTrueAndTeamIsActiveTrue(employee);
+		List<TeamBasicDetailsResponseDto> supervisedTeams = supervisorTeamRecords.stream()
+			.map(record -> peopleMapper.teamToTeamBasicDetailsResponseDto(record.getTeam()))
 			.toList();
 		SupervisorRolesResponseDto responseDto = new SupervisorRolesResponseDto();
 		responseDto.setSupervisedEmployees(supervisedEmployees);
@@ -1269,19 +1268,24 @@ public class PeopleServiceImpl implements PeopleService {
 		log.info("transferSupervisors: execution started");
 		Optional<Employee> optionalDepartingEmployee = employeeDao.findById(userId);
 		if (optionalDepartingEmployee.isEmpty()) {
-			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
 		Employee departingEmployee = optionalDepartingEmployee.get();
 		if (requestDto.getPrimarySupervisors() != null && !requestDto.getPrimarySupervisors().isEmpty()) {
 			requestDto.getPrimarySupervisors().forEach(item -> {
+				if (item.getSubordinateEmployeeId() == null) {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL);
+				}
+				if (item.getNewSupervisorId() == null) {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL);
+				}
 				Optional<Employee> optionalSubordinate = employeeDao.findById(item.getSubordinateEmployeeId());
 				if (optionalSubordinate.isEmpty()) {
-					throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 				}
 				Optional<Employee> optionalNewSupervisor = employeeDao.findById(item.getNewSupervisorId());
 				if (optionalNewSupervisor.isEmpty()) {
-					throw new EntityNotFoundException(
-							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
 				}
 				Employee subordinate = optionalSubordinate.get();
 				Employee newSupervisor = optionalNewSupervisor.get();
@@ -1296,21 +1300,26 @@ public class PeopleServiceImpl implements PeopleService {
 					employeeManagerDao.save(managerRecord);
 				}
 				else {
-					throw new EntityNotFoundException(
+					throw new ModuleException(
 							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_PRIMARY_SUPERVISOR_RECORD_NOT_FOUND);
 				}
 			});
 		}
 		if (requestDto.getTeamSupervisors() != null && !requestDto.getTeamSupervisors().isEmpty()) {
 			requestDto.getTeamSupervisors().forEach(item -> {
+				if (item.getTeamId() == null) {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_MEMBER_IDS_CANNOT_NULL);
+				}
+				if (item.getNewSupervisorId() == null) {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL);
+				}
 				Optional<Team> optionalTeam = teamDao.findById(item.getTeamId());
 				if (optionalTeam.isEmpty()) {
-					throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
 				}
 				Optional<Employee> optionalNewSupervisor = employeeDao.findById(item.getNewSupervisorId());
 				if (optionalNewSupervisor.isEmpty()) {
-					throw new EntityNotFoundException(
-							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
 				}
 				Team team = optionalTeam.get();
 				Employee newSupervisor = optionalNewSupervisor.get();
@@ -1338,7 +1347,7 @@ public class PeopleServiceImpl implements PeopleService {
 					}
 				}
 				else {
-					throw new EntityNotFoundException(
+					throw new ModuleException(
 							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND);
 				}
 			});
