@@ -8,14 +8,16 @@ import {
   useTheme
 } from "@mui/material";
 import Autocomplete, {
+  AutocompleteInputChangeReason,
   AutocompleteRenderInputParams
 } from "@mui/material/Autocomplete";
 import { useMemo } from "react";
 
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 import { EmployeeType } from "~community/people/types/EmployeeTypes";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+
 import Icon from "../../atoms/Icon/Icon";
 import AvatarChip from "../AvatarChip/AvatarChip";
 import styles from "./styles";
@@ -34,7 +36,7 @@ interface Props {
   options: EmployeeType[];
   value?: EmployeeOptionType | null;
   inputValue: string;
-  onInputChange: (value: string, reason: string) => void;
+  onInputChange: (value: string, reason: AutocompleteInputChangeReason) => void;
   onChange: (value: EmployeeType) => void;
   placeholder: string;
   isLoading?: boolean;

@@ -3,6 +3,7 @@ package com.skapp.community.peopleplanner.util;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.Validation;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
@@ -381,6 +382,12 @@ public class Validations {
 		if (employeeNumber.length() > PeopleConstants.MAX_EMPLOYEE_NUMBER_LENGTH)
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_EMPLOYEE_NUMBER_LENGTH,
 					List.of(String.valueOf(PeopleConstants.MAX_EMPLOYEE_NUMBER_LENGTH)));
+	}
+
+	public static void validateWorkLocation(Long workLocationId, WorkLocationDao workLocationDao) {
+		if (workLocationId != null && !workLocationDao.existsById(workLocationId)) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
+		}
 	}
 
 }

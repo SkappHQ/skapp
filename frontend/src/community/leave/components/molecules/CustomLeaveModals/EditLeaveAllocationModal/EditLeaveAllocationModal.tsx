@@ -133,6 +133,7 @@ const EditLeaveAllocationModal: React.FC<Props> = ({
   const isDeleteDisabled = currentEditingLeaveAllocation?.totalDaysUsed != 0;
 
   const isSaveDisabled =
+    !values.assignedTo ||
     !values.employeeId ||
     !values.typeId ||
     !values.numberOfDaysOff ||

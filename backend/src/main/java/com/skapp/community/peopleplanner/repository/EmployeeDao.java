@@ -40,4 +40,7 @@ public interface EmployeeDao
 
 	List<Employee> findByWorkLocationWorkLocationId(Long workLocationId);
 
+	List<Employee> findByWorkLocationWorkLocationIdAndAccountStatusIn(Long workLocationId,
+			Set<AccountStatus> accountStatuses);
+
 }

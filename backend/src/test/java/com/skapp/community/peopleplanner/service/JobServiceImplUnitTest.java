@@ -19,7 +19,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.mockito.Mockito.when;
@@ -57,7 +56,7 @@ class JobServiceImplUnitTest {
 	void updateTeam_returnsHttpOk() {
 		JobFamily jobFamily = getJobFamily();
 
-		when(jobFamilyDao.findById(1L)).thenReturn(Optional.of(jobFamily));
+		when(jobFamilyDao.getJobFamilyByIdWithJobTitles(1L)).thenReturn(jobFamily);
 
 		ResponseEntityDto response = jobService.getJobFamilyById(1L);
 		Assertions.assertEquals("successful", response.getStatus());

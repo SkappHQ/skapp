@@ -61,6 +61,7 @@ interface Props {
     | "top";
   isDisableOptionFilter?: boolean;
   required?: boolean;
+  listboxMaxHeight?: string;
 }
 
 const DropdownAutocomplete: FC<Props> = ({
@@ -80,7 +81,8 @@ const DropdownAutocomplete: FC<Props> = ({
   popperPosition,
   isDisableOptionFilter = false,
   required,
-  labelStyles
+  labelStyles,
+  listboxMaxHeight
 }) => {
   const theme: Theme = useTheme();
 
@@ -192,6 +194,11 @@ const DropdownAutocomplete: FC<Props> = ({
           </li>
         )}
         disableClearable={true}
+        ListboxProps={
+          listboxMaxHeight
+            ? { style: { maxHeight: listboxMaxHeight } }
+            : undefined
+        }
         PopperComponent={(props) => (
           <Popper {...props} placement={popperPosition} />
         )}

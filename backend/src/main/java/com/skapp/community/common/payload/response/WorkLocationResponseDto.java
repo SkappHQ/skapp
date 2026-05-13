@@ -13,6 +13,6 @@ public class WorkLocationResponseDto {
 
 	private String address;
 
-	private WorkLocationGeofenceResponseDto geofence;
+	private Long employeeCount;
 
 }
