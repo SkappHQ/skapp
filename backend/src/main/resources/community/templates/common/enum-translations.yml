@@ -5,7 +5,6 @@ en:
     HALFDAY_EVENING: "Half Day Evening"
   buttonText:
     COMMON_EMAIL_BUTTON_TEXT: "Visit the App"
-    GO_TO_PROJECT: "Go to project"
 
 sv:
   leaveDuration:
