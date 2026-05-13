@@ -4,3 +4,8 @@ export enum CrmDealStageEnum {
   WON = "WON",
   LOST = "LOST"
 }
+
+export enum CrmTaskStatusEnum {
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED"
+}
