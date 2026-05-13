@@ -2,10 +2,12 @@ package com.skapp.enterprise.people.service.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.type.EmailButtonText;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.email.PeopleEmailDynamicFields;
 import com.skapp.enterprise.common.config.TenantContext;
 import com.skapp.enterprise.common.type.EpEmailBodyTemplates;
+import com.skapp.enterprise.common.type.EpEmailButtonText;
 import com.skapp.enterprise.common.type.EpEmailMainTemplates;
 import com.skapp.enterprise.people.payload.email.GuestUserEmailDynamicFields;
 import com.skapp.enterprise.people.service.EpUserEmailService;
@@ -47,39 +49,54 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 	}
 
 	@Override
-	public void sendGuestUserRequestApprovedEmail(Employee employee, String projectName) {
+	public void sendGuestUserRequestApprovedEmail(Employee employee, String projectName, String projectKey) {
 		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
-		emailDynamicFields.setRecipientName(employee.getFirstName());
+		emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName());
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setProjectName(projectName);
+		emailDynamicFields.setButtonText(EpEmailButtonText.GO_TO_PROJECT.name());
+		emailDynamicFields.setAppUrl(buildProjectUrl(projectKey));
 
-		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_NO_BUTTON_V1,
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_APPROVED, emailDynamicFields,
 				emailDynamicFields.getWorkEmail());
 	}
 
 	@Override
-	public void sendGuestUserRequestDeclinedEmail(Employee employee, String projectName) {
+	public void sendGuestUserRequestDeclinedEmail(Employee employee, String projectName, String projectKey) {
 		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
-		emailDynamicFields.setRecipientName(employee.getFirstName());
+		emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName());
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setProjectName(projectName);
+		emailDynamicFields.setButtonText(EpEmailButtonText.GO_TO_PROJECT.name());
+		emailDynamicFields.setAppUrl(buildProjectUrl(projectKey));
 
-		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_NO_BUTTON_V1,
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_DECLINED, emailDynamicFields,
 				emailDynamicFields.getWorkEmail());
 	}
 
 	@Override
-	public void sendGuestUserRequestAwaitingApprovalEmail(String approverEmail, String projectName,
+	public void sendGuestUserRequestAwaitingApprovalEmail(String approverEmail, String approverName, String projectName,
 			String requesterName) {
 		GuestUserEmailDynamicFields emailDynamicFields = new GuestUserEmailDynamicFields();
 		emailDynamicFields.setWorkEmail(approverEmail);
+		emailDynamicFields.setEmployeeOrManagerName(approverName);
 		emailDynamicFields.setProjectName(projectName);
 		emailDynamicFields.setAdminName(requesterName);
+		emailDynamicFields.setButtonText(EmailButtonText.COMMON_EMAIL_BUTTON_TEXT.name());
+		emailDynamicFields.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com");
 
-		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_NO_BUTTON_V1,
+		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_AWAITING_APPROVAL, emailDynamicFields, approverEmail);
+	}
+
+	private String buildProjectUrl(String projectKey) {
+		String baseUrl = "https://" + TenantContext.getCurrentTenant() + ".skapp.com";
+		if (projectKey == null || projectKey.isBlank()) {
+			return baseUrl;
+		}
+		return baseUrl + "/pm/projects/" + projectKey;
 	}
 
 }

@@ -95,7 +95,10 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_NEW_ORGANIZATION_STARTED_CORE_FREE_TRIAL
 				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_TRIAL_ORGANIZATION_CONVERTED_TO_CORE
 				&& emailTemplate != EpEmailBodyTemplates.DASHBOARD_MODULE_ORGANIZATION_CANCELLED_CORE
-				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_INVITATION) {
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_INVITATION
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_REQUEST_APPROVED
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_REQUEST_DECLINED
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_REQUEST_AWAITING_APPROVAL) {
 			Optional<Organization> organization = organizationDao.findTopByOrderByOrganizationIdDesc();
 			organization.ifPresent(value -> {
 				placeholders.put("appUrl", value.getAppUrl());
@@ -116,7 +119,10 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 
 		if (TenantContext.getCurrentTenant() != null
 				&& !Objects.equals(TenantContext.getCurrentTenant(), EpCommonConstants.MASTER_DATABASE)
-				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_INVITATION) {
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_INVITATION
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_REQUEST_APPROVED
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_REQUEST_DECLINED
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_REQUEST_AWAITING_APPROVAL) {
 			String appUrl = "https://" + TenantContext.getCurrentTenant() + ".skapp.com/signin";
 			placeholders.put("appUrl", appUrl);
 		}
