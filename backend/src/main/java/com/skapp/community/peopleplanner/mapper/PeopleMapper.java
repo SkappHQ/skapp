@@ -159,6 +159,7 @@ public interface PeopleMapper {
 	@Mapping(target = "joinDate", source = "employeeBulkDto.joinedDate")
 	@Mapping(target = "jobFamily", ignore = true)
 	@Mapping(target = "jobTitle", ignore = true)
+	@Mapping(target = "workLocation", ignore = true)
 	Employee employeeBulkDtoToEmployee(EmployeeBulkDto employeeBulkDto);
 
 	@Mapping(target = "primaryManager", ignore = true)

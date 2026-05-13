@@ -138,6 +138,15 @@ export const getEmploymentChanges = (
     changes.workTimeZone = newEmployment?.workTimeZone;
   }
 
+  if (
+    isFieldDifferentAndValid(
+      newEmployment?.workLocationId,
+      previousEmployement?.workLocationId
+    )
+  ) {
+    changes.workLocationId = newEmployment?.workLocationId;
+  }
+
   return changes;
 };
 
