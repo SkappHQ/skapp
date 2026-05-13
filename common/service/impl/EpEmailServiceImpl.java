@@ -116,7 +116,10 @@ public class EpEmailServiceImpl extends EmailServiceImpl implements EpEmailServi
 
 		if (TenantContext.getCurrentTenant() != null
 				&& !Objects.equals(TenantContext.getCurrentTenant(), EpCommonConstants.MASTER_DATABASE)
-				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_INVITATION) {
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_INVITATION
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_REQUEST_APPROVED
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_REQUEST_DECLINED
+				&& emailTemplate != EpEmailBodyTemplates.GUEST_MODULE_REQUEST_AWAITING_APPROVAL) {
 			String appUrl = "https://" + TenantContext.getCurrentTenant() + ".skapp.com/signin";
 			placeholders.put("appUrl", appUrl);
 		}
