@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/crm")
-@Tag(name = "CRM Company Controller", description = "Endpoints for CRM company lookup")
+@Tag(name = "CRM Company Controller", description = "Endpoints for CRM company")
 public class CrmCompanyController {
 
 	private final CrmCompanyService crmCompanyService;

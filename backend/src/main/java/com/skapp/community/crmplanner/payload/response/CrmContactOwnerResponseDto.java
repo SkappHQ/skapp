@@ -16,6 +16,8 @@ public class CrmContactOwnerResponseDto {
 
 	private String email;
 
+	private String authPic;
+
 	private Role crmRole;
 
 }
