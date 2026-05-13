@@ -558,7 +558,9 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				if (email == null || email.isBlank()) {
 					continue;
 				}
-				epUserEmailService.sendGuestUserRequestAwaitingApprovalEmail(email, projectNames, requesterName);
+				String approverName = role.getEmployee().getFirstName();
+				epUserEmailService.sendGuestUserRequestAwaitingApprovalEmail(email, approverName, projectNames,
+						requesterName);
 			}
 			catch (Exception ex) {
 				log.warn("sendAwaitingApprovalEmails: Failed to send email to approver employeeId: {}",

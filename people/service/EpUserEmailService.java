@@ -13,6 +13,7 @@ public interface EpUserEmailService {
 
 	void sendGuestUserRequestDeclinedEmail(Employee employee, String projectName);
 
-	void sendGuestUserRequestAwaitingApprovalEmail(String approverEmail, String projectName, String requesterName);
+	void sendGuestUserRequestAwaitingApprovalEmail(String approverEmail, String approverName, String projectName,
+			String requesterName);
 
 }
