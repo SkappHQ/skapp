@@ -2,6 +2,7 @@ package com.skapp.enterprise.people.service.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.type.EmailButtonText;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.email.PeopleEmailDynamicFields;
 import com.skapp.enterprise.common.config.TenantContext;
@@ -54,8 +55,7 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setProjectName(projectName);
 		emailDynamicFields.setButtonText(EpEmailButtonText.GO_TO_PROJECT.name());
-		emailDynamicFields
-			.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com/pm/projects/" + projectKey);
+		emailDynamicFields.setAppUrl(buildProjectUrl(projectKey));
 
 		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_APPROVED, emailDynamicFields,
@@ -69,8 +69,7 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 		emailDynamicFields.setWorkEmail(employee.getUser().getEmail());
 		emailDynamicFields.setProjectName(projectName);
 		emailDynamicFields.setButtonText(EpEmailButtonText.GO_TO_PROJECT.name());
-		emailDynamicFields
-			.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com/pm/projects/" + projectKey);
+		emailDynamicFields.setAppUrl(buildProjectUrl(projectKey));
 
 		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_DECLINED, emailDynamicFields,
@@ -85,10 +84,19 @@ public class EpUserEmailServiceImpl implements EpUserEmailService {
 		emailDynamicFields.setEmployeeOrManagerName(approverName);
 		emailDynamicFields.setProjectName(projectName);
 		emailDynamicFields.setAdminName(requesterName);
+		emailDynamicFields.setButtonText(EmailButtonText.COMMON_EMAIL_BUTTON_TEXT.name());
 		emailDynamicFields.setAppUrl("https://" + TenantContext.getCurrentTenant() + ".skapp.com");
 
 		emailService.sendEmail(EpEmailMainTemplates.MAIN_TEMPLATE_V1,
 				EpEmailBodyTemplates.GUEST_MODULE_REQUEST_AWAITING_APPROVAL, emailDynamicFields, approverEmail);
+	}
+
+	private String buildProjectUrl(String projectKey) {
+		String baseUrl = "https://" + TenantContext.getCurrentTenant() + ".skapp.com";
+		if (projectKey == null || projectKey.isBlank()) {
+			return baseUrl;
+		}
+		return baseUrl + "/pm/projects/" + projectKey;
 	}
 
 }
