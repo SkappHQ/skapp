@@ -12,6 +12,7 @@ import com.skapp.community.common.payload.response.NotificationSettingsResponseD
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
@@ -166,6 +167,8 @@ public class PeopleServiceImpl implements PeopleService {
 	private final JobFamilyDao jobFamilyDao;
 
 	private final JobTitleDao jobTitleDao;
+
+	private final WorkLocationDao workLocationDao;
 
 	private final EmployeePeriodDao employeePeriodDao;
 
@@ -345,6 +348,16 @@ public class PeopleServiceImpl implements PeopleService {
 				employee::setJoinDate);
 		CommonModuleUtils.setIfExists(() -> requestDto.getEmployment().getEmploymentDetails().getWorkTimeZone(),
 				employee::setTimeZone);
+
+		// Work Location
+		if (requestDto != null && requestDto.getEmployment() != null
+				&& requestDto.getEmployment().getEmploymentDetails() != null
+				&& requestDto.getEmployment().getEmploymentDetails().getWorkLocationId() != null) {
+			employee.setWorkLocation(
+					workLocationDao.findById(requestDto.getEmployment().getEmploymentDetails().getWorkLocationId())
+						.orElseThrow(() -> new EntityNotFoundException(
+								PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND)));
+		}
 
 		// Identification and Diversity Details
 		CommonModuleUtils.setIfExists(
@@ -1509,47 +1522,30 @@ public class PeopleServiceImpl implements PeopleService {
 
 	@Override
 	public ResponseEntityDto isPrimarySecondaryOrTeamSupervisor(Long employeeId) {
-		User currentUser = userService.getCurrentUser();
 
-		Optional<Employee> employeeOptional = employeeDao.findById(employeeId);
-		if (employeeOptional.isEmpty()) {
+		if (!employeeDao.existsById(employeeId)) {
 			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
 
-		List<EmployeeTeam> currentEmployeeTeams = employeeTeamDao
-			.findEmployeeTeamsByEmployee(currentUser.getEmployee());
-		List<EmployeeTeam> employeeTeams = employeeTeamDao.findEmployeeTeamsByEmployee(employeeOptional.get());
+		User currentUser = userService.getCurrentUser();
 
 		PrimarySecondaryOrTeamSupervisorResponseDto primarySecondaryOrTeamSupervisor = employeeDao
-			.isPrimarySecondaryOrTeamSupervisor(employeeOptional.get(), currentUser.getEmployee());
+			.isPrimarySecondaryOrTeamSupervisor(employeeId, currentUser.getEmployee().getEmployeeId());
 
-		boolean isTeamSupervisor = currentEmployeeTeams.stream()
-			.anyMatch(currentTeam -> employeeTeams.stream()
-				.anyMatch(empTeam -> currentTeam.getTeam().equals(empTeam.getTeam()) && currentTeam.getIsSupervisor()));
-
-		primarySecondaryOrTeamSupervisor.setIsTeamSupervisor(isTeamSupervisor);
 		return new ResponseEntityDto(false, primarySecondaryOrTeamSupervisor);
 	}
 
 	@Override
 	public ResponseEntityDto hasSupervisoryRoles(Long employeeId) {
 
-		Optional<Employee> employeeOptional = employeeDao.findById(employeeId);
-		if (employeeOptional.isEmpty()) {
+		if (!employeeDao.existsById(employeeId)) {
 			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
 
-		List<EmployeeTeam> employeeTeams = employeeTeamDao.findEmployeeTeamsByEmployee(employeeOptional.get());
+		PrimarySecondaryOrTeamSupervisorResponseDto supervisoryRoles = employeeDao
+			.isPrimaryOrSecondarySupervisor(employeeId);
 
-		PrimarySecondaryOrTeamSupervisorResponseDto primarySecondaryOrTeamSupervisor = employeeDao
-			.isPrimaryOrSecondarySupervisor(employeeOptional.get());
-
-		boolean isTeamSupervisor = employeeTeams.stream()
-			.anyMatch(currentTeam -> employeeTeams.stream()
-				.anyMatch(empTeam -> currentTeam.getTeam().equals(empTeam.getTeam()) && currentTeam.getIsSupervisor()));
-
-		primarySecondaryOrTeamSupervisor.setIsTeamSupervisor(isTeamSupervisor);
-		return new ResponseEntityDto(false, primarySecondaryOrTeamSupervisor);
+		return new ResponseEntityDto(false, supervisoryRoles);
 	}
 
 	public List<EmployeeAllDataExportResponseDto> exportAllEmployeeData(List<Employee> employees,
@@ -1624,6 +1620,16 @@ public class PeopleServiceImpl implements PeopleService {
 			if (employeeBulkDto.getEmployeeProgression().getJobTitleId() != null
 					&& employeeBulkDto.getEmployeeProgression().getJobFamilyId() != null)
 				employee.setEmployeeProgressions(List.of(employeeProgression));
+		}
+	}
+
+	public void setBulkEmployeeWorkLocation(EmployeeBulkDto employeeBulkDto, Employee employee) {
+		if (employeeBulkDto.getWorkLocation() != null && !employeeBulkDto.getWorkLocation().isBlank()) {
+			workLocationDao.findByNameIgnoreCase(employeeBulkDto.getWorkLocation())
+				.ifPresentOrElse(employee::setWorkLocation, () -> {
+					throw new EntityNotFoundException(
+							PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
+				});
 		}
 	}
 
@@ -1706,6 +1712,13 @@ public class PeopleServiceImpl implements PeopleService {
 		if (socialSecurityNumber != null && socialSecurityNumber.length() > PeopleConstants.MAX_SSN_LENGTH)
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EXCEEDING_MAX_CHARACTER_LIMIT,
 					new Object[] { PeopleConstants.MAX_SSN_LENGTH, "First Name" }));
+	}
+
+	public void validateWorkLocationInBulk(String workLocation, List<String> errors) {
+		if (workLocation != null && !workLocation.isBlank()
+				&& workLocationDao.findByNameIgnoreCase(workLocation.trim()).isEmpty()) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND));
+		}
 	}
 
 	public void validateAddressInBulk(String addressLine, List<String> errors) {
@@ -1988,6 +2001,8 @@ public class PeopleServiceImpl implements PeopleService {
 
 		employee.setAccountStatus(employeeBulkDto.getAccountStatus());
 		employee.setEmploymentAllocation(employeeBulkDto.getEmploymentAllocation());
+
+		setBulkEmployeeWorkLocation(employeeBulkDto, employee);
 
 		UserSettings userSettings = createNotificationSettingsForBulkUser(user);
 		user.setSettings(userSettings);
@@ -2340,6 +2355,8 @@ public class PeopleServiceImpl implements PeopleService {
 		if (employeeBulkDto.getEmployeePersonalInfo().getSsn() != null) {
 			validateSocialSecurityNumber(employeeBulkDto.getEmployeePersonalInfo().getSsn(), errors);
 		}
+
+		validateWorkLocationInBulk(employeeBulkDto.getWorkLocation(), errors);
 
 		return errors;
 	}

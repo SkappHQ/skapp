@@ -153,6 +153,7 @@ export interface BulkEmployeeDetails {
   teams: (string | number)[] | null;
   primaryManager: string | null;
   timeZone: string | null;
+  workLocation: string | null;
   employmentAllocation: string | null;
   accountStatus: AccountStatus;
   eeo: string | null;

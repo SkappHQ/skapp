@@ -17,6 +17,8 @@ public interface JobFamilyRepository {
 
 	JobFamily getJobFamilyById(Long jobFamilyId);
 
+	JobFamily getJobFamilyByIdWithJobTitles(Long jobFamilyId);
+
 	JobFamily getJobFamilyByName(String jobFamilyName);
 
 	JobTitle getJobTitleById(Long jobTitleId);

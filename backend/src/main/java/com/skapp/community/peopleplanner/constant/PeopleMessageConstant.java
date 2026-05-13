@@ -215,6 +215,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 			"api.error.people.transfer-supervisors.primary-record-not-found"),
 	PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND(
 			"api.error.people.transfer-supervisors.team-record-not-found"),;
+	PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND("api.error.people.validation-work-location-not-found");
 
 	private final String messageKey;
 
