@@ -4,7 +4,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CompanyPopupController from "~community/crm/components/organisms/CompanyPopupController/CompanyPopupController";
-import { useCrmStore } from "~community/crm/store/crmStore";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const Companies: NextPage = () => {
@@ -30,9 +30,9 @@ const Companies: NextPage = () => {
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
-      <Box>
+      <>
         <CompanyPopupController />
-      </Box>
+      </>
     </ContentLayout>
   );
 };
