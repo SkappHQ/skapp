@@ -1254,14 +1254,11 @@ public class PeopleServiceImpl implements PeopleService {
 	@Transactional
 	public ResponseEntityDto transferSupervisors(Long userId, TransferSupervisorsRequestDto requestDto) {
 		log.info("transferSupervisors: execution started");
-		Optional<User> optionalUser = userDao.findById(userId);
-		if (optionalUser.isEmpty()) {
-			throw new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
-		}
-		Employee departingEmployee = optionalUser.get().getEmployee();
-		if (departingEmployee == null) {
+		Optional<Employee> optionalDepartingEmployee = employeeDao.findById(userId);
+		if (optionalDepartingEmployee.isEmpty()) {
 			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
 		}
+		Employee departingEmployee = optionalDepartingEmployee.get();
 		if (requestDto.getPrimarySupervisors() != null && !requestDto.getPrimarySupervisors().isEmpty()) {
 			requestDto.getPrimarySupervisors().forEach(item -> {
 				Optional<Employee> optionalSubordinate = employeeDao.findById(item.getSubordinateEmployeeId());
@@ -1275,11 +1272,7 @@ public class PeopleServiceImpl implements PeopleService {
 				}
 				Employee subordinate = optionalSubordinate.get();
 				Employee newSupervisor = optionalNewSupervisor.get();
-				if (!AccountStatus.ACTIVE.equals(newSupervisor.getAccountStatus())) {
-					throw new ModuleException(
-							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
-				}
-				if (newSupervisor.getEmployeeId().equals(departingEmployee.getEmployeeId())) {
+				if (newSupervisor.getEmployeeId().equals(subordinate.getEmployeeId())) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
 				}
 				Optional<EmployeeManager> optionalManagerRecord = employeeManagerDao
@@ -1308,21 +1301,17 @@ public class PeopleServiceImpl implements PeopleService {
 				}
 				Team team = optionalTeam.get();
 				Employee newSupervisor = optionalNewSupervisor.get();
-				if (!AccountStatus.ACTIVE.equals(newSupervisor.getAccountStatus())) {
-					throw new ModuleException(
-							PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND);
-				}
 				if (newSupervisor.getEmployeeId().equals(departingEmployee.getEmployeeId())) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
 				}
-				Optional<EmployeeTeam> optionalDepartingTeamRecord = employeeTeamDao
-					.findByTeamAndEmployee(team, departingEmployee);
+				Optional<EmployeeTeam> optionalDepartingTeamRecord = employeeTeamDao.findByTeamAndEmployee(team,
+						departingEmployee);
 				if (optionalDepartingTeamRecord.isPresent()
 						&& Boolean.TRUE.equals(optionalDepartingTeamRecord.get().getIsSupervisor())) {
 					optionalDepartingTeamRecord.get().setIsSupervisor(false);
 					employeeTeamDao.save(optionalDepartingTeamRecord.get());
-					Optional<EmployeeTeam> optionalNewSupervisorTeamRecord = employeeTeamDao
-						.findByTeamAndEmployee(team, newSupervisor);
+					Optional<EmployeeTeam> optionalNewSupervisorTeamRecord = employeeTeamDao.findByTeamAndEmployee(team,
+							newSupervisor);
 					if (optionalNewSupervisorTeamRecord.isPresent()) {
 						optionalNewSupervisorTeamRecord.get().setIsSupervisor(true);
 						employeeTeamDao.save(optionalNewSupervisorTeamRecord.get());
@@ -1342,8 +1331,8 @@ public class PeopleServiceImpl implements PeopleService {
 			});
 		}
 		log.info("transferSupervisors: execution ended");
-		return new ResponseEntityDto(
-				messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_TRANSFER_SUPERVISORS), false);
+		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_TRANSFER_SUPERVISORS),
+				false);
 	}
 
 	@Override
