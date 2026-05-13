@@ -16,9 +16,12 @@ export const userRolesEndPoints = {
 
 export const workLocationEndpoints = {
   GET_WORK_LOCATIONS: (search: string, page: number, size: number) =>
-    `work-location?searchKeyword=${encodeURIComponent(search)}&page=${page}&size=${size}`,
-  GET_WORK_LOCATION_BY_ID: (id: number) => `work-location/${id}`,
-  CREATE_WORK_LOCATION: "work-location",
-  UPDATE_WORK_LOCATION: (id: number) => `work-location/${id}`,
-  DELETE_WORK_LOCATION: (id: number) => `work-location/${id}`
+    `${moduleAPIPath.COMMON}/work-location?searchKeyword=${encodeURIComponent(search)}&page=${page}&size=${size}`,
+  GET_WORK_LOCATION_BY_ID: (id: number) =>
+    `${moduleAPIPath.COMMON}/work-location/${id}`,
+  CREATE_WORK_LOCATION: `${moduleAPIPath.COMMON}/work-location`,
+  UPDATE_WORK_LOCATION: (id: number) =>
+    `${moduleAPIPath.COMMON}/work-location/${id}`,
+  DELETE_WORK_LOCATION: (id: number) =>
+    `${moduleAPIPath.COMMON}/work-location/${id}`
 };
