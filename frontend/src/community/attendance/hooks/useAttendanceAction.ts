@@ -35,8 +35,7 @@ export const useAttendanceAction = (): {
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
 
-  const { data: attendanceConfig, isLoading: isConfigLoading } =
-    useGetAttendanceConfiguration();
+  const { data: attendanceConfig } = useGetAttendanceConfiguration();
   const isGeoFencingEnabled = attendanceConfig?.isGeoFencingEnabled;
 
   const recordAttendance = useCallback(
@@ -59,6 +58,6 @@ export const useAttendanceAction = (): {
 
   return {
     recordAttendance,
-    isPending: isPending || isEpPending || isConfigLoading
+    isPending: isPending || isEpPending
   };
 };
