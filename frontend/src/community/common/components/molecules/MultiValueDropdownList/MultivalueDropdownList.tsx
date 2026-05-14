@@ -50,7 +50,6 @@ interface Props {
   labelStyles?: SxProps;
   isCheckSelected?: boolean;
   ariaLabel?: string;
-  menuMaxHeight?: number;
 }
 
 // TODO: fix name
@@ -81,8 +80,7 @@ const MultivalueDropdownList: FC<Props> = ({
   isErrorFocusOutlineNeeded: errorFocusOutlineNeeded = true,
   labelStyles,
   isCheckSelected: checkSelected,
-  ariaLabel,
-  menuMaxHeight = 300
+  ariaLabel
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -174,7 +172,7 @@ const MultivalueDropdownList: FC<Props> = ({
             name={inputName}
             disabled={isDisabled}
             MenuProps={{
-              style: { maxHeight: menuMaxHeight, zIndex: ZIndexEnums.MAX }
+              style: { maxHeight: 300, zIndex: ZIndexEnums.MAX }
             }}
             sx={{
               ...classes.selectStyle(theme, isDisabled, readOnly),
