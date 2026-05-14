@@ -204,7 +204,7 @@ const TeamTimeSheetAnalytics: NextPage = () => {
       isBackButtonVisible
       isDividerVisible={false}
       customRightContent={
-        data?.user.roles?.includes(AdminTypes.LEAVE_ADMIN) &&
+        user?.roles?.includes(AdminTypes.LEAVE_ADMIN) &&
         activeStep === AnalyticsTypes.LEAVE ? (
           <ButtonV2
             variant="tertiary"

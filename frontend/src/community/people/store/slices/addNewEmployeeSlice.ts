@@ -138,7 +138,8 @@ const userRoles: EmployeeRoleType = {
   peopleRole: Role.PEOPLE_EMPLOYEE,
   leaveRole: Role.LEAVE_EMPLOYEE,
   esignRole: Role.ESIGN_EMPLOYEE,
-  pmRole: Role.PM_EMPLOYEE
+  pmRole: Role.PM_EMPLOYEE,
+  crmRole: Role.CRM_NONE
 };
 
 export const employeeDetailsSlice = (
