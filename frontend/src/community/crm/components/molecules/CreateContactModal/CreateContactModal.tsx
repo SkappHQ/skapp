@@ -5,14 +5,16 @@ import {
   EastArrowIcon
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 import {
   useCreateContact,
@@ -46,9 +48,30 @@ const CreateContactModal = () => {
 
   const { setIsAddContactModalOpen, setCrmModalType } = useCrmStore((state) => state);
 
+  const { isCrmAdmin, isCrmSalesManager, isCrmSalesRepresentative, isSuperadmin } = useSessionData();
+  const { data: me } = useGetUserPersonalDetails();
+
+  const crmRole = useMemo((): ContactOwner["crmRole"] => {
+    if (isCrmAdmin) return "CRM_ADMIN";
+    if (isCrmSalesManager) return "CRM_SALES_MANAGER";
+    return "CRM_SALES_REPRESENTATIVE";
+  }, [isCrmAdmin, isCrmSalesManager]);
+
+  const defaultOwner = useMemo((): ContactOwner | null => {
+    if (!me?.employeeId) return null;
+    return {
+      employeeId: me.employeeId as number,
+      firstName: me.firstName ?? "",
+      lastName: me.lastName ?? "",
+      email: me.email ?? "",
+      authPic: (me.authPic as string | null) ?? null,
+      crmRole
+    };
+  }, [me, crmRole]);
+
   const [selectedOwner, setSelectedOwner] = useState<ContactOwner | null>(null);
 
-  const { data: companiesData } = useGetCrmCompanies({ page: 0, size: 100 });
+  const { data: companiesData }= useGetCrmCompanies({ page: 0, size: 100 });
   const { data: ownersData } = useGetCrmOwners({ page: 0, size: 100 });
 
   const companyOptions = (companiesData?.items ?? []).map((c) => ({
@@ -101,7 +124,7 @@ const CreateContactModal = () => {
       companyId: null,
       contactNumber: "",
       countryCode,
-      ownerId: null
+      ownerId: defaultOwner?.employeeId ?? null
     },
     validationSchema,
     validateOnChange: false,
@@ -119,6 +142,13 @@ const CreateContactModal = () => {
       });
     }
   });
+
+  useEffect(() => {
+    if (defaultOwner && !selectedOwner) {
+      setSelectedOwner(defaultOwner);
+      formik.setFieldValue("ownerId", defaultOwner.employeeId);
+    }
+  }, [defaultOwner]);
 
   const { values, errors, setFieldValue, setFieldError, handleSubmit } = formik;
 
@@ -213,6 +243,7 @@ const CreateContactModal = () => {
         onClear={handleOwnerClear}
         options={ownerOptions}
         noResultsText={translateText(["noOwnerFound"])}
+        readonly={isCrmSalesRepresentative && !isCrmSalesManager && !isCrmAdmin && !isSuperadmin}
       />
 
       <Stack direction="row" justifyContent="flex-end" gap={1.5} mt={2}>

@@ -4,7 +4,7 @@ import {
   InputField,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 
 import { ContactOwner } from "~community/crm/types/CommonTypes";
 
@@ -17,6 +17,7 @@ interface OwnerSearchFieldProps {
   onClear: () => void;
   options: ContactOwner[];
   noResultsText?: string;
+  readonly?: boolean;
 }
 
 const getFullName = (owner: ContactOwner) =>
@@ -29,10 +30,12 @@ const OwnerSearchField = ({
   onSelect,
   onClear,
   options,
-  noResultsText = "No results found"
+  noResultsText = "No results found",
+  readonly = false
 }: OwnerSearchFieldProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [previousOwner, setPreviousOwner] = useState<ContactOwner | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const filteredResults = useMemo(() => {
@@ -41,18 +44,34 @@ const OwnerSearchField = ({
     );
   }, [options, searchTerm]);
 
-  // Close dropdown when clicking outside
+  const closeAndRestore = () => {
+    if (!selectedOwner && previousOwner) {
+      onSelect(previousOwner);
+      setPreviousOwner(null);
+    }
+    setSearchTerm("");
+    setIsOpen(false);
+  };
+
+  // Close dropdown when clicking outside — restore previous owner if nothing was selected
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        closeAndRestore();
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [selectedOwner, previousOwner]);
+
+  const handleClear = () => {
+    setPreviousOwner(selectedOwner);
+    onClear();
+    setIsOpen(true);
+  };
 
   const handleSelect = (owner: ContactOwner) => {
+    setPreviousOwner(null);
     onSelect(owner);
     setSearchTerm("");
     setIsOpen(false);
@@ -74,14 +93,18 @@ const OwnerSearchField = ({
               lastName: selectedOwner.lastName ?? "",
               size: "sm"
             }}
-            showActionButton
-            onActionClick={onClear}
-            actionIcon={<CloseIcon />}
+            showActionButton={!readonly}
+            onActionClick={readonly ? undefined : handleClear}
+            actionIcon={readonly ? undefined : <CloseIcon />}
             actionButtonAriaLabel="Remove owner"
           />
         </div>
       </div>
     );
+  }
+
+  if (readonly) {
+    return null;
   }
 
   return (
