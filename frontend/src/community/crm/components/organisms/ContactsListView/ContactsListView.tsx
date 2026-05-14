@@ -1,17 +1,18 @@
-import { Avatar, Box, Typography } from "@mui/material";
 import {
+  AvatarChip,
   Dropdown,
   InputField,
+  Label,
   SearchIcon,
   Table
 } from "@rootcodelabs/skapp-ui";
 import type { TableColumn, TableRowType } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetCrmCompanies,
-  useGetCrmContacts
+  useGetCrmContactsInfinite
 } from "~community/crm/api/CrmContactsApi";
 import { useCrmStore } from "~community/crm/store/store";
 import { ContactListItem } from "~community/crm/types/CommonTypes";
@@ -75,22 +76,15 @@ const mapContactToTableRow = (contact: ContactListItem): ContactTableRow => ({
   }
 });
 
-const getInitials = (firstName: string, lastName: string) =>
-  `${firstName.charAt(0)}${lastName.charAt(0)}`;
-
 const ContactNameCell = ({
   contact
 }: {
   contact: ContactTableRow["contact"];
 }) => (
-  <Box display="flex" flexDirection="column">
-    <Typography variant="body2" color="common.black">
-      {contact.name}
-    </Typography>
-    <Typography variant="caption" color="text.secondary">
-      {contact.company}
-    </Typography>
-  </Box>
+  <div className="flex flex-col">
+    <span className="body2 text-black">{contact.name}</span>
+    <span className="text-xs text-secondary-text">{contact.company}</span>
+  </div>
 );
 
 const DealValueCell = ({
@@ -98,14 +92,10 @@ const DealValueCell = ({
 }: {
   dealValue: ContactTableRow["dealValue"];
 }) => (
-  <Box display="flex" flexDirection="column">
-    <Typography variant="body2" color="common.black">
-      {dealValue.value}
-    </Typography>
-    <Typography variant="caption" color="text.secondary">
-      {dealValue.closedDeals}
-    </Typography>
-  </Box>
+  <div className="flex flex-col">
+    <span className="body2 text-black">{dealValue.value}</span>
+    <span className="text-xs text-secondary-text">{dealValue.closedDeals}</span>
+  </div>
 );
 
 const OpenTasksCell = ({
@@ -113,49 +103,31 @@ const OpenTasksCell = ({
 }: {
   openTasks: ContactTableRow["openTasks"];
 }) => (
-  <Box display="flex" alignItems="center" gap={1}>
-    <Typography variant="body2" color="common.black">
-      {openTasks.count}
-    </Typography>
+  <div className="flex items-center gap-1">
+    <span className="body2 text-black">{openTasks.count}</span>
     {openTasks.overdue && (
-      <span className="rounded-full bg-red-100 px-3 py-1 text-xs text-red-700">
+      <Label
+        backgroundColor="bg-semantic-red-background"
+        textColor="text-semantic-red-text"
+      >
         {openTasks.overdue}
-      </span>
+      </Label>
     )}
-  </Box>
+  </div>
 );
 
 const OwnerCell = ({ owner }: { owner: ContactTableRow["owner"] }) => (
-  <Box
-    display="inline-flex"
-    alignItems="center"
-    gap={1}
-    sx={{
-      backgroundColor: "grey.100",
-      borderRadius: "2rem",
-      minHeight: "2.25rem",
-      maxWidth: "100%",
-      padding: "0.125rem 0.875rem 0.125rem 0.125rem"
+  <AvatarChip
+    avatarProps={{
+      id: `owner-${owner.firstName}-${owner.lastName}`,
+      src: owner.authPic ?? undefined,
+      firstName: owner.firstName,
+      lastName: owner.lastName
     }}
-  >
-    <Avatar
-      src={owner.authPic ?? undefined}
-      sx={{
-        bgcolor: "secondary.main",
-        color: "primary.dark",
-        fontSize: "0.75rem",
-        height: "2rem",
-        width: "2rem"
-      }}
-    >
-      {getInitials(owner.firstName, owner.lastName)}
-    </Avatar>
-    <Typography
-      variant="body2"
-      color="common.black"
-      noWrap
-    >{`${owner.firstName} ${owner.lastName}`}</Typography>
-  </Box>
+    label={`${owner.firstName} ${owner.lastName}`}
+    backgroundColor="bg-zinc-100"
+    className="max-w-full"
+  />
 );
 
 const ContactsListView = () => {
@@ -174,15 +146,26 @@ const ContactsListView = () => {
     return selectedCompany;
   }, [selectedCompany]);
 
-  // Fetch contacts with search and filter
-  const { data: contactsData, isLoading } = useGetCrmContacts({
-    page: 0,
-    size: 100,
+  // Fetch contacts with infinite scroll
+  const {
+    data: contactsData,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  } = useGetCrmContactsInfinite({
+    size: 10,
     sortKey: "DEAL_VALUE",
     sortOrder: "DESC",
     searchKeyword: searchTerm.trim() || undefined,
     companyIds
   });
+
+  const handleLoadMore = useCallback(async () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const companyOptions = useMemo(
     () => [
@@ -201,7 +184,8 @@ const ContactsListView = () => {
   );
 
   const tableData = useMemo(() => {
-    return (contactsData?.items ?? []).map(mapContactToTableRow);
+    const allItems = contactsData?.pages.flatMap((page) => page?.items ?? []) ?? [];
+    return allItems.map(mapContactToTableRow);
   }, [contactsData]);
 
   const emptyStateType =
@@ -224,9 +208,7 @@ const ContactsListView = () => {
       header: translateText(["table", "columns", "email"]),
       key: "email",
       render: (value) => (
-        <Typography variant="body2" color="common.black" noWrap>
-          {value as string}
-        </Typography>
+        <span className="body2 truncate text-black">{value as string}</span>
       ),
       width: "21%"
     },
@@ -235,9 +217,7 @@ const ContactsListView = () => {
       header: translateText(["table", "columns", "contactNo"]),
       key: "contactNumber",
       render: (value) => (
-        <Typography variant="body2" color="common.black" noWrap>
-          {value as string}
-        </Typography>
+        <span className="body2 truncate text-black">{value as string}</span>
       ),
       width: "17%"
     },
@@ -284,21 +264,14 @@ const ContactsListView = () => {
 
   return (
     <>
-      <Box display="flex" flexDirection="column" gap={3} width="100%">
-        <Box
-          display="flex"
-          alignItems={{ xs: "stretch", sm: "center" }}
-          flexDirection={{ xs: "column", sm: "row" }}
-          gap={2}
-          justifyContent="space-between"
-          width="100%"
-        >
+      <div className="flex w-full flex-col gap-3">
+        <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           <InputField
             aria-label={translateText(["search", "ariaLabel"])}
             ariaLabelClearButton={translateText(["search", "clearAriaLabel"])}
             className="w-full max-w-[26rem]"
             customStyles={{
-              borderRadius: "rounded-full",
+              borderRadius: "rounded-full"
             }}
             placeholder={translateText(["search", "placeholder"])}
             rightIcon={<SearchIcon width={16} height={16} />}
@@ -317,7 +290,7 @@ const ContactsListView = () => {
             variant="secondary"
             onChange={(value) => setSelectedCompany(value)}
           />
-        </Box>
+        </div>
 
         <Table
           columns={columns}
@@ -328,9 +301,12 @@ const ContactsListView = () => {
               name: row.contact.name
             })
           }
-          hasMore={false}
+          hasMore={hasNextPage}
           height="35rem"
-          isLoading={isLoading}
+          isLoading={isLoading || isFetchingNextPage}
+          infiniteScrollLoadingMessage={translateText(["table", "loadingMore"])}
+          scrollThreshold={0.8}
+          onLoadMore={handleLoadMore}
           noDataState={{
             description: translateText([
               "emptyStates",
@@ -348,7 +324,7 @@ const ContactsListView = () => {
           tableAriaLabel={translateText(["table", "ariaLabel"])}
           onRowClick={handleRowClick}
         />
-      </Box>
+      </div>
     </>
   );
 };
