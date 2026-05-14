@@ -137,11 +137,11 @@ const ApplyLeaveModal = () => {
 
   const { data: currentEmployee } = useGetUserPersonalDetails();
 
+  // Pass 0 instead of undefined when employeeId is not yet available,
+  // since useGetEmployeeById disables the query only when memberId === 0.
   const { data: employeeData, isLoading: isEmployeeDataLoading } =
     useGetEmployeeById(
-      currentEmployee?.employeeId
-        ? Number(currentEmployee.employeeId)
-        : undefined
+      currentEmployee?.employeeId ? Number(currentEmployee.employeeId) : 0
     );
 
   const workLocationId =
