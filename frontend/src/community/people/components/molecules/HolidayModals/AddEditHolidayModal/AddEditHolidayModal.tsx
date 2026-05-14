@@ -361,7 +361,7 @@ const AddEditHolidayModal = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-6">
         <InputField
           inputName="holidayReason"
           inputType="text"
@@ -434,9 +434,7 @@ const AddEditHolidayModal = ({
           value={selectedWorkLocationIds}
           placeholder={translateText(["workLocationPlaceholder"])}
           onChange={handleWorkLocationChange}
-          componentStyle={{
-            mt: "0rem"
-          }}
+          componentStyle={{}}
           isCheckSelected
           isErrorFocusOutlineNeeded={false}
           itemList={workLocationList}
