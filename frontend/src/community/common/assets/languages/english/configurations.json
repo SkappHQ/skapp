@@ -154,7 +154,7 @@
         "selectedSearchPlaceholder": "Search selected employees"
       },
       "geofenceTitle": "Set geo-fence",
-      "radiusLabel": "Radius (meters)",
+      "radiusLabel": "Radius",
       "addressLabel": "Address",
       "addressPlaceholder": "Address will be auto-filled on pin drop",
       "geofenceEmptyState": "No geo-fence set",
