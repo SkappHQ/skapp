@@ -3,9 +3,11 @@ package com.skapp.community.crmplanner.controller.v1;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -23,6 +25,14 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/v1/company")
 @Tag(name = "CRM Companies Controller", description = "Operations related to CRM Companies")
 public class CrmCompanyController {
+
+  @Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
+  @GetMapping("/exists")
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
+  public ResponseEntity<ResponseEntityDto> checkCompanyNameExists(@RequestParam String name) {
+    ResponseEntityDto responseDto = companyService.checkCompanyNameExists(name);
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
+  }
 
   @NonNull
   private final CrmCompanyService companyService;
