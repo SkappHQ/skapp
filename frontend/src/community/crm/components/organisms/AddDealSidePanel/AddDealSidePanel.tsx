@@ -12,7 +12,7 @@ import * as Yup from "yup";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
-import { useCrmStore } from "~community/crm/store/store";
+import { useAppStore } from "../../../../../store/store";
 
 interface AddDealFormValues {
   name: string;
@@ -69,10 +69,10 @@ const STAGE_OPTIONS: DropdownOption[] = [
 const AddDealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
 
-  const { isAddDealSidePanelOpen, setIsAddDealSidePanelOpen } = useCrmStore(
+  const { isSidePanelOpen, closeSidePanel } = useAppStore(
     (state) => ({
-      isAddDealSidePanelOpen: state.isAddDealSidePanelOpen,
-      setIsAddDealSidePanelOpen: state.setIsAddDealSidePanelOpen
+      isSidePanelOpen: state.isSidePanelOpen,
+      closeSidePanel: state.closeSidePanel
     })
   );
 
@@ -91,13 +91,13 @@ const AddDealSidePanel: FC = () => {
       // TODO: wire up to API when available
       console.log("Add deal submitted:", values);
       resetForm();
-      setIsAddDealSidePanelOpen(false);
+      closeSidePanel();
     }
   });
 
   const handleClose = () => {
     formik.resetForm();
-    setIsAddDealSidePanelOpen(false);
+    closeSidePanel();
   };
 
   const metaRows: Array<{ label: string }> = [
@@ -110,7 +110,7 @@ const AddDealSidePanel: FC = () => {
 
   return (
     <SidePanel
-      isOpen={isAddDealSidePanelOpen}
+      isOpen={isSidePanelOpen}
       onClose={handleClose}
       header={<span>{translateText(["title"])}</span>}
       width="lg"

@@ -3,7 +3,6 @@ import { devtools } from "zustand/middleware";
 
 import { CrmStore } from "../types/StoreTypes";
 import CrmCompanyModalSlice from "./slices/crmCompanyModalSlice";
-import CrmDealSlice from "./slices/crmDealSlice";
 
 export const useCrmStore = create<
   CrmStore,
@@ -11,8 +10,7 @@ export const useCrmStore = create<
 >(
   devtools(
     (set) => ({
-      ...CrmCompanyModalSlice(set),
-      ...CrmDealSlice(set)
+      ...CrmCompanyModalSlice(set)
     }),
     {
       name: "crmStore",

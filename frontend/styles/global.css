@@ -1,6 +1,14 @@
 @import "pdfjs-dist/web/pdf_viewer.css";
-@import "@rootcodelabs/skapp-ui";
+@import "@rootcodelabs/skapp-ui/dist/tailwind.css";
+@source "../node_modules/@rootcodelabs/skapp-ui/dist/esm/index.esm.js";
 @import "tailwindcss";
+
+aside.fixed[role="dialog"] {
+  z-index: 1202 !important;
+}
+div.fixed.inset-0[aria-hidden="true"] {
+  z-index: 1201 !important;
+}
 
 @theme {
   --color-primary: #93c5fd;
