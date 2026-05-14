@@ -13,7 +13,7 @@ import { ChangeEvent, KeyboardEvent, useRef, useState } from "react";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
-import { CrmOwnerType } from "~community/crm/types/CrmContactTypes";
+import { ContactOwner } from "~community/crm/types/CommonTypes";
 
 import styles from "./styles";
 
@@ -21,14 +21,14 @@ interface OwnerSearchFieldProps {
   id?: string;
   label?: string;
   placeholder?: string;
-  selectedOwner: CrmOwnerType | null;
-  onSelect: (owner: CrmOwnerType) => void;
+  selectedOwner: ContactOwner | null;
+  onSelect: (owner: ContactOwner) => void;
   onClear: () => void;
-  options: CrmOwnerType[];
+  options: ContactOwner[];
   noResultsText?: string;
 }
 
-const getFullName = (owner: CrmOwnerType) =>
+const getFullName = (owner: ContactOwner) =>
   [owner.firstName, owner.lastName].filter(Boolean).join(" ");
 
 const OwnerSearchField = ({
@@ -57,7 +57,7 @@ const OwnerSearchField = ({
     setOpen(true);
   };
 
-  const handleSelect = (owner: CrmOwnerType) => {
+  const handleSelect = (owner: ContactOwner) => {
     onSelect(owner);
     setSearch("");
     setOpen(false);

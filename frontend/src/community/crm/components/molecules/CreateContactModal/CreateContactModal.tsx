@@ -21,8 +21,8 @@ import {
 } from "~community/crm/api/CrmContactsApi";
 import CompanySearchField from "~community/crm/components/molecules/CompanySearchField/CompanySearchField";
 import OwnerSearchField from "~community/crm/components/molecules/OwnerSearchField/OwnerSearchField";
-import { useCrmStore } from "~community/crm/store/crmStore";
-import { CrmOwnerType } from "~community/crm/types/CrmContactTypes";
+import { useCrmStore } from "~community/crm/store/store";
+import { ContactOwner } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 interface CreateContactFormValues {
@@ -46,7 +46,7 @@ const CreateContactModal = () => {
 
   const { setIsAddContactModalOpen, setCrmModalType } = useCrmStore((state) => state);
 
-  const [selectedOwner, setSelectedOwner] = useState<CrmOwnerType | null>(null);
+  const [selectedOwner, setSelectedOwner] = useState<ContactOwner | null>(null);
 
   const { data: companiesData } = useGetCrmCompanies({ page: 0, size: 100 });
   const { data: ownersData } = useGetCrmOwners({ page: 0, size: 100 });
@@ -56,11 +56,13 @@ const CreateContactModal = () => {
     name: c.name
   }));
 
-  const ownerOptions: CrmOwnerType[] = (ownersData?.items ?? []).map((o) => ({
+  const ownerOptions: ContactOwner[] = (ownersData?.items ?? []).map((o) => ({
     employeeId: o.employeeId,
     firstName: o.firstName,
     lastName: o.lastName,
-    authPic: null
+    email: o.email,
+    authPic: o.authPic,
+    crmRole: o.crmRole
   }));
 
   const validationSchema = Yup.object({
@@ -73,7 +75,7 @@ const CreateContactModal = () => {
   const { mutate, isPending } = useCreateContact({
     onSuccess: () => {
       setIsAddContactModalOpen(false);
-      setCrmModalType(CrmModalTypes.NONE);
+      setCrmModalType(CrmModalTypes.ADD_CONTACT_MODAL);
       setToastMessage({
         open: true,
         toastType: ToastType.SUCCESS,
@@ -142,7 +144,7 @@ const CreateContactModal = () => {
     await setFieldValue("countryCode", selectedCountryCode);
   };
 
-  const handleOwnerSelect = (owner: CrmOwnerType) => {
+  const handleOwnerSelect = (owner: ContactOwner) => {
     setSelectedOwner(owner);
     setFieldValue("ownerId", owner.employeeId);
   };
@@ -219,7 +221,7 @@ const CreateContactModal = () => {
           icon={<CloseIcon />}
           iconPosition="end"
           type="button"
-          onClick={() => { setIsAddContactModalOpen(false); setCrmModalType(CrmModalTypes.NONE); }}
+          onClick={() => { setIsAddContactModalOpen(false); setCrmModalType(CrmModalTypes.ADD_CONTACT_MODAL); }}
         >
           {translateText(["cancel"])}
         </ButtonV2>

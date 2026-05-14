@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import CreateContactModal from "~community/crm/components/molecules/CreateContactModal/CreateContactModal";
-import { useCrmStore } from "~community/crm/store/crmStore";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const CrmContactsModalController = () => {
@@ -19,7 +19,7 @@ const CrmContactsModalController = () => {
 
   const handleClose = (): void => {
     setIsAddContactModalOpen(false);
-    setCrmModalType(CrmModalTypes.NONE);
+    setCrmModalType(CrmModalTypes.ADD_CONTACT_MODAL);
   };
 
   const getModalTitle = (modalType: CrmModalTypes): string => {
