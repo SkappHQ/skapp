@@ -90,7 +90,8 @@ const holidayBulkUpload = async ({
     holidayDtoList: holidayData?.map((holiday) => ({
       date: holiday.date,
       name: holiday.name,
-      holidayDuration: holiday.holidayDuration
+      holidayDuration: holiday.holidayDuration,
+      workLocations: holiday.workLocations
     }))
   };
 

@@ -70,7 +70,13 @@ export const getFormattedDate = (date: string, fullDate = false): string => {
 export const downloadHolidayBulkUploadErrorLogsCSV = (
   data: holidayBulkUploadResponse
 ) => {
-  const headers = ["date", "name", "holidayDuration", "message"];
+  const headers = [
+    "date",
+    "workLocation",
+    "name",
+    "holidayDuration",
+    "message"
+  ];
 
   const stream = new ReadableStream({
     start(controller) {
@@ -78,13 +84,20 @@ export const downloadHolidayBulkUploadErrorLogsCSV = (
 
       for (const item of data?.bulkRecordErrorLogs || []) {
         const date = item.holiday?.date;
+        const workLocation = item.holiday?.workLocations
+          ? item.holiday.workLocations.join(", ")
+          : "";
         const name = item.holiday?.name;
         const HolidayDuration = item.holiday?.holidayDuration;
         const errorMessage = item.errorMessage;
         const row =
-          [date, `"${name}"`, `"${HolidayDuration}"`, `"${errorMessage}"`].join(
-            ","
-          ) + "\n";
+          [
+            date,
+            `"${workLocation}"`,
+            `"${name}"`,
+            `"${HolidayDuration}"`,
+            `"${errorMessage}"`
+          ].join(",") + "\n";
 
         controller.enqueue(row);
       }

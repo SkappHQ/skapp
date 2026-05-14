@@ -30,7 +30,12 @@ const validateHeaders = async (file: File): Promise<boolean> => {
   };
 
   const includesInvalidHeaders = (headers: string[]): boolean => {
-    const predefinedHeaders = ["Date", "Name", "Holiday Duration"];
+    const predefinedHeaders = [
+      "Date",
+      "Work Location",
+      "Name",
+      "Holiday Duration"
+    ];
     return headers?.some((header) => !predefinedHeaders?.includes(header));
   };
 
@@ -50,9 +55,16 @@ export const normalizeHolidayDates = (
 ): HolidayType[] => {
   return holidays.map((holiday) => {
     const formattedDate = formatToStrictYMD(holiday.date);
+    const workLocations = holiday.workLocation
+      ? holiday.workLocation
+          .split(",")
+          .map((loc) => loc.trim())
+          .filter(Boolean)
+      : undefined;
     return {
       ...holiday,
-      date: formattedDate ?? holiday.date
+      date: formattedDate ?? holiday.date,
+      workLocations
     };
   });
 };

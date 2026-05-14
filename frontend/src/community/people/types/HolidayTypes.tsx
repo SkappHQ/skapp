@@ -10,6 +10,7 @@ export interface HolidayDataType {
   halfDayState?: string | HolidayDurationType;
   holidayReason?: string;
   holidayId?: number;
+  workLocations?: string[];
 }
 
 export interface holiday {
@@ -113,6 +114,8 @@ export type HolidayType = {
   date: string;
   name: string;
   holidayDuration: HolidayDurationType;
+  workLocation?: string;
+  workLocations?: string[];
 };
 
 export interface bulkStatusSummary {
@@ -134,6 +137,7 @@ export interface holidayBulkUploadResponse {
 export type Holiday = {
   id: number;
   date: string;
+  workLocation?: string[];
   name: string;
   holidayDuration:
     | HolidayDurationType.FULLDAY
