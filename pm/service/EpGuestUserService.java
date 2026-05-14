@@ -12,6 +12,7 @@ import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserRequestInternalResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserRequestResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
+import com.skapp.enterprise.pm.payload.GuestInvitationValidationResponseDto;
 
 import java.util.List;
 
@@ -47,5 +48,7 @@ public interface EpGuestUserService {
 	ResponseEntityDto getPendingGuestUsersCount();
 
 	ResponseEntityDto revokeGuestUserRequest(Long requestId);
+
+	List<GuestInvitationValidationResponseDto> validateGuestInvitations(List<String> emails, Long projectId);
 
 }

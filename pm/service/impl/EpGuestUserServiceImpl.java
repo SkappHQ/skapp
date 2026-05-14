@@ -37,10 +37,12 @@ import com.skapp.enterprise.pm.model.GuestUserRequest;
 import com.skapp.enterprise.pm.payload.EpGuestUserRequestInternalResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserRequestResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
+import com.skapp.enterprise.pm.payload.GuestInvitationValidationResponseDto;
 import com.skapp.enterprise.pm.repository.GuestUserRequestDao;
 import com.skapp.enterprise.pm.service.EpGuestUserCacheService;
 import com.skapp.enterprise.pm.service.EpGuestUserInternalService;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
+import com.skapp.enterprise.pm.type.GuestInvitationValidationStatus;
 import com.skapp.enterprise.pm.type.GuestUserApprovalStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -615,6 +617,55 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			.filter(key -> key != null && !key.isBlank())
 			.findFirst()
 			.orElse("");
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<GuestInvitationValidationResponseDto> validateGuestInvitations(List<String> emails, Long projectId) {
+		log.info("validateGuestInvitations: Validating guest invitations for {} email(s), projectId: {}", emails.size(),
+				projectId);
+
+		return emails.stream().map(email -> {
+			String normalizedEmail = email.toLowerCase();
+			GuestInvitationValidationResponseDto result = new GuestInvitationValidationResponseDto();
+			result.setEmail(normalizedEmail);
+			result.setStatus(resolveValidationStatus(normalizedEmail, projectId));
+			return result;
+		}).toList();
+	}
+
+	private GuestInvitationValidationStatus resolveValidationStatus(String email, Long projectId) {
+		Optional<User> existingUserOpt = userDao.findByEmail(email);
+
+		if (existingUserOpt.isPresent()) {
+			User existingUser = existingUserOpt.get();
+			Employee employee = existingUser.getEmployee();
+
+			if (employee != null && employee.getAccountStatus() == AccountStatus.DEACTIVATED) {
+				return GuestInvitationValidationStatus.USER_ACCOUNT_DEACTIVATED;
+			}
+
+			if (employee == null || employee.getEmployeeRole() == null
+					|| employee.getEmployeeRole().getPmRole() != Role.PM_GUEST_EMPLOYEE) {
+				return GuestInvitationValidationStatus.USER_ALREADY_EXISTS;
+			}
+
+			if (projectId != null) {
+				List<ProjectRequestDto> userProjects = epGuestUserCacheService
+					.getUserAssignedProjects(existingUser.getUserId());
+				boolean isAlreadyInProject = userProjects.stream().anyMatch(p -> projectId.equals(p.getProjectId()));
+				if (isAlreadyInProject) {
+					return GuestInvitationValidationStatus.USER_ALREADY_IN_PROJECT;
+				}
+			}
+		}
+
+		List<GuestUserRequest> pendingRequests = guestUserRequestDao.findByEmailContaining(email);
+		if (!pendingRequests.isEmpty()) {
+			return GuestInvitationValidationStatus.PENDING_INVITATION_EXISTS;
+		}
+
+		return GuestInvitationValidationStatus.VALID;
 	}
 
 }
