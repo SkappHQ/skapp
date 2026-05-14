@@ -1,7 +1,9 @@
-import { Box } from "@mui/material";
 import {
   EmptyStateType,
+  FilterIcon,
+  IconButton,
   InputField,
+  Label,
   ProjectTableSkeletonLoader,
   SearchIcon,
   Table,
@@ -9,12 +11,11 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, useMemo, useState } from "react";
 
-import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompanyTableData } from "~community/crm/api/CompanyApi";
 import { EmptyStateTypeEnum } from "~community/crm/enums/CrmCompanyEnums";
-import { CrmCompanyTableDataType } from "~community/crm/types/CrmCompanyTypes";
+import { CrmCompanyTableDataType } from "~community/crm/types/CommonTypes";
 
 export const CompanyTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -60,12 +61,28 @@ export const CompanyTable: React.FC = () => {
       columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
       header: translateText(["table", "columns", "tasksHeader"]),
       key: "tasks",
+      render(value, row) {
+        return (
+          <div className="flex flex-row items-center gap-2">
+            <div className="font-medium text-gray-900">{`${value}`}</div>
+            {row.overdue > 0 && (
+              <Label
+                backgroundColor="bg-red-100"
+                textColor="text-red-900"
+              >{`${row.overdue} overdue`}</Label>
+            )}
+          </div>
+        );
+      },
       width: "20%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "pipelineAriaLabel"]),
       header: translateText(["table", "columns", "pipelineHeader"]),
       key: "openValue",
+      render(value) {
+        return `$${value}`;
+      },
       width: "20%"
     },
     {
@@ -76,17 +93,26 @@ export const CompanyTable: React.FC = () => {
       ]),
       header: translateText(["table", "columns", "accountValueHeader"]),
       key: "accountValue",
+      render(value, row) {
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="text-gray-900">{`$${value}`}</div>
+            <div className="text-sm text-slate-600">{`${row.closedDeals} Deals closed`}</div>
+          </div>
+        );
+      },
       width: "20%"
     }
   ];
 
   const tableData = companies.map((company: CrmCompanyTableDataType) => ({
-    id: company.id.toString(),
     name: company.name,
     contactNumber: company.contactNumber ?? "-",
     tasks: company.tasks ?? "-",
     openValue: company.openValue ?? "-",
-    accountValue: company.accountValue ?? "-"
+    accountValue: company.accountValue ?? "-",
+    closedDeals: company.closedDeals ?? "-",
+    overdue: company.overdue ?? "-"
   }));
 
   const loadMore = async () => {
@@ -96,41 +122,29 @@ export const CompanyTable: React.FC = () => {
   };
 
   return (
-    <Box display={"flex"} flexDirection="column" gap={1} width="100%">
-      <Box
-        display={"flex"}
-        flexDirection="row"
-        gap={1}
-        width="100%"
-        justifyContent={"space-between"}
-      >
+    <div className="flex flex-col gap-4 w-full">
+      <div className="flex flex-row gap-4 w-full items-center justify-between">
         <InputField
           ariaLabelClearButton={translateText([
             "table",
             "clearButtonAriaLabel"
           ])}
-          className="w-full"
+          className="w-1/2"
           placeholder={translateText(["table", "search"])}
           rightIcon={<SearchIcon />}
           state="default"
           type="search"
           value={searchTerm}
           onChange={handleSearchChange}
+          customStyles={{ borderRadius: "rounded-full" }}
         />
-        <FilterButton
-          id={""}
-          position={"bottom-end"}
-          handleApplyBtnClick={function (): void {
-            throw new Error("Function not implemented.");
-          }}
-          handleResetBtnClick={function (): void {
-            throw new Error("Function not implemented.");
-          }}
-          children={undefined}
-          selectedFilters={[]}
-          isResetBtnDisabled={true}
+        <IconButton
+          isRounded={true}
+          variant="outlined"
+          icon={<FilterIcon />}
+          style={{ width: "3.4rem", height: "2.75rem" }}
         />
-      </Box>
+      </div>
 
       <Table
         columns={columns as TableColumn<any>[]}
@@ -164,6 +178,6 @@ export const CompanyTable: React.FC = () => {
           ])
         }}
       />
-    </Box>
+    </div>
   );
 };

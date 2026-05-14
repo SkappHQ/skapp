@@ -15,6 +15,8 @@ public class CrmCompanyTableViewDto {
   private String name;
   private String contactNumber;
   private Long tasks;
+  private Long overdue;
   private BigDecimal openValue;
   private BigDecimal accountValue;
+  private Long closedDeals;
 }

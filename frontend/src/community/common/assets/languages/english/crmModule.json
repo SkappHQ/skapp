@@ -44,11 +44,11 @@
         "description": "We couldn't find any results for your search. Please try a different term."
       },
       "columns": {
-        "nameHeader": "Company Name",
-        "phoneHeader": "Contact Number",
-        "tasksHeader": "Tasks",
-        "pipelineHeader": "Pipeline",
-        "accountValueHeader": "Account Value"
+        "nameHeader": "NAME",
+        "phoneHeader": "CONTACT NO.",
+        "tasksHeader": "OPEN TASKS",
+        "pipelineHeader": "OPEN IN PIPELINE",
+        "accountValueHeader": "ACCOUNT VALUE"
       }
     },
     "addCompanyValidations": {

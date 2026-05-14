@@ -21,8 +21,10 @@ export interface CrmCompanyTableDataType {
   name: string;
   contactNumber: string;
   tasks: number;
+  overdue: number;
   openValue: number;
   accountValue: number;
+  closedDeals: number;
 }
 
 export interface CrmCompanyTableDataResponseType {
