@@ -221,8 +221,8 @@ const AddEditHolidayModal = ({
       }
 
       setSelectedWorkLocationIds(newValue);
-      void setFieldValue("workLocation", newValue);
-      void setFieldError("workLocation", "");
+      setFieldValue("workLocation", newValue);
+      setFieldError("workLocation", "");
     },
     [selectedWorkLocationIds, setFieldValue, setFieldError]
   );
@@ -298,10 +298,10 @@ const AddEditHolidayModal = ({
       duration !== translateText(["duration"]) &&
       newHolidayDetails.duration !== HolidayDurationType.HALFDAY
     ) {
-      void setFieldValue("duration", duration);
-      void setFieldError("duration", "");
+      setFieldValue("duration", duration);
+      setFieldError("duration", "");
     } else {
-      void setFieldValue("duration", "");
+      setFieldValue("duration", "");
     }
   }, [newHolidayDetails.duration]);
 
