@@ -144,7 +144,7 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
           step={10}
           value={tempRadius}
           onChange={(e) => handleRadiusChange(Number(e.target.value))}
-          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-accent"
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-accent bg-secondary-accent"
         />
         <div className="flex justify-between">
           <span className="body3 text-secondary-icon">
