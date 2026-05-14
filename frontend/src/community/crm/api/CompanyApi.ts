@@ -3,7 +3,7 @@ import { rejects } from "assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
-import { CrmCompanyCreatePayload } from "../types/CrmCompanyTypes";
+import { CrmCompanyCreatePayload } from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
