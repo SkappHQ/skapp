@@ -439,11 +439,16 @@ public class HolidayServiceImpl implements HolidayService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_DURATION_INVALID);
 		}
 
-		if (holidayDto.getWorkLocations() == null || holidayDto.getWorkLocations().isEmpty()) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION);
+		// if (holidayDto.getWorkLocations() == null ||
+		// holidayDto.getWorkLocations().isEmpty()) {
+		// throw new
+		// ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION);
+		// }
+
+		if (holidayDto.getWorkLocations() != null && !holidayDto.getWorkLocations().isEmpty()) {
+			validateWorkLocations(holidayDto.getWorkLocations(), validWorkLocationNames);
 		}
 
-		validateWorkLocations(holidayDto.getWorkLocations(), validWorkLocationNames);
 	}
 
 	private void validateWorkLocations(List<String> workLocationNames, List<String> validWorkLocationNames) {
