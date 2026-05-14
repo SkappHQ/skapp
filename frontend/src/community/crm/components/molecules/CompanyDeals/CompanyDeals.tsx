@@ -6,6 +6,7 @@ import { AdvancedAccordion } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
+import { useCrmStore } from "~community/crm/store/store";
 
 import styles from "./styles";
 
@@ -87,12 +88,17 @@ const getDealItems = () => [
 const CompanyDeals: React.FC = () => {
   const theme = useTheme();
   const classes = styles(theme);
+  const { setIsAddDealFormOpen } = useCrmStore();
+
+  const handleAddDeal = () => {
+    setIsAddDealFormOpen(true);
+  };
 
   return (
     <Box sx={classes.wrapper}>
       <Box sx={classes.header}>
         <Typography sx={classes.title}>Deals</Typography>
-        <Button variant="outlined" sx={classes.addButton}>
+        <Button variant="outlined" sx={classes.addButton} onClick={handleAddDeal}>
           Add deal
           <Icon
             name={IconName.ADD_ICON}
@@ -102,6 +108,7 @@ const CompanyDeals: React.FC = () => {
           />
         </Button>
       </Box>
+      <Box sx={classes.divider} />
       <AdvancedAccordion
         items={getDealItems()}
         variant="card"
