@@ -12,6 +12,4 @@ public interface EpGuestUserCacheService {
 
 	Map<Long, List<ProjectRequestDto>> getAllGuestUsersWithProjects(List<Employee> guestEmployees);
 
-	List<ProjectRequestDto> getProjectsByIds(List<Long> projectIds);
-
 }

@@ -42,6 +42,7 @@ import com.skapp.enterprise.pm.repository.GuestUserRequestDao;
 import com.skapp.enterprise.pm.service.EpGuestUserCacheService;
 import com.skapp.enterprise.pm.service.EpGuestUserInternalService;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
+import com.skapp.enterprise.pm.service.EpProjectService;
 import com.skapp.enterprise.pm.type.GuestInvitationValidationStatus;
 import com.skapp.enterprise.pm.type.GuestUserApprovalStatus;
 import lombok.RequiredArgsConstructor;
@@ -89,6 +90,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private final EpGuestUserInternalService epGuestUserInternalService;
 
 	private final EpGuestUserCacheService epGuestUserCacheService;
+
+	private final EpProjectService epProjectService;
 
 	private final GuestUserRequestDao guestUserRequestDao;
 
@@ -272,7 +275,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		dto.setEmail(request.getEmail());
 		dto.setRequestedDate(request.getRequestedDate());
 
-		dto.setProjects(epGuestUserCacheService.getProjectsByIds(request.getProjectIds()));
+		dto.setProjects(epProjectService.getProjectsByIds(request.getProjectIds()));
 
 		Employee requester = request.getRequestedUser();
 		if (requester != null) {
@@ -388,7 +391,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		Employee requester = request.getRequestedUser();
 
 		if (epGuestUserApprovalRequestDto.getStatus() == GuestUserApprovalStatus.APPROVED) {
-			List<ProjectRequestDto> projects = epGuestUserCacheService.getProjectsByIds(request.getProjectIds());
+			List<ProjectRequestDto> projects = epProjectService.getProjectsByIds(request.getProjectIds());
 			User currentUser = userService.getCurrentUser();
 			String adminName = currentUser.getEmployee() != null ? currentUser.getEmployee().getFirstName() : "";
 
@@ -417,7 +420,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_SUCCESS_GUEST_USER_APPROVED), false);
 		}
 
-		List<ProjectRequestDto> projects = epGuestUserCacheService.getProjectsByIds(request.getProjectIds());
+		List<ProjectRequestDto> projects = epProjectService.getProjectsByIds(request.getProjectIds());
 		String projectNames = projects.stream()
 			.map(ProjectRequestDto::getProjectName)
 			.filter(name -> name != null && !name.isBlank())
