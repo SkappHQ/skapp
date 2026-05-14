@@ -14,7 +14,6 @@ import com.skapp.community.crmplanner.model.CrmPriority;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -115,16 +114,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("getDeals: execution ended with {} result(s)", deals.size());
 		return new ResponseEntityDto(false, pageDto);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto getDealStages() {
-		log.info("getDealStages: execution started");
-		List<CrmDealStageResponseDto> stages = crmDealMapper
-			.crmDealStagesToCrmDealStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
-		log.info("getDealStages: execution ended with {} result(s)", stages.size());
-		return new ResponseEntityDto(false, stages);
 	}
 
 }

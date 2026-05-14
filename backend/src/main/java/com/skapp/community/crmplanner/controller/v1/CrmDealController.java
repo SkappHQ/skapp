@@ -45,12 +45,4 @@ public class CrmDealController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get deal stages", description = "Returns all active deal stages ordered by index.")
-	@GetMapping(value = "/stages", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN', 'ROLE_CRM_SALES_MANAGER', 'ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getDealStages() {
-		ResponseEntityDto response = crmDealService.getDealStages();
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
 }
