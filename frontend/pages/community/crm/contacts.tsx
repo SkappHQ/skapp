@@ -4,6 +4,8 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CrmContactsModalController from "~community/crm/components/organisms/CrmContactsModalController/CrmContactsModalController";
+import CrmSidePanelController from "~community/crm/components/organisms/CrmSidePanelController/CrmSidePanelController";
+import ContactsListView from "~community/crm/components/organisms/ContactsListView/ContactsListView";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -29,7 +31,9 @@ const Contacts: NextPage = () => {
       onPrimaryButtonClick={handleAddContact}
     >
       <>
+        <ContactsListView />
         <CrmContactsModalController />
+        <CrmSidePanelController />
       </>
     </ContentLayout>
   );
