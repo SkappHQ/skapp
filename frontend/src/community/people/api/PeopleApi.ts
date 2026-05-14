@@ -574,26 +574,28 @@ export const useAddBulkUsers = (
 
 export const useTerminateUser = (
   onSuccess: () => void,
-  onError: () => void
+  onError: () => void,
+  employeeId?: number
 ) => {
   const queryClient = useQueryClient();
 
   const { selectedEmployeeId } = usePeopleStore((state) => state);
+  const targetId = employeeId ?? selectedEmployeeId;
   return useMutation({
     mutationFn: () => {
       const payload = {
-        userId: selectedEmployeeId,
+        userId: targetId,
         isActive: false
       };
 
       return authFetch.patch(
-        peoplesEndpoints.TERMINATE_EMPLOYEE(selectedEmployeeId as number),
+        peoplesEndpoints.TERMINATE_EMPLOYEE(targetId as number),
         payload
       );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(selectedEmployeeId))
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(targetId))
       });
       queryClient
         .invalidateQueries({
@@ -694,19 +696,22 @@ export const useHasSupervisorRoles = (
   });
 };
 
-export const useDeleteUser = (onSuccess: () => void, onError: () => void) => {
+export const useDeleteUser = (
+  onSuccess: () => void,
+  onError: () => void,
+  employeeId?: number
+) => {
   const queryClient = useQueryClient();
 
   const { selectedEmployeeId } = usePeopleStore((state) => state);
+  const targetId = employeeId ?? selectedEmployeeId;
   return useMutation({
     mutationFn: () => {
-      return authFetch.patch(
-        peoplesEndpoints.DELETE_USER(selectedEmployeeId as number)
-      );
+      return authFetch.patch(peoplesEndpoints.DELETE_USER(targetId as number));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(selectedEmployeeId))
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(targetId))
       });
       queryClient
         .invalidateQueries({

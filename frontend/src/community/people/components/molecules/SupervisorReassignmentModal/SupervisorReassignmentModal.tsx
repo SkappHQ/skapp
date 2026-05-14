@@ -31,15 +31,17 @@ import {
 import {
   EmployeeDataTeamType,
   SupervisedEmployee,
+  SupervisorReassignmentActionType,
   TransferSupervisorsPayload
 } from "~community/people/types/PeopleTypes";
+import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
 interface Props {
   isOpen: boolean;
   onCancel: () => void;
   employeeId: number;
   employeeName: string;
-  actionType: "terminate" | "delete";
+  actionType: SupervisorReassignmentActionType;
   onActionSuccess: () => void;
 }
 
@@ -109,8 +111,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
       title: translateText(["terminateSuccessTitle"]),
       description: translateText(["terminateSuccessDescription"], {
         name: employeeName
-      }),
-      isIcon: true
+      })
     });
     onActionSuccess();
   };
@@ -123,8 +124,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
       title: translateText(["deleteSuccessTitle"]),
       description: translateText(["deleteSuccessDescription"], {
         name: employeeName
-      }),
-      isIcon: true
+      })
     });
     router.push(ROUTES.PEOPLE.DIRECTORY);
     onActionSuccess();
@@ -136,22 +136,23 @@ const SupervisorReassignmentModal: FC<Props> = ({
       open: true,
       toastType: ToastType.ERROR,
       title: translateText(["actionErrorTitle"]),
-      description: translateText(["actionErrorDescription"]),
-      isIcon: true
+      description: translateText(["actionErrorDescription"])
     });
   };
 
   const { mutate: terminateEmployee } = useTerminateUser(
     onTerminateSuccess,
-    onActionError
+    onActionError,
+    employeeId
   );
   const { mutate: deleteEmployee } = useDeleteUser(
     onDeleteSuccess,
-    onActionError
+    onActionError,
+    employeeId
   );
 
   const onTransferSuccess = useCallback(() => {
-    if (actionType === "terminate") {
+    if (actionType === SupervisorReassignmentActionType.TERMINATE) {
       terminateEmployee();
     } else {
       deleteEmployee();
@@ -192,7 +193,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
   };
 
   const proceedButtonLabel =
-    actionType === "terminate"
+    actionType === SupervisorReassignmentActionType.TERMINATE
       ? translateText(["proceedAndTerminateButton"])
       : translateText(["proceedAndDeleteButton"]);
 
@@ -234,7 +235,10 @@ const SupervisorReassignmentModal: FC<Props> = ({
                           firstName={emp.firstName}
                           lastName={emp.lastName}
                           avatarUrl={emp.authPic}
-                          chipStyles={{ justifyContent: "flex-start" }}
+                          chipStyles={{
+                            justifyContent: "flex-start",
+                            color: "text.primary"
+                          }}
                         />
                       </div>
                       <div className="w-62.5 shrink-0">
@@ -263,24 +267,31 @@ const SupervisorReassignmentModal: FC<Props> = ({
                                 ? ""
                                 : translateText(["noEmployeesFound"])
                             }}
-                            results={candidateList.map((ae) => (
-                              <button
-                                key={ae.employeeId}
-                                type="button"
-                                className="w-full text-left"
-                                onMouseDown={(e) => {
-                                  e.preventDefault();
-                                  handleSelectSupervisor(
-                                    ae.employeeId,
-                                    `${ae.firstName} ${ae.lastName}`,
-                                    emp.employeeId,
-                                    setPrimarySupervisorAssignments
-                                  );
-                                }}
-                              >
-                                {ae.firstName} {ae.lastName}
-                              </button>
-                            ))}
+                            results={candidateList
+                              .filter(
+                                (ae) => Number(ae.employeeId) !== emp.employeeId
+                              )
+                              .map((ae) => (
+                                <button
+                                  key={ae.employeeId}
+                                  type="button"
+                                  className="w-full text-left"
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    handleSelectSupervisor(
+                                      ae.employeeId,
+                                      concatStrings([
+                                        ae.firstName,
+                                        ae.lastName
+                                      ]).trim(),
+                                      emp.employeeId,
+                                      setPrimarySupervisorAssignments
+                                    );
+                                  }}
+                                >
+                                  {ae.firstName} {ae.lastName}
+                                </button>
+                              ))}
                           />
                         ) : (
                           <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
@@ -290,7 +301,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
                             <button
                               type="button"
                               aria-label={translateText(["removeAssignment"])}
-                              className="shrink-0 text-gray-400 hover:text-gray-600 leading-none"
+                              className="shrink-0 text-secondary-icon hover:text-secondary-text leading-none"
                               onClick={() =>
                                 setPrimarySupervisorAssignments((prev) => {
                                   const next = { ...prev };
@@ -370,7 +381,10 @@ const SupervisorReassignmentModal: FC<Props> = ({
                                   e.preventDefault();
                                   handleSelectSupervisor(
                                     ae.employeeId,
-                                    `${ae.firstName} ${ae.lastName}`,
+                                    concatStrings([
+                                      ae.firstName,
+                                      ae.lastName
+                                    ]).trim(),
                                     team.teamId,
                                     setTeamSupervisorAssignments
                                   );
@@ -388,7 +402,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
                             <button
                               type="button"
                               aria-label={translateText(["removeAssignment"])}
-                              className="shrink-0 text-gray-400 hover:text-gray-600 leading-none"
+                              className="shrink-0 text-secondary-icon hover:text-secondary-text leading-none"
                               onClick={() =>
                                 setTeamSupervisorAssignments((prev) => {
                                   const next = { ...prev };
@@ -436,7 +450,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
       onClose={onCancel}
       modalHeader={translateText(["modalTitle"])}
       content={modalContent}
-      className="w-138.25 rounded-2xl!"
+      className="w-138.25"
       closeButtonAriaLabel={translateText(["closeModalAriaLabel"])}
     />
   );

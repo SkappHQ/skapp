@@ -1,7 +1,7 @@
-import { Box } from "@mui/material";
 import { FC } from "react";
 
 import { usePeopleStore } from "~community/people/store/store";
+import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
 import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
 import SupervisorReassignmentModal from "../SupervisorReassignmentModal/SupervisorReassignmentModal";
@@ -24,7 +24,7 @@ const UserDeletionModalController: FC = () => {
   ]).trim();
 
   return (
-    <Box>
+    <>
       <SupervisorReassignmentModal
         isOpen={
           isSupervisorReassignmentModalOpen &&
@@ -33,14 +33,14 @@ const UserDeletionModalController: FC = () => {
         onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
         employeeId={Number(selectedEmployeeId)}
         employeeName={employeeName}
-        actionType="delete"
+        actionType={SupervisorReassignmentActionType.DELETE}
         onActionSuccess={() => setIsSupervisorReassignmentModalOpen(false)}
       />
       <UserDeletionConfirmationModal
         isOpen={isDeletionConfirmationModalOpen}
         onClose={() => setDeletionConfirmationModalOpen(false)}
       />
-    </Box>
+    </>
   );
 };
 

@@ -270,3 +270,8 @@ export interface TransferSupervisorsPayload {
   primarySupervisors: PrimarySupervisorTransferItem[];
   teamSupervisors: TeamSupervisorTransferItem[];
 }
+
+export enum SupervisorReassignmentActionType {
+  TERMINATE = "terminate",
+  DELETE = "delete"
+}
