@@ -228,7 +228,7 @@ const AddEditHolidayModal = ({
       setSelectedWorkLocationIds(newValue);
       setHolidayDetails({
         ...newHolidayDetails,
-        workLocations: newValue.map(String)
+        workLocations: newValue
       });
       setFieldValue("workLocation", newValue);
       setFieldError("workLocation", "");
