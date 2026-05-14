@@ -76,3 +76,38 @@ export interface CrmPriorityType {
   name: string;
   orderIndex: number;
 }
+
+export interface CrmDealCreateRequestType {
+  name: string;
+  stageId: number;
+  contactId: number;
+  ownerId: number;
+  priorityId?: number;
+  closingAt?: string;
+  amount?: string;
+  companyId?: number;
+}
+
+export interface CrmDealListItemType {
+  id: number;
+  name: string;
+  stageId: number;
+  stageName: string;
+  priorityId: number | null;
+  priorityName: string | null;
+  closingAt: string | null;
+  amount: string | null;
+  companyId: number | null;
+  companyName: string | null;
+  contactId: number;
+  contactName: string;
+  ownerId: number;
+  ownerName: string;
+}
+
+export interface CrmDealPaginatedResponseType {
+  items: CrmDealListItemType[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}

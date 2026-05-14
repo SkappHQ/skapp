@@ -27,16 +27,25 @@
       "dealNameLabel": "Deal name",
       "dealNamePlaceholder": "Enter deal name",
       "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Add message",
+      "descriptionPlaceholder": "Enter deal description",
       "stageLabel": "Stage",
       "valueLabel": "Value",
+      "amountLabel": "Amount",
+      "amountPlaceholder": "e.g. 5000.00",
+      "closingAtLabel": "Closing date",
       "priorityLabel": "Priority",
+      "ownerIdLabel": "Owner ID",
+      "ownerIdPlaceholder": "Enter employee ID",
       "ownedByLabel": "Owned by",
       "contactNameLabel": "Contact name",
       "companyNameLabel": "Company name",
       "noneText": "None",
       "addDealBtn": "Add deal",
-      "dealNameRequired": "Deal name is required"
+      "dealNameRequired": "Deal name is required",
+      "stageRequired": "Stage is required",
+      "contactRequired": "Contact is required",
+      "ownerRequired": "Owner is required",
+      "ownerMustBeNumber": "Owner ID must be a valid number"
     }
   },
   "tasks": {
