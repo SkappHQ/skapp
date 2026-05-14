@@ -441,7 +441,6 @@ const AddEditHolidayModal = ({
           isErrorFocusOutlineNeeded={false}
           itemList={workLocationList}
           isRequired
-          menuMaxHeight={232}
           onAddNewClickBtn={() => {
             router.push(`${ROUTES.SETTINGS.BASE}?tab=organization`);
           }}
