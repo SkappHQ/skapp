@@ -1,21 +1,12 @@
 import {
-  Box,
-  ClickAwayListener,
-  IconButton,
-  InputBase,
-  Paper,
-  Stack,
-  Typography
-} from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
-import { ChangeEvent, KeyboardEvent, useRef, useState } from "react";
+  AvatarChip,
+  CloseIcon,
+  InputField,
+  SearchIcon
+} from "@rootcodelabs/skapp-ui";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import CloseIcon from "~community/common/assets/Icons/CloseIcon";
-import SearchIcon from "~community/common/assets/Icons/SearchIcon";
-import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { ContactOwner } from "~community/crm/types/CommonTypes";
-
-import styles from "./styles";
 
 interface OwnerSearchFieldProps {
   id?: string;
@@ -32,7 +23,6 @@ const getFullName = (owner: ContactOwner) =>
   [owner.firstName, owner.lastName].filter(Boolean).join(" ");
 
 const OwnerSearchField = ({
-  id = "owner-search",
   label,
   placeholder,
   selectedOwner,
@@ -41,162 +31,102 @@ const OwnerSearchField = ({
   options,
   noResultsText = "No results found"
 }: OwnerSearchFieldProps) => {
-  const theme: Theme = useTheme();
-  const classes = styles(theme);
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listboxId = `${id}-listbox`;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const filtered = options.filter((o) =>
-    getFullName(o).toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredResults = useMemo(() => {
+    return options.filter((o) =>
+      getFullName(o).toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [options, searchTerm]);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    setOpen(true);
-  };
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSelect = (owner: ContactOwner) => {
     onSelect(owner);
-    setSearch("");
-    setOpen(false);
+    setSearchTerm("");
+    setIsOpen(false);
   };
 
-  /* Reset search text + close dropdown so input is clean after removing owner */
-  const handleClear = () => {
-    setSearch("");
-    setOpen(false);
-    onClear();
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") {
-      setOpen(false);
-      inputRef.current?.blur();
-    }
-  };
+  // When an owner is selected, show the selected chip instead of the search field
+  if (selectedOwner) {
+    return (
+      <div className="w-full">
+        {label && (
+          <label className="block text-black font-medium text-sm mb-1">{label}</label>
+        )}
+        <div className="h-12 rounded-lg bg-gray-100 flex items-center px-3">
+          <AvatarChip
+            label={getFullName(selectedOwner)}
+            avatarProps={{
+              src: selectedOwner.authPic ?? undefined,
+              firstName: selectedOwner.firstName,
+              lastName: selectedOwner.lastName ?? "",
+              size: "sm"
+            }}
+            showActionButton
+            onActionClick={onClear}
+            actionIcon={<CloseIcon />}
+            actionButtonAriaLabel="Remove owner"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <ClickAwayListener onClickAway={() => setOpen(false)}>
-      <Box sx={classes.wrapper}>
-        {label && (
-          <Typography component="label" htmlFor={!selectedOwner ? id : undefined} sx={classes.label}>
-            {label}
-          </Typography>
-        )}
+    <div className="w-full relative" ref={wrapperRef}>
+      <InputField
+        label={label}
+        placeholder={placeholder}
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        state="default"
+        variant="md"
+        rightIcon={<SearchIcon />}
+        fullWidth
+      />
 
-        <Paper elevation={0} sx={classes.fieldPaper}>
-          {selectedOwner ? (
-            /* Selected: custom chip row — full control over avatar, name, X button */
-            <Stack
-              direction="row"
-              alignItems="center"
-              gap={0.75}
-              role="group"
-              aria-label={`Selected owner: ${getFullName(selectedOwner)}`}
-              sx={classes.selectedChip}
-            >
-              <Avatar
-                firstName={selectedOwner.firstName}
-                lastName={selectedOwner.lastName ?? ""}
-                src={selectedOwner.authPic ?? ""}
-                avatarStyles={classes.selectedChipAvatar}
-              />
-              <Typography sx={classes.selectedChipLabel}>
-                {getFullName(selectedOwner)}
-              </Typography>
-              <IconButton
-                size="small"
-                onClick={handleClear}
-                aria-label="Remove owner"
-                sx={classes.selectedChipRemove}
-              >
-                <CloseIcon
-                  fill={theme.palette.grey[600]}
-                  width="16"
-                  height="16"
-                />
-              </IconButton>
-            </Stack>
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-64 overflow-y-auto">
+          {filteredResults.length === 0 ? (
+            <div className="px-4 py-3 text-gray-500 text-sm">{noResultsText}</div>
           ) : (
-            /* Empty: search input */
-            <>
-              <InputBase
-                id={id}
-                inputRef={inputRef}
-                value={search}
-                onChange={handleInputChange}
-                onFocus={() => setOpen(true)}
-                onKeyDown={handleKeyDown}
-                placeholder={placeholder}
-                sx={classes.inputBase}
-                role="combobox"
-                aria-haspopup="listbox"
-                aria-expanded={open}
-                aria-controls={open ? listboxId : undefined}
-                aria-autocomplete="list"
-              />
-              <Box
-                component="button"
-                type="button"
-                aria-label="Search owners"
-                sx={{ background: "none", border: "none", cursor: "pointer", p: 0, display: "flex", alignItems: "center" }}
-                onClick={() => inputRef.current?.focus()}
+            filteredResults.map((owner) => (
+              <div
+                key={owner.employeeId}
+                className="px-4 py-2 cursor-pointer hover:bg-gray-100 flex items-center gap-2"
+                onClick={() => handleSelect(owner)}
               >
-                <SearchIcon fill={theme.palette.text.secondary} />
-              </Box>
-            </>
-          )}
-        </Paper>
-
-        {open && !selectedOwner && (
-          <Paper
-            elevation={3}
-            id={listboxId}
-            role="listbox"
-            aria-label={label ?? "Owner options"}
-            sx={classes.dropdownPaper}
-          >
-            {filtered.length === 0 ? (
-              <Typography role="status" sx={classes.noResultsText}>
-                {noResultsText}
-              </Typography>
-            ) : (
-              filtered.map((owner) => (
-                <Stack
-                  key={owner.employeeId}
-                  direction="row"
-                  alignItems="center"
-                  gap={1.25}
-                  role="option"
-                  aria-selected={false}
-                  tabIndex={0}
-                  onClick={() => handleSelect(owner)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleSelect(owner);
-                    }
+                <AvatarChip
+                  label={getFullName(owner)}
+                  avatarProps={{
+                    src: owner.authPic ?? undefined,
+                    firstName: owner.firstName,
+                    lastName: owner.lastName ?? "",
+                    size: "sm"
                   }}
-                  sx={classes.ownerRow}
-                >
-                  <Avatar
-                    firstName={owner.firstName}
-                    lastName={owner.lastName ?? ""}
-                    src={owner.authPic ?? ""}
-                    avatarStyles={{ width: "2rem", height: "2rem" }}
-                  />
-                  <Typography sx={classes.ownerName}>
-                    {getFullName(owner)}
-                  </Typography>
-                </Stack>
-              ))
-            )}
-          </Paper>
-        )}
-      </Box>
-    </ClickAwayListener>
+                />
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
