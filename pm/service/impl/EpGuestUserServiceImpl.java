@@ -625,16 +625,12 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 		log.info("validateGuestInvitations: Validating guest invitations for {} email(s), projectId: {}", emails.size(),
 				projectId);
 
-		return emails.stream()
-			.filter(email -> email != null && !email.isBlank())
-			.distinct()
-			.map(email -> {
-				GuestInvitationValidationResponseDto result = new GuestInvitationValidationResponseDto();
-				result.setEmail(email);
-				result.setStatus(resolveValidationStatus(email, projectId));
-				return result;
-			})
-			.toList();
+		return emails.stream().filter(email -> email != null && !email.isBlank()).distinct().map(email -> {
+			GuestInvitationValidationResponseDto result = new GuestInvitationValidationResponseDto();
+			result.setEmail(email);
+			result.setStatus(resolveValidationStatus(email, projectId));
+			return result;
+		}).toList();
 	}
 
 	private GuestInvitationValidationStatus resolveValidationStatus(String email, Long projectId) {
