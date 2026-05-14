@@ -108,18 +108,23 @@ public class EpProjectServiceImpl implements EpProjectService {
 			}
 			Long id = projectNode.get("id").asLong();
 			if (projectIdSet.contains(id)) {
-				ProjectRequestDto dto = new ProjectRequestDto();
-				if (projectNode.has("name") && !projectNode.get("name").isNull()) {
-					dto.setProjectName(projectNode.get("name").asString());
-				}
-				if (projectNode.has("key") && !projectNode.get("key").isNull()) {
-					dto.setProjectKey(projectNode.get("key").asString());
-				}
-				result.add(dto);
+				result.add(mapProjectNode(projectNode, id));
 			}
 		}
 
 		return result;
+	}
+
+	private ProjectRequestDto mapProjectNode(JsonNode projectNode, Long id) {
+		ProjectRequestDto dto = new ProjectRequestDto();
+		dto.setProjectId(id);
+		if (projectNode.has("name") && !projectNode.get("name").isNull()) {
+			dto.setProjectName(projectNode.get("name").asString());
+		}
+		if (projectNode.has("key") && !projectNode.get("key").isNull()) {
+			dto.setProjectKey(projectNode.get("key").asString());
+		}
+		return dto;
 	}
 
 	private HttpHeaders createHeaders() {
