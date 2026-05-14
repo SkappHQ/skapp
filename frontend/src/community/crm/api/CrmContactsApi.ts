@@ -9,11 +9,18 @@ import { AxiosError } from "axios";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { crmEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmQueryKeys } from "~community/crm/api/utils/QueryKeys";
-import { CrmCompaniesResponseType } from "~community/crm/types/CrmCompanyTypes";
 import {
+  ContactDeal,
+  ContactDetail,
+  ContactMetrics,
+  ContactsListParams,
+  ContactTask,
   CreateContactPayload,
-  CrmOwnersResponseType
-} from "~community/crm/types/CrmContactTypes";
+  CrmCompaniesResponseType,
+  CrmContactsListResponseType,
+  CrmOwnersResponseType,
+  UpdateContactPayload
+} from "~community/crm/types/CommonTypes";
 
 interface CompaniesParams {
   page?: number;
@@ -27,6 +34,89 @@ interface OwnersParams {
   searchKeyword?: string;
 }
 
+// Get Contacts List
+export const useGetCrmContacts = (
+  params: ContactsListParams = {}
+): UseQueryResult<CrmContactsListResponseType> => {
+  const {
+    page = 0,
+    size = 10,
+    sortKey = "DEAL_VALUE",
+    sortOrder = "DESC",
+    searchKeyword,
+    companyIds
+  } = params;
+
+  return useQuery({
+    queryKey: crmQueryKeys.CRM_CONTACTS(params),
+    queryFn: () =>
+      authFetch.get(crmEndpoints.GET_CONTACTS, {
+        params: {
+          page,
+          size,
+          sortKey,
+          sortOrder,
+          ...(searchKeyword ? { searchKeyword } : {}),
+          ...(companyIds ? { companyIds } : {})
+        }
+      }),
+    select: (data) => data?.data?.results?.[0] as CrmContactsListResponseType
+  });
+};
+
+// Get Contact by ID
+export const useGetCrmContactById = (
+  id: number,
+  enabled = true
+): UseQueryResult<ContactDetail> => {
+  return useQuery({
+    queryKey: crmQueryKeys.CRM_CONTACT_BY_ID(id),
+    queryFn: () => authFetch.get(crmEndpoints.GET_CONTACT_BY_ID(id)),
+    select: (data) => data?.data?.results?.[0] as ContactDetail,
+    enabled: enabled && id > 0
+  });
+};
+
+// Get Contact Metrics
+export const useGetCrmContactMetrics = (
+  id: number,
+  enabled = true
+): UseQueryResult<ContactMetrics> => {
+  return useQuery({
+    queryKey: crmQueryKeys.CRM_CONTACT_METRICS(id),
+    queryFn: () => authFetch.get(crmEndpoints.GET_CONTACT_METRICS(id)),
+    select: (data) => data?.data?.results?.[0] as ContactMetrics,
+    enabled: enabled && id > 0
+  });
+};
+
+// Get Contact Deals
+export const useGetCrmContactDeals = (
+  contactId: number,
+  enabled = true
+): UseQueryResult<ContactDeal[]> => {
+  return useQuery({
+    queryKey: crmQueryKeys.CRM_CONTACT_DEALS(contactId),
+    queryFn: () => authFetch.get(crmEndpoints.GET_CONTACT_DEALS(contactId)),
+    select: (data) => (data?.data?.results ?? []) as ContactDeal[],
+    enabled: enabled && contactId > 0
+  });
+};
+
+// Get Contact Tasks
+export const useGetCrmContactTasks = (
+  contactId: number,
+  enabled = true
+): UseQueryResult<ContactTask[]> => {
+  return useQuery({
+    queryKey: crmQueryKeys.CRM_CONTACT_TASKS(contactId),
+    queryFn: () => authFetch.get(crmEndpoints.GET_CONTACT_TASKS(contactId)),
+    select: (data) => (data?.data?.results ?? []) as ContactTask[],
+    enabled: enabled && contactId > 0
+  });
+};
+
+// Get Companies Lookup
 export const useGetCrmCompanies = (
   params: CompaniesParams = {}
 ): UseQueryResult<CrmCompaniesResponseType> => {
@@ -42,11 +132,11 @@ export const useGetCrmCompanies = (
           ...(searchKeyword ? { searchKeyword } : {})
         }
       }),
-    select: (data) => data?.data?.results?.[0] as CrmCompaniesResponseType,
-    enabled: true
+    select: (data) => data?.data?.results?.[0] as CrmCompaniesResponseType
   });
 };
 
+// Get Owners
 export const useGetCrmOwners = (
   params: OwnersParams = {}
 ): UseQueryResult<CrmOwnersResponseType> => {
@@ -62,11 +152,11 @@ export const useGetCrmOwners = (
           ...(searchKeyword ? { searchKeyword } : {})
         }
       }),
-    select: (data) => data?.data?.results?.[0] as CrmOwnersResponseType,
-    enabled: true
+    select: (data) => data?.data?.results?.[0] as CrmOwnersResponseType
   });
 };
 
+// Create Contact
 export const useCreateContact = ({
   onSuccess,
   onError
@@ -80,13 +170,67 @@ export const useCreateContact = ({
     mutationFn: (payload: CreateContactPayload) =>
       authFetch.post(crmEndpoints.CREATE_CONTACT, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: crmQueryKeys.CRM_CONTACTS });
+      queryClient.invalidateQueries({ queryKey: ["crm-contacts"] });
       onSuccess();
     },
-    onError: (error: AxiosError<{ results: Array<{ message: string }> }>) => {
+    onError: (error: AxiosError<{ message?: string; results?: Array<{ message: string }> }>) => {
       const message =
+        error?.response?.data?.message ??
         error?.response?.data?.results?.[0]?.message ??
         "Failed to create contact. Please try again.";
+      onError(message);
+    }
+  });
+};
+
+// Update Contact
+export const useUpdateContact = ({
+  onSuccess,
+  onError
+}: {
+  onSuccess: () => void;
+  onError: (message: string) => void;
+}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: UpdateContactPayload }) =>
+      authFetch.put(crmEndpoints.UPDATE_CONTACT(id), payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["crm-contacts"] });
+      onSuccess();
+    },
+    onError: (error: AxiosError<{ message?: string; results?: Array<{ message: string }> }>) => {
+      const message =
+        error?.response?.data?.message ??
+        error?.response?.data?.results?.[0]?.message ??
+        "Failed to update contact. Please try again.";
+      onError(message);
+    }
+  });
+};
+
+// Delete Contact
+export const useDeleteContact = ({
+  onSuccess,
+  onError
+}: {
+  onSuccess: () => void;
+  onError: (message: string) => void;
+}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => authFetch.patch(crmEndpoints.DELETE_CONTACT(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["crm-contacts"] });
+      onSuccess();
+    },
+    onError: (error: AxiosError<{ message?: string; results?: Array<{ message: string }> }>) => {
+      const message =
+        error?.response?.data?.message ??
+        error?.response?.data?.results?.[0]?.message ??
+        "Failed to delete contact. Please try again.";
       onError(message);
     }
   });
