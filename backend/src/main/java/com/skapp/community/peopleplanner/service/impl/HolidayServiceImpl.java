@@ -460,7 +460,7 @@ public class HolidayServiceImpl implements HolidayService {
 
 		workLocationNames.forEach(workLocation -> {
 			if (!validNames.contains(workLocation.trim())) {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION);
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_WORK_LOCATION_NOT_FOUND);
 			}
 		});
 	}
