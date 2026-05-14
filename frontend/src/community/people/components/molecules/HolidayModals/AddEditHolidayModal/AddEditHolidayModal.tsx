@@ -174,7 +174,7 @@ const AddEditHolidayModal = ({
     duration: newHolidayDetails?.duration || "",
     workLocation: newHolidayDetails?.workLocations?.length
       ? newHolidayDetails.workLocations
-      : [0]
+      : [ALL_LOCATIONS_ID]
   };
 
   const handleAddNewHoliday = useCallback(async (): Promise<void> => {
