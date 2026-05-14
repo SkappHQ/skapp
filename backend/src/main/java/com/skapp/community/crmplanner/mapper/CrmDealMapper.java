@@ -1,7 +1,11 @@
 package com.skapp.community.crmplanner.mapper;
 
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmPriority;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmPriorityResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -23,5 +27,13 @@ public interface CrmDealMapper {
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
 
 	List<CrmDealResponseDto> crmDealsToCrmDealResponseDtos(List<CrmDeal> crmDeals);
+
+	CrmDealStageResponseDto crmDealStageToCrmDealStageResponseDto(CrmDealStage crmDealStage);
+
+	List<CrmDealStageResponseDto> crmDealStagesToCrmDealStageResponseDtos(List<CrmDealStage> crmDealStages);
+
+	CrmPriorityResponseDto crmPriorityToCrmPriorityResponseDto(CrmPriority crmPriority);
+
+	List<CrmPriorityResponseDto> crmPrioritiesToCrmPriorityResponseDtos(List<CrmPriority> crmPriorities);
 
 }
