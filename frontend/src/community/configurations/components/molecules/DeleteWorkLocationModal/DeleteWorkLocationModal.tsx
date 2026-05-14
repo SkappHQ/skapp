@@ -1,4 +1,4 @@
-import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -53,38 +53,30 @@ const DeleteWorkLocationModal = () => {
     }
   };
 
-  const content = (
-    <div>
-      <p>{translateText(["deleteModal.description"])}</p>
-      <div className="flex flex-row justify-end gap-3 mt-4">
-        <ButtonV2
-          variant="tertiary"
-          onClick={handleClose}
-          disabled={isPending}
-          icon={<Icon name={IconName.CLOSE_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["deleteModal.cancelButton"])}
-        </ButtonV2>
-        <ButtonV2
-          variant="error"
-          onClick={handleConfirm}
-          disabled={isPending}
-          icon={<Icon name={IconName.DELETE_BUTTON_ICON} fill="var(--color-semantic-red-text)" />}
-          iconPosition="end"
-        >
-          {translateText(["deleteModal.confirmButton"])}
-        </ButtonV2>
-      </div>
-    </div>
-  );
-
   return (
     <SmallModal
       isOpen={isDeleteModalOpen}
       onClose={handleClose}
       modalHeader={translateText(["deleteModal.title"])}
-      content={content}
+      content={<p>{translateText(["deleteModal.description"])}</p>}
+      buttons={{
+        buttonLeft: {
+          variant: "tertiary",
+          onClick: handleClose,
+          disabled: isPending,
+          icon: <Icon name={IconName.CLOSE_ICON} />,
+          iconPosition: "end",
+          children: translateText(["deleteModal.cancelButton"])
+        },
+        buttonRight: {
+          variant: "error",
+          onClick: handleConfirm,
+          disabled: isPending,
+          icon: <Icon name={IconName.DELETE_BUTTON_ICON} fill="var(--color-semantic-red-text)" />,
+          iconPosition: "end",
+          children: translateText(["deleteModal.confirmButton"])
+        }
+      }}
     />
   );
 };
