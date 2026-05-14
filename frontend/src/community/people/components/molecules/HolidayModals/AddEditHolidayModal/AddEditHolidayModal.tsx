@@ -178,34 +178,24 @@ const AddEditHolidayModal = ({
         : [ALL_LOCATIONS_ID]
   };
 
-  const handleAddNewHoliday = useCallback(
-    async (formValues: typeof initialValues): Promise<void> => {
-      const dateFormatted = formatDate(formValues.holidayDate);
+  const handleAddNewHoliday = useCallback(async (): Promise<void> => {
+    const dateFormatted = formatDate(newHolidayDetails?.holidayDate);
 
-      const selectedWorkLocationNames = workLocationList
-        .filter((loc) => selectedWorkLocationIds.includes(Number(loc.value)))
-        .map((loc) => loc.label as string);
+    const selectedWorkLocationNames = workLocationList
+      .filter((loc) => selectedWorkLocationIds.includes(Number(loc.value)))
+      .map((loc) => loc.label as string);
 
-      const payload = {
-        date: dateFormatted ?? "",
-        name: formValues.holidayReason,
-        holidayDuration: formValues.duration,
-        workLocations: selectedWorkLocationNames
-      };
+    const payload = {
+      date: dateFormatted ?? "",
+      name: newHolidayDetails?.holidayReason,
+      holidayDuration: newHolidayDetails?.duration,
+      workLocations: selectedWorkLocationNames
+    };
 
-      mutate({ holidayData: payload, selectedYear });
-      resetHolidayDetails();
-      setIsHolidayModalOpen(false);
-    },
-    [
-      mutate,
-      selectedWorkLocationIds,
-      workLocationList,
-      selectedYear,
-      resetHolidayDetails,
-      setIsHolidayModalOpen
-    ]
-  );
+    mutate({ holidayData: payload, selectedYear });
+    resetHolidayDetails();
+    setIsHolidayModalOpen(false);
+  }, [newHolidayDetails, mutate, selectedWorkLocationIds, workLocationList]);
 
   const {
     values,
