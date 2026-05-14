@@ -50,6 +50,7 @@ interface Props {
   labelStyles?: SxProps;
   isCheckSelected?: boolean;
   ariaLabel?: string;
+  menuMaxHeight?: number;
 }
 
 // TODO: fix name
@@ -80,7 +81,8 @@ const MultivalueDropdownList: FC<Props> = ({
   isErrorFocusOutlineNeeded: errorFocusOutlineNeeded = true,
   labelStyles,
   isCheckSelected: checkSelected,
-  ariaLabel
+  ariaLabel,
+  menuMaxHeight = 300
 }) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
@@ -135,7 +137,7 @@ const MultivalueDropdownList: FC<Props> = ({
               // TODO: move styles to styles.ts
               <Typography
                 component="span"
-                style={{ color: theme.palette.error.light }}
+                style={{ color: theme.palette.error.contrastText }}
               >
                 *
               </Typography>
@@ -172,7 +174,7 @@ const MultivalueDropdownList: FC<Props> = ({
             name={inputName}
             disabled={isDisabled}
             MenuProps={{
-              style: { maxHeight: 300, zIndex: ZIndexEnums.DEFAULT }
+              style: { maxHeight: menuMaxHeight, zIndex: ZIndexEnums.MAX }
             }}
             sx={{
               ...classes.selectStyle(theme, isDisabled, readOnly),

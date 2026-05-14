@@ -317,6 +317,7 @@ export interface Store extends actionsTypes {
     halfDayState: HolidayHalfDayState;
     holidayId: number;
     holidayColor: string;
+    workLocations: string[];
   };
   failedCount: number;
   successCount: number;

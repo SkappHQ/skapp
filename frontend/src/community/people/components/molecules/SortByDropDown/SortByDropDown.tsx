@@ -3,6 +3,10 @@ import { MutableRefObject, useEffect, useMemo } from "react";
 
 import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
+import {
+  ALL_LOCATIONS_ID,
+  ALL_LOCATIONS_LABEL
+} from "~community/common/constants/workLocationConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import {
@@ -13,8 +17,6 @@ import { usePeopleStore } from "~community/people/store/store";
 import { holiday } from "~community/people/types/HolidayTypes";
 
 import { styles } from "./styles";
-
-const ALL_LOCATIONS_ID = 0;
 
 interface Props {
   holidayData: holiday[] | undefined;
@@ -48,7 +50,7 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
 
   const workLocationOptions = useMemo(() => {
     const allOption = {
-      label: "All Locations",
+      label: ALL_LOCATIONS_LABEL,
       value: String(ALL_LOCATIONS_ID)
     };
     const locationOptions = (workLocations ?? []).map((loc) => ({
@@ -62,7 +64,7 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
     const found = workLocationOptions.find(
       (opt) => opt.value === String(selectedWorkLocationId)
     );
-    return found?.label ?? "All Locations";
+    return found?.label ?? ALL_LOCATIONS_LABEL;
   }, [workLocationOptions, selectedWorkLocationId]);
 
   useEffect(() => {

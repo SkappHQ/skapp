@@ -1,3 +1,4 @@
+import { ALL_LOCATIONS_LABEL } from "~community/common/constants/workLocationConstants";
 import { createCSV } from "~community/common/utils/bulkUploadUtils";
 import { currentYear } from "~community/common/utils/dateTimeUtils";
 import {
@@ -10,7 +11,7 @@ const getDummyHolidayCsvData = (): Holiday[] => {
     {
       id: 1,
       date: `${currentYear}-04-14`,
-      workLocation: ["All locations"],
+      workLocation: [ALL_LOCATIONS_LABEL],
       name: "New year",
       holidayDuration: HolidayDurationType.FULLDAY
     },

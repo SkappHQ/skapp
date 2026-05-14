@@ -135,7 +135,8 @@ export const useAddIndividualHoliday = (
             date: holidayData.date,
             name: holidayData.name,
             holidayDuration: holidayData.holidayDuration,
-            holidayColor: holidayData.holidayColor
+            holidayColor: holidayData.holidayColor,
+            workLocations: holidayData.workLocations
           }
         ]
       };
