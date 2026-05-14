@@ -5,11 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
-import com.skapp.community.crmplanner.payload.request.CrmCompanyUpdateDto;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,9 +28,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/v1/company")
 @Tag(name = "CRM Companies Controller", description = "Operations related to CRM Companies")
 public class CrmCompanyController {
-
-  @NonNull
-  private final CrmCompanyService companyService;
 
   @Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
   @GetMapping("/exists")

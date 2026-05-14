@@ -7,9 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
-import com.skapp.community.crmplanner.payload.request.CrmCompanyUpdateDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyTableViewDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
@@ -26,6 +27,8 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
   private final CrmCompanyDao crmCompanyDao;
 
   private final CrmCompanyRepository crmCompanyRepository;
+
+  private final CrmMapper crmMapper;
 
   @Override
   public PageDto getAllCompanies(String searchKeyword, Pageable pageable) {
@@ -69,16 +72,12 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
   @Transactional
   public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) {
     log.info("createCompany: execution started");
-    CrmCompany newCompany = new CrmCompany();
-    newCompany.setName(crmCompany.getName());
-    newCompany.setIndustry(crmCompany.getIndustry());
-    newCompany.setWebsite(crmCompany.getWebsite());
-    newCompany.setAddress(crmCompany.getAddress());
-    newCompany.setContactNumber(crmCompany.getContactNumber());
-    crmCompanyDao.save(newCompany);
-    log.info("createCompany: execution ended");
+    CrmCompany newCompany = crmMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
+    CrmCompany result = crmCompanyDao.save(newCompany);
+    CrmCompanyResponseDto responseDto = crmMapper.crmCompanyToCrmCompanyResponseDto(result);
+    log.info("createCompany: execution ended successfully");
 
-    return new ResponseEntityDto(false, "Company created successfully");
+    return new ResponseEntityDto(false, responseDto);
   }
 
   @Override

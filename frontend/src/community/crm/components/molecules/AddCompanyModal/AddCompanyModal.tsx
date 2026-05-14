@@ -23,7 +23,6 @@ import {
   CrmCompanyAddFormTypes,
   CrmCompanyCreatePayload
 } from "~community/crm/types/CommonTypes";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
 import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 
@@ -61,12 +60,9 @@ const AddCompanyModal: React.FC = () => {
     "companyToastMessages"
   );
 
-  const { setIsAddCompanyModalOpen, setCompanyModalType } = useCrmStore(
-    (store) => ({
-      setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen,
-      setCompanyModalType: store.setCompanyModalType
-    })
-  );
+  const { setIsAddCompanyModalOpen } = useCrmStore((store) => ({
+    setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
+  }));
 
   const { userId } = useSessionData();
 
