@@ -660,8 +660,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 			}
 		}
 
-		List<GuestUserRequest> pendingRequests = guestUserRequestDao.findByEmailContaining(email);
-		if (!pendingRequests.isEmpty()) {
+		Optional<GuestUserRequest> pendingRequest = guestUserRequestDao.findByEmail(email);
+		if (pendingRequest.isPresent()) {
 			return GuestInvitationValidationStatus.PENDING_INVITATION_EXISTS;
 		}
 
