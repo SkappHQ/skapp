@@ -115,6 +115,7 @@ export type HolidayType = {
   name: string;
   holidayDuration: HolidayDurationType;
   workLocations?: string[];
+  workLocation: string;
 };
 
 export interface bulkStatusSummary {
