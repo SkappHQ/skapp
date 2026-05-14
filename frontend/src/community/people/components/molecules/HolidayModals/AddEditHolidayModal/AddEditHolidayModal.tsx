@@ -98,7 +98,7 @@ const AddEditHolidayModal = ({
   const [selectedWorkLocationIds, setSelectedWorkLocationIds] = useState<
     number[]
   >(
-    newHolidayDetails?.workLocations?.length
+    newHolidayDetails?.workLocations?.length > 0
       ? newHolidayDetails.workLocations
       : [ALL_LOCATIONS_ID]
   );
@@ -172,9 +172,10 @@ const AddEditHolidayModal = ({
     holidayColor:
       newHolidayDetails?.holidayColor || theme.palette.text.blackText,
     duration: newHolidayDetails?.duration || "",
-    workLocation: newHolidayDetails?.workLocations?.length
-      ? newHolidayDetails.workLocations
-      : [ALL_LOCATIONS_ID]
+    workLocation:
+      newHolidayDetails?.workLocations?.length > 0
+        ? newHolidayDetails.workLocations
+        : [ALL_LOCATIONS_ID]
   };
 
   const handleAddNewHoliday = useCallback(
