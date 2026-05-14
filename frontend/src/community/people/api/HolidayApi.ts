@@ -9,6 +9,7 @@ import {
 import { rejects } from "assert";
 import { AxiosResponse } from "axios";
 
+import { ALL_LOCATIONS_ID } from "~community/common/constants/workLocationConstants";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { holidayEndpoints } from "~community/people/api/utils/ApiEndpoints";
@@ -43,7 +44,7 @@ export const useGetAllHolidays = (
 export const useGetAllHolidaysInfinite = (
   year?: string | undefined,
   sortOrder?: string | undefined,
-  workLocationId: number = 0
+  workLocationId: number = ALL_LOCATIONS_ID
 ): UseInfiniteQueryResult<HolidayDataResponse> => {
   const params = {
     year: year,
