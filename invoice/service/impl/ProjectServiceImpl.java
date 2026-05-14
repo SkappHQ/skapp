@@ -195,7 +195,7 @@ public class ProjectServiceImpl implements ProjectService {
 		int totalItems = sortedInternalProjects.size();
 		int totalPages = 1;
 
-		List<ProjectSummaryResponseDto> paginatedProjects = new ArrayList<>();
+		List<ProjectSummaryResponseDto> paginatedProjects;
 
 		// get the count ProjectSummaryResponseDto
 		List<ProjectSummaryResponseDto> projectSummaryResponseList = new ArrayList<>();

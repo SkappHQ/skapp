@@ -9,6 +9,7 @@ import com.skapp.enterprise.common.payload.request.EpGuestUserUpdateRequestDto;
 import com.skapp.enterprise.common.payload.response.EpUserResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserRequestResponseDto;
 import com.skapp.enterprise.pm.payload.EpGuestUserResponseDto;
+import com.skapp.enterprise.pm.payload.GuestInvitationValidationResponseDto;
 import com.skapp.enterprise.pm.service.EpGuestUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -106,6 +107,15 @@ public class EpGuestUserController {
 	@PreAuthorize("hasAnyRole('ROLE_PM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getPendingGuestUsersCount() {
 		ResponseEntityDto response = epGuestUserService.getPendingGuestUsersCount();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/validate")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
+	public ResponseEntity<List<GuestInvitationValidationResponseDto>> validateGuestInvitations(
+			@RequestParam List<String> emails, @RequestParam(required = false) Long projectId) {
+		List<GuestInvitationValidationResponseDto> response = epGuestUserService.validateGuestInvitations(emails,
+				projectId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
