@@ -34,7 +34,7 @@ public class AttendanceConfigController {
 	}
 
 	@Operation(summary = "Get All Attendance Configs", description = "This endpoint used to get all attendance configs")
-	@PreAuthorize("hasAnyRole('ATTENDANCE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_EMPLOYEE')")
 	@GetMapping
 	public ResponseEntity<ResponseEntityDto> getAllAttendanceConfigs() {
 		ResponseEntityDto responseDto = attendanceConfigService.getAllAttendanceConfigs();

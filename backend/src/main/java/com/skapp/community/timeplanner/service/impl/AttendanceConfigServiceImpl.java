@@ -6,12 +6,15 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
 import com.skapp.community.timeplanner.model.AttendanceConfig;
 import com.skapp.community.timeplanner.payload.request.AttendanceConfigRequestDto;
+import com.skapp.community.timeplanner.payload.response.AttendanceConfigResponseDto;
 import com.skapp.community.timeplanner.repository.AttendanceConfigDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
 import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,20 +94,38 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	public ResponseEntityDto getAllAttendanceConfigs() {
 		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
-		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
+		if (isAttendanceAdmin()) {
+			AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
 
+			for (AttendanceConfig config : attendanceConfigs) {
+				boolean value = Boolean.parseBoolean(config.getAttendanceConfigValue());
+				switch (config.getAttendanceConfigType()) {
+					case CLOCK_IN_ON_NON_WORKING_DAYS -> dto.setIsClockInOnNonWorkingDays(value);
+					case CLOCK_IN_ON_COMPANY_HOLIDAYS -> dto.setIsClockInOnCompanyHolidays(value);
+					case CLOCK_IN_ON_LEAVE_DAYS -> dto.setIsClockInOnLeaveDays(value);
+					case AUTO_APPROVAL_FOR_CHANGES -> dto.setIsAutoApprovalForChanges(value);
+					case GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
+				}
+			}
+
+			return new ResponseEntityDto(false, dto);
+		}
+
+		boolean isGeoFencingEnabled = false;
 		for (AttendanceConfig config : attendanceConfigs) {
-			boolean value = Boolean.parseBoolean(config.getAttendanceConfigValue());
-			switch (config.getAttendanceConfigType()) {
-				case CLOCK_IN_ON_NON_WORKING_DAYS -> dto.setIsClockInOnNonWorkingDays(value);
-				case CLOCK_IN_ON_COMPANY_HOLIDAYS -> dto.setIsClockInOnCompanyHolidays(value);
-				case CLOCK_IN_ON_LEAVE_DAYS -> dto.setIsClockInOnLeaveDays(value);
-				case AUTO_APPROVAL_FOR_CHANGES -> dto.setIsAutoApprovalForChanges(value);
-				case GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
+			if (config.getAttendanceConfigType() == AttendanceConfigType.GEO_FENCING_ENABLED) {
+				isGeoFencingEnabled = Boolean.parseBoolean(config.getAttendanceConfigValue());
+				break;
 			}
 		}
 
-		return new ResponseEntityDto(false, dto);
+		return new ResponseEntityDto(false, new AttendanceConfigResponseDto(isGeoFencingEnabled));
+	}
+
+	private boolean isAttendanceAdmin() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		return auth != null
+				&& auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ATTENDANCE_ADMIN"));
 	}
 
 	@Override

@@ -12,7 +12,10 @@ import { convertDateToUTC } from "~community/common/utils/dateTimeUtils";
 import { useUpdateEmployeeStatusWithLocation } from "~enterprise/attendance/api/AttendanceApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
-export const useAttendanceAction = () => {
+export const useAttendanceAction = (): {
+  recordAttendance: (slotType: AttendanceSlotType) => void;
+  isPending: boolean;
+} => {
   const { setToastMessage } = useToast();
   const translateTexts = useTranslator("attendanceModule", "timeWidget");
 

@@ -2,13 +2,13 @@ import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { useAttendanceAction } from "~community/attendance/hooks/useAttendanceAction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
   calculateWorkedDuration,
   calculateWorkedDurationInHoursAndMinutes
 } from "~community/attendance/utils/CalculateWorkedDuration";
-import { useAttendanceAction } from "~community/attendance/hooks/useAttendanceAction";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
