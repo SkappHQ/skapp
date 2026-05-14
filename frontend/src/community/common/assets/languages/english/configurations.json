@@ -174,7 +174,8 @@
       "geocodeNoResultsDescription": "No results found for the entered address. Please try a different search.",
       "addressSearchLabel": "Search address",
       "addressSearchPlaceholder": "Search Location",
-      "selectedAddressLabel": "Selected address"
+      "selectedAddressLabel": "Selected address",
+      "noSearchResults": "No employees found for your search"
     },
     "validation": {
       "nameRequired": "Please enter work location name",

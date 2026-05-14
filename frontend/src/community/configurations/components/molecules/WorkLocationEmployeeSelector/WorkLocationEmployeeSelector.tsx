@@ -343,13 +343,15 @@ const WorkLocationEmployeeSelector = ({
             </>
           )}
 
-          <div
-            className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
-            onClick={toggleAllEmployees}
-          >
-            <Checkbox checked={isAllSelected} />
-            <AvatarChip label={translateText(["form.allEmployees"])} />
-          </div>
+          {employeeSearchText.length === 0 && (
+            <div
+              className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+              onClick={toggleAllEmployees}
+            >
+              <Checkbox checked={isAllSelected} />
+              <AvatarChip label={translateText(["form.allEmployees"])} />
+            </div>
+          )}
 
           {!isAllSelected &&
             displayEmployees
@@ -375,6 +377,13 @@ const WorkLocationEmployeeSelector = ({
                   </div>
                 );
               })}
+
+          {employeeSearchText.length > 0 &&
+            displayEmployees.length === 0 && (
+              <p className="text-center text-secondary-text body2 py-4">
+                {translateText(["form.noSearchResults"])}
+              </p>
+            )}
 
           {isFetchingNextPage && (
             <div className="flex justify-center py-2">
