@@ -1,6 +1,7 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useState } from "react";
 
-import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { ALL_LOCATIONS_ID } from "~community/common/constants/workLocationConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
 import AddCalendar from "~community/people/components/molecules/HolidayModals/AddCalendar/AddCalendar";
@@ -95,11 +96,19 @@ const HolidayModalController: FC = () => {
       return;
     }
 
+    const hasCustomWorkLocations =
+      newHolidayDetails.workLocations?.length > 0 &&
+      !(
+        newHolidayDetails.workLocations.length === 1 &&
+        newHolidayDetails.workLocations[0] === ALL_LOCATIONS_ID
+      );
+
     const isEditingHoliday =
       newCalenderDetails?.acceptedFile?.length !== 0 ||
       newHolidayDetails.holidayDate ||
       newHolidayDetails.duration ||
-      newHolidayDetails.holidayReason;
+      newHolidayDetails.holidayReason ||
+      hasCustomWorkLocations;
 
     const isExitConfirmationNeeded =
       holidayModalType === holidayModalTypes.UPLOAD_HOLIDAY_BULK ||
@@ -174,9 +183,7 @@ const HolidayModalController: FC = () => {
 
   return (
     <SmallModal
-      isOpen={
-        isHolidayModalOpen && holidayModalType !== holidayModalTypes.NONE
-      }
+      isOpen={isHolidayModalOpen && holidayModalType !== holidayModalTypes.NONE}
       onClose={handleCloseModal}
       modalHeader={getModalTitle()}
       content={modalContent()}

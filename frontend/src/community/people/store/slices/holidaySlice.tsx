@@ -15,7 +15,7 @@ const newHolidayDetails = {
   holidayId: 0,
   holidayName: "",
   holidayColor: "",
-  workLocations: [] as string[]
+  workLocations: [] as (string | number)[]
 };
 
 const initialFailedCount = 0;

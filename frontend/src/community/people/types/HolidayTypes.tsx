@@ -10,7 +10,7 @@ export interface HolidayDataType {
   halfDayState?: string | HolidayDurationType;
   holidayReason?: string;
   holidayId?: number;
-  workLocations?: string[];
+  workLocations?: (string | number)[];
 }
 
 export interface holiday {

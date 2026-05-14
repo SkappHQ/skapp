@@ -97,7 +97,11 @@ const AddEditHolidayModal = ({
   );
   const [selectedWorkLocationIds, setSelectedWorkLocationIds] = useState<
     (string | number)[]
-  >([ALL_LOCATIONS_ID]);
+  >(
+    newHolidayDetails?.workLocations?.length
+      ? newHolidayDetails.workLocations
+      : [ALL_LOCATIONS_ID]
+  );
 
   const workLocationList: DropdownListType[] = useMemo(() => {
     const sorted = [...(workLocations ?? [])].sort((a, b) =>
@@ -221,10 +225,17 @@ const AddEditHolidayModal = ({
       }
 
       setSelectedWorkLocationIds(newValue);
+      setHolidayDetails({ ...newHolidayDetails, workLocations: newValue });
       setFieldValue("workLocation", newValue);
       setFieldError("workLocation", "");
     },
-    [selectedWorkLocationIds, setFieldValue, setFieldError]
+    [
+      selectedWorkLocationIds,
+      setFieldValue,
+      setFieldError,
+      setHolidayDetails,
+      newHolidayDetails
+    ]
   );
 
   const findHolidayAvailability = useCallback(
