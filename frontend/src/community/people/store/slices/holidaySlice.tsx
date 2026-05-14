@@ -15,7 +15,7 @@ const newHolidayDetails = {
   holidayId: 0,
   holidayName: "",
   holidayColor: "",
-  workLocations: [] as (string | number)[]
+  workLocations: [] as number[]
 };
 
 const initialFailedCount = 0;
@@ -50,7 +50,7 @@ const holidaySlice = (set: SetType<HolidaySliceTypes>): HolidaySliceTypes => ({
         halfDayState: halfDayState as HolidayHalfDayState,
         holidayId,
         holidayColor,
-        workLocations
+        workLocations: (workLocations ?? []).map(Number)
       }
     }));
   },

@@ -96,7 +96,7 @@ const AddEditHolidayModal = ({
     holidays
   );
   const [selectedWorkLocationIds, setSelectedWorkLocationIds] = useState<
-    (string | number)[]
+    number[]
   >(
     newHolidayDetails?.workLocations?.length
       ? newHolidayDetails.workLocations
@@ -181,7 +181,7 @@ const AddEditHolidayModal = ({
     const dateFormatted = formatDate(newHolidayDetails?.holidayDate);
 
     const selectedWorkLocationNames = workLocationList
-      .filter((loc) => selectedWorkLocationIds.includes(loc.value))
+      .filter((loc) => selectedWorkLocationIds.includes(Number(loc.value)))
       .map((loc) => loc.label as string);
 
     const payload = {
@@ -212,20 +212,24 @@ const AddEditHolidayModal = ({
 
   const handleWorkLocationChange = useCallback(
     (value: (string | number)[]) => {
+      const numericValue = value.map(Number);
       const wasAllSelected = selectedWorkLocationIds.includes(ALL_LOCATIONS_ID);
-      const isAllNowSelected = value.includes(ALL_LOCATIONS_ID);
+      const isAllNowSelected = numericValue.includes(ALL_LOCATIONS_ID);
 
-      let newValue: (string | number)[];
+      let newValue: number[];
       if (isAllNowSelected && !wasAllSelected) {
         newValue = [ALL_LOCATIONS_ID];
-      } else if (isAllNowSelected && value.length > 1) {
-        newValue = value.filter((v) => v !== ALL_LOCATIONS_ID);
+      } else if (isAllNowSelected && numericValue.length > 1) {
+        newValue = numericValue.filter((v) => v !== ALL_LOCATIONS_ID);
       } else {
-        newValue = value;
+        newValue = numericValue;
       }
 
       setSelectedWorkLocationIds(newValue);
-      setHolidayDetails({ ...newHolidayDetails, workLocations: newValue });
+      setHolidayDetails({
+        ...newHolidayDetails,
+        workLocations: newValue.map(String)
+      });
       setFieldValue("workLocation", newValue);
       setFieldError("workLocation", "");
     },
