@@ -29,19 +29,25 @@ const validateHeaders = async (file: File): Promise<boolean> => {
     });
   };
 
+  const predefinedHeaders = [
+    "Date",
+    "Work Location",
+    "Name",
+    "Holiday Duration"
+  ];
+
   const includesInvalidHeaders = (headers: string[]): boolean => {
-    const predefinedHeaders = [
-      "Date",
-      "Work Location",
-      "Name",
-      "Holiday Duration"
-    ];
     return headers?.some((header) => !predefinedHeaders?.includes(header));
+  };
+
+  const includesAllRequiredHeaders = (headers: string[]): boolean => {
+    return predefinedHeaders.every((required) => headers.includes(required));
   };
 
   const headers = await readCSVHeaders(file);
 
-  const isValid = !includesInvalidHeaders(headers);
+  const isValid =
+    !includesInvalidHeaders(headers) && includesAllRequiredHeaders(headers);
 
   return isValid;
 };
