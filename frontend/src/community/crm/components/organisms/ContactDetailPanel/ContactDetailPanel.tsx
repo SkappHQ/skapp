@@ -1,0 +1,169 @@
+import { Skeleton } from "@mui/material";
+import { SidePanel } from "@rootcodelabs/skapp-ui";
+import { FC, useEffect, useState } from "react";
+
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import {
+  useGetContactById,
+  useGetContactMetrics
+} from "~community/crm/api/CrmApi";
+import ContactActionMenu from "~community/crm/components/molecules/ContactActionMenu/ContactActionMenu";
+import ContactHeader from "~community/crm/components/molecules/ContactHeader/ContactHeader";
+import ContactMetrics, {
+  ContactMetricsSkeleton
+} from "~community/crm/components/molecules/ContactMetrics/ContactMetrics";
+import DealsSection from "~community/crm/components/molecules/DealsSection/DealsSection";
+import DeleteContactModal from "~community/crm/components/molecules/DeleteContactModal/DeleteContactModal";
+import EditContactModal from "~community/crm/components/molecules/EditContactModal/EditContactModal";
+import TasksSection from "~community/crm/components/molecules/TasksSection/TasksSection";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmContactMetricsType } from "~community/crm/types/CrmContactTypes";
+import { formatLastUpdated } from "~community/crm/utils/contactHeaderUtils";
+
+const DEFAULT_METRICS: CrmContactMetricsType = {
+  totalRevenue: 0,
+  revenueOnPipeline: 0,
+  activeDeals: 0,
+  openTasks: 0,
+  overdueTasks: 0
+};
+
+const ContactDetailPanel: FC = () => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const translateText = useTranslator(
+    "crmModule",
+    "contacts",
+    "contactDetailsPanel"
+  );
+
+  const { setToastMessage } = useToast();
+
+  const {
+    isContactDetailPanelOpen,
+    selectedContactId,
+    closeContactDetailPanel
+  } = useCrmStore();
+
+  const { data: contact, isLoading: isContactLoading } = useGetContactById(
+    selectedContactId ?? 0
+  );
+  const { data: metrics, isLoading: isMetricsLoading } = useGetContactMetrics(
+    selectedContactId ?? 0
+  );
+
+  useEffect(() => {
+    if (
+      !isContactLoading &&
+      !contact &&
+      isContactDetailPanelOpen &&
+      !!selectedContactId
+    ) {
+      setToastMessage({
+        open: true,
+        toastType: "error",
+        title: translateText(["errors", "contactNotFoundTitle"]),
+        description: translateText(["errors", "contactNotFoundDescription"]),
+        isIcon: true
+      });
+      closeContactDetailPanel();
+    }
+  }, [isContactLoading, contact, isContactDetailPanelOpen, selectedContactId]);
+
+  return (
+    <>
+      <div className="crm-contact-panel">
+        <SidePanel
+          isOpen={isContactDetailPanelOpen}
+          onClose={closeContactDetailPanel}
+          closeOnBackdropClick
+          width="lg"
+          ariaLabelledBy="contact-panel-title"
+          header={
+            isContactLoading ? (
+              <div className="flex flex-col gap-1">
+                <Skeleton width={180} height={28} animation="wave" />
+                <Skeleton width={120} height={16} animation="wave" />
+              </div>
+            ) : (
+              <div id="contact-panel-title" className="flex flex-col gap-0.5">
+                <p className="font-bold text-2xl text-black leading-tight">
+                  {contact?.name ?? ""}
+                </p>
+                <p className="text-sm text-secondary-text">
+                  {translateText(["lastUpdated"])} :{" "}
+                  <span className="text-black">
+                    {formatLastUpdated(contact?.lastContactAt ?? null)}
+                  </span>
+                </p>
+              </div>
+            )
+          }
+          headerActions={
+            <ContactActionMenu
+              editLabel={translateText(["menu", "editContact"])}
+              deleteLabel={translateText(["menu", "deleteContact"])}
+              onEdit={() => setIsEditModalOpen(true)}
+              onDelete={() => setIsDeleteModalOpen(true)}
+            />
+          }
+        >
+          <div className="flex flex-col gap-6 pb-4">
+            {/* Contact info */}
+            {isContactLoading ? (
+              <div className="flex flex-col gap-1">
+                <Skeleton width="60%" height={20} animation="wave" />
+                <Skeleton width="80%" height={20} animation="wave" />
+                <Skeleton width="70%" height={20} animation="wave" />
+              </div>
+            ) : contact ? (
+              <ContactHeader contact={contact} />
+            ) : null}
+
+            {/* Metrics */}
+            {isMetricsLoading ? (
+              <ContactMetricsSkeleton />
+            ) : (
+              <ContactMetrics metrics={metrics ?? DEFAULT_METRICS} />
+            )}
+
+            {/* Deals */}
+            {selectedContactId && (
+              <DealsSection contactId={selectedContactId} />
+            )}
+
+            {/* Tasks */}
+            {selectedContactId && (
+              <TasksSection contactId={selectedContactId} />
+            )}
+          </div>
+        </SidePanel>
+      </div>
+
+      {/* Edit contact modal */}
+      {contact && (
+        <EditContactModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          contact={contact}
+        />
+      )}
+
+      {/* Delete contact modal */}
+      {contact && (
+        <DeleteContactModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          contact={contact}
+          onDeleted={() => {
+            setIsDeleteModalOpen(false);
+            closeContactDetailPanel();
+          }}
+        />
+      )}
+    </>
+  );
+};
+
+export default ContactDetailPanel;

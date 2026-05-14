@@ -16,6 +16,7 @@ import BadgeCheckIcon from "~community/common/assets/Icons/BadgeCheckIcon";
 import BellIcon from "~community/common/assets/Icons/BellIcon";
 import BinIcon from "~community/common/assets/Icons/BinIcon";
 import BlockedIcon from "~community/common/assets/Icons/BlockedIcon";
+import BuildingIcon from "~community/common/assets/Icons/BuildingIcon";
 import CRMModuleIcon from "~community/common/assets/Icons/CRMModuleIcon";
 import CalendarIcon from "~community/common/assets/Icons/CalendarIcon";
 import CameraIcon from "~community/common/assets/Icons/CameraIcon";
@@ -86,6 +87,7 @@ import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon"
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
+import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
 import LockIcon from "~community/common/assets/Icons/LockIcon";
 import MagnifyingGlassIcon from "~community/common/assets/Icons/MagnifyingGlassIcon";
 import MenuIcon from "~community/common/assets/Icons/MenuIcon";
@@ -334,7 +336,9 @@ export const IconMapping: Partial<
   [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon,
   [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon,
   [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
-  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon
+  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon,
+  [IconName.LOCAL_PHONE_ICON]: LocalPhoneIcon,
+  [IconName.BUILDING_ICON]: BuildingIcon
   // Add more icons here as needed
 };
 

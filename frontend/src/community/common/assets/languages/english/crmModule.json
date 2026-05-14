@@ -4,7 +4,72 @@
     "title": "Contacts",
     "addContactBtn": "Add Contact",
     "detailsPageHead": "Contact Details | Skapp",
-    "detailsTitle": "Contact Details"
+    "detailsTitle": "Contact Details",
+    "contactDetailsPanel": {
+      "lastUpdated": "Last Updated",
+      "metrics": {
+        "totalRevenue": "Total Revenue",
+        "revenueOnPipeline": "Revenue on Pipeline",
+        "activeDeals": "No. of active deals",
+        "openTasks": "Open Tasks",
+        "overdueTasks": "overdue"
+      },
+      "deals": {
+        "sectionHeader": "Deals",
+        "addDealButton": "Add deal +",
+        "addDealButtonEmptyView": "Add deal",
+        "emptyTitle": "No deals yet",
+        "emptyDescription": "Add a deal to track opportunities with this contact.",
+        "descriptionLabel": "Description",
+        "noDescription": "No description available."
+      },
+      "tasks": {
+        "sectionHeader": "Tasks",
+        "addTaskButton": "Add task +",
+        "addTaskButtonEmptyView": "Add task",
+        "addTaskPlaceholder": "Type a task name…",
+        "emptyTitle": "No tasks yet",
+        "emptyDescription": "Add a task to follow up with this contact.",
+        "toggleErrorTitle": "Failed to update task",
+        "toggleErrorDescription": "Could not update the task status. Please try again."
+      },
+      "menu": {
+        "editContact": "Edit contact",
+        "deleteContact": "Delete contact"
+      },
+      "errors": {
+        "contactNotFoundTitle": "Contact not found",
+        "contactNotFoundDescription": "This contact is no longer available."
+      },
+      "editContactModal": {
+        "title": "Edit contact",
+        "nameLabel": "Contact name",
+        "emailLabel": "Email",
+        "companyLabel": "Company",
+        "contactNoLabel": "Contact no.",
+        "ownerLabel": "Contact owner",
+        "discardBtn": "Discard",
+        "saveBtn": "Save",
+        "successTitle": "Contact updated",
+        "successDescription": "The contact has been updated successfully.",
+        "errorTitle": "Failed to update contact",
+        "errorDescription": "Something went wrong. Please try again.",
+        "nameRequired": "Contact name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "emailDuplicate": "A contact with this email already exists."
+      },
+      "deleteContactModal": {
+        "title": "Are you sure?",
+        "description": "Are you sure you want to delete '{{name}}'? This will permanently remove this contact along with all associated deals and tasks. This action cannot be undone.",
+        "cancelBtn": "Cancel",
+        "deleteBtn": "Delete",
+        "successTitle": "Contact deleted",
+        "successDescription": "The contact has been deleted successfully.",
+        "errorTitle": "Failed to delete contact",
+        "errorDescription": "Something went wrong. Please try again."
+      }
+    }
   },
   "companies": {
     "pageHead": "Companies | Skapp",
@@ -21,11 +86,15 @@
     "title": "Deals",
     "addDealBtn": "Add Deal",
     "detailsPageHead": "Deal Details | Skapp",
-    "detailsTitle": "Deal Details"
+    "detailsTitle": "Deal Details",
+    "emptyTitle": "No Deals",
+    "emptyDescription": "No deals associated with this contact "
   },
   "tasks": {
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
-    "addTaskBtn": "Add Task"
+    "addTaskBtn": "Add Task",
+    "emptyTitle": "No Tasks",
+    "emptyDescription": "No tasks yet. Create a task to follow up with this contact"
   }
 }
