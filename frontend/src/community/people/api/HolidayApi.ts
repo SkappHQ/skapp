@@ -24,19 +24,29 @@ import {
 export const useGetAllHolidays = (
   year?: string,
   isExport?: boolean,
-  sortOrder?: string
+  sortOrder?: string,
+  workLocationId?: number,
+  enabled: boolean = true
 ): UseQueryResult<Holiday[]> => {
   return useQuery({
-    queryKey: [holidayQueryKeys.ALL_HOLIDAYS, year, sortOrder, isExport],
+    queryKey: [
+      holidayQueryKeys.ALL_HOLIDAYS,
+      year,
+      sortOrder,
+      isExport,
+      workLocationId
+    ],
     queryFn: () =>
       authFetch.get(holidayEndpoints.HOLIDAY, {
         params: {
           year: year,
           sortOrder: sortOrder,
-          isExport: isExport
+          isExport: isExport,
+          workLocationId: workLocationId
         }
       }),
-    select: (data) => data?.data?.results[0].items
+    select: (data) => data?.data?.results[0].items,
+    enabled
   });
 };
 
