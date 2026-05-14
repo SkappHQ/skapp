@@ -1,13 +1,23 @@
 import { CircularProgress } from "@mui/material";
-import { FormikProps } from "formik";
-import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import { AvatarChip, AvatarGroup, Checkbox } from "@rootcodelabs/skapp-ui";
+import { FormikProps } from "formik";
+import {
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
+
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
-
+import {
+  WorkLocationEmployee,
+  WorkLocationFormValues
+} from "~community/configurations/types/WorkLocationTypes";
 import {
   useGetEmployeeData,
   useGetSearchedEmployees
@@ -21,14 +31,16 @@ import {
   AllEmployeeDataResponse,
   AllEmployeeDataType
 } from "~community/people/types/PeopleTypes";
-import { WorkLocationEmployee, WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
   preloadedEmployees?: WorkLocationEmployee[];
 }
 
-const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props) => {
+const WorkLocationEmployeeSelector = ({
+  formik,
+  preloadedEmployees = []
+}: Props) => {
   const translateText = useTranslator("configurations", "workLocation");
 
   const [employeeSearchText, setEmployeeSearchText] = useState("");
@@ -39,8 +51,9 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
   const scrollCleanupRef = useRef<(() => void) | null>(null);
   const selectedIdsRef = useRef<number[]>([]);
   const [boxWidth, setBoxWidth] = useState(0);
-  const [stableSelected, setStableSelected] = useState<AllEmployeeDataType[]>([]);
-  const [stableUnselected, setStableUnselected] = useState<AllEmployeeDataType[]>([]);
+  const [stableUnselected, setStableUnselected] = useState<
+    AllEmployeeDataType[]
+  >([]);
 
   const { setEmployeeDataParams } = usePeopleStore((state) => state);
 
@@ -114,11 +127,20 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
     ) {
       fetchNextPage();
     }
-  }, [popperOpen, allEmployees, isFetchingNextPage, hasNextPage, fetchNextPage]);
+  }, [
+    popperOpen,
+    allEmployees,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  ]);
 
   const selectedIds: number[] = formik.values.employeeIds ?? [];
-  selectedIdsRef.current = selectedIds;
   const isAllSelected = formik.values.isAllEmployees;
+
+  useEffect(() => {
+    selectedIdsRef.current = selectedIds;
+  }, [selectedIds]);
 
   const selectedEmployees = useMemo(() => {
     return selectedIds
@@ -145,9 +167,6 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
       .filter(Boolean) as AllEmployeeDataType[];
   }, [selectedIds, allEmployees, searchResults, preloadedEmployees]);
 
-  // Re-sort the display list (selected at top) only when the popper opens or
-  // the underlying data changes. Intentionally does NOT react to selectedIds changes
-  // so that items stay in place while the user is making selections (no jumping).
   useEffect(() => {
     if (!popperOpen) return;
     const ids = selectedIdsRef.current;
@@ -157,11 +176,12 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
     const unselected = displayEmployees.filter(
       (e) => !ids.includes(Number(e.employeeId))
     );
-    setStableSelected(selected);
     setStableUnselected(unselected);
-  }, [popperOpen, displayEmployees]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [popperOpen, displayEmployees]);
 
-  const selectedCount = isAllSelected ? allEmployees.length : selectedIds.length;
+  const selectedCount = isAllSelected
+    ? allEmployees.length
+    : selectedIds.length;
 
   useEffect(() => {
     if (boxRef.current) {
@@ -301,16 +321,60 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
           backgroundColor: "var(--color-tertiary-background)"
         }}
       >
-      <SearchBox
-        placeHolder={translateText(["form.assignEmployeesLabel"])}
-        value={employeeSearchText}
-        setSearchTerm={setEmployeeSearchText}
-        autoFocus
-      />
+        <SearchBox
+          placeHolder={translateText(["form.assignEmployeesLabel"])}
+          value={employeeSearchText}
+          setSearchTerm={setEmployeeSearchText}
+          autoFocus
+        />
         <div ref={listRefCallback} className="max-h-56 overflow-y-auto">
           {!isAllSelected && selectedEmployees.length > 0 && (
             <>
-              {selectedEmployees.map((emp) => {
+              {selectedEmployees
+                .filter(
+                  (emp) =>
+                    employeeSearchText.length === 0 ||
+                    `${emp.firstName ?? ""} ${emp.lastName ?? ""}`
+                      .toLowerCase()
+                      .includes(employeeSearchText.toLowerCase())
+                )
+                .map((emp) => {
+                  const empId = Number(emp.employeeId);
+                  return (
+                    <div
+                      key={empId}
+                      className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                      onClick={() => toggleEmployee(empId)}
+                    >
+                      <Checkbox checked={true} />
+                      <AvatarChip
+                        label={`${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()}
+                        avatarProps={{
+                          id: String(emp.employeeId),
+                          firstName: emp.firstName,
+                          lastName: emp.lastName,
+                          src: emp.authPic
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              <hr className="border-secondary-background my-1 mx-3" />
+            </>
+          )}
+
+          <div
+            className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+            onClick={toggleAllEmployees}
+          >
+            <Checkbox checked={isAllSelected} />
+            <AvatarChip label={translateText(["form.allEmployees"])} />
+          </div>
+
+          {!isAllSelected &&
+            stableUnselected
+              .filter((emp) => !selectedIds.includes(Number(emp.employeeId)))
+              .map((emp) => {
                 const empId = Number(emp.employeeId);
                 return (
                   <div
@@ -318,7 +382,7 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
                     className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
                     onClick={() => toggleEmployee(empId)}
                   >
-                    <Checkbox checked={true} />
+                    <Checkbox checked={false} />
                     <AvatarChip
                       label={`${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()}
                       avatarProps={{
@@ -331,47 +395,6 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
                   </div>
                 );
               })}
-              <hr className="border-secondary-background my-1 mx-3" />
-            </>
-          )}
-
-          <div
-            className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
-            onClick={toggleAllEmployees}
-          >
-            <Checkbox
-              checked={isAllSelected}
-            />
-            <AvatarChip
-              label={translateText(["form.allEmployees"])}
-            />
-          </div>
-
-          {!isAllSelected &&
-            stableUnselected
-              .filter((emp) => !selectedIds.includes(Number(emp.employeeId)))
-              .map((emp) => {
-              const empId = Number(emp.employeeId);
-              const isSelected = selectedIds.includes(empId);
-              return (
-                <div
-                  key={empId}
-                  className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
-                  onClick={() => toggleEmployee(empId)}
-                >
-                  <Checkbox checked={isSelected} />
-                  <AvatarChip
-                    label={`${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()}
-                    avatarProps={{
-                      id: String(emp.employeeId),
-                      firstName: emp.firstName,
-                      lastName: emp.lastName,
-                      src: emp.authPic
-                    }}
-                  />
-                </div>
-              );
-            })}
 
           {isFetchingNextPage && (
             <div className="flex justify-center py-2">

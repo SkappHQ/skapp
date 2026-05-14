@@ -211,15 +211,25 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		List<Employee> allActiveEmployees = employeeDao
 			.findNonGuestEmployeesByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
-		boolean isAllEmployees = !employees.isEmpty() && employees.size() == allActiveEmployees.size();
+
+		// Filter location employees to the same non-guest ACTIVE/PENDING population
+		// to avoid mismatches from guests or inactive employees still assigned.
+		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
+		List<Employee> filteredEmployees = employees.stream()
+			.filter(e -> activeStatuses.contains(e.getAccountStatus()))
+			.filter(e -> e.getEmployeeRole() == null
+					|| e.getEmployeeRole().getPmRole() != com.skapp.community.common.type.Role.PM_GUEST_EMPLOYEE)
+			.toList();
+		boolean isAllEmployees = !filteredEmployees.isEmpty()
+				&& filteredEmployees.size() == allActiveEmployees.size();
 
 		WorkLocationDetailResponseDto responseDto = new WorkLocationDetailResponseDto();
 		responseDto.setWorkLocationId(workLocation.getWorkLocationId());
 		responseDto.setName(workLocation.getName());
 		responseDto.setAddress(workLocation.getAddress());
-		responseDto.setEmployeeCount((long) employees.size());
+		responseDto.setEmployeeCount((long) filteredEmployees.size());
 		responseDto.setIsAllEmployees(isAllEmployees);
-		responseDto.setEmployees(isAllEmployees ? null : employees.stream().map(emp -> {
+		responseDto.setEmployees(isAllEmployees ? null : filteredEmployees.stream().map(emp -> {
 			WorkLocationEmployeeResponseDto empDto = new WorkLocationEmployeeResponseDto();
 			empDto.setEmployeeId(emp.getEmployeeId());
 			empDto.setFirstName(emp.getFirstName());
