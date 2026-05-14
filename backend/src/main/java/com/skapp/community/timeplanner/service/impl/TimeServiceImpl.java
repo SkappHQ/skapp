@@ -154,7 +154,7 @@ public class TimeServiceImpl implements TimeService {
 
 	private final UserService userService;
 
-	private final TimeRecordDao timeRecordDao;
+	protected final TimeRecordDao timeRecordDao;
 
 	private final TimeSlotDao timeSlotDao;
 
