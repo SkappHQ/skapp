@@ -10,6 +10,7 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmPriority;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
@@ -17,12 +18,20 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmPriorityDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
+import com.skapp.community.common.payload.response.PageDto;
+import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -42,6 +51,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final EmployeeDao employeeDao;
 
 	private final CrmDealMapper crmDealMapper;
+
+	private final PageTransformer pageTransformer;
 
 	@Override
 	@Transactional
@@ -84,6 +95,25 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("createDeal: deal created with id={}", savedDeal.getId());
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getDeals(CrmDealFilterDto filterDto) {
+		log.info("getDeals: execution started");
+
+		Sort sort = Sort.by(filterDto.getSortOrder(), filterDto.getSortKey().getDbField());
+		Page<CrmDeal> dealsPage = crmDealDao.findAllDeals(filterDto,
+				PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort));
+
+		List<CrmDealResponseDto> deals = crmDealMapper
+			.crmDealsToCrmDealResponseDtos(dealsPage.hasContent() ? dealsPage.getContent() : Collections.emptyList());
+
+		PageDto pageDto = pageTransformer.transform(dealsPage);
+		pageDto.setItems(deals);
+
+		log.info("getDeals: execution ended with {} result(s)", deals.size());
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 }

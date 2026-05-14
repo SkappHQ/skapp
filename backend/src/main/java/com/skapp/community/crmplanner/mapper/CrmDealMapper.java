@@ -5,6 +5,8 @@ import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface CrmDealMapper {
 
@@ -19,5 +21,7 @@ public interface CrmDealMapper {
 	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "ownerName", source = "owner.fullName")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
+
+	List<CrmDealResponseDto> crmDealsToCrmDealResponseDtos(List<CrmDeal> crmDeals);
 
 }
