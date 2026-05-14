@@ -1,5 +1,6 @@
 import {
   type UseQueryResult,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient
@@ -61,6 +62,42 @@ export const useGetCrmContacts = (
         }
       }),
     select: (data) => data?.data?.results?.[0] as CrmContactsListResponseType
+  });
+};
+
+// Get Contacts List with Infinite Scroll
+export const useGetCrmContactsInfinite = (
+  params: Omit<ContactsListParams, "page"> = {}
+) => {
+  const {
+    size = 10,
+    sortKey = "DEAL_VALUE",
+    sortOrder = "DESC",
+    searchKeyword,
+    companyIds
+  } = params;
+
+  return useInfiniteQuery({
+    queryKey: crmQueryKeys.CRM_CONTACTS({ ...params, page: "infinite" }),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await authFetch.get(crmEndpoints.GET_CONTACTS, {
+        params: {
+          page: pageParam,
+          size,
+          sortKey,
+          sortOrder,
+          ...(searchKeyword ? { searchKeyword } : {}),
+          ...(companyIds ? { companyIds } : {})
+        }
+      });
+      return response?.data?.results?.[0] as CrmContactsListResponseType;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage) return undefined;
+      const hasMore = lastPage.currentPage < lastPage.totalPages - 1;
+      return hasMore ? lastPage.currentPage + 1 : undefined;
+    }
   });
 };
 
