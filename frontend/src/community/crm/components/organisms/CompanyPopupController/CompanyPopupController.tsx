@@ -10,17 +10,12 @@ import AddCompanyModal from "../../molecules/AddCompanyModal/AddCompanyModal";
 const CompanyPopupController = () => {
   const translateText = useTranslator("crmModule", "companies");
 
-  const {
-    isAddCompaniesModalOpen,
-    crmModalType,
-    setIsAddCompanyModalOpen,
-    setCrmModalType
-  } = useCrmStore((store) => ({
-    isAddCompaniesModalOpen: store.isAddCompanyModalOpen,
-    crmModalType: store.companyModalType,
-    setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen,
-    setCrmModalType: store.setCompanyModalType
-  }));
+  const { isAddCompaniesModalOpen, crmModalType, setIsAddCompanyModalOpen } =
+    useCrmStore((store) => ({
+      isAddCompaniesModalOpen: store.isAddCompanyModalOpen,
+      crmModalType: store.companyModalType,
+      setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
+    }));
 
   const handleCloseModal = (): void => {
     setIsAddCompanyModalOpen(false);

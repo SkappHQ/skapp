@@ -10,13 +10,6 @@ export interface CrmCompanyType {
   isDeleted: boolean;
 }
 
-export interface CrmCompanyResponseType {
-  items: CrmCompanyType[];
-  totalItems: number;
-  currentPage: number;
-  totalPages: number;
-}
-
 export interface CrmCompanyAddFormTypes {
   name: string;
   industry: string | null;
