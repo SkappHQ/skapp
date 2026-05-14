@@ -1,19 +1,7 @@
-import {
-  Box,
-  ClickAwayListener,
-  InputBase,
-  Paper,
-  Stack,
-  Typography
-} from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
-import { ChangeEvent, KeyboardEvent, useRef, useState } from "react";
+import { InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
-import SearchIcon from "~community/common/assets/Icons/SearchIcon";
-import { mergeSx } from "~community/common/utils/commonUtil";
-
-import styles from "./styles";
 
 interface CompanySearchFieldProps {
   id?: string;
@@ -28,7 +16,6 @@ interface CompanySearchFieldProps {
 }
 
 const CompanySearchField = ({
-  id = "company-search",
   label,
   placeholder,
   value,
@@ -38,136 +25,83 @@ const CompanySearchField = ({
   addCompanyLabel = "+ Add company",
   noResultsText = "No results found"
 }: CompanySearchFieldProps) => {
-  const theme: Theme = useTheme();
-  const classes = styles(theme);
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState(value);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listboxId = `${id}-listbox`;
+  const [searchTerm, setSearchTerm] = useState(value);
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const filtered = options.filter((o) =>
-    o.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredResults = useMemo(() => {
+    return options.filter((o) =>
+      o.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [options, searchTerm]);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    setSearch(v);
-    onChange(v, null);
-    setOpen(true);
-  };
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSelect = (option: { id: number; name: string }) => {
-    setSearch(option.name);
+    setSearchTerm(option.name);
     onChange(option.name, option.id);
-    setOpen(false);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") {
-      setOpen(false);
-      inputRef.current?.blur();
-    }
-  };
-
-  const handleSearchIconClick = () => {
-    inputRef.current?.focus();
+    setIsOpen(false);
   };
 
   return (
-    <ClickAwayListener onClickAway={() => setOpen(false)}>
-      <Box sx={classes.wrapper}>
-        {label && (
-          <Typography component="label" htmlFor={id} sx={classes.label}>
-            {label}
-          </Typography>
-        )}
+    <div className="w-full relative" ref={wrapperRef}>
+      <InputField
+        label={label}
+        placeholder={placeholder}
+        value={searchTerm}
+        onChange={(e) => {
+          const v = e.target.value;
+          setSearchTerm(v);
+          onChange(v, null);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        state="default"
+        variant="md"
+        rightIcon={<SearchIcon />}
+        fullWidth
+      />
 
-        <Paper elevation={0} sx={classes.inputPaper}>
-          <InputBase
-            id={id}
-            inputRef={inputRef}
-            value={search}
-            onChange={handleInputChange}
-            onFocus={() => setOpen(true)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            sx={classes.inputBase}
-            role="combobox"
-            aria-haspopup="listbox"
-            aria-expanded={open}
-            aria-controls={open ? listboxId : undefined}
-            aria-autocomplete="list"
-          />
-          <Box
-            component="button"
-            type="button"
-            aria-label="Search companies"
-            sx={mergeSx([classes.searchIconWrapper, { background: "none", border: "none", cursor: "pointer", p: 0 }])}
-            onClick={handleSearchIconClick}
-          >
-            <SearchIcon fill={theme.palette.text.secondary} />
-          </Box>
-        </Paper>
-
-        {open && (
-          <Paper
-            elevation={3}
-            id={listboxId}
-            role="listbox"
-            aria-label={label ?? "Company options"}
-            sx={mergeSx([classes.dropdownPaper])}
-          >
-            {filtered.length === 0 ? (
-              <Typography role="status" sx={classes.noResultsText}>{noResultsText}</Typography>
-            ) : (
-              filtered.map((option) => (
-                <Box
-                  key={option.id}
-                  role="option"
-                  aria-selected={value === option.name}
-                  tabIndex={0}
-                  onClick={() => handleSelect(option)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleSelect(option);
-                    }
-                  }}
-                  sx={classes.optionItem}
-                >
-                  {option.name}
-                </Box>
-              ))
-            )}
-
-            {onAddCompany && (
-              <Stack
-                direction="row"
-                alignItems="center"
-                gap={0.75}
-                role="button"
-                tabIndex={0}
-                onClick={() => {
-                  onAddCompany();
-                  setOpen(false);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onAddCompany();
-                    setOpen(false);
-                  }
-                }}
-                sx={classes.addCompanyRow}
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-64 overflow-y-auto">
+          {filteredResults.length === 0 ? (
+            <div className="px-4 py-3 text-gray-500 text-sm">{noResultsText}</div>
+          ) : (
+            filteredResults.map((option) => (
+              <div
+                key={option.id}
+                className="px-4 py-2.5 cursor-pointer text-black text-[15px] hover:bg-gray-100"
+                onClick={() => handleSelect(option)}
               >
-                  <PlusIcon />
-                  {addCompanyLabel}
-                </Stack>
-            )}
-          </Paper>
-        )}
-      </Box>
-    </ClickAwayListener>
+                {option.name}
+              </div>
+            ))
+          )}
+
+          {onAddCompany && (
+            <div
+              className="px-4 py-3 cursor-pointer text-primary font-medium text-[15px] bg-primary/10 hover:bg-primary/15 flex items-center gap-1.5"
+              onClick={() => {
+                onAddCompany();
+                setIsOpen(false);
+              }}
+            >
+              <PlusIcon fill="currentColor" width="16" height="16" />
+              {addCompanyLabel}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
