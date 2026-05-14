@@ -12,14 +12,6 @@ public interface CrmCompanyService {
 
   ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany);
 
-  ResponseEntityDto updateCompany(Long id, CrmCompanyUpdateDto crmCompany);
-
-  ResponseEntityDto getCompany(Long id);
-
-  ResponseEntityDto deleteCompany(Long id);
-
-  PageDto getAllCompanies(String searchKeyword, Pageable pageable);
-
   PageDto getCompanyTableView(String searchKeyword, Pageable pageable);
 
 }

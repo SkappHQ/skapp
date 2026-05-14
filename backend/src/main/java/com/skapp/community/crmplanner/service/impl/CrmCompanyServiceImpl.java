@@ -31,35 +31,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
   private final CrmMapper crmMapper;
 
   @Override
-  public PageDto getAllCompanies(String searchKeyword, Pageable pageable) {
-    log.info("getAllCompanies: execution started");
-    Page<CrmCompany> page;
-    if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
-      page = crmCompanyDao.findByIsDeletedFalseAndNameContainingIgnoreCase(searchKeyword.trim(), pageable);
-    } else {
-      page = crmCompanyDao.findByIsDeletedFalse(pageable);
-    }
-    PageDto response = new PageDto();
-    response.setItems(page.getContent());
-    response.setCurrentPage(page.getNumber());
-    response.setTotalItems(page.getTotalElements());
-    response.setTotalPages(page.getTotalPages());
-    log.info("getAllCompanies: execution ended");
-
-    return response;
-  }
-
-  @Override
-  public ResponseEntityDto getCompany(Long id) {
-    log.info("getCompany: execution started for id: {}", id);
-    CrmCompany company = crmCompanyDao.findById(id)
-        .orElseThrow(() -> new RuntimeException("Company not found with id: " + id));
-    log.info("getCompany: execution ended for id: {}", id);
-
-    return new ResponseEntityDto(false, company);
-  }
-
-  @Override
   public ResponseEntityDto checkCompanyNameExists(String name) {
     log.info("checkCompanyNameExists: execution started for name: {}", name);
     boolean exists = crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name.trim());
@@ -78,36 +49,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
     log.info("createCompany: execution ended successfully");
 
     return new ResponseEntityDto(false, responseDto);
-  }
-
-  @Override
-  @Transactional
-  public ResponseEntityDto updateCompany(Long id, CrmCompanyUpdateDto crmCompany) {
-    log.info("updateCompany: execution started for id: {}", id);
-    CrmCompany existingCompany = crmCompanyDao.findById(id)
-        .orElseThrow(() -> new RuntimeException("Company not found with id: " + id));
-    existingCompany.setName(crmCompany.getName());
-    existingCompany.setIndustry(crmCompany.getIndustry());
-    existingCompany.setWebsite(crmCompany.getWebsite());
-    existingCompany.setAddress(crmCompany.getAddress());
-    existingCompany.setContactNumber(crmCompany.getContactNumber());
-    crmCompanyDao.save(existingCompany);
-    log.info("updateCompany: execution ended for id: {}", id);
-
-    return new ResponseEntityDto(false, "Company updated successfully");
-  }
-
-  @Override
-  @Transactional
-  public ResponseEntityDto deleteCompany(Long id) {
-    log.info("deleteCompany: execution started for id: {}", id);
-    CrmCompany existingCompany = crmCompanyDao.findById(id)
-        .orElseThrow(() -> new RuntimeException("Company not found with id: " + id));
-    existingCompany.setIsDeleted(true);
-    crmCompanyDao.save(existingCompany);
-    log.info("deleteCompany: execution ended for id: {}", id);
-
-    return new ResponseEntityDto(false, "Company deleted successfully");
   }
 
   @Override

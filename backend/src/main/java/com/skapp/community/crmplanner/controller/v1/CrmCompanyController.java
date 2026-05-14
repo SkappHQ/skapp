@@ -29,23 +29,14 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "CRM Companies Controller", description = "Operations related to CRM Companies")
 public class CrmCompanyController {
 
+  @NonNull
+  private final CrmCompanyService companyService;
+
   @Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
   @GetMapping("/exists")
   @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
   public ResponseEntity<ResponseEntityDto> checkCompanyNameExists(@RequestParam String name) {
     ResponseEntityDto responseDto = companyService.checkCompanyNameExists(name);
-    return new ResponseEntity<>(responseDto, HttpStatus.OK);
-  }
-
-  @Operation(summary = "Get all companies", description = "Get all registered companies in the database")
-  @GetMapping
-  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
-  public ResponseEntity<PageDto> getAllCompanies(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "8") int size,
-      @RequestParam(required = false) String searchKeyword) {
-    Pageable pageable = PageRequest.of(page, size);
-    PageDto responseDto = companyService.getAllCompanies(searchKeyword, pageable);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
@@ -55,31 +46,6 @@ public class CrmCompanyController {
   public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CrmCompanyCreateDto crmCompany) {
     ResponseEntityDto responseDto = companyService.createCompany(crmCompany);
     return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
-  }
-
-  @Operation(summary = "Get a company by ID", description = "Get a company by ID")
-  @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
-  public ResponseEntity<ResponseEntityDto> getCompany(@PathVariable Long id) {
-    ResponseEntityDto responseDto = companyService.getCompany(id);
-    return new ResponseEntity<>(responseDto, HttpStatus.OK);
-  }
-
-  @Operation(summary = "Delete a company by ID", description = "Delete a company by ID")
-  @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER')")
-  public ResponseEntity<ResponseEntityDto> deleteCompany(@PathVariable Long id) {
-    ResponseEntityDto responseDto = companyService.deleteCompany(id);
-    return new ResponseEntity<>(responseDto, HttpStatus.OK);
-  }
-
-  @Operation(summary = "Update company", description = "Update company details")
-  @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER')")
-  public ResponseEntity<ResponseEntityDto> updateCompany(@PathVariable Long id,
-      @Valid @RequestBody CrmCompanyUpdateDto updatedCompany) {
-    ResponseEntityDto responseDto = companyService.updateCompany(id, updatedCompany);
-    return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
   @Operation(summary = "Get company table view", description = "Get company table view")
