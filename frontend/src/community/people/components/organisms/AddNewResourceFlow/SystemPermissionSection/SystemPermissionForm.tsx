@@ -90,7 +90,7 @@ const SystemPermissionForm = ({
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isPmModuleEnabled,
-    isCrmModuleEnabled
+    // isCrmModuleEnabled
   } = useSessionData();
 
   const { setToastMessage } = useToast();
@@ -124,9 +124,9 @@ const SystemPermissionForm = ({
     esignAdminLimitExceeded: false,
     esignSenderLimitExceeded: false,
     pmAdminLimitExceeded: false,
-    crmAdminLimitExceeded: false,
-    crmSalesManagerLimitExceeded: false,
-    crmSalesRepresentativeLimitExceeded: false
+    // crmAdminLimitExceeded: false,
+    // crmSalesManagerLimitExceeded: false,
+    // crmSalesRepresentativeLimitExceeded: false
   });
 
   const initialValues: SystemPermissionInitialStateType = {
@@ -136,7 +136,7 @@ const SystemPermissionForm = ({
     attendanceRole: userRoles.attendanceRole || Role.ATTENDANCE_EMPLOYEE,
     esignRole: userRoles.esignRole || Role.ESIGN_EMPLOYEE,
     pmRole: userRoles.pmRole || Role.PM_EMPLOYEE,
-    crmRole: userRoles.crmRole || Role.CRM_NONE
+    // crmRole: userRoles.crmRole || Role.CRM_NONE
   };
 
   const { values, setFieldValue } = useFormik({
@@ -373,7 +373,7 @@ const SystemPermissionForm = ({
             />
           )}
 
-          {isCrmModuleEnabled && (
+          {/* {isCrmModuleEnabled && (
             <DropdownList
               inputName={"crmRole"}
               label={systemPermissionsText(["crm"])}
@@ -391,7 +391,7 @@ const SystemPermissionForm = ({
                 isProfileView || values.isSuperAdmin || isInputsDisabled
               }
             />
-          )}
+          )} */}
         </Stack>
 
         {isUpdate &&
