@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useEffect, useState } from "react";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -30,7 +30,8 @@ const Holidays: NextPage = () => {
     setIsHolidayModalOpen,
     setHolidayModalType,
     selectedYear,
-    holidayDataParams
+    holidayDataParams,
+    selectedWorkLocationId
   } = usePeopleStore((state) => state);
 
   const {
@@ -41,7 +42,11 @@ const Holidays: NextPage = () => {
     fetchNextPage,
     isFetchingNextPage,
     isLoading: isHolidayDataLoading
-  } = useGetAllHolidaysInfinite(selectedYear, holidayDataParams.sortOrder);
+  } = useGetAllHolidaysInfinite(
+    selectedYear,
+    holidayDataParams.sortOrder,
+    selectedWorkLocationId
+  );
 
   const handleAddHoliday = () => {
     setHolidayModalType(holidayModalTypes.ADD_EDIT_HOLIDAY);
