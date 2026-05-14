@@ -210,7 +210,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		Optional<WorkLocationGeofence> geofence = workLocationGeofenceDao.findByWorkLocationWorkLocationId(id);
 
 		List<Employee> allActiveEmployees = employeeDao
-			.findByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+			.findNonGuestEmployeesByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 		boolean isAllEmployees = !employees.isEmpty() && employees.size() == allActiveEmployees.size();
 
 		WorkLocationDetailResponseDto responseDto = new WorkLocationDetailResponseDto();
@@ -263,7 +263,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	private void assignEmployeesToWorkLocation(WorkLocationRequestDto requestDto, WorkLocation workLocation) {
 		if (Boolean.TRUE.equals(requestDto.getIsAllEmployees())) {
 			List<Employee> allActiveEmployees = employeeDao
-				.findByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+				.findNonGuestEmployeesByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
 			for (Employee employee : allActiveEmployees) {
 				employee.setWorkLocation(workLocation);
 			}

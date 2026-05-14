@@ -1,13 +1,13 @@
 import { CircularProgress } from "@mui/material";
 import { FormikProps } from "formik";
-import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AvatarChip, AvatarGroup, Checkbox } from "@rootcodelabs/skapp-ui";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
-import { testPassiveEventSupport } from "~community/common/utils/commonUtil";
+
 import {
   useGetEmployeeData,
   useGetSearchedEmployees
@@ -35,9 +35,12 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
   const [popperOpen, setPopperOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
-  const listInnerRef = useRef<HTMLDivElement>(null);
-  const supportsPassive = testPassiveEventSupport();
+  const listInnerRef = useRef<HTMLDivElement | null>(null);
+  const scrollCleanupRef = useRef<(() => void) | null>(null);
+  const selectedIdsRef = useRef<number[]>([]);
   const [boxWidth, setBoxWidth] = useState(0);
+  const [stableSelected, setStableSelected] = useState<AllEmployeeDataType[]>([]);
+  const [stableUnselected, setStableUnselected] = useState<AllEmployeeDataType[]>([]);
 
   const { setEmployeeDataParams } = usePeopleStore((state) => state);
 
@@ -56,10 +59,13 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
   } = useGetEmployeeData();
   const { data: searchResults } = useGetSearchedEmployees(employeeSearchText);
 
-  const allEmployees: AllEmployeeDataType[] =
-    employeePages?.pages?.flatMap(
-      (page: AllEmployeeDataResponse) => page?.items ?? []
-    ) ?? [];
+  const allEmployees: AllEmployeeDataType[] = useMemo(
+    () =>
+      employeePages?.pages?.flatMap(
+        (page: AllEmployeeDataResponse) => page?.items ?? []
+      ) ?? [],
+    [employeePages]
+  );
 
   const displayEmployees = useMemo(() => {
     return employeeSearchText.length > 0
@@ -67,58 +73,93 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
       : allEmployees;
   }, [employeeSearchText, searchResults, allEmployees]);
 
-  useEffect(() => {
-    const listInnerElement = listInnerRef.current;
+  // Attach scroll listener via callback ref so it fires when the DOM element
+  // actually mounts inside the Popper (not before).
+  const listRefCallback = useCallback(
+    (node: HTMLDivElement | null) => {
+      // Clean up previous listener
+      if (scrollCleanupRef.current) {
+        scrollCleanupRef.current();
+        scrollCleanupRef.current = null;
+      }
 
-    const onScroll = () => {
-      if (listInnerRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = listInnerRef.current;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight;
+      listInnerRef.current = node;
+
+      if (!node) return;
+
+      const onScroll = () => {
+        const { scrollTop, scrollHeight, clientHeight } = node;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10;
         if (isNearBottom && !isFetchingNextPage && hasNextPage) {
           fetchNextPage();
         }
-      }
-    };
-
-    if (!isFetchingNextPage && listInnerElement) {
-      listInnerElement.addEventListener(
-        "touchmove",
-        onScroll,
-        supportsPassive ? { passive: true } : false
-      );
-
-      listInnerElement.addEventListener(
-        "wheel",
-        onScroll,
-        supportsPassive ? { passive: true } : false
-      );
-
-      return () => {
-        listInnerElement.removeEventListener("touchmove", onScroll);
-        listInnerElement.removeEventListener("wheel", onScroll);
       };
+
+      node.addEventListener("scroll", onScroll);
+      scrollCleanupRef.current = () =>
+        node.removeEventListener("scroll", onScroll);
+    },
+    [isFetchingNextPage, hasNextPage, fetchNextPage]
+  );
+
+  // Auto-fetch next page if the list doesn't overflow (no scrollbar = no scroll event).
+  useEffect(() => {
+    const el = listInnerRef.current;
+    if (
+      el &&
+      popperOpen &&
+      !isFetchingNextPage &&
+      hasNextPage &&
+      el.scrollHeight <= el.clientHeight
+    ) {
+      fetchNextPage();
     }
-  }, [isFetchingNextPage, hasNextPage, supportsPassive, fetchNextPage]);
+  }, [popperOpen, allEmployees, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   const selectedIds: number[] = formik.values.employeeIds ?? [];
+  selectedIdsRef.current = selectedIds;
   const isAllSelected = formik.values.isAllEmployees;
 
   const selectedEmployees = useMemo(() => {
-    return selectedIds.map((id) => {
-      const fromList = allEmployees.find((e) => Number(e.employeeId) === id);
-      if (fromList) return fromList;
-      const fromPreloaded = preloadedEmployees.find((e) => e.employeeId === id);
-      if (fromPreloaded) {
-        return {
-          employeeId: fromPreloaded.employeeId,
-          firstName: fromPreloaded.firstName,
-          lastName: fromPreloaded.lastName ?? "",
-          authPic: fromPreloaded.authPic ?? ""
-        } as AllEmployeeDataType;
-      }
-      return undefined;
-    }).filter(Boolean) as AllEmployeeDataType[];
-  }, [selectedIds, allEmployees, preloadedEmployees]);
+    return selectedIds
+      .map((id) => {
+        const fromList = allEmployees.find((e) => Number(e.employeeId) === id);
+        if (fromList) return fromList;
+        const fromSearch = (searchResults ?? []).find(
+          (e) => Number(e.employeeId) === id
+        ) as AllEmployeeDataType | undefined;
+        if (fromSearch) return fromSearch;
+        const fromPreloaded = preloadedEmployees.find(
+          (e) => e.employeeId === id
+        );
+        if (fromPreloaded) {
+          return {
+            employeeId: fromPreloaded.employeeId,
+            firstName: fromPreloaded.firstName,
+            lastName: fromPreloaded.lastName ?? "",
+            authPic: fromPreloaded.authPic ?? ""
+          } as AllEmployeeDataType;
+        }
+        return undefined;
+      })
+      .filter(Boolean) as AllEmployeeDataType[];
+  }, [selectedIds, allEmployees, searchResults, preloadedEmployees]);
+
+  // Re-sort the display list (selected at top) only when the popper opens or
+  // the underlying data changes. Intentionally does NOT react to selectedIds changes
+  // so that items stay in place while the user is making selections (no jumping).
+  useEffect(() => {
+    if (!popperOpen) return;
+    const ids = selectedIdsRef.current;
+    const selected = displayEmployees.filter((e) =>
+      ids.includes(Number(e.employeeId))
+    );
+    const unselected = displayEmployees.filter(
+      (e) => !ids.includes(Number(e.employeeId))
+    );
+    setStableSelected(selected);
+    setStableUnselected(unselected);
+  }, [popperOpen, displayEmployees]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedCount = isAllSelected ? allEmployees.length : selectedIds.length;
 
@@ -173,7 +214,7 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
       return (
         <AvatarChip
           label={translateText(["form.allEmployees"])}
-          showAvatar={false}
+          showAvatar={true}
         />
       );
     }
@@ -266,9 +307,36 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
         setSearchTerm={setEmployeeSearchText}
         autoFocus
       />
-        <div ref={listInnerRef} className="max-h-56 overflow-y-auto">
+        <div ref={listRefCallback} className="max-h-56 overflow-y-auto">
+          {!isAllSelected && selectedEmployees.length > 0 && (
+            <>
+              {selectedEmployees.map((emp) => {
+                const empId = Number(emp.employeeId);
+                return (
+                  <div
+                    key={empId}
+                    className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                    onClick={() => toggleEmployee(empId)}
+                  >
+                    <Checkbox checked={true} />
+                    <AvatarChip
+                      label={`${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()}
+                      avatarProps={{
+                        id: String(emp.employeeId),
+                        firstName: emp.firstName,
+                        lastName: emp.lastName,
+                        src: emp.authPic
+                      }}
+                    />
+                  </div>
+                );
+              })}
+              <hr className="border-secondary-background my-1 mx-3" />
+            </>
+          )}
+
           <div
-            className="flex items-center px-3 py-1 cursor-pointer hover:bg-secondary-background"
+            className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
             onClick={toggleAllEmployees}
           >
             <Checkbox
@@ -276,23 +344,22 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
             />
             <AvatarChip
               label={translateText(["form.allEmployees"])}
-              showAvatar={false}
             />
           </div>
 
           {!isAllSelected &&
-            displayEmployees.map((emp) => {
+            stableUnselected
+              .filter((emp) => !selectedIds.includes(Number(emp.employeeId)))
+              .map((emp) => {
               const empId = Number(emp.employeeId);
               const isSelected = selectedIds.includes(empId);
               return (
                 <div
                   key={empId}
-                  className="flex items-center px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                  className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
                   onClick={() => toggleEmployee(empId)}
                 >
-                  <Checkbox
-                    checked={isSelected}
-                  />
+                  <Checkbox checked={isSelected} />
                   <AvatarChip
                     label={`${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()}
                     avatarProps={{

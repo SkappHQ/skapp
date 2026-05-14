@@ -1515,10 +1515,12 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 
 		Join<Employee, WorkLocation> workLocationJoin = root.join(Employee_.workLocation, JoinType.INNER);
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.INNER);
 
 		criteriaQuery.multiselect(workLocationJoin.get(WorkLocation_.workLocationId), criteriaBuilder.count(root));
 		criteriaQuery.where(workLocationJoin.get(WorkLocation_.workLocationId).in(workLocationIds),
-				root.get(Employee_.accountStatus).in(AccountStatus.ACTIVE, AccountStatus.PENDING));
+				root.get(Employee_.accountStatus).in(AccountStatus.ACTIVE, AccountStatus.PENDING),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
 		criteriaQuery.groupBy(workLocationJoin.get(WorkLocation_.workLocationId));
 
 		Map<Long, Long> result = new HashMap<>();
@@ -1526,6 +1528,26 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			result.put(tuple.get(0, Long.class), tuple.get(1, Long.class));
 		}
 		return result;
+	}
+
+	@Override
+	public List<Employee> findNonGuestEmployeesByAccountStatusIn(Set<AccountStatus> accountStatuses) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.INNER);
+
+		List<Predicate> predicates = new ArrayList<>();
+		if (accountStatuses != null && !accountStatuses.isEmpty()) {
+			predicates.add(root.get(Employee_.accountStatus).in(accountStatuses));
+		}
+		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.select(root).distinct(true);
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 }
