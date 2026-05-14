@@ -82,6 +82,8 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_HOLIDAY_TODAY_NOT_ALLOWED("api.error.people.holiday.today-not-allowed"),
 	PEOPLE_ERROR_HOLIDAY_PAST_DATE_NOT_ALLOWED("api.error.people.holiday.past-date-not-allowed"),
 	PEOPLE_ERROR_HOLIDAY_NAME_REQUIRED("api.error.people.holiday.name-required"),
+	PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION("api.error.people.holiday.required-work-location"),
+	PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION("api.error.people.holiday.invalid-work-location"),
 	PEOPLE_ERROR_HOLIDAY_NAME_CHAR_LIMIT("api.error.people.holiday.name-char-limit"),
 	PEOPLE_ERROR_HOLIDAY_NAME_SPECIAL_CHAR("api.error.people.holiday.name-special-char"),
 	PEOPLE_ERROR_HOLIDAY_DURATION_INVALID("api.error.people.holiday.duration-invalid"),
@@ -207,7 +209,8 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_VALIDATION_ONLY_ONE_CURRENT_EMPLOYMENT_ALLOWED(
 			"api.error.people.validation-only-one-current-employment-allowed"),
 	PEOPLE_ERROR_VALIDATION_CANNOT_ADD_OTHER_SUPERVISORS_WITHOUT_PRIMARY_SUPERVISOR(
-			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),;
+			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),
+	PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND("api.error.people.validation-work-location-not-found");
 
 	private final String messageKey;
 

@@ -38,6 +38,7 @@ export const USER_BULK_HEADERS = [
   "startDate",
   "endDate",
   "timeZone",
+  "workLocation",
   "employeeType",
   "jobFamilyId",
   "jobTitleId",

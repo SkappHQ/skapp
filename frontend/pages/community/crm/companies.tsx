@@ -1,21 +1,22 @@
 import { NextPage } from "next";
-import { useRouter } from "next/router";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { IconName } from "~community/common/types/IconTypes";
 
-const CrmCompanyDetails: NextPage = () => {
+const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
-  const { id } = useRouter().query;
 
   return (
     <ContentLayout
-      pageHead={translateText(["detailsPageHead"])}
-      title={translateText(["detailsTitle"])}
+      pageHead={translateText(["pageHead"])}
+      title={translateText(["title"])}
+      primaryButtonText={translateText(["addCompanyBtn"])}
+      primaryBtnIconName={IconName.ADD_ICON}
     >
-      {/* Company details for id: {id} */}
+      <></>
     </ContentLayout>
   );
 };
 
-export default CrmCompanyDetails;
+export default Companies;

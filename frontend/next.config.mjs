@@ -205,11 +205,11 @@ const nextConfig = {
       },
       {
         source: "/configurations/work-location/create",
-        destination: "/enterprise/configurations/work-location/create"
+        destination: "/community/configurations/work-location/create"
       },
       {
         source: "/configurations/work-location/:id",
-        destination: "/enterprise/configurations/work-location/:id"
+        destination: "/community/configurations/work-location/:id"
       },
       {
         source: "/leave/analytics/:id",
@@ -409,24 +409,12 @@ const nextConfig = {
         destination: "/community/crm/contacts"
       },
       {
-        source: "/crm/contacts/:id",
-        destination: "/community/crm/contacts/:id"
-      },
-      {
         source: "/crm/companies",
         destination: "/community/crm/companies"
       },
       {
-        source: "/crm/companies/:id",
-        destination: "/community/crm/companies/:id"
-      },
-      {
         source: "/crm/deals",
         destination: "/community/crm/deals"
-      },
-      {
-        source: "/crm/deals/:id",
-        destination: "/community/crm/deals/:id"
       },
       {
         source: "/crm/tasks",

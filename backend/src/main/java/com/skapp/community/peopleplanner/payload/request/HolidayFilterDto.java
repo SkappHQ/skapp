@@ -34,4 +34,6 @@ public class HolidayFilterDto {
 
 	private Integer year;
 
+	private Long workLocationId;
+
 }

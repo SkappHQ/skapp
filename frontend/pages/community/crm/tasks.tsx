@@ -4,7 +4,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
-const CrmTasks: NextPage = () => {
+const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
 
   return (
@@ -14,9 +14,9 @@ const CrmTasks: NextPage = () => {
       primaryButtonText={translateText(["addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
     >
-      {/* CRM Tasks content */}
+      <></>
     </ContentLayout>
   );
 };
 
-export default CrmTasks;
+export default Tasks;

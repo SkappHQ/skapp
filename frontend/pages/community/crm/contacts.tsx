@@ -7,7 +7,7 @@ import CrmContactsModalController from "~community/crm/components/organisms/CrmC
 import { useCrmStore } from "~community/crm/store/crmStore";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-const CrmContacts: NextPage = () => {
+const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
   const { setIsAddContactModalOpen, setCrmModalType } = useCrmStore(
     (state) => state
@@ -35,4 +35,4 @@ const CrmContacts: NextPage = () => {
   );
 };
 
-export default CrmContacts;
+export default Contacts;

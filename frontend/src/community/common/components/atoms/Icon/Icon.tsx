@@ -1,3 +1,4 @@
+import { HandshakeIcon } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 import AddIcon from "~community/common/assets/Icons/AddIcon";
@@ -70,6 +71,7 @@ import ForwardArrow from "~community/common/assets/Icons/ForwardArrow";
 import GemIcon from "~community/common/assets/Icons/GemIcon";
 import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIcon";
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
+import DefaultHandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
 import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
 import IdentityVerifiedIcon from "~community/common/assets/Icons/IdentityVerifiedIcon";
@@ -81,7 +83,6 @@ import IntegrationsIcon from "~community/common/assets/Icons/IntegrationsIcon";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
 import InvoiceIcon from "~community/common/assets/Icons/InvoiceIcon";
 import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon";
-import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
@@ -322,7 +323,7 @@ export const IconMapping: Partial<
   [IconName.INSTAGRAM_ICON]: InstagramIcon,
   [IconName.INVOICE_ICON]: InvoiceIcon,
   [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
-  [IconName.CRM_ICON]: HandshakeIcon,
+  [IconName.HAND_SHAKE_ICON]: HandshakeIcon ?? DefaultHandshakeIcon,
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
