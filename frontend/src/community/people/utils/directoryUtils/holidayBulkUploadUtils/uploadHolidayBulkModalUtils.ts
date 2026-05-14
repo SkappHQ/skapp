@@ -9,7 +9,10 @@ import {
 import { type FileUploadType } from "~community/common/types/CommonTypes";
 import { ToastProps } from "~community/common/types/ToastTypes";
 import { toCamelCase } from "~community/common/utils/commonUtil";
-import { HolidayType } from "~community/people/types/HolidayTypes";
+import {
+  HolidayCSVRowType,
+  HolidayType
+} from "~community/people/types/HolidayTypes";
 
 const validateHeaders = async (file: File): Promise<boolean> => {
   const readCSVHeaders = (file: File): Promise<string[]> => {
@@ -57,7 +60,7 @@ const transformCSVHeaders = (header: string) => {
 };
 
 export const normalizeHolidayDates = (
-  holidays: HolidayType[]
+  holidays: HolidayCSVRowType[]
 ): HolidayType[] => {
   return holidays.map((holiday) => {
     const formattedDate = formatToStrictYMD(holiday.date);
@@ -68,8 +71,9 @@ export const normalizeHolidayDates = (
           .filter(Boolean)
       : undefined;
     return {
-      ...holiday,
       date: formattedDate ?? holiday.date,
+      name: holiday.name,
+      holidayDuration: holiday.holidayDuration,
       workLocations
     };
   });
@@ -157,7 +161,7 @@ export const setAttachment = async ({
         header: true,
         skipEmptyLines: true,
         transformHeader: transformCSVHeaders,
-        complete: function (recordDetails: { data: HolidayType[] }) {
+        complete: function (recordDetails: { data: HolidayCSVRowType[] }) {
           if (recordDetails?.data?.length === 0) {
             setToastMessage({
               title: translateText(["noRecordCSVTitle"]),

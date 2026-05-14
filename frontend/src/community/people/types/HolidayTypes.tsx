@@ -110,12 +110,18 @@ export type addedHolidays = {
   holidayType?: string;
 };
 
+export type HolidayCSVRowType = {
+  date: string;
+  name: string;
+  holidayDuration: HolidayDurationType;
+  workLocation?: string;
+};
+
 export type HolidayType = {
   date: string;
   name: string;
   holidayDuration: HolidayDurationType;
   workLocations?: string[];
-  workLocation: string;
 };
 
 export interface bulkStatusSummary {
