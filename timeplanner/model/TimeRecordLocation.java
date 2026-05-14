@@ -21,7 +21,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "time_record_location")
+@Table(name = "att_time_record_location")
 public class TimeRecordLocation {
 
 	@Id
@@ -30,7 +30,7 @@ public class TimeRecordLocation {
 	private Long id;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "time_record_id", nullable = false)
+	@JoinColumn(name = "time_record_id", nullable = false, unique = true)
 	private TimeRecord timeRecord;
 
 	@Enumerated(EnumType.STRING)

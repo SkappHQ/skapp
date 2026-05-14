@@ -1,8 +1,10 @@
 package com.skapp.enterprise.timeplanner.util;
 
 import com.skapp.enterprise.timeplanner.constant.EpTimeConstants;
+import lombok.experimental.UtilityClass;
 
-public final class GeoFenceUtils {
+@UtilityClass
+public class GeoFenceUtils {
 
 	public static double calculateHaversineDistance(double lat1, double lon1, double lat2, double lon2) {
 		double dLat = Math.toRadians(lat2 - lat1);

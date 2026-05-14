@@ -39,6 +39,7 @@ import com.skapp.enterprise.timeplanner.constant.EpTimeMessageConstant;
 import com.skapp.enterprise.timeplanner.model.TimeRecordLocation;
 import com.skapp.enterprise.timeplanner.payload.request.EpAddTimeRecordDto;
 import com.skapp.enterprise.timeplanner.repository.TimeRecordLocationDao;
+import com.skapp.enterprise.timeplanner.service.EpTimeService;
 import com.skapp.enterprise.timeplanner.type.RecordLocationStatus;
 import com.skapp.enterprise.timeplanner.util.GeoFenceUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -52,19 +53,13 @@ import java.util.Optional;
 @Primary
 @Service
 @Slf4j
-public class EpTimeServiceImpl extends TimeServiceImpl {
+public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService {
 
 	private final EpLeaveCalendarService epLeaveCalendarService;
-
-	private final UserService userService;
-
-	private final TimeRecordDao timeRecordDao;
 
 	private final WorkLocationGeofenceDao workLocationGeofenceDao;
 
 	private final TimeRecordLocationDao timeRecordLocationDao;
-
-	private final AttendanceConfigService attendanceConfigService;
 
 	public EpTimeServiceImpl(TimeConfigDao timeConfigDao, JsonMapper mapper, MessageUtil messageUtil,
 			UserService userService, TimeRecordDao timeRecordDao, TimeSlotDao timeSlotDao,
@@ -81,11 +76,8 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 				timeMapper, commonMapper, timeEmailService, pageTransformer, employeeManagerDao,
 				attendanceNotificationService, leaveRequestEntitlementDao, leaveEntitlementDao, organizationService);
 		this.epLeaveCalendarService = epLeaveCalendarService;
-		this.userService = userService;
-		this.timeRecordDao = timeRecordDao;
 		this.workLocationGeofenceDao = workLocationGeofenceDao;
 		this.timeRecordLocationDao = timeRecordLocationDao;
-		this.attendanceConfigService = attendanceConfigService;
 	}
 
 	@Override
@@ -110,7 +102,7 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 			throw new ModuleException(EpTimeMessageConstant.EP_TIME_ERROR_GEO_FENCING_NOT_ENABLED);
 		}
 
-		ResponseEntityDto response = addTimeRecord(epAddTimeRecordDto);
+		addTimeRecord(epAddTimeRecordDto);
 
 		RecordLocationStatus locationStatus;
 		if (epAddTimeRecordDto.getLatitude() == null || epAddTimeRecordDto.getLongitude() == null) {
@@ -130,7 +122,7 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 			saveLocationStatus(timeRecord, epAddTimeRecordDto.getRecordActionType(), locationStatus);
 		}
 
-		return response;
+		return new ResponseEntityDto(false, locationStatus);
 	}
 
 	private boolean determineIfWithinGeofence(Employee employee, double userLat, double userLon) {
@@ -152,8 +144,7 @@ public class EpTimeServiceImpl extends TimeServiceImpl {
 		double fenceLat = Double.parseDouble(fence.getLatitude());
 		double fenceLon = Double.parseDouble(fence.getLongitude());
 
-		double distance = GeoFenceUtils.calculateHaversineDistance(userLat, userLon, fenceLat, fenceLon);
-		return distance <= fence.getRadiusMeters();
+		return GeoFenceUtils.isWithinGeofence(userLat, userLon, fenceLat, fenceLon, fence.getRadiusMeters());
 	}
 
 	private void saveLocationStatus(TimeRecord timeRecord, TimeRecordActionTypes actionType,
