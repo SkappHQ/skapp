@@ -12,7 +12,7 @@ import {
   attendanceDashboardEndpoints,
   attendanceEndpoints
 } from "~community/attendance/api/utils/attendanceEndPoints";
-import { invalidateAttendanceQueries } from "~community/attendance/api/utils/invalidateAttendanceQueries";
+import { invalidateAttendanceTimeRecordQueries } from "~community/attendance/api/utils/invalidateAttendanceQueries";
 import {
   getAttendanceDashboardQueryKeys,
   getAttendanceQueryKeys
@@ -48,7 +48,7 @@ export const useUpdateEmployeeStatus = () => {
   return useMutation({
     mutationFn: updateStatus,
     onSuccess: () => {
-      invalidateAttendanceQueries(queryClient);
+      invalidateAttendanceTimeRecordQueries(queryClient);
     }
   });
 };
