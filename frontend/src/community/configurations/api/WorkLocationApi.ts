@@ -1,9 +1,14 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { workLocationEndpoints } from "~community/configurations/api/utils/ApiEndpoints";
 import { WorkLocationRequestPayload } from "~community/configurations/types/WorkLocationTypes";
 
-import { workLocationEndpoints } from "~community/configurations/api/utils/ApiEndpoints";
 import { workLocationQueryKeys } from "./utils/QueryKeys";
 
 export const useGetWorkLocations = (
@@ -18,7 +23,7 @@ export const useGetWorkLocations = (
         workLocationEndpoints.GET_WORK_LOCATIONS(search, page, size)
       );
       return response.data.results[0];
-    },
+    }
   });
 };
 

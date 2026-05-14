@@ -11,18 +11,21 @@ import { useRouter } from "next/router";
 import { ChangeEvent, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import ROUTES from "~community/common/constants/routes";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import ROUTES from "~community/common/constants/routes";
 import { useGetWorkLocationsInfinite } from "~community/configurations/api/WorkLocationApi";
-import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
-import { WorkLocation } from "~community/configurations/types/WorkLocationTypes";
 import DeleteWorkLocationModal from "~community/configurations/components/molecules/DeleteWorkLocationModal/DeleteWorkLocationModal";
 import {
   WORK_LOCATION_PAGE_SIZE,
   WORK_LOCATION_SEARCH_DEBOUNCE_MS
 } from "~community/configurations/constants/workLocationConstants";
+import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
+import {
+  WorkLocation,
+  WorkLocationsPage
+} from "~community/configurations/types/WorkLocationTypes";
 
 const WorkLocationsTable = () => {
   const router = useRouter();
@@ -32,7 +35,8 @@ const WorkLocationsTable = () => {
     "noData" as EmptyStateType
   );
 
-  const { setIsDeleteModalOpen, setSelectedLocationId } = useWorkLocationStore();
+  const { setIsDeleteModalOpen, setSelectedLocationId } =
+    useWorkLocationStore();
   const debouncedSearch = useDebounce(search, WORK_LOCATION_SEARCH_DEBOUNCE_MS);
 
   const {
@@ -46,7 +50,7 @@ const WorkLocationsTable = () => {
   const locations: WorkLocation[] = useMemo(
     () =>
       locationPages?.pages?.flatMap(
-        (page: any) => page?.items ?? []
+        (page: WorkLocationsPage) => page?.items ?? []
       ) ?? [],
     [locationPages]
   );
@@ -144,7 +148,9 @@ const WorkLocationsTable = () => {
         {locations.length > 0 && (
           <ButtonV2
             variant="primary"
-            onClick={() => router.push(ROUTES.CONFIGURATIONS.WORK_LOCATION_CREATE)}
+            onClick={() =>
+              router.push(ROUTES.CONFIGURATIONS.WORK_LOCATION_CREATE)
+            }
             icon={<Icon name={IconName.ADD_ICON} width="1rem" height="1rem" />}
             iconPosition="start"
           >
@@ -157,7 +163,13 @@ const WorkLocationsTable = () => {
         data={tableData}
         emptyStateType={emptyStateType}
         isLoading={isLoading}
-        onLoadMore={hasNextPage ? async () => { await fetchNextPage(); } : undefined}
+        onLoadMore={
+          hasNextPage
+            ? async () => {
+                if (hasNextPage && !isFetchingNextPage) await fetchNextPage();
+              }
+            : undefined
+        }
         hasMore={hasNextPage ?? false}
         noDataState={{
           buttonText: translateText(["table.addButton"]),
