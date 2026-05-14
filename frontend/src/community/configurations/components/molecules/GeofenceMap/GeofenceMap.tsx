@@ -1,4 +1,4 @@
-import { ButtonV2, EmptyDataView, IconButton } from "@rootcodelabs/skapp-ui";
+import { EmptyDataView, IconButton, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -7,7 +7,6 @@ import { IconName } from "~community/common/types/IconTypes";
 import GeofenceMapView from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceMapView";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
-import { formatRadius } from "~community/configurations/utils/geofenceUtils";
 import GeofenceSelectorModal from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceSelectorModal";
 
 interface Props {
@@ -70,16 +69,19 @@ const GeofenceMap = ({ formik }: Props) => {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-3 bg-tertiary-background rounded-lg border-2 border-dashed border-secondary-accent">
+        <div className="flex flex-col items-center bg-tertiary-background rounded-lg border-2 border border-secondary-accent">
           <EmptyDataView
             title={translateText(["form.geofenceEmptyState"])}
             description={translateText(["form.geofenceEmptyStateDescription"])}
-            className={{ wrapper: "p-8 pb-0 bg-transparent border-none" }}
           />
           <div className="pb-8">
-            <ButtonV2 variant="primary" type="button" onClick={handleOpenModal}>
-              {translateText(["form.geofenceAddButton"])}
-            </ButtonV2>
+            <IconButton
+              icon={<PlusIcon />}
+              type="button"
+              onClick={handleOpenModal}
+              aria-label={translateText(["form.geofenceAddButton"])}
+              variant="outlined"
+            />
           </div>
         </div>
       )}
