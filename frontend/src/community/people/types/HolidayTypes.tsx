@@ -114,7 +114,6 @@ export type HolidayType = {
   date: string;
   name: string;
   holidayDuration: HolidayDurationType;
-  workLocation?: string;
   workLocations?: string[];
 };
 
