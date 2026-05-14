@@ -4,14 +4,15 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
-import { useMarkNotificationSummaryAsRead } from "~community/common/api/notificationsApi";
 import PeopleAndTeamAutocompleteSearch, {
   OptionType
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
+import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import { useGetManagerAssignedLeaveRequests } from "~community/leave/api/LeaveApi";
 import ManagerLeaveRequest from "~community/leave/components/molecules/ManagerLeaveRequests/ManagerLeaveRequest";
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
@@ -66,12 +67,6 @@ const LeaveRequests: NextPage = () => {
     setLeaveRequestParams("status", ["PENDING"]);
   }, [setLeaveRequestParams]);
 
-  const { mutate: markLeaveNotificationsAsRead } =
-    useMarkNotificationSummaryAsRead();
-  useEffect(() => {
-    markLeaveNotificationsAsRead("LEAVE_REQUEST");
-  }, [markLeaveNotificationsAsRead]);
-
   const options = useMemo(() => {
     const individualSuggestions = suggestions?.employeeResponseDtoList?.map(
       (employee) => {
@@ -111,52 +106,56 @@ const LeaveRequests: NextPage = () => {
   };
 
   return (
-    <ContentLayout
-      pageHead={translateText(["pageHead"])}
-      title={translateText(["title"])}
-      isDividerVisible={true}
+    <NotificationReadProvider
+      notificationType={NotificationSummaryType.LEAVE_REQUEST}
     >
-      <Box
-        role="region"
-        aria-label={translateAria(["allLeaveRequestPage"])}
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          width: "100%"
-        }}
+      <ContentLayout
+        pageHead={translateText(["pageHead"])}
+        title={translateText(["title"])}
+        isDividerVisible={true}
       >
-        <PeopleAndTeamAutocompleteSearch
-          id={{
-            autocomplete: "all-leave-requests-autocomplete",
-            textField: "all-leave-requests-text-field"
+        <Box
+          role="region"
+          aria-label={translateAria(["allLeaveRequestPage"])}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            width: "100%"
           }}
-          name="leaveRequestsSearch"
-          options={options}
-          value={null}
-          inputValue={searchTerm}
-          onChange={onSearchChange}
-          onInputChange={(value) => {
-            const formattedValue = value.replace(/^\s+/g, "");
-            setSearchTerm(formattedValue);
-          }}
-          placeholder={translateText(["search"])}
-          isLoading={isSuggestionsPending}
-          error={searchErrors}
-          isDisabled={false}
-          required={false}
-          label=""
-        />
+        >
+          <PeopleAndTeamAutocompleteSearch
+            id={{
+              autocomplete: "all-leave-requests-autocomplete",
+              textField: "all-leave-requests-text-field"
+            }}
+            name="leaveRequestsSearch"
+            options={options}
+            value={null}
+            inputValue={searchTerm}
+            onChange={onSearchChange}
+            onInputChange={(value) => {
+              const formattedValue = value.replace(/^\s+/g, "");
+              setSearchTerm(formattedValue);
+            }}
+            placeholder={translateText(["search"])}
+            isLoading={isSuggestionsPending}
+            error={searchErrors}
+            isDisabled={false}
+            required={false}
+            label=""
+          />
 
-        <ManagerLeaveRequest
-          employeeLeaveRequests={assignedLeaveRequests?.items ?? []}
-          totalPages={assignedLeaveRequests?.totalPages}
-          isLoading={isLoading}
-        />
+          <ManagerLeaveRequest
+            employeeLeaveRequests={assignedLeaveRequests?.items ?? []}
+            totalPages={assignedLeaveRequests?.totalPages}
+            isLoading={isLoading}
+          />
 
-        <LeaveManagerModalController />
-      </Box>
-    </ContentLayout>
+          <LeaveManagerModalController />
+        </Box>
+      </ContentLayout>
+    </NotificationReadProvider>
   );
 };
 
