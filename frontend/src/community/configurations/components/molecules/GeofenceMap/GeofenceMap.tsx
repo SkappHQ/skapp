@@ -69,7 +69,7 @@ const GeofenceMap = ({ formik }: Props) => {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center bg-tertiary-background rounded-lg border-2 border border-secondary-accent">
+        <div className="flex flex-col items-center bg-tertiary-background rounded-lg border-2 border-dashed border-secondary-accent">
           <EmptyDataView
             title={translateText(["form.geofenceEmptyState"])}
             description={translateText(["form.geofenceEmptyStateDescription"])}
