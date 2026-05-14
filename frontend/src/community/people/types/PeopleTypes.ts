@@ -251,14 +251,9 @@ export interface SupervisedEmployee {
   authPic?: string;
 }
 
-export interface SupervisedTeam {
-  teamId: number;
-  teamName: string;
-}
-
 export interface SupervisorRolesData {
   supervisedEmployees: SupervisedEmployee[];
-  supervisedTeams: SupervisedTeam[];
+  supervisedTeams: EmployeeDataTeamType[];
 }
 
 export interface PrimarySupervisorTransferItem {

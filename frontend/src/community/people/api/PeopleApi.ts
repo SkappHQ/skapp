@@ -17,9 +17,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
 import {
   ErrorResponse,
-  ManagerTypes,
-  SortKeyTypes,
-  SortOrderTypes
+  ManagerTypes
 } from "~community/common/types/CommonTypes";
 import authFetch, {
   authFetchV2
@@ -47,7 +45,6 @@ import {
   EmployeeDataType,
   EmployeeDetails,
   EmployeeManagerType,
-  EmploymentStatusTypes,
   MyManagersType,
   QuickAddEmployeePayload,
   QuickAddEmployeeResponse
@@ -59,7 +56,6 @@ import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
 import {
   AllEmployeeDataResponse,
-  AllEmployeeDataType,
   L1EmployeeType,
   SupervisorRolesData,
   TransferSupervisorsPayload
@@ -601,11 +597,6 @@ export const useTerminateUser = (
       });
       queryClient
         .invalidateQueries({
-          queryKey: peopleQueryKeys.ACTIVE_EMPLOYEES_FOR_REASSIGNMENT
-        })
-        .catch(rejects);
-      queryClient
-        .invalidateQueries({
           queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
         })
         .catch(rejects);
@@ -717,11 +708,6 @@ export const useDeleteUser = (onSuccess: () => void, onError: () => void) => {
       queryClient.invalidateQueries({
         queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(selectedEmployeeId))
       });
-      queryClient
-        .invalidateQueries({
-          queryKey: peopleQueryKeys.ACTIVE_EMPLOYEES_FOR_REASSIGNMENT
-        })
-        .catch(rejects);
       queryClient
         .invalidateQueries({
           queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
@@ -895,26 +881,5 @@ export const useTransferSupervisors = (
       onSuccess();
     },
     onError
-  });
-};
-
-export const useGetActiveEmployeesForReassignment = (
-  enabled: boolean = true
-): UseQueryResult<AllEmployeeDataType[]> => {
-  return useQuery({
-    queryKey: peopleQueryKeys.ACTIVE_EMPLOYEES_FOR_REASSIGNMENT,
-    queryFn: async () => {
-      const response = await authFetch.get(peoplesEndpoints.GET_EMPLOYEES, {
-        params: {
-          sortOrder: SortOrderTypes.ASC,
-          sortKey: SortKeyTypes.NAME,
-          searchKeyword: "",
-          isExport: true,
-          accountStatus: EmploymentStatusTypes.ACTIVE
-        }
-      });
-      return (response?.data?.results ?? []) as AllEmployeeDataType[];
-    },
-    enabled
   });
 };
