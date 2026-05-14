@@ -1,8 +1,6 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 import { type StylesConfig } from "react-select";
 
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-
 export const useGetSelectStyles = (error: string | string[]) => {
   const theme: Theme = useTheme();
 
@@ -111,11 +109,7 @@ export const useGetSelectStyles = (error: string | string[]) => {
         justifyContent: "center",
         alignItems: "center"
       };
-    },
-    menuPortal: (styles) => ({
-      ...styles,
-      zIndex: ZIndexEnums.NEWMODAL
-    })
+    }
   };
 
   return selectStyles;

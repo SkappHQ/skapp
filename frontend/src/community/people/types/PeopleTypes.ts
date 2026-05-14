@@ -262,13 +262,13 @@ export interface SupervisorRolesData {
 }
 
 export interface PrimarySupervisorTransferItem {
-  subordinateEmployeeId: number;
-  newSupervisorId: number;
+  employeeId: number;
+  newPrimarySupervisorId: number;
 }
 
 export interface TeamSupervisorTransferItem {
   teamId: number;
-  newSupervisorId: number;
+  newTeamSupervisorId: number;
 }
 
 export interface TransferSupervisorsPayload {

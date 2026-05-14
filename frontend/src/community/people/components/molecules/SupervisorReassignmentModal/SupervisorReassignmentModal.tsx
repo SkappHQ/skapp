@@ -62,7 +62,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
   }, [isOpen]);
 
   const { data: supervisorRoles } = useGetSupervisorRoles(employeeId, isOpen);
-  const { data: activeEmployees = [] } =
+  const { data: activeEmployees = [], isLoading: isLoadingEmployees } =
     useGetActiveEmployeesForReassignment(isOpen);
 
   const supervisedEmployees: SupervisedEmployee[] =
@@ -79,24 +79,25 @@ const SupervisorReassignmentModal: FC<Props> = ({
       }));
   }, [activeEmployees, employeeId]);
 
-  const noActiveEmployeesAvailable = employeeDropdownOptions.length === 0;
+  const noActiveEmployeesAvailable =
+    !isLoadingEmployees && employeeDropdownOptions.length === 0;
 
-  const allPrimaryAssigned =
-    supervisedEmployees.length === 0 ||
-    supervisedEmployees.every((emp) => !!primaryAssignments[emp.employeeId]);
+  const allPrimaryAssigned = supervisedEmployees.every(
+    (emp) => !!primaryAssignments[emp.employeeId]
+  );
 
-  const allTeamAssigned =
-    supervisedTeams.length === 0 ||
-    supervisedTeams.every((team) => !!teamAssignments[team.teamId]);
+  const allTeamAssigned = supervisedTeams.every(
+    (team) => !!teamAssignments[team.teamId]
+  );
 
   const isProceedEnabled =
     allPrimaryAssigned && allTeamAssigned && !noActiveEmployeesAvailable;
 
   const onTransferSuccess = () => {
     if (actionType === "terminate") {
-      terminateEmployee(employeeId);
+      terminateEmployee();
     } else {
-      deleteEmployee(employeeId);
+      deleteEmployee();
     }
   };
 
@@ -160,14 +161,14 @@ const SupervisorReassignmentModal: FC<Props> = ({
       primarySupervisors: supervisedEmployees
         .filter((emp) => !!primaryAssignments[emp.employeeId])
         .map((emp) => ({
-          subordinateEmployeeId: emp.employeeId,
-          newSupervisorId: Number(primaryAssignments[emp.employeeId])
+          employeeId: emp.employeeId,
+          newPrimarySupervisorId: Number(primaryAssignments[emp.employeeId])
         })),
       teamSupervisors: supervisedTeams
         .filter((team) => !!teamAssignments[team.teamId])
         .map((team) => ({
           teamId: team.teamId,
-          newSupervisorId: Number(teamAssignments[team.teamId])
+          newTeamSupervisorId: Number(teamAssignments[team.teamId])
         }))
     };
     transferSupervisors(payload);
@@ -307,21 +308,21 @@ const SupervisorReassignmentModal: FC<Props> = ({
         <ButtonV2 variant="tertiary" onClick={onCancel} disabled={isSubmitting}>
           {translateText(["cancelButton"])}
         </ButtonV2>
-        <div
+        <ButtonV2
+          variant="primary"
           onClick={() => {
-            if (!isProceedEnabled && !noActiveEmployeesAvailable) {
-              setHasAttemptedProceed(true);
+            if (!isProceedEnabled) {
+              if (!noActiveEmployeesAvailable) {
+                setHasAttemptedProceed(true);
+              }
+              return;
             }
+            handleProceed();
           }}
+          disabled={isSubmitting}
         >
-          <ButtonV2
-            variant="primary"
-            onClick={handleProceed}
-            disabled={!isProceedEnabled || isSubmitting}
-          >
-            {proceedButtonLabel}
-          </ButtonV2>
-        </div>
+          {proceedButtonLabel}
+        </ButtonV2>
       </div>
     </div>
   );

@@ -584,19 +584,20 @@ export const useTerminateUser = (
 
   const { selectedEmployeeId } = usePeopleStore((state) => state);
   return useMutation({
-    mutationFn: (explicitEmployeeId?: number) => {
-      const id = explicitEmployeeId ?? (selectedEmployeeId as number);
+    mutationFn: () => {
       const payload = {
-        userId: id,
+        userId: selectedEmployeeId,
         isActive: false
       };
 
-      return authFetch.patch(peoplesEndpoints.TERMINATE_EMPLOYEE(id), payload);
+      return authFetch.patch(
+        peoplesEndpoints.TERMINATE_EMPLOYEE(selectedEmployeeId as number),
+        payload
+      );
     },
-    onSuccess: (_data, explicitEmployeeId) => {
-      const id = explicitEmployeeId ?? Number(selectedEmployeeId);
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(id)
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(selectedEmployeeId))
       });
       queryClient
         .invalidateQueries({
@@ -707,14 +708,14 @@ export const useDeleteUser = (onSuccess: () => void, onError: () => void) => {
 
   const { selectedEmployeeId } = usePeopleStore((state) => state);
   return useMutation({
-    mutationFn: (explicitEmployeeId?: number) => {
-      const id = explicitEmployeeId ?? (selectedEmployeeId as number);
-      return authFetch.patch(peoplesEndpoints.DELETE_USER(id));
+    mutationFn: () => {
+      return authFetch.patch(
+        peoplesEndpoints.DELETE_USER(selectedEmployeeId as number)
+      );
     },
-    onSuccess: (_data, explicitEmployeeId) => {
-      const id = explicitEmployeeId ?? Number(selectedEmployeeId);
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(id)
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(selectedEmployeeId))
       });
       queryClient
         .invalidateQueries({
@@ -864,12 +865,9 @@ export const useGetSupervisorRoles = (
 ): UseQueryResult<SupervisorRolesData> => {
   return useQuery({
     queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId),
-    queryFn: async () => {
-      const response = await authFetch.get(
-        peoplesEndpoints.GET_SUPERVISOR_ROLES(userId)
-      );
-      return response?.data?.results?.[0] as SupervisorRolesData;
-    },
+    queryFn: async () =>
+      await authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId)),
+    select: (data) => data?.data?.results[0] as SupervisorRolesData,
     enabled: !!userId && enabled
   });
 };
