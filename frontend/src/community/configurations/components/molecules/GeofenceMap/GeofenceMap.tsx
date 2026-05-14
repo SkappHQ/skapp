@@ -1,4 +1,4 @@
-import { EmptyDataView, IconButton, PlusIcon } from "@rootcodelabs/skapp-ui";
+import { IconButton, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -69,20 +69,20 @@ const GeofenceMap = ({ formik }: Props) => {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center bg-tertiary-background rounded-lg border-2 border-dashed border-secondary-accent">
-          <EmptyDataView
-            title={translateText(["form.geofenceEmptyState"])}
-            description={translateText(["form.geofenceEmptyStateDescription"])}
+        <div className="flex flex-col items-center justify-center bg-tertiary-background rounded-lg border-2 border-dashed border-secondary-accent gap-2 h-[410px]">
+          <p className="subtitle1">
+            {translateText(["form.geofenceEmptyState"])}
+          </p>
+          <p className="body2 text-secondary-text">
+            {translateText(["form.geofenceEmptyStateDescription"])}
+          </p>
+          <IconButton
+            icon={<PlusIcon />}
+            type="button"
+            onClick={handleOpenModal}
+            aria-label={translateText(["form.geofenceAddButton"])}
+            variant="outlined"
           />
-          <div className="pb-8">
-            <IconButton
-              icon={<PlusIcon />}
-              type="button"
-              onClick={handleOpenModal}
-              aria-label={translateText(["form.geofenceAddButton"])}
-              variant="outlined"
-            />
-          </div>
         </div>
       )}
 
