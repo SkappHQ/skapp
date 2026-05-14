@@ -12,7 +12,7 @@ import {
   CrmCompanyCreatePayload,
   CrmCompanyResponseType,
   CrmCompanyTableDataResponseType
-} from "../types/CrmCompanyTypes";
+} from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
