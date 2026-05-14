@@ -265,7 +265,7 @@ const ContactsListView = () => {
   return (
     <>
       <div className="flex w-full flex-col gap-3">
-        <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full flex-row items-center justify-between gap-2">
           <InputField
             aria-label={translateText(["search", "ariaLabel"])}
             ariaLabelClearButton={translateText(["search", "clearAriaLabel"])}
@@ -276,7 +276,6 @@ const ContactsListView = () => {
             placeholder={translateText(["search", "placeholder"])}
             rightIcon={<SearchIcon width={16} height={16} />}
             type="search"
-            variant="sm"
             value={searchTerm}
             onChange={handleSearchChange}
           />
