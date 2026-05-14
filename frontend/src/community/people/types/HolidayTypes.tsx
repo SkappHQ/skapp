@@ -143,7 +143,7 @@ export interface holidayBulkUploadResponse {
 export type Holiday = {
   id: number;
   date: string;
-  workLocation?: string[];
+  workLocations?: string[];
   name: string;
   holidayDuration:
     | HolidayDurationType.FULLDAY
