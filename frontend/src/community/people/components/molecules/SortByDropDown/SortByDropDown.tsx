@@ -96,7 +96,7 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
 
   const handleItemClick = (event: SelectChangeEvent) => {
     handleHolidayDataSort("sortOrder", event.target.value);
-    scrollToTop?.();
+    scrollToTop();
   };
 
   const selectedItem = dropdownItems.find(
@@ -155,7 +155,7 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
         options={workLocationOptions}
         onChange={(event) => {
           setSelectedWorkLocationId(Number(event.target.value));
-          scrollToTop?.();
+          scrollToTop();
         }}
         renderValue={() => {
           return (
