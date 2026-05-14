@@ -5,8 +5,12 @@ import useFcmToken from "~enterprise/common/hooks/useFCMToken";
 import { appModes } from "../constants/configs";
 import { useCommonStore } from "../stores/commonStore";
 import { SortKeyTypes, SortOrderTypes } from "../types/CommonTypes";
-import { NotifyFilterButtonTypes } from "../types/notificationTypes";
+import {
+  NotificationSummaryType,
+  NotifyFilterButtonTypes
+} from "../types/notificationTypes";
 import authFetch from "../utils/axiosInterceptor";
+import { getNotificationCount } from "../utils/notificationUtils";
 import { notificationsEndpoints } from "./utils/ApiEndpoints";
 import { notificationsQueryKeys } from "./utils/QueryKeys";
 
@@ -133,11 +137,18 @@ export const useGetNotificationSummary = () => {
   });
 };
 
+export const useGetNotificationSummaryCount = (
+  type: NotificationSummaryType
+) => {
+  const { data } = useGetNotificationSummary();
+  return getNotificationCount(data?.results, type);
+};
+
 export const useMarkNotificationSummaryAsRead = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (notificationType: string) => {
+    mutationFn: async (notificationType: NotificationSummaryType) => {
       await authFetch.patch(
         notificationsEndpoints.MARK_NOTIFICATION_SUMMARY_AS_READ,
         { notificationType }

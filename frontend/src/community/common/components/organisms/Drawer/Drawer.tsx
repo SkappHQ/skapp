@@ -19,7 +19,7 @@ import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
-import { useGetNotificationSummary } from "~community/common/api/notificationsApi";
+import { useGetNotificationSummaryCount } from "~community/common/api/notificationsApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import NotificationBadge from "~community/common/components/atoms/NotificationBadge/NotificationBadge";
 import NotificationDot from "~community/common/components/atoms/NotificationDot/NotificationDot";
@@ -42,6 +42,7 @@ import {
 } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
+import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
@@ -116,24 +117,15 @@ const Drawer = (): JSX.Element => {
     setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
   }));
 
-  const { data: notificationSummaryData } = useGetNotificationSummary();
-  const {
-    notificationLeaveCount,
-    notificationTimesheetCount,
-    notificationSignCount
-  } = useMemo(() => {
-    const counts: Record<string, number> = {};
-    notificationSummaryData?.results?.forEach(
-      (item: { notificationType: string; notificationCount: number }) => {
-        counts[item.notificationType] = item.notificationCount;
-      }
-    );
-    return {
-      notificationLeaveCount: counts["LEAVE_REQUEST"] || 0,
-      notificationTimesheetCount: counts["TIME_ENTRY"] || 0,
-      notificationSignCount: counts["ESIGN"] || 0
-    };
-  }, [notificationSummaryData?.results]);
+  const notificationLeaveCount = useGetNotificationSummaryCount(
+    NotificationSummaryType.LEAVE_REQUEST
+  );
+  const notificationTimesheetCount = useGetNotificationSummaryCount(
+    NotificationSummaryType.TIME_ENTRY
+  );
+  const notificationSignCount = useGetNotificationSummaryCount(
+    NotificationSummaryType.ESIGN
+  );
 
   const [orgLogo, setOrgLogo] = useState<string | null>(null);
 
