@@ -49,11 +49,7 @@ const WorkLocationEmployeeSelector = ({
   const boxRef = useRef<HTMLDivElement>(null);
   const listInnerRef = useRef<HTMLDivElement | null>(null);
   const scrollCleanupRef = useRef<(() => void) | null>(null);
-  const selectedIdsRef = useRef<number[]>([]);
   const [boxWidth, setBoxWidth] = useState(0);
-  const [stableUnselected, setStableUnselected] = useState<
-    AllEmployeeDataType[]
-  >([]);
 
   const { setEmployeeDataParams } = usePeopleStore((state) => state);
 
@@ -138,10 +134,6 @@ const WorkLocationEmployeeSelector = ({
   const selectedIds: number[] = formik.values.employeeIds ?? [];
   const isAllSelected = formik.values.isAllEmployees;
 
-  useEffect(() => {
-    selectedIdsRef.current = selectedIds;
-  }, [selectedIds]);
-
   const selectedEmployees = useMemo(() => {
     return selectedIds
       .map((id) => {
@@ -166,18 +158,6 @@ const WorkLocationEmployeeSelector = ({
       })
       .filter(Boolean) as AllEmployeeDataType[];
   }, [selectedIds, allEmployees, searchResults, preloadedEmployees]);
-
-  useEffect(() => {
-    if (!popperOpen) return;
-    const ids = selectedIdsRef.current;
-    const selected = displayEmployees.filter((e) =>
-      ids.includes(Number(e.employeeId))
-    );
-    const unselected = displayEmployees.filter(
-      (e) => !ids.includes(Number(e.employeeId))
-    );
-    setStableUnselected(unselected);
-  }, [popperOpen, displayEmployees]);
 
   const selectedCount = isAllSelected
     ? allEmployees.length
@@ -343,7 +323,7 @@ const WorkLocationEmployeeSelector = ({
                   return (
                     <div
                       key={empId}
-                      className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                      className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
                       onClick={() => toggleEmployee(empId)}
                     >
                       <Checkbox checked={true} />
@@ -359,12 +339,12 @@ const WorkLocationEmployeeSelector = ({
                     </div>
                   );
                 })}
-              <hr className="border-secondary-background my-1 mx-3" />
+              <hr className="border-secondary-accent my-2 mx-3" />
             </>
           )}
 
           <div
-            className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+            className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
             onClick={toggleAllEmployees}
           >
             <Checkbox checked={isAllSelected} />
@@ -372,14 +352,14 @@ const WorkLocationEmployeeSelector = ({
           </div>
 
           {!isAllSelected &&
-            stableUnselected
+            displayEmployees
               .filter((emp) => !selectedIds.includes(Number(emp.employeeId)))
               .map((emp) => {
                 const empId = Number(emp.employeeId);
                 return (
                   <div
                     key={empId}
-                    className="flex items-center gap-2 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                    className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
                     onClick={() => toggleEmployee(empId)}
                   >
                     <Checkbox checked={false} />
