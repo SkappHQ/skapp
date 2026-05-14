@@ -4,7 +4,14 @@ import {
   SmallModal
 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { FC, useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState
+} from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
@@ -172,6 +179,18 @@ const SupervisorReassignmentModal: FC<Props> = ({
     transferSupervisors(payload);
   };
 
+  const handleSelectSupervisor = (
+    candidateId: number,
+    candidateName: string,
+    entityId: number,
+    setAssignment: Dispatch<SetStateAction<Record<number, number>>>
+  ) => {
+    setNameMap((prev) => new Map(prev).set(String(candidateId), candidateName));
+    setAssignment((prev) => ({ ...prev, [entityId]: candidateId }));
+    setSearchTerm("");
+    setOpenDropdownId(null);
+  };
+
   const proceedButtonLabel =
     actionType === "terminate"
       ? translateText(["proceedAndTerminateButton"])
@@ -219,31 +238,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
                         />
                       </div>
                       <div className="w-62.5 shrink-0">
-                        {assignedName !== null ? (
-                          <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
-                            <span className="body2 truncate flex-1">
-                              {assignedName}
-                            </span>
-                            <button
-                              type="button"
-                              aria-label={translateText(["removeAssignment"])}
-                              className="shrink-0 text-gray-400 hover:text-gray-600 leading-none"
-                              onClick={() =>
-                                setPrimarySupervisorAssignments((prev) => {
-                                  const next = { ...prev };
-                                  delete next[emp.employeeId];
-                                  return next;
-                                })
-                              }
-                            >
-                              <Icon
-                                name={IconName.CLOSE_ICON}
-                                width="16"
-                                height="16"
-                              />
-                            </button>
-                          </div>
-                        ) : (
+                        {assignedName === null ? (
                           <AutoCompleteDropdown
                             hasCard={false}
                             className="w-full!"
@@ -269,29 +264,48 @@ const SupervisorReassignmentModal: FC<Props> = ({
                                 : translateText(["noEmployeesFound"])
                             }}
                             results={candidateList.map((ae) => (
-                              <div
+                              <button
                                 key={ae.employeeId}
-                                className="w-full"
+                                type="button"
+                                className="w-full text-left"
                                 onMouseDown={(e) => {
                                   e.preventDefault();
-                                  setNameMap((prev) =>
-                                    new Map(prev).set(
-                                      String(ae.employeeId),
-                                      `${ae.firstName} ${ae.lastName}`
-                                    )
+                                  handleSelectSupervisor(
+                                    ae.employeeId,
+                                    `${ae.firstName} ${ae.lastName}`,
+                                    emp.employeeId,
+                                    setPrimarySupervisorAssignments
                                   );
-                                  setPrimarySupervisorAssignments((prev) => ({
-                                    ...prev,
-                                    [emp.employeeId]: ae.employeeId
-                                  }));
-                                  setSearchTerm("");
-                                  setOpenDropdownId(null);
                                 }}
                               >
                                 {ae.firstName} {ae.lastName}
-                              </div>
+                              </button>
                             ))}
                           />
+                        ) : (
+                          <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
+                            <span className="body2 truncate flex-1">
+                              {assignedName}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label={translateText(["removeAssignment"])}
+                              className="shrink-0 text-gray-400 hover:text-gray-600 leading-none"
+                              onClick={() =>
+                                setPrimarySupervisorAssignments((prev) => {
+                                  const next = { ...prev };
+                                  delete next[emp.employeeId];
+                                  return next;
+                                })
+                              }
+                            >
+                              <Icon
+                                name={IconName.CLOSE_ICON}
+                                width="16"
+                                height="16"
+                              />
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -322,31 +336,7 @@ const SupervisorReassignmentModal: FC<Props> = ({
                         <p className="body2 truncate">{team.teamName}</p>
                       </div>
                       <div className="w-62.5 shrink-0">
-                        {assignedName !== null ? (
-                          <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
-                            <span className="body2 truncate flex-1">
-                              {assignedName}
-                            </span>
-                            <button
-                              type="button"
-                              aria-label={translateText(["removeAssignment"])}
-                              className="shrink-0 text-gray-400 hover:text-gray-600 leading-none"
-                              onClick={() =>
-                                setTeamSupervisorAssignments((prev) => {
-                                  const next = { ...prev };
-                                  delete next[team.teamId];
-                                  return next;
-                                })
-                              }
-                            >
-                              <Icon
-                                name={IconName.CLOSE_ICON}
-                                width="16"
-                                height="16"
-                              />
-                            </button>
-                          </div>
-                        ) : (
+                        {assignedName === null ? (
                           <AutoCompleteDropdown
                             hasCard={false}
                             className="w-full!"
@@ -372,29 +362,48 @@ const SupervisorReassignmentModal: FC<Props> = ({
                                 : translateText(["noEmployeesFound"])
                             }}
                             results={candidateList.map((ae) => (
-                              <div
+                              <button
                                 key={ae.employeeId}
-                                className="w-full"
+                                type="button"
+                                className="w-full text-left"
                                 onMouseDown={(e) => {
                                   e.preventDefault();
-                                  setNameMap((prev) =>
-                                    new Map(prev).set(
-                                      String(ae.employeeId),
-                                      `${ae.firstName} ${ae.lastName}`
-                                    )
+                                  handleSelectSupervisor(
+                                    ae.employeeId,
+                                    `${ae.firstName} ${ae.lastName}`,
+                                    team.teamId,
+                                    setTeamSupervisorAssignments
                                   );
-                                  setTeamSupervisorAssignments((prev) => ({
-                                    ...prev,
-                                    [team.teamId]: ae.employeeId
-                                  }));
-                                  setSearchTerm("");
-                                  setOpenDropdownId(null);
                                 }}
                               >
                                 {ae.firstName} {ae.lastName}
-                              </div>
+                              </button>
                             ))}
                           />
+                        ) : (
+                          <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
+                            <span className="body2 truncate flex-1">
+                              {assignedName}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label={translateText(["removeAssignment"])}
+                              className="shrink-0 text-gray-400 hover:text-gray-600 leading-none"
+                              onClick={() =>
+                                setTeamSupervisorAssignments((prev) => {
+                                  const next = { ...prev };
+                                  delete next[team.teamId];
+                                  return next;
+                                })
+                              }
+                            >
+                              <Icon
+                                name={IconName.CLOSE_ICON}
+                                width="16"
+                                height="16"
+                              />
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
