@@ -29,7 +29,7 @@ public class EpTimeController {
 	@Operation(summary = "Add time record with location",
 			description = "Adds a time record and determines if the employee is inside or outside the geo-fence.")
 	public ResponseEntity<ResponseEntityDto> addTimeRecordWithLocation(
-			@Valid @RequestBody EpAddTimeRecordDto epAddTimeRecordDto) {
+			@RequestBody EpAddTimeRecordDto epAddTimeRecordDto) {
 		ResponseEntityDto response = epTimeService.addTimeRecordWithLocation(epAddTimeRecordDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

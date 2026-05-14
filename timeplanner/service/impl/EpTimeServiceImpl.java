@@ -89,6 +89,7 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 		}
 	}
 
+	@Override
 	@Transactional
 	public ResponseEntityDto addTimeRecordWithLocation(EpAddTimeRecordDto epAddTimeRecordDto) {
 		User currentUser = userService.getCurrentUser();
