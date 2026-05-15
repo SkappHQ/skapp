@@ -83,7 +83,7 @@ public class RolesServiceImpl implements RolesService {
 		List<RoleResponseDto> roleResponseDtos = new ArrayList<>();
 
 		for (ModuleType moduleType : ModuleType.values()) {
-			if (moduleType != ModuleType.COMMON && moduleType != ModuleType.CRM) {
+			if (moduleType != ModuleType.COMMON) {
 				roleResponseDtos.add(createRoleResponseDto(moduleType));
 			}
 		}
