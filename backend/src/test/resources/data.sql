@@ -91,7 +91,7 @@ VALUES (default, YEAR(CURRENT_TIMESTAMP) || '-03-06', 'Poya Day', 'FULL_DAY', tr
        (default, YEAR(CURRENT_TIMESTAMP) || '-12-25', 'Christmas Day', 'FULL_DAY', true),
        (default, YEAR(CURRENT_TIMESTAMP + 1) || '-12-31', 'Future holiday', 'FULL_DAY', true);
 
-INSERT INTO holiday_work_location (holiday_id, work_location_id)
+INSERT INTO shr_com_work_location_ppl_holiday (holiday_id, work_location_id)
 VALUES (1, 1), (1, 2), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1);
 
 INSERT INTO time_config(id, day_of_week, time_blocks, total_hours, is_week_start_day, start_hour, start_minute)

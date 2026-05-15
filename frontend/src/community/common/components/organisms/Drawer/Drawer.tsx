@@ -19,6 +19,7 @@ import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
+import { useGetNotificationSummaryCount } from "~community/common/api/notificationsApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import NotificationBadge from "~community/common/components/atoms/NotificationBadge/NotificationBadge";
 import NotificationDot from "~community/common/components/atoms/NotificationDot/NotificationDot";
@@ -41,15 +42,13 @@ import {
 } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
+import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
-import { useGetPendingLeaveRequests } from "~community/leave/api/LeaveApi";
-import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
-import { useGetPendingCounts } from "~enterprise/common/api/DashboardApi";
 import Badge from "~enterprise/common/components/atoms/Badge/Badge";
 import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
 import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
@@ -118,13 +117,15 @@ const Drawer = (): JSX.Element => {
     setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
   }));
 
-  const { data: pendingLeavesData } = useGetPendingLeaveRequests("");
-  const pendingLeaveCount = pendingLeavesData?.length || 0;
-
-  const { data: pendingCountsData } = useGetPendingCounts();
-  const pendingTimesheetCount =
-    pendingCountsData?.pendingTimeEntryRequestsCount || 0;
-  const pendingSignCount = pendingCountsData?.pendingDocumentsToSignCount || 0;
+  const notificationLeaveCount = useGetNotificationSummaryCount(
+    NotificationSummaryType.LEAVE_REQUEST
+  );
+  const notificationTimesheetCount = useGetNotificationSummaryCount(
+    NotificationSummaryType.TIME_ENTRY
+  );
+  const notificationSignCount = useGetNotificationSummaryCount(
+    NotificationSummaryType.ESIGN
+  );
 
   const [orgLogo, setOrgLogo] = useState<string | null>(null);
 
@@ -142,18 +143,18 @@ const Drawer = (): JSX.Element => {
           organizationCalendarStatusData?.isGoogleCalendarEnabled ?? false,
         organizationCalendarMicrosoftStatus:
           organizationCalendarStatusData?.isMicrosoftCalendarEnabled ?? false,
-        pendingLeaveCount,
-        pendingTimesheetCount,
-        pendingSignCount
+        notificationLeaveCount,
+        notificationTimesheetCount,
+        notificationSignCount
       }),
     [
       user,
       isEnterprise,
       globalLoginMethod,
       organizationCalendarStatusData,
-      pendingLeaveCount,
-      pendingTimesheetCount,
-      pendingSignCount
+      notificationLeaveCount,
+      notificationTimesheetCount,
+      notificationSignCount
     ]
   );
 
@@ -302,28 +303,30 @@ const Drawer = (): JSX.Element => {
                               route?.url ?? null
                             )}
                           />
-                          {/* Feature flagged: Notification red dots temporarily disabled */}
-                          {/* <NotificationDot
+                          <NotificationDot
                             show={
                               route.id === "1" &&
-                              pendingTimesheetCount > 0 &&
-                              !isExpanded
+                              notificationTimesheetCount > 0 &&
+                              ((hasSubTree && !isExpanded) ||
+                                (!hasSubTree && !isDrawerExpanded))
                             }
-                          /> */}
-                          {/* <NotificationDot
+                          />
+                          <NotificationDot
                             show={
                               route.id === "2" &&
-                              pendingLeaveCount > 0 &&
-                              !isExpanded
+                              notificationLeaveCount > 0 &&
+                              ((hasSubTree && !isExpanded) ||
+                                (!hasSubTree && !isDrawerExpanded))
                             }
-                          /> */}
-                          {/* <NotificationDot
+                          />
+                          <NotificationDot
                             show={
                               route.id === "4" &&
-                              pendingSignCount > 0 &&
-                              !isExpanded
+                              notificationSignCount > 0 &&
+                              ((hasSubTree && !isExpanded) ||
+                                (!hasSubTree && !isDrawerExpanded))
                             }
-                          /> */}
+                          />
                         </Box>
                       )}
                     </ListItemIcon>
@@ -338,7 +341,12 @@ const Drawer = (): JSX.Element => {
                           )
                         )}
                       />
-                      {route?.badge && <Badge text={route.badge} />}
+                      {route?.featureBadge && (
+                        <Badge text={route.featureBadge} />
+                      )}
+                      {route?.notificationCount && !hasSubTree && (
+                        <NotificationBadge count={route.notificationCount} />
+                      )}
                       <ListItemIcon
                         sx={classes.chevronIcons(
                           expandedDrawerListItem,
@@ -384,7 +392,7 @@ const Drawer = (): JSX.Element => {
                           if (!subTreeRoute) return null;
                           const subRoute =
                             subTreeRoute as typeof subTreeRoute & {
-                              badge?: string;
+                              notificationCount?: string;
                             };
 
                           return (
@@ -430,10 +438,11 @@ const Drawer = (): JSX.Element => {
                                     )
                                   )}
                                 />
-                                {/* Feature flagged: Notification badge count temporarily disabled */}
-                                {/* {subRoute?.badge && (
-                                  <NotificationBadge count={subRoute.badge} />
-                                )} */}
+                                {subRoute?.notificationCount && (
+                                  <NotificationBadge
+                                    count={subRoute.notificationCount}
+                                  />
+                                )}
                               </ListItemButton>
                             </ListItem>
                           );
