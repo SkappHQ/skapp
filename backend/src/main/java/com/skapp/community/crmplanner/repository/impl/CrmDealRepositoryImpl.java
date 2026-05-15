@@ -1,12 +1,16 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
+import com.skapp.community.peopleplanner.model.Employee;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -62,8 +66,14 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		predicates.add(cb.equal(deal.get("isDeleted"), false));
 
 		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().isBlank()) {
-			predicates.add(cb.like(cb.lower(deal.get("name")),
-					"%" + filterDto.getSearchKeyword().toLowerCase() + "%"));
+			String keyword = "%" + filterDto.getSearchKeyword().toLowerCase() + "%";
+			Join<CrmDeal, CrmContact> contactJoin = deal.join("contact", JoinType.LEFT);
+			Join<CrmDeal, Employee> ownerJoin = deal.join("owner", JoinType.LEFT);
+			predicates.add(cb.or(
+					cb.like(cb.lower(deal.get("name")), keyword),
+					cb.like(cb.lower(contactJoin.get("name")), keyword),
+					cb.like(cb.lower(ownerJoin.get("firstName")), keyword),
+					cb.like(cb.lower(ownerJoin.get("lastName")), keyword)));
 		}
 
 		if (filterDto.getStageId() != null) {
