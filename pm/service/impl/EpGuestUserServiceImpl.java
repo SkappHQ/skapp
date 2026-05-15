@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -101,7 +102,7 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				|| epGuestUserInviteRequestDto.getEmail().isBlank()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
-		String email = epGuestUserInviteRequestDto.getEmail().toLowerCase();
+		String email = epGuestUserInviteRequestDto.getEmail().toLowerCase(Locale.ROOT);
 		Validation.validateEmail(email);
 		if (userDao.findByEmail(email).isPresent()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_ALREADY_EXISTS);
