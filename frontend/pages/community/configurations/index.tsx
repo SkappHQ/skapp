@@ -2,7 +2,7 @@ import { Box, Divider } from "@mui/material";
 import { Tabs } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -39,13 +39,16 @@ const Configurations: NextPage = () => {
   }, [allTabs, user?.roles]);
 
   const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id);
+  const hasInitializedTab = useRef(false);
 
   useEffect(() => {
     if (!router.isReady || visibleTabs?.length === 0) return;
+    if (hasInitializedTab.current) return;
     const tabParam = router.query.tab as string | undefined;
     if (tabParam && visibleTabs.some((tab) => tab.id === tabParam)) {
       setActiveTab(tabParam);
     }
+    hasInitializedTab.current = true;
   }, [router.isReady, router.query.tab, visibleTabs]);
 
   const handleTabChange = (id: string) => {

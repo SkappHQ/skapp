@@ -160,7 +160,7 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
       <GeofenceMapView
         center={tempMarkerPosition}
         radius={tempRadius}
-        height="30rem"
+        height="20rem"
         mapId="geofence-map"
         onClick={handleMapClick}
       >

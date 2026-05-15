@@ -136,7 +136,8 @@
       "editAction": "Edit",
       "deleteAction": "Delete",
       "addButton": "Add Location",
-      "emptyState": "No work locations have been added yet.",
+      "emptyStateTitle": "No locations available",
+      "emptyStateDescription": "No locations have been added yet. Once you add locations, they will be displayed here.",
       "searchPlaceholder": "Search by location name"
     },
     "form": {
