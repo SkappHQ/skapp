@@ -4,7 +4,8 @@ import { useAuth } from "~community/auth/providers/AuthProvider";
 import {
   AdminTypes,
   ManagerTypes as AuthManagerType,
-  EmployeeTypes, // RepresentativeTypes,
+  EmployeeTypes,
+  RepresentativeTypes,
   SenderTypes
 } from "~community/common/types/AuthTypes";
 import { ManagerTypes } from "~community/common/types/CommonTypes";
@@ -126,25 +127,25 @@ const useSessionData = () => {
     [user?.roles]
   );
 
-  // const isCrmAdmin = useMemo(
-  //   () => user?.roles?.includes(AdminTypes.CRM_ADMIN),
-  //   [user?.roles]
-  // );
+  const isCrmAdmin = useMemo(
+    () => user?.roles?.includes(AdminTypes.CRM_ADMIN),
+    [user?.roles]
+  );
 
-  // const isCrmSalesManager = useMemo(
-  //   () => user?.roles?.includes(AuthManagerType.CRM_SALES_MANAGER),
-  //   [user?.roles]
-  // );
+  const isCrmSalesManager = useMemo(
+    () => user?.roles?.includes(AuthManagerType.CRM_SALES_MANAGER),
+    [user?.roles]
+  );
 
-  // const isCrmSalesRepresentative = useMemo(
-  //   () => user?.roles?.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE),
-  //   [user?.roles]
-  // );
+  const isCrmSalesRepresentative = useMemo(
+    () => user?.roles?.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE),
+    [user?.roles]
+  );
 
-  // const isCrmModuleEnabled = useMemo(
-  //   () => isCrmSalesRepresentative,
-  //   [user?.roles]
-  // );
+  const isCrmModuleEnabled = useMemo(
+    () => isCrmSalesRepresentative,
+    [user?.roles]
+  );
 
   return {
     isFreeTier,
@@ -172,10 +173,10 @@ const useSessionData = () => {
     isESignSender,
     isPmAdmin,
     isInvoiceAdmin,
-    // isCrmAdmin,
-    // isCrmSalesManager,
-    // isCrmSalesRepresentative,
-    // isCrmModuleEnabled,
+    isCrmAdmin,
+    isCrmSalesManager,
+    isCrmSalesRepresentative,
+    isCrmModuleEnabled,
     tenantID
   };
 };
