@@ -11,7 +11,8 @@ import {
   AdminTypes,
   EmployeeTypes,
   ManagerTypes,
-  ROLE_SUPER_ADMIN, // RepresentativeTypes,
+  ROLE_SUPER_ADMIN,
+  RepresentativeTypes,
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
@@ -57,8 +58,8 @@ const superAdminRoutes = {
     ROUTES.PROJECTS.GUEST_REQUESTS,
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
-    ROUTES.INVOICE.CUSTOMERS.BASE
-    // ROUTES.CRM.BASE
+    ROUTES.INVOICE.CUSTOMERS.BASE,
+    ROUTES.CRM.BASE
   ]
 };
 
@@ -93,8 +94,8 @@ const adminRoutes = {
     ROUTES.PROJECTS.BASE,
     ROUTES.PROJECTS.GUESTS,
     ROUTES.PROJECTS.GUEST_REQUESTS
-  ]
-  // [AdminTypes.CRM_ADMIN]: [ROUTES.CRM.BASE]
+  ],
+  [AdminTypes.CRM_ADMIN]: [ROUTES.CRM.BASE]
 };
 
 const managerRoutes = {
@@ -127,8 +128,8 @@ const managerRoutes = {
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE,
     ROUTES.INVOICE.CREATE.BASE
-  ]
-  // [ManagerTypes.CRM_SALES_MANAGER]: [ROUTES.CRM.BASE]
+  ],
+  [ManagerTypes.CRM_SALES_MANAGER]: [ROUTES.CRM.BASE]
 };
 
 const employeeRoutes = {
@@ -151,11 +152,11 @@ const employeeRoutes = {
     ...commonRoutes
   ],
   [EmployeeTypes.PM_EMPLOYEE]: [...commonRoutes],
-  [EmployeeTypes.PM_GUEST_EMPLOYEE]: [...commonRoutes]
-  // [RepresentativeTypes.CRM_SALES_REPRESENTATIVE]: [
-  //   ROUTES.CRM.BASE,
-  //   ...commonRoutes
-  // ]
+  [EmployeeTypes.PM_GUEST_EMPLOYEE]: [...commonRoutes],
+  [RepresentativeTypes.CRM_SALES_REPRESENTATIVE]: [
+    ROUTES.CRM.BASE,
+    ...commonRoutes
+  ]
 };
 
 const senderRoutes = {
@@ -175,8 +176,12 @@ const senderRoutes = {
 
 // Merging all routes into one allowedRoutes object
 const allowedRoutes: Record<
-  AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType | SenderTypes,
-  // | RepresentativeTypes,
+  | AdminTypes
+  | ManagerTypes
+  | EmployeeTypes
+  | SuperAdminType
+  | SenderTypes
+  | RepresentativeTypes,
   string[]
 > = {
   ...superAdminRoutes,
@@ -355,9 +360,9 @@ export const config = {
     // Invoice routes
     "/invoice",
     "/invoice/:path*",
-    "/invoice/create/:path*"
+    "/invoice/create/:path*",
     // CRM module routes
-    // "/crm",
-    // "/crm/:path*"
+    "/crm",
+    "/crm/:path*"
   ]
 };
