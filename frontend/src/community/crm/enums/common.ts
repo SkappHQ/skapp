@@ -9,3 +9,13 @@ export enum CrmTaskStatusEnum {
   PENDING = "PENDING",
   COMPLETED = "COMPLETED"
 }
+
+export enum CrmDealViewMode {
+  LIST = "list",
+  KANBAN = "kanban"
+}
+
+export enum CrmDealSortOrder {
+  NEWEST = "DESC",
+  OLDEST = "ASC"
+}

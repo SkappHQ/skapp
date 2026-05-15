@@ -510,7 +510,7 @@ const AddDealSidePanel: FC = () => {
     <SidePanel
       isOpen={isSidePanelOpen}
       onClose={handleClose}
-      header={<span>{translateText(["title"])}</span>}
+      header={<span className="text-2xl font-bold text-black">{translateText(["title"])}</span>}
       width="lg"
       animation="slide"
       closeOnBackdropClick

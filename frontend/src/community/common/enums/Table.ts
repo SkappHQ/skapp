@@ -28,5 +28,8 @@ export enum TableNames {
   CUSTOM_ALLOCATIONS_REPORT = "Custom allocations report",
   ON_LEAVE_MODAL = "On leave modal",
   ALL_TIMESHEETS = "All timesheets",
-  NOTIFICATIONS = "Notifications"
+  NOTIFICATIONS = "Notifications",
+
+  // Community CRM Module
+  CRM_DEALS = "CRM deals"
 }

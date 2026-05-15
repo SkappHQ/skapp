@@ -93,6 +93,7 @@ export interface CrmDealListItemType {
   name: string;
   stageId: number;
   stageName: string;
+  stageColor?: string;
   priorityId: number | null;
   priorityName: string | null;
   closingAt: string | null;
@@ -103,6 +104,8 @@ export interface CrmDealListItemType {
   contactName: string;
   ownerId: number;
   ownerName: string;
+  openTaskCount?: number;
+  overdueTaskCount?: number;
 }
 
 export interface CrmDealPaginatedResponseType {
