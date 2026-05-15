@@ -5,29 +5,16 @@ import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import { getCurrentLocation } from "~community/attendance/utils/geolocationUtils";
 import { appModes } from "~community/common/constants/configs";
-import { ToastType } from "~community/common/enums/ComponentEnums";
-import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { convertDateToUTC } from "~community/common/utils/dateTimeUtils";
 import { useUpdateEmployeeStatusWithLocation } from "~enterprise/attendance/api/AttendanceApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
-export const useAttendanceAction = (): {
+export const useRecordAttendance = (
+  onError?: () => void
+): {
   recordAttendance: (slotType: AttendanceSlotType) => void;
   isPending: boolean;
 } => {
-  const { setToastMessage } = useToast();
-  const translateTexts = useTranslator("attendanceModule", "timeWidget");
-
-  const onError = () => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateTexts(["clockInErrorTitle"]),
-      description: translateTexts(["clockInErrorDescription"])
-    });
-  };
-
   const { isPending, mutate } = useUpdateEmployeeStatus();
   const { mutate: mutateWithLocation, isPending: isEpPending } =
     useUpdateEmployeeStatusWithLocation(onError);

@@ -2,19 +2,17 @@ package com.skapp.community.timeplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
 import com.skapp.community.timeplanner.model.AttendanceConfig;
 import com.skapp.community.timeplanner.payload.request.AttendanceConfigRequestDto;
-import com.skapp.community.timeplanner.payload.response.AttendanceConfigResponseDto;
 import com.skapp.community.timeplanner.repository.AttendanceConfigDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
 import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +32,9 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 
 	@NonNull
 	private final MessageUtil messageUtil;
+
+	@NonNull
+	private final UserService userService;
 
 	@Override
 	public void setDefaultAttendanceConfig() {
@@ -94,7 +95,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	public ResponseEntityDto getAllAttendanceConfigs() {
 		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
-		if (isAttendanceAdmin()) {
+		if (userService.getCurrentUserRoles().contains("ROLE_ATTENDANCE_ADMIN")) {
 			AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
 
 			for (AttendanceConfig config : attendanceConfigs) {
@@ -119,13 +120,8 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 			}
 		}
 
-		return new ResponseEntityDto(false, new AttendanceConfigResponseDto(isGeoFencingEnabled));
-	}
-
-	private boolean isAttendanceAdmin() {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		return auth != null
-				&& auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ATTENDANCE_ADMIN"));
+		return new ResponseEntityDto(false,
+				new AttendanceConfigRequestDto(null, null, null, null, isGeoFencingEnabled));
 	}
 
 	@Override

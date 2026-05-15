@@ -1,18 +1,20 @@
 import { JSX, useMemo } from "react";
 
-import { useAttendanceAction } from "~community/attendance/hooks/useAttendanceAction";
+import { useRecordAttendance } from "~community/attendance/hooks/useRecordAttendance";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import Button from "~community/common/components/atoms/Button/Button";
 import {
   ButtonSizes,
-  ButtonStyle
+  ButtonStyle,
+  ToastType
 } from "~community/common/enums/ComponentEnums";
 import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 
 interface Props {
@@ -29,11 +31,19 @@ const ClockInButton = ({ disabled }: Props): JSX.Element => {
 
   const status = attendanceParams.slotType;
 
+  const { setToastMessage } = useToast();
   const translateText = useTranslator("attendanceModule", "timeWidget");
 
   const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
 
-  const { recordAttendance, isPending } = useAttendanceAction();
+  const { recordAttendance, isPending } = useRecordAttendance(() => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["clockInErrorTitle"]),
+      description: translateText(["clockInErrorDescription"])
+    });
+  });
 
   const isClockedIn = useMemo(() => {
     return (

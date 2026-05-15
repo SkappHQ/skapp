@@ -2,7 +2,7 @@ import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { useAttendanceAction } from "~community/attendance/hooks/useAttendanceAction";
+import { useRecordAttendance } from "~community/attendance/hooks/useRecordAttendance";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
@@ -10,7 +10,9 @@ import {
   calculateWorkedDurationInHoursAndMinutes
 } from "~community/attendance/utils/CalculateWorkedDuration";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 
 import styles from "./styles";
@@ -32,9 +34,17 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
     hour12: false
   });
 
+  const { setToastMessage } = useToast();
   const translateText = useTranslator("attendanceModule", "timeWidget");
 
-  const { recordAttendance, isPending } = useAttendanceAction();
+  const { recordAttendance, isPending } = useRecordAttendance(() => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["clockInErrorTitle"]),
+      description: translateText(["clockInErrorDescription"])
+    });
+  });
 
   const handleProceedHome = (): void => {
     const slotType = setSlotType(AttendanceSlotType.END);
