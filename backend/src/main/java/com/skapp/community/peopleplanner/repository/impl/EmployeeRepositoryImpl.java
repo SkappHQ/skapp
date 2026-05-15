@@ -1541,8 +1541,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(root.get(Employee_.accountStatus).in(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
-		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.PM_ROLE).isNull(),
-				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE)));
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
 
 		if (workLocationId != null) {
 			predicates.add(criteriaBuilder.equal(root.get(Employee_.workLocation).get(WorkLocation_.workLocationId),
@@ -1566,8 +1566,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(root.get(Employee_.accountStatus).in(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
-		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.PM_ROLE).isNull(),
-				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE)));
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(criteriaBuilder.count(root));
