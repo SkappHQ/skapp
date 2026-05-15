@@ -1545,8 +1545,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE)));
 
 		if (workLocationId != null) {
-			predicates.add(criteriaBuilder.equal(
-					root.get(Employee_.workLocation).get(WorkLocation_.workLocationId), workLocationId));
+			predicates.add(criteriaBuilder.equal(root.get(Employee_.workLocation).get(WorkLocation_.workLocationId),
+					workLocationId));
 		}
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));

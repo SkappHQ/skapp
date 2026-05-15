@@ -208,15 +208,15 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		List<Employee> locationEmployees = employeeDao.findActiveEmployeesExcludingGuests(id);
 		Long totalActiveCount = employeeDao.countActiveEmployeesExcludingGuests();
-		boolean isAllEmployees = !locationEmployees.isEmpty() && locationEmployees.size() == totalActiveCount;
+		boolean isAllEmployeesAssigned = !locationEmployees.isEmpty() && locationEmployees.size() == totalActiveCount;
 
 		WorkLocationDetailResponseDto responseDto = new WorkLocationDetailResponseDto();
 		responseDto.setWorkLocationId(workLocation.getWorkLocationId());
 		responseDto.setName(workLocation.getName());
 		responseDto.setAddress(workLocation.getAddress());
 		responseDto.setEmployeeCount((long) locationEmployees.size());
-		responseDto.setIsAllEmployees(isAllEmployees);
-		responseDto.setEmployees(isAllEmployees ? null : locationEmployees.stream().map(emp -> {
+		responseDto.setIsAllEmployees(isAllEmployeesAssigned);
+		responseDto.setEmployees(isAllEmployeesAssigned ? null : locationEmployees.stream().map(emp -> {
 			WorkLocationEmployeeResponseDto empDto = new WorkLocationEmployeeResponseDto();
 			empDto.setEmployeeId(emp.getEmployeeId());
 			empDto.setFirstName(emp.getFirstName());
