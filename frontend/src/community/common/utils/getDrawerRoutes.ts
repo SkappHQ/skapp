@@ -327,7 +327,7 @@ const getDrawerRoutes = ({
             }
 
             // Add notification count to "Inbox" if there are pending documents to sign
-            if (subRoute.id === "5A" && notificationSignCount > 0) {
+            if (subRoute.id === "4A" && notificationSignCount > 0) {
               return {
                 ...subRoute,
                 notificationCount: notificationSignCount.toString()
