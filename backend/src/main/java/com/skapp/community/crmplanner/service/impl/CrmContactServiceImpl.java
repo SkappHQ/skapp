@@ -60,8 +60,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmPriorityDao crmPriorityDao;
 
-	private final CrmDealRepository crmDealRepository;
-
 	private final CrmTaskRepository crmTaskRepository;
 
 	private final EmployeeDao employeeDao;
@@ -179,11 +177,11 @@ public class CrmContactServiceImpl implements CrmContactService {
 			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
 		// Fetch closed deal summary (Total Revenue)
-		List<CrmDealSummary> closedDeals = crmDealRepository.findClosedDealSummaryByContactIds(List.of(id));
+		List<CrmDealSummary> closedDeals = crmDealDao.findClosedDealSummaryByContactIds(List.of(id));
 		CrmDealSummary closedDeal = closedDeals.isEmpty() ? null : closedDeals.get(0);
 
 		// Fetch active deal summary (Revenue on Pipeline + Active Deals Count)
-		List<CrmActiveDealSummary> activeDeals = crmDealRepository.findActiveDealSummaryByContactIds(List.of(id));
+		List<CrmActiveDealSummary> activeDeals = crmDealDao.findActiveDealSummaryByContactIds(List.of(id));
 		CrmActiveDealSummary activeDeal = activeDeals.isEmpty() ? null : activeDeals.get(0);
 
 		// Fetch task summary (Open Tasks + Overdue Tasks)
@@ -460,13 +458,13 @@ public class CrmContactServiceImpl implements CrmContactService {
 	}
 
 	private Map<Long, CrmDealSummary> buildClosedDealSummaryMap(List<Long> contactIds) {
-		return crmDealRepository.findClosedDealSummaryByContactIds(contactIds)
+		return crmDealDao.findClosedDealSummaryByContactIds(contactIds)
 			.stream()
 			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
 	}
 
 	private Map<Long, CrmActiveDealSummary> buildActiveDealSummaryMap(List<Long> contactIds) {
-		return crmDealRepository.findActiveDealSummaryByContactIds(contactIds)
+		return crmDealDao.findActiveDealSummaryByContactIds(contactIds)
 			.stream()
 			.collect(Collectors.toMap(CrmActiveDealSummary::getContactId, Function.identity()));
 	}

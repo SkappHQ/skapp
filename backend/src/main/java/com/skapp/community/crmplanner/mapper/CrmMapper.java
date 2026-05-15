@@ -40,10 +40,14 @@ public interface CrmMapper {
 	@Mapping(target = "overdueTaskCount", ignore = true)
 	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
-	@Mapping(target = "stage", source = "stage")
-	@Mapping(target = "priority", source = "priority")
-	@Mapping(target = "owner", source = "owner")
-	@Mapping(target = "company", source = "company")
+	@Mapping(target = "stageId", source = "stage.id")
+	@Mapping(target = "stageName", source = "stage.name")
+	@Mapping(target = "priorityId", source = "priority.id")
+	@Mapping(target = "priorityName", source = "priority.name")
+	@Mapping(target = "ownerId", source = "owner.employeeId")
+	@Mapping(target = "ownerName", source = "owner.fullName")
+	@Mapping(target = "companyId", source = "company.id")
+	@Mapping(target = "companyName", source = "company.name")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal deal);
 
 	CrmDealStageResponseDto crmDealStageToCrmDealStageResponseDto(CrmDealStage stage);
