@@ -92,9 +92,9 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 	@Override
 	@Transactional
 	public ResponseEntityDto addTimeRecordWithLocation(EpAddTimeRecordDto epAddTimeRecordDto) {
+		log.info("addTimeRecordWithLocation: execution started");
 		User currentUser = userService.getCurrentUser();
 		Employee employee = currentUser.getEmployee();
-		log.info("addTimeRecordWithLocation: execution started by user: {}", currentUser.getUserId());
 
 		boolean isGeoFencingEnabled = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.GEO_FENCING_ENABLED);
