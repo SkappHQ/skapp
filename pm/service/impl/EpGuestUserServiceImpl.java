@@ -101,7 +101,15 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 				|| epGuestUserInviteRequestDto.getEmail().isBlank()) {
 			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_INVALID_GUEST_USER_EMAILS);
 		}
-		String email = epGuestUserInviteRequestDto.getEmail();
+		String email = epGuestUserInviteRequestDto.getEmail().toLowerCase();
+		Validation.validateEmail(email);
+		if (userDao.findByEmail(email).isPresent()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_ALREADY_EXISTS);
+		}
+		if (guestUserRequestDao.findByEmailIgnoreCase(email).isPresent()) {
+			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_GUEST_USER_REQUEST_ALREADY_EXISTS);
+		}
+
 		User currentUser = userService.getCurrentUser();
 		if (!isPrivilegedUser(currentUser)) {
 			EpGuestUserRequestResponseDto requestDto = saveGuestUserRequest(email,

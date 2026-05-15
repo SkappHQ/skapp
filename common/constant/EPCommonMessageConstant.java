@@ -177,6 +177,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_GUEST_USER_PROJECT_ASSIGNMENT_FAILED("ep.common.error.guest-user-project-assignment-failed"),
 	EP_COMMON_ERROR_GUEST_USER_PROJECT_UPDATE_FAILED("ep.common.error.guest-user-project-update-failed"),
 	EP_COMMON_ERROR_GUEST_USER_REQUEST_ALREADY_EXISTS("ep.common.error.guest-user-request-already-exists"),
+	EP_COMMON_ERROR_GUEST_USER_ALREADY_EXISTS("ep.common.error.guest-user-already-exists"),
 	EP_COMMON_ERROR_INVALID_REQUESTER("ep.common.error.invalid-requester"),
 	EP_COMMON_ERROR_GUEST_USER_PROJECT_ACCESS_DENIED("ep.common.error.guest-user-project-access-denied"),
 	EP_COMMON_ERROR_INVALID_FILE_TYPE("ep.common.error.api.invalid-file-type"),
