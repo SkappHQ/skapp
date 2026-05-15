@@ -34,7 +34,7 @@
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
-      "search": "Enter name of a company to search",
+      "search": "Search companies",
       "emptyDataState": {
         "title": "No companies available.",
         "description": "Create a company to get started."

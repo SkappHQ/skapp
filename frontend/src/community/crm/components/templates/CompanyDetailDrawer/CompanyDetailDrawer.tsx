@@ -15,6 +15,7 @@ import CompanyContactsTables from "../../molecules/CompanyContactsTable/CompanyC
 import CompanyDeals from "../../molecules/CompanyDeals/CompanyDeals";
 import CompanyDetailHeader from "../../molecules/CompanyDetailHeader/CompanyDetailHeader";
 import CompanyMetricCards from "../../molecules/CompanyMetricCards/CompanyMetricCards";
+import TasksSection from "../../molecules/TasksSection/TasksSection";
 
 const getCompanyMetrics = (company: CrmCompanyTableDataType) => [
   {
@@ -76,14 +77,15 @@ const CompanyDetailDrawer: React.FC = () => {
       onClose={handleClose}
       sx={{
         "& .MuiDrawer-paper": {
-          width: "calc(100vw - 507px)",
-          maxWidth: "100%",
-          borderRadius: "0.75rem 0 0 0.75rem",
+          width: "min(70vw, 65rem)",
+          minWidth: "34rem",
+          maxWidth: "100vw",
+          borderRadius: 0,
           boxShadow: theme.shadows[8]
         }
       }}
     >
-      <div className="flex flex-col gap-2 w-full p-6">
+      <div className="flex flex-col gap-1 w-full p-6">
         <div className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-4">
           {selectedCompany && (
             <CompanyDetailHeader
@@ -100,6 +102,9 @@ const CompanyDetailDrawer: React.FC = () => {
         </div>
         <div className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-4">
           <CompanyContactsTables />
+        </div>
+        <div className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-4">
+          <TasksSection />
         </div>
       </div>
     </Drawer>

@@ -87,7 +87,7 @@ const CompanyContactsTables = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <Typography variant="h1">Contacts</Typography>
+      <p className="text-[1.125rem] font-bold text-black">Contacts</p>
       <Table
         columns={columns as TableColumn<any>[]}
         data={tableData}

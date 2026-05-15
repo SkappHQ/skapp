@@ -87,6 +87,7 @@ import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon"
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
+import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
 import LocationIcon from "~community/common/assets/Icons/LocationIcon";
 import LockIcon from "~community/common/assets/Icons/LockIcon";
 import MagnifyingGlassIcon from "~community/common/assets/Icons/MagnifyingGlassIcon";
@@ -342,7 +343,8 @@ export const IconMapping: Partial<
   [IconName.PHONE_ICON]: PhoneIcon,
   [IconName.LOCATION_ICON]: LocationIcon,
   [IconName.BUILDING_ICON]: BuildingIcon,
-  [IconName.WEB_ICON]: WebIcon
+  [IconName.WEB_ICON]: WebIcon,
+  [IconName.LOCAL_PHONE_ICON]: LocalPhoneIcon,
   // Add more icons here as needed
 };
 

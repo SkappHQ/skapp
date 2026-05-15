@@ -70,6 +70,7 @@ export const CompanyTable: React.FC = () => {
       header: translateText(["table", "columns", "tasksHeader"]),
       key: "tasks",
       render(value, row) {
+        if (value === 0) return;
         return (
           <div className="flex flex-row items-center gap-2">
             <div className="font-medium text-gray-900">{`${value}`}</div>
@@ -89,6 +90,7 @@ export const CompanyTable: React.FC = () => {
       header: translateText(["table", "columns", "pipelineHeader"]),
       key: "openValue",
       render(value) {
+        if (value === 0 || value === "-") return "-";
         return `$${value}`;
       },
       width: "20%"
@@ -102,6 +104,7 @@ export const CompanyTable: React.FC = () => {
       header: translateText(["table", "columns", "accountValueHeader"]),
       key: "accountValue",
       render(value, row) {
+        if (value === "-") return "-";
         return (
           <div className="flex flex-col gap-1">
             <div className="text-gray-900">{`$${value}`}</div>
@@ -117,11 +120,11 @@ export const CompanyTable: React.FC = () => {
     id: company.id,
     name: company.name,
     contactNumber: company.contactNumber ? `+${company.contactNumber}` : "-",
-    tasks: company.tasks ?? "-",
-    openValue: company.openValue ?? "-",
-    accountValue: company.accountValue ?? "-",
-    closedDeals: company.closedDeals ?? "-",
-    overdue: company.overdue ?? "-"
+    tasks: company.tasks ? company.tasks : "-",
+    openValue: company.openValue ? company.openValue : "-",
+    accountValue: company.accountValue ? company.accountValue : "-",
+    closedDeals: company.closedDeals ? company.closedDeals : "-",
+    overdue: company.overdue ? company.overdue : "-"
   }));
 
   const handleRowClick = (
@@ -162,7 +165,7 @@ export const CompanyTable: React.FC = () => {
             "table",
             "clearButtonAriaLabel"
           ])}
-          className="w-1/2"
+          className="w-1/3"
           placeholder={translateText(["table", "search"])}
           rightIcon={<SearchIcon />}
           state="default"

@@ -67,9 +67,9 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
           sx={{
             display: "flex",
             flexDirection: "row",
-            justifyContent: "space-between",
+            justifyContent: "start",
             alignItems: "center",
-            width: "757px",
+            maxWidth: "100%",
             gap: "0.75rem"
           }}
         >

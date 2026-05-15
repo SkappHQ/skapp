@@ -1,10 +1,14 @@
 import { Button, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { AdvancedAccordion, ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, EmptyDataView } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
+import AddIcon from "~community/common/assets/Icons/AddIcon";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
+
+import AdvancedAccordion from "../../atoms/AdvancedAccordion/AdvancedAccordion";
+import styles from "./styles";
 
 const getDealItems = () => [
   {
@@ -86,23 +90,20 @@ const CompanyDeals: React.FC = () => {
 
   return (
     <div>
-      <div className="flex flex-row justify-between w-full py-4">
-        <Typography variant="h1">Deals</Typography>
-        <ButtonV2
-          variant="tertiary"
-          icon={
-            <Icon
-              name={IconName.ADD_ICON}
-              width="1rem"
-              height="1rem"
-              fill={theme.palette.text.primary}
-            />
-          }
-        >
-          Add deal
-        </ButtonV2>
+      <div className={styles.wrapper}>
+        <div className={styles.header}>
+          <p className={styles.title}>{"Deals"}</p>
+          {/*  TODO: Wire up "Add deal" when AddDealModal is implemented */}
+          <ButtonV2 type="button" variant="secondary" size="sm" disabled>
+            {"Add Deal"}
+          </ButtonV2>
+        </div>
+        <AdvancedAccordion
+          items={getDealItems()}
+          variant="card"
+          className={styles.accordionList}
+        />
       </div>
-      <AdvancedAccordion items={getDealItems()} allowMultiple={true} />
     </div>
   );
 };

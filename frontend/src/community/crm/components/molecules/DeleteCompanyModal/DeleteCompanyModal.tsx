@@ -45,7 +45,7 @@ const DeleteCompanyModal = () => {
         onClick: handleDelete,
         endIcon: IconName.DELETE_BUTTON_ICON,
         buttonStyle: ButtonStyle.ERROR,
-        isDisabled: isPending
+        isDisabled: isPending,
       }}
       secondaryBtn={{
         label: "Cancel",
