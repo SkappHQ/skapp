@@ -252,7 +252,7 @@ const WorkLocationForm = ({ id }: Props) => {
             name="name"
             maxLength={50}
             className="w-full"
-            disabled={isFormDisabled}
+            disabled={isLoading}
           />
         </div>
 
