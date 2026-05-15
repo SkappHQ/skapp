@@ -122,11 +122,9 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 
 		TimeRecord timeRecord = timeRecordDao
 			.findByEmployeeAndDate(employee, epAddTimeRecordDto.getTime().toLocalDate())
-			.orElse(null);
+			.orElseThrow(() -> new ModuleException(EpTimeMessageConstant.EP_TIME_ERROR_TIME_RECORD_NOT_FOUND));
 
-		if (timeRecord != null) {
-			saveLocationStatus(timeRecord, epAddTimeRecordDto.getRecordActionType(), locationStatus);
-		}
+		saveLocationStatus(timeRecord, epAddTimeRecordDto.getRecordActionType(), locationStatus);
 
 		return new ResponseEntityDto(false, locationStatus);
 	}
@@ -136,8 +134,6 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 			.findByWorkLocationWorkLocationId(employee.getWorkLocation().getWorkLocationId());
 
 		if (geofence.isEmpty()) {
-			log.warn("addTimeRecordWithLocation: no geofence configured for work location {}",
-					employee.getWorkLocation().getWorkLocationId());
 			return false;
 		}
 
