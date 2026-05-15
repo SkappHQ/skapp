@@ -16,6 +16,7 @@ import BadgeCheckIcon from "~community/common/assets/Icons/BadgeCheckIcon";
 import BellIcon from "~community/common/assets/Icons/BellIcon";
 import BinIcon from "~community/common/assets/Icons/BinIcon";
 import BlockedIcon from "~community/common/assets/Icons/BlockedIcon";
+import BuildingIcon from "~community/common/assets/Icons/BuildingIcon";
 import CRMModuleIcon from "~community/common/assets/Icons/CRMModuleIcon";
 import CalendarIcon from "~community/common/assets/Icons/CalendarIcon";
 import CameraIcon from "~community/common/assets/Icons/CameraIcon";
@@ -86,6 +87,7 @@ import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon"
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
+import LocationIcon from "~community/common/assets/Icons/LocationIcon";
 import LockIcon from "~community/common/assets/Icons/LockIcon";
 import MagnifyingGlassIcon from "~community/common/assets/Icons/MagnifyingGlassIcon";
 import MenuIcon from "~community/common/assets/Icons/MenuIcon";
@@ -105,6 +107,7 @@ import PeopleIcon from "~community/common/assets/Icons/PeopleIcon";
 import PeopleModuleIcon from "~community/common/assets/Icons/PeopleModuleIcon";
 import PeopleRemoveIcon from "~community/common/assets/Icons/PeopleRemoveIcon";
 import PercentageIcon from "~community/common/assets/Icons/PercentageIcon";
+import PhoneIcon from "~community/common/assets/Icons/PhoneIcon";
 import PlayIcon from "~community/common/assets/Icons/PlayIcon";
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import PopOutIcon from "~community/common/assets/Icons/PopOutIcon";
@@ -155,6 +158,7 @@ import WaitingStatusIcon from "~community/common/assets/Icons/WaitingStatusIcon"
 import WarningAlertIcon from "~community/common/assets/Icons/WarningAlertIcon";
 import WarningIcon from "~community/common/assets/Icons/WarningIcon";
 import WarningSignIcon from "~community/common/assets/Icons/WarningSignIcon";
+import WebIcon from "~community/common/assets/Icons/WebIcon";
 import WrenchIcon from "~community/common/assets/Icons/WrenchIcon";
 import { IconName, IconProps } from "~community/common/types/IconTypes";
 import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
@@ -334,7 +338,11 @@ export const IconMapping: Partial<
   [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon,
   [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon,
   [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
-  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon
+  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon,
+  [IconName.PHONE_ICON]: PhoneIcon,
+  [IconName.LOCATION_ICON]: LocationIcon,
+  [IconName.BUILDING_ICON]: BuildingIcon,
+  [IconName.WEB_ICON]: WebIcon
   // Add more icons here as needed
 };
 

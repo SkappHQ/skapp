@@ -145,6 +145,30 @@ export const useCreateNewCompany = (
   });
 };
 
+const deleteCompany = async (companyId: number) => {
+  const response = await authFetch.delete(
+    companyEndpoints.DELETE_COMPANY(companyId)
+  );
+  return response.data;
+};
+
+export const useDeleteCompany = (
+  onSuccess: () => void,
+  onError: (error: Error) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKeys.GET_COMPANY_TABLE_DATA
+      });
+      onSuccess();
+    },
+    onError: onError
+  });
+};
+
 export const useCheckCompanyNameExists = (name: string) => {
   return useQuery({
     queryKey: [...companyQueryKeys.CHECK_COMPANY_NAME_EXISTS, name],

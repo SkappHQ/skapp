@@ -6,6 +6,7 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import AddCompanyModal from "../../molecules/AddCompanyModal/AddCompanyModal";
+import DeleteCompanyModal from "../../molecules/DeleteCompanyModal/DeleteCompanyModal";
 
 const CompanyPopupController = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -25,6 +26,8 @@ const CompanyPopupController = () => {
     switch (modalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
         return translateText(["addCompanyModal", "title"]);
+      case CrmModalTypes.DELETE_COMPANY_MODAL:
+        return translateText(["deleteCompanyModal", "title"]);
       default:
         return "Unknown";
     }
@@ -34,6 +37,8 @@ const CompanyPopupController = () => {
     switch (crmModalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
         return <AddCompanyModal />;
+      case CrmModalTypes.DELETE_COMPANY_MODAL:
+        return <DeleteCompanyModal />;
       default:
         return null;
     }

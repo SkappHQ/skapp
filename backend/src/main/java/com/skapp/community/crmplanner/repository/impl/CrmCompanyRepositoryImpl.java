@@ -89,7 +89,11 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
             overdueCount,
             openValue,
             accountValue,
-            closedDealsCount
+            closedDealsCount,
+
+            company.get("industry"),
+            company.get("website"),
+            company.get("address")
 
         ));
 
@@ -106,7 +110,10 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
     query.groupBy(
         company.get("id"),
         company.get("name"),
-        company.get("contactNumber"));
+        company.get("contactNumber"),
+        company.get("industry"),
+        company.get("website"),
+        company.get("address"));
 
     List<CrmCompanyTableViewDto> content = entityManager.createQuery(query)
         .setFirstResult((int) pageable.getOffset())

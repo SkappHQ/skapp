@@ -66,4 +66,17 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
     return response;
   }
 
+   @Override
+  @Transactional
+  public ResponseEntityDto deleteCompany(Long id) {
+    log.info("deleteCompany: execution started for id: {}", id);
+    CrmCompany existingCompany = crmCompanyDao.findById(id)
+        .orElseThrow(() -> new RuntimeException("Company not found with id: " + id));
+    existingCompany.setIsDeleted(true);
+    crmCompanyDao.save(existingCompany);
+    log.info("deleteCompany: execution ended for id: {}", id);
+
+    return new ResponseEntityDto(false, "Company deleted successfully");
+  }
+
 }

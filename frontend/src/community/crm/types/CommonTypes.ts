@@ -18,6 +18,7 @@ export interface CrmCompanyResponseType {
 }
 
 export interface CrmCompanyTableDataType {
+  id: number;
   name: string;
   contactNumber: string;
   tasks: number;
@@ -25,6 +26,10 @@ export interface CrmCompanyTableDataType {
   openValue: number;
   accountValue: number;
   closedDeals: number;
+  openDeals: number | null;
+  industry: string | null;
+  website: string | null;
+  address: string | null;
 }
 
 export interface CrmCompanyTableDataResponseType {

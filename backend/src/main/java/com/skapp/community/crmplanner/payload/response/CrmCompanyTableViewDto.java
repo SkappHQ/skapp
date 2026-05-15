@@ -19,4 +19,8 @@ public class CrmCompanyTableViewDto {
   private BigDecimal openValue;
   private BigDecimal accountValue;
   private Long closedDeals;
+
+  private String industry;
+  private String website;
+  private String address;
 }

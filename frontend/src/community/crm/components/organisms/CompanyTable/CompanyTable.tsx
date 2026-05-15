@@ -15,10 +15,18 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompanyTableData } from "~community/crm/api/CompanyApi";
 import { EmptyStateTypeEnum } from "~community/crm/enums/CrmCompanyEnums";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyTableDataType } from "~community/crm/types/CommonTypes";
 
 export const CompanyTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "companies");
+
+  const { setSelectedCompany, setIsCompanyDetailDrawerOpen } = useCrmStore(
+    (store) => ({
+      setSelectedCompany: store.setSelectedCompany,
+      setIsCompanyDetailDrawerOpen: store.setIsCompanyDetailDrawerOpen
+    })
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const [emptyStateType, setEmptyStateType] = useState<EmptyStateType>(
@@ -106,14 +114,39 @@ export const CompanyTable: React.FC = () => {
   ];
 
   const tableData = companies.map((company: CrmCompanyTableDataType) => ({
+    id: company.id,
     name: company.name,
-    contactNumber: company.contactNumber ?? "-",
+    contactNumber: company.contactNumber ? `+${company.contactNumber}` : "-",
     tasks: company.tasks ?? "-",
     openValue: company.openValue ?? "-",
     accountValue: company.accountValue ?? "-",
     closedDeals: company.closedDeals ?? "-",
     overdue: company.overdue ?? "-"
   }));
+
+  const handleRowClick = (
+    _row: Record<string, unknown>,
+    index: number
+  ): void => {
+    const company = companies[index];
+    if (!company) return;
+
+    setSelectedCompany({
+      id: company.id,
+      name: company.name,
+      industry: company.industry,
+      website: company.website ?? "",
+      address: company.address ?? "",
+      contactNumber: company.contactNumber ? `+${company.contactNumber}` : "-",
+      tasks: company.tasks ?? 0,
+      overdue: company.overdue ?? 0,
+      openValue: company.openValue ?? 0,
+      accountValue: company.accountValue ?? 0,
+      closedDeals: company.closedDeals ?? 0,
+      openDeals: company.openDeals ?? 0
+    });
+    setIsCompanyDetailDrawerOpen(true);
+  };
 
   const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -154,9 +187,7 @@ export const CompanyTable: React.FC = () => {
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="35.3125rem"
         hasMore={hasNextPage}
-        onRowClick={() => {
-          return;
-        }}
+        onRowClick={handleRowClick}
         onLoadMore={loadMore}
         infiniteScrollLoadingMessage={translateText([
           "table",
