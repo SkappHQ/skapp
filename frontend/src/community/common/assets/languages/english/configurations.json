@@ -131,9 +131,9 @@
       "searchPlaceholder": "Search by location name"
     },
     "form": {
-      "nameLabel": "Work Location Name",
+      "nameLabel": "Work location name",
       "namePlaceholder": "Enter work location name",
-      "assignEmployeesLabel": "Assign Employees",
+      "assignEmployeesLabel": "Assigned Employees",
       "allEmployees": "All Employees",
       "employeeMultiSelect": {
         "ariaLabelClearButton": "Clear search",
@@ -213,7 +213,7 @@
       }
     },
     "deleteModal": {
-      "title": "Delete Work Location",
+      "title": "Are you sure?",
       "description": "Are you sure you want to delete this work location? This action cannot be undone.",
       "confirmButton": "Delete",
       "cancelButton": "Cancel"

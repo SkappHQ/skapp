@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { ButtonV2, InputField, SmallModal, Spinner } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -211,7 +211,25 @@ const WorkLocationForm = ({ id }: Props) => {
   const isFormDisabled = isLoading || isPending;
 
   if (isEditMode && isLoading) {
-    return <Spinner />;
+    return (
+      <div className="flex flex-col gap-6 max-w-[40rem] animate-pulse">
+        <div>
+          <div className="h-4 w-24 rounded bg-secondary-accent mb-2" />
+          <div className="h-10 w-full rounded bg-secondary-accent" />
+        </div>
+        <div>
+          <div className="h-4 w-32 rounded bg-secondary-accent mb-2" />
+          <div className="h-10 w-full rounded bg-secondary-accent" />
+        </div>
+        {canSeeGeofence && (
+          <div className="h-64 w-full rounded bg-secondary-accent" />
+        )}
+        <div className="flex justify-start gap-3">
+          <div className="h-10 w-24 rounded bg-secondary-accent" />
+          <div className="h-10 w-32 rounded bg-secondary-accent" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -245,7 +263,17 @@ const WorkLocationForm = ({ id }: Props) => {
 
         {canSeeGeofence && <GeofenceMap formik={formik} />}
 
-        <div className="flex justify-start">
+        <div className="flex justify-start gap-3">
+          {isEditMode && (
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              onClick={navigateBack}
+              disabled={isPending}
+            >
+              {translateText(["form.cancelButton"])}
+            </ButtonV2>
+          )}
           <ButtonV2
             variant="primary"
             type="submit"
