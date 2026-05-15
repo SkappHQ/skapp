@@ -134,7 +134,8 @@ const SystemPermissionFormSection = ({
         attendanceRole: employee?.systemPermissions?.attendanceRole,
         esignRole: employee?.systemPermissions?.esignRole,
         invoiceRole: employee?.systemPermissions?.invoiceRole,
-        pmRole: employee?.systemPermissions?.pmRole
+        pmRole: employee?.systemPermissions?.pmRole,
+        crmRole: employee?.systemPermissions?.crmRole
       };
 
       const errorsToShow = [];
@@ -171,7 +172,6 @@ const SystemPermissionFormSection = ({
         return;
       }
     }
-
     const isLeaveDowngraded =
       employee?.systemPermissions?.leaveRole === Role.LEAVE_EMPLOYEE &&
       (initialEmployee?.systemPermissions?.leaveRole === Role.LEAVE_ADMIN ||
@@ -388,6 +388,26 @@ const SystemPermissionFormSection = ({
                   isDisabled={isDropdownDisabled}
                 />
               )}
+
+            {/* {(!isRoleMissing(RoleModuleEnum.CRM, RoleNameEnum.ADMIN) ||
+              !isRoleMissing(RoleModuleEnum.CRM, RoleNameEnum.SALES_MANAGER) ||
+              !isRoleMissing(
+                RoleModuleEnum.CRM,
+                RoleNameEnum.SALES_REPRESENTATIVE
+              )) && (
+                <DropdownList
+                  inputName={"crmRole"}
+                  label={translateText(["crm"])}
+                  itemList={grantablePermission?.crm || []}
+                  value={permissions.crmRole}
+                  componentStyle={classes.dropdownListComponentStyles}
+                  checkSelected
+                  onChange={(event) =>
+                    handleRoleDropdown("crmRole", event.target.value as Role)
+                  }
+                  isDisabled={isDropdownDisabled}
+                />
+              )} */}
           </Stack>
 
           {isUpdate &&

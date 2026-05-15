@@ -9,6 +9,10 @@ public class PeopleConstants {
 
 	public static final String HOLIDAY_NAME_REGEX_PATTERN = "^[a-zA-Z ]*$";
 
+	public static final Long HOLIDAY_ALL_WORK_LOCATIONS_ID = -1L;
+
+	public static final String HOLIDAY_ALL_WORK_LOCATIONS = "All locations";
+
 	public static final String DELETED_PREFIX = "DELETED_";
 
 	public static final int MAXIMUM_HOLIDAYS_PER_DAY = 3;
