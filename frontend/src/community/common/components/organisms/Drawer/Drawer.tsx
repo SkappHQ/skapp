@@ -321,7 +321,7 @@ const Drawer = (): JSX.Element => {
                           />
                           <NotificationDot
                             show={
-                              route.id === "4" &&
+                              route.id === "5" &&
                               notificationSignCount > 0 &&
                               ((hasSubTree && !isExpanded) ||
                                 (!hasSubTree && !isDrawerExpanded))
@@ -347,6 +347,7 @@ const Drawer = (): JSX.Element => {
                       {route?.notificationCount && !hasSubTree && (
                         <NotificationBadge count={route.notificationCount} />
                       )}
+
                       <ListItemIcon
                         sx={classes.chevronIcons(
                           expandedDrawerListItem,
