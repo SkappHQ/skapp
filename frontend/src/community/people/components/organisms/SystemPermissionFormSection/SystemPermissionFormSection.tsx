@@ -135,7 +135,7 @@ const SystemPermissionFormSection = ({
         esignRole: employee?.systemPermissions?.esignRole,
         invoiceRole: employee?.systemPermissions?.invoiceRole,
         pmRole: employee?.systemPermissions?.pmRole,
-        // crmRole: employee?.systemPermissions?.crmRole
+        crmRole: employee?.systemPermissions?.crmRole
       };
 
       const errorsToShow = [];
