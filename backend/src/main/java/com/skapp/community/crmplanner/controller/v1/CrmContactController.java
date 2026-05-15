@@ -136,4 +136,14 @@ public class CrmContactController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get contacts for lookup",
+			description = "Retrieves contacts for dropdown/autocomplete selection.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping(value = "/contacts/lookup", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getContactsLookup(@Valid CrmContactLookupFilterDto filterDto) {
+
+		ResponseEntityDto response = crmContactService.getContactsLookup(filterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

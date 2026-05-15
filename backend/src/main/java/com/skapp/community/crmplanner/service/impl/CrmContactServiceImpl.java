@@ -408,6 +408,30 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactsLookup(CrmContactLookupFilterDto filterDto) {
+		log.info("getContactsLookup: execution started");
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmContact> contactPage = crmContactRepository.findContactsForLookup(filterDto.getSearchKeyword(),
+				pageable);
+
+		List<CrmContactLookupResponseDto> contactDtos = contactPage.getContent()
+			.stream()
+			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
+			.toList();
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(contactDtos);
+		pageDto.setCurrentPage(contactPage.getNumber());
+		pageDto.setTotalItems(contactPage.getTotalElements());
+		pageDto.setTotalPages(contactPage.getTotalPages());
+
+		log.info("getContactsLookup: execution ended");
+		return new ResponseEntityDto(false, pageDto);
+	}
+
 	private void enforceEditPermission(CrmContact contact, User currentUser) {
 		Employee currentEmployee = currentUser.getEmployee();
 		if (currentEmployee == null) {

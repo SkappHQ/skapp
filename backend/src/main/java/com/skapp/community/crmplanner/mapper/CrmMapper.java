@@ -7,15 +7,7 @@ import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmPriority;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmPriorityResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
+import com.skapp.community.crmplanner.payload.response.*;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -64,5 +56,7 @@ public interface CrmMapper {
 	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask task);
 
 	CrmTaskTypeResponseDto crmTaskTypeToCrmTaskTypeResponseDto(CrmTaskType type);
+
+	CrmContactLookupResponseDto crmContactToCrmContactLookupResponseDto(CrmContact contact);
 
 }

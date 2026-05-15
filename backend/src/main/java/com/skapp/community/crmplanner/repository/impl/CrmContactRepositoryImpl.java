@@ -127,4 +127,51 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 
+	@Override
+	public Page<CrmContact> findContactsForLookup(String searchKeyword, Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(contact.get("isDeleted")));
+
+		if (searchKeyword != null && !searchKeyword.isBlank()) {
+			String likePattern = "%" + searchKeyword.trim().toLowerCase() + "%";
+			predicates.add(cb.or(cb.like(cb.lower(contact.get("name")), likePattern),
+					cb.like(cb.lower(contact.get("email")), likePattern)));
+		}
+
+		query.where(predicates.toArray(new Predicate[0]));
+		query.orderBy(cb.asc(contact.get("name")));
+
+		TypedQuery<CrmContact> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+
+		List<CrmContact> contacts = typedQuery.getResultList();
+		Long totalCount = getTotalCountForLookup(cb, searchKeyword);
+
+		return new PageImpl<>(contacts, pageable, totalCount);
+	}
+
+	private Long getTotalCountForLookup(CriteriaBuilder cb, String searchKeyword) {
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmContact> contact = countQuery.from(CrmContact.class);
+		countQuery.select(cb.count(contact));
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(contact.get("isDeleted")));
+
+		if (searchKeyword != null && !searchKeyword.isBlank()) {
+			String likePattern = "%" + searchKeyword.trim().toLowerCase() + "%";
+			predicates.add(cb.or(cb.like(cb.lower(contact.get("name")), likePattern),
+					cb.like(cb.lower(contact.get("email")), likePattern)));
+		}
+
+		countQuery.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(countQuery).getSingleResult();
+	}
+
 }

@@ -9,4 +9,6 @@ public interface CrmContactRepository {
 
 	Page<CrmContact> findContacts(CrmContactFilterDto filterDto, Pageable pageable);
 
+	Page<CrmContact> findContactsForLookup(String searchKeyword, Pageable pageable);
+
 }

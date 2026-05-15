@@ -27,4 +27,6 @@ public interface CrmContactService {
 
 	ResponseEntityDto getContactOwners(CrmContactOwnerFilterDto filterDto);
 
+	ResponseEntityDto getContactsLookup(CrmContactLookupFilterDto filterDto);
+
 }
