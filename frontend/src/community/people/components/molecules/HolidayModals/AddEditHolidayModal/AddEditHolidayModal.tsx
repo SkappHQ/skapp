@@ -360,6 +360,10 @@ const AddEditHolidayModal = ({
     }
   };
 
+  const handleOnAddNewClickBtn = () => {
+    router.push(`${ROUTES.SETTINGS.BASE}?tab=organization`);
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="flex flex-col gap-6">
@@ -440,9 +444,7 @@ const AddEditHolidayModal = ({
           isErrorFocusOutlineNeeded={false}
           itemList={workLocationList}
           isRequired
-          onAddNewClickBtn={() => {
-            router.push(`${ROUTES.SETTINGS.BASE}?tab=organization`);
-          }}
+          onAddNewClickBtn={handleOnAddNewClickBtn}
           addNewClickBtnText={translateText(["addNewWorkLocation"])}
           ariaLabel={translateAria(["selectWorkLocation"])}
           error={errors.workLocation as string}
