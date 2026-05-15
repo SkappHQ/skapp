@@ -1,10 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactUpdateRequestDto;
+import com.skapp.community.crmplanner.payload.request.*;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -78,6 +75,26 @@ public class CrmContactController {
 	public ResponseEntity<ResponseEntityDto> getContactDeals(@PathVariable Long contactId) {
 
 		ResponseEntityDto response = crmContactService.getContactDeals(contactId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Create task for contact", description = "Creates a new task linked to a contact.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PostMapping(value = "/contacts/{contactId}/tasks", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> createContactTask(@PathVariable Long contactId,
+			@Valid @RequestBody CrmTaskCreateRequestDto requestDto) {
+
+		ResponseEntityDto response = crmContactService.createContactTask(contactId, requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Create deal for contact", description = "Creates a new deal linked to a contact.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PostMapping(value = "/contacts/{contactId}/deals", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> createContactDeal(@PathVariable Long contactId,
+			@Valid @RequestBody CrmDealCreateRequestDto requestDto) {
+
+		ResponseEntityDto response = crmContactService.createContactDeal(contactId, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -1,10 +1,7 @@
 package com.skapp.community.crmplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactUpdateRequestDto;
+import com.skapp.community.crmplanner.payload.request.*;
 
 public interface CrmContactService {
 
@@ -17,6 +14,10 @@ public interface CrmContactService {
 	ResponseEntityDto getContactMetrics(Long id);
 
 	ResponseEntityDto getContactDeals(Long contactId);
+
+	ResponseEntityDto createContactTask(Long contactId, CrmTaskCreateRequestDto requestDto);
+
+	ResponseEntityDto createContactDeal(Long contactId, CrmDealCreateRequestDto requestDto);
 
 	ResponseEntityDto getContactTasks(Long contactId);
 

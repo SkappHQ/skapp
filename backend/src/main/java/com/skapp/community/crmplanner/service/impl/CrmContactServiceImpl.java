@@ -11,12 +11,8 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
-import com.skapp.community.crmplanner.model.CrmCompany;
-import com.skapp.community.crmplanner.model.CrmContact;
-import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactUpdateRequestDto;
+import com.skapp.community.crmplanner.model.*;
+import com.skapp.community.crmplanner.payload.request.*;
 import com.skapp.community.crmplanner.payload.response.*;
 import com.skapp.community.crmplanner.repository.*;
 import com.skapp.community.crmplanner.service.CrmContactService;
@@ -57,6 +53,12 @@ public class CrmContactServiceImpl implements CrmContactService {
 	private final CrmDealDao crmDealDao;
 
 	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
+
+	private final CrmDealStageDao crmDealStageDao;
+
+	private final CrmPriorityDao crmPriorityDao;
 
 	private final CrmDealRepository crmDealRepository;
 
@@ -246,6 +248,104 @@ public class CrmContactServiceImpl implements CrmContactService {
 	}
 
 	@Override
+	@Transactional
+	public ResponseEntityDto createContactTask(Long contactId, CrmTaskCreateRequestDto requestDto) {
+		log.info("createContactTask: execution started for contactId: {}", contactId);
+
+		User currentUser = userService.getCurrentUser();
+
+		// Verify contact exists
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(contactId)
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		// Resolve task type
+		CrmTaskType taskType = crmTaskTypeDao.findById(requestDto.getTypeId())
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_TASK_TYPE_NOT_FOUND));
+
+		// Resolve priority
+		CrmPriority priority = crmPriorityDao.findById(requestDto.getPriorityId())
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND));
+
+		// Resolve owner (defaults to current user)
+		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+
+		// Resolve deal if provided
+		CrmDeal deal = null;
+		if (requestDto.getDealId() != null) {
+			deal = crmDealDao.findById(requestDto.getDealId())
+				.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+		}
+
+		// Create task
+		CrmTask task = new CrmTask();
+		task.setName(requestDto.getName().trim());
+		task.setType(taskType);
+		task.setPriority(priority);
+		task.setIsCompleted(false);
+		task.setDueAt(requestDto.getDueAt());
+		task.setNotes(normalizeNullableText(requestDto.getNotes()));
+		task.setOwner(owner);
+		task.setContact(contact);
+		task.setCompany(contact.getCompany());
+		task.setDeal(deal);
+		task.setIsDeleted(false);
+
+		crmTaskDao.save(task);
+
+		log.info("createContactTask: execution ended, task created with id: {}", task.getId());
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_TASK_CREATED), false);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto createContactDeal(Long contactId, CrmDealCreateRequestDto requestDto) {
+		log.info("createContactDeal: execution started for contactId: {}", contactId);
+
+		User currentUser = userService.getCurrentUser();
+
+		// Verify contact exists
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(contactId)
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		// Resolve deal stage
+		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
+			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+
+		// Resolve priority (optional)
+		CrmPriority priority = null;
+		if (requestDto.getPriorityId() != null) {
+			priority = crmPriorityDao.findById(requestDto.getPriorityId())
+				.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND));
+		}
+
+		// Resolve owner (defaults to current user)
+		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+
+		// Resolve company (optional, defaults to contact's company)
+		CrmCompany company = resolveCompany(requestDto.getCompanyId());
+		if (company == null) {
+			company = contact.getCompany();
+		}
+
+		// Create deal
+		CrmDeal deal = new CrmDeal();
+		deal.setName(requestDto.getName().trim());
+		deal.setStage(stage);
+		deal.setPriority(priority);
+		deal.setClosingAt(requestDto.getClosingAt());
+		deal.setAmount(requestDto.getAmount());
+		deal.setCompany(company);
+		deal.setContact(contact);
+		deal.setOwner(owner);
+		deal.setIsDeleted(false);
+
+		crmDealDao.save(deal);
+
+		log.info("createContactDeal: execution ended, deal created with id: {}", deal.getId());
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_DEAL_CREATED), false);
+	}
+
+	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getContactTasks(Long contactId) {
 		log.info("getContactTasks: execution started for contactId: {}", contactId);
@@ -271,6 +371,13 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
+		// Cascade soft delete to all associated deals and tasks
+		int dealsDeleted = crmDealDao.softDeleteByContactId(id);
+		int tasksDeleted = crmTaskDao.softDeleteByContactId(id);
+
+		log.info("deleteContact: soft deleting {} deals and {} tasks for contact {}", dealsDeleted, tasksDeleted, id);
+
+		// Soft delete the contact itself
 		contact.setIsDeleted(true);
 		crmContactDao.save(contact);
 
