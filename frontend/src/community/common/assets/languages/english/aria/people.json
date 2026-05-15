@@ -113,6 +113,7 @@
       "janToDec": "January to December",
       "decToJan": "December to January",
       "yearSelector": "Year selector",
+      "workLocationSelector": "Work location selector",
       "currentSelection": "Current selection is"
     },
     "holidays": "Holidays",
@@ -122,7 +123,8 @@
     "holidayTableRow": "Row: Date {{date}}; Duration {{duration}}; Holiday Name: {{holidayName}}; Delete holiday {{status}}",
     "deleteHoliday": "Delete {{holidayName}} holiday",
     "enabled": "Enabled",
-    "disabled": "Disabled"
+    "disabled": "Disabled",
+    "selectWorkLocation": "Select the work location"
   },
   "directory": {
     "userBulkUpload": "User Bulk",

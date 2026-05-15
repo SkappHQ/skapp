@@ -99,6 +99,7 @@ interface actionsTypes {
   setIndividualDeleteId: (value: number) => void;
   setSelectedDeleteIds: (value: number[]) => void;
   setSelectedYear: (value: string) => void;
+  setSelectedWorkLocationId: (value: number) => void;
 
   //holidaySlice
   setIsBulkUpload: (value: boolean) => void;
@@ -302,6 +303,7 @@ export interface Store extends actionsTypes {
     colors?: string | string[];
     holidayDurations?: string;
   };
+  selectedWorkLocationId: number;
   individualDeleteId: number;
   selectedDeleteIds: number[];
   selectedYear: string;
@@ -315,6 +317,7 @@ export interface Store extends actionsTypes {
     halfDayState: HolidayHalfDayState;
     holidayId: number;
     holidayColor: string;
+    workLocations: number[];
   };
   failedCount: number;
   successCount: number;
