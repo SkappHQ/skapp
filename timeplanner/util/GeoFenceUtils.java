@@ -1,6 +1,5 @@
 package com.skapp.enterprise.timeplanner.util;
 
-import com.skapp.enterprise.timeplanner.constant.EpTimeConstants;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -15,7 +14,8 @@ public class GeoFenceUtils {
 
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-		return EpTimeConstants.EARTH_RADIUS_METERS * c;
+		// Haversine formula: Earth's mean radius in meters (WGS-84)
+		return 6_371_000.0 * c;
 	}
 
 	public static boolean isWithinGeofence(double userLat, double userLon, double fenceLat, double fenceLon,

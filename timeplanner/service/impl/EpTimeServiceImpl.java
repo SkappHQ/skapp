@@ -105,6 +105,11 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 
 		addTimeRecord(epAddTimeRecordDto);
 
+		if (employee.getWorkLocation() == null) {
+			log.warn("addTimeRecordWithLocation: employee {} has no assigned work location", employee.getEmployeeId());
+			return new ResponseEntityDto(false, null);
+		}
+
 		RecordLocationStatus locationStatus;
 		if (epAddTimeRecordDto.getLatitude() == null || epAddTimeRecordDto.getLongitude() == null) {
 			locationStatus = RecordLocationStatus.UNAVAILABLE;
@@ -127,11 +132,6 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 	}
 
 	private boolean determineIfWithinGeofence(Employee employee, double userLat, double userLon) {
-		if (employee.getWorkLocation() == null) {
-			log.warn("addTimeRecordWithLocation: employee {} has no assigned work location", employee.getEmployeeId());
-			return false;
-		}
-
 		Optional<WorkLocationGeofence> geofence = workLocationGeofenceDao
 			.findByWorkLocationWorkLocationId(employee.getWorkLocation().getWorkLocationId());
 

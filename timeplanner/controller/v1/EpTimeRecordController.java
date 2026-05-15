@@ -5,7 +5,6 @@ import com.skapp.enterprise.timeplanner.payload.request.EpAddTimeRecordDto;
 import com.skapp.enterprise.timeplanner.service.EpTimeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/v1/ep/time")
 @Tag(name = "EP Time Controller", description = "Enterprise endpoints for time recordings with location tracking")
-public class EpTimeController {
+public class EpTimeRecordController {
 
 	private final EpTimeService epTimeService;
 
