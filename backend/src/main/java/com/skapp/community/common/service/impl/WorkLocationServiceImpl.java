@@ -209,19 +209,15 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		List<Employee> employees = employeeDao.findByWorkLocationWorkLocationId(id);
 		Optional<WorkLocationGeofence> geofence = workLocationGeofenceDao.findByWorkLocationWorkLocationId(id);
 
-		List<Employee> allActiveEmployees = employeeDao
-			.findNonGuestEmployeesByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+		List<Employee> allActiveEmployees = employeeDao.findActiveEmployeesExcludingGuests();
 
-		// Filter location employees to the same non-guest ACTIVE/PENDING population
-		// to avoid mismatches from guests or inactive employees still assigned.
 		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
 		List<Employee> filteredEmployees = employees.stream()
 			.filter(e -> activeStatuses.contains(e.getAccountStatus()))
 			.filter(e -> e.getEmployeeRole() == null
 					|| e.getEmployeeRole().getPmRole() != com.skapp.community.common.type.Role.PM_GUEST_EMPLOYEE)
 			.toList();
-		boolean isAllEmployees = !filteredEmployees.isEmpty()
-				&& filteredEmployees.size() == allActiveEmployees.size();
+		boolean isAllEmployees = !filteredEmployees.isEmpty() && filteredEmployees.size() == allActiveEmployees.size();
 
 		WorkLocationDetailResponseDto responseDto = new WorkLocationDetailResponseDto();
 		responseDto.setWorkLocationId(workLocation.getWorkLocationId());
@@ -272,8 +268,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 	private void assignEmployeesToWorkLocation(WorkLocationRequestDto requestDto, WorkLocation workLocation) {
 		if (Boolean.TRUE.equals(requestDto.getIsAllEmployees())) {
-			List<Employee> allActiveEmployees = employeeDao
-				.findNonGuestEmployeesByAccountStatusIn(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+			List<Employee> allActiveEmployees = employeeDao.findActiveEmployeesExcludingGuests();
 			for (Employee employee : allActiveEmployees) {
 				employee.setWorkLocation(workLocation);
 			}

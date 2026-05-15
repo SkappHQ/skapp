@@ -1532,11 +1532,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
-	public List<Employee> findNonGuestEmployeesByAccountStatusIn(@NonNull Set<AccountStatus> accountStatuses) {
-		if (accountStatuses.isEmpty()) {
-			throw new IllegalArgumentException("accountStatuses must not be empty");
-		}
-
+	public List<Employee> findActiveEmployeesExcludingGuests() {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
@@ -1544,7 +1540,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
 
 		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(root.get(Employee_.accountStatus).in(accountStatuses));
+		predicates.add(root.get(Employee_.accountStatus).in(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
 		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.PM_ROLE).isNull(),
 				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE)));
 
