@@ -1,11 +1,22 @@
-﻿import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import {
+  BaseRowData,
+  Column,
+  GroupData,
+  ListTable
+} from "@rootcodelabs/skapp-ui";
+import {
+  FC,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
-import Table from "~community/common/components/molecules/Table/Table";
-import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import {
   useGetDeals,
   useGetDealStages
@@ -44,7 +55,6 @@ const DealTable: FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState("");
 
-  const tableContainerRef = useRef<HTMLDivElement>(null);
   const isFetchingMoreRef = useRef(false);
 
   const { data: dealsData, isFetching } = useGetDeals(
@@ -67,25 +77,12 @@ const DealTable: FC = () => {
     isFetchingMoreRef.current = false;
   }, [dealsData, isFetching, fetchPage]);
 
-  // Scroll-based infinite load
-  const handleLoadMore = useCallback(() => {
+  // Triggered by skapp-ui Table's built-in scroll detection
+  const handleLoadMore = useCallback(async () => {
     if (!hasMore || isFetching || isFetchingMoreRef.current) return;
     isFetchingMoreRef.current = true;
     setFetchPage((p) => p + 1);
   }, [hasMore, isFetching]);
-
-  useEffect(() => {
-    const el = tableContainerRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = el;
-      if (scrollHeight - scrollTop - clientHeight < 150) {
-        handleLoadMore();
-      }
-    };
-    el.addEventListener("scroll", onScroll);
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [handleLoadMore]);
 
   const { data: stages = [] } = useGetDealStages();
 
@@ -111,12 +108,6 @@ const DealTable: FC = () => {
     resetPagination();
   };
 
-  const handleRowClick = (row: { id: number }) => {
-    openSidePanel(row.id);
-  };
-
-  const isFiltering = !!searchKeyword;
-
   const noSearchResultsTitle = useMemo(() => {
     const base = translateText(["noSearchResultsTitle"]);
     return searchKeyword
@@ -128,27 +119,96 @@ const DealTable: FC = () => {
   // Table columns & rows
   // -------------------------------------------------------------------------
 
-  const tableHeaders = [
-    { id: "dealName", label: translateText(["dealColumn"]) },
-    { id: "value", label: translateText(["valueColumn"]) },
-    { id: "stage", label: translateText(["stageColumn"]) },
-    { id: "companyName", label: translateText(["companyNameColumn"]) },
-    { id: "contactName", label: translateText(["contactNameColumn"]) },
-    { id: "dealOwner", label: translateText(["dealOwnerColumn"]) }
-  ];
+  interface DealRow extends BaseRowData {
+    id: string;
+    dealName: ReactNode;
+    value: ReactNode;
+    stage: ReactNode;
+    companyName: ReactNode;
+    contactName: ReactNode;
+    dealOwner: ReactNode;
+  }
 
-  const tableRows = useMemo(() => {
+  const columnHeaders = useMemo((): Column<DealRow>[] => [
+    {
+      id: "dealName",
+      title: translateText(["dealColumn"]),
+      field: "dealName",
+      width: 200,
+      minWidth: 120,
+      resizable: true,
+      draggable: true,
+      visible: true,
+      sortable: false
+    },
+    {
+      id: "value",
+      title: translateText(["valueColumn"]),
+      field: "value",
+      width: 150,
+      minWidth: 100,
+      resizable: true,
+      draggable: true,
+      visible: true,
+      sortable: false
+    },
+    {
+      id: "stage",
+      title: translateText(["stageColumn"]),
+      field: "stage",
+      width: 150,
+      minWidth: 100,
+      resizable: true,
+      draggable: true,
+      visible: true,
+      sortable: false
+    },
+    {
+      id: "companyName",
+      title: translateText(["companyNameColumn"]),
+      field: "companyName",
+      width: 180,
+      minWidth: 120,
+      resizable: true,
+      draggable: true,
+      visible: true,
+      sortable: false
+    },
+    {
+      id: "contactName",
+      title: translateText(["contactNameColumn"]),
+      field: "contactName",
+      width: 180,
+      minWidth: 120,
+      resizable: true,
+      draggable: true,
+      visible: true,
+      sortable: false
+    },
+    {
+      id: "dealOwner",
+      title: translateText(["dealOwnerColumn"]),
+      field: "dealOwner",
+      width: 180,
+      minWidth: 120,
+      resizable: true,
+      draggable: true,
+      visible: true,
+      sortable: false
+    }
+  ], [translateText]);
+
+  const tableRows = useMemo((): DealRow[] => {
     return allDeals.map((deal: CrmDealListItemType) => {
       const stageColor =
         deal.stageColor ?? stageColorMap[deal.stageId] ?? "#6B7280";
-      const [ownerFirstName = "", ...rest] = (deal.ownerName ?? "").split(" ");
-      const ownerLastName = rest.join(" ");
-
+      const [ownerFirst = "", ...rest] = (deal.ownerName ?? "").split(" ");
+      const ownerLast = rest.join(" ");
       return {
-        id: deal.id,
-        dealName: deal.name,
+        id: String(deal.id),
+        dealName: deal.name ?? "",
         value: deal.amount
-          ? `${Number(deal.amount).toLocaleString()}`
+          ? `$${Number(deal.amount).toLocaleString()}`
           : "\u2014",
         stage: (
           <div className="inline-flex items-center gap-2">
@@ -163,8 +223,8 @@ const DealTable: FC = () => {
         contactName: deal.contactName ?? "\u2014",
         dealOwner: (
           <AvatarChip
-            firstName={ownerFirstName}
-            lastName={ownerLastName}
+            firstName={ownerFirst}
+            lastName={ownerLast}
             avatarUrl={undefined}
             chipStyles={{ maxWidth: "fit-content" }}
           />
@@ -173,61 +233,43 @@ const DealTable: FC = () => {
     });
   }, [allDeals, stageColorMap]);
 
+  const tableData = useMemo((): GroupData<DealRow>[] => [
+    { items: tableRows }
+  ], [tableRows]);
+
   // -------------------------------------------------------------------------
   // Render
   // -------------------------------------------------------------------------
 
   return (
-    <Table
-      tableName={TableNames.CRM_DEALS}
-      headers={tableHeaders}
-      rows={tableRows}
-      isLoading={isFetching && fetchPage === 0}
-      tableContainerRef={tableContainerRef}
-      customStyles={{
-        container: { maxHeight: "calc(100vh - 220px)", overflow: "auto" }
-      }}
-      actionToolbar={{
-        firstRow: {
-          leftButton: (
-            <SearchBox
-              placeHolder={translateText(["searchPlaceholder"])}
-              value={searchKeyword}
-              setSearchTerm={handleSearchChange}
-              name="dealSearch"
-            />
-          ),
-          rightButton: undefined
+    <div className="flex flex-col gap-3">
+      <div className="w-60">
+        <SearchBox
+          placeHolder={translateText(["searchPlaceholder"])}
+          value={searchKeyword}
+          setSearchTerm={handleSearchChange}
+          name="dealSearch"
+        />
+      </div>
+      <ListTable<DealRow>
+        columnHeaders={columnHeaders}
+        data={tableData}
+        hasMore={hasMore}
+        onLoadMore={handleLoadMore}
+        emptyStateTitle={
+          searchKeyword
+            ? noSearchResultsTitle
+            : translateText(["noDealsTitle"])
         }
-      }}
-      tableBody={{
-        onRowClick: handleRowClick,
-        emptyState: {
-          isSearching: isFiltering,
-          noData: {
-            title: translateText(["noDealsTitle"]),
-            description: translateText(["noDealsDescription"]),
-            button: {
-              label: translateText(["addDealBtn"]),
-              onClick: openCreatePanel,
-              startIcon: IconName.ADD_ICON
-            }
-          },
-          noSearchResults: {
-            title: noSearchResultsTitle,
-            description: translateText(["noSearchResultsDescription"])
-          }
-        },
-        loadingState: {
-          skeleton: { rows: PAGE_SIZE }
+        emptyStateDescription={
+          searchKeyword
+            ? translateText(["noSearchResultsDescription"])
+            : translateText(["noDealsDescription"])
         }
-      }}
-      tableFoot={{
-        pagination: {
-          isEnabled: false
-        }
-      }}
-    />
+        infiniteScrollLoadingMessage="Loading more deals..."
+        scrollThreshold={0.8}
+      />
+    </div>
   );
 };
 
