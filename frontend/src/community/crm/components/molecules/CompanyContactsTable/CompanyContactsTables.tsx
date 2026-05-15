@@ -47,10 +47,46 @@ const CompanyContactsTables = () => {
     }
   ];
 
-  const tableData: any[] = [];
+  const tableData = [
+    {
+      contact: "Samuel West",
+      email: "samuelwest@mail.com",
+      contactNumber: "+1234567890",
+      revenue: "$1,000",
+      openTasks: "10"
+    },
+    {
+      contact: "Hannah Lee",
+      email: "hannah.lee@stark.com",
+      contactNumber: "+1234567890",
+      revenue: "$1,000",
+      openTasks: "10"
+    },
+    {
+      contact: "Michael Chen",
+      email: "michael.chen@stark.com",
+      contactNumber: "+1234567890",
+      revenue: "$1,000",
+      openTasks: "10"
+    },
+    {
+      contact: "Sarah Rodriguez",
+      email: "sarah.rodriguez@stark.com",
+      contactNumber: "+1234567890",
+      revenue: "$1,000",
+      openTasks: "10"
+    },
+    {
+      contact: "David Wilson",
+      email: "david.wilson@stark.com",
+      contactNumber: "+1234567890",
+      revenue: "$1,000",
+      openTasks: "10"
+    }
+  ];
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       <Typography variant="h1">Contacts</Typography>
       <Table
         columns={columns as TableColumn<any>[]}

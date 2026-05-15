@@ -83,7 +83,7 @@ const CompanyDetailDrawer: React.FC = () => {
         }
       }}
     >
-      <div className="flex flex-col gap-4 w-full p-6">
+      <div className="flex flex-col gap-2 w-full p-6">
         <div className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-4">
           {selectedCompany && (
             <CompanyDetailHeader
