@@ -1,7 +1,6 @@
 package com.skapp.community.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.payload.response.WorkLocationDetailResponseDto;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -212,11 +212,11 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		List<Employee> allActiveEmployees = employeeDao.findActiveEmployeesExcludingGuests();
 
-		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING);
+		Set<Long> activeEmployeeIds = allActiveEmployees.stream()
+			.map(Employee::getEmployeeId)
+			.collect(Collectors.toSet());
 		List<Employee> filteredEmployees = employees.stream()
-			.filter(e -> activeStatuses.contains(e.getAccountStatus()))
-			.filter(e -> e.getEmployeeRole() == null
-					|| e.getEmployeeRole().getPmRole() != Role.PM_GUEST_EMPLOYEE)
+			.filter(e -> activeEmployeeIds.contains(e.getEmployeeId()))
 			.toList();
 		boolean isAllEmployees = !filteredEmployees.isEmpty() && filteredEmployees.size() == allActiveEmployees.size();
 
