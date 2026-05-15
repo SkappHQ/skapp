@@ -99,6 +99,8 @@ public interface EmployeeRepository {
 
 	Map<Long, Long> countByWorkLocationIds(List<Long> workLocationIds);
 
-	List<Employee> findActiveEmployeesExcludingGuests();
+	List<Employee> findActiveEmployeesExcludingGuests(Long workLocationId);
+
+	Long countActiveEmployeesExcludingGuests();
 
 }
