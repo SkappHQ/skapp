@@ -347,7 +347,6 @@ const Drawer = (): JSX.Element => {
                       {route?.notificationCount && !hasSubTree && (
                         <NotificationBadge count={route.notificationCount} />
                       )}
-
                       <ListItemIcon
                         sx={classes.chevronIcons(
                           expandedDrawerListItem,
