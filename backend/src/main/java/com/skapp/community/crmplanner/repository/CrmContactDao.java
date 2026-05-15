@@ -11,12 +11,12 @@ import java.util.Optional;
 @Repository
 public interface CrmContactDao extends JpaRepository<CrmContact, Long> {
 
-	boolean existsByEmailIgnoreCaseAndIsDeletedFalse(String email);
+boolean existsByEmailIgnoreCaseAndIsDeletedFalse(String email);
 
-	boolean existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(String email, Long id);
+boolean existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(String email, Long id);
 
-	List<CrmContact> findByOwnerInAndIsDeletedFalse(List<Employee> owners);
+List<CrmContact> findByOwnerInAndIsDeletedFalse(List<Employee> owners);
 
-	Optional<CrmContact> findByIdAndIsDeletedFalse(Long id);
+Optional<CrmContact> findByIdAndIsDeletedFalse(Long id);
 
 }

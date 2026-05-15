@@ -13,16 +13,28 @@ public class CrmDealResponseDto {
 
 	private String name;
 
-	private String amount;
+	private Long stageId;
+
+	private String stageName;
+
+	private Long priorityId;
+
+	private String priorityName;
 
 	private LocalDateTime closingAt;
 
-	private CrmDealStageResponseDto stage;
+	private String amount;
 
-	private CrmPriorityResponseDto priority;
+	private Long companyId;
 
-	private CrmContactOwnerResponseDto owner;
+	private String companyName;
 
-	private CrmCompanyLookupResponseDto company;
+	private Long contactId;
+
+	private String contactName;
+
+	private Long ownerId;
+
+	private String ownerName;
 
 }

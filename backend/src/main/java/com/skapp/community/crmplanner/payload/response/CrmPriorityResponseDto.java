@@ -11,4 +11,6 @@ public class CrmPriorityResponseDto {
 
 	private String name;
 
+	private Integer orderIndex;
+
 }

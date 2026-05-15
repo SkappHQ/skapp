@@ -10,12 +10,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CrmDealDao extends JpaRepository<CrmDeal, Long> {
+public interface CrmDealDao extends JpaRepository<CrmDeal, Long>, CrmDealRepository {
 
-	List<CrmDeal> findByContactIdAndIsDeletedFalse(Long contactId);
+List<CrmDeal> findByContactIdAndIsDeletedFalse(Long contactId);
 
-	@Modifying
-	@Query("UPDATE CrmDeal d SET d.isDeleted = true WHERE d.contact.id = :contactId AND d.isDeleted = false")
-	int softDeleteByContactId(@Param("contactId") Long contactId);
+@Modifying
+@Query("UPDATE CrmDeal d SET d.isDeleted = true WHERE d.contact.id = :contactId AND d.isDeleted = false")
+int softDeleteByContactId(@Param("contactId") Long contactId);
 
 }

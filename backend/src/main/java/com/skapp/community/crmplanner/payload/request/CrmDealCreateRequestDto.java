@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 @Setter
 public class CrmDealCreateRequestDto {
 
-	@NotBlank(message = "Deal name is required")
+	@NotBlank(message = "{crm.error.deal.name-required}")
 	private String name;
 
-	@NotNull(message = "Deal stage is required")
+	@NotNull(message = "{crm.error.deal.stage-not-found}")
 	private Long stageId;
 
 	private Long priorityId;
@@ -25,6 +25,10 @@ public class CrmDealCreateRequestDto {
 
 	private Long companyId;
 
+	@NotNull(message = "{crm.error.deal.contact-not-found}")
+	private Long contactId;
+
+	@NotNull(message = "{crm.error.deal.owner-not-found}")
 	private Long ownerId;
 
 }
