@@ -307,7 +307,7 @@ const WorkLocationEmployeeSelector = ({
           setSearchTerm={setEmployeeSearchText}
           autoFocus
         />
-        <div ref={listRefCallback} className="max-h-56 overflow-y-auto">
+        <div ref={listRefCallback} role="listbox" className="max-h-56 overflow-y-auto">
           {!isAllSelected && selectedEmployees.length > 0 && (
             <>
               {selectedEmployees
@@ -323,8 +323,17 @@ const WorkLocationEmployeeSelector = ({
                   return (
                     <div
                       key={empId}
+                      role="option"
+                      tabIndex={0}
+                      aria-selected={true}
                       className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
                       onClick={() => toggleEmployee(empId)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggleEmployee(empId);
+                        }
+                      }}
                     >
                       <Checkbox checked={true} />
                       <AvatarChip
@@ -345,8 +354,17 @@ const WorkLocationEmployeeSelector = ({
 
           {employeeSearchText.length === 0 && (
             <div
+              role="option"
+              tabIndex={0}
+              aria-selected={isAllSelected}
               className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
               onClick={toggleAllEmployees}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  toggleAllEmployees();
+                }
+              }}
             >
               <Checkbox checked={isAllSelected} />
               <AvatarChip label={translateText(["form.allEmployees"])} />
@@ -361,8 +379,17 @@ const WorkLocationEmployeeSelector = ({
                 return (
                   <div
                     key={empId}
+                    role="option"
+                    tabIndex={0}
+                    aria-selected={false}
                     className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
                     onClick={() => toggleEmployee(empId)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleEmployee(empId);
+                      }
+                    }}
                   >
                     <Checkbox checked={false} />
                     <AvatarChip

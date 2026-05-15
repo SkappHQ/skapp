@@ -190,7 +190,7 @@ const WorkLocationForm = ({ id }: Props) => {
     router.beforePopState(() => {
       if (formik.dirty) {
         setIsUnsavedModalOpen(true);
-        window.history.pushState(null, "", router.asPath);
+        globalThis.history.pushState(null, "", router.asPath);
         return false;
       }
       return true;
