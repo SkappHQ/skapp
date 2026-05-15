@@ -20,10 +20,7 @@ import InputField from "~community/common/components/molecules/InputField/InputF
 import MultivalueDropdownList from "~community/common/components/molecules/MultiValueDropdownList/MultivalueDropdownList";
 import ROUTES from "~community/common/constants/routes";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
-import {
-  ALL_LOCATIONS_ID,
-  ALL_LOCATIONS_LABEL
-} from "~community/common/constants/workLocationConstants";
+import { ALL_LOCATIONS_ID } from "~community/common/constants/workLocationConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -107,7 +104,7 @@ const AddEditHolidayModal = ({
       a.name.localeCompare(b.name)
     );
     return [
-      { label: ALL_LOCATIONS_LABEL, value: ALL_LOCATIONS_ID },
+      { label: translateText(["allLocations"]), value: ALL_LOCATIONS_ID },
       ...sorted.map((loc) => ({
         label: loc.name,
         value: loc.workLocationId
