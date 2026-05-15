@@ -307,6 +307,9 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 				});
 		}
 
+		Optional.ofNullable(employee.getWorkLocation())
+			.ifPresent(workLocation -> dto.setWorkLocationId(workLocation.getWorkLocationId()));
+
 		return dto;
 	}
 

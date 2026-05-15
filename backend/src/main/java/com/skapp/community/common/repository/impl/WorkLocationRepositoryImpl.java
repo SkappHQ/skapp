@@ -40,12 +40,31 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		query.orderBy(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
 
 		TypedQuery<WorkLocation> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
+		if (pageable.isPaged()) {
+			typedQuery.setFirstResult((int) pageable.getOffset());
+			typedQuery.setMaxResults(pageable.getPageSize());
+		}
 		List<WorkLocation> results = typedQuery.getResultList();
 
 		Long total = getTotalCount(cb, workLocationFilterDto);
 		return new PageImpl<>(results, pageable, total);
+	}
+
+	@Override
+	public List<WorkLocation> findAllWorkLocations(WorkLocationFilterDto workLocationFilterDto) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<WorkLocation> query = cb.createQuery(WorkLocation.class);
+		Root<WorkLocation> workLocation = query.from(WorkLocation.class);
+
+		List<Predicate> predicates = buildPredicates(cb, workLocation, workLocationFilterDto);
+		if (!predicates.isEmpty()) {
+			query.where(predicates.toArray(new Predicate[0]));
+		}
+
+		query.orderBy(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
+
+		return entityManager.createQuery(query).getResultList();
 	}
 
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<WorkLocation> workLocation,

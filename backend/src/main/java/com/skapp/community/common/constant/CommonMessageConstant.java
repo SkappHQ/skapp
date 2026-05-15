@@ -132,7 +132,9 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_WORK_LOCATION_NOT_FOUND("api.error.common.work-location-not-found"),
 	COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS("api.error.common.work-location-name-already-exists"),
 	COMMON_ERROR_WORK_LOCATION_NAME_REQUIRED("api.error.common.work-location-name-required"),
-	COMMON_ERROR_WORK_LOCATION_NAME_LENGTH_EXCEEDED("api.error.common.work-location-name-length-exceeded");
+	COMMON_ERROR_WORK_LOCATION_NAME_LENGTH_EXCEEDED("api.error.common.work-location-name-length-exceeded"),
+	COMMON_ERROR_WORK_LOCATION_EMPLOYEE_ASSIGNMENT_CONFLICT(
+			"api.error.common.work-location-employee-assignment-conflict");
 
 	private final String messageKey;
 

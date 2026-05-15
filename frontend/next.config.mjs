@@ -205,11 +205,11 @@ const nextConfig = {
       },
       {
         source: "/configurations/work-location/create",
-        destination: "/enterprise/configurations/work-location/create"
+        destination: "/community/configurations/work-location/create"
       },
       {
         source: "/configurations/work-location/:id",
-        destination: "/enterprise/configurations/work-location/:id"
+        destination: "/community/configurations/work-location/:id"
       },
       {
         source: "/leave/analytics/:id",
@@ -399,6 +399,26 @@ const nextConfig = {
       {
         source: "/app-link",
         destination: "/enterprise/app-link"
+      },
+      {
+        source: "/crm",
+        destination: "/community/crm/contacts"
+      },
+      {
+        source: "/crm/contacts",
+        destination: "/community/crm/contacts"
+      },
+      {
+        source: "/crm/companies",
+        destination: "/community/crm/companies"
+      },
+      {
+        source: "/crm/deals",
+        destination: "/community/crm/deals"
+      },
+      {
+        source: "/crm/tasks",
+        destination: "/community/crm/tasks"
       }
     ];
   },

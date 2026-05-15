@@ -12,7 +12,9 @@ import PeopleAndTeamAutocompleteSearch, {
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
+import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import { useGetEmployeesAndTeamsForAnalytics } from "~community/people/api/PeopleApi";
 import { usePeopleStore } from "~community/people/store/store";
 
@@ -89,36 +91,40 @@ const AllTimesheetsPage: NextPage = () => {
   };
 
   return (
-    <ContentLayout
-      title={translateText(["allTimesheets.title"])}
-      isDividerVisible={true}
-      pageHead={translateText(["allTimesheets.pageHead"])}
+    <NotificationReadProvider
+      notificationType={NotificationSummaryType.TIME_ENTRY}
     >
-      <Stack sx={{ gap: 2 }}>
-        <PeopleAndTeamAutocompleteSearch
-          id={{
-            autocomplete: "all-timesheets-autocomplete",
-            textField: "all-timesheets-text-field"
-          }}
-          name="allTimesheetsSearch"
-          options={options}
-          value={null}
-          inputValue={searchTerm}
-          onChange={onSearchChange}
-          onInputChange={(value) => {
-            const formattedValue = value.replace(/^\s+/g, "");
-            setSearchTerm(formattedValue);
-          }}
-          placeholder={translateText(["search"])}
-          isLoading={isSuggestionsPending}
-          error={searchErrors}
-          isDisabled={false}
-          required={false}
-          label=""
-        />
-        <ManagerTimesheet />
-      </Stack>
-    </ContentLayout>
+      <ContentLayout
+        title={translateText(["allTimesheets.title"])}
+        isDividerVisible={true}
+        pageHead={translateText(["allTimesheets.pageHead"])}
+      >
+        <Stack sx={{ gap: 2 }}>
+          <PeopleAndTeamAutocompleteSearch
+            id={{
+              autocomplete: "all-timesheets-autocomplete",
+              textField: "all-timesheets-text-field"
+            }}
+            name="allTimesheetsSearch"
+            options={options}
+            value={null}
+            inputValue={searchTerm}
+            onChange={onSearchChange}
+            onInputChange={(value) => {
+              const formattedValue = value.replace(/^\s+/g, "");
+              setSearchTerm(formattedValue);
+            }}
+            placeholder={translateText(["search"])}
+            isLoading={isSuggestionsPending}
+            error={searchErrors}
+            isDisabled={false}
+            required={false}
+            label=""
+          />
+          <ManagerTimesheet />
+        </Stack>
+      </ContentLayout>
+    </NotificationReadProvider>
   );
 };
 

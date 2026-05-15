@@ -123,6 +123,13 @@ const ROUTES = {
   },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
+  CRM: {
+    BASE: "/crm",
+    CONTACTS: "/crm/contacts",
+    COMPANIES: "/crm/companies",
+    DEALS: "/crm/deals",
+    TASKS: "/crm/tasks"
+  },
   PROJECTS: {
     BASE: "/projects/list",
     GUESTS: "/projects/guests",

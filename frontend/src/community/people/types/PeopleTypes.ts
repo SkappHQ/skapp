@@ -56,6 +56,7 @@ export interface L2SystemPermissionsType {
   esignRole?: Role;
   pmRole?: Role;
   invoiceRole?: Role;
+  crmRole?: Role;
 }
 
 export interface L2CommonDetailsType {
@@ -142,6 +143,7 @@ export interface L3EmploymentDetailsType {
   probationStartDate?: string;
   probationEndDate?: string;
   workTimeZone?: string;
+  workLocationId?: number;
 }
 
 export interface L3CareerProgressionDetailsType {

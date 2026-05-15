@@ -113,6 +113,7 @@ export interface EmployeeEmploymentDetailsTypes {
   probationStartDate: string | undefined;
   probationEndDate: string | undefined;
   workTimeZone: string | null | undefined;
+  workLocationId: number | null | undefined;
 }
 
 export interface PositionDetailsType {
@@ -201,6 +202,7 @@ export interface EmployeeEmploymentDetailsFormTypes {
   probationStartDate: string;
   probationEndDate: string;
   workTimeZone: string;
+  workLocationId: number | null;
 }
 
 export interface SelectedFileTypes {
@@ -352,4 +354,5 @@ export type SystemPermissionInitialStateType = {
   attendanceRole: Role;
   esignRole: Role;
   pmRole: Role;
+  crmRole: Role;
 };

@@ -35,6 +35,7 @@ export enum Modules {
   OKR = "OKR",
   INVOICE = "INVOICE",
   PM = "PM",
+  CRM = "CRM",
   NONE = ""
 }
 

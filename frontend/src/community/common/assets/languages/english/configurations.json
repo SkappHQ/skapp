@@ -68,7 +68,16 @@
     "viewProjects": "View Projects",
     "createProjects": "Create Projects",
     "allProjects": "(All projects)",
-    "assignedProjects": "(Assigned projects)"
+    "assignedProjects": "(Assigned projects)",
+    "crm": "CRM",
+    "crmTitle": "CRM Module Roles",
+    "salesManagerHeader": "SALES MANAGER",
+    "salesRepresentativeHeader": "SALES REPRESENTATIVE",
+    "viewContactsAndCompanies": "View Contacts & Companies",
+    "manageContactsAndCompanies": "Manage Contacts & Companies",
+    "manageDeals": "Manage Deals",
+    "manageTasks": "Manage Tasks",
+    "viewReports": "View Reports"
   },
   "times": {
     "pageHead": "Time Configurations | Skapp",
@@ -111,5 +120,111 @@
     "userRoles": "User Roles",
     "invoice": "Invoice",
     "organization": "Organization"
+  },
+  "workLocation": {
+    "areYouSureModalTitle": "Are you sure?",
+    "pageHead": "Work Locations | Skapp",
+    "pageTitle": "Work Locations",
+    "table": {
+      "nameHeader": "Name",
+      "nameHeaderUpper": "NAME",
+      "addressHeader": "Address",
+      "addressHeaderUpper": "ADDRESS",
+      "employeesHeader": "No. of Employees",
+      "employeesHeaderUpper": "NO. OF EMPLOYEES",
+      "actionsHeaderUpper": "ACTIONS",
+      "editAction": "Edit",
+      "deleteAction": "Delete",
+      "addButton": "Add Location",
+      "emptyState": "No work locations have been added yet.",
+      "searchPlaceholder": "Search by location name"
+    },
+    "form": {
+      "nameLabel": "Work Location Name",
+      "namePlaceholder": "Enter work location name",
+      "assignEmployeesLabel": "Assign Employees",
+      "allEmployees": "All Employees",
+      "employeeMultiSelect": {
+        "ariaLabelClearButton": "Clear search",
+        "ariaLabelSearch": "Search employees",
+        "ariaLabelSearchResults": "Search results",
+        "chipRemovedText": "removed",
+        "chipRemovedCountText": "items selected",
+        "chipSelectedText": "selected",
+        "chipSelectedCountText": "items selected",
+        "instructionText": "Search and select employees",
+        "itemSelectedText": "selected",
+        "noResultsText": "No employees found",
+        "regionAriaLabel": "Employee selection",
+        "resultCountText": "Showing",
+        "resultCountOfText": "of",
+        "resultCountResultsText": "results",
+        "searchClearedText": "Search cleared",
+        "selectedSearchPlaceholder": "Search selected employees"
+      },
+      "geofenceTitle": "Set geo-fence",
+      "radiusLabel": "Radius (meters)",
+      "addressLabel": "Address",
+      "addressPlaceholder": "Address will be auto-filled on pin drop",
+      "geofenceEmptyState": "No geo-fence set",
+      "geofenceEmptyStateDescription": "Set up a geo-fence to define the location boundary for employee check-ins",
+      "geofenceAddButton": "Add Location",
+      "geofenceEditButton": "Edit Location",
+      "geofenceDeleteButton": "Delete Location",
+      "geofenceModalTitle": "Select Geo-fence",
+      "geofenceConfirmButton": "Confirm Location",
+      "geofenceWaitingLocation": "Waiting for location permission...",
+      "addLocationButton": "Add Location",
+      "saveChangesButton": "Save Changes",
+      "editLocationTitle": "Edit Location",
+      "cancelButton": "Cancel",
+      "geocodeErrorTitle": "Oops! Something went wrong",
+      "geocodeErrorDescription": "Unable to retrieve address for the selected location. Please try again.",
+      "geocodeNoResultsDescription": "No results found for the entered address. Please try a different search.",
+      "addressSearchLabel": "Search address",
+      "addressSearchPlaceholder": "Search Location",
+      "selectedAddressLabel": "Selected address"
+    },
+    "validation": {
+      "nameRequired": "Please enter work location name",
+      "nameMaxLength": "Work location name should be less than 50 characters",
+      "nameInvalidChars": "Work location name should only contain letters, numbers, and spaces"
+    },
+    "toasts": {
+      "createSuccess": {
+        "title": "Work location created",
+        "description": "Work location created successfully"
+      },
+      "updateSuccess": {
+        "title": "Work location updated",
+        "description": "Work location updated successfully"
+      },
+      "deleteSuccess": {
+        "title": "Location deleted",
+        "description": "Location has been deleted successfully"
+      },
+      "error": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to delete location"
+      },
+      "createError": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to create location"
+      },
+      "updateError": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to update work location"
+      },
+      "mapUnavailable": {
+        "title": "Map unavailable",
+        "description": "The map could not be loaded. Please try again later."
+      }
+    },
+    "deleteModal": {
+      "title": "Delete Work Location",
+      "description": "Are you sure you want to delete this work location? This action cannot be undone.",
+      "confirmButton": "Delete",
+      "cancelButton": "Cancel"
+    }
   }
 }
