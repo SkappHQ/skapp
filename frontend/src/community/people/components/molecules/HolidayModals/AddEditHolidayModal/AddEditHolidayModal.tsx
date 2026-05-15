@@ -356,7 +356,7 @@ const AddEditHolidayModal = ({
   };
 
   const handleOnAddNewClickBtn = () => {
-    router.push(`${ROUTES.SETTINGS.BASE}?tab=organization`);
+    router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
   };
 
   return (
