@@ -396,10 +396,13 @@
         "manager": "Manager",
         "admin": "Admin",
         "sender": "Sender",
+        "salesManager": "Sales Manager",
+        "salesRepresentative": "Sales Representative",
         "attendanceModule": "Attendance Module",
         "leaveModule": "Leave Module",
         "peopleModule": "People Module",
-        "esignModule": "E-Signature Module"
+        "esignModule": "E-Signature Module",
+        "crmModule": "CRM Module"
       },
       "selectedFiltersFilterItems": {
         "male": "Male",
@@ -425,7 +428,10 @@
         "super_admin": "Super Admin",
         "esign_admin": "E-Sign Admin",
         "esign_sender": "E-Sign Sender",
-        "esign_employee": "E-Sign Employee"
+        "esign_employee": "E-Sign Employee",
+        "crm_admin": "CRM Admin",
+        "crm_sales_manager": "CRM Sales Manager",
+        "crm_sales_representative": "CRM Sales Representative"
       }
     },
     "reInvitationSuccessTitle": "Reinvited Successfully",
@@ -881,6 +887,7 @@
       "alert": "Alert",
       "projectManagement": "Project Management",
       "invoice": "Invoice",
+      "crm": "CRM",
       "selectRole": "Select role"
     },
     "credentials": {
@@ -1075,7 +1082,13 @@
     "userRoleLimitationTitle": "User Role Limit Reached",
     "userRoleLimitationDescription": "Failed to change user role. Please try again.",
     "pmAdminLimitationTitle": "Project Admin Limit Reached",
-    "pmAdminLimitationDescription": "Only one Project Admin account is allowed."
+    "pmAdminLimitationDescription": "Only one Project Admin account is allowed.",
+    "crmAdminLimitationTitle": "CRM Admin Limit Reached",
+    "crmAdminLimitationDescription": "Only one CRM Admin account is allowed.",
+    "crmSalesManagerLimitationTitle": "CRM Sales Manager Limit Reached",
+    "crmSalesManagerLimitationDescription": "Only one CRM Sales Manager account is allowed.",
+    "crmSalesRepresentativeLimitationTitle": "CRM Sales Representative Limit Reached",
+    "crmSalesRepresentativeLimitationDescription": "Only one CRM Sales Representative account is allowed."
   },
   "inbox": {
     "pageHead": "Documents | Skapp",
