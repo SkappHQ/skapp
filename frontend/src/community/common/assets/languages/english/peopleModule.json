@@ -190,7 +190,8 @@
     "sort": "Sort : ",
     "chronologically": "Chronologically :",
     "janToDec": "Jan to Dec",
-    "decToJan": "Dec to Jan"
+    "decToJan": "Dec to Jan",
+    "allLocations": "All locations"
   },
 
   "editAllInfo": {

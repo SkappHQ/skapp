@@ -1,8 +1,37 @@
 import { DateTime } from "luxon";
 
+import {
+  ALL_LOCATIONS_ID,
+  ALL_LOCATIONS_LABEL
+} from "~community/common/constants/workLocationConstants";
 import { BulkRecordErrorLogType } from "~community/common/types/BulkUploadTypes";
+import { WorkLocationType } from "~community/common/types/WorkLocationTypes";
 import { createCSV } from "~community/common/utils/bulkUploadUtils";
 import { holidayBulkUploadResponse } from "~community/people/types/HolidayTypes";
+
+export const hasCustomWorkLocations = (workLocations?: number[]): boolean =>
+  (workLocations?.length ?? 0) > 0 &&
+  !(workLocations?.length === 1 && workLocations[0] === ALL_LOCATIONS_ID);
+
+export const getDefaultWorkLocations = (workLocations?: number[]): number[] =>
+  workLocations && workLocations.length > 0
+    ? workLocations
+    : [ALL_LOCATIONS_ID];
+
+export const buildWorkLocationOptions = (
+  workLocations?: WorkLocationType[],
+  allLocationsLabel?: string
+): { label: string; value: string }[] => {
+  const allOption = {
+    label: allLocationsLabel ?? ALL_LOCATIONS_LABEL,
+    value: String(ALL_LOCATIONS_ID)
+  };
+  const locationOptions = (workLocations ?? []).map((loc) => ({
+    label: loc.name,
+    value: String(loc.workLocationId)
+  }));
+  return [allOption, ...locationOptions];
+};
 
 export const getFormattedYear = (date: string): string => {
   const dateFormate = new Date(date);

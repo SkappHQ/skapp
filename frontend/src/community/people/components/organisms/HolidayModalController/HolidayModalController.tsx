@@ -1,7 +1,6 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useState } from "react";
 
-import { ALL_LOCATIONS_ID } from "~community/common/constants/workLocationConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
 import AddCalendar from "~community/people/components/molecules/HolidayModals/AddCalendar/AddCalendar";
@@ -16,6 +15,7 @@ import {
   holidayBulkUploadResponse,
   holidayModalTypes
 } from "~community/people/types/HolidayTypes";
+import { hasCustomWorkLocations } from "~community/people/utils/holidayUtils/commonUtils";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
@@ -96,19 +96,16 @@ const HolidayModalController: FC = () => {
       return;
     }
 
-    const hasCustomWorkLocations =
-      newHolidayDetails.workLocations?.length > 0 &&
-      !(
-        newHolidayDetails.workLocations.length === 1 &&
-        newHolidayDetails.workLocations[0] === ALL_LOCATIONS_ID
-      );
+    const hasCustomLocations = hasCustomWorkLocations(
+      newHolidayDetails.workLocations
+    );
 
     const isEditingHoliday =
       newCalenderDetails?.acceptedFile?.length !== 0 ||
       newHolidayDetails.holidayDate ||
       newHolidayDetails.duration ||
       newHolidayDetails.holidayReason ||
-      hasCustomWorkLocations;
+      hasCustomLocations;
 
     const isExitConfirmationNeeded =
       holidayModalType === holidayModalTypes.UPLOAD_HOLIDAY_BULK ||

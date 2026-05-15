@@ -3,10 +3,6 @@ import { MutableRefObject, useEffect, useMemo } from "react";
 
 import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
-import {
-  ALL_LOCATIONS_ID,
-  ALL_LOCATIONS_LABEL
-} from "~community/common/constants/workLocationConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import {
@@ -15,6 +11,7 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { usePeopleStore } from "~community/people/store/store";
 import { holiday } from "~community/people/types/HolidayTypes";
+import { buildWorkLocationOptions } from "~community/people/utils/holidayUtils/commonUtils";
 
 import { styles } from "./styles";
 
@@ -48,24 +45,18 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
 
   const { data: workLocations } = useGetAllWorkLocations();
 
-  const workLocationOptions = useMemo(() => {
-    const allOption = {
-      label: ALL_LOCATIONS_LABEL,
-      value: String(ALL_LOCATIONS_ID)
-    };
-    const locationOptions = (workLocations ?? []).map((loc) => ({
-      label: loc.name,
-      value: String(loc.workLocationId)
-    }));
-    return [allOption, ...locationOptions];
-  }, [workLocations]);
+  const workLocationOptions = useMemo(
+    () =>
+      buildWorkLocationOptions(workLocations, translateText(["allLocations"])),
+    [workLocations, translateText]
+  );
 
   const selectedWorkLocationLabel = useMemo(() => {
     const found = workLocationOptions.find(
       (opt) => opt.value === String(selectedWorkLocationId)
     );
-    return found?.label ?? ALL_LOCATIONS_LABEL;
-  }, [workLocationOptions, selectedWorkLocationId]);
+    return found?.label ?? translateText(["allLocations"]);
+  }, [workLocationOptions, selectedWorkLocationId, translateText]);
 
   useEffect(() => {
     setSelectedYear(currentYear.toString());

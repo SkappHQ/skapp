@@ -48,7 +48,10 @@ import {
   holidayBulkUploadResponse,
   holidayModalTypes
 } from "~community/people/types/HolidayTypes";
-import { holidayDatePreprocessor } from "~community/people/utils/holidayUtils/commonUtils";
+import {
+  getDefaultWorkLocations,
+  holidayDatePreprocessor
+} from "~community/people/utils/holidayUtils/commonUtils";
 import { addHolidayValidation } from "~community/people/utils/validation";
 
 type Props = {
@@ -97,11 +100,7 @@ const AddEditHolidayModal = ({
   );
   const [selectedWorkLocationIds, setSelectedWorkLocationIds] = useState<
     number[]
-  >(
-    newHolidayDetails?.workLocations?.length > 0
-      ? newHolidayDetails.workLocations
-      : [ALL_LOCATIONS_ID]
-  );
+  >(getDefaultWorkLocations(newHolidayDetails?.workLocations));
 
   const workLocationList: DropdownListType[] = useMemo(() => {
     const sorted = [...(workLocations ?? [])].sort((a, b) =>
@@ -172,10 +171,7 @@ const AddEditHolidayModal = ({
     holidayColor:
       newHolidayDetails?.holidayColor || theme.palette.text.blackText,
     duration: newHolidayDetails?.duration || "",
-    workLocation:
-      newHolidayDetails?.workLocations?.length > 0
-        ? newHolidayDetails.workLocations
-        : [ALL_LOCATIONS_ID]
+    workLocation: getDefaultWorkLocations(newHolidayDetails?.workLocations)
   };
 
   const handleAddNewHoliday = useCallback(async (): Promise<void> => {
@@ -221,7 +217,9 @@ const AddEditHolidayModal = ({
       if (isAllNowSelected && !wasAllSelected) {
         newValue = [ALL_LOCATIONS_ID];
       } else if (isAllNowSelected && numericValue.length > 1) {
-        newValue = numericValue.filter((v) => v !== ALL_LOCATIONS_ID);
+        newValue = numericValue.filter(
+          (workLocationValue) => workLocationValue !== ALL_LOCATIONS_ID
+        );
       } else {
         newValue = numericValue;
       }
