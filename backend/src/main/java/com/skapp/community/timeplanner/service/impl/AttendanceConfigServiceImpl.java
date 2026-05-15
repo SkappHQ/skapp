@@ -1,8 +1,10 @@
 package com.skapp.community.timeplanner.service.impl;
 
+import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
 import com.skapp.community.timeplanner.model.AttendanceConfig;
@@ -95,7 +97,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	public ResponseEntityDto getAllAttendanceConfigs() {
 		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
-		if (userService.getCurrentUserRoles().contains("ROLE_ATTENDANCE_ADMIN")) {
+		if (userService.getCurrentUserRoles().contains(Role.ATTENDANCE_ADMIN.name())) {
 			AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
 
 			for (AttendanceConfig config : attendanceConfigs) {
