@@ -1,6 +1,7 @@
 package com.skapp.community.common.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.payload.response.WorkLocationDetailResponseDto;
@@ -215,7 +216,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		List<Employee> filteredEmployees = employees.stream()
 			.filter(e -> activeStatuses.contains(e.getAccountStatus()))
 			.filter(e -> e.getEmployeeRole() == null
-					|| e.getEmployeeRole().getPmRole() != com.skapp.community.common.type.Role.PM_GUEST_EMPLOYEE)
+					|| e.getEmployeeRole().getPmRole() != Role.PM_GUEST_EMPLOYEE)
 			.toList();
 		boolean isAllEmployees = !filteredEmployees.isEmpty() && filteredEmployees.size() == allActiveEmployees.size();
 
