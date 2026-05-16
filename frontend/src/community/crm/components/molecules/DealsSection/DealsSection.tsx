@@ -7,9 +7,8 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetDealsByContactId } from "~community/crm/api/CrmApi";
 import AdvancedAccordion from "~community/crm/components/atoms/AdvancedAccordion/AdvancedAccordion";
 import type { AdvancedAccordionItem } from "~community/crm/components/atoms/AdvancedAccordion/AdvancedAccordion";
-import { CrmDealStageEnum } from "~community/crm/enums/common";
 import { CrmDealType } from "~community/crm/types/CrmDealTypes";
-import { formatDealAmount } from "~community/crm/utils/contactMetricsUtils";
+import { formatDealAmountFull } from "~community/crm/utils/contactMetricsUtils";
 
 import styles from "./styles";
 
@@ -40,7 +39,7 @@ const DealsSection: FC<Props> = ({ contactId }) => {
         <span className="flex items-center gap-1.5">
           <span>{ownerName}</span>
           <span className={styles.dotSeparator} />
-          <span>{formatDealAmount(deal.amount)}</span>
+          <span>{formatDealAmountFull(deal.amount)}</span>
         </span>
       ),
       statusBadge: deal.stage

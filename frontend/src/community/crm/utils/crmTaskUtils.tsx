@@ -3,8 +3,9 @@ import {
   LowPriorityIcon,
   MediumPriorityIcon
 } from "@rootcodelabs/skapp-ui";
-import { ReactElement } from "react";
+import { ReactElement, ReactNode } from "react";
 
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
 import { CrmPriorityType } from "~community/crm/types/CrmDealTypes";
 
@@ -60,6 +61,41 @@ export const getTaskTypeConfig = (typeName: string): TaskTypeConfig => {
       return { bg: "#8e51ff", iconName: IconName.EMAIL_ICON };
   }
 };
+
+export interface TaskTypeOption {
+  id: string;
+  label: ReactNode;
+  value: string;
+  icon: ReactElement;
+}
+
+export const TASK_TYPE_OPTIONS: TaskTypeOption[] = [
+  { id: "email", label: "Email", value: "email" },
+  { id: "call", label: "Call", value: "call" },
+  { id: "meeting", label: "Meeting", value: "meeting" },
+  { id: "other", label: "Other", value: "other" }
+].map((t) => {
+  const config = getTaskTypeConfig(t.value);
+  const iconEl = (
+    <div
+      className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+      style={{ backgroundColor: config.bg }}
+    >
+      <Icon name={config.iconName} fill="white" width="12" height="12" />
+    </div>
+  );
+  return {
+    id: t.id,
+    value: t.value,
+    icon: iconEl,
+    label: (
+      <div className="flex items-center gap-2">
+        {iconEl}
+        <span className="font-medium">{t.label}</span>
+      </div>
+    )
+  };
+});
 
 export const getDueDateDisplay = (
   dueAt: string | null,

@@ -68,8 +68,8 @@ const ContactActionMenu: FC<Props> = ({
         <Icon
           name={IconName.THREE_DOTS_ICON}
           fill={cls.triggerIconFill}
-          width="20"
-          height="20"
+          width="16"
+          height="16"
         />
       </ButtonV2>
 
@@ -95,7 +95,7 @@ const ContactActionMenu: FC<Props> = ({
             size="sm"
             isFullWidth
             iconPosition="start"
-            icon={<TrashIcon />}
+            icon={<TrashIcon color={cls.deleteIconFill} />}
             role="menuitem"
             className={cls.deleteItem}
             onClick={handleDelete}

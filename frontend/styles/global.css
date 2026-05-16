@@ -346,3 +346,15 @@ thead .sticky-col {
 .crm-contact-panel > aside[role="dialog"] {
   z-index: 1260 !important; /* panel */
 }
+
+/* CRM Contact Detail Panel: align header buttons to top of name block (Figma: items-start) */
+.crm-contact-panel aside[role="dialog"] header {
+  align-items: flex-start !important;
+  padding-bottom: 0.5rem !important; /* 8px — matches Figma gap-[8px] between name row and info row */
+}
+
+/* CRM Contact Detail Panel: align body padding with header (16px) so info row is left-flush with contact name */
+.crm-contact-panel aside[role="dialog"] > div > .overflow-y-auto {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}

@@ -226,7 +226,7 @@ const AdvancedAccordion: React.FC<AdvancedAccordionProps> = ({
         </div>
       )}
 
-      <div className="accordion-items flex flex-col gap-2">
+      <div className="accordion-items flex flex-col gap-4">
         {filteredItems.length === 0 ? (
           <div
             className="py-8 text-center text-secondary-text"
@@ -268,12 +268,12 @@ const AdvancedAccordion: React.FC<AdvancedAccordionProps> = ({
                 role="region"
                 aria-labelledby={buttonId}
                 aria-hidden={!isExpanded}
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                className={`overflow-hidden ${
                   isCard
                     ? isExpanded
-                      ? "max-h-500 border-t border-[#e5e7eb] px-3 py-3 opacity-100"
-                      : "max-h-0 opacity-0"
-                    : `accordion-content border-secondary-accent border-r border-l ${isExpanded ? "max-h-500 opacity-100" : "max-h-0 opacity-0"} rounded-b-lg border-b`
+                      ? "border-t border-[#E5E7EB] px-3 py-3"
+                      : "hidden"
+                    : `accordion-content border-secondary-accent border-r border-l transition-all duration-300 ease-in-out ${isExpanded ? "max-h-500 opacity-100" : "max-h-0 opacity-0"} rounded-b-lg border-b`
                 }`}
               >
                 <div
@@ -352,11 +352,11 @@ const AdvancedAccordion: React.FC<AdvancedAccordionProps> = ({
                   >
                     <div className="flex w-full items-center justify-between gap-4">
                       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                        <p className="truncate text-sm font-normal text-black">
+                        <p className="truncate text-sm font-medium text-black">
                           {item.header}
                         </p>
                         {item.subtitle && (
-                          <div className="flex min-w-0 items-center gap-2 overflow-hidden text-xs text-gray-500">
+                          <div className="flex min-w-0 items-center gap-2 overflow-hidden text-xs text-[#4A5565]">
                             {item.subtitle}
                           </div>
                         )}

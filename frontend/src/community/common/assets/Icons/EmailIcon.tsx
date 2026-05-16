@@ -3,7 +3,7 @@ import { JSX } from "react";
 import { IconProps } from "~community/common/types/IconTypes";
 
 const EmailIcon = ({
-  fill = "black",
+  fill = "#68707F",
   width = "20",
   height = "20",
   id,
@@ -15,15 +15,25 @@ const EmailIcon = ({
       id={id}
       width={width}
       height={height}
-      viewBox="0 0 21 20"
+      viewBox="0 0 20 20"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       onClick={onClick}
       {...svgProps}
     >
       <path
-        d="M18.8337 4.99967C18.8337 4.08301 18.0837 3.33301 17.167 3.33301H3.83366C2.91699 3.33301 2.16699 4.08301 2.16699 4.99967V14.9997C2.16699 15.9163 2.91699 16.6663 3.83366 16.6663H17.167C18.0837 16.6663 18.8337 15.9163 18.8337 14.9997V4.99967ZM17.167 4.99967L10.5003 9.16634L3.83366 4.99967H17.167ZM17.167 14.9997H3.83366V6.66634L10.5003 10.833L17.167 6.66634V14.9997Z"
-        fill={fill}
+        d="M3.33341 3.33301H16.6667C17.5834 3.33301 18.3334 4.08301 18.3334 4.99967V14.9997C18.3334 15.9163 17.5834 16.6663 16.6667 16.6663H3.33341C2.41675 16.6663 1.66675 15.9163 1.66675 14.9997V4.99967C1.66675 4.08301 2.41675 3.33301 3.33341 3.33301Z"
+        stroke={fill}
+        strokeWidth="1.66667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18.3334 5L10.0001 10.8333L1.66675 5"
+        stroke={fill}
+        strokeWidth="1.66667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

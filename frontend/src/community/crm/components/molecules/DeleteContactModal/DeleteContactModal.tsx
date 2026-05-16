@@ -64,6 +64,7 @@ const DeleteContactModal: FC<Props> = ({
       onClose={onClose}
       modalHeader={translateText(["deleteContactModal", "title"])}
       backdropVariant="dark"
+      className="w-[553px] !rounded-2xl"
       content={<p className={styles.description}>{description}</p>}
       buttons={{
         buttonLeft: {

@@ -46,12 +46,8 @@ const ContactDetailPanel: FC = () => {
     closeContactDetailPanel
   } = useCrmStore();
 
-  const { data: contact, isLoading: isContactLoading } = useGetContactById(
-    selectedContactId ?? 0
-  );
-  const { data: metrics, isLoading: isMetricsLoading } = useGetContactMetrics(
-    selectedContactId ?? 0
-  );
+  const { data: contact, isLoading: isContactLoading } = useGetContactById(selectedContactId ?? 0);
+  const { data: metrics, isLoading: isMetricsLoading } = useGetContactMetrics(selectedContactId ?? 0);
 
   useEffect(() => {
     if (
@@ -82,20 +78,21 @@ const ContactDetailPanel: FC = () => {
           ariaLabelledBy="contact-panel-title"
           header={
             isContactLoading ? (
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-[8px]">
                 <Skeleton width={180} height={28} animation="wave" />
                 <Skeleton width={120} height={16} animation="wave" />
               </div>
             ) : (
-              <div id="contact-panel-title" className="flex flex-col gap-0.5">
-                <p className="font-bold text-2xl text-black leading-tight">
+              <div
+                id="contact-panel-title"
+                className="flex flex-col gap-[8px] items-start"
+              >
+                <p className="font-bold text-[24px] leading-[24px] tracking-[0.0703px] text-black">
                   {contact?.name ?? ""}
                 </p>
-                <p className="text-sm text-secondary-text">
+                <p className="font-normal text-[14px] leading-[1.5] text-[#4a5565]">
                   {translateText(["lastUpdated"])} :{" "}
-                  <span className="text-black">
-                    {formatLastUpdated(contact?.lastContactAt ?? null)}
-                  </span>
+                  {formatLastUpdated(contact?.lastContactAt ?? null)}
                 </p>
               </div>
             )
@@ -111,15 +108,10 @@ const ContactDetailPanel: FC = () => {
         >
           <div className="flex flex-col gap-6 pb-4">
             {/* Contact info */}
-            {isContactLoading ? (
-              <div className="flex flex-col gap-1">
-                <Skeleton width="60%" height={20} animation="wave" />
-                <Skeleton width="80%" height={20} animation="wave" />
-                <Skeleton width="70%" height={20} animation="wave" />
-              </div>
-            ) : contact ? (
-              <ContactHeader contact={contact} />
-            ) : null}
+            <ContactHeader
+              contact={contact ?? undefined}
+              isLoading={isContactLoading}
+            />
 
             {/* Metrics */}
             {isMetricsLoading ? (
@@ -128,14 +120,14 @@ const ContactDetailPanel: FC = () => {
               <ContactMetrics metrics={metrics ?? DEFAULT_METRICS} />
             )}
 
-            {/* Deals */}
-            {selectedContactId && (
-              <DealsSection contactId={selectedContactId} />
-            )}
-
             {/* Tasks */}
             {selectedContactId && (
               <TasksSection contactId={selectedContactId} />
+            )}
+
+            {/* Deals */}
+            {selectedContactId && (
+              <DealsSection contactId={selectedContactId} />
             )}
           </div>
         </SidePanel>

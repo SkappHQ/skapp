@@ -21,19 +21,15 @@ const ContactInfoItem: FC<Props> = ({
   endIcon
 }) => {
   const cls = styles;
+  const iconFill = isLink && linkHref ? cls.linkIconFill : cls.iconFill;
 
-  return (
-    <div className={cls.row}>
+  const inner = (
+    <>
       <span className={cls.iconWrapper}>
-        <Icon name={icon} fill={cls.iconFill} width="16" height="16" />
+        <Icon name={icon} fill={iconFill} width="20" height="20" />
       </span>
       {isLink && linkHref ? (
-        <a
-          href={linkHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cls.link}
-        >
+        <span className={cls.link}>
           <span className={cls.linkText}>{value}</span>
           {endIcon && (
             <Icon
@@ -43,14 +39,29 @@ const ContactInfoItem: FC<Props> = ({
               height="16"
             />
           )}
-        </a>
+        </span>
       ) : (
         <span className={value ? cls.plainText : cls.emptyText}>
           {value ?? "—"}
         </span>
       )}
-    </div>
+    </>
   );
+
+  if (isLink && linkHref) {
+    return (
+      <a
+        href={linkHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cls.linkRow}
+      >
+        {inner}
+      </a>
+    );
+  }
+
+  return <div className={cls.row}>{inner}</div>;
 };
 
 export default ContactInfoItem;
