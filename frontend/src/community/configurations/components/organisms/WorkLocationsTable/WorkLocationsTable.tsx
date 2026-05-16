@@ -173,16 +173,16 @@ const WorkLocationsTable = () => {
         hasMore={hasNextPage ?? false}
         noDataState={{
           buttonText: translateText(["table.addButton"]),
-          description: translateText(["table.emptyState"]),
+          description: translateText(["table.emptyStateDescription"]),
           icon: <SearchIcon />,
           onButtonClick: () =>
             router.push(ROUTES.CONFIGURATIONS.WORK_LOCATION_CREATE),
-          title: translateText(["table.emptyState"])
+          title: translateText(["table.emptyStateTitle"])
         }}
         noSearchResultsState={{
-          description: translateText(["table.emptyState"]),
+          description: translateText(["table.emptyStateDescription"]),
           icon: <SearchIcon />,
-          title: translateText(["table.emptyState"])
+          title: translateText(["table.emptyStateTitle"])
         }}
       />
       <DeleteWorkLocationModal />
