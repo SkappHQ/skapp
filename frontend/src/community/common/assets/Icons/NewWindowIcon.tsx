@@ -1,31 +1,19 @@
 import { JSX } from "react";
 
-import { IconProps } from "~community/common/types/IconTypes";
-
-const NewWindowIcon = ({
-  fill = "black",
-  width = "16",
-  height = "16"
-}: IconProps): JSX.Element => {
+const NewWindowIcon = (): JSX.Element => {
   return (
     <svg
-      width={width}
-      height={height}
-      viewBox="0 0 16 16"
+      width="16"
+      height="17"
+      viewBox="0 0 16 17"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clipPath="url(#clip0_643_12545)">
-        <path
-          d="M12.6667 12.6667H3.33333V3.33333H8V2H3.33333C2.59333 2 2 2.6 2 3.33333V12.6667C2 13.4 2.59333 14 3.33333 14H12.6667C13.4 14 14 13.4 14 12.6667V8H12.6667V12.6667ZM9.33333 2V3.33333H11.7267L5.17333 9.88667L6.11333 10.8267L12.6667 4.27333V6.66667H14V2H9.33333Z"
-          fill={fill}
-        />
-      </g>
-      <defs>
-        <clipPath id="clip0_643_12545">
-          <rect width="16" height="16" fill="white" />
-        </clipPath>
-      </defs>
+      <path
+        d="M11.3333 12.1572C10.9333 12.1572 10.6667 11.8906 10.6667 11.4906V6.42389L5.13333 11.9572C4.86667 12.2239 4.46667 12.2239 4.2 11.9572C3.93333 11.6906 3.93333 11.2906 4.2 11.0239L9.73333 5.49056H4.66667C4.26667 5.49056 4 5.22389 4 4.82389C4 4.42389 4.26667 4.15723 4.66667 4.15723H11.3333C11.7333 4.15723 12 4.42389 12 4.82389V11.4906C12 11.8906 11.7333 12.1572 11.3333 12.1572Z"
+        fill="black"
+        fillOpacity={1}
+      />
     </svg>
   );
 };

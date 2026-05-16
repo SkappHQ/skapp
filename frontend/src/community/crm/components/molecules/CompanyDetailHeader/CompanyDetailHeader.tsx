@@ -4,11 +4,9 @@ import React from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
-import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { IconName } from "~community/common/types/IconTypes";
-import DeleteCompanyConfirmationModal from "~community/crm/components/molecules/DeleteCompanyConfirmationModal/DeleteCompanyConfirmationModal";
-import { useCrmStore } from "~community/crm/store/crmStore";
-import { CrmCompanyType } from "~community/crm/types/CrmCompanyTypes";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmCompanyType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 interface Props {
@@ -18,7 +16,7 @@ interface Props {
 
 const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
   const theme = useTheme();
-  const { companyModalType, setCompanyModalType } = useCrmStore();
+  const { setCompanyModalType } = useCrmStore();
 
   const infoItems = [
     {
@@ -116,7 +114,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
                       >
                         {item.value}
                         <Icon
-                          name={IconName.NEW_WINDOW_ICON}
+                          name={IconName.BROWSER_WINDOW_ICON}
                           fill={theme.palette.primary.dark}
                         />
                       </Link>
@@ -137,7 +135,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
 
       <Box sx={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
         <KebabMenu
-          id="company-detail-kebab"
+          id="company-detail-menu"
           menuItems={[
             {
               id: "delete-company",
@@ -146,23 +144,15 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
                   name={IconName.BIN_ICON}
                   width="1.25rem"
                   height="1.25rem"
-                  fill="#82181A"
+                  fill="#7F1D1D"
                 />
               ),
               text: "Delete company",
-              onClickHandler: () => {
-                setCompanyModalType(CrmModalTypes.DELETE_COMPANY_CONFIRMATION);
-              }
+              color: "#7F1D1D",
+              onClickHandler: () =>
+                setCompanyModalType(CrmModalTypes.DELETE_COMPANY_CONFIRMATION)
             }
           ]}
-          icon={
-            <Icon
-              name={IconName.THREE_DOTS_ICON}
-              width="1rem"
-              height="1rem"
-              fill={theme.palette.text.mouseGrey}
-            />
-          }
           menuAlign={{
             anchorOrigin: { vertical: "bottom", horizontal: "right" },
             transformOrigin: { vertical: "top", horizontal: "right" }
@@ -180,27 +170,11 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
             },
             menu: {
               "& .MuiPaper-root": {
-                width: "227px",
-                backgroundColor: "transparent",
-                boxShadow: "none",
-                borderRadius: "0.75rem"
+                backgroundColor: theme.palette.error.main
               }
             },
             menuItem: {
-              width: "227px",
-              height: "48px",
-              backgroundColor: "#FFE2E2",
-              borderRadius: "12px",
-              border: "0.8px solid #F3F4F6",
-              px: "0.75rem",
-              boxShadow: "none",
-              "&:hover": { backgroundColor: "#FFE2E2" }
-            },
-            menuItemText: {
-              color: "#82181A",
-              fontSize: "1rem",
-              lineHeight: "1.5rem",
-              letterSpacing: "0.03125rem"
+              "&:hover": { backgroundColor: "transparent" }
             }
           }}
         />
@@ -222,17 +196,6 @@ const CompanyDetailHeader: React.FC<Props> = ({ company, onClose }) => {
           />
         </IconButton>
       </Box>
-
-      <ModalController
-        isModalOpen={
-          companyModalType === CrmModalTypes.DELETE_COMPANY_CONFIRMATION
-        }
-        handleCloseModal={() => setCompanyModalType(CrmModalTypes.NONE)}
-        modalTitle="Are you sure?"
-        isDividerVisible={false}
-      >
-        <DeleteCompanyConfirmationModal />
-      </ModalController>
     </Box>
   );
 };

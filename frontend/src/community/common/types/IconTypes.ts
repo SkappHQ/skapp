@@ -179,6 +179,7 @@ export enum IconName {
   PHONE_ICON = "PHONE_ICON",
   LOCATION_ICON = "LOCATION_ICON",
   BUILDING_ICON = "BUILDING_ICON",
-  WEB_ICON = "WEB_ICON"
+  WEB_ICON = "WEB_ICON",
+  BROWSER_WINDOW_ICON = "BROWSER_WINDOW_ICON"
   // add more icons in snake case
 }

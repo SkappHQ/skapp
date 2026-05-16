@@ -1,7 +1,7 @@
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { IconName } from "~community/common/types/IconTypes";
-import { useCrmStore } from "~community/crm/store/crmStore";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const DeleteCompanyConfirmationModal = () => {
