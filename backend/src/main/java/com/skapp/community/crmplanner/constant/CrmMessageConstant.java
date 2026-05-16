@@ -7,11 +7,10 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum CrmMessageConstant implements MessageConstant{
+public enum CrmMessageConstant implements MessageConstant {
 
-	COMMON_ERROR_COMPANY_EXISTS("api.error.common.crm-company-name-exists");
+  COMMON_ERROR_COMPANY_EXISTS("api.error.crm.company-name-exists");
 
   private final String messageKey;
-  
-  
+
 }
