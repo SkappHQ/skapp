@@ -1,15 +1,11 @@
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Box, Button, IconButton, Menu, MenuItem, Typography } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import React, { ChangeEvent, MouseEvent, useState } from "react";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import TextArea from "~community/common/components/atoms/TextArea/TextArea";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import { IconName } from "~community/common/types/IconTypes";
 import { useCrmStore } from "~community/crm/store/store";
-
-import styles from "./styles";
 
 interface DealFormData {
   dealName: string;
@@ -26,11 +22,11 @@ const initialFormData: DealFormData = {
   dealName: "",
   description: "",
   status: "Lead",
-  value: "None",
-  priority: "None",
-  ownedBy: "None",
-  contactName: "None",
-  companyName: "None"
+  value: "",
+  priority: "",
+  ownedBy: "",
+  contactName: "",
+  companyName: ""
 };
 
 const statusOptions = [
@@ -51,11 +47,10 @@ const detailFields = [
 ] as const;
 
 const AddDealForm: React.FC = () => {
-  const theme = useTheme();
-  const classes = styles(theme);
   const { setIsAddDealFormOpen } = useCrmStore();
   const [formData, setFormData] = useState<DealFormData>(initialFormData);
-  const [statusAnchorEl, setStatusAnchorEl] = useState<null | HTMLElement>(null);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const statusRef = useRef<HTMLDivElement>(null);
 
   const handleClose = () => {
     setIsAddDealFormOpen(false);
@@ -69,13 +64,13 @@ const AddDealForm: React.FC = () => {
     setFormData((prev) => ({ ...prev, description: e.target.value }));
   };
 
-  const handleStatusClick = (e: MouseEvent<HTMLElement>) => {
-    setStatusAnchorEl(e.currentTarget);
+  const handleDetailChange = (key: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleStatusSelect = (label: string) => {
     setFormData((prev) => ({ ...prev, status: label }));
-    setStatusAnchorEl(null);
+    setIsStatusOpen(false);
   };
 
   const handleAddDeal = () => {
@@ -87,22 +82,22 @@ const AddDealForm: React.FC = () => {
     (opt) => opt.label === formData.status
   );
 
-  return (
-    <Box sx={classes.wrapper}>
-      <Box sx={classes.header}>
-        <Typography sx={classes.title}>Add deal</Typography>
-        <IconButton onClick={handleClose} sx={classes.closeButton}>
-          <Icon
-            name={IconName.CLOSE_ICON}
-            width="1rem"
-            height="1rem"
-            fill={theme.palette.text.primary}
-          />
-        </IconButton>
-      </Box>
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (statusRef.current && !statusRef.current.contains(e.target as Node)) {
+        setIsStatusOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside as never);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside as never);
+  }, []);
 
-      <Box sx={classes.content}>
-        <Box sx={classes.leftColumn}>
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex flex-row gap-6 flex-1">
+        {/* Left Column */}
+        <div className="flex flex-col gap-2.5 w-[637px]">
           <InputField
             inputName="dealName"
             label="Deal name"
@@ -118,65 +113,93 @@ const AddDealForm: React.FC = () => {
             isRequired={false}
             value={formData.description}
             onChange={handleDescriptionChange}
-            textColor={theme.palette.text.primary}
           />
-        </Box>
+        </div>
 
-        <Box sx={classes.rightColumn}>
-          <Box sx={classes.statusDropdown} onClick={handleStatusClick}>
-            <Box sx={classes.statusDot(currentStatus?.iconColor ?? "#3b82f6")} />
-            <Typography sx={classes.statusText}>{formData.status}</Typography>
-            <KeyboardArrowDownIcon
-              sx={{ fontSize: "1.25rem", color: theme.palette.text.secondary }}
-            />
-          </Box>
-          <Menu
-            anchorEl={statusAnchorEl}
-            open={Boolean(statusAnchorEl)}
-            onClose={() => setStatusAnchorEl(null)}
-            sx={classes.statusMenu}
-          >
-            {statusOptions.map((option) => (
-              <MenuItem
-                key={option.label}
-                onClick={() => handleStatusSelect(option.label)}
-                sx={classes.statusMenuItem}
+        {/* Right Column */}
+        <div className="flex flex-col gap-3 w-[296px]">
+          {/* Status Dropdown */}
+          <div className="relative" ref={statusRef}>
+            <button
+              type="button"
+              onClick={() => setIsStatusOpen(!isStatusOpen)}
+              className="flex items-center gap-1 px-3 py-3 w-[219px] h-12 bg-zinc-100 rounded-lg cursor-pointer"
+            >
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: currentStatus?.iconColor ?? "#3b82f6" }}
+              />
+              <span className="text-sm flex-1 text-left text-zinc-900">
+                {formData.status}
+              </span>
+              <svg
+                className={`w-5 h-5 text-zinc-500 transition-transform ${isStatusOpen ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <Box sx={classes.statusDot(option.iconColor)} />
-                <Typography sx={classes.statusMenuText}>
-                  {option.label}
-                </Typography>
-              </MenuItem>
-            ))}
-          </Menu>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
 
-          <Box sx={classes.detailsList}>
+            {isStatusOpen && (
+              <div className="absolute top-full left-0 mt-1 w-[219px] bg-white border border-zinc-200 rounded-lg shadow-md z-[1500]">
+                {statusOptions.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={() => handleStatusSelect(option.label)}
+                    className="flex items-center gap-2 w-full px-3 py-2 hover:bg-zinc-50 text-left first:rounded-t-lg last:rounded-b-lg"
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: option.iconColor }}
+                    />
+                    <span className="text-sm text-zinc-900">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Details List */}
+          <div className="flex flex-col gap-3 p-3 border border-zinc-200 rounded-lg">
             {detailFields.map((field) => (
-              <Box key={field.key} sx={classes.detailRow}>
-                <Typography sx={classes.detailLabel}>
-                  {field.label}
-                </Typography>
-                <Typography sx={classes.detailValue}>
-                  {formData[field.key]}
-                </Typography>
-              </Box>
+              <div
+                key={field.key}
+                className="flex items-center justify-between w-full h-9"
+              >
+                <span className="text-sm text-zinc-900">{field.label}</span>
+                <input
+                  type="text"
+                  value={formData[field.key]}
+                  placeholder="None"
+                  onChange={(e) => handleDetailChange(field.key, e.target.value)}
+                  className="w-1/2 text-sm text-right text-zinc-500 border-0 border-b border-transparent hover:border-zinc-200 focus:border-blue-500 focus:outline-none bg-transparent py-1 px-0"
+                />
+              </div>
             ))}
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
 
-      <Box sx={classes.footer}>
-        <Button variant="contained" sx={classes.submitButton} onClick={handleAddDeal}>
+      {/* Footer */}
+      <div className="flex justify-end py-6">
+        <ButtonV2
+          id="add-deal-btn"
+          isFullWidth={false}
+          onClick={handleAddDeal}
+          style={{ gap: "8px" }}
+        >
           Add deal
           <Icon
             name={IconName.ADD_ICON}
             width="1rem"
             height="1rem"
-            fill="#fff"
           />
-        </Button>
-      </Box>
-    </Box>
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 
