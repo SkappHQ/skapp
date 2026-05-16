@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { rejects } from "assert";
+import { rejects } from "node:assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 

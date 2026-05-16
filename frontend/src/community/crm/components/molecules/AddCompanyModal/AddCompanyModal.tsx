@@ -9,7 +9,6 @@ import InputPhoneNumber from "~community/common/components/molecules/InputPhoneN
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -44,8 +43,6 @@ const AddCompanyModal: React.FC = () => {
     setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
   }));
 
-  const { userId } = useSessionData();
-
   const initialValues: CrmCompanyAddFormTypes = {
     name: "",
     industry: null,
@@ -79,10 +76,12 @@ const AddCompanyModal: React.FC = () => {
     setIsAddCompanyModalOpen(false);
   };
 
-  const { mutate: createNewCompany, isPending: isCreatingNewCompany } =
-    useCreateNewCompany(handleSuccess, (error: Error) => {
+  const { mutate: createNewCompany } = useCreateNewCompany(
+    handleSuccess,
+    (error: Error) => {
       handleError(error);
-    });
+    }
+  );
 
   const createCompany = (values: CrmCompanyAddFormTypes) => {
     if (companyNameExists === true) {
@@ -130,7 +129,10 @@ const AddCompanyModal: React.FC = () => {
       const timeoutId = setTimeout(() => {
         refetchCompanyNameExists().then(() => {
           if (companyNameExists === true) {
-            setFieldError("name", translateText(["validations", "companyExists"]));
+            setFieldError(
+              "name",
+              translateText(["validations", "companyExists"])
+            );
           } else {
             setFieldError("name", "");
           }
