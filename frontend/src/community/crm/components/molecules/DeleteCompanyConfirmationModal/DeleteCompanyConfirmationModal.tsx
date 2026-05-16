@@ -23,7 +23,6 @@ const DeleteCompanyConfirmationModal = () => {
         label: "Delete",
         onClick: handleDelete,
         endIcon: IconName.DELETE_BUTTON_ICON,
-        iconFill: "#7F1D1D",
         buttonStyle: ButtonStyle.ERROR
       }}
       secondaryBtn={{
