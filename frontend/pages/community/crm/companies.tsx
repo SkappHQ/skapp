@@ -30,9 +30,7 @@ const Companies: NextPage = () => {
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
-      <>
-        <CompanyPopupController />
-      </>
+      <CompanyPopupController />
     </ContentLayout>
   );
 };
