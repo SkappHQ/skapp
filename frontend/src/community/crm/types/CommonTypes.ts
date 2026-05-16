@@ -1,4 +1,5 @@
-import { CrmDealStageEnum } from "../enums/common";
+import { SortOrderTypes } from "~community/common/types/CommonTypes";
+import { CrmDealSortEnum, CrmDealStageEnum } from "../enums/common";
 
 export interface CrmCompanyType {
   id: number;
@@ -113,4 +114,14 @@ export interface CrmDealPaginatedResponseType {
   currentPage: number;
   totalItems: number;
   totalPages: number;
+}
+
+export interface CrmDealFilterParams {
+  page: number;
+  size: number;
+  sortOrder: SortOrderTypes;
+  sortKey: CrmDealSortEnum;
+  searchKeyword?: string;
+  stageId?: number;
+  priorityId?: number;
 }

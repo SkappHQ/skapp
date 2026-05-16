@@ -11,6 +11,7 @@ import {
   CrmCompanyType,
   CrmContactType,
   CrmDealCreateRequestType,
+  CrmDealFilterParams,
   CrmDealPaginatedResponseType,
   CrmDealStageType,
   CrmPriorityType
@@ -21,13 +22,7 @@ import {
   crmContactEndpoints,
   crmDealEndpoints
 } from "./utils/ApiEndpoints";
-import {
-  MOCK_COMPANIES,
-  MOCK_CONTACTS,
-  MOCK_DEAL_STAGES,
-  MOCK_PRIORITIES,
-  filterAndPaginateMockDeals
-} from "./utils/mockDealData";
+
 import {
   crmCompanyQueryKeys,
   crmContactQueryKeys,
@@ -38,14 +33,8 @@ export const useGetDealStages = (): UseQueryResult<CrmDealStageType[]> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_STAGES,
     queryFn: async () => {
-      try {
-        const response = await authFetch.get(crmDealEndpoints.GET_DEAL_STAGES);
-        const results = response?.data?.results ?? [];
-        if (results.length > 0) return results as CrmDealStageType[];
-      } catch {
-        // fall through to mock data
-      }
-      return MOCK_DEAL_STAGES;
+      const response = await authFetch.get(crmDealEndpoints.GET_DEAL_STAGES);
+      return (response?.data?.results ?? []) as CrmDealStageType[];
     },
     staleTime: 5 * 60 * 1000
   });
@@ -55,111 +44,21 @@ export const useGetPriorities = (): UseQueryResult<CrmPriorityType[]> => {
   return useQuery({
     queryKey: crmDealQueryKeys.PRIORITIES,
     queryFn: async () => {
-      try {
-        const response = await authFetch.get(crmDealEndpoints.GET_PRIORITIES);
-        const results = response?.data?.results ?? [];
-        if (results.length > 0) return results as CrmPriorityType[];
-      } catch {
-        // fall through to mock data
-      }
-      return MOCK_PRIORITIES;
+      const response = await authFetch.get(crmDealEndpoints.GET_PRIORITIES);
+      return (response?.data?.results ?? []) as CrmPriorityType[];
     },
     staleTime: 5 * 60 * 1000
   });
 };
 
 export const useGetDeals = (
-  page: number,
-  size: number,
-  sortOrder: string,
-  sortKey: string,
-  searchKeyword?: string,
-  stageId?: number,
-  priorityId?: number
+  params: CrmDealFilterParams
 ): UseQueryResult<CrmDealPaginatedResponseType> => {
   return useQuery({
-    queryKey: crmDealQueryKeys.DEALS(
-      page,
-      size,
-      sortOrder,
-      sortKey,
-      searchKeyword,
-      stageId,
-      priorityId
-    ),
+    queryKey: crmDealQueryKeys.GET_DEALS(params),
     queryFn: async () => {
-      try {
-        const response = await authFetch.get(
-          crmDealEndpoints.GET_DEALS(
-            page,
-            size,
-            sortOrder,
-            sortKey,
-            searchKeyword,
-            stageId,
-            priorityId
-          )
-        );
-        const result = response?.data?.results as CrmDealPaginatedResponseType;
-        if (result?.items) return result;
-      } catch {
-        // fall through to mock data
-      }
-      return filterAndPaginateMockDeals(
-        page,
-        size,
-        sortOrder,
-        searchKeyword,
-        stageId,
-        priorityId
-      );
-    }
-  });
-};
-
-export const useGetDealsForKanban = (
-  sortOrder: string,
-  searchKeyword?: string,
-  stageId?: number,
-  priorityId?: number
-): UseQueryResult<CrmDealPaginatedResponseType> => {
-  const KANBAN_PAGE_SIZE = 500;
-  return useQuery({
-    queryKey: crmDealQueryKeys.DEALS(
-      0,
-      KANBAN_PAGE_SIZE,
-      sortOrder,
-      "CREATED_DATE",
-      searchKeyword,
-      stageId,
-      priorityId
-    ),
-    queryFn: async () => {
-      try {
-        const response = await authFetch.get(
-          crmDealEndpoints.GET_DEALS(
-            0,
-            KANBAN_PAGE_SIZE,
-            sortOrder,
-            "CREATED_DATE",
-            searchKeyword,
-            stageId,
-            priorityId
-          )
-        );
-        const result = response?.data?.results as CrmDealPaginatedResponseType;
-        if (result?.items) return result;
-      } catch {
-        // fall through to mock data
-      }
-      return filterAndPaginateMockDeals(
-        0,
-        KANBAN_PAGE_SIZE,
-        sortOrder,
-        searchKeyword,
-        stageId,
-        priorityId
-      );
+      const response = await authFetch.get(crmDealEndpoints.GET_DEALS(params));
+      return response?.data?.results?.[0] as CrmDealPaginatedResponseType;
     }
   });
 };
@@ -187,23 +86,12 @@ export const useGetCrmContacts = (
   return useQuery({
     queryKey: crmContactQueryKeys.LIST(searchKeyword),
     queryFn: async () => {
-      try {
-        const response = await authFetch.get(
-          crmContactEndpoints.GET_CONTACTS(searchKeyword)
-        );
-        const results =
-          response?.data?.results?.items ?? response?.data?.results ?? [];
-        if (results.length > 0) return results as CrmContactType[];
-      } catch {
-        // fall through to mock data
-      }
-      if (!searchKeyword) return MOCK_CONTACTS;
-      const kw = searchKeyword.toLowerCase();
-      return MOCK_CONTACTS.filter(
-        (c) =>
-          c.name.toLowerCase().includes(kw) ||
-          c.email.toLowerCase().includes(kw)
+      const response = await authFetch.get(
+        crmContactEndpoints.GET_CONTACTS(searchKeyword)
       );
+      const results =
+        response?.data?.results?.[0]?.items ?? response?.data?.results ?? [];
+      return results as CrmContactType[];
     },
     staleTime: 2 * 60 * 1000
   });
@@ -215,21 +103,12 @@ export const useGetCrmCompanies = (
   return useQuery({
     queryKey: crmCompanyQueryKeys.LIST(searchKeyword),
     queryFn: async () => {
-      try {
-        const response = await authFetch.get(
-          crmCompanyEndpoints.GET_COMPANIES(searchKeyword)
-        );
-        const results =
-          response?.data?.results?.items ?? response?.data?.results ?? [];
-        if (results.length > 0) return results as CrmCompanyType[];
-      } catch {
-        // fall through to mock data
-      }
-      if (!searchKeyword) return MOCK_COMPANIES;
-      const kw = searchKeyword.toLowerCase();
-      return MOCK_COMPANIES.filter((c) =>
-        c.name.toLowerCase().includes(kw)
+      const response = await authFetch.get(
+        crmCompanyEndpoints.GET_COMPANIES(searchKeyword)
       );
+      const results =
+        response?.data?.results?.[0]?.items ?? response?.data?.results ?? [];
+      return results as CrmCompanyType[];
     },
     staleTime: 2 * 60 * 1000
   });

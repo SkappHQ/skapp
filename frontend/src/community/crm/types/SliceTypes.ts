@@ -12,8 +12,6 @@ export interface CrmDealSliceTypes extends Pick<
   CrmStore,
   | "isAddDealSidePanelOpen"
   | "setIsAddDealSidePanelOpen"
-  | "dealViewMode"
-  | "setDealViewMode"
   | "dealSortOrder"
   | "setDealSortOrder"
 > {}

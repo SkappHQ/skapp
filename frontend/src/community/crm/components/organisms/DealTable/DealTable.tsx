@@ -22,8 +22,9 @@ import {
   useGetDeals,
   useGetDealStages
 } from "~community/crm/api/crmDealApi";
-import { CrmDealSortOrder, CrmDealStageEnum } from "~community/crm/enums/common";
+import { CrmDealSortEnum, CrmDealSortOrder, CrmDealStageEnum } from "~community/crm/enums/common";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
+import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { useAppStore } from "../../../../../store/store";
 
 // ---------------------------------------------------------------------------
@@ -58,13 +59,13 @@ const DealTable: FC = () => {
 
   const isFetchingMoreRef = useRef(false);
 
-  const { data: dealsData, isFetching } = useGetDeals(
-    fetchPage,
-    PAGE_SIZE,
-    CrmDealSortOrder.NEWEST,
-    "CREATED_DATE",
-    searchKeyword || undefined
-  );
+  const { data: dealsData, isFetching } = useGetDeals({
+    page: fetchPage,
+    size: PAGE_SIZE,
+    sortOrder: SortOrderTypes.DESC,
+    sortKey: CrmDealSortEnum.CREATED_DATE,
+    searchKeyword: searchKeyword || undefined
+  });
 
   // Accumulate pages as data arrives
   useEffect(() => {

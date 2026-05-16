@@ -10,12 +10,14 @@ export enum CrmTaskStatusEnum {
   COMPLETED = "COMPLETED"
 }
 
-export enum CrmDealViewMode {
-  LIST = "list",
-  KANBAN = "kanban"
-}
-
 export enum CrmDealSortOrder {
   NEWEST = "DESC",
   OLDEST = "ASC"
+}
+
+export enum CrmDealSortEnum {
+  CREATED_DATE = "CREATED_DATE",
+  NAME = "NAME",
+  CLOSING_DATE = "CLOSING_DATE",
+  AMOUNT = "AMOUNT"
 }

@@ -3,6 +3,7 @@ import { FormatListBulletedRounded, GridViewRounded } from "@mui/icons-material"
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
 
+import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -222,7 +223,8 @@ const KanbanView: FC<KanbanViewProps> = ({
           <ButtonV2
             variant="primary"
             onClick={onAddDeal}
-            endIcon={<span>+</span>}
+            icon={<PlusIcon fill="white" />}
+            iconPosition="end"
           >
             {translateText(["addDealBtn"])}
           </ButtonV2>

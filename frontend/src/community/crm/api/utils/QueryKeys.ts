@@ -1,14 +1,9 @@
+import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
+
 export const crmDealQueryKeys = {
   ALL_DEALS: ["crm-deals"],
-  DEALS: function (
-    page: number,
-    size: number,
-    sortOrder: string,
-    sortKey: string,
-    searchKeyword?: string,
-    stageId?: number,
-    priorityId?: number
-  ) {
+  GET_DEALS: function (params: CrmDealFilterParams) {
+    const { page, size, sortOrder, sortKey, searchKeyword, stageId, priorityId } = params;
     return [
       ...this.ALL_DEALS,
       page,
