@@ -1,12 +1,18 @@
-import { Stack } from "@mui/material";
 import { FC, JSX } from "react";
 
 import CompanyMetricCard from "~community/crm/components/atoms/CompanyMetricCard/CompanyMetricCard";
 
+interface ChipProps {
+  label: string;
+  color?: string;
+  bgColor?: string;
+  icon?: JSX.Element;
+}
+
 interface MetricItem {
   title: string;
   amount: string;
-  chip?: JSX.Element;
+  chip?: ChipProps;
 }
 
 interface Props {
@@ -15,7 +21,7 @@ interface Props {
 
 const CompanyMetricCards: FC<Props> = ({ metrics }) => {
   return (
-    <Stack direction="row" gap="1rem" sx={{ marginTop: "1.5rem", "& > *": { flex: 1 } }}>
+    <div className="flex gap-4 w-full">
       {metrics.map((metric, index) => (
         <CompanyMetricCard
           key={index}
@@ -24,7 +30,7 @@ const CompanyMetricCards: FC<Props> = ({ metrics }) => {
           chip={metric.chip}
         />
       ))}
-    </Stack>
+    </div>
   );
 };
 
