@@ -2,7 +2,9 @@
   BaseRowData,
   Column,
   GroupData,
-  ListTable
+  InputField,
+  ListTable,
+  SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import {
   FC,
@@ -15,7 +17,6 @@ import {
 } from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetDeals,
@@ -134,10 +135,10 @@ const DealTable: FC = () => {
       id: "dealName",
       title: translateText(["dealColumn"]),
       field: "dealName",
-      width: 200,
-      minWidth: 120,
-      resizable: true,
-      draggable: true,
+      width: 300,
+      minWidth: 160,
+      resizable: false,
+      draggable: false,
       visible: true,
       sortable: false
     },
@@ -145,10 +146,10 @@ const DealTable: FC = () => {
       id: "value",
       title: translateText(["valueColumn"]),
       field: "value",
-      width: 150,
-      minWidth: 100,
-      resizable: true,
-      draggable: true,
+      width: 160,
+      minWidth: 90,
+      resizable: false,
+      draggable: false,
       visible: true,
       sortable: false
     },
@@ -156,10 +157,10 @@ const DealTable: FC = () => {
       id: "stage",
       title: translateText(["stageColumn"]),
       field: "stage",
-      width: 150,
+      width: 160,
       minWidth: 100,
-      resizable: true,
-      draggable: true,
+      resizable: false,
+      draggable: false,
       visible: true,
       sortable: false
     },
@@ -167,10 +168,10 @@ const DealTable: FC = () => {
       id: "companyName",
       title: translateText(["companyNameColumn"]),
       field: "companyName",
-      width: 180,
+      width: 200,
       minWidth: 120,
-      resizable: true,
-      draggable: true,
+      resizable: false,
+      draggable: false,
       visible: true,
       sortable: false
     },
@@ -178,10 +179,10 @@ const DealTable: FC = () => {
       id: "contactName",
       title: translateText(["contactNameColumn"]),
       field: "contactName",
-      width: 180,
+      width: 200,
       minWidth: 120,
-      resizable: true,
-      draggable: true,
+      resizable: false,
+      draggable: false,
       visible: true,
       sortable: false
     },
@@ -189,10 +190,10 @@ const DealTable: FC = () => {
       id: "dealOwner",
       title: translateText(["dealOwnerColumn"]),
       field: "dealOwner",
-      width: 180,
+      width: 200,
       minWidth: 120,
-      resizable: true,
-      draggable: true,
+      resizable: false,
+      draggable: false,
       visible: true,
       sortable: false
     }
@@ -242,33 +243,45 @@ const DealTable: FC = () => {
   // -------------------------------------------------------------------------
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="w-60">
-        <SearchBox
-          placeHolder={translateText(["searchPlaceholder"])}
-          value={searchKeyword}
-          setSearchTerm={handleSearchChange}
-          name="dealSearch"
+    <div className="flex flex-col gap-6 w-full">
+      <InputField
+        placeholder={translateText(["searchPlaceholder"])}
+        value={searchKeyword}
+        onChange={(e) => handleSearchChange(e.target.value)}
+        type="search"
+        variant="md"
+        rightIcon={<SearchIcon />}
+        ariaLabelClearButton="Clear search"
+        customStyles={{
+          borderRadius: "rounded-full",
+          padding: "px-6",
+          background: "bg-[#f4f4f5]",
+          border: "border-0"
+        }}
+        className="max-w-[412px] w-full"
+      />
+      <div className="w-full rounded-lg overflow-hidden shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full [&>div]:!h-auto [&_td[role='status']]:!p-0 [&_td[role='status']>div>div]:!h-0">
+        <ListTable<DealRow>
+          columnHeaders={columnHeaders}
+          data={tableData}
+          hasMore={hasMore}
+          onLoadMore={handleLoadMore}
+          emptyStateTitle={
+            searchKeyword
+              ? noSearchResultsTitle
+              : translateText(["noDealsTitle"])
+          }
+          emptyStateDescription={
+            searchKeyword
+              ? translateText(["noSearchResultsDescription"])
+              : translateText(["noDealsDescription"])
+          }
+          scrollThreshold={0.8}
+          showKebabMenu={false}
+          showColumnVisibilityToggle={false}
+          disableColumnDragging
         />
       </div>
-      <ListTable<DealRow>
-        columnHeaders={columnHeaders}
-        data={tableData}
-        hasMore={hasMore}
-        onLoadMore={handleLoadMore}
-        emptyStateTitle={
-          searchKeyword
-            ? noSearchResultsTitle
-            : translateText(["noDealsTitle"])
-        }
-        emptyStateDescription={
-          searchKeyword
-            ? translateText(["noSearchResultsDescription"])
-            : translateText(["noDealsDescription"])
-        }
-        infiniteScrollLoadingMessage="Loading more deals..."
-        scrollThreshold={0.8}
-      />
     </div>
   );
 };
