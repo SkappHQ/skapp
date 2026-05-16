@@ -9,6 +9,6 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyTableViewDto;
 @Repository
 public interface CrmCompanyRepository {
 
-  public Page<CrmCompanyTableViewDto> getCompanyTableViewDetails(Pageable pageable, String searchKeyword);
+	public Page<CrmCompanyTableViewDto> getCompanyTableViewDetails(Pageable pageable, String searchKeyword);
 
 }

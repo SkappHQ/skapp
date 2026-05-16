@@ -11,12 +11,20 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CrmCompanyTableViewDto {
 
-  private Long id;
-  private String name;
-  private String contactNumber;
-  private Long tasks;
-  private Long overdue;
-  private BigDecimal openValue;
-  private BigDecimal accountValue;
-  private Long closedDeals;
+	private Long id;
+
+	private String name;
+
+	private String contactNumber;
+
+	private Long tasks;
+
+	private Long overdue;
+
+	private BigDecimal openValue;
+
+	private BigDecimal accountValue;
+
+	private Long closedDeals;
+
 }
