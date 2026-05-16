@@ -2,11 +2,12 @@ import { Skeleton } from "@mui/material";
 import { ButtonV2, EmptyDataView, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetDealsByContactId } from "~community/crm/api/CrmApi";
 import AdvancedAccordion from "~community/crm/components/atoms/AdvancedAccordion/AdvancedAccordion";
 import type { AdvancedAccordionItem } from "~community/crm/components/atoms/AdvancedAccordion/AdvancedAccordion";
-import { CrmDealStageEnum } from "~community/crm/enums/CrmDealEnums";
+import { CrmDealStageEnum } from "~community/crm/enums/common";
 import { CrmDealType } from "~community/crm/types/CrmDealTypes";
 import { formatDealAmount } from "~community/crm/utils/contactMetricsUtils";
 
@@ -68,9 +69,18 @@ const DealsSection: FC<Props> = ({ contactId }) => {
       <div className={styles.header}>
         <p className={styles.title}>{translateText(["sectionHeader"])}</p>
         {/*  TODO: Wire up "Add deal" when AddDealModal is implemented */}
-        <ButtonV2 type="button" variant="secondary" size="sm" disabled>
-          {translateText(["addDealButton"])}
-        </ButtonV2>
+        {dealItems.length > 0 && (
+          <ButtonV2
+            type="button"
+            variant="secondary"
+            size="sm"
+            icon={<PlusIcon />}
+            iconPosition="end"
+            disabled
+          >
+            {translateText(["addDealButton"])}
+          </ButtonV2>
+        )}
       </div>
 
       {/* Section divider */}
@@ -101,7 +111,12 @@ const DealsSection: FC<Props> = ({ contactId }) => {
           <EmptyDataView
             title={translateText(["emptyTitle"])}
             description={translateText(["emptyDescription"])}
-            className={{ wrapper: "!h-auto !p-0 w-full" }}
+            icon={<SearchIcon width="24" height="24" />}
+            className={{
+              wrapper: styles.emptyDataViewWrapper,
+              title: styles.emptyTitle,
+              description: styles.emptyDesc
+            }}
           />
           {/*   TODO: Wire up "Add deal" when AddDealModal is implemented */}
           <ButtonV2
@@ -110,6 +125,7 @@ const DealsSection: FC<Props> = ({ contactId }) => {
             size="sm"
             icon={<PlusIcon />}
             iconPosition="end"
+            className={styles.emptyAddDealBtnClass}
             disabled
           >
             {translateText(["addDealButtonEmptyView"])}

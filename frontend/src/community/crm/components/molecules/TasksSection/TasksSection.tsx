@@ -1,13 +1,13 @@
 import { Skeleton } from "@mui/material";
 import {
   Avatar,
-  ButtonV2,
   EmptyDataView,
   PlusIcon,
   PriorityIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
+import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -42,12 +42,10 @@ const TasksSection: FC<Props> = ({ contactId }) => {
 
   const { data, isLoading } = useGetTasksByContactId(contactId);
   const tasks: CrmTaskType[] = data?.items ?? [];
-
   const { mutate: updateCompletion } = useUpdateTaskCompletion(
     () => {},
     () => {}
   );
-
   const handleToggleComplete = (id: number, isCompleted: boolean) => {
     updateCompletion({ id, isCompleted: !isCompleted });
   };
@@ -71,97 +69,113 @@ const TasksSection: FC<Props> = ({ contactId }) => {
         </div>
       )}
 
-      {/* Task list */}
+      {/* Task list + add-task button*/}
       {!isLoading && (tasks.length > 0 || isAddingTask) && (
-        <div className={styles.taskList}>
-          {tasks.map((task, idx) => {
-            const typeConfig = getTaskTypeConfig(task.type.name);
-            const priorityConfig = getPriorityConfig(task.priority);
-            const dueDateDisplay = getDueDateDisplay(
-              task.dueAt,
-              task.isCompleted
-            );
-            const isLast = idx === tasks.length - 1 && !isAddingTask;
+        <div className={styles.taskSection}>
+          <div className={styles.taskList}>
+            {tasks.map((task, idx) => {
+              const typeConfig = getTaskTypeConfig(task.type.name);
+              const priorityConfig = getPriorityConfig(task.priority);
+              const dueDateDisplay = getDueDateDisplay(
+                task.dueAt,
+                task.isCompleted
+              );
+              const isLast = idx === tasks.length - 1 && !isAddingTask;
 
-            return (
-              <div key={task.id} className={isLast ? "" : styles.taskRowBorder}>
-                <div className={styles.taskRow}>
-                  {/* Completion toggle */}
-                  <CheckTask
-                    checked={task.isCompleted}
-                    onChange={() =>
-                      handleToggleComplete(task.id, task.isCompleted)
-                    }
-                    size="size-5"
-                    ariaLabel={
-                      task.isCompleted ? "Mark incomplete" : "Mark complete"
-                    }
-                  />
-
-                  {/* Task type icon */}
-                  <div
-                    className={styles.typeIconCircle}
-                    style={{ backgroundColor: typeConfig.bg }}
-                    aria-hidden="true"
-                  >
-                    <Icon
-                      name={typeConfig.iconName}
-                      fill="white"
-                      width="12"
-                      height="12"
-                    />
-                  </div>
-
-                  {/* Task name + due date */}
-                  <div className={styles.taskContent}>
-                    <p
-                      className={
-                        task.isCompleted
-                          ? styles.taskNameCompleted
-                          : styles.taskName
+              return (
+                <div
+                  key={task.id}
+                  className={isLast ? "" : styles.taskRowBorder}
+                >
+                  <div className={styles.taskRow}>
+                    {/* Completion toggle */}
+                    <CheckTask
+                      checked={task.isCompleted}
+                      onChange={() =>
+                        handleToggleComplete(task.id, task.isCompleted)
                       }
-                    >
-                      {task.name}
-                    </p>
-                    <p
-                      className={`${styles.taskDueDateBase} ${dueDateDisplay.colorClass}`}
-                    >
-                      {dueDateDisplay.text}
-                    </p>
-                  </div>
-
-                  {/* Priority + avatar */}
-                  <div className={styles.taskActions}>
-                    <PriorityIcon
-                      icon={priorityConfig.icon}
-                      bgColor={priorityConfig.bgColor}
+                      size="size-5"
+                      ariaLabel={
+                        task.isCompleted ? "Mark incomplete" : "Mark complete"
+                      }
                     />
-                    {task.owner && (
-                      <Avatar
-                        id={`task-owner-${task.id}`}
-                        size="xs"
-                        src={task.owner.authPic ?? undefined}
-                        firstName={task.owner.firstName}
-                        lastName={task.owner.lastName ?? undefined}
+
+                    {/* Task type icon */}
+                    <div
+                      className={styles.typeIconCircle}
+                      style={{ backgroundColor: typeConfig.bg }}
+                      aria-hidden="true"
+                    >
+                      <Icon
+                        name={typeConfig.iconName}
+                        fill="white"
+                        width="12"
+                        height="12"
                       />
-                    )}
+                    </div>
+
+                    {/* Task name + due date */}
+                    <div className={styles.taskContent}>
+                      <p
+                        className={
+                          task.isCompleted
+                            ? styles.taskNameCompleted
+                            : styles.taskName
+                        }
+                      >
+                        {task.name}
+                      </p>
+                      <p
+                        className={`${styles.taskDueDateBase} ${dueDateDisplay.colorClass}`}
+                      >
+                        {dueDateDisplay.text}
+                      </p>
+                    </div>
+
+                    {/* Priority + avatar */}
+                    <div className={styles.taskActions}>
+                      <PriorityIcon
+                        icon={priorityConfig.icon}
+                        bgColor={priorityConfig.bgColor}
+                      />
+                      {task.owner && (
+                        <Avatar
+                          id={`task-owner-${task.id}`}
+                          size="xs"
+                          src={task.owner.authPic ?? undefined}
+                          firstName={task.owner.firstName}
+                          lastName={task.owner.lastName ?? undefined}
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {/* Inline add-task row */}
-          {isAddingTask && (
-            <AddTaskRow
-              placeholder={translateText(["addTaskPlaceholder"])}
-              onSave={(_name: string, _type: TaskTypeValue) => {
-                // TODO: Phase 8 — call create task mutation with name + type
-                setIsAddingTask(false);
-              }}
-              onCancel={() => setIsAddingTask(false)}
-              hasBorder={tasks.length > 0}
-            />
+            {/* Inline add-task row */}
+            {isAddingTask && (
+              <AddTaskRow
+                placeholder={translateText(["addTaskPlaceholder"])}
+                onSave={(_name: string, _type: TaskTypeValue) => {
+                  // TODO: call create task mutation with name + type
+                  setIsAddingTask(false);
+                }}
+                onCancel={() => setIsAddingTask(false)}
+                hasBorder={tasks.length > 0}
+              />
+            )}
+          </div>
+
+          {!isAddingTask && tasks.length > 0 && (
+            <button
+              type="button"
+              className={styles.addTaskBtn}
+              onClick={() => setIsAddingTask(true)}
+            >
+              {translateText(["addTaskButtonEmptyView"])}
+              <PlusIcon />
+            </button>
           )}
         </div>
       )}
@@ -170,33 +184,25 @@ const TasksSection: FC<Props> = ({ contactId }) => {
       {!isLoading && tasks.length === 0 && !isAddingTask && (
         <div className={styles.emptyWrapper}>
           <EmptyDataView
+            icon={<SearchIcon width="24" height="24" fill="#71717A" />}
             title={translateText(["emptyTitle"])}
             description={translateText(["emptyDescription"])}
-            className={{ wrapper: "!h-auto !p-0 w-full" }}
+            className={{
+              wrapper: styles.emptyDataViewWrapper,
+              title: styles.emptyTitle,
+              description: styles.emptyDesc
+            }}
           />
-          <ButtonV2
+
+          <button
             type="button"
-            variant="line"
-            size="sm"
-            icon={<PlusIcon />}
-            iconPosition="end"
+            className={styles.emptyAddTaskBtn}
             onClick={() => setIsAddingTask(true)}
           >
             {translateText(["addTaskButtonEmptyView"])}
-          </ButtonV2>
+            <PlusIcon />
+          </button>
         </div>
-      )}
-
-      {/* Add task link — shown only when tasks exist */}
-      {!isAddingTask && tasks.length > 0 && (
-        <ButtonV2
-          type="button"
-          variant="line"
-          size="sm"
-          onClick={() => setIsAddingTask(true)}
-        >
-          {translateText(["addTaskButton"])}
-        </ButtonV2>
       )}
     </div>
   );

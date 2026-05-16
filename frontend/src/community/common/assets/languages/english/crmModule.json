@@ -16,10 +16,10 @@
       },
       "deals": {
         "sectionHeader": "Deals",
-        "addDealButton": "Add deal +",
+        "addDealButton": "Add deal",
         "addDealButtonEmptyView": "Add deal",
-        "emptyTitle": "No deals yet",
-        "emptyDescription": "Add a deal to track opportunities with this contact.",
+        "emptyTitle": "No deals",
+        "emptyDescription": "No deals associated with this contact",
         "descriptionLabel": "Description",
         "noDescription": "No description available."
       },
@@ -28,8 +28,8 @@
         "addTaskButton": "Add task +",
         "addTaskButtonEmptyView": "Add task",
         "addTaskPlaceholder": "Type a task name…",
-        "emptyTitle": "No tasks yet",
-        "emptyDescription": "Add a task to follow up with this contact.",
+        "emptyTitle": "No tasks",
+        "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
         "toggleErrorTitle": "Failed to update task",
         "toggleErrorDescription": "Could not update the task status. Please try again."
       },

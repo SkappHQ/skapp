@@ -112,16 +112,18 @@ const TaskTypeSelector: FC<Props> = ({ value, onChange }) => {
         aria-expanded={open}
         aria-label={`Task type: ${value}`}
       >
-        <div
-          className={styles.iconCircle}
-          style={{ backgroundColor: currentType.bg }}
-        >
-          <Icon
-            name={currentType.iconName}
-            fill="white"
-            width="12"
-            height="12"
-          />
+        <div className={styles.iconWrapper}>
+          <div
+            className={styles.iconCircle}
+            style={{ backgroundColor: currentType.bg }}
+          >
+            <Icon
+              name={currentType.iconName}
+              fill="white"
+              width="12"
+              height="12"
+            />
+          </div>
         </div>
         <TaskTypeArrowIcon
           svgProps={{

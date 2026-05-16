@@ -1,7 +1,5 @@
 const styles = {
   form: "flex flex-col gap-4",
-
-  // Contact owner field — display-only, mirrors InputField background
   ownerRow: "flex flex-col gap-1",
   ownerLabel: "text-base font-medium text-black",
   ownerInputArea:
