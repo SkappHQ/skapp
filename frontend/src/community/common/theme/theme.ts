@@ -495,9 +495,7 @@ export const theme = createTheme({
     // Chip/Medium, Modal drag & drop, Dropdown, Blank table content, Table chip, Table content, Button medium
     body2: {
       fontWeight: 400,
-      fontSize: "0.875rem", // 14px
-      lineHeight: "1.5rem", // 24px
-      letterSpacing: "0.03125rem" // 0.5px
+      fontSize: "0.875rem" // 14px
     },
     // caption, Button small, Selected filters category, Modal drag & drop ( sm), Chip/small, Toast message
     caption: {
