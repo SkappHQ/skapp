@@ -163,96 +163,106 @@ const AddCompanyModal: React.FC = () => {
   }, [values.name, refetchCompanyNameExists, companyNameExists]);
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Stack
-        sx={{
-          flexDirection: "column",
-          gap: 2,
-          zIndex: ZIndexEnums.MODAL
-        }}
-        role="form"
-        aria-label={translateAria(["addCompanyForm"])}
-      >
-        <InputField
-          inputName="name"
-          value={values.name}
-          error={errors.name || ""}
-          label={translateLabelText(["name"])}
-          required
-          placeHolder={translateInputText(["name"])}
-          onChange={handleChange}
-          onBlur={handleBlur as any}
-          maxLength={characterLengths.NAME_LENGTH}
-        />
-
-        <InputPhoneNumber
-          label={translateLabelText(["contactNumber"])}
-          value={values.contactNumber || ""}
-          countryCodeValue={values.countryCode as string}
-          placeHolder={translateInputText(["contactNumber"])}
-          onChangeCountry={async (countryCode: string) => {
-            const syntheticEvent = {
-              target: { name: "countryCode", value: countryCode }
-            } as ChangeEvent<HTMLInputElement>;
-            handleChange(syntheticEvent);
+    <div>
+      <Form onSubmit={handleSubmit}>
+        {/* <Stack
+          sx={{
+            flexDirection: "column",
+            gap: 2,
+            zIndex: ZIndexEnums.MODAL
           }}
-          onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-            handleChange(e);
-          }}
-          error={errors.contactNumber || ""}
-          inputName="contactNumber"
-          fullComponentStyle={{
-            mt: "0rem",
-            mb: "0rem"
-          }}
-        />
+          role="form"
+          aria-label={translateAria(["addCompanyForm"])}
+        > */}
+        <div className="flex flex-col h-full justify-between gap-[0.625rem]">
+          <InputField
+            inputName="name"
+            value={values.name}
+            error={errors.name || ""}
+            label={translateLabelText(["name"])}
+            required
+            placeHolder={translateInputText(["name"])}
+            onChange={handleChange}
+            onBlur={handleBlur as any}
+            maxLength={characterLengths.NAME_LENGTH}
+          />
 
-        <InputField
-          inputName="website"
-          value={values.website || ""}
-          error={errors.website || ""}
-          label={translateLabelText(["website"])}
-          placeHolder={translateInputText(["website"])}
-          onChange={handleChange}
-          onBlur={handleBlur as any}
-          maxLength={characterLengths.CHARACTER_LENGTH}
-        />
+          <InputPhoneNumber
+            label={translateLabelText(["contactNumber"])}
+            value={values.contactNumber || ""}
+            countryCodeValue={values.countryCode as string}
+            placeHolder={translateInputText(["contactNumber"])}
+            onChangeCountry={async (countryCode: string) => {
+              const syntheticEvent = {
+                target: { name: "countryCode", value: countryCode }
+              } as ChangeEvent<HTMLInputElement>;
+              handleChange(syntheticEvent);
+            }}
+            onChange={async (e: ChangeEvent<HTMLInputElement>) => {
+              handleChange(e);
+            }}
+            error={errors.contactNumber || ""}
+            inputName="contactNumber"
+            fullComponentStyle={{
+              m:0,p:0
+            }}
+          />
 
-        <InputField
-          inputName="address"
-          value={values.address || ""}
-          error={errors.address || ""}
-          label={translateLabelText(["address"])}
-          placeHolder={translateInputText(["address"])}
-          onChange={handleChange}
-          onBlur={handleBlur as any}
-          maxLength={characterLengths.CHARACTER_LENGTH}
-        />
+          <InputField
+            inputName="website"
+            value={values.website || ""}
+            error={errors.website || ""}
+            label={translateLabelText(["website"])}
+            placeHolder={translateInputText(["website"])}
+            onChange={handleChange}
+            onBlur={handleBlur as any}
+            maxLength={characterLengths.CHARACTER_LENGTH}
+          />
 
-        <InputField
-          inputName="industry"
-          value={values.industry || ""}
-          error={errors.industry || ""}
-          label={translateLabelText(["industry"])}
-          placeHolder={translateInputText(["industry"])}
-          onChange={handleChange}
-          onBlur={handleBlur as any}
-          maxLength={characterLengths.CHARACTER_LENGTH}
-        />
+          <InputField
+            inputName="address"
+            value={values.address || ""}
+            error={errors.address || ""}
+            label={translateLabelText(["address"])}
+            placeHolder={translateInputText(["address"])}
+            onChange={handleChange}
+            onBlur={handleBlur as any}
+            maxLength={characterLengths.CHARACTER_LENGTH}
+          />
 
-        <div className="flex flex-row justify-end gap-3 mt-4">
-          <ButtonV2
-            variant="primary"
-            type="submit"
-            disabled={isSubmitting || companyNameExists === true}
-            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            iconPosition="end"
-          >
-            {translateButton(["addCompany"])}
-          </ButtonV2>
+          <InputField
+            inputName="industry"
+            value={values.industry || ""}
+            error={errors.industry || ""}
+            label={translateLabelText(["industry"])}
+            placeHolder={translateInputText(["industry"])}
+            onChange={handleChange}
+            onBlur={handleBlur as any}
+            maxLength={characterLengths.CHARACTER_LENGTH}
+          />
+
+          <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              disabled={isSubmitting || companyNameExists === true}
+              onClick={handleCloseModal}
+              icon={<Icon name={IconName.CLOSE_ICON} />}
+              iconPosition="end"
+            >
+              {translateButton(["cancelAddCompany"])}
+            </ButtonV2>
+            <ButtonV2
+              variant="primary"
+              type="submit"
+              disabled={isSubmitting || companyNameExists === true}
+            >
+              {translateButton(["addCompany"])}
+            </ButtonV2>
+          </div>
         </div>
-      </Stack>
-    </Form>
+      </Form>
+    </div>
   );
 };
 

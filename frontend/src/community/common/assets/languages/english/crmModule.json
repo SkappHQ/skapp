@@ -9,27 +9,28 @@
   "companies": {
     "pageHead": "Companies | Skapp",
     "title": "Companies",
-    "addCompanyBtn": "Add Company",
+    "addCompanyBtn": "Add company",
     "detailsPageHead": "Company Details | Skapp",
     "detailsTitle": "Company Details",
     "addCompanyModal": {
       "title": "Add Company",
       "labels": {
-        "name": "Company Name",
-        "contactNumber": "Contact Number",
+        "name": "Company name",
+        "contactNumber": "Contact no.",
         "website": "Website",
         "address": "Address",
         "industry": "Industry"
       },
       "placeholders": {
         "name": "Enter company name",
-        "contactNumber": "Enter contact number",
-        "website": "Enter website URL",
+        "contactNumber": "Enter contact no.",
+        "website": "Enter website",
         "address": "Enter address",
-        "industry": "Enter industry"
+        "industry": "Select industry"
       },
       "buttons": {
-        "addCompany": "Add Company"
+        "addCompany": "Save",
+        "cancelAddCompany": "Cancel"
       }
     },
     "addCompanyValidations": {
