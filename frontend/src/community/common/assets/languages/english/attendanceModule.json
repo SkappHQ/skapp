@@ -15,7 +15,12 @@
     "updateSuccessMessageTitle": "Configuration Updated",
     "updateSuccessMessage": "Attendance Configuration has been updated successfully",
     "updateErrorMessageTitle": "Oops! Something went wrong",
-    "updateErrorMessage": "Failed to update the attendance configuration. Please try again."
+    "updateErrorMessage": "Failed to update the attendance configuration. Please try again.",
+    "geoFencingSettingsTitle": "Geofence Settings",
+    "geoFencingSettingsDescription": "Turn on geofencing to restrict clock ins to a specific location.",
+    "isGeoFencingEnabled": "Geo fencing",
+    "configureWorkLocationsLink": "Configure work locations",
+    "proTier": "Pro"
   },
   "timesheet": {
     "myTimesheet": {
@@ -48,7 +53,7 @@
     "addTimeEntrySuccessDes": "Your time log has has been submitted for approval successfully",
     "addTimeEntryErrorTitle": "Oops! Something went wrong",
     "addTimeEntryErrorDes": "Failed to submit the time log. Please try again",
-    "addTimeEntryNoManagerErrorTitle":"No supervisor has been assigned",
+    "addTimeEntryNoManagerErrorTitle": "No supervisor has been assigned",
     "managerMissingErrorDes": "Please contact the administrator regarding your request",
     "dateInputLabel": "Date",
     "durationLabel": "Duration:",
@@ -183,7 +188,9 @@
     "clockInAgain": "Clock in again",
     "clockOutAlert": "Clock out alert !",
     "clockOutAlertMessage": "You will be clocked out in 10 minutes. If you wish to continue working, please clock in again.",
-    "ok": "Okay"
+    "ok": "Okay",
+    "clockInErrorTitle": "Oops! Something went wrong",
+    "clockInErrorDescription": "Failed to record your attendance. Please try again."
   },
   "myTimesheet": {
     "pageHead": "My Timesheet | Skapp",

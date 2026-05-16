@@ -1,9 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { workLocationEndpoints } from "~community/configurations/api/utils/ApiEndpoints";
 import { WorkLocationRequestPayload } from "~community/configurations/types/WorkLocationTypes";
 
-import { workLocationEndpoints } from "~community/configurations/api/utils/ApiEndpoints";
 import { workLocationQueryKeys } from "./utils/QueryKeys";
 
 export const useGetWorkLocations = (
@@ -18,7 +23,31 @@ export const useGetWorkLocations = (
         workLocationEndpoints.GET_WORK_LOCATIONS(search, page, size)
       );
       return response.data.results[0];
+    }
+  });
+};
+
+export const useGetWorkLocationsInfinite = (search: string, size: number) => {
+  return useInfiniteQuery({
+    queryKey: workLocationQueryKeys.GET_WORK_LOCATIONS_INFINITE(search, size),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await authFetch.get(
+        workLocationEndpoints.GET_WORK_LOCATIONS(search, pageParam, size)
+      );
+      return response.data.results[0];
     },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (
+        lastPage?.currentPage !== undefined &&
+        lastPage?.totalPages !== undefined &&
+        lastPage?.currentPage < lastPage?.totalPages - 1
+      ) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
+    },
+    refetchOnWindowFocus: false
   });
 };
 

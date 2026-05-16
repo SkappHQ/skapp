@@ -8,38 +8,52 @@ import {
   TableColumn
 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import Pagination from "~community/common/components/atoms/Pagination/Pagination";
+import ROUTES from "~community/common/constants/routes";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import ROUTES from "~community/common/constants/routes";
-import { useGetWorkLocations } from "~community/configurations/api/WorkLocationApi";
-import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
-import { WorkLocation } from "~community/configurations/types/WorkLocationTypes";
+import { useGetWorkLocationsInfinite } from "~community/configurations/api/WorkLocationApi";
 import DeleteWorkLocationModal from "~community/configurations/components/molecules/DeleteWorkLocationModal/DeleteWorkLocationModal";
 import {
   WORK_LOCATION_PAGE_SIZE,
   WORK_LOCATION_SEARCH_DEBOUNCE_MS
 } from "~community/configurations/constants/workLocationConstants";
+import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
+import {
+  WorkLocation,
+  WorkLocationsPage
+} from "~community/configurations/types/WorkLocationTypes";
 
 const WorkLocationsTable = () => {
   const router = useRouter();
   const translateText = useTranslator("configurations", "workLocation");
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(0);
   const [emptyStateType, setEmptyStateType] = useState<EmptyStateType>(
     "noData" as EmptyStateType
   );
 
-  const { setIsDeleteModalOpen, setSelectedLocationId } = useWorkLocationStore();
+  const { setIsDeleteModalOpen, setSelectedLocationId } =
+    useWorkLocationStore();
   const debouncedSearch = useDebounce(search, WORK_LOCATION_SEARCH_DEBOUNCE_MS);
 
-  const { data, isLoading } = useGetWorkLocations(debouncedSearch, currentPage, WORK_LOCATION_PAGE_SIZE);
-  const locations: WorkLocation[] = data?.items ?? [];
-  const totalPages: number = data?.totalPages ?? 0;
+  const {
+    data: locationPages,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetWorkLocationsInfinite(debouncedSearch, WORK_LOCATION_PAGE_SIZE);
+
+  const locations: WorkLocation[] = useMemo(
+    () =>
+      locationPages?.pages?.flatMap(
+        (page: WorkLocationsPage) => page?.items ?? []
+      ) ?? [],
+    [locationPages]
+  );
 
   const handleEditClick = (id: number) => {
     router.push(ROUTES.CONFIGURATIONS.WORK_LOCATION_EDIT(id));
@@ -52,7 +66,6 @@ const WorkLocationsTable = () => {
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
-    setCurrentPage(0);
     if (event.target.value.trim() === "") {
       setEmptyStateType("noData" as EmptyStateType);
     } else {
@@ -123,31 +136,41 @@ const WorkLocationsTable = () => {
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="flex gap-2 items-center justify-between">
-        <div className="w-[412px] rounded-[24px] overflow-hidden">
-          <InputField
-            className="w-full"
-            placeholder={translateText(["table.searchPlaceholder"])}
-            rightIcon={<SearchIcon />}
-            state="default"
-            type="search"
-            value={search}
-            onChange={handleSearchChange}
-          />
-        </div>
-        <ButtonV2
-          variant="primary"
-          onClick={() => router.push(ROUTES.CONFIGURATIONS.WORK_LOCATION_CREATE)}
-          icon={<Icon name={IconName.ADD_ICON} width="1rem" height="1rem" />}
-          iconPosition="start"
-        >
-          {translateText(["table.addButton"])}
-        </ButtonV2>
+        <InputField
+          className="w-[412px]"
+          placeholder={translateText(["table.searchPlaceholder"])}
+          rightIcon={<SearchIcon />}
+          state="default"
+          type="search"
+          value={search}
+          onChange={handleSearchChange}
+        />
+        {locations.length > 0 && (
+          <ButtonV2
+            variant="primary"
+            onClick={() =>
+              router.push(ROUTES.CONFIGURATIONS.WORK_LOCATION_CREATE)
+            }
+            icon={<Icon name={IconName.ADD_ICON} width="1rem" height="1rem" />}
+            iconPosition="start"
+          >
+            {translateText(["table.addButton"])}
+          </ButtonV2>
+        )}
       </div>
       <Table
         columns={columns as TableColumn<any>[]}
         data={tableData}
         emptyStateType={emptyStateType}
         isLoading={isLoading}
+        onLoadMore={
+          hasNextPage
+            ? async () => {
+                if (hasNextPage && !isFetchingNextPage) await fetchNextPage();
+              }
+            : undefined
+        }
+        hasMore={hasNextPage ?? false}
         noDataState={{
           buttonText: translateText(["table.addButton"]),
           description: translateText(["table.emptyState"]),
@@ -162,16 +185,6 @@ const WorkLocationsTable = () => {
           title: translateText(["table.emptyState"])
         }}
       />
-      {totalPages > 1 && (
-        <Pagination
-          tableName="Work locations"
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onChange={(_event: ChangeEvent<unknown>, value: number) =>
-            setCurrentPage(value - 1)
-          }
-        />
-      )}
       <DeleteWorkLocationModal />
     </div>
   );
