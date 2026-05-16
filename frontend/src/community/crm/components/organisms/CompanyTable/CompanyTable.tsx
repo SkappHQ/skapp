@@ -129,14 +129,14 @@ export const CompanyTable: React.FC = () => {
             "table",
             "clearButtonAriaLabel"
           ])}
-          className="w-1/2"
+          className="w-[412px] h-[48px]"
           placeholder={translateText(["table", "search"])}
           rightIcon={<SearchIcon />}
           state="default"
           type="search"
           value={searchTerm}
           onChange={handleSearchChange}
-          customStyles={{ borderRadius: "rounded-full" }}
+          customStyles={{ borderRadius: "rounded-[24px]" }}
         />
         <IconButton
           isRounded={true}

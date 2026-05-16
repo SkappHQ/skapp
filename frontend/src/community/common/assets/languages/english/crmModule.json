@@ -38,25 +38,25 @@
         "industry": "Industry",
         "addCompany": "Add Company",
         "cancelAddCompany": "Cancel Add Company"
+      }
+    },
+    "table": {
+      "clearButtonAriaLabel": "Clear search",
+      "search": "Search company",
+      "emptyDataState": {
+        "title": "No companies available.",
+        "description": "Create a company to get started."
       },
-      "table": {
-        "clearButtonAriaLabel": "Clear search",
-        "search": "Enter name of a company to search",
-        "emptyDataState": {
-          "title": "No companies available.",
-          "description": "Create a company to get started."
-        },
-        "emptySearchState": {
-          "title": "No results found.",
-          "description": "We couldn't find any results for your search. Please try a different term."
-        },
-        "columns": {
-          "nameHeader": "NAME",
-          "phoneHeader": "CONTACT NO.",
-          "tasksHeader": "OPEN TASKS",
-          "pipelineHeader": "OPEN IN PIPELINE",
-          "accountValueHeader": "ACCOUNT VALUE"
-        }
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
+      },
+      "columns": {
+        "nameHeader": "NAME",
+        "phoneHeader": "CONTACT NO.",
+        "tasksHeader": "OPEN TASKS",
+        "pipelineHeader": "OPEN IN PIPELINE",
+        "accountValueHeader": "ACCOUNT VALUE"
       },
       "validations": {
         "name": "Company name is required",
