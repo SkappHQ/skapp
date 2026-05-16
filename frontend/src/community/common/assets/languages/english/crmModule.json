@@ -1,12 +1,4 @@
 {
-  "aria": {
-    "addCompanyForm": "Add Company Form",
-    "companyName": "Company Name",
-    "contactNumber": "Contact Number",
-    "website": "Website",
-    "address": "Address",
-    "industry": "Industry"
-  },
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",
@@ -18,8 +10,6 @@
     "pageHead": "Companies | Skapp",
     "title": "Companies",
     "addCompanyBtn": "Add company",
-    "detailsPageHead": "Company Details | Skapp",
-    "detailsTitle": "Company Details",
     "addCompanyModal": {
       "title": "Add Company",
       "labels": {

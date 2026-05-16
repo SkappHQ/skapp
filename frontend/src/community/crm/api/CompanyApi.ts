@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { rejects } from "node:assert";
+import { rejects } from "assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
@@ -8,15 +8,11 @@ import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
 const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
-  try {
-    const response = await authFetch.post(
-      companyEndpoints.CREATE_COMPANY,
-      companyDetails
-    );
-    return response.data.results[0];
-  } catch (error) {
-    throw error;
-  }
+  const response = await authFetch.post(
+    companyEndpoints.CREATE_COMPANY,
+    companyDetails
+  );
+  return response.data.results[0];
 };
 
 export const useCreateNewCompany = (

@@ -146,14 +146,7 @@ const AddCompanyModal: React.FC = () => {
   return (
     <div>
       <Form onSubmit={handleSubmit}>
-        <div
-          className="flex flex-col h-full justify-between gap-[0.625rem]"
-          aria-label={translateText(["ariaLabels", "addCompanyForm"])}
-          style={{
-            zIndex: ZIndexEnums.MODAL
-          }}
-          role="form"
-        >
+        <div className="flex flex-col h-full justify-between gap-[0.625rem]">
           <InputField
             inputName="name"
             value={values.name}
