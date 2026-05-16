@@ -5,8 +5,8 @@ import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 
 public interface CrmCompanyService {
 
-  ResponseEntityDto checkCompanyNameExists(String name);
+	ResponseEntityDto checkCompanyNameExists(String name);
 
-  ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany);
+	ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany);
 
 }

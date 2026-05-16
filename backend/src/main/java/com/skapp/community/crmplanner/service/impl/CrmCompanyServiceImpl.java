@@ -21,35 +21,36 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CrmCompanyServiceImpl implements CrmCompanyService {
 
-  private final CrmCompanyDao crmCompanyDao;
+	private final CrmCompanyDao crmCompanyDao;
 
-  private final CrmMapper crmMapper;
+	private final CrmMapper crmMapper;
 
-  @Override
-  public ResponseEntityDto checkCompanyNameExists(String name) {
-    log.info("checkCompanyNameExists: execution started for name: {}", name);
-    boolean exists = checkCompanyExists(name);
-    log.info("checkCompanyNameExists: execution ended, exists: {}", exists);
+	@Override
+	public ResponseEntityDto checkCompanyNameExists(String name) {
+		log.info("checkCompanyNameExists: execution started for name: {}", name);
+		boolean exists = checkCompanyExists(name);
+		log.info("checkCompanyNameExists: execution ended, exists: {}", exists);
 
-    return new ResponseEntityDto(false, exists);
-  }
+		return new ResponseEntityDto(false, exists);
+	}
 
-  @Override
-  @Transactional
-  public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) throws ValidationException {
-    if (checkCompanyExists(crmCompany.getName())) {
-      throw new ValidationException(CrmMessageConstant.COMMON_ERROR_COMPANY_EXISTS);
-    }
-    log.info("createCompany: execution started");
-    CrmCompany newCompany = crmMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
-    CrmCompany result = crmCompanyDao.save(newCompany);
-    CrmCompanyResponseDto responseDto = crmMapper.crmCompanyToCrmCompanyResponseDto(result);
-    log.info("createCompany: execution ended successfully");
+	@Override
+	@Transactional
+	public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) throws ValidationException {
+		if (checkCompanyExists(crmCompany.getName())) {
+			throw new ValidationException(CrmMessageConstant.COMMON_ERROR_COMPANY_EXISTS);
+		}
+		log.info("createCompany: execution started");
+		CrmCompany newCompany = crmMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
+		CrmCompany result = crmCompanyDao.save(newCompany);
+		CrmCompanyResponseDto responseDto = crmMapper.crmCompanyToCrmCompanyResponseDto(result);
+		log.info("createCompany: execution ended successfully");
 
-    return new ResponseEntityDto(false, responseDto);
-  }
+		return new ResponseEntityDto(false, responseDto);
+	}
 
-  private boolean checkCompanyExists(String name) {
-    return crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name.trim());
-  }
+	private boolean checkCompanyExists(String name) {
+		return crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name.trim());
+	}
+
 }

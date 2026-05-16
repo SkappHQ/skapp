@@ -26,22 +26,24 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "CRM Companies Controller", description = "Operations related to CRM Companies")
 public class CrmCompanyController {
 
-  @NonNull
-  private final CrmCompanyService companyService;
+	@NonNull
+	private final CrmCompanyService companyService;
 
-  @Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
-  @GetMapping("/exists")
-  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
-  public ResponseEntity<ResponseEntityDto> checkCompanyNameExists(@RequestParam String name) {
-    ResponseEntityDto responseDto = companyService.checkCompanyNameExists(name);
-    return new ResponseEntity<>(responseDto, HttpStatus.OK);
-  }
+	@Operation(summary = "Check if a company name exists",
+			description = "Check if a company with the given name already exists")
+	@GetMapping("/exists")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> checkCompanyNameExists(@RequestParam String name) {
+		ResponseEntityDto responseDto = companyService.checkCompanyNameExists(name);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
 
-  @Operation(summary = "Create a new company", description = "Create a new company")
-  @PostMapping
-  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
-  public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CrmCompanyCreateDto crmCompany) {
-    ResponseEntityDto responseDto = companyService.createCompany(crmCompany);
-    return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
-  }
+	@Operation(summary = "Create a new company", description = "Create a new company")
+	@PostMapping
+	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CrmCompanyCreateDto crmCompany) {
+		ResponseEntityDto responseDto = companyService.createCompany(crmCompany);
+		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+	}
+
 }
