@@ -9,53 +9,64 @@
   "companies": {
     "pageHead": "Companies | Skapp",
     "title": "Companies",
-    "addCompanyBtn": "Add Company",
-    "detailsPageHead": "Company Details | Skapp",
-    "detailsTitle": "Company Details",
+    "addCompanyBtn": "Add company",
     "addCompanyModal": {
       "title": "Add Company",
       "labels": {
-        "name": "Company Name",
-        "contactNumber": "Contact Number",
+        "name": "Company name",
+        "contactNumber": "Contact no.",
         "website": "Website",
         "address": "Address",
         "industry": "Industry"
       },
       "placeholders": {
         "name": "Enter company name",
-        "contactNumber": "Enter contact number",
-        "website": "Enter website URL",
+        "contactNumber": "Enter contact no.",
+        "website": "Enter website",
         "address": "Enter address",
-        "industry": "Enter industry"
+        "industry": "Select industry"
       },
       "buttons": {
-        "addCompany": "Add Company"
-      }
-    },
-    "table": {
-      "clearButtonAriaLabel": "Clear search",
-      "search": "Enter name of a company to search",
-      "emptyDataState": {
-        "title": "No companies available.",
-        "description": "Create a company to get started."
+        "addCompany": "Save",
+        "cancelAddCompany": "Cancel"
       },
-      "emptySearchState": {
-        "title": "No results found.",
-        "description": "We couldn't find any results for your search. Please try a different term."
+      "ariaLabels": {
+        "companyName": "Company Name",
+        "contactNumber": "Contact Number",
+        "website": "Website",
+        "address": "Address",
+        "industry": "Industry",
+        "addCompany": "Add Company",
+        "cancelAddCompany": "Cancel Add Company"
       },
-      "columns": {
-        "nameHeader": "NAME",
-        "phoneHeader": "CONTACT NO.",
-        "tasksHeader": "OPEN TASKS",
-        "pipelineHeader": "OPEN IN PIPELINE",
-        "accountValueHeader": "ACCOUNT VALUE"
+      "table": {
+        "clearButtonAriaLabel": "Clear search",
+        "search": "Enter name of a company to search",
+        "emptyDataState": {
+          "title": "No companies available.",
+          "description": "Create a company to get started."
+        },
+        "emptySearchState": {
+          "title": "No results found.",
+          "description": "We couldn't find any results for your search. Please try a different term."
+        },
+        "columns": {
+          "nameHeader": "NAME",
+          "phoneHeader": "CONTACT NO.",
+          "tasksHeader": "OPEN TASKS",
+          "pipelineHeader": "OPEN IN PIPELINE",
+          "accountValueHeader": "ACCOUNT VALUE"
+        }
+      },
+      "validations": {
+        "name": "Company name is required",
+        "companyExists": "A company with this name already exists",
+        "website": "Please enter a valid website URL",
+        "contactNumber": "Contact number is invalid",
+        "companyNameLength": "Company name must be less than 30 characters",
+        "characterLength": "Entry must be less than 50 characters",
+        "addressLength": "Address must be less than 100 characters"
       }
-    },
-    "addCompanyValidations": {
-      "name": "Company name is required",
-      "companyExists": "A company with this name already exists",
-      "website": "Please enter a valid website URL",
-      "contactNumber": "Contact number is invalid"
     },
     "companyToastMessages": {
       "successTitle": "Company added successfully",

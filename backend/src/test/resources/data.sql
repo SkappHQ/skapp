@@ -59,12 +59,12 @@ VALUES (default, 1, 1, 1, 'PRIMARY'),
        (default, 3, 1, 1, 'PRIMARY'),
        (default, 4, 1, 1, 'PRIMARY');
 
-INSERT INTO employee_role (employee_id, people_role, leave_role, attendance_role, is_super_admin)
-VALUES (1, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', true),
-       (2, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', false),
-       (3, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', false),
-       (4, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', false),
-       (5, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', false);
+INSERT INTO employee_role (employee_id, people_role, leave_role, attendance_role, crm_role, is_super_admin)
+VALUES (1, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', 'CRM_ADMIN', true),
+       (2, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', null, false),
+       (3, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', null, false),
+       (4, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', null, false),
+       (5, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', null, false);
 
 INSERT INTO team (team_id, team_name, is_active)
 VALUES (default, 'DEV', true),
@@ -91,7 +91,7 @@ VALUES (default, YEAR(CURRENT_TIMESTAMP) || '-03-06', 'Poya Day', 'FULL_DAY', tr
        (default, YEAR(CURRENT_TIMESTAMP) || '-12-25', 'Christmas Day', 'FULL_DAY', true),
        (default, YEAR(CURRENT_TIMESTAMP + 1) || '-12-31', 'Future holiday', 'FULL_DAY', true);
 
-INSERT INTO holiday_work_location (holiday_id, work_location_id)
+INSERT INTO shr_com_work_location_ppl_holiday (holiday_id, work_location_id)
 VALUES (1, 1), (1, 2), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1);
 
 INSERT INTO time_config(id, day_of_week, time_blocks, total_hours, is_week_start_day, start_hour, start_minute)

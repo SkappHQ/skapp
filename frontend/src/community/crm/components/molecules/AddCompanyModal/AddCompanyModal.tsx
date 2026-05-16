@@ -1,4 +1,3 @@
-import { Stack } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { ChangeEvent, useEffect } from "react";
@@ -8,9 +7,7 @@ import Form from "~community/common/components/molecules/Form/Form";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import { characterLengths } from "~community/common/constants/stringConstants";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -29,31 +26,12 @@ import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCount
 const AddCompanyModal: React.FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateAria = useTranslator("crmModule", "addCompanyForm");
+  const translateText = useTranslator(
+    "crmModule",
+    "companies",
+    "addCompanyModal"
+  );
 
-  const translateLabelText = useTranslator(
-    "crmModule",
-    "companies",
-    "addCompanyModal",
-    "labels"
-  );
-  const translateInputText = useTranslator(
-    "crmModule",
-    "companies",
-    "addCompanyModal",
-    "placeholders"
-  );
-  const translateButton = useTranslator(
-    "crmModule",
-    "companies",
-    "addCompanyModal",
-    "buttons"
-  );
-  const translateValidations = useTranslator(
-    "crmModule",
-    "companies",
-    "addCompanyValidations"
-  );
   const translateToasts = useTranslator(
     "crmModule",
     "companies",
@@ -64,15 +42,13 @@ const AddCompanyModal: React.FC = () => {
     setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
   }));
 
-  const { userId } = useSessionData();
-
   const initialValues: CrmCompanyAddFormTypes = {
     name: "",
-    industry: "",
-    website: "",
-    address: "",
+    industry: null,
+    website: null,
+    address: null,
     countryCode: useGetDefaultCountryCode(),
-    contactNumber: ""
+    contactNumber: null
   };
 
   const handleSuccess = () => {
@@ -92,20 +68,23 @@ const AddCompanyModal: React.FC = () => {
       title: translateToasts(["errorTitle"]),
       description: translateToasts(["errorDescription"])
     });
+    formik.resetForm();
   };
 
   const handleCloseModal = (): void => {
     setIsAddCompanyModalOpen(false);
   };
 
-  const { mutate: createNewCompany, isPending: isCreatingNewCompany } =
-    useCreateNewCompany(handleSuccess, (error: Error) => {
+  const { mutate: createNewCompany } = useCreateNewCompany(
+    handleSuccess,
+    (error: Error) => {
       handleError(error);
-    });
+    }
+  );
 
   const createCompany = (values: CrmCompanyAddFormTypes) => {
     if (companyNameExists === true) {
-      setFieldError("name", translateValidations(["companyExists"]));
+      setFieldError("name", translateText(["validations", "companyExists"]));
       return;
     }
 
@@ -116,9 +95,7 @@ const AddCompanyModal: React.FC = () => {
       address: values.address?.trim() || null,
       contactNumber: values.contactNumber
         ? values.countryCode + values.contactNumber?.trim()
-        : null,
-      createdBy: userId,
-      lastModifiedBy: userId
+        : null
     };
 
     createNewCompany(payload);
@@ -127,7 +104,7 @@ const AddCompanyModal: React.FC = () => {
   const formik = useFormik({
     initialValues,
     onSubmit: createCompany,
-    validationSchema: addCompanyValidations(translateValidations),
+    validationSchema: addCompanyValidations(translateText),
     validateOnChange: false,
     validateOnBlur: false,
     enableReinitialize: true
@@ -151,7 +128,10 @@ const AddCompanyModal: React.FC = () => {
       const timeoutId = setTimeout(() => {
         refetchCompanyNameExists().then(() => {
           if (companyNameExists === true) {
-            setFieldError("name", translateValidations(["companyExists"]));
+            setFieldError(
+              "name",
+              translateText(["validations", "companyExists"])
+            );
           } else {
             setFieldError("name", "");
           }
@@ -163,96 +143,102 @@ const AddCompanyModal: React.FC = () => {
   }, [values.name, refetchCompanyNameExists, companyNameExists]);
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Stack
-        sx={{
-          flexDirection: "column",
-          gap: 2,
-          zIndex: ZIndexEnums.MODAL
-        }}
-        role="form"
-        aria-label={translateAria(["addCompanyForm"])}
-      >
-        <InputField
-          inputName="name"
-          value={values.name}
-          error={errors.name || ""}
-          label={translateLabelText(["name"])}
-          required
-          placeHolder={translateInputText(["name"])}
-          onChange={handleChange}
-          onBlur={handleBlur as any}
-          maxLength={characterLengths.NAME_LENGTH}
-        />
+    <div>
+      <Form onSubmit={handleSubmit}>
+        <div className="flex flex-col h-full justify-between gap-[0.625rem]">
+          <InputField
+            inputName="name"
+            value={values.name}
+            error={errors.name || ""}
+            label={translateText(["labels", "name"])}
+            required
+            placeHolder={translateText(["placeholders", "name"])}
+            onChange={handleChange}
+            onBlur={handleBlur as any}
+            ariaLabel={translateText(["ariaLabels", "companyName"])}
+            maxLength={characterLengths.NAME_LENGTH}
+          />
 
-        <InputPhoneNumber
-          label={translateLabelText(["contactNumber"])}
-          value={values.contactNumber || ""}
-          countryCodeValue={values.countryCode as string}
-          placeHolder={translateInputText(["contactNumber"])}
-          onChangeCountry={async (countryCode: string) => {
-            const syntheticEvent = {
-              target: { name: "countryCode", value: countryCode }
-            } as ChangeEvent<HTMLInputElement>;
-            handleChange(syntheticEvent);
-          }}
-          onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-            handleChange(e);
-          }}
-          error={errors.contactNumber || ""}
-          inputName="contactNumber"
-          fullComponentStyle={{
-            mt: "0rem",
-            mb: "0rem"
-          }}
-        />
+          <InputPhoneNumber
+            label={translateText(["labels", "contactNumber"])}
+            value={values.contactNumber || ""}
+            countryCodeValue={values.countryCode as string}
+            placeHolder={translateText(["placeholders", "contactNumber"])}
+            onChangeCountry={async (countryCode: string) => {
+              const syntheticEvent = {
+                target: { name: "countryCode", value: countryCode }
+              } as ChangeEvent<HTMLInputElement>;
+              handleChange(syntheticEvent);
+            }}
+            onChange={async (e: ChangeEvent<HTMLInputElement>) => {
+              handleChange(e);
+            }}
+            error={errors.contactNumber || ""}
+            inputName="contactNumber"
+            fullComponentStyle={{
+              m: 0,
+              p: 0
+            }}
+            ariaLabel={translateText(["ariaLabels", "contactNumber"])}
+          />
 
-        <InputField
-          inputName="website"
-          value={values.website || ""}
-          error={errors.website || ""}
-          label={translateLabelText(["website"])}
-          placeHolder={translateInputText(["website"])}
-          onChange={handleChange}
-          onBlur={handleBlur as any}
-          maxLength={characterLengths.CHARACTER_LENGTH}
-        />
+          <InputField
+            inputName="website"
+            value={values.website || ""}
+            error={errors.website || ""}
+            label={translateText(["labels", "website"])}
+            placeHolder={translateText(["placeholders", "website"])}
+            onChange={handleChange}
+            onBlur={handleBlur as any}
+            ariaLabel={translateText(["ariaLabels", "website"])}
+          />
 
-        <InputField
-          inputName="address"
-          value={values.address || ""}
-          error={errors.address || ""}
-          label={translateLabelText(["address"])}
-          placeHolder={translateInputText(["address"])}
-          onChange={handleChange}
-          onBlur={handleBlur as any}
-          maxLength={characterLengths.CHARACTER_LENGTH}
-        />
+          <InputField
+            inputName="address"
+            value={values.address || ""}
+            error={errors.address || ""}
+            label={translateText(["labels", "address"])}
+            placeHolder={translateText(["placeholders", "address"])}
+            onChange={handleChange}
+            onBlur={handleBlur as any}
+            ariaLabel={translateText(["ariaLabels", "address"])}
+          />
 
-        <InputField
-          inputName="industry"
-          value={values.industry || ""}
-          error={errors.industry || ""}
-          label={translateLabelText(["industry"])}
-          placeHolder={translateInputText(["industry"])}
-          onChange={handleChange}
-          onBlur={handleBlur as any}
-          maxLength={characterLengths.CHARACTER_LENGTH}
-        />
+          <InputField
+            inputName="industry"
+            value={values.industry || ""}
+            error={errors.industry || ""}
+            label={translateText(["labels", "industry"])}
+            placeHolder={translateText(["placeholders", "industry"])}
+            onChange={handleChange}
+            onBlur={handleBlur as any}
+            ariaLabel={translateText(["ariaLabels", "industry"])}
+          />
 
-        <div className="flex flex-row justify-end gap-3 mt-4">
-          <ButtonV2
-            variant="primary"
-            type="submit"
-            disabled={isSubmitting || companyNameExists === true}
-            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            iconPosition="end"
-          >
-            {translateButton(["addCompany"])}
-          </ButtonV2>
+          <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              disabled={isSubmitting || companyNameExists === true}
+              onClick={handleCloseModal}
+              icon={<Icon name={IconName.CLOSE_ICON} />}
+              iconPosition="end"
+              aria-label={translateText(["ariaLabels", "cancelAddCompany"])}
+            >
+              {translateText(["buttons", "cancelAddCompany"])}
+            </ButtonV2>
+            <ButtonV2
+              variant="primary"
+              type="submit"
+              disabled={isSubmitting || companyNameExists === true}
+              aria-label={translateText(["ariaLabels", "addCompany"])}
+            >
+              {translateText(["buttons", "addCompany"])}
+            </ButtonV2>
+          </div>
         </div>
-      </Stack>
-    </Form>
+      </Form>
+    </div>
   );
 };
 

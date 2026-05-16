@@ -152,13 +152,13 @@ public class TimeServiceImpl implements TimeService {
 
 	private final MessageUtil messageUtil;
 
-	private final UserService userService;
+	protected final UserService userService;
 
-	private final TimeRecordDao timeRecordDao;
+	protected final TimeRecordDao timeRecordDao;
 
 	private final TimeSlotDao timeSlotDao;
 
-	private final AttendanceConfigService attendanceConfigService;
+	protected final AttendanceConfigService attendanceConfigService;
 
 	private final LeaveRequestDao leaveRequestDao;
 

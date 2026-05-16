@@ -6,14 +6,15 @@ import lombok.Data;
 @Data
 public class CrmCompanyCreateDto {
 
-  @NotBlank(message = "Company name is required")
-  private String name;
+	@NotBlank(message = "Company name is required")
+	private String name;
 
-  private String industry;
+	private String industry;
 
-  private String website;
+	private String website;
 
-  private String address;
+	private String address;
 
-  private String contactNumber;
+	private String contactNumber;
+
 }

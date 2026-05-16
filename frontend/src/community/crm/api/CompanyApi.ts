@@ -112,16 +112,11 @@ export const useGetCompanyTableData = (
 };
 
 const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
-  try {
-    const response = await authFetch.post(
-      companyEndpoints.CREATE_COMPANY,
-      companyDetails
-    );
-    return response.data.results[0];
-  } catch (error) {
-    console.error("Error adding customer:", error);
-    throw error;
-  }
+  const response = await authFetch.post(
+    companyEndpoints.CREATE_COMPANY,
+    companyDetails
+  );
+  return response.data.results[0];
 };
 
 export const useCreateNewCompany = (
@@ -136,9 +131,7 @@ export const useCreateNewCompany = (
         .invalidateQueries({
           queryKey: companyQueryKeys.GET_COMPANY_TABLE_DATA
         })
-        .catch(() => {
-          rejects;
-        });
+        .catch(rejects);
       onSuccess();
     },
     onError: onError

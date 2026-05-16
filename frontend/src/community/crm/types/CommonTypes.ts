@@ -49,8 +49,6 @@ export interface CrmCompanyCreatePayload {
   website: string | null;
   address: string | null;
   contactNumber: string | null;
-  createdBy: number | undefined;
-  lastModifiedBy: number | undefined;
 }
 
 export interface CrmOwnerType {

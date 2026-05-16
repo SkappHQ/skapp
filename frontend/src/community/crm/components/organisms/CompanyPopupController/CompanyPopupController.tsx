@@ -45,6 +45,7 @@ const CompanyPopupController = () => {
       onClose={handleCloseModal}
       modalHeader={getModalTitle(crmModalType)}
       content={getModalContent()}
+      className="w-[553px] h-fit"
     />
   );
 };

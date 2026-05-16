@@ -34,7 +34,7 @@ public class CrmCompanyController {
 
   @Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
   @GetMapping("/exists")
-  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
   public ResponseEntity<ResponseEntityDto> checkCompanyNameExists(@RequestParam String name) {
     ResponseEntityDto responseDto = companyService.checkCompanyNameExists(name);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
@@ -42,7 +42,7 @@ public class CrmCompanyController {
 
   @Operation(summary = "Create a new company", description = "Create a new company")
   @PostMapping
-  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
   public ResponseEntity<ResponseEntityDto> createCompany(@Valid @RequestBody CrmCompanyCreateDto crmCompany) {
     ResponseEntityDto responseDto = companyService.createCompany(crmCompany);
     return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
@@ -50,7 +50,7 @@ public class CrmCompanyController {
 
   @Operation(summary = "Get company table view", description = "Get company table view")
   @GetMapping("/table-view")
-  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE','ROLE_CRM_NONE')")
+  @PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
   public ResponseEntity<PageDto> getCompanyTableView(
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "8") int size,
