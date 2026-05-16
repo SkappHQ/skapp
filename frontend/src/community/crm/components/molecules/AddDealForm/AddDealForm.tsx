@@ -21,7 +21,7 @@ interface DealFormData {
 const initialFormData: DealFormData = {
   dealName: "",
   description: "",
-  status: "Lead",
+  status: "Initial",
   value: "",
   priority: "",
   ownedBy: "",
@@ -30,10 +30,8 @@ const initialFormData: DealFormData = {
 };
 
 const statusOptions = [
-  { label: "Lead", iconColor: "#3b82f6" },
-  { label: "Lead Qualified", iconColor: "#3b82f6" },
-  { label: "Proposal Sent", iconColor: "#34d399" },
-  { label: "Negotiation", iconColor: "#f59e0b" },
+  { label: "Initial", iconColor: "#3b82f6" },
+  { label: "Open", iconColor: "#f59e0b" },
   { label: "Won", iconColor: "#22c55e" },
   { label: "Lost", iconColor: "#ef4444" }
 ];
