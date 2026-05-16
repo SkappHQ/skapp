@@ -107,6 +107,7 @@ class HolidayControllerIntegrationTest {
 		holidayDto.setDate(date);
 		holidayDto.setName(name);
 		holidayDto.setHolidayDuration(HolidayControllerIntegrationTest.FULL_DAY);
+		holidayDto.setWorkLocations(List.of("All locations"));
 		return holidayDto;
 	}
 
@@ -165,7 +166,9 @@ class HolidayControllerIntegrationTest {
 
 			performPostRequest(holidayBulkRequestDto).andDo(print())
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['bulkStatusSummary']['successCount']").value(2))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['bulkStatusSummary']['failedCount']").value(0));
 		}
 
 	}

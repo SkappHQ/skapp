@@ -1,7 +1,7 @@
 import { useFormik } from "formik";
-import { ButtonV2, InputField, SmallModal, Spinner } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -18,6 +18,7 @@ import {
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import WorkLocationEmployeeSelector from "~community/configurations/components/molecules/WorkLocationEmployeeSelector/WorkLocationEmployeeSelector";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
+import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
 
 interface Props {
@@ -41,7 +42,8 @@ const WorkLocationForm = ({ id }: Props) => {
 
   const { user } = useAuth();
   const { setToastMessage } = useToast();
-  const [isUnsavedModalOpen, setIsUnsavedModalOpen] = useState(false);
+  const { isUnsavedModalOpen, setIsUnsavedModalOpen, setIsFormDirty } =
+    useWorkLocationStore();
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
 
@@ -172,6 +174,7 @@ const WorkLocationForm = ({ id }: Props) => {
 
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);
+    setIsFormDirty(false);
     navigateBack();
   };
 
@@ -179,10 +182,54 @@ const WorkLocationForm = ({ id }: Props) => {
     setIsUnsavedModalOpen(false);
   };
 
+  useEffect(() => {
+    setIsFormDirty(formik.dirty);
+  }, [formik.dirty, setIsFormDirty]);
+
+  useEffect(() => {
+    router.beforePopState(() => {
+      if (formik.dirty) {
+        setIsUnsavedModalOpen(true);
+        globalThis.history.pushState(null, "", router.asPath);
+        return false;
+      }
+      return true;
+    });
+
+    return () => {
+      router.beforePopState(() => true);
+    };
+  }, [formik.dirty, router, setIsUnsavedModalOpen]);
+
+  useEffect(() => {
+    return () => {
+      setIsFormDirty(false);
+      setIsUnsavedModalOpen(false);
+    };
+  }, [setIsFormDirty, setIsUnsavedModalOpen]);
+
   const isFormDisabled = isLoading || isPending;
 
   if (isEditMode && isLoading) {
-    return <Spinner />;
+    return (
+      <div className="flex flex-col gap-6 max-w-[40rem] animate-pulse">
+        <div>
+          <div className="h-4 w-24 rounded bg-secondary-accent mb-2" />
+          <div className="h-10 w-full rounded bg-secondary-accent" />
+        </div>
+        <div>
+          <div className="h-4 w-32 rounded bg-secondary-accent mb-2" />
+          <div className="h-10 w-full rounded bg-secondary-accent" />
+        </div>
+        {canSeeGeofence && (
+          <div className="h-64 w-full rounded bg-secondary-accent" />
+        )}
+        <div className="flex justify-start gap-3">
+          <div className="h-10 w-24 rounded bg-secondary-accent" />
+          <div className="h-10 w-32 rounded bg-secondary-accent" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -205,7 +252,7 @@ const WorkLocationForm = ({ id }: Props) => {
             name="name"
             maxLength={50}
             className="w-full"
-            disabled={isFormDisabled}
+            disabled={isLoading}
           />
         </div>
 
@@ -216,7 +263,17 @@ const WorkLocationForm = ({ id }: Props) => {
 
         {canSeeGeofence && <GeofenceMap formik={formik} />}
 
-        <div className="flex justify-start">
+        <div className="flex justify-start gap-3">
+          {isEditMode && (
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              onClick={navigateBack}
+              disabled={isPending}
+            >
+              {translateText(["form.cancelButton"])}
+            </ButtonV2>
+          )}
           <ButtonV2
             variant="primary"
             type="submit"
@@ -237,19 +294,19 @@ const WorkLocationForm = ({ id }: Props) => {
         isOpen={isUnsavedModalOpen}
         onClose={handleResume}
         modalHeader={translateText(["areYouSureModalTitle"])}
-        content={
-          <div>
-            <p>{translateCommon(["description"])}</p>
-            <div className="flex flex-row justify-end gap-3">
-              <ButtonV2 variant="tertiary" onClick={handleLeave}>
-                {translateCommon(["leaveAnywayBtn"])}
-              </ButtonV2>
-              <ButtonV2 variant="primary" onClick={handleResume}>
-                {translateCommon(["resumeTaskBtn"])}
-              </ButtonV2>
-            </div>
-          </div>
-        }
+        content={<p>{translateCommon(["description"])}</p>}
+        buttons={{
+          buttonLeft: {
+            variant: "tertiary",
+            onClick: handleLeave,
+            children: translateCommon(["leaveAnywayBtn"])
+          },
+          buttonRight: {
+            variant: "primary",
+            onClick: handleResume,
+            children: translateCommon(["resumeTaskBtn"])
+          }
+        }}
       />
     </>
   );

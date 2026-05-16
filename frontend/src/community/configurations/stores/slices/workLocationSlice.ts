@@ -12,11 +12,15 @@ export interface WorkLocationSliceType {
   selectedLocationId: number | null;
   isGeofenceModalOpen: boolean;
   tempGeofence: GeofenceTempState | null;
+  isFormDirty: boolean;
+  isUnsavedModalOpen: boolean;
   setIsDeleteModalOpen: (open: boolean) => void;
   setSelectedLocationId: (id: number | null) => void;
   setIsGeofenceModalOpen: (open: boolean) => void;
   setTempGeofence: (geofence: GeofenceTempState | null) => void;
   updateTempGeofence: (partial: Partial<GeofenceTempState>) => void;
+  setIsFormDirty: (dirty: boolean) => void;
+  setIsUnsavedModalOpen: (open: boolean) => void;
 }
 
 export const workLocationSlice = (
@@ -26,6 +30,8 @@ export const workLocationSlice = (
   selectedLocationId: null,
   isGeofenceModalOpen: false,
   tempGeofence: null,
+  isFormDirty: false,
+  isUnsavedModalOpen: false,
   setIsDeleteModalOpen: (open) =>
     set((state) => ({ ...state, isDeleteModalOpen: open })),
   setSelectedLocationId: (id) =>
@@ -39,5 +45,9 @@ export const workLocationSlice = (
       state.tempGeofence
         ? { tempGeofence: { ...state.tempGeofence, ...partial } }
         : {}
-    )
+    ),
+  setIsFormDirty: (dirty) =>
+    set((state) => ({ ...state, isFormDirty: dirty })),
+  setIsUnsavedModalOpen: (open) =>
+    set((state) => ({ ...state, isUnsavedModalOpen: open }))
 });
