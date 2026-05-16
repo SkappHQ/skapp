@@ -49,7 +49,12 @@ const WorkLocationEmployeeSelector = ({
   const boxRef = useRef<HTMLDivElement>(null);
   const listInnerRef = useRef<HTMLDivElement | null>(null);
   const scrollCleanupRef = useRef<(() => void) | null>(null);
+  const searchTextRef = useRef(employeeSearchText);
+  searchTextRef.current = employeeSearchText;
   const [boxWidth, setBoxWidth] = useState(0);
+  const [employeeMap, setEmployeeMap] = useState<
+    Map<number, AllEmployeeDataType>
+  >(new Map());
 
   const { setEmployeeDataParams } = usePeopleStore((state) => state);
 
@@ -99,7 +104,12 @@ const WorkLocationEmployeeSelector = ({
       const onScroll = () => {
         const { scrollTop, scrollHeight, clientHeight } = node;
         const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10;
-        if (isNearBottom && !isFetchingNextPage && hasNextPage) {
+        if (
+          isNearBottom &&
+          !isFetchingNextPage &&
+          hasNextPage &&
+          searchTextRef.current.length === 0
+        ) {
           fetchNextPage();
         }
       };
@@ -119,6 +129,7 @@ const WorkLocationEmployeeSelector = ({
       popperOpen &&
       !isFetchingNextPage &&
       hasNextPage &&
+      employeeSearchText.length === 0 &&
       el.scrollHeight <= el.clientHeight
     ) {
       fetchNextPage();
@@ -126,6 +137,7 @@ const WorkLocationEmployeeSelector = ({
   }, [
     popperOpen,
     allEmployees,
+    employeeSearchText,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage
@@ -134,30 +146,33 @@ const WorkLocationEmployeeSelector = ({
   const selectedIds: number[] = formik.values.employeeIds ?? [];
   const isAllSelected = formik.values.isAllEmployees;
 
-  const selectedEmployees = useMemo(() => {
-    return selectedIds
-      .map((id) => {
-        const fromList = allEmployees.find((e) => Number(e.employeeId) === id);
-        if (fromList) return fromList;
-        const fromSearch = (searchResults ?? []).find(
-          (e) => Number(e.employeeId) === id
-        ) as AllEmployeeDataType | undefined;
-        if (fromSearch) return fromSearch;
-        const fromPreloaded = preloadedEmployees.find(
-          (e) => e.employeeId === id
-        );
-        if (fromPreloaded) {
-          return {
-            employeeId: fromPreloaded.employeeId,
-            firstName: fromPreloaded.firstName,
-            lastName: fromPreloaded.lastName ?? "",
-            authPic: fromPreloaded.authPic ?? ""
-          } as AllEmployeeDataType;
+  useEffect(() => {
+    setEmployeeMap((prev) => {
+      const next = new Map(prev);
+      for (const emp of allEmployees) next.set(Number(emp.employeeId), emp);
+      for (const emp of (searchResults ?? []) as AllEmployeeDataType[])
+        next.set(Number(emp.employeeId), emp);
+      for (const emp of preloadedEmployees) {
+        if (!next.has(emp.employeeId)) {
+          next.set(emp.employeeId, {
+            employeeId: emp.employeeId,
+            firstName: emp.firstName,
+            lastName: emp.lastName ?? "",
+            authPic: emp.authPic ?? ""
+          } as AllEmployeeDataType);
         }
-        return undefined;
-      })
-      .filter(Boolean) as AllEmployeeDataType[];
-  }, [selectedIds, allEmployees, searchResults, preloadedEmployees]);
+      }
+      return next;
+    });
+  }, [allEmployees, searchResults, preloadedEmployees]);
+
+  const selectedEmployees = useMemo(
+    () =>
+      selectedIds
+        .map((id) => employeeMap.get(id))
+        .filter(Boolean) as AllEmployeeDataType[],
+    [selectedIds, employeeMap]
+  );
 
   const selectedCount = isAllSelected
     ? allEmployees.length

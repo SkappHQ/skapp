@@ -1,7 +1,7 @@
 import { useFormik } from "formik";
 import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -172,23 +172,64 @@ const WorkLocationForm = ({ id }: Props) => {
     }
   });
 
+  const pendingNavigationRef = useRef<string | null>(null);
+  const allowRouteChangeRef = useRef(false);
+
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);
     setIsFormDirty(false);
-    navigateBack();
+    allowRouteChangeRef.current = true;
+    const target = pendingNavigationRef.current;
+    pendingNavigationRef.current = null;
+    if (target) {
+      router.push(target);
+    } else {
+      navigateBack();
+    }
   };
 
   const handleResume = () => {
     setIsUnsavedModalOpen(false);
+    pendingNavigationRef.current = null;
   };
+
+  const isDirtyRef = useRef(formik.dirty);
+  isDirtyRef.current = formik.dirty;
 
   useEffect(() => {
     setIsFormDirty(formik.dirty);
   }, [formik.dirty, setIsFormDirty]);
 
   useEffect(() => {
+    const handleRouteChangeStart = (url: string) => {
+      if (allowRouteChangeRef.current) return;
+      if (isDirtyRef.current && url !== router.asPath) {
+        pendingNavigationRef.current = url;
+        setIsUnsavedModalOpen(true);
+        router.events.emit("routeChangeError");
+        throw "Abort route change";
+      }
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirtyRef.current) {
+        e.preventDefault();
+        return "";
+      }
+    };
+
+    router.events.on("routeChangeStart", handleRouteChangeStart);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      router.events.off("routeChangeStart", handleRouteChangeStart);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [router, setIsUnsavedModalOpen]);
+
+  useEffect(() => {
     router.beforePopState(() => {
-      if (formik.dirty) {
+      if (isDirtyRef.current) {
         setIsUnsavedModalOpen(true);
         globalThis.history.pushState(null, "", router.asPath);
         return false;
@@ -199,7 +240,7 @@ const WorkLocationForm = ({ id }: Props) => {
     return () => {
       router.beforePopState(() => true);
     };
-  }, [formik.dirty, router, setIsUnsavedModalOpen]);
+  }, [router, setIsUnsavedModalOpen]);
 
   useEffect(() => {
     return () => {
