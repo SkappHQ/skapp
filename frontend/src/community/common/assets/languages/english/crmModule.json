@@ -1,4 +1,12 @@
 {
+  "aria": {
+    "addCompanyForm": "Add Company Form",
+    "companyName": "Company Name",
+    "contactNumber": "Contact Number",
+    "website": "Website",
+    "address": "Address",
+    "industry": "Industry"
+  },
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",
@@ -31,13 +39,25 @@
       "buttons": {
         "addCompany": "Save",
         "cancelAddCompany": "Cancel"
+      },
+      "ariaLabels": {
+        "companyName": "Company Name",
+        "contactNumber": "Contact Number",
+        "website": "Website",
+        "address": "Address",
+        "industry": "Industry",
+        "addCompany": "Add Company",
+        "cancelAddCompany": "Cancel Add Company"
+      },
+      "validations": {
+        "name": "Company name is required",
+        "companyExists": "A company with this name already exists",
+        "website": "Please enter a valid website URL",
+        "contactNumber": "Contact number is invalid",
+        "companyNameLength": "Company name must be less than 30 characters",
+        "characterLength": "Entry must be less than 50 characters",
+        "addressLength": "Address must be less than 100 characters"
       }
-    },
-    "addCompanyValidations": {
-      "name": "Company name is required",
-      "companyExists": "A company with this name already exists",
-      "website": "Please enter a valid website URL",
-      "contactNumber": "Contact number is invalid"
     },
     "companyToastMessages": {
       "successTitle": "Company added successfully",

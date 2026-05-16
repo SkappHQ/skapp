@@ -15,7 +15,6 @@ const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
     );
     return response.data.results[0];
   } catch (error) {
-    console.error("Error adding customer:", error);
     throw error;
   }
 };
@@ -32,9 +31,7 @@ export const useCreateNewCompany = (
         .invalidateQueries({
           queryKey: companyQueryKeys.GET_COMPANY_TABLE_DATA
         })
-        .catch(() => {
-          rejects;
-        });
+        .catch(rejects);
       onSuccess();
     },
     onError: onError
