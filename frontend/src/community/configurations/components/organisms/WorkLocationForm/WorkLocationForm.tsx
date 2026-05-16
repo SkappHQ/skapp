@@ -68,6 +68,7 @@ const WorkLocationForm = ({ id }: Props) => {
           description: translateText(["toasts.createSuccess.description"]),
           isIcon: true
         });
+        allowRouteChangeRef.current = true;
         navigateBack();
       },
       () => {
@@ -91,6 +92,7 @@ const WorkLocationForm = ({ id }: Props) => {
           description: translateText(["toasts.updateSuccess.description"]),
           isIcon: true
         });
+        allowRouteChangeRef.current = true;
         navigateBack();
       },
       () => {
@@ -214,7 +216,7 @@ const WorkLocationForm = ({ id }: Props) => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirtyRef.current) {
         e.preventDefault();
-        return "";
+        e.returnValue = "";
       }
     };
 
