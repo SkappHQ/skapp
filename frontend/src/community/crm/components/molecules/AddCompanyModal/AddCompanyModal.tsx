@@ -121,13 +121,13 @@ const AddCompanyModal: React.FC = () => {
   } = formik;
 
   const { data: companyNameExists, refetch: refetchCompanyNameExists } =
-    useCheckCompanyNameExists(values.name);
+    useCheckCompanyNameExists(values.name.trim());
 
   useEffect(() => {
     if (values.name && values.name.trim() !== "") {
       const timeoutId = setTimeout(() => {
-        refetchCompanyNameExists().then(() => {
-          if (companyNameExists === true) {
+        refetchCompanyNameExists().then((result) => {
+          if (result.data === true) {
             setFieldError(
               "name",
               translateText(["validations", "companyExists"])
@@ -140,7 +140,7 @@ const AddCompanyModal: React.FC = () => {
 
       return () => clearTimeout(timeoutId);
     }
-  }, [values.name, refetchCompanyNameExists, companyNameExists]);
+  }, [values.name, refetchCompanyNameExists]);
 
   return (
     <div>

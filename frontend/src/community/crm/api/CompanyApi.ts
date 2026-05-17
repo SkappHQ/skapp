@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { rejects } from "assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
@@ -27,7 +26,7 @@ export const useCreateNewCompany = (
         .invalidateQueries({
           queryKey: companyQueryKeys.GET_COMPANY_TABLE_DATA
         })
-        .catch(rejects);
+        .catch(() => {});
       onSuccess();
     },
     onError: onError

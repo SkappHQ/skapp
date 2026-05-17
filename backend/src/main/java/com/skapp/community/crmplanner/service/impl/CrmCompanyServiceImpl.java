@@ -50,7 +50,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	}
 
 	private boolean checkCompanyExists(String name) {
-		return crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name.trim());
+		return crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
 	}
 
 }
