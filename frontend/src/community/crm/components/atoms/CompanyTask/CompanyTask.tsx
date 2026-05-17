@@ -62,9 +62,9 @@ const CompanyTask: React.FC<Props> = ({ task, onToggleComplete }) => {
       </button>
 
       <div
-        className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${bg}`}
+        className={`flex items-center justify-center w-6 h-6 rounded-full shrink-0 ${bg}`}
       >
-        <Icon name={iconName} width="20px" height="20px" fill="white" />
+        <Icon name={iconName} width="14px" height="14px" fill="white" />
       </div>
 
       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
