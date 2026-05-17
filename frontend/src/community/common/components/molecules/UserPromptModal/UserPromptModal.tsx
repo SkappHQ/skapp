@@ -35,9 +35,10 @@ interface Props {
 
 const getVariant = (
   style?: ButtonStyle
-): "primary" | "secondary" | "tertiary" => {
+): "primary" | "secondary" | "tertiary" | "error" => {
   if (style === ButtonStyle.TERTIARY) return "tertiary";
   if (style === ButtonStyle.SECONDARY) return "secondary";
+  if (style === ButtonStyle.ERROR) return "error";
   return "primary";
 };
 
