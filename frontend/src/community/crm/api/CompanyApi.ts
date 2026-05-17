@@ -73,7 +73,7 @@ export const useCreateNewCompany = (
     onSuccess: () => {
       queryClient
         .invalidateQueries({
-          queryKey: companyQueryKeys.GET_COMPANY_TABLE_DATA
+          queryKey: companyQueryKeys.GET_COMPANY_DATA
         })
         .catch(() => {});
       onSuccess();
