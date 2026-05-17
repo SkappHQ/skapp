@@ -13,9 +13,9 @@ import { ChangeEvent, useMemo, useState } from "react";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetCompanyTableData } from "~community/crm/api/CompanyApi";
+import { useGetCompanyMetrics } from "~community/crm/api/CompanyApi";
 import { EmptyStateTypeEnum } from "~community/crm/enums/CrmCompanyEnums";
-import { CrmCompanyTableDataType } from "~community/crm/types/CommonTypes";
+import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 
 export const CompanyTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -28,7 +28,7 @@ export const CompanyTable: React.FC = () => {
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetCompanyTableData(debouncedSearch, 12);
+    useGetCompanyMetrics(debouncedSearch, 12);
 
   const companies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []) ?? [];
@@ -44,7 +44,7 @@ export const CompanyTable: React.FC = () => {
     );
   };
 
-  const columns: TableColumn<CrmCompanyTableDataType>[] = [
+  const columns: TableColumn<CrmCompanyMetricsType>[] = [
     {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
@@ -105,7 +105,7 @@ export const CompanyTable: React.FC = () => {
     }
   ];
 
-  const tableData = companies.map((company: CrmCompanyTableDataType) => ({
+  const tableData = companies.map((company: CrmCompanyMetricsType) => ({
     name: company.name,
     contactNumber: company.contactNumber ?? "-",
     tasks: company.tasks ?? "-",

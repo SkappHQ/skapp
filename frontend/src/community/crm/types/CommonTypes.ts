@@ -10,25 +10,22 @@ export interface CrmCompanyType {
   isDeleted: boolean;
 }
 
-export interface CrmCompanyResponseType {
-  items: CrmCompanyType[];
-  totalItems: number;
-  currentPage: number;
-  totalPages: number;
-}
-
-export interface CrmCompanyTableDataType {
+export interface CrmCompanyMetricsType {
   name: string;
   contactNumber: string;
+  industry: string | null;
+  website: string | null;
+  address: string | null;
   tasks: number;
   overdue: number;
   openValue: number;
   accountValue: number;
   closedDeals: number;
+  openDeals: number;
 }
 
-export interface CrmCompanyTableDataResponseType {
-  items: CrmCompanyTableDataType[];
+export interface CrmCompanyMetricsResponseType {
+  items: CrmCompanyMetricsType[];
   totalItems: number;
   currentPage: number;
   totalPages: number;

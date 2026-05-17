@@ -9,96 +9,41 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 
 import {
   CrmCompanyCreatePayload,
-  CrmCompanyResponseType,
-  CrmCompanyTableDataResponseType
+  CrmCompanyMetricsResponseType
 } from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
-interface GetAllCompaniesParams {
+interface Params {
   page?: number;
   size?: number;
   searchKeyword?: string;
 }
-
-const fetchCompanies = async ({
-  page,
-  size,
-  searchKeyword
-}: GetAllCompaniesParams) => {
+const fetchCompanyMetrics = async ({ page, size, searchKeyword }: Params) => {
   try {
-    const response = await authFetch.get(companyEndpoints.GET_ALL_COMPANIES, {
+    const response = await authFetch.get(companyEndpoints.GET_COMPANY_METRICS, {
       params: {
         page,
         size,
         ...(searchKeyword ? { searchKeyword } : {})
       }
     });
-    return response?.data as CrmCompanyResponseType;
+    return response?.data as CrmCompanyMetricsResponseType;
   } catch (error) {
     console.error("Error fetching companies:", error);
     throw error;
   }
 };
 
-const fetchCompanyTableData = async ({
-  page,
-  size,
-  searchKeyword
-}: GetAllCompaniesParams) => {
-  try {
-    const response = await authFetch.get(
-      companyEndpoints.GET_COMPANY_TABLE_DATA,
-      {
-        params: {
-          page,
-          size,
-          ...(searchKeyword ? { searchKeyword } : {})
-        }
-      }
-    );
-    return response?.data as CrmCompanyTableDataResponseType;
-  } catch (error) {
-    console.error("Error fetching companies:", error);
-    throw error;
-  }
-};
-
-export const useGetAllCompanies = (
+export const useGetCompanyMetrics = (
   searchKeyword: string,
   limit: number = 8
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: companyQueryKeys.GET_COMPANY_TABLE_DATA_BY_SEARCH(
-      searchKeyword,
-      limit
-    ),
+    queryKey: companyQueryKeys.GET_COMPANY_DATA_BY_SEARCH(searchKeyword, limit),
     queryFn: ({ pageParam }) =>
-      fetchCompanies({
-        page: pageParam,
-        size: limit,
-        searchKeyword
-      }),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
-      return lastPage.currentPage + 1;
-    }
-  });
-};
-
-export const useGetCompanyTableData = (
-  searchKeyword: string,
-  limit: number = 8
-) => {
-  return useInfiniteQuery({
-    initialPageParam: 0,
-    queryKey: companyQueryKeys.GET_COMPANY_TABLE_DATA_BY_SEARCH(
-      searchKeyword,
-      limit
-    ),
-    queryFn: ({ pageParam }) =>
-      fetchCompanyTableData({
+      fetchCompanyMetrics({
         page: pageParam,
         size: limit,
         searchKeyword
