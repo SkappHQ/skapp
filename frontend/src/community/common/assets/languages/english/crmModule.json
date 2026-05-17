@@ -70,9 +70,8 @@
     },
     "companyToastMessages": {
       "successTitle": "Company added successfully",
-      "successDescription": "Company added successfully",
       "errorTitle": "Failed to add company",
-      "errorDescription": "Failed to add company"
+      "errorDescription": "Please try again or contact support"
     }
   },
   "deals": {

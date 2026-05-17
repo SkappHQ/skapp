@@ -4,7 +4,6 @@ import {
   useQuery,
   useQueryClient
 } from "@tanstack/react-query";
-import { rejects } from "assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
@@ -121,7 +120,7 @@ const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
 
 export const useCreateNewCompany = (
   onSuccess: () => void,
-  onError: (error: Error) => void
+  onError: (messageKey: string) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -131,10 +130,12 @@ export const useCreateNewCompany = (
         .invalidateQueries({
           queryKey: companyQueryKeys.GET_COMPANY_TABLE_DATA
         })
-        .catch(rejects);
+        .catch(() => {});
       onSuccess();
     },
-    onError: onError
+    onError: (error: any) => {
+      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
+    }
   });
 };
 

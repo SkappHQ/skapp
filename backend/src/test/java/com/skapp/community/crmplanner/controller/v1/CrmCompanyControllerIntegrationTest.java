@@ -65,8 +65,8 @@ class CrmCompanyControllerIntegrationTest {
 
 	private <T> ResultActions performPostRequest(T content) throws Exception {
 		return performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(content))
-			.accept(MediaType.APPLICATION_JSON));
+				.content(objectMapper.writeValueAsString(content))
+				.accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performGetExistsRequest(String name) throws Exception {
@@ -79,7 +79,7 @@ class CrmCompanyControllerIntegrationTest {
 		dto.setIndustry("Technology");
 		dto.setWebsite("https://acme.com");
 		dto.setAddress("123 Main St");
-		dto.setContactNumber("+94771234567");
+		dto.setContactNumber("94771234567");
 		return dto;
 	}
 
@@ -92,9 +92,9 @@ class CrmCompanyControllerIntegrationTest {
 				2L);
 
 		mvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(createValidPayload()))
-			.accept(MediaType.APPLICATION_JSON)
-			.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
+				.content(objectMapper.writeValueAsString(createValidPayload()))
+				.accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
 	}
 
 	// --- Create company tests ---
@@ -103,9 +103,9 @@ class CrmCompanyControllerIntegrationTest {
 	@DisplayName("Create company with valid payload - Returns Created")
 	void createCompany_HappyPath_ReturnsCreated() throws Exception {
 		performPostRequest(createValidPayload()).andDo(print())
-			.andExpect(status().isCreated())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp"));
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp"));
 	}
 
 	@Test
@@ -114,10 +114,38 @@ class CrmCompanyControllerIntegrationTest {
 		performPostRequest(createValidPayload()).andExpect(status().isCreated());
 
 		performPostRequest(createValidPayload()).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.COMMON_ERROR_COMPANY_EXISTS)));
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+						.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS)));
+	}
+
+	@Test
+	@DisplayName("Create company with whitespace-padded duplicate name - Returns Bad Request")
+	void createCompany_WhitespacePaddedDuplicateName_ReturnsBadRequest() throws Exception {
+		performPostRequest(createValidPayload()).andExpect(status().isCreated());
+
+		CrmCompanyCreateDto dto = createValidPayload();
+		dto.setName(" Acme Corp ");
+		performPostRequest(dto).andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+						.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS)));
+	}
+
+	@Test
+	@DisplayName("Create company with different-case duplicate name - Returns Bad Request")
+	void createCompany_DifferentCaseDuplicateName_ReturnsBadRequest() throws Exception {
+		performPostRequest(createValidPayload()).andExpect(status().isCreated());
+
+		CrmCompanyCreateDto dto = createValidPayload();
+		dto.setName("acme corp");
+		performPostRequest(dto).andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+						.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS)));
 	}
 
 	@Test
@@ -127,8 +155,8 @@ class CrmCompanyControllerIntegrationTest {
 		dto.setName("");
 
 		performPostRequest(dto).andDo(print())
-			.andExpect(status().isUnprocessableContent())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+				.andExpect(status().isUnprocessableContent())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
 	}
 
 	// --- Check company name exists tests ---
@@ -137,9 +165,9 @@ class CrmCompanyControllerIntegrationTest {
 	@DisplayName("Check company name exists when not found - Returns OK with false")
 	void checkCompanyNameExists_NotFound_ReturnsOkWithFalse() throws Exception {
 		performGetExistsRequest("NonExistent").andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH).value(false));
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH).value(false));
 	}
 
 	@Test
@@ -148,9 +176,9 @@ class CrmCompanyControllerIntegrationTest {
 		performPostRequest(createValidPayload()).andExpect(status().isCreated());
 
 		performGetExistsRequest("Acme Corp").andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH).value(true));
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH).value(true));
 	}
 
 }
