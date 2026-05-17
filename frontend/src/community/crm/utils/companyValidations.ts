@@ -8,6 +8,7 @@ type TranslatorFunctionType = (suffixes: string[]) => string;
 export const addCompanyValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: Yup.string()
+      .trim()
       .required(translator(["validations", "name"]))
       .max(
         characterLengths.COMPANY_NAME_LENGTH,
