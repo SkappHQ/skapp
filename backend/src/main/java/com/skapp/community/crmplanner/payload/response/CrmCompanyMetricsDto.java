@@ -9,13 +9,19 @@ import lombok.Getter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CrmCompanyTableViewDto {
+public class CrmCompanyMetricsDto {
 
 	private Long id;
 
 	private String name;
 
 	private String contactNumber;
+
+	private String industry;
+
+	private String website;
+
+	private String address;
 
 	private Long tasks;
 
