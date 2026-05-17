@@ -11,7 +11,7 @@ const CompanyPopupController = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const {
-    isAddCompanyModalOpen: isAddCompanyModalOpen,
+    isAddCompanyModalOpen,
     crmModalType,
     setIsAddCompanyModalOpen
   } = useCrmStore((store) => ({

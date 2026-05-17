@@ -81,8 +81,10 @@ const AddCompanyModal: React.FC = () => {
     setIsAddCompanyModalOpen(false);
   };
 
-  const { mutate: createNewCompany, isPending: isPending } =
-    useCreateNewCompany(handleSuccess, handleError);
+  const { mutate: createNewCompany, isPending } = useCreateNewCompany(
+    handleSuccess,
+    handleError
+  );
 
   const createCompany = (values: CrmCompanyAddFormTypes) => {
     if (companyNameExists === true) {
