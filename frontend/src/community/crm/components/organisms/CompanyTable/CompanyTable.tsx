@@ -1,5 +1,4 @@
 import {
-  EmptyStateType,
   FilterIcon,
   IconButton,
   InputField,
@@ -14,18 +13,21 @@ import { ChangeEvent, useMemo, useState } from "react";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompanyMetrics } from "~community/crm/api/CompanyApi";
+import { companyTableColumns } from "~community/crm/constants/companyTableConstants";
 import { EmptyStateTypeEnum } from "~community/crm/enums/CrmCompanyEnums";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+
+import styles from "./styles";
 
 export const CompanyTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [emptyStateType, setEmptyStateType] = useState<EmptyStateType>(
-    EmptyStateTypeEnum.NO_DATA
-  );
-
   const debouncedSearch = useDebounce(searchTerm, 300);
+  const emptyStateType =
+    debouncedSearch.trim() === ""
+      ? EmptyStateTypeEnum.NO_DATA
+      : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCompanyMetrics(debouncedSearch, 12);
@@ -37,30 +39,25 @@ export const CompanyTable: React.FC = () => {
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
-    setEmptyStateType(
-      value.trim() === ""
-        ? EmptyStateTypeEnum.NO_DATA
-        : EmptyStateTypeEnum.NO_SEARCH_RESULTS
-    );
   };
 
   const columns: TableColumn<CrmCompanyMetricsType>[] = [
     {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
-      key: "name",
+      key: companyTableColumns.NAME,
       width: "20%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "phoneAriaLabel"]),
       header: translateText(["table", "columns", "phoneHeader"]),
-      key: "contactNumber",
+      key: companyTableColumns.CONTACT_NUMBER,
       width: "20%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
       header: translateText(["table", "columns", "tasksHeader"]),
-      key: "tasks",
+      key: companyTableColumns.TASKS,
       render(value, row) {
         return (
           <div className="flex flex-row items-center gap-2">
@@ -79,7 +76,7 @@ export const CompanyTable: React.FC = () => {
     {
       columnAriaLabel: translateText(["table", "columns", "pipelineAriaLabel"]),
       header: translateText(["table", "columns", "pipelineHeader"]),
-      key: "openValue",
+      key: companyTableColumns.OPEN_VALUE,
       render(value) {
         return `$${value}`;
       },
@@ -92,7 +89,7 @@ export const CompanyTable: React.FC = () => {
         "accountValueAriaLabel"
       ]),
       header: translateText(["table", "columns", "accountValueHeader"]),
-      key: "accountValue",
+      key: companyTableColumns.ACCOUNT_VALUE,
       render(value, row) {
         return (
           <div className="flex flex-col gap-1">
@@ -106,13 +103,13 @@ export const CompanyTable: React.FC = () => {
   ];
 
   const tableData = companies.map((company: CrmCompanyMetricsType) => ({
-    name: company.name,
-    contactNumber: company.contactNumber ?? "-",
-    tasks: company.tasks ?? "-",
-    openValue: company.openValue ?? "-",
-    accountValue: company.accountValue ?? "-",
-    closedDeals: company.closedDeals ?? "-",
-    overdue: company.overdue ?? "-"
+    [companyTableColumns.NAME]: company.name,
+    [companyTableColumns.CONTACT_NUMBER]: company.contactNumber ?? "-",
+    [companyTableColumns.TASKS]: company.tasks ?? "-",
+    [companyTableColumns.OPEN_VALUE]: company.openValue ?? "-",
+    [companyTableColumns.ACCOUNT_VALUE]: company.accountValue ?? "-",
+    [companyTableColumns.CLOSED_DEALS]: company.closedDeals ?? "-",
+    [companyTableColumns.OVERDUE]: company.overdue ?? "-"
   }));
 
   const loadMore = async () => {
@@ -123,7 +120,7 @@ export const CompanyTable: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <div className="flex flex-row gap-4 w-full items-center justify-between">
+      <div className="flex flex-row gap-4 w-full h-[48px] items-center justify-between">
         <InputField
           ariaLabelClearButton={translateText([
             "table",
@@ -136,13 +133,15 @@ export const CompanyTable: React.FC = () => {
           type="search"
           value={searchTerm}
           onChange={handleSearchChange}
-          customStyles={{ borderRadius: "rounded-[24px]" }}
+          customStyles={styles.searchInput}
         />
         <IconButton
           isRounded={true}
           variant="outlined"
           icon={<FilterIcon />}
-          style={{ width: "3.4rem", height: "2.75rem" }}
+          style={styles.filterButton}
+          type="button"
+          disabled
         />
       </div>
 
