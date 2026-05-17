@@ -33,6 +33,6 @@ public class CrmModuleConstant {
 
 	public static final Integer WON_STAGE_ID = 3;
 
-	public static final String AMOUNT = "amountNumeric";
+	public static final String AMOUNT = "amount";
 
 }

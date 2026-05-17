@@ -55,14 +55,19 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					taskJoin.<Long>get(CrmModuleConstant.ID))
 			.otherwise(cb.nullLiteral(Long.class)));
 
+		Expression<BigDecimal> amountAsDecimal = cb.function(
+			"CAST", BigDecimal.class,
+			dealJoin.get(CrmModuleConstant.AMOUNT),
+			cb.literal("DECIMAL(15,2)"));
+
 		Expression<BigDecimal> openDealCase = cb.<BigDecimal>selectCase()
 			.when(cb.notEqual(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
-					CrmModuleConstant.WON_STAGE_ID), dealJoin.get(CrmModuleConstant.AMOUNT))
+					CrmModuleConstant.WON_STAGE_ID), amountAsDecimal)
 			.otherwise(BigDecimal.ZERO);
 
 		Expression<BigDecimal> closedDealCase = cb.<BigDecimal>selectCase()
 			.when(cb.equal(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
-					CrmModuleConstant.WON_STAGE_ID), dealJoin.get(CrmModuleConstant.AMOUNT))
+					CrmModuleConstant.WON_STAGE_ID), amountAsDecimal)
 			.otherwise(BigDecimal.ZERO);
 
 		Expression<BigDecimal> openValue = cb.<BigDecimal>sum(openDealCase);
