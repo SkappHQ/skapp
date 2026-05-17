@@ -16,7 +16,7 @@ const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
 
 export const useCreateNewCompany = (
   onSuccess: () => void,
-  onError: (error: Error) => void
+  onError: (messageKey: string) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -29,7 +29,9 @@ export const useCreateNewCompany = (
         .catch(() => {});
       onSuccess();
     },
-    onError: onError
+    onError: (error: any) => {
+      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
+    }
   });
 };
 

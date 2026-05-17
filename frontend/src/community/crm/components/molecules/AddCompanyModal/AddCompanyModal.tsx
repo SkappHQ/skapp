@@ -42,45 +42,47 @@ const AddCompanyModal: React.FC = () => {
     setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
   }));
 
+  const defaultCountryCode = useGetDefaultCountryCode();
+
   const initialValues: CrmCompanyAddFormTypes = {
     name: "",
     industry: null,
     website: null,
     address: null,
-    countryCode: useGetDefaultCountryCode(),
+    countryCode: defaultCountryCode,
     contactNumber: null
   };
 
   const handleSuccess = () => {
+    setSubmitting(false);
     handleCloseModal();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateToasts(["successTitle"]),
-      description: translateToasts(["successDescription"])
+      title: translateToasts(["successTitle"])
     });
   };
 
-  const handleError = (error: Error) => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateToasts(["errorTitle"]),
-      description: translateToasts(["errorDescription"])
-    });
-    formik.resetForm();
+  const handleError = (messageKey: string) => {
+    setSubmitting(false);
+    if (messageKey === "CRM_ERROR_COMPANY_EXISTS") {
+      setFieldError("name", translateText(["validations", "companyExists"]));
+    } else {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateToasts(["errorTitle"]),
+        description: translateToasts(["errorDescription"])
+      });
+    }
   };
 
   const handleCloseModal = (): void => {
     setIsAddCompanyModalOpen(false);
   };
 
-  const { mutate: createNewCompany } = useCreateNewCompany(
-    handleSuccess,
-    (error: Error) => {
-      handleError(error);
-    }
-  );
+  const { mutate: createNewCompany, isPending: isPending } =
+    useCreateNewCompany(handleSuccess, handleError);
 
   const createCompany = (values: CrmCompanyAddFormTypes) => {
     if (companyNameExists === true) {
@@ -117,7 +119,8 @@ const AddCompanyModal: React.FC = () => {
     handleChange,
     handleBlur,
     isSubmitting,
-    setFieldError
+    setFieldError,
+    setSubmitting
   } = formik;
 
   const { data: companyNameExists, refetch: refetchCompanyNameExists } =
@@ -219,7 +222,7 @@ const AddCompanyModal: React.FC = () => {
             <ButtonV2
               variant="tertiary"
               type="button"
-              disabled={isSubmitting || companyNameExists === true}
+              disabled={isSubmitting}
               onClick={handleCloseModal}
               icon={<Icon name={IconName.CLOSE_ICON} />}
               iconPosition="end"
@@ -230,7 +233,7 @@ const AddCompanyModal: React.FC = () => {
             <ButtonV2
               variant="primary"
               type="submit"
-              disabled={isSubmitting || companyNameExists === true}
+              disabled={isSubmitting || isPending || companyNameExists === true}
               aria-label={translateText(["ariaLabels", "addCompany"])}
             >
               {translateText(["buttons", "addCompany"])}

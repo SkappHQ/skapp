@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.mapper.CrmMapper;
+import com.skapp.community.crmplanner.mapper.CrmCompanyMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
@@ -23,9 +23,10 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
-	private final CrmMapper crmMapper;
+	private final CrmCompanyMapper crmCompanyMapper;
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto checkCompanyNameExists(String name) {
 		log.info("checkCompanyNameExists: execution started for name: {}", name);
 		boolean exists = checkCompanyExists(name);
@@ -38,12 +39,12 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	@Transactional
 	public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) throws ValidationException {
 		if (checkCompanyExists(crmCompany.getName())) {
-			throw new ValidationException(CrmMessageConstant.COMMON_ERROR_COMPANY_EXISTS);
+			throw new ValidationException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
 		}
 		log.info("createCompany: execution started");
-		CrmCompany newCompany = crmMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
+		CrmCompany newCompany = crmCompanyMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
 		CrmCompany result = crmCompanyDao.save(newCompany);
-		CrmCompanyResponseDto responseDto = crmMapper.crmCompanyToCrmCompanyResponseDto(result);
+		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
 		log.info("createCompany: execution ended successfully");
 
 		return new ResponseEntityDto(false, responseDto);

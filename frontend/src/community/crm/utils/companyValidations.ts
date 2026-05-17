@@ -33,6 +33,7 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
     website: Yup.string()
       .nullable()
       .optional()
+      .transform((v) => (v === "" ? null : v))
       .url(translator(["validations", "website"]))
       .max(characterLengths.CHARACTER_LENGTH, translator(["validations", "characterLength"])),
     address: Yup.string()

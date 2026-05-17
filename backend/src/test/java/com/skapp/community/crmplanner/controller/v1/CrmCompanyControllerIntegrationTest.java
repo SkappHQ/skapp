@@ -79,7 +79,7 @@ class CrmCompanyControllerIntegrationTest {
 		dto.setIndustry("Technology");
 		dto.setWebsite("https://acme.com");
 		dto.setAddress("123 Main St");
-		dto.setContactNumber("+94771234567");
+		dto.setContactNumber("94771234567");
 		return dto;
 	}
 
@@ -117,7 +117,35 @@ class CrmCompanyControllerIntegrationTest {
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-						.value(messageUtil.getMessage(CrmMessageConstant.COMMON_ERROR_COMPANY_EXISTS)));
+						.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS)));
+	}
+
+	@Test
+	@DisplayName("Create company with whitespace-padded duplicate name - Returns Bad Request")
+	void createCompany_WhitespacePaddedDuplicateName_ReturnsBadRequest() throws Exception {
+		performPostRequest(createValidPayload()).andExpect(status().isCreated());
+
+		CrmCompanyCreateDto dto = createValidPayload();
+		dto.setName(" Acme Corp ");
+		performPostRequest(dto).andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+						.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS)));
+	}
+
+	@Test
+	@DisplayName("Create company with different-case duplicate name - Returns Bad Request")
+	void createCompany_DifferentCaseDuplicateName_ReturnsBadRequest() throws Exception {
+		performPostRequest(createValidPayload()).andExpect(status().isCreated());
+
+		CrmCompanyCreateDto dto = createValidPayload();
+		dto.setName("acme corp");
+		performPostRequest(dto).andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+						.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS)));
 	}
 
 	@Test
