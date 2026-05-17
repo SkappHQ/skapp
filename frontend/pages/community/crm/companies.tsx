@@ -5,7 +5,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CompanyPopupController from "~community/crm/components/organisms/CompanyPopupController/CompanyPopupController";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
-import CompanyDetailDrawer from "~community/crm/components/templates/CompanyDetailDrawer/CompanyDetailDrawer";
+import CrmSidePanelController from "~community/crm/components/organisms/CrmSidePanelController/CrmSidePanelController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -34,7 +34,7 @@ const Companies: NextPage = () => {
     >
       <>
         <CompanyPopupController />
-        <CompanyDetailDrawer />
+        <CrmSidePanelController />
         <CompanyTable />
       </>
     </ContentLayout>

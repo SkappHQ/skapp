@@ -336,24 +336,3 @@ thead .sticky-col {
   border-color: var(--focus-border-color) !important;
   box-shadow: 0px 0px 4px 0px var(--focus-shadow-color) !important;
 }
-
-/* CRM Contact Detail Panel: override z-index above MUI AppBar (1100) and Drawer (1200) */
-.crm-panel > div[aria-hidden="true"] {
-  z-index: 1250 !important; /* backdrop */
-}
-.crm-panel > aside[role="dialog"] {
-  z-index: 1260 !important; /* panel */
-  width: calc(100vw - 35rem);
-}
-
-/* CRM Contact Detail Panel: align header buttons to top of name block */
-.crm-panel aside[role="dialog"] header {
-  align-items: flex-start !important;
-  padding-bottom: 0.5rem !important;
-}
-
-/* CRM Contact Detail Panel: align body padding with header (16px) so info row is left-flush with contact name */
-.crm-panel aside[role="dialog"] > div > .overflow-y-auto {
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-}

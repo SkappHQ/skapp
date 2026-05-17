@@ -1,9 +1,9 @@
 import { SidePanel } from "@rootcodelabs/skapp-ui";
 import React from "react";
+import { createPortal } from "react-dom";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
-import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 
 import CompanyContacts from "../../molecules/CompanyContacts/CompanyContacts";
@@ -43,46 +43,57 @@ const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
   }
 ];
 
-const CompanyDetailDrawer: React.FC = () => {
-  const {
-    isCompanyDetailDrawerOpen,
-    setIsCompanyDetailDrawerOpen,
-    selectedCompany
-  } = useCrmStore((store) => ({
-    isCompanyDetailDrawerOpen: store.isCompanyDetailDrawerOpen,
-    setIsCompanyDetailDrawerOpen: store.setIsCompanyDetailDrawerOpen,
-    selectedCompany: store.selectedCompany
-  }));
+interface CompanyViewSidePanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedCompany: CrmCompanyMetricsType | null;
+}
 
-  const handleClose = () => {
-    setIsCompanyDetailDrawerOpen(false);
-  };
-
-  return (
-    <div className="crm-panel">
-      <SidePanel
-        isOpen={isCompanyDetailDrawerOpen}
-        header={
-          <div className="w-full p-[0.5rem]">
-            {selectedCompany && (
-              <CompanyDetailHeader company={selectedCompany} />
-            )}
-          </div>
-        }
-        headerActions={<CompanyDetailHeaderActions />}
-        width="xl"
-        onClose={handleClose}
+const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
+  isOpen,
+  onClose,
+  selectedCompany
+}) => {
+  return createPortal(
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1500,
+        pointerEvents: "none"
+      }}
+    >
+      <div
+        className="[&_aside]:!w-[62.8125rem]"
+        style={{ pointerEvents: "auto" }}
       >
-        <div className="flex flex-col w-full p-[0.5rem]">
-          {selectedCompany && (
-            <CompanyMetricCards metrics={getCompanyMetrics(selectedCompany)} />
-          )}
-          <CompanyDeals />
-          <CompanyContacts contacts={[]} />
-        </div>
-      </SidePanel>
-    </div>
+        <SidePanel
+          isOpen={isOpen}
+          header={
+            <div className="w-full p-[0.5rem]">
+              {selectedCompany && (
+                <CompanyDetailHeader company={selectedCompany} />
+              )}
+            </div>
+          }
+          headerActions={<CompanyDetailHeaderActions />}
+          width="lg"
+          onClose={onClose}
+        >
+          <div className="flex flex-col w-full p-[0.5rem]">
+            {selectedCompany && (
+              <CompanyMetricCards
+                metrics={getCompanyMetrics(selectedCompany)}
+              />
+            )}
+            <CompanyDeals />
+            <CompanyContacts contacts={[]} />
+          </div>
+        </SidePanel>
+      </div>
+    </div>,
+    document.body
   );
 };
 
-export default CompanyDetailDrawer;
+export default CompanyViewSidePanel;
