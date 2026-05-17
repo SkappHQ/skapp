@@ -33,4 +33,6 @@ public class CrmCompanyMetricsDto {
 
 	private Long closedDeals;
 
+	private Long openDeals;
+
 }
