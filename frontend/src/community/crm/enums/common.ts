@@ -1,3 +1,9 @@
+export enum CrmPriorityEnum {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high"
+}
+
 export enum CrmDealStageEnum {
   INITIAL = "INITIAL",
   OPEN = "OPEN",
