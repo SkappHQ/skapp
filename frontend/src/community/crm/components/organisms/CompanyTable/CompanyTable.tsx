@@ -2,7 +2,6 @@ import {
   FilterIcon,
   IconButton,
   InputField,
-  Label,
   ProjectTableSkeletonLoader,
   SearchIcon,
   Table,
@@ -16,6 +15,12 @@ import { useGetCompanyMetrics } from "~community/crm/api/CompanyApi";
 import { companyTableColumns } from "~community/crm/constants/companyTableConstants";
 import { EmptyStateTypeEnum } from "~community/crm/enums/CrmCompanyEnums";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+import {
+  formatAccountValue,
+  formatCurrency,
+  formatPhoneNumber,
+  formatTasks
+} from "~community/crm/utils/companyTableHelpers";
 
 import styles from "./styles";
 
@@ -52,6 +57,9 @@ export const CompanyTable: React.FC = () => {
       columnAriaLabel: translateText(["table", "columns", "phoneAriaLabel"]),
       header: translateText(["table", "columns", "phoneHeader"]),
       key: companyTableColumns.CONTACT_NUMBER,
+      render(value) {
+        return formatPhoneNumber(value);
+      },
       width: "20%"
     },
     {
@@ -59,17 +67,7 @@ export const CompanyTable: React.FC = () => {
       header: translateText(["table", "columns", "tasksHeader"]),
       key: companyTableColumns.TASKS,
       render(value, row) {
-        return (
-          <div className="flex flex-row items-center gap-2">
-            <div className="font-medium text-gray-900">{`${value}`}</div>
-            {row.overdue > 0 && (
-              <Label
-                backgroundColor="bg-red-100"
-                textColor="text-red-900"
-              >{`${row.overdue} overdue`}</Label>
-            )}
-          </div>
-        );
+        return formatTasks(value, row);
       },
       width: "20%"
     },
@@ -77,8 +75,8 @@ export const CompanyTable: React.FC = () => {
       columnAriaLabel: translateText(["table", "columns", "pipelineAriaLabel"]),
       header: translateText(["table", "columns", "pipelineHeader"]),
       key: companyTableColumns.OPEN_VALUE,
-      render(value) {
-        return `$${value}`;
+      render(openValue) {
+        return formatCurrency(openValue);
       },
       width: "20%"
     },
@@ -91,26 +89,11 @@ export const CompanyTable: React.FC = () => {
       header: translateText(["table", "columns", "accountValueHeader"]),
       key: companyTableColumns.ACCOUNT_VALUE,
       render(value, row) {
-        return (
-          <div className="flex flex-col gap-1">
-            <div className="text-gray-900">{`$${value}`}</div>
-            <div className="text-sm text-slate-600">{`${row.closedDeals} Deals closed`}</div>
-          </div>
-        );
+        return formatAccountValue(value, row);
       },
       width: "20%"
     }
   ];
-
-  const tableData = companies.map((company: CrmCompanyMetricsType) => ({
-    [companyTableColumns.NAME]: company.name,
-    [companyTableColumns.CONTACT_NUMBER]: company.contactNumber ?? "-",
-    [companyTableColumns.TASKS]: company.tasks ?? "-",
-    [companyTableColumns.OPEN_VALUE]: company.openValue ?? "-",
-    [companyTableColumns.ACCOUNT_VALUE]: company.accountValue ?? "-",
-    [companyTableColumns.CLOSED_DEALS]: company.closedDeals ?? "-",
-    [companyTableColumns.OVERDUE]: company.overdue ?? "-"
-  }));
 
   const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -120,13 +103,13 @@ export const CompanyTable: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <div className="flex flex-row gap-4 w-full h-[48px] items-center justify-between">
+      <div className="flex flex-row gap-4 w-full h-[3rem] items-center justify-between">
         <InputField
           ariaLabelClearButton={translateText([
             "table",
             "clearButtonAriaLabel"
           ])}
-          className="w-[412px] h-[48px]"
+          className="w-[25.75rem] h-[3rem]"
           placeholder={translateText(["table", "search"])}
           rightIcon={<SearchIcon />}
           state="default"
@@ -147,7 +130,7 @@ export const CompanyTable: React.FC = () => {
 
       <Table
         columns={columns as TableColumn<any>[]}
-        data={tableData}
+        data={companies as CrmCompanyMetricsType[]}
         emptyStateType={emptyStateType}
         isLoading={isLoading && companies.length === 0}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
