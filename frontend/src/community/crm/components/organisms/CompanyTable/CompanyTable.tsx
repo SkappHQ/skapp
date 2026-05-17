@@ -14,6 +14,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompanyMetrics } from "~community/crm/api/CompanyApi";
 import { companyTableColumns } from "~community/crm/constants/companyTableConstants";
 import { EmptyStateTypeEnum } from "~community/crm/enums/CrmCompanyEnums";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 import {
   formatAccountValue,
@@ -26,6 +27,13 @@ import styles from "./styles";
 
 export const CompanyTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "companies");
+
+  const { setSelectedCompany, setIsCompanyDetailDrawerOpen } = useCrmStore(
+    (store) => ({
+      setSelectedCompany: store.setSelectedCompany,
+      setIsCompanyDetailDrawerOpen: store.setIsCompanyDetailDrawerOpen
+    })
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -44,6 +52,29 @@ export const CompanyTable: React.FC = () => {
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
+  };
+
+  const handleRowClick = (
+    _row: Record<string, unknown>,
+    index: number
+  ): void => {
+    const company = companies[index];
+    if (!company) return;
+
+    setSelectedCompany({
+      name: company.name,
+      industry: company.industry,
+      website: company.website ?? "",
+      address: company.address ?? "",
+      contactNumber: company.contactNumber ? `+${company.contactNumber}` : "-",
+      tasks: company.tasks ?? 0,
+      overdue: company.overdue ?? 0,
+      openValue: company.openValue ?? 0,
+      accountValue: company.accountValue ?? 0,
+      closedDeals: company.closedDeals ?? 0,
+      openDeals: company.openDeals ?? 0
+    });
+    setIsCompanyDetailDrawerOpen(true);
   };
 
   const columns: TableColumn<CrmCompanyMetricsType>[] = [
@@ -130,15 +161,13 @@ export const CompanyTable: React.FC = () => {
 
       <Table
         columns={columns as TableColumn<any>[]}
-        data={companies as CrmCompanyMetricsType[]}
+        data={companies}
         emptyStateType={emptyStateType}
         isLoading={isLoading && companies.length === 0}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="35.3125rem"
         hasMore={hasNextPage}
-        onRowClick={() => {
-          return;
-        }}
+        onRowClick={handleRowClick}
         onLoadMore={loadMore}
         infiniteScrollLoadingMessage={translateText([
           "table",

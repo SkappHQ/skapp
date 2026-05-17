@@ -4,11 +4,11 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
 import { IconName } from "~community/common/types/IconTypes";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmCompanyType } from "~community/crm/types/CommonTypes";
+import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 interface Props {
-  company: CrmCompanyType;
+  company: CrmCompanyMetricsType;
 }
 
 const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
@@ -93,13 +93,7 @@ export const CompanyDetailHeaderActions: React.FC = () => {
   return (
     <KebabMenu
       id="company-detail-menu"
-      icon={
-        <Icon
-          name={IconName.THREE_DOTS_ICON}
-          width="1rem"
-          height="1rem"
-        />
-      }
+      icon={<Icon name={IconName.THREE_DOTS_ICON} width="1rem" height="1rem" />}
       menuItems={[
         {
           id: "delete-company",
