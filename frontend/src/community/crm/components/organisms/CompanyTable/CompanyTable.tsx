@@ -147,7 +147,7 @@ export const CompanyTable: React.FC = () => {
           type="search"
           value={searchTerm}
           onChange={handleSearchChange}
-          customStyles={styles.searchInput}
+          customStyles={{ borderRadius: "rounded-[24px]" }}
         />
         <IconButton
           isRounded={true}
