@@ -1100,8 +1100,8 @@ public class LeaveServiceImpl implements LeaveService {
 
 	private void addUsedHoursToLeaveEntitlement(LeaveRequest leaveRequest) {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<LocalDate> holidayDates = holidayDao.findAllByIsActiveTrue().stream().map(Holiday::getDate).toList();
-		List<Holiday> holidayObjects = holidayDao.findAllByIsActiveTrue();
+		List<Holiday> holidayObjects = getHolidaysForEmployee(leaveRequest.getEmployee());
+		List<LocalDate> holidayDates = holidayObjects.stream().map(Holiday::getDate).toList();
 
 		removeExistingEntitlements(leaveRequest);
 
