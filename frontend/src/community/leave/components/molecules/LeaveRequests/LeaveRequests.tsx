@@ -252,6 +252,7 @@ const LeaveRequests: FC = () => {
                 value: id
               })
             )}
+            className="max-h-50"
             selectedValues={filter.type}
             onChipClick={(id) => {
               setFilter((prev) => ({
