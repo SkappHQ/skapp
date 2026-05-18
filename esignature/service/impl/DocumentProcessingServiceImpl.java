@@ -155,6 +155,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				document.setAllSecurityToBeRemoved(true);
 			}
 
+			// Load font once outside the loop to avoid repeated font embedding per page
+			PDType0Font font = loadFont(document);
+
 			for (int i = 0; i < numOfPages; i++) {
 				PDPage page = document.getPage(i);
 				float pageHeight = page.getMediaBox().getHeight();
@@ -162,7 +165,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 						PDPageContentStream.AppendMode.APPEND, true, true)) {
 					float adjustedY = pageHeight - UUID_Y_POSITION;
-					PDType0Font font = loadFont(document);
 					float textWidth = font.getStringWidth(value) / 1000 * UUID_FONT_SIZE;
 					float textHeight = font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000
 							* UUID_FONT_SIZE;
@@ -216,6 +218,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			byte[] inputBytes = buffer.toByteArray();
 
 			int numberOfPages = getNumberOfPages(inputBytes);
+
 			byte[] updatedBytes = updateEnvelopeUuidToEachPage(value, inputBytes, numberOfPages);
 
 			return new ProcessedDocumentResult(updatedBytes, numberOfPages);
