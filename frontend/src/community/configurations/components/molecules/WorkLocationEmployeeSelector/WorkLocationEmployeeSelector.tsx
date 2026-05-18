@@ -241,6 +241,11 @@ const WorkLocationEmployeeSelector = ({
       );
     }
 
+    const remainingEmployees = selectedEmployees.slice(3);
+    const remainingTitle = remainingEmployees
+      .map((emp) => `${emp.firstName ?? ""} ${(emp.lastName ?? "").trim()}`.trim())
+      .join(", ");
+
     return (
       <AvatarGroup
         avatars={selectedEmployees.map((emp) => ({
@@ -249,7 +254,7 @@ const WorkLocationEmployeeSelector = ({
           image: emp.authPic || null
         }))}
         max={4}
-        isHoverModal
+        title={remainingTitle || undefined}
       />
     );
   };
