@@ -69,20 +69,16 @@ public class CrmDealServiceImpl implements CrmDealService {
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_PRIORITY_NOT_FOUND));
 		}
 
-		CrmCompany company = null;
-		if (requestDto.getCompanyId() != null) {
-			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
-		}
-
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
 
+		CrmCompany company = null;
 		if (requestDto.getCompanyId() != null) {
-			CrmCompany contactCompany = contact.getCompany();
-			if (contactCompany == null || !contactCompany.getId().equals(requestDto.getCompanyId())) {
+			if (contact.getCompany() == null || !contact.getCompany().getId().equals(requestDto.getCompanyId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_COMPANY_MISMATCH);
 			}
+			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
 		}
 
 		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
