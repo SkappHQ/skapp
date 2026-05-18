@@ -9,14 +9,17 @@ import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import {
+  useCheckWorkLocationNameExists,
   useCreateWorkLocation,
   useGetWorkLocationById,
   useUpdateWorkLocation
 } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import WorkLocationEmployeeSelector from "~community/configurations/components/molecules/WorkLocationEmployeeSelector/WorkLocationEmployeeSelector";
+import { WORK_LOCATION_SEARCH_DEBOUNCE_MS } from "~community/configurations/constants/workLocationConstants";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
@@ -172,6 +175,13 @@ const WorkLocationForm = ({ id }: Props) => {
     }
   });
 
+  const debouncedName = useDebounce(formik.values.name.trim(), WORK_LOCATION_SEARCH_DEBOUNCE_MS);
+
+  const { isError: isNameDuplicate } = useCheckWorkLocationNameExists(
+    debouncedName,
+    isEditMode ? id : undefined
+  );
+
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);
     setIsFormDirty(false);
@@ -246,13 +256,22 @@ const WorkLocationForm = ({ id }: Props) => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             state={
-              formik.touched.name && formik.errors.name ? "error" : "default"
+              (formik.touched.name && formik.errors.name) || isNameDuplicate
+                ? "error"
+                : "default"
             }
-            helperText={formik.touched.name ? formik.errors.name : ""}
+            helperText={
+              formik.touched.name && formik.errors.name
+                ? formik.errors.name
+                : isNameDuplicate
+                  ? translateText(["validation.nameAlreadyExists"])
+                  : ""
+            }
             name="name"
             maxLength={50}
             className="w-full"
             disabled={isLoading}
+            required
           />
         </div>
 
@@ -280,7 +299,8 @@ const WorkLocationForm = ({ id }: Props) => {
             disabled={
               isFormDisabled ||
               !formik.isValid ||
-              !formik.dirty
+              !formik.dirty ||
+              isNameDuplicate
             }
           >
             {isEditMode

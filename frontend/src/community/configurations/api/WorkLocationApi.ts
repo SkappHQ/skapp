@@ -146,3 +146,23 @@ export const useDeleteWorkLocation = (
     onError
   });
 };
+
+export const useCheckWorkLocationNameExists = (
+  name: string,
+  excludeId?: number
+) => {
+  return useQuery({
+    queryKey: workLocationQueryKeys.CHECK_WORK_LOCATION_NAME_EXISTS(
+      name,
+      excludeId
+    ),
+    queryFn: async () => {
+      const response = await authFetch.get(
+        workLocationEndpoints.CHECK_WORK_LOCATION_NAME_EXISTS(name, excludeId)
+      );
+      return response.data;
+    },
+    enabled: name.trim().length > 0,
+    retry: false
+  });
+};

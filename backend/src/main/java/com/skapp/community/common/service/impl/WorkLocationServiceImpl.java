@@ -283,4 +283,27 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		employeeDao.saveAll(employees);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto checkWorkLocationNameExists(String name, Long excludeId) {
+		log.info("checkWorkLocationNameExists: execution started");
+
+		boolean exists;
+		if (excludeId != null) {
+			exists = workLocationDao.existsByNameIgnoreCaseAndWorkLocationIdNot(name.trim(), excludeId);
+		}
+		else {
+			exists = workLocationDao.existsByNameIgnoreCase(name.trim());
+		}
+
+		if (exists) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
+		}
+
+		log.info("checkWorkLocationNameExists: execution ended");
+
+		return new ResponseEntityDto(
+				messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_WORK_LOCATION_NAME_AVAILABLE), false);
+	}
+
 }
