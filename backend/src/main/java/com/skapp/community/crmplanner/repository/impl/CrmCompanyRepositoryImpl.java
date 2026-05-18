@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Repository
 @RequiredArgsConstructor
@@ -49,7 +50,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			predicates.add(cb.like(cb.lower(company.<String>get("name")),
-					"%" + searchKeyword.trim().toLowerCase() + "%"));
+					"%" + searchKeyword.trim().toLowerCase(Locale.ROOT) + "%"));
 		}
 
 		return predicates;

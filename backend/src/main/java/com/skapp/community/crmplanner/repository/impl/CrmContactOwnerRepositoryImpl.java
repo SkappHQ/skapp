@@ -22,6 +22,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Repository
@@ -80,7 +81,7 @@ public class CrmContactOwnerRepositoryImpl implements CrmContactOwnerRepository 
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String likePattern = "%" + searchKeyword.trim().toLowerCase() + "%";
+			String likePattern = "%" + searchKeyword.trim().toLowerCase(Locale.ROOT) + "%";
 			predicates.add(cb.or(cb.like(cb.lower(employee.<String>get("firstName")), likePattern),
 					cb.like(cb.lower(employee.<String>get("lastName")), likePattern),
 					cb.like(cb.lower(user.<String>get("email")), likePattern)));

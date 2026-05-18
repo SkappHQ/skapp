@@ -9,6 +9,8 @@ import com.skapp.community.peopleplanner.util.Validations;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
+
 @Service
 @RequiredArgsConstructor
 public class CrmContactValidationServiceImpl implements CrmContactValidationService {
@@ -33,7 +35,7 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_REQUIRED);
 		}
 
-		String normalizedEmail = email.trim().toLowerCase();
+		String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
 		Validations.validateEmail(normalizedEmail);
 
 		boolean emailExists = crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(normalizedEmail);

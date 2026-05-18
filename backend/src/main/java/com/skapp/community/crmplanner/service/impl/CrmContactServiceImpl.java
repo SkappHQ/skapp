@@ -23,6 +23,8 @@ import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Locale;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -67,7 +69,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContact contact = new CrmContact();
 		contact.setName(requestDto.getName().trim());
-		contact.setEmail(requestDto.getEmail().trim().toLowerCase());
+		contact.setEmail(requestDto.getEmail().trim().toLowerCase(Locale.ROOT));
 		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
 		contact.setCompany(company);
 		contact.setOwner(owner);
@@ -122,7 +124,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 				&& Boolean.TRUE.equals(currentEmployeeRole.getIsSuperAdmin());
 		Role currentCrmRole = currentEmployeeRole != null ? currentEmployeeRole.getCrmRole() : null;
 
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE) {
+		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
 			if (ownerId != null && !ownerId.equals(currentEmployee.getEmployeeId())) {
 				throw new ValidationException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
 			}

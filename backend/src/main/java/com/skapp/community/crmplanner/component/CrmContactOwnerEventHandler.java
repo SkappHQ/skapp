@@ -18,23 +18,23 @@ public class CrmContactOwnerEventHandler {
 
 	private final CrmContactOwnerReassignmentService crmContactOwnerReassignmentService;
 
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
 	public void handleUserDeactivation(UserDeactivatedEvent event) {
 		try {
 			crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(List.of(event.getUser()));
 		}
-		catch (IllegalStateException e) {
-			log.error("handleUserDeactivation: failed to reassign CRM contacts - {}", e.getMessage());
+		catch (Exception e) {
+			log.error("handleUserDeactivation: failed to reassign CRM contacts - {}", e.getMessage(), e);
 		}
 	}
 
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
 	public void handleUsersDeactivation(UsersDeactivatedEvent event) {
 		try {
 			crmContactOwnerReassignmentService.reassignContactsOwnedByDeactivatedUsers(event.getUsers());
 		}
-		catch (IllegalStateException e) {
-			log.error("handleUsersDeactivation: failed to reassign CRM contacts - {}", e.getMessage());
+		catch (Exception e) {
+			log.error("handleUsersDeactivation: failed to reassign CRM contacts - {}", e.getMessage(), e);
 		}
 	}
 
