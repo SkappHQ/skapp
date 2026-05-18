@@ -39,7 +39,7 @@ public class CrmDealController {
 	@Operation(summary = "Get deals",
 			description = "Returns a paginated list of CRM deals with optional filtering.")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_CRM_ADMIN', 'ROLE_CRM_SALES_MANAGER', 'ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getDeals(@Valid CrmDealFilterDto crmDealFilterDto) {
 		ResponseEntityDto response = crmDealService.getDeals(crmDealFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
