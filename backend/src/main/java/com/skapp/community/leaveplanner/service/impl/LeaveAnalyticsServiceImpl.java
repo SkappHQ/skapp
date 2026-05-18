@@ -1525,7 +1525,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			List<Employee> employeeManagers = employeeDao.findManagersByEmployeeIdAndLoggedInManagerId(employeeId,
 					currentUser.getEmployee().getEmployeeId());
 
-			if (!employeeManagers.isEmpty()) {
+			if (!employeeManagers.isEmpty()
+					|| isEmployeeUnderSupervisor(employeeId, currentUser.getEmployee().getEmployeeId())) {
 				HashMap<Long, LeaveEntitlementResponseDto> responseDtoList = processedLeaveEntitlements(employeeId,
 						leaveEntitlementsFilterDto);
 				return new ResponseEntityDto(false, responseDtoList.values());
@@ -1534,6 +1535,15 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 
 		log.info("getEmployeeLeaveEntitlements: execution ended");
 		return new ResponseEntityDto();
+	}
+
+	private boolean isEmployeeUnderSupervisor(Long employeeId, Long supervisorId) {
+		List<Long> leadingTeamIds = teamDao.findLeadingTeamIdsByManagerId(supervisorId);
+		if (leadingTeamIds.isEmpty()) {
+			return false;
+		}
+		List<Team> employeeTeams = employeeTeamDao.findTeamsByEmployeeId(employeeId);
+		return employeeTeams.stream().anyMatch(team -> leadingTeamIds.contains(team.getTeamId()));
 	}
 
 	private HashMap<Long, LeaveEntitlementResponseDto> processedLeaveEntitlements(Long employeeId,
