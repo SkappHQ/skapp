@@ -4,7 +4,6 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactUpdateRequestDto;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.service.CrmContactValidationService;
 import com.skapp.community.peopleplanner.util.Validations;
@@ -25,13 +24,6 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 	public void validateCreateContactRequest(CrmContactCreateRequestDto requestDto) {
 		validateName(requestDto.getName());
 		validateEmail(requestDto.getEmail(), null);
-		validateContactNumber(requestDto.getContactNumber());
-	}
-
-	@Override
-	public void validateUpdateContactRequest(CrmContactUpdateRequestDto requestDto, Long contactId) {
-		validateName(requestDto.getName());
-		validateEmail(requestDto.getEmail(), contactId);
 		validateContactNumber(requestDto.getContactNumber());
 	}
 
@@ -59,14 +51,7 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 		String normalizedEmail = email.trim().toLowerCase();
 		Validations.validateEmail(normalizedEmail);
 
-		boolean emailExists;
-		if (excludeContactId != null) {
-			emailExists = crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(normalizedEmail,
-					excludeContactId);
-		}
-		else {
-			emailExists = crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(normalizedEmail);
-		}
+		boolean emailExists = crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(normalizedEmail);
 
 		if (emailExists) {
 			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
