@@ -23,5 +23,16 @@ export const workLocationQueryKeys = {
     page,
     size
   ],
-  GET_WORK_LOCATION_BY_ID: (id: number) => ["work-location", id]
+  GET_WORK_LOCATIONS_INFINITE: (search: string, size: number) => [
+    "work-locations",
+    "infinite",
+    search,
+    size
+  ],
+  GET_WORK_LOCATION_BY_ID: (id: number) => ["work-location", id],
+  CHECK_WORK_LOCATION_NAME_EXISTS: (name: string) => [
+    "work-locations",
+    "name-exists",
+    name
+  ]
 };

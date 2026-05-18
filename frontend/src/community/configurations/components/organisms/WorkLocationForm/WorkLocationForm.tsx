@@ -1,24 +1,33 @@
+import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { ButtonV2, InputField, SmallModal, Spinner } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
+
+import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
+import { AxiosError } from "axios";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import ROUTES from "~community/common/constants/routes";
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
-import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
+import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
 import {
+  useCheckWorkLocationNameExists,
   useCreateWorkLocation,
   useGetWorkLocationById,
   useUpdateWorkLocation
 } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import WorkLocationEmployeeSelector from "~community/configurations/components/molecules/WorkLocationEmployeeSelector/WorkLocationEmployeeSelector";
+import {
+  COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS,
+  WORK_LOCATION_SEARCH_DEBOUNCE_MS
+} from "~community/configurations/constants/workLocationConstants";
+import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
-import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
 
 interface Props {
   id?: number;
@@ -41,7 +50,8 @@ const WorkLocationForm = ({ id }: Props) => {
 
   const { user } = useAuth();
   const { setToastMessage } = useToast();
-  const [isUnsavedModalOpen, setIsUnsavedModalOpen] = useState(false);
+  const { isUnsavedModalOpen, setIsUnsavedModalOpen, setIsFormDirty } =
+    useWorkLocationStore();
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
 
@@ -51,6 +61,14 @@ const WorkLocationForm = ({ id }: Props) => {
     attendanceConfig?.isGeoFencingEnabled === true;
 
   const validationSchema = buildWorkLocationValidationSchema(translateText);
+
+  const pendingNavigationRef = useRef<string | null>(null);
+  const allowRouteChangeRef = useRef(false);
+
+  const stablePreloadedEmployees = useMemo(
+    () => workLocation?.employees ?? [],
+    [workLocation?.employees]
+  );
 
   const navigateBack = () => {
     router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
@@ -66,6 +84,7 @@ const WorkLocationForm = ({ id }: Props) => {
           description: translateText(["toasts.createSuccess.description"]),
           isIcon: true
         });
+        allowRouteChangeRef.current = true;
         navigateBack();
       },
       () => {
@@ -89,6 +108,7 @@ const WorkLocationForm = ({ id }: Props) => {
           description: translateText(["toasts.updateSuccess.description"]),
           isIcon: true
         });
+        allowRouteChangeRef.current = true;
         navigateBack();
       },
       () => {
@@ -104,27 +124,31 @@ const WorkLocationForm = ({ id }: Props) => {
 
   const isPending = isCreating || isUpdating;
 
+  const getInitialValues = (): WorkLocationFormValues => {
+    if (isEditMode && workLocation) {
+      const geofence =
+        canSeeGeofence && workLocation.geofence
+          ? {
+              latitude: Number.parseFloat(workLocation.geofence.latitude),
+              longitude: Number.parseFloat(workLocation.geofence.longitude),
+              radiusMeters: workLocation.geofence.radiusMeters,
+              address: workLocation.address ?? ""
+            }
+          : null;
+
+      return {
+        name: workLocation.name,
+        isAllEmployees: workLocation.isAllEmployees ?? false,
+        employeeIds: workLocation.employees?.map((e) => e.employeeId) ?? [],
+        geofence
+      };
+    }
+
+    return { name: "", isAllEmployees: false, employeeIds: [], geofence: null };
+  };
+
   const formik = useFormik<WorkLocationFormValues>({
-    initialValues:
-      isEditMode && workLocation
-        ? {
-            name: workLocation.name,
-            isAllEmployees: workLocation.isAllEmployees ?? false,
-            employeeIds:
-              workLocation.employees?.map((e) => e.employeeId) ?? [],
-            geofence:
-              canSeeGeofence && workLocation.geofence
-                ? {
-                    latitude: Number.parseFloat(workLocation.geofence.latitude),
-                    longitude: Number.parseFloat(
-                      workLocation.geofence.longitude
-                    ),
-                    radiusMeters: workLocation.geofence.radiusMeters,
-                    address: workLocation.address ?? ""
-                  }
-                : null
-          }
-        : { name: "", isAllEmployees: false, employeeIds: [], geofence: null },
+    initialValues: getInitialValues(),
     enableReinitialize: isEditMode,
     validationSchema,
     onSubmit: (values) => {
@@ -170,20 +194,139 @@ const WorkLocationForm = ({ id }: Props) => {
     }
   });
 
+  const debouncedName = useDebounce(
+    formik.values.name.trim(),
+    WORK_LOCATION_SEARCH_DEBOUNCE_MS
+  );
+
+  const { data: nameCheckResult, error: nameCheckError } =
+    useCheckWorkLocationNameExists(
+      debouncedName,
+      debouncedName.length > 0 &&
+        !(isEditMode && debouncedName === workLocation?.name)
+    );
+
+  const isNameDuplicate =
+    (nameCheckResult?.isExists === true ||
+      (nameCheckError instanceof AxiosError &&
+        nameCheckError.response?.data?.results?.[0]?.messageKey ===
+          COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS)) &&
+    !(isEditMode && debouncedName === workLocation?.name);
+  const isNameCheckPending = formik.values.name.trim() !== debouncedName;
+
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);
-    navigateBack();
+    allowRouteChangeRef.current = true;
+    const target = pendingNavigationRef.current;
+    pendingNavigationRef.current = null;
+    if (target) {
+      router.push(target);
+    } else {
+      navigateBack();
+    }
   };
 
   const handleResume = () => {
     setIsUnsavedModalOpen(false);
+    pendingNavigationRef.current = null;
   };
+
+  const isDirtyRef = useRef(formik.dirty);
+
+  useEffect(() => {
+    isDirtyRef.current = formik.dirty;
+  });
+
+  useEffect(() => {
+    setIsFormDirty(formik.dirty);
+  }, [formik.dirty, setIsFormDirty]);
+
+  useEffect(() => {
+    const handleRouteChangeStart = (url: string) => {
+      if (allowRouteChangeRef.current) {
+        allowRouteChangeRef.current = false;
+        return;
+      }
+      if (isDirtyRef.current && url !== router.asPath) {
+        pendingNavigationRef.current = url;
+        setIsUnsavedModalOpen(true);
+        router.events.emit("routeChangeError");
+        throw "Abort route change";
+      }
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirtyRef.current) {
+        e.preventDefault();
+      }
+    };
+
+    router.events.on("routeChangeStart", handleRouteChangeStart);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      router.events.off("routeChangeStart", handleRouteChangeStart);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [router, setIsUnsavedModalOpen]);
+
+  useEffect(() => {
+    router.beforePopState(({ url }) => {
+      if (allowRouteChangeRef.current) {
+        allowRouteChangeRef.current = false;
+        return true;
+      }
+      if (isDirtyRef.current) {
+        pendingNavigationRef.current = url;
+        setIsUnsavedModalOpen(true);
+        globalThis.history.pushState(null, "", router.asPath);
+        return false;
+      }
+      return true;
+    });
+
+    return () => {
+      router.beforePopState(() => true);
+    };
+  }, [router, setIsUnsavedModalOpen]);
+
+  useEffect(() => {
+    return () => {
+      setIsFormDirty(false);
+      setIsUnsavedModalOpen(false);
+    };
+  }, [setIsFormDirty, setIsUnsavedModalOpen]);
 
   const isFormDisabled = isLoading || isPending;
 
   if (isEditMode && isLoading) {
-    return <Spinner />;
+    return (
+      <div className="flex flex-col gap-6 max-w-[40rem] animate-pulse">
+        <div>
+          <div className="h-4 w-24 rounded bg-secondary-accent mb-2" />
+          <div className="h-10 w-full rounded bg-secondary-accent" />
+        </div>
+        <div>
+          <div className="h-4 w-32 rounded bg-secondary-accent mb-2" />
+          <div className="h-10 w-full rounded bg-secondary-accent" />
+        </div>
+        {canSeeGeofence && (
+          <div className="h-64 w-full rounded bg-secondary-accent" />
+        )}
+        <div className="flex justify-start gap-3">
+          <div className="h-10 w-24 rounded bg-secondary-accent" />
+          <div className="h-10 w-32 rounded bg-secondary-accent" />
+        </div>
+      </div>
+    );
   }
+
+  const nameFieldHelperText =
+    formik.touched.name && formik.errors.name
+      ? formik.errors.name
+      : isNameDuplicate
+        ? translateText(["validation.nameAlreadyExists"])
+        : "";
 
   return (
     <>
@@ -198,32 +341,43 @@ const WorkLocationForm = ({ id }: Props) => {
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            state={
-              formik.touched.name && formik.errors.name ? "error" : "default"
-            }
-            helperText={formik.touched.name ? formik.errors.name : ""}
+            state={nameFieldHelperText ? "error" : "default"}
+            helperText={nameFieldHelperText}
             name="name"
             maxLength={50}
             className="w-full"
-            disabled={isFormDisabled}
+            disabled={isLoading}
+            required
           />
         </div>
 
         <WorkLocationEmployeeSelector
           formik={formik}
-          preloadedEmployees={workLocation?.employees ?? []}
+          preloadedEmployees={stablePreloadedEmployees}
         />
 
         {canSeeGeofence && <GeofenceMap formik={formik} />}
 
-        <div className="flex justify-start">
+        <div className="flex justify-start gap-3">
+          {isEditMode && (
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              onClick={() => formik.resetForm()}
+              disabled={isPending || !formik.dirty}
+            >
+              {translateText(["form.cancelButton"])}
+            </ButtonV2>
+          )}
           <ButtonV2
             variant="primary"
             type="submit"
             disabled={
               isFormDisabled ||
               !formik.isValid ||
-              !formik.dirty
+              !formik.dirty ||
+              isNameDuplicate ||
+              isNameCheckPending
             }
           >
             {isEditMode
@@ -237,19 +391,19 @@ const WorkLocationForm = ({ id }: Props) => {
         isOpen={isUnsavedModalOpen}
         onClose={handleResume}
         modalHeader={translateText(["areYouSureModalTitle"])}
-        content={
-          <div>
-            <p>{translateCommon(["description"])}</p>
-            <div className="flex flex-row justify-end gap-3">
-              <ButtonV2 variant="tertiary" onClick={handleLeave}>
-                {translateCommon(["leaveAnywayBtn"])}
-              </ButtonV2>
-              <ButtonV2 variant="primary" onClick={handleResume}>
-                {translateCommon(["resumeTaskBtn"])}
-              </ButtonV2>
-            </div>
-          </div>
-        }
+        content={<p>{translateCommon(["description"])}</p>}
+        buttons={{
+          buttonLeft: {
+            variant: "tertiary",
+            onClick: handleLeave,
+            children: translateCommon(["leaveAnywayBtn"])
+          },
+          buttonRight: {
+            variant: "primary",
+            onClick: handleResume,
+            children: translateCommon(["resumeTaskBtn"])
+          }
+        }}
       />
     </>
   );

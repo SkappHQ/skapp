@@ -136,13 +136,14 @@
       "editAction": "Edit",
       "deleteAction": "Delete",
       "addButton": "Add Location",
-      "emptyState": "No work locations have been added yet.",
+      "emptyStateTitle": "No locations available",
+      "emptyStateDescription": "No locations have been added yet. Once you add locations, they will be displayed here.",
       "searchPlaceholder": "Search by location name"
     },
     "form": {
-      "nameLabel": "Work Location Name",
+      "nameLabel": "Work location name",
       "namePlaceholder": "Enter work location name",
-      "assignEmployeesLabel": "Assign Employees",
+      "assignEmployeesLabel": "Assigned employees",
       "allEmployees": "All Employees",
       "employeeMultiSelect": {
         "ariaLabelClearButton": "Clear search",
@@ -163,7 +164,7 @@
         "selectedSearchPlaceholder": "Search selected employees"
       },
       "geofenceTitle": "Set geo-fence",
-      "radiusLabel": "Radius (meters)",
+      "radiusLabel": "Radius",
       "addressLabel": "Address",
       "addressPlaceholder": "Address will be auto-filled on pin drop",
       "geofenceEmptyState": "No geo-fence set",
@@ -183,12 +184,14 @@
       "geocodeNoResultsDescription": "No results found for the entered address. Please try a different search.",
       "addressSearchLabel": "Search address",
       "addressSearchPlaceholder": "Search Location",
-      "selectedAddressLabel": "Selected address"
+      "selectedAddressLabel": "Selected address",
+      "noSearchResults": "No employees found for your search"
     },
     "validation": {
       "nameRequired": "Please enter work location name",
       "nameMaxLength": "Work location name should be less than 50 characters",
-      "nameInvalidChars": "Work location name should only contain letters, numbers, and spaces"
+      "nameInvalidChars": "Work location name should only contain letters, numbers, and spaces",
+      "nameAlreadyExists": "Work location already exists"
     },
     "toasts": {
       "createSuccess": {
@@ -221,7 +224,7 @@
       }
     },
     "deleteModal": {
-      "title": "Delete Work Location",
+      "title": "Are you sure?",
       "description": "Are you sure you want to delete this work location? This action cannot be undone.",
       "confirmButton": "Delete",
       "cancelButton": "Cancel"

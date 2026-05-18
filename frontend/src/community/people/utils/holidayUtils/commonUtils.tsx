@@ -1,8 +1,37 @@
 import { DateTime } from "luxon";
 
+import {
+  ALL_LOCATIONS_ID,
+  ALL_LOCATIONS_LABEL
+} from "~community/common/constants/workLocationConstants";
 import { BulkRecordErrorLogType } from "~community/common/types/BulkUploadTypes";
+import { WorkLocationType } from "~community/common/types/WorkLocationTypes";
 import { createCSV } from "~community/common/utils/bulkUploadUtils";
 import { holidayBulkUploadResponse } from "~community/people/types/HolidayTypes";
+
+export const hasCustomWorkLocations = (workLocations?: number[]): boolean =>
+  (workLocations?.length ?? 0) > 0 &&
+  !(workLocations?.length === 1 && workLocations[0] === ALL_LOCATIONS_ID);
+
+export const getDefaultWorkLocations = (workLocations?: number[]): number[] =>
+  workLocations && workLocations.length > 0
+    ? workLocations
+    : [ALL_LOCATIONS_ID];
+
+export const buildWorkLocationOptions = (
+  workLocations?: WorkLocationType[],
+  allLocationsLabel?: string
+): { label: string; value: string }[] => {
+  const allOption = {
+    label: allLocationsLabel ?? ALL_LOCATIONS_LABEL,
+    value: String(ALL_LOCATIONS_ID)
+  };
+  const locationOptions = (workLocations ?? []).map((loc) => ({
+    label: loc.name,
+    value: String(loc.workLocationId)
+  }));
+  return [allOption, ...locationOptions];
+};
 
 export const getFormattedYear = (date: string): string => {
   const dateFormate = new Date(date);
@@ -70,7 +99,13 @@ export const getFormattedDate = (date: string, fullDate = false): string => {
 export const downloadHolidayBulkUploadErrorLogsCSV = (
   data: holidayBulkUploadResponse
 ) => {
-  const headers = ["date", "name", "holidayDuration", "message"];
+  const headers = [
+    "date",
+    "workLocation",
+    "name",
+    "holidayDuration",
+    "message"
+  ];
 
   const stream = new ReadableStream({
     start(controller) {
@@ -78,13 +113,20 @@ export const downloadHolidayBulkUploadErrorLogsCSV = (
 
       for (const item of data?.bulkRecordErrorLogs || []) {
         const date = item.holiday?.date;
+        const workLocation = item.holiday?.workLocations
+          ? item.holiday.workLocations.join(", ")
+          : "";
         const name = item.holiday?.name;
         const HolidayDuration = item.holiday?.holidayDuration;
         const errorMessage = item.errorMessage;
         const row =
-          [date, `"${name}"`, `"${HolidayDuration}"`, `"${errorMessage}"`].join(
-            ","
-          ) + "\n";
+          [
+            date,
+            `"${workLocation}"`,
+            `"${name}"`,
+            `"${HolidayDuration}"`,
+            `"${errorMessage}"`
+          ].join(",") + "\n";
 
         controller.enqueue(row);
       }

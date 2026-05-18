@@ -11,6 +11,6 @@ public interface WorkLocationRepository {
 
 	Page<WorkLocation> findWorkLocations(WorkLocationFilterDto workLocationFilterDto, Pageable pageable);
 
-	List<WorkLocation> findAllWorkLocations(WorkLocationFilterDto workLocationFilterDto);
+	List<WorkLocation> findAllWorkLocationsOrderByNameAsc();
 
 }
