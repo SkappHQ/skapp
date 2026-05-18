@@ -19,8 +19,10 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmPriorityDao;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,9 +78,21 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
 
+		if (requestDto.getCompanyId() != null) {
+			CrmCompany contactCompany = contact.getCompany();
+			if (contactCompany == null || !contactCompany.getId().equals(requestDto.getCompanyId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_COMPANY_MISMATCH);
+			}
+		}
+
 		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
 		if (owner == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
+		}
+
+		EmployeeRole ownerRole = owner.getEmployeeRole();
+		if (ownerRole == null || ownerRole.getCrmRole() == null || ownerRole.getCrmRole() == Role.CRM_NONE) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_INVALID_ROLE);
 		}
 
 		CrmDeal deal = new CrmDeal();

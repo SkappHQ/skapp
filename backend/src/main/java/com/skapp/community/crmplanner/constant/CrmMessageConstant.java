@@ -15,7 +15,9 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_PRIORITY_NOT_FOUND("crm.error.deal.priority-not-found"),
 	CRM_ERROR_DEAL_COMPANY_NOT_FOUND("crm.error.deal.company-not-found"),
 	CRM_ERROR_DEAL_CONTACT_NOT_FOUND("crm.error.deal.contact-not-found"),
+	CRM_ERROR_DEAL_CONTACT_COMPANY_MISMATCH("crm.error.deal.contact-company-mismatch"),
 	CRM_ERROR_DEAL_OWNER_NOT_FOUND("crm.error.deal.owner-not-found"),
+	CRM_ERROR_DEAL_OWNER_INVALID_ROLE("crm.error.deal.owner-invalid-role"),
 	CRM_ERROR_DEAL_NOT_FOUND("crm.error.deal.not-found");
 
 	private final String messageKey;
