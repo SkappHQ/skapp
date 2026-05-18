@@ -14,4 +14,6 @@ public interface CrmCompanyService {
 
 	PageDto getCompanyMetrics(String searchKeyword, Pageable pageable);
 
+	ResponseEntityDto deleteCompany(Long id);
+
 }
