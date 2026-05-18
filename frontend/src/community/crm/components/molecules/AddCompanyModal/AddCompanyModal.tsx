@@ -1,13 +1,13 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { ChangeEvent, useEffect } from "react";
+import React, { ChangeEvent } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import Form from "~community/common/components/molecules/Form/Form";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -15,6 +15,7 @@ import {
   useCheckCompanyNameExists,
   useCreateNewCompany
 } from "~community/crm/api/CompanyApi";
+import { CRM_ERROR_COMPANY_EXISTS } from "~community/crm/constants/companyConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompanyAddFormTypes,
@@ -65,7 +66,7 @@ const AddCompanyModal: React.FC = () => {
 
   const handleError = (messageKey: string) => {
     setSubmitting(false);
-    if (messageKey === "CRM_ERROR_COMPANY_EXISTS") {
+    if (messageKey === CRM_ERROR_COMPANY_EXISTS) {
       setFieldError("name", translateText(["validations", "companyExists"]));
     } else {
       setToastMessage({
@@ -125,36 +126,22 @@ const AddCompanyModal: React.FC = () => {
     setSubmitting
   } = formik;
 
-  const { data: companyNameExists, refetch: refetchCompanyNameExists } =
-    useCheckCompanyNameExists(values.name.trim());
-
-  useEffect(() => {
-    if (values.name && values.name.trim() !== "") {
-      const timeoutId = setTimeout(() => {
-        refetchCompanyNameExists().then((result) => {
-          if (result.data === true) {
-            setFieldError(
-              "name",
-              translateText(["validations", "companyExists"])
-            );
-          } else {
-            setFieldError("name", "");
-          }
-        });
-      }, 500);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [values.name, refetchCompanyNameExists]);
+  const debouncedCompanyName = useDebounce(values.name.trim(), 500);
+  const { data: companyNameExists } = useCheckCompanyNameExists(
+    debouncedCompanyName
+  );
+  const companyExistsError = companyNameExists
+    ? translateText(["validations", "companyExists"])
+    : "";
 
   return (
     <div>
-      <Form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <div className="flex flex-col h-full justify-between gap-[0.625rem]">
           <InputField
             inputName="name"
             value={values.name}
-            error={errors.name || ""}
+            error={errors.name || companyExistsError}
             label={translateText(["labels", "name"])}
             required
             placeHolder={translateText(["placeholders", "name"])}
@@ -235,6 +222,7 @@ const AddCompanyModal: React.FC = () => {
             <ButtonV2
               variant="primary"
               type="submit"
+              onClick={() => handleSubmit()}
               disabled={isSubmitting || isPending || companyNameExists === true}
               aria-label={translateText(["ariaLabels", "addCompany"])}
             >
@@ -242,7 +230,7 @@ const AddCompanyModal: React.FC = () => {
             </ButtonV2>
           </div>
         </div>
-      </Form>
+      </form>
     </div>
   );
 };

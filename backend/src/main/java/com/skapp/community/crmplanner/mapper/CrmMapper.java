@@ -6,7 +6,7 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface CrmCompanyMapper {
+public interface CrmMapper {
 
 	CrmCompany crmCompanyCreateDtoToCrmCompany(CrmCompanyCreateDto crmCompanyCreateDto);
 

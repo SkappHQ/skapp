@@ -29,6 +29,9 @@ public class CrmDealStage extends Auditable<String> {
 	@Column(name = "name", nullable = false)
 	private String name;
 
+	@Column(name = "description")
+	private String description;
+
 	@Column(name = "color", nullable = false)
 	private String color;
 
