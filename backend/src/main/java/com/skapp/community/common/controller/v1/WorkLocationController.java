@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -44,6 +45,16 @@ public class WorkLocationController {
 	public ResponseEntity<ResponseEntityDto> getAllWorkLocations() {
 
 		ResponseEntityDto response = workLocationService.getAllWorkLocations();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Check if work location name exists",
+			description = "Returns whether a work location name already exists.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_ADMIN')")
+	@GetMapping(value = "/name-exists", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> checkWorkLocationNameExists(@RequestParam String name) {
+
+		ResponseEntityDto response = workLocationService.checkWorkLocationNameExists(name);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
