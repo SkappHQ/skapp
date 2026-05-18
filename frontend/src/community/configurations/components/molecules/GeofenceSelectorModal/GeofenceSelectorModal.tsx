@@ -126,9 +126,9 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
       : null;
 
   const modalContent = (
-    <div className="flex flex-col gap-4">
+    <div className="absolute inset-0 flex flex-col gap-4 mt-[4.5rem] mb-[5rem] px-6 overflow-hidden">
       {/* Radius slider */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 flex-shrink-0">
         <div className="flex items-center justify-between">
           <span className="subtitle2">
             {translateText(["form.radiusLabel"])}
@@ -157,27 +157,29 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
       </div>
 
       {/* Map with search overlay */}
-      <GeofenceMapView
-        center={tempMarkerPosition}
-        radius={tempRadius}
-        height="20rem"
-        mapId="geofence-map"
-        onClick={handleMapClick}
-      >
-        {/* Search overlay — top-left corner of the map */}
-        <div className="absolute top-3 left-3 w-72 p-3">
-          <AddressSearch
-            onResult={handleSearchResult}
-            onError={handleSearchError}
-            searchPlaceholder={translateText(["form.addressSearchPlaceholder"])}
-          />
-          {tempGeofence?.address && (
-            <span className="body3 block mt-2 text-secondary-text">
-              {tempGeofence.address}
-            </span>
-          )}
-        </div>
-      </GeofenceMapView>
+      <div className="flex-1 min-h-0 relative mb-4">
+        <GeofenceMapView
+          center={tempMarkerPosition}
+          radius={tempRadius}
+          height="100%"
+          mapId="geofence-map"
+          onClick={handleMapClick}
+        >
+          {/* Search overlay — top-left corner of the map */}
+          <div className="absolute top-3 left-3 w-72 p-3">
+            <AddressSearch
+              onResult={handleSearchResult}
+              onError={handleSearchError}
+              searchPlaceholder={translateText(["form.addressSearchPlaceholder"])}
+            />
+            {tempGeofence?.address && (
+              <span className="body3 block mt-2 text-secondary-text">
+                {tempGeofence.address}
+              </span>
+            )}
+          </div>
+        </GeofenceMapView>
+      </div>
     </div>
   );
 
