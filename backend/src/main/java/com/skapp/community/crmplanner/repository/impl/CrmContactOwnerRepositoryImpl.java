@@ -81,13 +81,18 @@ public class CrmContactOwnerRepositoryImpl implements CrmContactOwnerRepository 
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String likePattern = "%" + searchKeyword.trim().toLowerCase(Locale.ROOT) + "%";
-			predicates.add(cb.or(cb.like(cb.lower(employee.<String>get("firstName")), likePattern),
-					cb.like(cb.lower(employee.<String>get("lastName")), likePattern),
-					cb.like(cb.lower(user.<String>get("email")), likePattern)));
+			String escaped = escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			String likePattern = "%" + escaped + "%";
+			predicates.add(cb.or(cb.like(cb.lower(employee.<String>get("firstName")), likePattern, '\\'),
+					cb.like(cb.lower(employee.<String>get("lastName")), likePattern, '\\'),
+					cb.like(cb.lower(user.<String>get("email")), likePattern, '\\')));
 		}
 
 		return predicates;
+	}
+
+	private String escapeLikePattern(String input) {
+		return input.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 	}
 
 	private Long getTotalCount(CriteriaBuilder cb, CrmContactOwnerFilterDto filterDto) {

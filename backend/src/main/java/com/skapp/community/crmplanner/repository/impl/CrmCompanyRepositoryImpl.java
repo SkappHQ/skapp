@@ -49,11 +49,15 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			predicates.add(cb.like(cb.lower(company.<String>get("name")),
-					"%" + searchKeyword.trim().toLowerCase(Locale.ROOT) + "%"));
+			String escaped = escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			predicates.add(cb.like(cb.lower(company.<String>get("name")), "%" + escaped + "%", '\\'));
 		}
 
 		return predicates;
+	}
+
+	private String escapeLikePattern(String input) {
+		return input.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 	}
 
 	private Long getTotalCount(CriteriaBuilder cb, CrmCompanyFilterDto filterDto) {
