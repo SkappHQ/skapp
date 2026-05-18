@@ -9,7 +9,6 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { appModes } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
-import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
 import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
@@ -52,7 +51,9 @@ const Configurations: NextPage = () => {
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);
-    replaceTabQueryParam(router.asPath, id);
+    router.replace(`${router.asPath.split("?")[0]}?tab=${id}`, undefined, {
+      shallow: true
+    });
   };
 
   return (
