@@ -83,23 +83,27 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 				emailDynamicFields.getWorkEmail());
 	}
 
-	@Async
+	@Async("getAsyncExecutor")
 	@Transactional(readOnly = true)
 	@Override
 	public void sendNewHolidayDeclarationEmail(Holiday holiday) {
-		PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
-		emailDynamicFields.setOrganizationName(getOrganizationName());
-		emailDynamicFields.setHolidayDate(holiday.getDate().toString());
-		emailDynamicFields.setHolidayName(holiday.getName());
+		try {
+			PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
+			emailDynamicFields.setOrganizationName(getOrganizationName());
+			emailDynamicFields.setHolidayDate(holiday.getDate().toString());
+			emailDynamicFields.setHolidayName(holiday.getName());
 
-		List<User> users = userDao.findAllByIsActiveTrue();
-		users.forEach(user -> {
-			emailDynamicFields
-				.setEmployeeOrManagerName(user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
-			emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED, emailDynamicFields,
-					user.getEmail());
-		});
-
+			List<User> users = userDao.findAllByIsActiveTrue();
+			users.forEach(user -> {
+				emailDynamicFields.setEmployeeOrManagerName(
+						user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
+				emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED, emailDynamicFields,
+						user.getEmail());
+			});
+		}
+		catch (Exception e) {
+			log.error("Error sending new holiday declaration email for holiday: {}", holiday.getName(), e);
+		}
 	}
 
 	@Override
