@@ -209,14 +209,13 @@ const WorkLocationForm = ({ id }: Props) => {
         pendingNavigationRef.current = url;
         setIsUnsavedModalOpen(true);
         router.events.emit("routeChangeError");
-        throw "Abort route change";
+        throw new Error("Abort route change");
       }
     };
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirtyRef.current) {
         e.preventDefault();
-        e.returnValue = "";
       }
     };
 

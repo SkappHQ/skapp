@@ -159,7 +159,7 @@ const WorkLocationEmployeeSelector = ({
             firstName: emp.firstName,
             lastName: emp.lastName ?? "",
             authPic: emp.authPic ?? ""
-          } as AllEmployeeDataType);
+          });
         }
       }
       return next;
