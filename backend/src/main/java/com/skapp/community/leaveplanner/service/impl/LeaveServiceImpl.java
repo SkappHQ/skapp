@@ -828,15 +828,13 @@ public class LeaveServiceImpl implements LeaveService {
 		leaveEntitlements.sort(Comparator.comparing(LeaveEntitlement::getValidTo));
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<Holiday> employeeHolidays = getHolidaysForEmployee(leaveRequest.getEmployee());
-		List<LocalDate> holidayDates = employeeHolidays.stream().map(Holiday::getDate).toList();
+		List<Holiday> holidayObjects = getHolidaysForEmployee(leaveRequest.getEmployee());
+		List<LocalDate> holidayDates = holidayObjects.stream().map(Holiday::getDate).toList();
 
-		validateLeaveWithHoliday(leaveRequest.getStartDate(), leaveRequest.getEndDate(), employeeHolidays,
-				leaveRequest);
+		validateLeaveWithHoliday(leaveRequest.getStartDate(), leaveRequest.getEndDate(), holidayObjects, leaveRequest);
 
 		float weekDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(leaveRequest.getStartDate(),
-				leaveRequest.getEndDate(), timeConfigs, employeeHolidays,
-				organizationService.getOrganizationTimeZone());
+				leaveRequest.getEndDate(), timeConfigs, holidayObjects, organizationService.getOrganizationTimeZone());
 
 		if (weekDays <= 0) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_APPLICABLE);
@@ -849,7 +847,7 @@ public class LeaveServiceImpl implements LeaveService {
 		}
 
 		float remainingTotalDays = getRemainingTotalHours(leaveEntitlements, leaveRequest, timeConfigs, holidayDates,
-				totalRequestedDayCount, employeeHolidays);
+				totalRequestedDayCount, holidayObjects);
 
 		boolean isValid = remainingTotalDays >= totalRequestedDayCount;
 
