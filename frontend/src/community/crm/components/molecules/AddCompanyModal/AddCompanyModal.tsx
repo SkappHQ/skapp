@@ -3,7 +3,6 @@ import { useFormik } from "formik";
 import React, { ChangeEvent, useEffect } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import Form from "~community/common/components/molecules/Form/Form";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import { characterLengths } from "~community/common/constants/stringConstants";
@@ -15,6 +14,7 @@ import {
   useCheckCompanyNameExists,
   useCreateNewCompany
 } from "~community/crm/api/CompanyApi";
+import { CRM_ERROR_COMPANY_EXISTS } from "~community/crm/constants/companyConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompanyAddFormTypes,
@@ -65,7 +65,7 @@ const AddCompanyModal: React.FC = () => {
 
   const handleError = (messageKey: string) => {
     setSubmitting(false);
-    if (messageKey === "CRM_ERROR_COMPANY_EXISTS") {
+    if (messageKey === CRM_ERROR_COMPANY_EXISTS) {
       setFieldError("name", translateText(["validations", "companyExists"]));
     } else {
       setToastMessage({
@@ -149,7 +149,7 @@ const AddCompanyModal: React.FC = () => {
 
   return (
     <div>
-      <Form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <div className="flex flex-col h-full justify-between gap-[0.625rem]">
           <InputField
             inputName="name"
@@ -235,6 +235,7 @@ const AddCompanyModal: React.FC = () => {
             <ButtonV2
               variant="primary"
               type="submit"
+              onClick={() => handleSubmit()}
               disabled={isSubmitting || isPending || companyNameExists === true}
               aria-label={translateText(["ariaLabels", "addCompany"])}
             >
@@ -242,7 +243,7 @@ const AddCompanyModal: React.FC = () => {
             </ButtonV2>
           </div>
         </div>
-      </Form>
+      </form>
     </div>
   );
 };

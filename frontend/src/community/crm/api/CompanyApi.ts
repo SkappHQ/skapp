@@ -25,8 +25,7 @@ export const useCreateNewCompany = (
       queryClient
         .invalidateQueries({
           queryKey: companyQueryKeys.GET_COMPANY_DATA
-        })
-        .catch(() => {});
+        });
       onSuccess();
     },
     onError: (error: any) => {
