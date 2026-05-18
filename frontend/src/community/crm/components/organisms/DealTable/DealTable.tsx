@@ -22,7 +22,8 @@ import {
   useGetDeals,
   useGetDealStages
 } from "~community/crm/api/crmDealApi";
-import { CrmDealSortOrder, CrmDealStageEnum } from "~community/crm/enums/common";
+import { CrmDealSortEnum, CrmDealStageEnum } from "~community/crm/enums/common";
+import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
 import { useAppStore } from "../../../../../store/store";
 
@@ -30,7 +31,7 @@ import { useAppStore } from "../../../../../store/store";
 // Constants
 // ---------------------------------------------------------------------------
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 const STAGE_FALLBACK_COLOR: Record<string, string> = {
   [CrmDealStageEnum.INITIAL]: "#3B82F6",
@@ -58,25 +59,25 @@ const DealTable: FC = () => {
 
   const isFetchingMoreRef = useRef(false);
 
-  const { data: dealsData, isFetching } = useGetDeals(
-    fetchPage,
-    PAGE_SIZE,
-    CrmDealSortOrder.NEWEST,
-    "CREATED_DATE",
-    searchKeyword || undefined
-  );
+  const { data: dealsData, isFetching } = useGetDeals({
+    page: fetchPage,
+    size: PAGE_SIZE,
+    sortKey: CrmDealSortEnum.STAGE_TYPE,
+    sortOrder: SortOrderTypes.ASC,
+    searchKeyword: searchKeyword || undefined
+  });
 
   // Accumulate pages as data arrives
   useEffect(() => {
     if (!dealsData?.items || isFetching) return;
-    if (fetchPage === 0) {
+    if (dealsData.currentPage === 0) {
       setAllDeals(dealsData.items);
     } else {
       setAllDeals((prev) => [...prev, ...dealsData.items]);
     }
-    setHasMore(fetchPage < (dealsData.totalPages ?? 1) - 1);
+    setHasMore(dealsData.currentPage < (dealsData.totalPages ?? 1) - 1);
     isFetchingMoreRef.current = false;
-  }, [dealsData, isFetching, fetchPage]);
+  }, [dealsData, isFetching]);
 
   // Triggered by skapp-ui Table's built-in scroll detection
   const handleLoadMore = useCallback(async () => {
@@ -268,7 +269,7 @@ const DealTable: FC = () => {
         }}
         className="max-w-[412px] w-full"
       />
-      <div className="w-full rounded-lg overflow-hidden shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full">
+      <div className="w-full h-fit max-h-[600px] flex rounded-lg overflow-auto shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full">
         <ListTable<DealRow>
           columnHeaders={columnHeaders}
           data={tableData}
@@ -288,6 +289,7 @@ const DealTable: FC = () => {
           showKebabMenu={false}
           showColumnVisibilityToggle={false}
           disableColumnDragging
+          infiniteScrollLoadingMessage={translateText(["infiniteScrollLoadingMessage"])}
         />
       </div>
     </div>

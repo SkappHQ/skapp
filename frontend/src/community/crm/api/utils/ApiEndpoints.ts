@@ -7,10 +7,10 @@ export const crmDealEndpoints = {
     const { page, size, sortOrder, sortKey, searchKeyword, stageId, priorityId } = params;
     const urlParams = new URLSearchParams({
       page: String(page),
-      size: String(size),
-      sortOrder,
-      sortKey
+      size: String(size)
     });
+    if (sortKey) urlParams.set("sortKey", sortKey);
+    if (sortOrder) urlParams.set("sortOrder", sortOrder);
     if (searchKeyword) urlParams.set("searchKeyword", searchKeyword);
     if (stageId !== undefined) urlParams.set("stageId", String(stageId));
     if (priorityId !== undefined) urlParams.set("priorityId", String(priorityId));

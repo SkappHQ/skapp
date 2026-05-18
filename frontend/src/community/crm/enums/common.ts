@@ -25,5 +25,6 @@ export enum CrmDealSortEnum {
   CREATED_DATE = "CREATED_DATE",
   NAME = "NAME",
   CLOSING_DATE = "CLOSING_DATE",
-  AMOUNT = "AMOUNT"
+  AMOUNT = "AMOUNT",
+  STAGE_TYPE = "STAGE_TYPE"
 }

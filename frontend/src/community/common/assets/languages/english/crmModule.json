@@ -45,7 +45,8 @@
       "addDealBtn": "Add deal +",
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
-      "overdueTasksTooltip": "{{count}} overdue task(s)"
+      "overdueTasksTooltip": "{{count}} overdue task(s)",
+      "infiniteScrollLoadingMessage": "Loading more deals..."
     },
     "addDealSidePanel": {
       "title": "Add deal",
