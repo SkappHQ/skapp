@@ -1,7 +1,6 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ValidationException;
-import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
@@ -26,12 +25,6 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 	private void validateName(String name) {
 		if (name == null || name.trim().isEmpty()) {
 			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_REQUIRED);
-		}
-
-		String trimmedName = name.trim();
-		if (trimmedName.length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_LENGTH_EXCEEDED,
-					new Object[] { CrmConstants.CONTACT_NAME_MAX_LENGTH });
 		}
 	}
 
