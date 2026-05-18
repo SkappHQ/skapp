@@ -131,7 +131,7 @@ export const CompanyTable: React.FC = () => {
 
       <Table
         columns={columns as TableColumn<any>[]}
-        data={companies as CrmCompanyMetricsType[]}
+        data={companies}
         emptyStateType={emptyStateType}
         isLoading={isLoading && companies.length === 0}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
