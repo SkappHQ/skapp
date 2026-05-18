@@ -3,8 +3,7 @@ import {
   CrmCompanyType,
   CrmContactType,
   CrmDealListItemType,
-  CrmDealStageType,
-  CrmPriorityType
+  CrmDealStageType
 } from "~community/crm/types/CommonTypes";
 
 export const MOCK_DEAL_STAGES: CrmDealStageType[] = [
@@ -52,112 +51,79 @@ export const MOCK_DEAL_STAGES: CrmDealStageType[] = [
   }
 ];
 
-export const MOCK_PRIORITIES: CrmPriorityType[] = [
-  { id: 1, name: "Low", orderIndex: 0 },
-  { id: 2, name: "Medium", orderIndex: 1 },
-  { id: 3, name: "High", orderIndex: 2 },
-  { id: 4, name: "Critical", orderIndex: 3 }
-];
 
 export const MOCK_COMPANIES: CrmCompanyType[] = [
   {
     id: 1,
     name: "Acme Corporation",
     industry: "Technology",
-    website: "https://acme.com",
-    address: "123 Main St, San Francisco, CA",
-    contactNumber: "+1-555-0100",
+    website: "https://www.acme.example",
+    address: "100 Market Street",
+    contactNumber: "+14155550100",
     isDeleted: false
   },
   {
     id: 2,
-    name: "Globex Inc.",
+    name: "Globex Ltd",
     industry: "Manufacturing",
-    website: "https://globex.com",
-    address: "456 Industrial Blvd, Chicago, IL",
-    contactNumber: "+1-555-0200",
+    website: "https://www.globex.example",
+    address: "42 Industrial Avenue",
+    contactNumber: "+442071230001",
     isDeleted: false
   },
   {
     id: 3,
     name: "Initech Solutions",
-    industry: "Finance",
-    website: "https://initech.com",
-    address: "789 Finance Ave, New York, NY",
-    contactNumber: "+1-555-0300",
+    industry: "Software",
+    website: "https://www.initech.example",
+    address: "8 Innovation Drive",
+    contactNumber: "+12125550125",
     isDeleted: false
   },
   {
     id: 4,
-    name: "Umbrella Corp",
-    industry: "Pharmaceutical",
-    website: "https://umbrella.com",
-    address: "321 Research Pkwy, Boston, MA",
-    contactNumber: "+1-555-0400",
+    name: "Umbrella Health",
+    industry: "Healthcare",
+    website: "https://www.umbrella.example",
+    address: "75 Wellness Road",
+    contactNumber: "+61355501010",
     isDeleted: false
   },
   {
     id: 5,
     name: "Stark Industries",
-    industry: "Defense",
-    website: "https://stark.com",
-    address: "1 Stark Tower, New York, NY",
-    contactNumber: "+1-555-0500",
+    industry: "Engineering",
+    website: "https://www.stark.example",
+    address: "200 Arc Reactor Way",
+    contactNumber: "+13105550177",
     isDeleted: false
   }
 ];
 
 export const MOCK_CONTACTS: CrmContactType[] = [
-  {
-    id: 1,
-    name: "Alice Johnson",
-    email: "alice@acme.com",
-    contactNumber: "+1-555-1001",
-    lastContactAt: "2026-05-01T10:00:00Z",
-    company: MOCK_COMPANIES[0],
-    owner: { employeeId: 1, firstName: "John", lastName: "Smith", authPic: null },
-    isDeleted: false
-  },
-  {
-    id: 2,
-    name: "Bob Martinez",
-    email: "bob@globex.com",
-    contactNumber: "+1-555-1002",
-    lastContactAt: "2026-04-28T09:00:00Z",
-    company: MOCK_COMPANIES[1],
-    owner: { employeeId: 2, firstName: "Sarah", lastName: "Lee", authPic: null },
-    isDeleted: false
-  },
-  {
-    id: 3,
-    name: "Carol White",
-    email: "carol@initech.com",
-    contactNumber: "+1-555-1003",
-    lastContactAt: "2026-05-05T14:00:00Z",
-    company: MOCK_COMPANIES[2],
-    owner: { employeeId: 1, firstName: "John", lastName: "Smith", authPic: null },
-    isDeleted: false
-  },
-  {
-    id: 4,
-    name: "David Brown",
-    email: "david@umbrella.com",
-    contactNumber: "+1-555-1004",
-    lastContactAt: "2026-05-10T11:00:00Z",
-    company: MOCK_COMPANIES[3],
-    owner: { employeeId: 3, firstName: "Mike", lastName: "Taylor", authPic: null },
-    isDeleted: false
-  },
-  {
-    id: 5,
-    name: "Eva Garcia",
-    email: "eva@stark.com",
-    contactNumber: "+1-555-1005",
-    lastContactAt: "2026-05-12T16:00:00Z",
-    company: MOCK_COMPANIES[4],
-    owner: { employeeId: 2, firstName: "Sarah", lastName: "Lee", authPic: null },
-    isDeleted: false
-  }
+  { id: 1,  name: "Alice Johnson",      email: "alice.johnson@example.com",      contactNumber: "+14155550111", lastContactAt: "2026-05-08T11:55:28Z", company: MOCK_COMPANIES[0], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 2,  name: "Brian Carter",       email: "brian.carter@example.com",       contactNumber: "+442071230002", lastContactAt: "2026-05-08T11:55:28Z", company: MOCK_COMPANIES[1], owner: { employeeId: 4, firstName: "CRM",   lastName: "Manager",        authPic: null }, isDeleted: false },
+  { id: 3,  name: "Caroline Smith",     email: "caroline.smith@example.com",     contactNumber: "+12125550126", lastContactAt: "2026-05-08T11:55:28Z", company: MOCK_COMPANIES[2], owner: { employeeId: 5, firstName: "CRM",   lastName: "Representative", authPic: null }, isDeleted: false },
+  { id: 4,  name: "Daniel Lee",         email: "daniel.lee@example.com",         contactNumber: "+61355501011", lastContactAt: "2026-05-08T11:55:28Z", company: MOCK_COMPANIES[3], owner: { employeeId: 4, firstName: "CRM",   lastName: "Manager",        authPic: null }, isDeleted: false },
+  { id: 5,  name: "Emma Wilson",        email: "emma.wilson@example.com",        contactNumber: "+13105550178", lastContactAt: "2026-05-08T11:55:28Z", company: MOCK_COMPANIES[4], owner: { employeeId: 5, firstName: "CRM",   lastName: "Representative", authPic: null }, isDeleted: false },
+  { id: 10, name: "John Doe",           email: "john.doe@example.com",           contactNumber: "+14155550199", lastContactAt: "2026-05-14T11:35:41Z", company: MOCK_COMPANIES[0], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 12, name: "Sarah Martinez",     email: "sarah.martinez@techcorp.com",    contactNumber: "+14155551001", lastContactAt: "2026-05-01T09:00:00Z", company: MOCK_COMPANIES[0], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 13, name: "Michael Chen",       email: "michael.chen@techcorp.com",      contactNumber: "+14155551002", lastContactAt: "2026-05-02T10:30:00Z", company: MOCK_COMPANIES[0], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 14, name: "Jennifer Wu",        email: "jennifer.wu@techcorp.com",       contactNumber: "+14155551003", lastContactAt: "2026-05-03T14:15:00Z", company: MOCK_COMPANIES[0], owner: { employeeId: 4, firstName: "CRM",   lastName: "Manager",        authPic: null }, isDeleted: false },
+  { id: 15, name: "David Park",         email: "david.park@techcorp.com",        contactNumber: "+14155551004", lastContactAt: "2026-05-04T11:20:00Z", company: MOCK_COMPANIES[0], owner: { employeeId: 4, firstName: "CRM",   lastName: "Manager",        authPic: null }, isDeleted: false },
+  { id: 16, name: "Lisa Thompson",      email: "lisa.thompson@techcorp.com",     contactNumber: "+14155551005", lastContactAt: "2026-05-05T16:45:00Z", company: MOCK_COMPANIES[0], owner: { employeeId: 5, firstName: "CRM",   lastName: "Representative", authPic: null }, isDeleted: false },
+  { id: 17, name: "Robert Kim",         email: "robert.kim@innovatech.com",      contactNumber: "+14155551006", lastContactAt: "2026-05-06T08:30:00Z", company: MOCK_COMPANIES[1], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 18, name: "Amanda Lee",         email: "amanda.lee@innovatech.com",      contactNumber: "+14155551007", lastContactAt: "2026-05-07T13:00:00Z", company: MOCK_COMPANIES[1], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 19, name: "James Wilson",       email: "james.wilson@innovatech.com",    contactNumber: "+14155551008", lastContactAt: "2026-05-08T15:30:00Z", company: MOCK_COMPANIES[1], owner: { employeeId: 4, firstName: "CRM",   lastName: "Manager",        authPic: null }, isDeleted: false },
+  { id: 20, name: "Maria Garcia",       email: "maria.garcia@innovatech.com",    contactNumber: "+14155551009", lastContactAt: "2026-05-09T09:45:00Z", company: MOCK_COMPANIES[1], owner: { employeeId: 4, firstName: "CRM",   lastName: "Manager",        authPic: null }, isDeleted: false },
+  { id: 22, name: "Emily Brown",        email: "emily.brown@globalsys.com",      contactNumber: "+14155551011", lastContactAt: "2026-05-11T10:00:00Z", company: MOCK_COMPANIES[2], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 23, name: "Daniel White",       email: "daniel.white@globalsys.com",     contactNumber: "+14155551012", lastContactAt: "2026-05-12T14:30:00Z", company: MOCK_COMPANIES[2], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 24, name: "Jessica Taylor",     email: "jessica.taylor@globalsys.com",   contactNumber: "+14155551013", lastContactAt: "2026-05-13T11:45:00Z", company: MOCK_COMPANIES[2], owner: { employeeId: 4, firstName: "CRM",   lastName: "Manager",        authPic: null }, isDeleted: false },
+  { id: 27, name: "Matthew Jackson",    email: "matthew.jackson@datasol.com",    contactNumber: "+14155551016", lastContactAt: "2026-04-16T13:45:00Z", company: MOCK_COMPANIES[3], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 28, name: "Melissa Harris",     email: "melissa.harris@datasol.com",     contactNumber: "+14155551017", lastContactAt: "2026-04-17T10:30:00Z", company: MOCK_COMPANIES[3], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 32, name: "Rachel Robinson",    email: "rachel.robinson@fintech.com",    contactNumber: "+14155551021", lastContactAt: "2026-04-21T09:30:00Z", company: MOCK_COMPANIES[4], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 33, name: "Kevin Clark",        email: "kevin.clark@fintech.com",        contactNumber: "+14155551022", lastContactAt: "2026-04-22T12:00:00Z", company: MOCK_COMPANIES[4], owner: { employeeId: 3, firstName: "CRM",   lastName: "Admin",          authPic: null }, isDeleted: false },
+  { id: 34, name: "Stephanie Rodriguez",email: "stephanie.rodriguez@fintech.com",contactNumber: "+14155551023", lastContactAt: "2026-04-23T15:30:00Z", company: MOCK_COMPANIES[4], owner: { employeeId: 4, firstName: "CRM",   lastName: "Manager",        authPic: null }, isDeleted: false }
 ];
 
 export const MOCK_DEALS: CrmDealListItemType[] = [

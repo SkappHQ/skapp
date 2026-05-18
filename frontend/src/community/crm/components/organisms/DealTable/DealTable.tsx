@@ -22,9 +22,8 @@ import {
   useGetDeals,
   useGetDealStages
 } from "~community/crm/api/crmDealApi";
-import { CrmDealSortEnum, CrmDealSortOrder, CrmDealStageEnum } from "~community/crm/enums/common";
+import { CrmDealSortOrder, CrmDealStageEnum } from "~community/crm/enums/common";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
-import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { useAppStore } from "../../../../../store/store";
 
 // ---------------------------------------------------------------------------
@@ -59,13 +58,13 @@ const DealTable: FC = () => {
 
   const isFetchingMoreRef = useRef(false);
 
-  const { data: dealsData, isFetching } = useGetDeals({
-    page: fetchPage,
-    size: PAGE_SIZE,
-    sortOrder: SortOrderTypes.DESC,
-    sortKey: CrmDealSortEnum.CREATED_DATE,
-    searchKeyword: searchKeyword || undefined
-  });
+  const { data: dealsData, isFetching } = useGetDeals(
+    fetchPage,
+    PAGE_SIZE,
+    CrmDealSortOrder.NEWEST,
+    "CREATED_DATE",
+    searchKeyword || undefined
+  );
 
   // Accumulate pages as data arrives
   useEffect(() => {
@@ -208,21 +207,29 @@ const DealTable: FC = () => {
       const ownerLast = rest.join(" ");
       return {
         id: String(deal.id),
-        dealName: deal.name ?? "",
-        value: deal.amount
-          ? `$${Number(deal.amount).toLocaleString()}`
-          : "\u2014",
+        dealName: <span className="body2">{deal.name ?? ""}</span>,
+        value: (
+          <span className="body2">
+            {deal.amount
+              ? `$${Number(deal.amount).toLocaleString()}`
+              : "\u2014"}
+          </span>
+        ),
         stage: (
           <div className="inline-flex items-center gap-2">
             <div
               className="size-2 rounded-full shrink-0"
               style={{ backgroundColor: stageColor }}
             />
-            <span>{deal.stageName}</span>
+            <span className="body2">{deal.stageName}</span>
           </div>
         ),
-        companyName: deal.companyName ?? "\u2014",
-        contactName: deal.contactName ?? "\u2014",
+        companyName: (
+          <span className="body2">{deal.companyName ?? "\u2014"}</span>
+        ),
+        contactName: (
+          <span className="body2">{deal.contactName ?? "\u2014"}</span>
+        ),
         dealOwner: (
           <AvatarChip
             firstName={ownerFirst}
@@ -261,7 +268,7 @@ const DealTable: FC = () => {
         }}
         className="max-w-[412px] w-full"
       />
-      <div className="w-full rounded-lg overflow-hidden shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full [&>div]:!h-auto [&_td[role='status']]:!p-0 [&_td[role='status']>div>div]:!h-0">
+      <div className="w-full rounded-lg overflow-hidden shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full">
         <ListTable<DealRow>
           columnHeaders={columnHeaders}
           data={tableData}
