@@ -43,7 +43,7 @@ public class PeopleNotificationServiceImpl implements PeopleNotificationService 
 	@NonNull
 	private final EmployeeRoleDao employeeRoleDao;
 
-	@Async("getAsyncExecutor")
+	@Async
 	@Transactional(readOnly = true)
 	@Override
 	public void sendNewHolidayDeclarationNotification(Holiday holiday) {

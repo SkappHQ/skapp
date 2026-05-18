@@ -83,7 +83,7 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 				emailDynamicFields.getWorkEmail());
 	}
 
-	@Async("getAsyncExecutor")
+	@Async
 	@Transactional(readOnly = true)
 	@Override
 	public void sendNewHolidayDeclarationEmail(Holiday holiday) {
