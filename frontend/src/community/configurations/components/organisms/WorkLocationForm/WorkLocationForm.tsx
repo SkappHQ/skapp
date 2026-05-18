@@ -1,25 +1,33 @@
-import { useFormik } from "formik";
 import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
+import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef } from "react";
 
+import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
+import { AxiosError } from "axios";
+
 import { useAuth } from "~community/auth/providers/AuthProvider";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import ROUTES from "~community/common/constants/routes";
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
-import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
+import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
 import {
+  useCheckWorkLocationNameExists,
   useCreateWorkLocation,
   useGetWorkLocationById,
   useUpdateWorkLocation
 } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import WorkLocationEmployeeSelector from "~community/configurations/components/molecules/WorkLocationEmployeeSelector/WorkLocationEmployeeSelector";
-import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
+import {
+  COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS,
+  WORK_LOCATION_SEARCH_DEBOUNCE_MS
+} from "~community/configurations/constants/workLocationConstants";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
-import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
+import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 interface Props {
   id?: number;
@@ -116,27 +124,31 @@ const WorkLocationForm = ({ id }: Props) => {
 
   const isPending = isCreating || isUpdating;
 
+  const getInitialValues = (): WorkLocationFormValues => {
+    if (isEditMode && workLocation) {
+      const geofence =
+        canSeeGeofence && workLocation.geofence
+          ? {
+              latitude: Number.parseFloat(workLocation.geofence.latitude),
+              longitude: Number.parseFloat(workLocation.geofence.longitude),
+              radiusMeters: workLocation.geofence.radiusMeters,
+              address: workLocation.address ?? ""
+            }
+          : null;
+
+      return {
+        name: workLocation.name,
+        isAllEmployees: workLocation.isAllEmployees ?? false,
+        employeeIds: workLocation.employees?.map((e) => e.employeeId) ?? [],
+        geofence
+      };
+    }
+
+    return { name: "", isAllEmployees: false, employeeIds: [], geofence: null };
+  };
+
   const formik = useFormik<WorkLocationFormValues>({
-    initialValues:
-      isEditMode && workLocation
-        ? {
-            name: workLocation.name,
-            isAllEmployees: workLocation.isAllEmployees ?? false,
-            employeeIds:
-              workLocation.employees?.map((e) => e.employeeId) ?? [],
-            geofence:
-              canSeeGeofence && workLocation.geofence
-                ? {
-                    latitude: Number.parseFloat(workLocation.geofence.latitude),
-                    longitude: Number.parseFloat(
-                      workLocation.geofence.longitude
-                    ),
-                    radiusMeters: workLocation.geofence.radiusMeters,
-                    address: workLocation.address ?? ""
-                  }
-                : null
-          }
-        : { name: "", isAllEmployees: false, employeeIds: [], geofence: null },
+    initialValues: getInitialValues(),
     enableReinitialize: isEditMode,
     validationSchema,
     onSubmit: (values) => {
@@ -181,6 +193,26 @@ const WorkLocationForm = ({ id }: Props) => {
       }
     }
   });
+
+  const debouncedName = useDebounce(
+    formik.values.name.trim(),
+    WORK_LOCATION_SEARCH_DEBOUNCE_MS
+  );
+
+  const { data: nameCheckResult, error: nameCheckError } =
+    useCheckWorkLocationNameExists(
+      debouncedName,
+      debouncedName.length > 0 &&
+        !(isEditMode && debouncedName === workLocation?.name)
+    );
+
+  const isNameDuplicate =
+    (nameCheckResult?.isExists === true ||
+      (nameCheckError instanceof AxiosError &&
+        nameCheckError.response?.data?.results?.[0]?.messageKey ===
+          COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS)) &&
+    !(isEditMode && debouncedName === workLocation?.name);
+  const isNameCheckPending = formik.values.name.trim() !== debouncedName;
 
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);
@@ -289,6 +321,13 @@ const WorkLocationForm = ({ id }: Props) => {
     );
   }
 
+  const nameFieldHelperText =
+    formik.touched.name && formik.errors.name
+      ? formik.errors.name
+      : isNameDuplicate
+        ? translateText(["validation.nameAlreadyExists"])
+        : "";
+
   return (
     <>
       <form
@@ -302,14 +341,13 @@ const WorkLocationForm = ({ id }: Props) => {
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            state={
-              formik.touched.name && formik.errors.name ? "error" : "default"
-            }
-            helperText={formik.touched.name ? formik.errors.name : ""}
+            state={nameFieldHelperText ? "error" : "default"}
+            helperText={nameFieldHelperText}
             name="name"
             maxLength={50}
             className="w-full"
             disabled={isLoading}
+            required
           />
         </div>
 
@@ -325,11 +363,8 @@ const WorkLocationForm = ({ id }: Props) => {
             <ButtonV2
               variant="tertiary"
               type="button"
-              onClick={() => {
-                allowRouteChangeRef.current = true;
-                navigateBack();
-              }}
-              disabled={isPending}
+              onClick={() => formik.resetForm()}
+              disabled={isPending || !formik.dirty}
             >
               {translateText(["form.cancelButton"])}
             </ButtonV2>
@@ -340,7 +375,9 @@ const WorkLocationForm = ({ id }: Props) => {
             disabled={
               isFormDisabled ||
               !formik.isValid ||
-              !formik.dirty
+              !formik.dirty ||
+              isNameDuplicate ||
+              isNameCheckPending
             }
           >
             {isEditMode

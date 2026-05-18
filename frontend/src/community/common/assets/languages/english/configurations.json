@@ -190,7 +190,8 @@
     "validation": {
       "nameRequired": "Please enter work location name",
       "nameMaxLength": "Work location name should be less than 50 characters",
-      "nameInvalidChars": "Work location name should only contain letters, numbers, and spaces"
+      "nameInvalidChars": "Work location name should only contain letters, numbers, and spaces",
+      "nameAlreadyExists": "Work location already exists"
     },
     "toasts": {
       "createSuccess": {
