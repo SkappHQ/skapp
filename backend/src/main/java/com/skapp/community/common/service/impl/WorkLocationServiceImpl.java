@@ -182,7 +182,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		List<WorkLocation> workLocations = workLocationDao.findAll();
 
 		List<WorkLocationSummaryResponseDto> workLocationResponseDtos = workLocations.stream()
-			.sorted(Comparator.comparing(WorkLocation::getName))
+			.sorted(Comparator.comparing(WorkLocation::getName, String.CASE_INSENSITIVE_ORDER))
 			.map(this::mapWorkLocationToSummaryResponseDto)
 			.toList();
 
