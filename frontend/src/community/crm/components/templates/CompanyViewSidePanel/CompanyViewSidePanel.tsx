@@ -12,6 +12,7 @@ import CompanyDetailHeader, {
   CompanyDetailHeaderActions
 } from "../../molecules/CompanyDetailHeader/CompanyDetailHeader";
 import CompanyMetricCards from "../../molecules/CompanyMetricCards/CompanyMetricCards";
+import CompanyTasks from "../../molecules/CompanyTasks/CompanyTasks";
 
 const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
   {
@@ -43,6 +44,30 @@ const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
   }
 ];
 
+const getCompanyContacts = (company: CrmCompanyMetricsType) => [
+  // TODO: Wire up contacts for the selected company
+  {
+    id: "1",
+    name: "John Doe",
+    email: "johndoe@email.com",
+    contactNo: "1234567890",
+    company: "",
+    revenue: "",
+    dealsClosed: 0,
+    openTasks: 0
+  },
+  {
+    id: "2",
+    name: "Jane Doe",
+    email: "janedoe@email.com",
+    contactNo: "1234567890",
+    company: "",
+    revenue: "",
+    dealsClosed: 0,
+    openTasks: 0
+  }
+];
+
 interface CompanyViewSidePanelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -64,7 +89,7 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
       }}
     >
       <div
-        className="[&_aside]:!w-[62.8125rem]"
+        className="[&_aside]:!min-w-[68vw] [&_aside]:!max-w-[62.813rem]"
         style={{ pointerEvents: "auto" }}
       >
         <SidePanel
@@ -80,14 +105,44 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
           width="lg"
           onClose={onClose}
         >
-          <div className="flex flex-col w-full p-[0.5rem]">
+          <div className="flex flex-col w-full">
             {selectedCompany && (
               <CompanyMetricCards
                 metrics={getCompanyMetrics(selectedCompany)}
               />
             )}
-            <CompanyDeals />
-            <CompanyContacts contacts={[]} />
+            {selectedCompany && <CompanyDeals />}
+            {selectedCompany && (
+              <CompanyContacts contacts={getCompanyContacts(selectedCompany)} />
+            )}
+            <CompanyTasks
+              tasks={[
+                {
+                  id: "1",
+                  title: "Call supervisor",
+                  isCompleted: false,
+                  type: "call",
+                  dueDate: "",
+                  isOverdue: false,
+                  priority: "high"
+                },
+                {
+                  id: "2",
+                  title: "Send out proposal",
+                  isCompleted: false,
+                  type: "email",
+                  dueDate: "",
+                  isOverdue: false,
+                  priority: "low"
+                }
+              ]}
+              onToggleComplete={function (id: string): void {
+                throw new Error("Function not implemented.");
+              }}
+              onAddTask={function (): void {
+                throw new Error("Function not implemented.");
+              }}
+            />
           </div>
         </SidePanel>
       </div>
