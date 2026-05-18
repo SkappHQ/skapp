@@ -9,6 +9,7 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
@@ -32,7 +33,10 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		boolean exists = checkCompanyExists(name);
 		log.info("checkCompanyNameExists: execution ended, exists: {}", exists);
 
-		return new ResponseEntityDto(false, exists);
+		CrmCompanyNameExistsResponseDto responseDto = new CrmCompanyNameExistsResponseDto();
+		responseDto.setExists(exists);
+
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
@@ -40,6 +44,11 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) {
 		log.info("createCompany: execution started");
 
+		if (crmCompany.getName() == null || crmCompany.getName().trim().isEmpty()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_VALIDATION_NAME);
+		}
+
+		crmCompany.setName(crmCompany.getName().trim());
 		if (checkCompanyExists(crmCompany.getName())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
 		}

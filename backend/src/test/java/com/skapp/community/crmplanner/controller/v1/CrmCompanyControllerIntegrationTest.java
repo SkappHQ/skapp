@@ -149,13 +149,13 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Create company with blank name - Returns Unprocessable Entity")
+	@DisplayName("Create company with blank name - Returns Bad Request")
 	void createCompany_BlankName_ReturnsUnprocessableEntity() throws Exception {
 		CrmCompanyCreateDto dto = new CrmCompanyCreateDto();
 		dto.setName("");
 
 		performPostRequest(dto).andDo(print())
-			.andExpect(status().isUnprocessableContent())
+			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
 	}
 
@@ -167,7 +167,7 @@ class CrmCompanyControllerIntegrationTest {
 		performGetExistsRequest("NonExistent").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH).value(false));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['exists']").value(false));
 	}
 
 	@Test
@@ -178,7 +178,7 @@ class CrmCompanyControllerIntegrationTest {
 		performGetExistsRequest("Acme Corp").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH).value(true));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['exists']").value(true));
 	}
 
 }

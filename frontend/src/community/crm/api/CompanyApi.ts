@@ -41,8 +41,8 @@ export const useCheckCompanyNameExists = (name: string) => {
       const response = await authFetch.get(
         companyEndpoints.CHECK_COMPANY_NAME_EXISTS(name)
       );
-      return response?.data?.results[0] as boolean;
+      return response?.data?.results?.[0]?.exists;
     },
-    enabled: false
+    enabled: name.length > 0
   });
 };

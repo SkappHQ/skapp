@@ -1,12 +1,13 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { ChangeEvent, useEffect } from "react";
+import React, { ChangeEvent } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputField from "~community/common/components/molecules/InputField/InputField";
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -125,27 +126,13 @@ const AddCompanyModal: React.FC = () => {
     setSubmitting
   } = formik;
 
-  const { data: companyNameExists, refetch: refetchCompanyNameExists } =
-    useCheckCompanyNameExists(values.name.trim());
-
-  useEffect(() => {
-    if (values.name && values.name.trim() !== "") {
-      const timeoutId = setTimeout(() => {
-        refetchCompanyNameExists().then((result) => {
-          if (result.data === true) {
-            setFieldError(
-              "name",
-              translateText(["validations", "companyExists"])
-            );
-          } else {
-            setFieldError("name", "");
-          }
-        });
-      }, 500);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [values.name, refetchCompanyNameExists]);
+  const debouncedCompanyName = useDebounce(values.name.trim(), 500);
+  const { data: companyNameExists } = useCheckCompanyNameExists(
+    debouncedCompanyName
+  );
+  const companyExistsError = companyNameExists
+    ? translateText(["validations", "companyExists"])
+    : "";
 
   return (
     <div>
@@ -154,7 +141,7 @@ const AddCompanyModal: React.FC = () => {
           <InputField
             inputName="name"
             value={values.name}
-            error={errors.name || ""}
+            error={errors.name || companyExistsError}
             label={translateText(["labels", "name"])}
             required
             placeHolder={translateText(["placeholders", "name"])}
