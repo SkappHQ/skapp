@@ -31,7 +31,8 @@ export const workLocationQueryKeys = {
   ],
   GET_WORK_LOCATION_BY_ID: (id: number) => ["work-location", id],
   CHECK_WORK_LOCATION_NAME_EXISTS: (name: string, excludeId?: number) => [
-    "work-location-name-exists",
+    "work-locations",
+    "name-exists",
     name,
     excludeId
   ]

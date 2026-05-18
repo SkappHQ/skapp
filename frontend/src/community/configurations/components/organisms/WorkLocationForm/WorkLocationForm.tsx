@@ -1,16 +1,17 @@
-import { useFormik } from "formik";
 import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
+import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import { useAuth } from "~community/auth/providers/AuthProvider";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import ROUTES from "~community/common/constants/routes";
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
-import useDebounce from "~community/common/hooks/useDebounce";
-import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
+import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
 import {
   useCheckWorkLocationNameExists,
   useCreateWorkLocation,
@@ -20,9 +21,8 @@ import {
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import WorkLocationEmployeeSelector from "~community/configurations/components/molecules/WorkLocationEmployeeSelector/WorkLocationEmployeeSelector";
 import { WORK_LOCATION_SEARCH_DEBOUNCE_MS } from "~community/configurations/constants/workLocationConstants";
-import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
-import { buildWorkLocationValidationSchema } from "~community/common/utils/validationUtils";
+import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 interface Props {
   id?: number;
@@ -115,8 +115,7 @@ const WorkLocationForm = ({ id }: Props) => {
         ? {
             name: workLocation.name,
             isAllEmployees: workLocation.isAllEmployees ?? false,
-            employeeIds:
-              workLocation.employees?.map((e) => e.employeeId) ?? [],
+            employeeIds: workLocation.employees?.map((e) => e.employeeId) ?? [],
             geofence:
               canSeeGeofence && workLocation.geofence
                 ? {
@@ -175,12 +174,17 @@ const WorkLocationForm = ({ id }: Props) => {
     }
   });
 
-  const debouncedName = useDebounce(formik.values.name.trim(), WORK_LOCATION_SEARCH_DEBOUNCE_MS);
+  const debouncedName = useDebounce(
+    formik.values.name.trim(),
+    WORK_LOCATION_SEARCH_DEBOUNCE_MS
+  );
 
-  const { isError: isNameDuplicate } = useCheckWorkLocationNameExists(
+  const { data: nameCheckResult } = useCheckWorkLocationNameExists(
     debouncedName,
     isEditMode ? id : undefined
   );
+
+  const isNameDuplicate = nameCheckResult?.exists === true;
 
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);

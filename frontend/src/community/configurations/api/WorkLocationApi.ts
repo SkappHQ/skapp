@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import {
   useInfiniteQuery,
   useMutation,
@@ -7,7 +8,12 @@ import {
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { workLocationEndpoints } from "~community/configurations/api/utils/ApiEndpoints";
-import { WorkLocationRequestPayload } from "~community/configurations/types/WorkLocationTypes";
+import {
+  WorkLocationNameAvailabilityResponse,
+  WorkLocationRequestPayload
+} from "~community/configurations/types/WorkLocationTypes";
+
+import { COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS } from "~community/configurations/constants/workLocationConstants";
 
 import { workLocationQueryKeys } from "./utils/QueryKeys";
 
@@ -156,11 +162,22 @@ export const useCheckWorkLocationNameExists = (
       name,
       excludeId
     ),
-    queryFn: async () => {
-      const response = await authFetch.get(
-        workLocationEndpoints.CHECK_WORK_LOCATION_NAME_EXISTS(name, excludeId)
-      );
-      return response.data;
+    queryFn: async (): Promise<WorkLocationNameAvailabilityResponse> => {
+      try {
+        const response = await authFetch.get(
+          workLocationEndpoints.CHECK_WORK_LOCATION_NAME_EXISTS(name, excludeId)
+        );
+        return response.data.results[0] as WorkLocationNameAvailabilityResponse;
+      } catch (error) {
+        if (
+          error instanceof AxiosError &&
+          error.response?.data?.results?.[0]?.messageKey ===
+            COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS
+        ) {
+          return { exists: true };
+        }
+        throw error;
+      }
     },
     enabled: name.trim().length > 0,
     retry: false

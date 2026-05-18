@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.payload.response.WorkLocationDetailResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationEmployeeResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationGeofenceResponseDto;
+import com.skapp.community.common.payload.response.WorkLocationNameAvailabilityResponseDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -288,6 +289,10 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto checkWorkLocationNameExists(String name, Long excludeId) {
 		log.info("checkWorkLocationNameExists: execution started");
 
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_REQUIRED);
+		}
+
 		boolean exists;
 		if (excludeId != null) {
 			exists = workLocationDao.existsByNameIgnoreCaseAndWorkLocationIdNot(name.trim(), excludeId);
@@ -296,14 +301,9 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 			exists = workLocationDao.existsByNameIgnoreCase(name.trim());
 		}
 
-		if (exists) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
-		}
-
 		log.info("checkWorkLocationNameExists: execution ended");
 
-		return new ResponseEntityDto(
-				messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_WORK_LOCATION_NAME_AVAILABLE), false);
+		return new ResponseEntityDto(false, new WorkLocationNameAvailabilityResponseDto(exists));
 	}
 
 }
