@@ -243,30 +243,25 @@ const LeaveRequests: FC = () => {
         </section>
         <section
           aria-label={translateAria(["myLeaveRequests", "typeFilterSection"])}
-          className="flex flex-col gap-2"
         >
-          <span className="subtitle3">
-            {translateText(["myLeaveRequests", "filterButtonType"])}
-          </span>
-          <div className="max-h-44 overflow-y-auto">
-            <SelectableItemList
-              items={leaveTypeOptions.map(
-                ({ id, name }: { id: string; name: string }) => ({
-                  label: name,
-                  value: id
-                })
-              )}
-              selectedValues={filter.type}
-              onChipClick={(id) => {
-                setFilter((prev) => ({
-                  ...prev,
-                  type: prev.type.includes(id)
-                    ? prev.type.filter((item) => item !== id)
-                    : [...prev.type, id]
-                }));
-              }}
-            />
-          </div>
+          <SelectableItemList
+            title={translateText(["myLeaveRequests", "filterButtonType"])}
+            items={leaveTypeOptions.map(
+              ({ id, name }: { id: string; name: string }) => ({
+                label: name,
+                value: id
+              })
+            )}
+            selectedValues={filter.type}
+            onChipClick={(id) => {
+              setFilter((prev) => ({
+                ...prev,
+                type: prev.type.includes(id)
+                  ? prev.type.filter((item) => item !== id)
+                  : [...prev.type, id]
+              }));
+            }}
+          />
         </section>
       </div>
     </FilterButton>

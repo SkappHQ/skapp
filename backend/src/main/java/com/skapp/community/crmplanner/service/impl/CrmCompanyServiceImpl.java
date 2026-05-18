@@ -5,13 +5,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.mapper.CrmCompanyMapper;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
@@ -30,7 +31,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyRepository crmCompanyRepository;
 
-	private final CrmCompanyMapper crmCompanyMapper;
+	private final CrmMapper crmCompanyMapper;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -39,19 +40,30 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		boolean exists = checkCompanyExists(name);
 		log.info("checkCompanyNameExists: execution ended, exists: {}", exists);
 
-		return new ResponseEntityDto(false, exists);
+		CrmCompanyNameExistsResponseDto responseDto = new CrmCompanyNameExistsResponseDto();
+		responseDto.setExists(exists);
+
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
 	@Transactional
-	public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) throws ValidationException {
-		if (checkCompanyExists(crmCompany.getName())) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
-		}
+	public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) {
 		log.info("createCompany: execution started");
+
+		if (crmCompany.getName() == null || crmCompany.getName().trim().isEmpty()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_VALIDATION_NAME);
+		}
+
+		crmCompany.setName(crmCompany.getName().trim());
+		if (checkCompanyExists(crmCompany.getName())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
+		}
+
 		CrmCompany newCompany = crmCompanyMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
 		CrmCompany result = crmCompanyDao.save(newCompany);
 		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
+
 		log.info("createCompany: execution ended successfully");
 
 		return new ResponseEntityDto(false, responseDto);

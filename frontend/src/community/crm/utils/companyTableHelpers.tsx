@@ -3,18 +3,20 @@ import { ReactNode } from "react";
 
 import { CrmCompanyMetricsType } from "../types/CommonTypes";
 
-export const formatCurrency = (value: any): ReactNode => {
+type NumericValue = string | number | null;
+
+export const formatCurrency = (value: number | null): ReactNode => {
   if (value == null || value === 0) return "-";
   return <div className="flex items-baseline tabular-nums">{`$${value}`}</div>;
 };
 
-export const formatPhoneNumber = (value: any): ReactNode => {
+export const formatPhoneNumber = (value: NumericValue): ReactNode => {
   if (value == null) return "-";
   return <div className="flex items-baseline">{`+${value}`}</div>;
 };
 
 export const formatTasks = (
-  value: string | number | null,
+  value: NumericValue,
   row: CrmCompanyMetricsType
 ): ReactNode => {
   if (value == null || value === 0) return "-";
@@ -32,7 +34,7 @@ export const formatTasks = (
 };
 
 export const formatAccountValue = (
-  value: string | number | null,
+  value: NumericValue,
   row: CrmCompanyMetricsType
 ): ReactNode => {
   if (value == null || value === 0) return "-";

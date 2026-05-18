@@ -7,7 +7,10 @@ import {
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { workLocationEndpoints } from "~community/configurations/api/utils/ApiEndpoints";
-import { WorkLocationRequestPayload } from "~community/configurations/types/WorkLocationTypes";
+import {
+  WorkLocationNameAvailabilityResponse,
+  WorkLocationRequestPayload
+} from "~community/configurations/types/WorkLocationTypes";
 
 import { workLocationQueryKeys } from "./utils/QueryKeys";
 
@@ -144,5 +147,22 @@ export const useDeleteWorkLocation = (
       onSuccess();
     },
     onError
+  });
+};
+
+export const useCheckWorkLocationNameExists = (
+  name: string,
+  enabled: boolean = true
+) => {
+  return useQuery({
+    queryKey: workLocationQueryKeys.CHECK_WORK_LOCATION_NAME_EXISTS(name),
+    queryFn: async (): Promise<WorkLocationNameAvailabilityResponse> => {
+      const response = await authFetch.get(
+        workLocationEndpoints.CHECK_WORK_LOCATION_NAME_EXISTS(name)
+      );
+      return response.data.results[0] as WorkLocationNameAvailabilityResponse;
+    },
+    enabled: enabled && name.trim().length > 0,
+    retry: false
   });
 };

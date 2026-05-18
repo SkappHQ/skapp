@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 
 import {
   CrmCompanyCreatePayload,
@@ -74,11 +75,10 @@ export const useCreateNewCompany = (
       queryClient
         .invalidateQueries({
           queryKey: companyQueryKeys.GET_COMPANY_DATA
-        })
-        .catch(() => {});
+        });
       onSuccess();
     },
-    onError: (error: any) => {
+    onError: (error: ErrorResponse) => {
       onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
     }
   });
@@ -91,8 +91,8 @@ export const useCheckCompanyNameExists = (name: string) => {
       const response = await authFetch.get(
         companyEndpoints.CHECK_COMPANY_NAME_EXISTS(name)
       );
-      return response?.data?.results[0] as boolean;
+      return response?.data?.results?.[0]?.exists;
     },
-    enabled: false
+    enabled: name.length > 0
   });
 };

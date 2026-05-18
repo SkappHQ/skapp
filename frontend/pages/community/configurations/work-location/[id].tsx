@@ -19,7 +19,7 @@ const WorkLocationEditPage: NextPage = () => {
     if (isFormDirty) {
       setIsUnsavedModalOpen(true);
     } else {
-      router.replace(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
+      router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
     }
   };
 
