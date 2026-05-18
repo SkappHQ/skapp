@@ -17,6 +17,7 @@ import com.skapp.community.peopleplanner.service.PeopleNotificationService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class PeopleNotificationServiceImpl implements PeopleNotificationService 
 	@NonNull
 	private final EmployeeRoleDao employeeRoleDao;
 
+	@Async
 	@Override
 	public void sendNewHolidayDeclarationNotification(Holiday holiday) {
 		PeopleEmailDynamicFields peopleEmailDynamicFields = new PeopleEmailDynamicFields();

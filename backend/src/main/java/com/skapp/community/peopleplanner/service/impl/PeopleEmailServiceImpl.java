@@ -18,6 +18,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -81,6 +82,7 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 				emailDynamicFields.getWorkEmail());
 	}
 
+	@Async
 	@Override
 	public void sendNewHolidayDeclarationEmail(Holiday holiday) {
 		PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
