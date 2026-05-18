@@ -17,6 +17,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -82,21 +83,18 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 	}
 
 	@Override
-	public List<Holiday> findAllActiveHolidaysByWorkLocationId(Long workLocationId) {
+	public List<Holiday> findAllActiveHolidaysByWorkLocationId(@NotNull Long workLocationId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
 		Root<Holiday> root = criteriaQuery.from(Holiday.class);
-		root.fetch(Holiday_.workLocations, JoinType.LEFT);
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
 
-		if (workLocationId != null) {
-			Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
-			predicates.add(criteriaBuilder.or(
-					criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
-					criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
-		}
+		Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
+		predicates.add(criteriaBuilder.or(
+				criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
+				criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.distinct(true);

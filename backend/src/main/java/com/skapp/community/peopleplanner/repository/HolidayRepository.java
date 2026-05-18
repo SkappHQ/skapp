@@ -2,6 +2,7 @@ package com.skapp.community.peopleplanner.repository;
 
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.payload.request.HolidayFilterDto;
+import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,6 +15,6 @@ public interface HolidayRepository {
 
 	List<Holiday> findAllActiveHolidaysByDateWithWorkLocations(LocalDate date);
 
-	List<Holiday> findAllActiveHolidaysByWorkLocationId(Long workLocationId);
+	List<Holiday> findAllActiveHolidaysByWorkLocationId(@NonNull Long workLocationId);
 
 }
