@@ -62,6 +62,7 @@ export const CompanyTable: React.FC = () => {
     if (!company) return;
 
     setSelectedCompany({
+      id: company.id,
       name: company.name,
       industry: company.industry,
       website: company.website ?? "",

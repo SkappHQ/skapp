@@ -96,3 +96,27 @@ export const useCheckCompanyNameExists = (name: string) => {
     enabled: name.length > 0
   });
 };
+
+export const useDeleteCompany = (
+  onSuccess: () => void,
+  onError: (messageKey: string) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (companyId: number) => {
+      const response = await authFetch.delete(
+        companyEndpoints.DELETE_COMPANY(companyId)
+      );
+      return response.data.results[0];
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKeys.GET_COMPANY_DATA
+      });
+      onSuccess();
+    },
+    onError: (error: ErrorResponse) => {
+      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
+    }
+  });
+};

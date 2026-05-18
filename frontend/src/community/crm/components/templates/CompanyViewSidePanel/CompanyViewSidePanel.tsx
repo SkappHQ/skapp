@@ -84,7 +84,7 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 1500,
+        zIndex: 1200,
         pointerEvents: "none"
       }}
     >
@@ -101,7 +101,7 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
               )}
             </div>
           }
-          headerActions={<CompanyDetailHeaderActions />}
+          headerActions={selectedCompany && <CompanyDetailHeaderActions company={selectedCompany} />}
           width="lg"
           onClose={onClose}
         >

@@ -1,33 +1,46 @@
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { useDeleteCompany } from "~community/crm/api/CompanyApi";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const DeleteCompanyConfirmationModal = () => {
-  const { selectedCompany, setCompanyModalType } = useCrmStore();
+  const translateText = useTranslator("crmModule", "companies");
 
-  const handleDelete = () => {
-    // TODO: call delete API
-    setCompanyModalType(CrmModalTypes.NONE);
+  const { selectedCompany, setIsCompanyModalOpen, setIsCompanyDetailDrawerOpen } = useCrmStore();
+  const { mutate: deleteCompany } = useDeleteCompany(
+    () => {
+      handleClose();
+      setIsCompanyDetailDrawerOpen(false);
+    },
+    (messageKey) => {
+      console.error("Error deleting company:", messageKey);
+    }
+  );
+
+  const handleClose = () => {
+    setIsCompanyModalOpen(false);
   };
 
-  const handleCancel = () => {
-    setCompanyModalType(CrmModalTypes.NONE);
+  const handleDelete = () => {
+    if (selectedCompany) {
+      deleteCompany(selectedCompany.id);
+    }
   };
 
   return (
     <UserPromptModal
-      description={`Are you sure you want to delete '${selectedCompany?.name ?? ""}'? This will permanently remove this company along with all associated deals and tasks. This action cannot be undone.`}
+      description={translateText(["deleteCompanyModal", "description"], { companyName: selectedCompany?.name ?? "this company" })}
       primaryBtn={{
-        label: "Delete",
+        label: translateText(["deleteCompanyModal", "buttons", "confirmDelete"]),
         onClick: handleDelete,
         endIcon: IconName.DELETE_BUTTON_ICON,
         buttonStyle: ButtonStyle.ERROR
       }}
       secondaryBtn={{
-        label: "Cancel",
-        onClick: handleCancel,
+        label: translateText(["deleteCompanyModal", "buttons", "cancelDelete"]),
+        onClick: handleClose,
         endIcon: IconName.CLOSE_ICON
       }}
     />

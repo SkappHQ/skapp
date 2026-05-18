@@ -6,28 +6,31 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import AddCompanyModal from "../../molecules/AddCompanyModal/AddCompanyModal";
+import DeleteCompanyConfirmationModal from "../../molecules/DeleteCompanyConfirmationModal/DeleteCompanyConfirmationModal";
 
 const CompanyPopupController = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const {
-    isAddCompanyModalOpen,
+    isCompanyModalOpen,
     crmModalType,
-    setIsAddCompanyModalOpen
+    setIsCompanyModalOpen,
   } = useCrmStore((store) => ({
-    isAddCompanyModalOpen: store.isAddCompanyModalOpen,
+    isCompanyModalOpen: store.isCompanyModalOpen,
     crmModalType: store.companyModalType,
-    setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen
   }));
 
   const handleCloseModal = (): void => {
-    setIsAddCompanyModalOpen(false);
+    setIsCompanyModalOpen(false);
   };
 
   const getModalTitle = (modalType: CrmModalTypes) => {
     switch (modalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
         return translateText(["addCompanyModal", "title"]);
+      case CrmModalTypes.DELETE_COMPANY_CONFIRMATION:
+        return translateText(["deleteCompanyModal", "title"]);
       default:
         return "";
     }
@@ -37,6 +40,8 @@ const CompanyPopupController = () => {
     switch (crmModalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
         return <AddCompanyModal />;
+      case CrmModalTypes.DELETE_COMPANY_CONFIRMATION:
+        return <DeleteCompanyConfirmationModal />;
       default:
         return null;
     }
@@ -44,7 +49,7 @@ const CompanyPopupController = () => {
 
   return (
     <SmallModal
-      isOpen={isAddCompanyModalOpen}
+      isOpen={isCompanyModalOpen}
       onClose={handleCloseModal}
       modalHeader={getModalTitle(crmModalType)}
       content={getModalContent()}

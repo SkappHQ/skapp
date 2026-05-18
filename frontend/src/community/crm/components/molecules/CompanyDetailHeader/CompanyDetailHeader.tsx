@@ -87,8 +87,8 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
 
 export default CompanyDetailHeader;
 
-export const CompanyDetailHeaderActions: React.FC = () => {
-  const { setCompanyModalType } = useCrmStore();
+export const CompanyDetailHeaderActions: React.FC<{ company: CrmCompanyMetricsType }> = ({ company }) => {
+  const { setCompanyModalType, setIsCompanyModalOpen, setSelectedCompany } = useCrmStore();
 
   return (
     <KebabMenu
@@ -107,8 +107,11 @@ export const CompanyDetailHeaderActions: React.FC = () => {
           ),
           text: "Delete company",
           color: "#7F1D1D",
-          onClickHandler: () =>
-            setCompanyModalType(CrmModalTypes.DELETE_COMPANY_CONFIRMATION)
+          onClickHandler: () => {
+            setSelectedCompany(company);
+            setCompanyModalType(CrmModalTypes.DELETE_COMPANY_CONFIRMATION);
+            setIsCompanyModalOpen(true);
+          }
         }
       ]}
       menuAlign={{

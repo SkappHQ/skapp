@@ -5,7 +5,7 @@ import { CrmCompanyMetricsType } from "../types/CommonTypes";
 
 type NumericValue = string | number | null;
 
-export const formatCurrency = (value: number | null): ReactNode => {
+export const formatCurrency = (value: NumericValue): ReactNode => {
   if (value == null || value === 0) return "-";
   return <div className="flex items-baseline tabular-nums">{`$${value}`}</div>;
 };

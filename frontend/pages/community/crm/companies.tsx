@@ -12,15 +12,15 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
 
-  const { setIsAddCompanyModalOpen, setCompanyModalType } = useCrmStore(
+  const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(
     (store) => ({
-      setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen,
+      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
       setCompanyModalType: store.setCompanyModalType
     })
   );
 
   const onPrimaryButtonClick = () => {
-    setIsAddCompanyModalOpen(true);
+    setIsCompanyModalOpen(true);
     setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL);
   };
 

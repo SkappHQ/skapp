@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
 import { CrmStore } from "../types/StoreTypes";
-import CrmCompanyDetailPanelSlice from "./slices/CompanyDetailPanelSlice";
+import CrmCompanyDetailPanelSlice from "./slices/companyDetailPanelSlice";
 import CrmCompanyModalSlice from "./slices/crmCompanyModalSlice";
 
 export const useCrmStore = create<

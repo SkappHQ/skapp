@@ -40,6 +40,18 @@
         "cancelAddCompany": "Cancel Add Company"
       }
     },
+    "deleteCompanyModal": {
+      "title": "Are you sure?",
+      "description": "Are you sure you want to delete {{companyName}}? This will permanently remove this company along with all associated deals and tasks. This action cannot be undone.",
+      "buttons": {
+        "confirmDelete": "Delete",
+        "cancelDelete": "Cancel"
+      },
+      "ariaLabels": {
+        "confirmDelete": "Confirm Delete Company",
+        "cancelDelete": "Cancel Delete Company"
+      }
+    },
     "table": {
       "clearButtonAriaLabel": "Clear search",
       "search": "Search company",
