@@ -9,6 +9,7 @@ import { useState } from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
 import { usePeopleStore } from "~community/people/store/store";
@@ -97,6 +98,11 @@ const ReassignMemberRow = ({ teamMember, setTeamId }: Props) => {
         value={
           selectedTeam?.teamId.toString() ?? translateText(["notAssigned"])
         }
+        customStyles={{
+          menuProps: {
+            sx: { zIndex: ZIndexEnums.NEWMODAL }
+          }
+        }}
         accessibility={{
           label: `${teamMember?.firstName} ${teamMember?.lastName}`
         }}

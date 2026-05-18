@@ -31,7 +31,11 @@ export enum Modules {
   LEAVE = "LEAVE",
   ATTENDANCE = "ATTENDANCE",
   PEOPLE = "PEOPLE",
-  ESIGNATURE = "ESIGNATURE",
+  ESIGN = "ESIGN",
+  OKR = "OKR",
+  INVOICE = "INVOICE",
+  PM = "PM",
+  CRM = "CRM",
   NONE = ""
 }
 

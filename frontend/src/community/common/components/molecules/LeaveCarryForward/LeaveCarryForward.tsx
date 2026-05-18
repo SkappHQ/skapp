@@ -1,4 +1,5 @@
 import { Box, Typography } from "@mui/material";
+import { Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import SyncIcon from "~community/common/assets/Icons/SyncIcon";
@@ -8,6 +9,7 @@ import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveCarryForwardModalTypes } from "~community/leave/types/LeaveCarryForwardTypes";
 
 const LeaveCarryForward = () => {
+  const theme: Theme = useTheme();
   const translateTexts = useTranslator("leaveModule", "leaveCarryForward");
 
   const {
@@ -69,7 +71,7 @@ const LeaveCarryForward = () => {
           variant={"secondary"}
           isFullWidth={false}
           onClick={handleLeaveSync}
-          icon={<SyncIcon />}
+          icon={<SyncIcon fill={theme.palette.primary.dark} />}
           iconPosition="end"
         >
           {translateTexts(["leaveCarryForwardSectionBtn"]) ?? ""}

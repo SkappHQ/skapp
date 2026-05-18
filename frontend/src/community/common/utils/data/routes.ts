@@ -3,6 +3,7 @@ import {
   AdminTypes,
   EmployeeTypes,
   ManagerTypes,
+  RepresentativeTypes,
   SenderTypes
 } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -199,6 +200,69 @@ const routes = [
   },
   {
     id: "4",
+    name: "CRM",
+    url: ROUTES.CRM.BASE,
+    icon: IconName.HAND_SHAKE_ICON,
+    hasSubTree: true,
+    requiredAuthLevel: [
+      AdminTypes.SUPER_ADMIN,
+      AdminTypes.CRM_ADMIN,
+      ManagerTypes.CRM_SALES_MANAGER,
+      RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+    ],
+    subTree: [
+      {
+        id: "4A",
+        name: "Contacts",
+        url: ROUTES.CRM.CONTACTS,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.CRM_ADMIN,
+          ManagerTypes.CRM_SALES_MANAGER,
+          RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+        ]
+      },
+      {
+        id: "4B",
+        name: "Companies",
+        url: ROUTES.CRM.COMPANIES,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.CRM_ADMIN,
+          ManagerTypes.CRM_SALES_MANAGER,
+          RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+        ]
+      },
+      {
+        id: "4C",
+        name: "Deals",
+        url: ROUTES.CRM.DEALS,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.CRM_ADMIN,
+          ManagerTypes.CRM_SALES_MANAGER,
+          RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+        ]
+      },
+      {
+        id: "4D",
+        name: "Tasks",
+        url: ROUTES.CRM.TASKS,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.CRM_ADMIN,
+          ManagerTypes.CRM_SALES_MANAGER,
+          RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+        ]
+      }
+    ]
+  },
+  {
+    id: "5",
     name: "Sign",
     url: ROUTES.SIGN.BASE,
     icon: IconName.DOCUMENTS_ICON,
@@ -211,7 +275,7 @@ const routes = [
     ],
     subTree: [
       {
-        id: "4A",
+        id: "5A",
         name: "Inbox",
         url: ROUTES.SIGN.INBOX,
         hasSubTree: false,
@@ -223,7 +287,7 @@ const routes = [
         ]
       },
       {
-        id: "4B",
+        id: "5B",
         name: "Sent",
         url: ROUTES.SIGN.SENT,
         hasSubTree: false,
@@ -234,7 +298,7 @@ const routes = [
         ]
       },
       {
-        id: "4C",
+        id: "5C",
         name: "Templates",
         url: ROUTES.SIGN.TEMPLATE,
         hasSubTree: false,
@@ -245,7 +309,7 @@ const routes = [
         ]
       },
       {
-        id: "4D",
+        id: "5D",
         name: "Contacts",
         url: ROUTES.SIGN.CONTACTS,
         hasSubTree: false,
@@ -258,7 +322,7 @@ const routes = [
     ]
   },
   {
-    id: "5",
+    id: "6",
     name: "Projects",
     url: ROUTES.PROJECTS.BASE,
     icon: IconName.PROJECTS_ICON,
@@ -278,7 +342,7 @@ const routes = [
     ],
     subTree: [
       {
-        id: "5A",
+        id: "6A",
         name: "All Projects",
         url: ROUTES.PROJECTS.BASE,
         hasSubTree: false,
@@ -296,7 +360,7 @@ const routes = [
         ]
       },
       {
-        id: "5B",
+        id: "6B",
         name: "Guest Users",
         url: ROUTES.PROJECTS.GUESTS,
         hasSubTree: false,
@@ -305,7 +369,7 @@ const routes = [
     ]
   },
   {
-    id: "6",
+    id: "7",
     name: "Invoices",
     url: ROUTES.INVOICE.BASE,
     icon: IconName.INVOICE_ICON,
@@ -313,7 +377,7 @@ const routes = [
     requiredAuthLevel: [AdminTypes.SUPER_ADMIN, ManagerTypes.INVOICE_MANAGER],
     subTree: [
       {
-        id: "6A",
+        id: "7A",
         name: "All Invoices",
         url: ROUTES.INVOICE.ALL_INVOICES,
         hasSubTree: false,
@@ -323,7 +387,7 @@ const routes = [
         ]
       },
       {
-        id: "6B",
+        id: "7B",
         name: "Customers",
         url: ROUTES.INVOICE.CUSTOMERS.BASE,
         hasSubTree: false,
@@ -335,7 +399,7 @@ const routes = [
     ]
   },
   {
-    id: "7",
+    id: "8",
     name: "Configurations",
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
@@ -350,7 +414,7 @@ const routes = [
     ]
   },
   {
-    id: "8",
+    id: "9",
     name: "Settings",
     url: ROUTES.SETTINGS.BASE,
     icon: IconName.SETTINGS_ICON,

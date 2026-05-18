@@ -71,13 +71,13 @@ const CareerProgressDetailsSection = ({
   };
 
   const tableHeaders = [
-    "",
-    translateText(["employmentType"]),
-    translateText(["jobFamily"]),
-    translateText(["jobTitle"]),
-    translateText(["startDate"]),
-    translateText(["endDate"]),
-    translateText(["tenure"])
+    { label: "", ariaLabel: translateAria(["currentPositionColumn"]) },
+    { label: translateText(["employmentType"]) },
+    { label: translateText(["jobFamily"]) },
+    { label: translateText(["jobTitle"]) },
+    { label: translateText(["startDate"]) },
+    { label: translateText(["endDate"]) },
+    { label: translateText(["tenure"]) }
   ];
 
   const onSubmit = (values: L3CareerProgressionDetailsType) => {

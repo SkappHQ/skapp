@@ -1,6 +1,6 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useState } from "react";
 
-import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
 import AddCalendar from "~community/people/components/molecules/HolidayModals/AddCalendar/AddCalendar";
@@ -15,6 +15,7 @@ import {
   holidayBulkUploadResponse,
   holidayModalTypes
 } from "~community/people/types/HolidayTypes";
+import { hasCustomWorkLocations } from "~community/people/utils/holidayUtils/commonUtils";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
@@ -82,19 +83,29 @@ const HolidayModalController: FC = () => {
 
   const handleCloseModal = (): void => {
     if (
-      holidayModalType === holidayModalTypes.HOLIDAY_EXIT_CONFIRMATION ||
       holidayModalType === holidayModalTypes.HOLIDAY_BULK_DELETE ||
       holidayModalType === holidayModalTypes.HOLIDAY_INDIVIDUAL_DELETE ||
       holidayModalType === holidayModalTypes.HOLIDAY_SELECTED_DELETE
     ) {
+      setIsHolidayModalOpen(false);
+      setHolidayModalType(holidayModalTypes.NONE);
       return;
     }
+
+    if (holidayModalType === holidayModalTypes.HOLIDAY_EXIT_CONFIRMATION) {
+      return;
+    }
+
+    const hasCustomLocations = hasCustomWorkLocations(
+      newHolidayDetails.workLocations
+    );
 
     const isEditingHoliday =
       newCalenderDetails?.acceptedFile?.length !== 0 ||
       newHolidayDetails.holidayDate ||
       newHolidayDetails.duration ||
-      newHolidayDetails.holidayReason;
+      newHolidayDetails.holidayReason ||
+      hasCustomLocations;
 
     const isExitConfirmationNeeded =
       holidayModalType === holidayModalTypes.UPLOAD_HOLIDAY_BULK ||
@@ -169,9 +180,7 @@ const HolidayModalController: FC = () => {
 
   return (
     <SmallModal
-      isOpen={
-        isHolidayModalOpen && holidayModalType !== holidayModalTypes.NONE
-      }
+      isOpen={isHolidayModalOpen && holidayModalType !== holidayModalTypes.NONE}
       onClose={handleCloseModal}
       modalHeader={getModalTitle()}
       content={modalContent()}

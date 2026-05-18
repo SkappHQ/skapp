@@ -5,6 +5,7 @@ import {
   AdminTypes,
   ManagerTypes as AuthManagerType,
   EmployeeTypes,
+  RepresentativeTypes,
   SenderTypes
 } from "~community/common/types/AuthTypes";
 import { ManagerTypes } from "~community/common/types/CommonTypes";
@@ -55,6 +56,11 @@ const useSessionData = () => {
 
   const isInvoiceModuleEnabled = useMemo(
     () => user?.roles?.includes(AuthManagerType.INVOICE_MANAGER),
+    [user?.roles]
+  );
+
+  const isPmModuleEnabled = useMemo(
+    () => user?.roles?.includes(EmployeeTypes.PM_EMPLOYEE),
     [user?.roles]
   );
 
@@ -111,8 +117,33 @@ const useSessionData = () => {
     [user?.roles]
   );
 
+  const isPmAdmin = useMemo(
+    () => user?.roles?.includes(AdminTypes.PM_ADMIN),
+    [user?.roles]
+  );
+
   const isInvoiceAdmin = useMemo(
     () => user?.roles?.includes(AdminTypes.INVOICE_ADMIN),
+    [user?.roles]
+  );
+
+  const isCrmAdmin = useMemo(
+    () => user?.roles?.includes(AdminTypes.CRM_ADMIN),
+    [user?.roles]
+  );
+
+  const isCrmSalesManager = useMemo(
+    () => user?.roles?.includes(AuthManagerType.CRM_SALES_MANAGER),
+    [user?.roles]
+  );
+
+  const isCrmSalesRepresentative = useMemo(
+    () => user?.roles?.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE),
+    [user?.roles]
+  );
+
+  const isCrmModuleEnabled = useMemo(
+    () => isCrmSalesRepresentative,
     [user?.roles]
   );
 
@@ -123,6 +154,7 @@ const useSessionData = () => {
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isInvoiceModuleEnabled,
+    isPmModuleEnabled,
     employeeDetails,
     isSuperAdmin,
     isPeopleAdmin,
@@ -139,7 +171,12 @@ const useSessionData = () => {
     isAttendanceEmployee,
     isAttendanceManager,
     isESignSender,
+    isPmAdmin,
     isInvoiceAdmin,
+    isCrmAdmin,
+    isCrmSalesManager,
+    isCrmSalesRepresentative,
+    isCrmModuleEnabled,
     tenantID
   };
 };

@@ -1,6 +1,7 @@
 package com.skapp.community.common.controller.v1;
 
 import com.skapp.community.common.payload.request.SignInRequestDto;
+import com.skapp.TestSkappApplication;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,24 +12,23 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import static com.skapp.support.TestConstants.RESULTS_0_PATH;
+import static com.skapp.support.TestConstants.STATUS_PATH;
+import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(classes = TestSkappApplication.class)
 @AutoConfigureMockMvc
+@Transactional
 @RequiredArgsConstructor
 @DisplayName("Auth Controller Integration Tests")
 class AuthControllerIntegrationTest {
-
-	private static final String STATUS_PATH = "['status']";
-
-	private static final String RESULTS_0_PATH = "['results'][0]";
-
-	private static final String STATUS_SUCCESSFUL = "successful";
 
 	private final JsonMapper objectMapper;
 

@@ -38,8 +38,11 @@ import com.skapp.community.peopleplanner.type.EmployeeSort;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
+import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.model.WorkLocation_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -61,7 +64,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -1209,70 +1215,90 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
-	public PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Employee employee,
-			Employee currentEmployee) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Object[]> criteriaQuery = criteriaBuilder.createQuery(Object[].class);
-		Root<EmployeeManager> root = criteriaQuery.from(EmployeeManager.class);
+	public PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Long employeeId,
+			Long currentEmployeeId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(criteriaBuilder.equal(root.get(EmployeeManager_.employee).get(Employee_.employeeId),
-				employee.getEmployeeId()));
-		predicates.add(criteriaBuilder.equal(root.get(EmployeeManager_.manager).get(Employee_.employeeId),
-				currentEmployee.getEmployeeId()));
+		CriteriaQuery<Tuple> managerQuery = cb.createTupleQuery();
+		Root<EmployeeManager> root = managerQuery.from(EmployeeManager.class);
 
-		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		Expression<Boolean> isPrimary = cb.equal(root.get(EmployeeManager_.managerType), ManagerType.PRIMARY);
+		Expression<Boolean> isSecondary = cb.equal(root.get(EmployeeManager_.managerType), ManagerType.SECONDARY);
 
-		Expression<Boolean> isPrimaryManager = criteriaBuilder.equal(root.get(EmployeeManager_.managerType),
-				ManagerType.PRIMARY);
-		Expression<Boolean> isSecondaryManager = criteriaBuilder.equal(root.get(EmployeeManager_.managerType),
-				ManagerType.SECONDARY);
+		managerQuery
+			.select(cb.tuple(cb.selectCase().when(isPrimary, true).otherwise(false),
+					cb.selectCase().when(isSecondary, true).otherwise(false)))
+			.where(cb.equal(root.get(EmployeeManager_.employee).get(Employee_.employeeId), employeeId),
+					cb.equal(root.get(EmployeeManager_.manager).get(Employee_.employeeId), currentEmployeeId));
 
-		criteriaQuery.multiselect(criteriaBuilder.selectCase().when(isPrimaryManager, true).otherwise(false),
-				criteriaBuilder.selectCase().when(isSecondaryManager, true).otherwise(false),
-				criteriaBuilder.literal(false));
+		TypedQuery<Tuple> managerTypedQuery = entityManager.createQuery(managerQuery);
+		Tuple managerResult = managerTypedQuery.getResultList().stream().findFirst().orElse(null);
 
-		TypedQuery<Object[]> query = entityManager.createQuery(criteriaQuery);
-		Object[] result = query.getResultList().stream().findFirst().orElse(new Object[] { false, false, false });
+		boolean isPrimaryManager = false;
+		boolean isSecondaryManager = false;
 
-		return new PrimarySecondaryOrTeamSupervisorResponseDto((Boolean) result[0], (Boolean) result[1],
-				(Boolean) result[2]);
+		if (managerResult != null) {
+			isPrimaryManager = Boolean.TRUE.equals(managerResult.get(0, Boolean.class));
+			isSecondaryManager = Boolean.TRUE.equals(managerResult.get(1, Boolean.class));
+		}
+
+		CriteriaQuery<Long> teamQuery = cb.createQuery(Long.class);
+		Root<EmployeeTeam> supervisorRoot = teamQuery.from(EmployeeTeam.class);
+		Join<EmployeeTeam, Team> teamJoin = supervisorRoot.join(EmployeeTeam_.team);
+
+		Subquery<Long> memberTeamsSubquery = teamQuery.subquery(Long.class);
+		Root<EmployeeTeam> memberRoot = memberTeamsSubquery.from(EmployeeTeam.class);
+		memberTeamsSubquery.select(memberRoot.get(EmployeeTeam_.team).get(Team_.teamId))
+			.where(cb.equal(memberRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), employeeId));
+
+		teamQuery.select(cb.literal(1L))
+			.where(cb.equal(supervisorRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), currentEmployeeId),
+					cb.isTrue(supervisorRoot.get(EmployeeTeam_.isSupervisor)),
+					teamJoin.get(Team_.teamId).in(memberTeamsSubquery));
+
+		TypedQuery<Long> teamTypedQuery = entityManager.createQuery(teamQuery);
+		boolean isTeamSupervisor = !teamTypedQuery.setMaxResults(1).getResultList().isEmpty();
+
+		return new PrimarySecondaryOrTeamSupervisorResponseDto(isPrimaryManager, isSecondaryManager, isTeamSupervisor);
 	}
 
 	@Override
-	public PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Employee employee) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Object[]> criteriaQuery = criteriaBuilder.createQuery(Object[].class);
-		Root<EmployeeManager> root = criteriaQuery.from(EmployeeManager.class);
+	public PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Long employeeId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		Predicate managerPredicate = criteriaBuilder.equal(root.get(EmployeeManager_.manager).get(Employee_.employeeId),
-				employee.getEmployeeId());
+		CriteriaQuery<Tuple> managerQuery = cb.createTupleQuery();
+		Root<EmployeeManager> root = managerQuery.from(EmployeeManager.class);
 
-		criteriaQuery.where(managerPredicate);
+		Expression<Boolean> isPrimary = cb.equal(root.get(EmployeeManager_.managerType), ManagerType.PRIMARY);
+		Expression<Boolean> isSecondary = cb.equal(root.get(EmployeeManager_.managerType), ManagerType.SECONDARY);
 
-		Expression<Boolean> isPrimaryManager = criteriaBuilder.equal(root.get(EmployeeManager_.managerType),
-				ManagerType.PRIMARY);
+		managerQuery
+			.select(cb.tuple(cb.selectCase().when(isPrimary, true).otherwise(false),
+					cb.selectCase().when(isSecondary, true).otherwise(false)))
+			.where(cb.equal(root.get(EmployeeManager_.manager).get(Employee_.employeeId), employeeId));
 
-		Expression<Boolean> isSecondaryManager = criteriaBuilder.equal(root.get(EmployeeManager_.managerType),
-				ManagerType.SECONDARY);
+		TypedQuery<Tuple> managerTypedQuery = entityManager.createQuery(managerQuery);
+		Tuple managerResult = managerTypedQuery.getResultList().stream().findFirst().orElse(null);
 
-		criteriaQuery.multiselect(
-				criteriaBuilder.function("MAX", Boolean.class,
-						criteriaBuilder.selectCase().when(isPrimaryManager, true).otherwise(false)),
-				criteriaBuilder.function("MAX", Boolean.class,
-						criteriaBuilder.selectCase().when(isSecondaryManager, true).otherwise(false)),
-				criteriaBuilder.literal(false));
+		boolean isPrimaryManager = false;
+		boolean isSecondaryManager = false;
 
-		TypedQuery<Object[]> query = entityManager.createQuery(criteriaQuery);
-
-		try {
-			Object[] result = query.getSingleResult();
-			return new PrimarySecondaryOrTeamSupervisorResponseDto((Boolean) result[0], (Boolean) result[1],
-					(Boolean) result[2]);
+		if (managerResult != null) {
+			isPrimaryManager = Boolean.TRUE.equals(managerResult.get(0, Boolean.class));
+			isSecondaryManager = Boolean.TRUE.equals(managerResult.get(1, Boolean.class));
 		}
-		catch (NoResultException e) {
-			return new PrimarySecondaryOrTeamSupervisorResponseDto(false, false, false);
-		}
+
+		CriteriaQuery<Long> teamQuery = cb.createQuery(Long.class);
+		Root<EmployeeTeam> teamRoot = teamQuery.from(EmployeeTeam.class);
+
+		teamQuery.select(cb.literal(1L))
+			.where(cb.equal(teamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), employeeId),
+					cb.isTrue(teamRoot.get(EmployeeTeam_.isSupervisor)));
+
+		TypedQuery<Long> teamTypedQuery = entityManager.createQuery(teamQuery);
+		boolean isTeamSupervisor = !teamTypedQuery.setMaxResults(1).getResultList().isEmpty();
+
+		return new PrimarySecondaryOrTeamSupervisorResponseDto(isPrimaryManager, isSecondaryManager, isTeamSupervisor);
 	}
 
 	@Override
@@ -1288,17 +1314,17 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 		Join<Employee, User> userJoin = root.join(Employee_.user);
 
-		List<Predicate> predicates = buildPredicates(employeeFilterDto, criteriaBuilder, root, userJoin);
+		List<Predicate> predicates = buildPredicates(employeeFilterDto, criteriaBuilder, criteriaQuery, root, userJoin);
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 
 		List<Order> orderList = new ArrayList<>();
 
-		if (employeeFilterDto.getSearchKeyword() != null && !employeeFilterDto.getSearchKeyword().isEmpty()) {
+		String searchKeyword = employeeFilterDto.getSearchKeyword();
+		if (searchKeyword != null && !searchKeyword.isEmpty()) {
+			String searchPattern = getSearchString(searchKeyword);
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
-				.when(criteriaBuilder.like(root.get(Employee_.FIRST_NAME),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 1)
-				.when(criteriaBuilder.like(root.get(Employee_.LAST_NAME),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 2)
+				.when(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.FIRST_NAME)), searchPattern), 1)
+				.when(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.LAST_NAME)), searchPattern), 2)
 				.otherwise(3));
 			orderList.add(sortingOrder);
 		}
@@ -1312,37 +1338,52 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			orderList.add(criteriaBuilder.desc(root.get(Employee_.LAST_NAME)));
 		}
 
-		criteriaQuery.distinct(true);
 		criteriaQuery.orderBy(orderList);
 
-		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
-		Root<Employee> countRoot = countQuery.from(Employee.class);
-		Join<Employee, User> countUserJoin = countRoot.join(Employee_.user);
-
-		List<Predicate> countPredicates = buildPredicates(employeeFilterDto, criteriaBuilder, countRoot, countUserJoin);
-		countQuery.where(countPredicates.toArray(new Predicate[0]));
-		countQuery.select(criteriaBuilder.countDistinct(countRoot));
-
-		Long totalRows = entityManager.createQuery(countQuery).getSingleResult();
-
 		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
-		query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-		query.setMaxResults(pageable.getPageSize());
+		long offset = pageable.getOffset();
+		int pageSize = pageable.getPageSize();
+		query.setFirstResult((int) offset);
+		query.setMaxResults(pageSize);
 
-		return new PageImpl<>(query.getResultList(), pageable, totalRows);
+		List<Employee> resultList = query.getResultList();
+
+		long totalRows;
+		if (!resultList.isEmpty() && resultList.size() < pageSize) {
+			totalRows = offset + resultList.size();
+		}
+		else {
+			CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+			Root<Employee> countRoot = countQuery.from(Employee.class);
+			Join<Employee, User> countUserJoin = countRoot.join(Employee_.user);
+
+			List<Predicate> countPredicates = buildPredicates(employeeFilterDto, criteriaBuilder, countQuery, countRoot,
+					countUserJoin);
+			countQuery.where(countPredicates.toArray(new Predicate[0]));
+			countQuery.select(criteriaBuilder.count(countRoot));
+
+			totalRows = entityManager.createQuery(countQuery).getSingleResult();
+		}
+
+		return new PageImpl<>(resultList, pageable, totalRows);
 	}
 
 	private List<Predicate> buildPredicates(EmployeeFilterDtoV2 employeeFilterDto, CriteriaBuilder criteriaBuilder,
-			Root<Employee> root, Join<Employee, User> userJoin) {
+			CriteriaQuery<?> criteriaQuery, Root<Employee> root, Join<Employee, User> userJoin) {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
 
-		buildEnterprisePredicates(criteriaBuilder, root, predicates);
+		boolean hasPermissionsFilter = employeeFilterDto.getPermissions() != null
+				&& !employeeFilterDto.getPermissions().isEmpty();
 
 		if (employeeFilterDto.getTeam() != null && !employeeFilterDto.getTeam().isEmpty()) {
-			Join<Employee, EmployeeTeam> employeeTeam = root.join(Employee_.employeeTeams);
-			predicates.add(employeeTeam.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeFilterDto.getTeam()));
+			Subquery<Long> teamSubquery = criteriaQuery.subquery(Long.class);
+			Root<EmployeeTeam> teamRoot = teamSubquery.from(EmployeeTeam.class);
+			teamSubquery.select(criteriaBuilder.literal(1L));
+			teamSubquery.where(criteriaBuilder.equal(teamRoot.get(EmployeeTeam_.employee), root),
+					teamRoot.get(EmployeeTeam_.TEAM).get(Team_.TEAM_ID).in(employeeFilterDto.getTeam()));
+			predicates.add(criteriaBuilder.exists(teamSubquery));
 		}
 
 		if (employeeFilterDto.getNationality() != null && !employeeFilterDto.getNationality().isEmpty()) {
@@ -1372,25 +1413,50 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			predicates.add(findByEmailName(employeeFilterDto.getSearchKeyword(), criteriaBuilder, root, userJoin));
 		}
 
-		if (employeeFilterDto.getPermissions() != null && !employeeFilterDto.getPermissions().isEmpty()) {
-			Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole);
+		if (hasPermissionsFilter) {
+			Subquery<Long> roleSubquery = criteriaQuery.subquery(Long.class);
+			Root<EmployeeRole> roleRoot = roleSubquery.from(EmployeeRole.class);
+			roleSubquery.select(criteriaBuilder.literal(1L));
 
-			Predicate attendanceRolePredicate = roleJoin.get(EmployeeRole_.ATTENDANCE_ROLE)
+			Predicate attendanceRolePredicate = roleRoot.get(EmployeeRole_.ATTENDANCE_ROLE)
 				.in(employeeFilterDto.getPermissions());
-			Predicate peopleRolePredicate = roleJoin.get(EmployeeRole_.PEOPLE_ROLE)
+			Predicate peopleRolePredicate = roleRoot.get(EmployeeRole_.PEOPLE_ROLE)
 				.in(employeeFilterDto.getPermissions());
-			Predicate leaveRolePredicate = roleJoin.get(EmployeeRole_.LEAVE_ROLE)
-				.in(employeeFilterDto.getPermissions());
-			Predicate esignRolePredicate = roleJoin.get(EmployeeRole_.ESIGN_ROLE)
+			Predicate leaveRolePredicate = roleRoot.get(EmployeeRole_.LEAVE_ROLE)
 				.in(employeeFilterDto.getPermissions());
 
-			Predicate rolePredicate = criteriaBuilder.or(attendanceRolePredicate, peopleRolePredicate,
-					leaveRolePredicate, esignRolePredicate);
-			predicates.add(rolePredicate);
-			predicates.add(criteriaBuilder.equal(roleJoin.get(EmployeeRole_.IS_SUPER_ADMIN), false));
+			List<Predicate> rolePredicates = new ArrayList<>(
+					List.of(attendanceRolePredicate, peopleRolePredicate, leaveRolePredicate));
+			buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates, employeeFilterDto, roleRoot,
+					rolePredicates);
+
+			Predicate rolePredicate = criteriaBuilder.or(rolePredicates.toArray(new Predicate[0]));
+
+			roleSubquery.where(criteriaBuilder.equal(roleRoot.get(EmployeeRole_.employee), root), rolePredicate,
+					criteriaBuilder.equal(roleRoot.get(EmployeeRole_.IS_SUPER_ADMIN), false));
+			predicates.add(criteriaBuilder.exists(roleSubquery));
+		}
+		else {
+			buildEnterprisePredicatesV2(criteriaBuilder, criteriaQuery, root, predicates, employeeFilterDto, null,
+					null);
 		}
 
 		return predicates;
+	}
+
+	protected void buildEnterprisePredicatesV2(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
+			Root<Employee> root, List<Predicate> predicates, EmployeeFilterDtoV2 employeeFilterDto,
+			Root<EmployeeRole> roleRoot, List<Predicate> rolePredicates) {
+		Subquery<Long> roleSubquery = criteriaQuery.subquery(Long.class);
+		Root<EmployeeRole> pmRoleRoot = roleSubquery.from(EmployeeRole.class);
+		roleSubquery.select(criteriaBuilder.literal(1L));
+		roleSubquery.where(criteriaBuilder.equal(pmRoleRoot.get(EmployeeRole_.employee), root),
+				criteriaBuilder.notEqual(pmRoleRoot.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+		predicates.add(criteriaBuilder.exists(roleSubquery));
+
+		if (roleRoot != null && rolePredicates != null) {
+			rolePredicates.add(roleRoot.get(EmployeeRole_.ESIGN_ROLE).in(employeeFilterDto.getPermissions()));
+		}
 	}
 
 	private Predicate findByEmailName(String keyword, CriteriaBuilder criteriaBuilder, Root<Employee> employee,
@@ -1436,6 +1502,30 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		query.setMaxResults(page.getPageSize());
 
 		return new PageImpl<>(query.getResultList(), page, totalRows);
+	}
+
+	@Override
+	public Map<Long, Long> countByWorkLocationIds(List<Long> workLocationIds) {
+		if (workLocationIds == null || workLocationIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+
+		Join<Employee, WorkLocation> workLocationJoin = root.join(Employee_.workLocation, JoinType.INNER);
+
+		criteriaQuery.multiselect(workLocationJoin.get(WorkLocation_.workLocationId), criteriaBuilder.count(root));
+		criteriaQuery.where(workLocationJoin.get(WorkLocation_.workLocationId).in(workLocationIds),
+				root.get(Employee_.accountStatus).in(AccountStatus.ACTIVE, AccountStatus.PENDING));
+		criteriaQuery.groupBy(workLocationJoin.get(WorkLocation_.workLocationId));
+
+		Map<Long, Long> result = new HashMap<>();
+		for (Tuple tuple : entityManager.createQuery(criteriaQuery).getResultList()) {
+			result.put(tuple.get(0, Long.class), tuple.get(1, Long.class));
+		}
+		return result;
 	}
 
 }

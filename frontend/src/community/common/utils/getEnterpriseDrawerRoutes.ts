@@ -18,19 +18,13 @@ interface Props {
   tenantID?: string;
   organizationCalendarGoogleStatus?: boolean;
   organizationCalendarMicrosoftStatus?: boolean;
-  pendingLeaveCount?: number;
-  pendingTimesheetCount?: number;
-  pendingSignCount?: number;
 }
 
 const getEnterpriseDrawerRoutes = ({
   userRoles,
   globalLoginMethod,
   organizationCalendarGoogleStatus,
-  organizationCalendarMicrosoftStatus,
-  pendingLeaveCount,
-  pendingTimesheetCount,
-  pendingSignCount
+  organizationCalendarMicrosoftStatus
 }: Props) => {
   const userSpecificRoutes = routes.map((route) => {
     const isSuperAdmin = userRoles?.includes(AdminTypes.SUPER_ADMIN);

@@ -11,7 +11,8 @@ import {
   MaritalStatusTypes,
   NationalityEnum,
   RelationshipTypes,
-  Role
+  Role,
+  TitleEnum
 } from "../enums/PeopleEnums";
 import { EmploymentStatusTypes } from "./EmployeeTypes";
 
@@ -55,6 +56,7 @@ export interface L2SystemPermissionsType {
   esignRole?: Role;
   pmRole?: Role;
   invoiceRole?: Role;
+  crmRole?: Role;
 }
 
 export interface L2CommonDetailsType {
@@ -66,6 +68,7 @@ export interface L2CommonDetailsType {
 
 //L3 Types
 export interface L3GeneralDetailsType {
+  title?: TitleEnum;
   firstName?: string;
   middleName?: string;
   lastName?: string;
@@ -140,6 +143,7 @@ export interface L3EmploymentDetailsType {
   probationStartDate?: string;
   probationEndDate?: string;
   workTimeZone?: string;
+  workLocationId?: number;
 }
 
 export interface L3CareerProgressionDetailsType {

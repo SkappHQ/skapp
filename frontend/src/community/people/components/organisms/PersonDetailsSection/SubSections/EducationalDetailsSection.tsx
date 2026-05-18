@@ -61,11 +61,11 @@ const EducationalDetailsSection = (props: Props): JSX.Element => {
   } = useEducationalDetailsFormHandlers();
 
   const tableHeaders = [
-    translateText(["college"]),
-    translateText(["degree"]),
-    translateText(["major"]),
-    translateText(["startDate"]),
-    translateText(["endDate"])
+    { label: translateText(["college"]) },
+    { label: translateText(["degree"]) },
+    { label: translateText(["major"]) },
+    { label: translateText(["startDate"]) },
+    { label: translateText(["endDate"]) }
   ];
 
   return (

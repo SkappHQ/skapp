@@ -16,6 +16,7 @@ import { PeopleSliceTypes } from "~community/people/types/SliceTypes";
 const defaultEmployee: L1EmployeeType = {
   personal: {
     general: {
+      title: undefined,
       firstName: "",
       middleName: "",
       lastName: "",
@@ -95,7 +96,8 @@ const defaultEmployee: L1EmployeeType = {
     attendanceRole: Role.ATTENDANCE_EMPLOYEE,
     esignRole: Role.ESIGN_EMPLOYEE,
     pmRole: Role.PM_EMPLOYEE,
-    invoiceRole: Role.INVOICE_NONE
+    invoiceRole: Role.INVOICE_NONE,
+    crmRole: Role.CRM_NONE
   },
   common: {
     employeeId: "",

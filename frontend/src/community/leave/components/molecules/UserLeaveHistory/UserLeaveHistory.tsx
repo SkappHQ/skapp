@@ -64,7 +64,7 @@ const UserLeaveHistory: FC<Props> = ({
 }) => {
   const theme: Theme = useTheme();
 
-  const { isFreeTier, isCoreTier } = useTier();
+  const { isFreeTier, isAtLeastCoreTier } = useTier();
 
   const translateText = useTranslator(
     "peopleModule",
@@ -152,12 +152,12 @@ const UserLeaveHistory: FC<Props> = ({
     currentPage,
     6,
     false,
-    isCoreTier
+    isAtLeastCoreTier
   );
 
   const leaveHistory = useMemo(() => {
-    return isCoreTier ? leaveHistoryData : leaveHistoryMockData;
-  }, [isCoreTier, leaveHistoryData]);
+    return isAtLeastCoreTier ? leaveHistoryData : leaveHistoryMockData;
+  }, [isAtLeastCoreTier, leaveHistoryData]);
 
   const { data: exportHistoryData } = useGetEmployeeLeaveHistory(
     employeeId,
@@ -167,7 +167,7 @@ const UserLeaveHistory: FC<Props> = ({
     0,
     6,
     true,
-    isCoreTier
+    isAtLeastCoreTier
   );
 
   const columns = [
@@ -342,22 +342,31 @@ const UserLeaveHistory: FC<Props> = ({
             </Typography>
           </Box>
         ),
-        status: (
-          <IconChip
-            label={leaveData.status.toLowerCase()}
-            icon={requestTypeSelector(getLeaveRequestStatus(leaveData.status))}
-            isResponsive={true}
-            chipStyles={{
-              alignSelf: "flex-end",
-              [`@media (max-width: 81.25rem)`]: {
-                marginRight: "2.25rem",
-                padding: "1rem"
-              }
-            }}
-            isTruncated={!theme.breakpoints.up("xl")}
-            tabIndex={-1}
-          />
-        ),
+        status: (() => {
+          const statusLabel = leaveData.status.toLowerCase();
+          const translatedStatus = translateAria(["leaveStatus", statusLabel]);
+          return (
+            <IconChip
+              label={statusLabel}
+              accessibility={{
+                ariaLabel: `${translateAria(["leaveStatusChip"])} ${translatedStatus}`
+              }}
+              icon={requestTypeSelector(
+                getLeaveRequestStatus(leaveData.status)
+              )}
+              isResponsive={true}
+              chipStyles={{
+                alignSelf: "flex-end",
+                [`@media (max-width: 81.25rem)`]: {
+                  marginRight: "2.25rem",
+                  padding: "1rem"
+                }
+              }}
+              isTruncated={!theme.breakpoints.up("xl")}
+              tabIndex={-1}
+            />
+          );
+        })(),
         reason: (
           <Box
             sx={{
@@ -520,7 +529,8 @@ const UserLeaveHistory: FC<Props> = ({
   return (
     <Box>
       <Typography
-        variant="h4"
+        variant="h2"
+        component="h2"
         sx={{
           mb: "0.75rem"
         }}

@@ -19,8 +19,11 @@ import {
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtils";
 
+import { AdminTypes } from "~community/common/types/AuthTypes";
+
 import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
+import { characterLengths } from "~community/common/constants/stringConstants";
 
 export const getBlinkClass = (shouldBlink: boolean): string =>
   shouldBlink ? "animate-pulse" : "";
@@ -37,6 +40,14 @@ export const getLabelByValue = (
 
 export const hasSpecificRole = (roles: string[], role: string): boolean => {
   return roles.includes(role);
+};
+
+export const isSuperAdminOnlySession = (roles?: string[]): boolean => {
+  return (
+    Array.isArray(roles) &&
+    roles.length === 1 &&
+    roles[0] === AdminTypes.SUPER_ADMIN
+  );
 };
 
 export const getEmoji = (unicode: string): string => {
@@ -557,3 +568,14 @@ export const isMobileDevice = (): boolean => {
     globalThis.navigator?.userAgent ?? ""
   );
 };
+
+export const replaceTabQueryParam = (path: string, tabId: string): void => {
+  const [basePath, query] = path.split("?");
+  const params = new URLSearchParams(query);
+  params.set("tab", tabId);
+  globalThis.history.replaceState(null, "", `${basePath}?${params.toString()}`);
+};
+
+export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
+  return characterLengths.PHONE_NUMBER_LENGTH_MAX - countryCodeValue.length;
+}
