@@ -14,4 +14,6 @@ public interface HolidayRepository {
 
 	List<Holiday> findAllActiveHolidaysByDateWithWorkLocations(LocalDate date);
 
+	List<Holiday> findAllActiveHolidaysByWorkLocationId(Long workLocationId);
+
 }

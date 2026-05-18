@@ -81,6 +81,29 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
+	@Override
+	public List<Holiday> findAllActiveHolidaysByWorkLocationId(Long workLocationId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
+		Root<Holiday> root = criteriaQuery.from(Holiday.class);
+		root.fetch(Holiday_.workLocations, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
+
+		if (workLocationId != null) {
+			Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
+			predicates.add(criteriaBuilder.or(
+					criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
+					criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
+		}
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.distinct(true);
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
 	private static List<Predicate> buildPredicates(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
 			HolidayFilterDto holidayFilterDto, Root<Holiday> root) {
 

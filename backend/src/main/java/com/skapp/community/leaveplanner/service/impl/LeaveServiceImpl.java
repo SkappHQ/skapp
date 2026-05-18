@@ -828,13 +828,15 @@ public class LeaveServiceImpl implements LeaveService {
 		leaveEntitlements.sort(Comparator.comparing(LeaveEntitlement::getValidTo));
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<LocalDate> holidayDates = holidayDao.findAllByIsActiveTrue().stream().map(Holiday::getDate).toList();
-		List<Holiday> holidayObjects = holidayDao.findAllByIsActiveTrue();
+		List<Holiday> employeeHolidays = getHolidaysForEmployee(leaveRequest.getEmployee());
+		List<LocalDate> holidayDates = employeeHolidays.stream().map(Holiday::getDate).toList();
 
-		validateLeaveWithHoliday(leaveRequest.getStartDate(), leaveRequest.getEndDate(), holidayObjects, leaveRequest);
+		validateLeaveWithHoliday(leaveRequest.getStartDate(), leaveRequest.getEndDate(), employeeHolidays,
+				leaveRequest);
 
 		float weekDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(leaveRequest.getStartDate(),
-				leaveRequest.getEndDate(), timeConfigs, holidayObjects, organizationService.getOrganizationTimeZone());
+				leaveRequest.getEndDate(), timeConfigs, employeeHolidays,
+				organizationService.getOrganizationTimeZone());
 
 		if (weekDays <= 0) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_APPLICABLE);
@@ -847,7 +849,7 @@ public class LeaveServiceImpl implements LeaveService {
 		}
 
 		float remainingTotalDays = getRemainingTotalHours(leaveEntitlements, leaveRequest, timeConfigs, holidayDates,
-				totalRequestedDayCount, holidayObjects);
+				totalRequestedDayCount, employeeHolidays);
 
 		boolean isValid = remainingTotalDays >= totalRequestedDayCount;
 
@@ -1026,6 +1028,14 @@ public class LeaveServiceImpl implements LeaveService {
 	private boolean isHalfDayHoliday(HolidayDuration holidayDuration) {
 		return holidayDuration.equals(HolidayDuration.HALF_DAY_MORNING)
 				|| holidayDuration.equals(HolidayDuration.HALF_DAY_EVENING);
+	}
+
+	private List<Holiday> getHolidaysForEmployee(Employee employee) {
+		if (employee != null && employee.getWorkLocation() != null
+				&& employee.getWorkLocation().getWorkLocationId() != null) {
+			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
+		}
+		return holidayDao.findAllByIsActiveTrue();
 	}
 
 	private float getRemainingTotalHours(List<LeaveEntitlement> leaveEntitlements, LeaveRequest leaveRequest,
