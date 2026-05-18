@@ -58,16 +58,16 @@ const WorkLocationEmployeeSelector = ({
   const [employeeMap, setEmployeeMap] = useState<
     Map<number, AllEmployeeDataType>
   >(() => {
-    const m = new Map<number, AllEmployeeDataType>();
+    const initialMap = new Map<number, AllEmployeeDataType>();
     for (const emp of preloadedEmployees) {
-      m.set(emp.employeeId, {
+      initialMap.set(emp.employeeId, {
         employeeId: emp.employeeId,
         firstName: emp.firstName,
         lastName: emp.lastName ?? "",
         authPic: emp.authPic ?? ""
-      } as AllEmployeeDataType);
+      });
     }
-    return m;
+    return initialMap;
   });
 
   const { setEmployeeDataParams } = usePeopleStore((state) => state);
@@ -183,7 +183,7 @@ const WorkLocationEmployeeSelector = ({
             firstName: emp.firstName,
             lastName: emp.lastName ?? "",
             authPic: emp.authPic ?? ""
-          } as AllEmployeeDataType);
+          });
           changed = true;
         }
       }
