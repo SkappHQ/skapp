@@ -19,7 +19,7 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
       .optional()
       .test(
         "valid-contact-number",
-        translator(["validations","contactNumber"]),
+        translator(["validations", "contactNumber"]),
         function (inputContactNumber) {
           if (!inputContactNumber || inputContactNumber === "") {
             return true;
