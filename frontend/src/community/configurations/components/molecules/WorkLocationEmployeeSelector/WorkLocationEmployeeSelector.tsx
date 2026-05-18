@@ -248,7 +248,7 @@ const WorkLocationEmployeeSelector = ({
           lastName: (emp.lastName ?? "").trim(),
           image: emp.authPic || null
         }))}
-        max={3}
+        max={4}
         isHoverModal
       />
     );
