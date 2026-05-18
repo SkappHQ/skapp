@@ -160,6 +160,18 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
         accessibility={{
           label: translateAria(["workLocationSelector"])
         }}
+        customStyles={{
+          menuProps: {
+            paperProps: {
+              sx: {
+                style: {
+                  maxHeight: "12rem",
+                  overflowY: "auto"
+                }
+              }
+            }
+          }
+        }}
       />
     </Stack>
   );
