@@ -57,17 +57,12 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 			return userProjects;
 		}
 
-		JsonNode projectsMapNode = objectMapper.readTree(cachedData);
-
-		if (projectsMapNode.isObject()) {
-			projectsMapNode.properties().forEach(entry -> {
-				JsonNode projectData = entry.getValue();
-
-				ProjectRequestDto project = extractProjectForUserFromNode(projectData, userId);
-				if (project != null) {
-					userProjects.add(project);
-				}
-			});
+		List<JsonNode> projectNodes = parseProjectNodesFromCache(cachedData);
+		for (JsonNode projectData : projectNodes) {
+			ProjectRequestDto project = extractProjectForUserFromNode(projectData, userId);
+			if (project != null) {
+				userProjects.add(project);
+			}
 		}
 
 		return userProjects;
@@ -99,17 +94,28 @@ public class EpGuestUserCacheServiceImpl implements EpGuestUserCacheService {
 			return guestUsersProjectsMap;
 		}
 
-		JsonNode projectsMapNode = objectMapper.readTree(cachedData);
-
-		if (projectsMapNode.isObject()) {
-			projectsMapNode.properties().forEach(entry -> {
-				JsonNode projectData = entry.getValue();
-
-				mapProjectToGuestUsersFromNode(projectData, guestUsersProjectsMap);
-			});
+		List<JsonNode> projectNodes = parseProjectNodesFromCache(cachedData);
+		for (JsonNode projectData : projectNodes) {
+			mapProjectToGuestUsersFromNode(projectData, guestUsersProjectsMap);
 		}
 
 		return guestUsersProjectsMap;
+	}
+
+	private List<JsonNode> parseProjectNodesFromCache(String cachedData) {
+		List<JsonNode> projectNodes = new ArrayList<>();
+		JsonNode rootNode = objectMapper.readTree(cachedData);
+
+		if (rootNode.isObject()) {
+			rootNode.properties().forEach(entry -> projectNodes.add(entry.getValue()));
+		}
+		else if (rootNode.isArray()) {
+			for (JsonNode node : rootNode) {
+				projectNodes.add(node);
+			}
+		}
+
+		return projectNodes;
 	}
 
 	private ProjectRequestDto extractProjectForUserFromNode(JsonNode projectNode, Long userId) {
