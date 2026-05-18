@@ -29,7 +29,7 @@ public class CrmModuleConstant {
 
 	public static final String STAGE = "stage";
 
-	public static final String STAGE_ID = "Id";
+	public static final String STAGE_ID = "id";
 
 	public static final Integer WON_STAGE_ID = 3;
 
