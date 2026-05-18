@@ -14,6 +14,7 @@ import {
 } from "~community/configurations/constants/workLocationConstants";
 import {
   formatRadius,
+  haversineDistance,
   reverseGeocode
 } from "~community/configurations/utils/geofenceUtils";
 import AddressSearch from "./AddressSearch";
@@ -54,7 +55,17 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
       const newLat = e.detail.latLng.lat;
       const newLng = e.detail.latLng.lng;
       if (tempGeofence) {
-        updateTempGeofence({ latitude: newLat, longitude: newLng });
+        const distance = haversineDistance(
+          tempGeofence.latitude,
+          tempGeofence.longitude,
+          newLat,
+          newLng
+        );
+        const clampedRadius = Math.max(
+          MIN_RADIUS,
+          Math.min(MAX_RADIUS, distance)
+        );
+        updateTempGeofence({ radiusMeters: clampedRadius });
       } else {
         setTempGeofence({
           latitude: newLat,
@@ -62,20 +73,20 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
           radiusMeters: MIN_RADIUS,
           address: ""
         });
-      }
-      try {
-        const address = await reverseGeocode(newLat, newLng);
-        if (address) {
-          updateTempGeofence({ address });
+        try {
+          const address = await reverseGeocode(newLat, newLng);
+          if (address) {
+            updateTempGeofence({ address });
+          }
+        } catch {
+          setToastMessage({
+            open: true,
+            toastType: ToastType.ERROR,
+            title: translateText(["form.geocodeErrorTitle"]),
+            description: translateText(["form.geocodeErrorDescription"]),
+            isIcon: true
+          });
         }
-      } catch {
-        setToastMessage({
-          open: true,
-          toastType: ToastType.ERROR,
-          title: translateText(["form.geocodeErrorTitle"]),
-          description: translateText(["form.geocodeErrorDescription"]),
-          isIcon: true
-        });
       }
     },
     [tempGeofence, setTempGeofence, updateTempGeofence, setToastMessage, translateText]
