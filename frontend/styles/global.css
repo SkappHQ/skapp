@@ -336,3 +336,19 @@ thead .sticky-col {
   border-color: var(--focus-border-color) !important;
   box-shadow: 0px 0px 4px 0px var(--focus-shadow-color) !important;
 }
+
+
+
+
+.crm-contact-side-panel aside {
+  width: min(50vw, 48rem) !important;
+  min-width: 28rem;
+  max-width: 100vw;
+}
+
+@media (max-width: 1024px) {
+  .crm-contact-side-panel aside {
+    width: 100vw !important;
+    min-width: 0;
+  }
+}
