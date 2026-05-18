@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.service.impl;
 
-import com.skapp.community.common.exception.EntityNotFoundException;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.transformer.PageTransformer;
@@ -30,7 +30,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -59,26 +58,28 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto) {
 		log.info("createDeal: creating deal with name={}", requestDto.getName());
 
-		CrmDealStage stage = crmDealStageDao.findById(requestDto.getStageId())
-			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
 		CrmPriority priority = null;
 		if (requestDto.getPriorityId() != null) {
 			priority = crmPriorityDao.findById(requestDto.getPriorityId())
-				.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_DEAL_PRIORITY_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_PRIORITY_NOT_FOUND));
 		}
 
 		CrmCompany company = null;
 		if (requestDto.getCompanyId() != null) {
-			company = crmCompanyDao.findById(requestDto.getCompanyId())
-				.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
+			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
 		}
 
-		CrmContact contact = crmContactDao.findById(requestDto.getContactId())
-			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
 
-		Employee owner = employeeDao.findById(requestDto.getOwnerId())
-			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND));
+		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
+		if (owner == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
+		}
 
 		CrmDeal deal = new CrmDeal();
 		deal.setName(requestDto.getName());
@@ -106,8 +107,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		Page<CrmDeal> dealsPage = crmDealDao.findAllDeals(filterDto,
 				PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort));
 
-		List<CrmDealResponseDto> deals = crmDealMapper
-			.crmDealsToCrmDealResponseDtos(dealsPage.hasContent() ? dealsPage.getContent() : Collections.emptyList());
+		List<CrmDealResponseDto> deals = crmDealMapper.crmDealsToCrmDealResponseDtos(dealsPage.getContent());
 
 		PageDto pageDto = pageTransformer.transform(dealsPage);
 		pageDto.setItems(deals);

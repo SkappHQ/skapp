@@ -8,11 +8,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CrmMessageConstant implements MessageConstant {
 
-	// Deal success constants
-	CRM_SUCCESS_DEAL_CREATED("api.success.crm.deal-created"),
-
 	// Deal error constants
 	CRM_ERROR_DEAL_NAME_REQUIRED("crm.error.deal.name-required"),
+	CRM_ERROR_DEAL_STAGE_ID_REQUIRED("crm.error.deal.stage-id-required"),
 	CRM_ERROR_DEAL_STAGE_NOT_FOUND("crm.error.deal.stage-not-found"),
 	CRM_ERROR_DEAL_PRIORITY_NOT_FOUND("crm.error.deal.priority-not-found"),
 	CRM_ERROR_DEAL_COMPANY_NOT_FOUND("crm.error.deal.company-not-found"),

@@ -23,7 +23,7 @@ public class CrmCommonController {
 
 	@Operation(summary = "Get priorities", description = "Returns all CRM priorities ordered by index.")
 	@GetMapping(value = "/priorities", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN', 'ROLE_CRM_SALES_MANAGER', 'ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_CRM_ADMIN', 'ROLE_CRM_SALES_MANAGER', 'ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getPriorities() {
 		ResponseEntityDto response = crmCommonService.getPriorities();
 		return new ResponseEntity<>(response, HttpStatus.OK);

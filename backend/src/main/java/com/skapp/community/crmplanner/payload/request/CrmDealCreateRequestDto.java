@@ -14,7 +14,7 @@ public class CrmDealCreateRequestDto {
 	@NotBlank(message = "{crm.error.deal.name-required}")
 	private String name;
 
-	@NotNull(message = "{crm.error.deal.stage-not-found}")
+	@NotNull(message = "{crm.error.deal.stage-id-required}")
 	private Long stageId;
 
 	private Long priorityId;
