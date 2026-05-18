@@ -44,7 +44,7 @@ public class PeopleNotificationServiceImpl implements PeopleNotificationService 
 	private final EmployeeRoleDao employeeRoleDao;
 
 	@Async
-	@Transactional
+	@Transactional(readOnly = true)
 	@Override
 	public void sendNewHolidayDeclarationNotification(Holiday holiday) {
 		PeopleEmailDynamicFields peopleEmailDynamicFields = new PeopleEmailDynamicFields();
