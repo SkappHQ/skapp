@@ -58,7 +58,8 @@ export const useGetDeals = (
     queryKey: crmDealQueryKeys.GET_DEALS(params),
     queryFn: async () => {
       const response = await authFetch.get(crmDealEndpoints.GET_DEALS(params));
-      return response?.data?.results?.[0] as CrmDealPaginatedResponseType;
+      return (response?.data?.results?.[0] ??
+        { items: [], currentPage: 0, totalItems: 0, totalPages: 0 }) as CrmDealPaginatedResponseType;
     }
   });
 };

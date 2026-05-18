@@ -1,4 +1,4 @@
-﻿import {
+import {
   ButtonV2,
   Dropdown,
   InputField,
@@ -20,16 +20,12 @@ import * as Yup from "yup";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import { useCreateDeal, useGetDealStages, useGetPriorities } from "~community/crm/api/crmDealApi";
+import { useCreateDeal, useGetCrmCompanies, useGetCrmContacts, useGetDealStages, useGetPriorities } from "~community/crm/api/crmDealApi";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
 import PeoplePopupSearch from "~community/crm/components/molecules/PeoplePopupSearch/PeoplePopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
-import {
-  MOCK_COMPANIES,
-  MOCK_CONTACTS
-} from "~community/crm/api/utils/mockDealData";
 import { CrmOwnerType } from "~community/crm/types/CommonTypes";
-import { useAppStore } from "../../../../../store/store";
+import { useAppStore } from "~store/store";
 
 const MOCK_OWNERS: CrmOwnerType[] = [
   { employeeId: 1, firstName: "Anusha",  lastName: "Mahindarathne",  authPic: null },
@@ -96,6 +92,8 @@ const AddDealSidePanel: FC = () => {
   // ---------- stages and priorities from API ----------
   const { data: stages = [] } = useGetDealStages();
   const { data: priorities = [] } = useGetPriorities();
+  const { data: contacts = [] } = useGetCrmContacts();
+  const { data: companies = [] } = useGetCrmCompanies();
 
   // Set default stage to Lead (INITIAL) once stages are fetched
   useEffect(() => {
@@ -127,22 +125,22 @@ const AddDealSidePanel: FC = () => {
 
   const contactOptions = useMemo<DropdownOption[]>(
     () =>
-      MOCK_CONTACTS.map((c) => ({
+      contacts.map((c) => ({
         id: String(c.id),
         label: c.name,
         value: String(c.id)
       })),
-    []
+    [contacts]
   );
 
   const companyOptions = useMemo<DropdownOption[]>(
     () =>
-      MOCK_COMPANIES.map((co) => ({
+      companies.map((co) => ({
         id: String(co.id),
         label: co.name,
         value: String(co.id)
       })),
-    []
+    [companies]
   );
 
   // ---------------------------------------------------------------------------------------

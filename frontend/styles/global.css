@@ -3,10 +3,10 @@
 @source "../node_modules/@rootcodelabs/skapp-ui/dist/esm/index.esm.js";
 @import "tailwindcss";
 
-aside.fixed[role="dialog"] {
+.crm-deal-side-panel aside.fixed[role="dialog"] {
   z-index: 1202 !important;
 }
-div.fixed.inset-0[aria-hidden="true"] {
+.crm-deal-side-panel div.fixed.inset-0[aria-hidden="true"] {
   z-index: 1201 !important;
 }
 

@@ -26,7 +26,7 @@ import {
 import { CrmDealSortEnum, CrmDealStageEnum } from "~community/crm/enums/common";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
-import { useAppStore } from "../../../../../store/store";
+import { useAppStore } from "~store/store";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -240,6 +240,7 @@ const DealTable: FC = () => {
         dealOwner: (
           <AvatarChip
             avatarProps={{
+              id: String(deal.ownerId),
               firstName: ownerFirst,
               lastName: ownerLast,
               src: "",
