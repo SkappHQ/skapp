@@ -1,0 +1,1 @@
+export { CrmDealStageEnum } from "./common";
