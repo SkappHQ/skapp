@@ -13,8 +13,6 @@ public interface CrmContactDao extends JpaRepository<CrmContact, Long> {
 
 	boolean existsByEmailIgnoreCaseAndIsDeletedFalse(String email);
 
-	boolean existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(String email, Long id);
-
 	List<CrmContact> findByOwnerInAndIsDeletedFalse(List<Employee> owners);
 
 	Optional<CrmContact> findByIdAndIsDeletedFalse(Long id);

@@ -43,6 +43,11 @@ public class CrmContactOwnerReassignmentServiceImpl implements CrmContactOwnerRe
 			}
 			crmContactDao.saveAll(contacts);
 		}, () -> {
+			List<Long> affectedContactIds = contacts.stream().map(CrmContact::getId).toList();
+			log.error(
+					"reassignContactsOwnedByDeactivatedUsers: no active CRM admin found. "
+							+ "Affected contact IDs requiring manual reassignment: {}",
+					affectedContactIds);
 			throw new IllegalStateException(
 					"No active CRM admin or super admin found to reassign contacts from deactivated user(s). Manual reassignment is required.");
 		});

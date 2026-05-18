@@ -30,7 +30,7 @@ public class CrmContactController {
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
 	@PostMapping(value = "/contacts", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> createContact(
-			@Valid @RequestBody CrmContactCreateRequestDto requestDto) {
+			@RequestBody CrmContactCreateRequestDto requestDto) {
 
 		ResponseEntityDto response = crmContactService.createContact(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
