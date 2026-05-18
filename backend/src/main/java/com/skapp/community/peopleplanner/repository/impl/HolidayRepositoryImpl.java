@@ -83,7 +83,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 	}
 
 	@Override
-	public List<Holiday> findAllActiveHolidaysByWorkLocationId(@NotNull Long workLocationId) {
+	public List<Holiday> findAllActiveHolidaysByWorkLocationId(Long workLocationId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
 		Root<Holiday> root = criteriaQuery.from(Holiday.class);
