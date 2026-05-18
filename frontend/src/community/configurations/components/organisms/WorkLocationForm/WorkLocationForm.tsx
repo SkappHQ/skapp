@@ -293,8 +293,8 @@ const WorkLocationForm = ({ id }: Props) => {
             <ButtonV2
               variant="tertiary"
               type="button"
-              onClick={navigateBack}
-              disabled={isPending}
+              onClick={() => formik.resetForm()}
+              disabled={isPending || !formik.dirty}
             >
               {translateText(["form.cancelButton"])}
             </ButtonV2>
