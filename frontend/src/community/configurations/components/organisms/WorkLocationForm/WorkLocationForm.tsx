@@ -211,7 +211,10 @@ const WorkLocationForm = ({ id }: Props) => {
 
   useEffect(() => {
     const handleRouteChangeStart = (url: string) => {
-      if (allowRouteChangeRef.current) return;
+      if (allowRouteChangeRef.current) {
+        allowRouteChangeRef.current = false;
+        return;
+      }
       if (isDirtyRef.current && url !== router.asPath) {
         pendingNavigationRef.current = url;
         setIsUnsavedModalOpen(true);
@@ -226,28 +229,21 @@ const WorkLocationForm = ({ id }: Props) => {
       }
     };
 
-    const handleRouteChangeComplete = () => {
-      allowRouteChangeRef.current = false;
-    };
-    const handleRouteChangeError = () => {
-      allowRouteChangeRef.current = false;
-    };
-
     router.events.on("routeChangeStart", handleRouteChangeStart);
-    router.events.on("routeChangeComplete", handleRouteChangeComplete);
-    router.events.on("routeChangeError", handleRouteChangeError);
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       router.events.off("routeChangeStart", handleRouteChangeStart);
-      router.events.off("routeChangeComplete", handleRouteChangeComplete);
-      router.events.off("routeChangeError", handleRouteChangeError);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [router, setIsUnsavedModalOpen]);
 
   useEffect(() => {
     router.beforePopState(({ url }) => {
+      if (allowRouteChangeRef.current) {
+        allowRouteChangeRef.current = false;
+        return true;
+      }
       if (isDirtyRef.current) {
         pendingNavigationRef.current = url;
         setIsUnsavedModalOpen(true);
