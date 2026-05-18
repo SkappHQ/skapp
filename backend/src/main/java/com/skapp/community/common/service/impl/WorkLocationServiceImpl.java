@@ -28,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -179,10 +178,9 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto getAllWorkLocations() {
 		log.info("getAllWorkLocations: execution started");
 
-		List<WorkLocation> workLocations = workLocationDao.findAll();
+		List<WorkLocation> workLocations = workLocationDao.findAllWorkLocationsOrderByNameAsc();
 
 		List<WorkLocationSummaryResponseDto> workLocationResponseDtos = workLocations.stream()
-			.sorted(Comparator.comparing(WorkLocation::getName, String.CASE_INSENSITIVE_ORDER))
 			.map(this::mapWorkLocationToSummaryResponseDto)
 			.toList();
 
