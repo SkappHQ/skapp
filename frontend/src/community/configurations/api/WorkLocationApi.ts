@@ -175,7 +175,7 @@ export const useCheckWorkLocationNameExists = (
           error.response?.data?.results?.[0]?.messageKey ===
             COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS
         ) {
-          return { exists: true };
+          return { isExists: true };
         }
         throw error;
       }

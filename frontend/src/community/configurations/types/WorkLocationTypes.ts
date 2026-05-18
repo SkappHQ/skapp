@@ -59,5 +59,5 @@ export interface WorkLocationsPage {
 }
 
 export interface WorkLocationNameAvailabilityResponse {
-  exists: boolean;
+  isExists: boolean;
 }

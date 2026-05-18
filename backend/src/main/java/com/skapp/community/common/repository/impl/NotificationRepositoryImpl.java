@@ -112,33 +112,31 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.USER_ID), userId));
 		predicates.add(criteriaBuilder.equal(root.get(Notification_.IS_TYPE_VIEWED), Boolean.FALSE));
 
-		// Exclude own leave request notifications (where the user is the requester)
-		Subquery<Integer> ownLeaveExistsSubquery = criteriaQuery.subquery(Integer.class);
+		Subquery<Long> ownLeaveExistsSubquery = criteriaQuery.subquery(Long.class);
 		Root<LeaveRequest> leaveRequestRoot = ownLeaveExistsSubquery.from(LeaveRequest.class);
-		ownLeaveExistsSubquery.select(criteriaBuilder.literal(1));
+		ownLeaveExistsSubquery.select(leaveRequestRoot.get(LeaveRequest_.leaveRequestId));
 		ownLeaveExistsSubquery.where(
 				criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.leaveRequestId).as(String.class),
-						root.get(Notification_.RESOURCE_ID)),
+						root.get(Notification_.resourceId)),
 				criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.employee).get(Employee_.employeeId),
 						notificationEmployeeJoin.get(Employee_.employeeId)));
 
 		Predicate notOwnLeaveRequest = criteriaBuilder.not(criteriaBuilder.and(
-				root.get(Notification_.NOTIFICATION_TYPE)
+				root.get(Notification_.notificationType)
 					.in(NotificationType.LEAVE_REQUEST, NotificationType.LEAVE_REQUEST_NUDGE),
 				criteriaBuilder.exists(ownLeaveExistsSubquery)));
 
-		// Exclude own time entry notifications (where the user is the requester)
-		Subquery<Integer> ownTimeExistsSubquery = criteriaQuery.subquery(Integer.class);
+		Subquery<Long> ownTimeExistsSubquery = criteriaQuery.subquery(Long.class);
 		Root<TimeRequest> timeRequestRoot = ownTimeExistsSubquery.from(TimeRequest.class);
-		ownTimeExistsSubquery.select(criteriaBuilder.literal(1));
+		ownTimeExistsSubquery.select(timeRequestRoot.get(TimeRequest_.timeRequestId));
 		ownTimeExistsSubquery.where(
 				criteriaBuilder.equal(timeRequestRoot.get(TimeRequest_.timeRequestId).as(String.class),
-						root.get(Notification_.RESOURCE_ID)),
+						root.get(Notification_.resourceId)),
 				criteriaBuilder.equal(timeRequestRoot.get(TimeRequest_.employee).get(Employee_.employeeId),
 						notificationEmployeeJoin.get(Employee_.employeeId)));
 
 		Predicate notOwnTimeEntry = criteriaBuilder.not(criteriaBuilder.and(
-				criteriaBuilder.equal(root.get(Notification_.NOTIFICATION_TYPE), NotificationType.TIME_ENTRY),
+				criteriaBuilder.equal(root.get(Notification_.notificationType), NotificationType.TIME_ENTRY),
 				criteriaBuilder.exists(ownTimeExistsSubquery)));
 
 		predicates.add(notOwnLeaveRequest);
@@ -148,9 +146,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 		predicates.toArray(predicatesArray);
 
 		criteriaQuery.select(criteriaBuilder.construct(NotificationTypeCountResponseDto.class,
-				root.get(Notification_.NOTIFICATION_TYPE), criteriaBuilder.count(root)));
+				root.get(Notification_.notificationType), criteriaBuilder.count(root)));
 		criteriaQuery.where(predicatesArray);
-		criteriaQuery.groupBy(root.get(Notification_.NOTIFICATION_TYPE));
+		criteriaQuery.groupBy(root.get(Notification_.notificationType));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
@@ -169,7 +167,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.USER_ID), userId));
-		predicates.add(root.get(Notification_.NOTIFICATION_TYPE).in(types));
+		predicates.add(root.get(Notification_.notificationType).in(types));
 		predicates.add(criteriaBuilder.equal(root.get(Notification_.IS_TYPE_VIEWED), Boolean.FALSE));
 
 		Predicate[] predicatesArray = new Predicate[predicates.size()];

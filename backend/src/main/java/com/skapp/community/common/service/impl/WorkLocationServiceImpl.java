@@ -294,7 +294,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_REQUIRED);
 		}
 
-		if (name.trim().length() > CommonConstants.WORK_LOCATION_NAME_MAX_LENGTH) {
+		if (name.length() > CommonConstants.WORK_LOCATION_NAME_MAX_LENGTH) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_LENGTH_EXCEEDED);
 		}
 

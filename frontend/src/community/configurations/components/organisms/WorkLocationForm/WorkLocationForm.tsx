@@ -185,7 +185,7 @@ const WorkLocationForm = ({ id }: Props) => {
     debouncedName !== workLocation?.name
   );
 
-  const isNameDuplicate = nameCheckResult?.exists === true;
+  const isNameDuplicate = nameCheckResult?.isExists === true;
   const isNameCheckPending = formik.values.name.trim() !== debouncedName;
 
   const handleLeave = () => {
