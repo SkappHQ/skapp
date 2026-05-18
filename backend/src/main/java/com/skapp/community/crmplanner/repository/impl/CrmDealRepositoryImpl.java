@@ -1,10 +1,15 @@
 package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDeal_;
+import com.skapp.community.crmplanner.model.CrmDealStage_;
+import com.skapp.community.crmplanner.model.CrmPriority_;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -12,6 +17,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +46,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		if (pageable.getSort().isSorted()) {
 			List<Order> orders = new ArrayList<>();
 			pageable.getSort().forEach(order -> {
-				Order sortOrder = order.isAscending() ? cb.asc(deal.get(order.getProperty()))
-						: cb.desc(deal.get(order.getProperty()));
+				Path<?> path = resolvePath(deal, order.getProperty());
+				Order sortOrder = order.isAscending() ? cb.asc(path) : cb.desc(path);
 				orders.add(sortOrder);
 			});
 			query.orderBy(orders);
@@ -63,28 +69,36 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<CrmDeal> deal, CrmDealFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 
-		predicates.add(cb.equal(deal.get("isDeleted"), false));
+		predicates.add(cb.equal(deal.get(CrmDeal_.isDeleted), false));
 
 		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().isBlank()) {
 			String keyword = "%" + filterDto.getSearchKeyword().toLowerCase() + "%";
-			Join<CrmDeal, CrmContact> contactJoin = deal.join("contact", JoinType.LEFT);
-			Join<CrmDeal, Employee> ownerJoin = deal.join("owner", JoinType.LEFT);
-			predicates.add(cb.or(
-					cb.like(cb.lower(deal.get("name")), keyword),
-					cb.like(cb.lower(contactJoin.get("name")), keyword),
-					cb.like(cb.lower(ownerJoin.get("firstName")), keyword),
-					cb.like(cb.lower(ownerJoin.get("lastName")), keyword)));
+			Join<CrmDeal, CrmContact> contactJoin = deal.join(CrmDeal_.contact, JoinType.LEFT);
+			Join<CrmDeal, Employee> ownerJoin = deal.join(CrmDeal_.owner, JoinType.LEFT);
+			predicates.add(cb.or(cb.like(cb.lower(deal.get(CrmDeal_.name)), keyword),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), keyword),
+					cb.like(cb.lower(ownerJoin.get(Employee_.firstName)), keyword),
+					cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword)));
 		}
 
 		if (filterDto.getStageId() != null) {
-			predicates.add(cb.equal(deal.get("stage").get("id"), filterDto.getStageId()));
+			predicates.add(cb.equal(deal.get(CrmDeal_.stage).get(CrmDealStage_.id), filterDto.getStageId()));
 		}
 
 		if (filterDto.getPriorityId() != null) {
-			predicates.add(cb.equal(deal.get("priority").get("id"), filterDto.getPriorityId()));
+			predicates.add(cb.equal(deal.get(CrmDeal_.priority).get(CrmPriority_.id), filterDto.getPriorityId()));
 		}
 
 		return predicates;
+	}
+
+	private Path<?> resolvePath(Root<CrmDeal> root, String property) {
+		String[] parts = property.split("\\.");
+		Path<?> path = root.get(parts[0]);
+		for (int i = 1; i < parts.length; i++) {
+			path = path.get(parts[i]);
+		}
+		return path;
 	}
 
 }

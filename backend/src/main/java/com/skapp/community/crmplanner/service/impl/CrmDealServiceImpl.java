@@ -19,10 +19,8 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmPriorityDao;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +58,18 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto) {
 		log.info("createDeal: creating deal with name={}", requestDto.getName());
 
+		if (requestDto.getName() == null || requestDto.getName().isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_REQUIRED);
+		}
+
+		if (requestDto.getStageId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_ID_REQUIRED);
+		}
+
+		if (requestDto.getContactId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND);
+		}
+
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
@@ -81,14 +91,13 @@ public class CrmDealServiceImpl implements CrmDealService {
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
 		}
 
-		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
-		if (owner == null) {
+		if (requestDto.getOwnerId() == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
 		}
 
-		EmployeeRole ownerRole = owner.getEmployeeRole();
-		if (ownerRole == null || ownerRole.getCrmRole() == null || ownerRole.getCrmRole() == Role.CRM_NONE) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_INVALID_ROLE);
+		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
+		if (owner == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
 		}
 
 		CrmDeal deal = new CrmDeal();

@@ -29,18 +29,16 @@ public class CrmDealController {
 	@Operation(summary = "Create a new deal",
 			description = "This endpoint creates a new CRM deal with the provided details.")
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_CRM_ADMIN', 'ROLE_CRM_SALES_MANAGER', 'ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> createDeal(
-			@Valid @RequestBody CrmDealCreateRequestDto crmDealCreateRequestDto) {
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> createDeal(@RequestBody CrmDealCreateRequestDto crmDealCreateRequestDto) {
 		ResponseEntityDto response = crmDealService.createDeal(crmDealCreateRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@Operation(summary = "Get deals",
-			description = "Returns a paginated list of CRM deals with optional filtering.")
+	@Operation(summary = "Get deals", description = "Returns a paginated list of CRM deals with optional filtering.")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getDeals(@Valid CrmDealFilterDto crmDealFilterDto) {
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getDeals(CrmDealFilterDto crmDealFilterDto) {
 		ResponseEntityDto response = crmDealService.getDeals(crmDealFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

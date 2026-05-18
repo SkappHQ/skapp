@@ -24,4 +24,12 @@ public class CrmDealFilterDto {
 
 	private Long priorityId;
 
+	public Sort.Direction getSortOrder() {
+		return sortOrder != null ? sortOrder : Sort.Direction.DESC;
+	}
+
+	public CrmDealSort getSortKey() {
+		return sortKey != null ? sortKey : CrmDealSort.CREATED_DATE;
+	}
+
 }

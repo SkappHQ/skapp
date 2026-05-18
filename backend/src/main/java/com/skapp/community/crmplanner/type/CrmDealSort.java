@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CrmDealSort {
 
-	NAME("name"),
-	CREATED_DATE("createdDate"),
-	CLOSING_AT("closingAt"),
-	AMOUNT("amount");
+	NAME("name"), CREATED_DATE("createdDate"), CLOSING_AT("closingAt"), AMOUNT("amount"), STAGE_TYPE("stage.stageType");
 
 	private final String dbField;
 

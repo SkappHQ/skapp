@@ -25,9 +25,12 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getDealStages() {
 		log.info("getDealStages: execution started");
+		
 		List<CrmDealStageResponseDto> stages = crmDealMapper
 			.crmDealStagesToCrmDealStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		
 		log.info("getDealStages: execution ended with {} result(s)", stages.size());
+
 		return new ResponseEntityDto(false, stages);
 	}
 

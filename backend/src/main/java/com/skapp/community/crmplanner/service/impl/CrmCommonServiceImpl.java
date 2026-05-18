@@ -25,9 +25,12 @@ public class CrmCommonServiceImpl implements CrmCommonService {
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getPriorities() {
 		log.info("getPriorities: execution started");
+
 		List<CrmPriorityResponseDto> priorities = crmDealMapper
 			.crmPrioritiesToCrmPriorityResponseDtos(crmPriorityDao.findAllByOrderByOrderIndexAsc());
+
 		log.info("getPriorities: execution ended with {} result(s)", priorities.size());
+
 		return new ResponseEntityDto(false, priorities);
 	}
 
