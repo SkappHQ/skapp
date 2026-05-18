@@ -54,7 +54,7 @@ const Configurations: NextPage = () => {
     router.replace(
       { pathname: router.pathname, query: { ...router.query, tab: id } },
       undefined,
-      { shallow: true }
+      { shallow: true, scroll: false }
     );
   };
 
