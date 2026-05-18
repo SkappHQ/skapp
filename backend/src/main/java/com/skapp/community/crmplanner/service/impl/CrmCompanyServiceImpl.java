@@ -3,10 +3,10 @@ package com.skapp.community.crmplanner.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.mapper.CrmCompanyMapper;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
@@ -23,7 +23,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
-	private final CrmCompanyMapper crmCompanyMapper;
+	private final CrmMapper crmCompanyMapper;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -37,14 +37,17 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) throws ValidationException {
-		if (checkCompanyExists(crmCompany.getName())) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
-		}
+	public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) {
 		log.info("createCompany: execution started");
+
+		if (checkCompanyExists(crmCompany.getName())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
+		}
+
 		CrmCompany newCompany = crmCompanyMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
 		CrmCompany result = crmCompanyDao.save(newCompany);
 		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
+
 		log.info("createCompany: execution ended successfully");
 
 		return new ResponseEntityDto(false, responseDto);
