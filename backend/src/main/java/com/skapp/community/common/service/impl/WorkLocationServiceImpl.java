@@ -11,6 +11,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocationGeofence;
@@ -291,6 +292,10 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		if (name == null || name.isBlank()) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_REQUIRED);
+		}
+
+		if (name.trim().length() > CommonConstants.WORK_LOCATION_NAME_MAX_LENGTH) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_LENGTH_EXCEEDED);
 		}
 
 		boolean exists;

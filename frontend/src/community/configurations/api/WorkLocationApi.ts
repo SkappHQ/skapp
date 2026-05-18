@@ -155,7 +155,8 @@ export const useDeleteWorkLocation = (
 
 export const useCheckWorkLocationNameExists = (
   name: string,
-  excludeId?: number
+  excludeId?: number,
+  enabled: boolean = true
 ) => {
   return useQuery({
     queryKey: workLocationQueryKeys.CHECK_WORK_LOCATION_NAME_EXISTS(
@@ -179,7 +180,7 @@ export const useCheckWorkLocationNameExists = (
         throw error;
       }
     },
-    enabled: name.trim().length > 0,
+    enabled: enabled && name.trim().length > 0,
     retry: false
   });
 };
