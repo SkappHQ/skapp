@@ -83,19 +83,19 @@ const reportsFiltersSlice = (set: any): any => ({
   },
 
   resetReportsParams: () => {
-    set({
+    set((state: any) => ({
       reportsParams: {
         year: new Date().getFullYear().toString(),
         leaveTypeId: "-1",
         jobRoleId: "",
-        teamId: "",
+        teamId: state.reportsParams.teamId,
         page: 0,
         size: 5,
         sortKey: SortKeyTypes.NAME,
         sortOrder: SortOrderTypes.ASC,
         leaveStatus: ""
       }
-    });
+    }));
   },
 
   resetReportsFilter: () => {

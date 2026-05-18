@@ -64,7 +64,7 @@ export const useGetEmployeeLeaveReportCSV = (
   isEnabled: boolean = true
 ) => {
   const { data, isLoading, isSuccess } = useQuery({
-    enabled: isEnabled,
+    enabled: isEnabled && !!teamId,
     queryKey: reportsQueryKeys.getEmployeeLeaveReportCSV(
       year,
       leaveTypeIds,
