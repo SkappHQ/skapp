@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -83,6 +84,7 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 	}
 
 	@Async
+	@Transactional(readOnly = true)
 	@Override
 	public void sendNewHolidayDeclarationEmail(Holiday holiday) {
 		PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();

@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,7 @@ public class PeopleNotificationServiceImpl implements PeopleNotificationService 
 	private final EmployeeRoleDao employeeRoleDao;
 
 	@Async
+	@Transactional
 	@Override
 	public void sendNewHolidayDeclarationNotification(Holiday holiday) {
 		PeopleEmailDynamicFields peopleEmailDynamicFields = new PeopleEmailDynamicFields();
