@@ -10,13 +10,9 @@ import com.skapp.community.peopleplanner.util.Validations;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.regex.Pattern;
-
 @Service
 @RequiredArgsConstructor
 public class CrmContactValidationServiceImpl implements CrmContactValidationService {
-
-	private static final Pattern CONTACT_NAME_PATTERN = Pattern.compile(CrmConstants.CONTACT_NAME_REGEX);
 
 	private final CrmContactDao crmContactDao;
 
@@ -36,10 +32,6 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 		if (trimmedName.length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
 			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_LENGTH_EXCEEDED,
 					new Object[] { CrmConstants.CONTACT_NAME_MAX_LENGTH });
-		}
-
-		if (!CONTACT_NAME_PATTERN.matcher(trimmedName).matches()) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID);
 		}
 	}
 
