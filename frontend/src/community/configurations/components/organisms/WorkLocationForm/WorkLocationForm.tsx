@@ -4,6 +4,8 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
+import { AxiosError } from "axios";
+
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -20,7 +22,10 @@ import {
 } from "~community/configurations/api/WorkLocationApi";
 import GeofenceMap from "~community/configurations/components/molecules/GeofenceMap/GeofenceMap";
 import WorkLocationEmployeeSelector from "~community/configurations/components/molecules/WorkLocationEmployeeSelector/WorkLocationEmployeeSelector";
-import { WORK_LOCATION_SEARCH_DEBOUNCE_MS } from "~community/configurations/constants/workLocationConstants";
+import {
+  COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS,
+  WORK_LOCATION_SEARCH_DEBOUNCE_MS
+} from "~community/configurations/constants/workLocationConstants";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
@@ -119,26 +124,31 @@ const WorkLocationForm = ({ id }: Props) => {
 
   const isPending = isCreating || isUpdating;
 
+  const getInitialValues = (): WorkLocationFormValues => {
+    if (isEditMode && workLocation) {
+      const geofence =
+        canSeeGeofence && workLocation.geofence
+          ? {
+              latitude: Number.parseFloat(workLocation.geofence.latitude),
+              longitude: Number.parseFloat(workLocation.geofence.longitude),
+              radiusMeters: workLocation.geofence.radiusMeters,
+              address: workLocation.address ?? ""
+            }
+          : null;
+
+      return {
+        name: workLocation.name,
+        isAllEmployees: workLocation.isAllEmployees ?? false,
+        employeeIds: workLocation.employees?.map((e) => e.employeeId) ?? [],
+        geofence
+      };
+    }
+
+    return { name: "", isAllEmployees: false, employeeIds: [], geofence: null };
+  };
+
   const formik = useFormik<WorkLocationFormValues>({
-    initialValues:
-      isEditMode && workLocation
-        ? {
-            name: workLocation.name,
-            isAllEmployees: workLocation.isAllEmployees ?? false,
-            employeeIds: workLocation.employees?.map((e) => e.employeeId) ?? [],
-            geofence:
-              canSeeGeofence && workLocation.geofence
-                ? {
-                    latitude: Number.parseFloat(workLocation.geofence.latitude),
-                    longitude: Number.parseFloat(
-                      workLocation.geofence.longitude
-                    ),
-                    radiusMeters: workLocation.geofence.radiusMeters,
-                    address: workLocation.address ?? ""
-                  }
-                : null
-          }
-        : { name: "", isAllEmployees: false, employeeIds: [], geofence: null },
+    initialValues: getInitialValues(),
     enableReinitialize: isEditMode,
     validationSchema,
     onSubmit: (values) => {
@@ -189,14 +199,18 @@ const WorkLocationForm = ({ id }: Props) => {
     WORK_LOCATION_SEARCH_DEBOUNCE_MS
   );
 
-  const { data: nameCheckResult } = useCheckWorkLocationNameExists(
-    debouncedName,
-    debouncedName.length > 0 &&
-      !(isEditMode && debouncedName === workLocation?.name)
-  );
+  const { data: nameCheckResult, error: nameCheckError } =
+    useCheckWorkLocationNameExists(
+      debouncedName,
+      debouncedName.length > 0 &&
+        !(isEditMode && debouncedName === workLocation?.name)
+    );
 
   const isNameDuplicate =
-    nameCheckResult?.isExists === true &&
+    (nameCheckResult?.isExists === true ||
+      (nameCheckError instanceof AxiosError &&
+        nameCheckError.response?.data?.results?.[0]?.messageKey ===
+          COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS)) &&
     !(isEditMode && debouncedName === workLocation?.name);
   const isNameCheckPending = formik.values.name.trim() !== debouncedName;
 
