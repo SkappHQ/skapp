@@ -164,7 +164,8 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
           menuProps: {
             paperProps: {
               sx: {
-                style: {
+                sx: {
+                  borderRadius: "0.75rem",
                   maxHeight: "12rem",
                   overflowY: "auto"
                 }
