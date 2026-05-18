@@ -13,6 +13,11 @@ import AppBarMenu from "~community/common/components/molecules/AppBarMenu/AppBar
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appBarTestId } from "~community/common/constants/testIds";
 import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
+import useDrawer from "~community/common/hooks/useDrawer";
+import {
+  MediaQueries,
+  useMediaQuery
+} from "~community/common/hooks/useMediaQuery";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { AppBarItemTypes } from "~community/common/types/CommonTypes";
@@ -32,6 +37,10 @@ const AppBar = () => {
   const [showClockWidget, setShowClockWidget] = useState(false);
 
   const breadcrumbs = useBreadcrumbs();
+
+  const queryMatches = useMediaQuery();
+  const isBelow600 = queryMatches(MediaQueries.BELOW_600);
+  const { handleDrawer } = useDrawer(isBelow600);
 
   const { user } = useAuth();
 
@@ -81,73 +90,86 @@ const AppBar = () => {
     <>
       <PageHeader
         breadcrumbs={breadcrumbs}
-        onBreadcrumbNavigate={(href) => router.push(href)}
+        onNavigate={(href) => router.push(href)}
       >
-        {employee ? (
-          <Stack sx={classes.userInfoPanelWrapper} ref={userInfoRef}>
-            {showClockWidget && <ClockWidget />}
-            <Box
-              sx={{ cursor: "pointer" }}
-              onClick={() => handleOpenMenu(AppBarItemTypes.NOTIFICATION)}
-              tabIndex={0}
-              role="button"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleOpenMenu(AppBarItemTypes.NOTIFICATION);
-                }
-              }}
-              aria-label="Notifications"
-            >
-              <Badge
-                sx={{
-                  ".MuiBadge-badge": {
-                    backgroundColor: "error.contrastText",
-                    color: "common.white"
+        <>
+          {employee ? (
+            <Stack sx={classes.userInfoPanelWrapper} ref={userInfoRef}>
+              {showClockWidget && <ClockWidget />}
+              <div
+                className="cursor-pointer"
+                onClick={() => handleOpenMenu(AppBarItemTypes.NOTIFICATION)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleOpenMenu(AppBarItemTypes.NOTIFICATION);
                   }
                 }}
-                badgeContent={notifyData.unreadCount}
-                invisible={false}
-                max={99}
-                aria-atomic={true}
+                aria-label="Notifications"
               >
-                <Icon
-                  name={IconName.BELL_ICON}
-                  width="1.75rem"
-                  height="1.75rem"
+                <Badge
+                  sx={{
+                    ".MuiBadge-badge": {
+                      backgroundColor: "error.contrastText",
+                      color: "common.white"
+                    }
+                  }}
+                  badgeContent={notifyData.unreadCount}
+                  invisible={false}
+                  max={99}
+                  aria-atomic={true}
+                >
+                  <Icon
+                    name={IconName.BELL_ICON}
+                    width="1.75rem"
+                    height="1.75rem"
+                  />
+                </Badge>
+              </div>
+              <div
+                className="cursor-pointer"
+                onClick={() => handleOpenMenu(AppBarItemTypes.ACCOUNT_DETAILS)}
+                data-testid={appBarTestId.appBar.profileAvatar}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleOpenMenu(AppBarItemTypes.ACCOUNT_DETAILS);
+                  }
+                }}
+                aria-label="Account details"
+              >
+                <Avatar
+                  firstName={employee?.firstName || ""}
+                  lastName={employee?.lastName || ""}
+                  src={
+                    typeof employee?.authPic === "string"
+                      ? employee.authPic
+                      : ""
+                  }
+                  avatarStyles={{ width: "2.5rem", height: "2.5rem" }}
                 />
-              </Badge>
-            </Box>
-            <Box
-              sx={{ cursor: "pointer" }}
-              onClick={() => handleOpenMenu(AppBarItemTypes.ACCOUNT_DETAILS)}
-              data-testid={appBarTestId.appBar.profileAvatar}
-              tabIndex={0}
-              role="button"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleOpenMenu(AppBarItemTypes.ACCOUNT_DETAILS);
-                }
-              }}
-              aria-label="Account details"
-            >
-              <Avatar
-                firstName={employee?.firstName || ""}
-                lastName={employee?.lastName || ""}
-                src={
-                  typeof employee?.authPic === "string" ? employee.authPic : ""
-                }
-                avatarStyles={{ width: "2.5rem", height: "2.5rem" }}
-              />
-            </Box>
-          </Stack>
-        ) : (
-          <Skeleton
-            variant="rounded"
-            height="2.5rem"
-            width="7.5rem"
-            sx={classes.userInfoPanelWrapper}
-            animation={"wave"}
-          />
+              </div>
+            </Stack>
+          ) : (
+            <Skeleton
+              variant="rounded"
+              height="2.5rem"
+              width="7.5rem"
+              sx={classes.userInfoPanelWrapper}
+              animation={"wave"}
+            />
+          )}
+        </>
+        {isBelow600 && (
+          <button
+            className="flex cursor-pointer items-center justify-center w-10 h-10"
+            onClick={handleDrawer}
+            aria-label="Toggle navigation"
+          >
+            <Icon name={IconName.MENU_ICON} width="1.5rem" height="1.5rem" />
+          </button>
         )}
       </PageHeader>
       <Box sx={classes.appBarMenuWrapper}>

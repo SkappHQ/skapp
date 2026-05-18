@@ -2,13 +2,16 @@ const styles = () => ({
   protectedWrapper: {
     flexDirection: "row",
     width: "100%",
-    overflowX: "hidden"
+    height: "100dvh",
+    overflow: "hidden"
   },
   contentWrapper: {
     width: "100%",
+    height: "100%",
     boxSizing: "border-box",
     transition: "width 0.3s ease",
-    overflowX: "hidden"
+    overflowX: "hidden",
+    overflowY: "auto"
   }
 });
 

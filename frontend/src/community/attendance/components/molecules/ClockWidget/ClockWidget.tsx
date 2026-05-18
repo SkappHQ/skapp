@@ -138,7 +138,9 @@ const ClockWidget = (): JSX.Element => {
           onClick={handleClockIn}
           disabled={isDisabled}
           aria-label={
-            isDisabled ? translateAria(["widget"]) : translateText(["clockIn"])
+            isDisabled
+              ? title || translateAria(["widget"])
+              : translateAria(["clockIn"])
           }
         >
           <Icon
