@@ -1,7 +1,7 @@
 import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -57,6 +57,14 @@ const WorkLocationForm = ({ id }: Props) => {
 
   const validationSchema = buildWorkLocationValidationSchema(translateText);
 
+  const pendingNavigationRef = useRef<string | null>(null);
+  const allowRouteChangeRef = useRef(false);
+
+  const stablePreloadedEmployees = useMemo(
+    () => workLocation?.employees ?? [],
+    [workLocation?.employees]
+  );
+
   const navigateBack = () => {
     router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
   };
@@ -71,6 +79,7 @@ const WorkLocationForm = ({ id }: Props) => {
           description: translateText(["toasts.createSuccess.description"]),
           isIcon: true
         });
+        allowRouteChangeRef.current = true;
         navigateBack();
       },
       () => {
@@ -94,6 +103,7 @@ const WorkLocationForm = ({ id }: Props) => {
           description: translateText(["toasts.updateSuccess.description"]),
           isIcon: true
         });
+        allowRouteChangeRef.current = true;
         navigateBack();
       },
       () => {
@@ -192,21 +202,68 @@ const WorkLocationForm = ({ id }: Props) => {
 
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);
-    setIsFormDirty(false);
-    navigateBack();
+    allowRouteChangeRef.current = true;
+    const target = pendingNavigationRef.current;
+    pendingNavigationRef.current = null;
+    if (target) {
+      router.push(target);
+    } else {
+      navigateBack();
+    }
   };
 
   const handleResume = () => {
     setIsUnsavedModalOpen(false);
+    pendingNavigationRef.current = null;
   };
+
+  const isDirtyRef = useRef(formik.dirty);
+
+  useEffect(() => {
+    isDirtyRef.current = formik.dirty;
+  });
 
   useEffect(() => {
     setIsFormDirty(formik.dirty);
   }, [formik.dirty, setIsFormDirty]);
 
   useEffect(() => {
-    router.beforePopState(() => {
-      if (formik.dirty) {
+    const handleRouteChangeStart = (url: string) => {
+      if (allowRouteChangeRef.current) {
+        allowRouteChangeRef.current = false;
+        return;
+      }
+      if (isDirtyRef.current && url !== router.asPath) {
+        pendingNavigationRef.current = url;
+        setIsUnsavedModalOpen(true);
+        router.events.emit("routeChangeError");
+        throw "Abort route change";
+      }
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirtyRef.current) {
+        e.preventDefault();
+      }
+    };
+
+    router.events.on("routeChangeStart", handleRouteChangeStart);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      router.events.off("routeChangeStart", handleRouteChangeStart);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [router, setIsUnsavedModalOpen]);
+
+  useEffect(() => {
+    router.beforePopState(({ url }) => {
+      if (allowRouteChangeRef.current) {
+        allowRouteChangeRef.current = false;
+        return true;
+      }
+      if (isDirtyRef.current) {
+        pendingNavigationRef.current = url;
         setIsUnsavedModalOpen(true);
         globalThis.history.pushState(null, "", router.asPath);
         return false;
@@ -217,7 +274,7 @@ const WorkLocationForm = ({ id }: Props) => {
     return () => {
       router.beforePopState(() => true);
     };
-  }, [formik.dirty, router, setIsUnsavedModalOpen]);
+  }, [router, setIsUnsavedModalOpen]);
 
   useEffect(() => {
     return () => {
@@ -285,7 +342,7 @@ const WorkLocationForm = ({ id }: Props) => {
 
         <WorkLocationEmployeeSelector
           formik={formik}
-          preloadedEmployees={workLocation?.employees ?? []}
+          preloadedEmployees={stablePreloadedEmployees}
         />
 
         {canSeeGeofence && <GeofenceMap formik={formik} />}
