@@ -155,18 +155,14 @@ export const useDeleteWorkLocation = (
 
 export const useCheckWorkLocationNameExists = (
   name: string,
-  excludeId?: number,
   enabled: boolean = true
 ) => {
   return useQuery({
-    queryKey: workLocationQueryKeys.CHECK_WORK_LOCATION_NAME_EXISTS(
-      name,
-      excludeId
-    ),
+    queryKey: workLocationQueryKeys.CHECK_WORK_LOCATION_NAME_EXISTS(name),
     queryFn: async (): Promise<WorkLocationNameAvailabilityResponse> => {
       try {
         const response = await authFetch.get(
-          workLocationEndpoints.CHECK_WORK_LOCATION_NAME_EXISTS(name, excludeId)
+          workLocationEndpoints.CHECK_WORK_LOCATION_NAME_EXISTS(name)
         );
         return response.data.results[0] as WorkLocationNameAvailabilityResponse;
       } catch (error) {

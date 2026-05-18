@@ -49,13 +49,12 @@ public class WorkLocationController {
 	}
 
 	@Operation(summary = "Check if work location name exists",
-			description = "Returns whether a work location name already exists. Optionally excludes a given ID (for update scenarios).")
+			description = "Returns whether a work location name already exists.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_ADMIN')")
 	@GetMapping(value = "/name-exists", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> checkWorkLocationNameExists(@RequestParam String name,
-			@RequestParam(required = false) Long excludeId) {
+	public ResponseEntity<ResponseEntityDto> checkWorkLocationNameExists(@RequestParam String name) {
 
-		ResponseEntityDto response = workLocationService.checkWorkLocationNameExists(name, excludeId);
+		ResponseEntityDto response = workLocationService.checkWorkLocationNameExists(name);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

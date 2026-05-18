@@ -88,7 +88,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		String workLocationName = workLocationRequestDto.getName();
 
 		if (workLocationName != null
-				&& workLocationDao.existsByNameIgnoreCaseAndWorkLocationIdNot(workLocationName, id)) {
+				&& !workLocationName.equalsIgnoreCase(workLocation.getName())
+				&& workLocationDao.existsByNameIgnoreCase(workLocationName)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
 		}
 
@@ -287,7 +288,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto checkWorkLocationNameExists(String name, Long excludeId) {
+	public ResponseEntityDto checkWorkLocationNameExists(String name) {
 		log.info("checkWorkLocationNameExists: execution started");
 
 		if (name == null || name.isBlank()) {
@@ -298,17 +299,14 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_LENGTH_EXCEEDED);
 		}
 
-		boolean exists;
-		if (excludeId != null) {
-			exists = workLocationDao.existsByNameIgnoreCaseAndWorkLocationIdNot(name.trim(), excludeId);
-		}
-		else {
-			exists = workLocationDao.existsByNameIgnoreCase(name.trim());
-		}
+		boolean isExists = workLocationDao.existsByNameIgnoreCase(name);
+
+		WorkLocationNameAvailabilityResponseDto responseDto = new WorkLocationNameAvailabilityResponseDto();
+		responseDto.setIsExists(isExists);
 
 		log.info("checkWorkLocationNameExists: execution ended");
 
-		return new ResponseEntityDto(false, new WorkLocationNameAvailabilityResponseDto(exists));
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 }

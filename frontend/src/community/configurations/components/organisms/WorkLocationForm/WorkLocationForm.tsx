@@ -181,11 +181,13 @@ const WorkLocationForm = ({ id }: Props) => {
 
   const { data: nameCheckResult } = useCheckWorkLocationNameExists(
     debouncedName,
-    isEditMode ? id : undefined,
-    debouncedName !== workLocation?.name
+    debouncedName.length > 0 &&
+      !(isEditMode && debouncedName === workLocation?.name)
   );
 
-  const isNameDuplicate = nameCheckResult?.isExists === true;
+  const isNameDuplicate =
+    nameCheckResult?.isExists === true &&
+    !(isEditMode && debouncedName === workLocation?.name);
   const isNameCheckPending = formik.values.name.trim() !== debouncedName;
 
   const handleLeave = () => {

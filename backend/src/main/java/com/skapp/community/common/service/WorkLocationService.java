@@ -18,6 +18,6 @@ public interface WorkLocationService {
 
 	ResponseEntityDto getWorkLocationById(Long id);
 
-	ResponseEntityDto checkWorkLocationNameExists(String name, Long excludeId);
+	ResponseEntityDto checkWorkLocationNameExists(String name);
 
 }
