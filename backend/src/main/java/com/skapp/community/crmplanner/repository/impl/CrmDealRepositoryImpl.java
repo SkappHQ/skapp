@@ -78,7 +78,9 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			predicates.add(cb.or(cb.like(cb.lower(deal.get(CrmDeal_.name)), keyword),
 					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), keyword),
 					cb.like(cb.lower(ownerJoin.get(Employee_.firstName)), keyword),
-					cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword)));
+					cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword),
+					cb.like(cb.lower(cb.concat(cb.concat(ownerJoin.get(Employee_.firstName), " "),
+							ownerJoin.get(Employee_.lastName))), keyword)));
 		}
 
 		if (filterDto.getStageId() != null) {
