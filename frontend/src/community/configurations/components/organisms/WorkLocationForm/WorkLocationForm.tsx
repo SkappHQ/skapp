@@ -1,7 +1,7 @@
 import { useFormik } from "formik";
 import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -53,6 +53,14 @@ const WorkLocationForm = ({ id }: Props) => {
     attendanceConfig?.isGeoFencingEnabled === true;
 
   const validationSchema = buildWorkLocationValidationSchema(translateText);
+
+  const pendingNavigationRef = useRef<string | null>(null);
+  const allowRouteChangeRef = useRef(false);
+
+  const stablePreloadedEmployees = useMemo(
+    () => workLocation?.employees ?? [],
+    [workLocation?.employees]
+  );
 
   const navigateBack = () => {
     router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
@@ -174,12 +182,8 @@ const WorkLocationForm = ({ id }: Props) => {
     }
   });
 
-  const pendingNavigationRef = useRef<string | null>(null);
-  const allowRouteChangeRef = useRef(false);
-
   const handleLeave = () => {
     setIsUnsavedModalOpen(false);
-    setIsFormDirty(false);
     allowRouteChangeRef.current = true;
     const target = pendingNavigationRef.current;
     pendingNavigationRef.current = null;
@@ -196,7 +200,10 @@ const WorkLocationForm = ({ id }: Props) => {
   };
 
   const isDirtyRef = useRef(formik.dirty);
-  isDirtyRef.current = formik.dirty;
+
+  useEffect(() => {
+    isDirtyRef.current = formik.dirty;
+  });
 
   useEffect(() => {
     setIsFormDirty(formik.dirty);
@@ -209,7 +216,7 @@ const WorkLocationForm = ({ id }: Props) => {
         pendingNavigationRef.current = url;
         setIsUnsavedModalOpen(true);
         router.events.emit("routeChangeError");
-        throw new Error("Abort route change");
+        throw "Abort route change";
       }
     };
 
@@ -219,18 +226,30 @@ const WorkLocationForm = ({ id }: Props) => {
       }
     };
 
+    const handleRouteChangeComplete = () => {
+      allowRouteChangeRef.current = false;
+    };
+    const handleRouteChangeError = () => {
+      allowRouteChangeRef.current = false;
+    };
+
     router.events.on("routeChangeStart", handleRouteChangeStart);
+    router.events.on("routeChangeComplete", handleRouteChangeComplete);
+    router.events.on("routeChangeError", handleRouteChangeError);
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       router.events.off("routeChangeStart", handleRouteChangeStart);
+      router.events.off("routeChangeComplete", handleRouteChangeComplete);
+      router.events.off("routeChangeError", handleRouteChangeError);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [router, setIsUnsavedModalOpen]);
 
   useEffect(() => {
-    router.beforePopState(() => {
+    router.beforePopState(({ url }) => {
       if (isDirtyRef.current) {
+        pendingNavigationRef.current = url;
         setIsUnsavedModalOpen(true);
         globalThis.history.pushState(null, "", router.asPath);
         return false;
@@ -300,7 +319,7 @@ const WorkLocationForm = ({ id }: Props) => {
 
         <WorkLocationEmployeeSelector
           formik={formik}
-          preloadedEmployees={workLocation?.employees ?? []}
+          preloadedEmployees={stablePreloadedEmployees}
         />
 
         {canSeeGeofence && <GeofenceMap formik={formik} />}
@@ -310,7 +329,10 @@ const WorkLocationForm = ({ id }: Props) => {
             <ButtonV2
               variant="tertiary"
               type="button"
-              onClick={navigateBack}
+              onClick={() => {
+                allowRouteChangeRef.current = true;
+                navigateBack();
+              }}
               disabled={isPending}
             >
               {translateText(["form.cancelButton"])}
