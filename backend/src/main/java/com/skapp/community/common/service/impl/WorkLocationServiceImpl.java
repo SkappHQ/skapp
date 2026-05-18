@@ -87,8 +87,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		String workLocationName = workLocationRequestDto.getName();
 
-		if (workLocationName != null
-				&& !workLocationName.equalsIgnoreCase(workLocation.getName())
+		if (workLocationName != null && !workLocationName.equalsIgnoreCase(workLocation.getName())
 				&& workLocationDao.existsByNameIgnoreCase(workLocationName)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
 		}
