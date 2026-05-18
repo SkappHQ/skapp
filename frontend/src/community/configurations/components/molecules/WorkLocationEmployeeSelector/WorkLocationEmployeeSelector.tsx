@@ -203,6 +203,15 @@ const WorkLocationEmployeeSelector = ({
     }
   };
 
+  const renderAllEmployeesChip = () => (
+    <AvatarChip
+      firstName={translateText(["form.allEmployees"]).trim()}
+      lastName=""
+      avatarUrl={undefined}
+      isTooltipEnabled
+    />
+  );
+
   const renderTriggerContent = () => {
     if (selectedCount === 0) {
       return (
@@ -213,13 +222,7 @@ const WorkLocationEmployeeSelector = ({
     }
 
     if (isAllSelected) {
-      return (
-        <AvatarChip
-          firstName={translateText(["form.allEmployees"])}
-          lastName=""
-          avatarUrl={undefined}
-        />
-      );
+      return renderAllEmployeesChip();
     }
 
     if (selectedCount <= 2) {
@@ -229,8 +232,9 @@ const WorkLocationEmployeeSelector = ({
             <AvatarChip
               key={emp.employeeId}
               firstName={emp.firstName ?? ""}
-              lastName={emp.lastName ?? ""}
+              lastName={(emp.lastName ?? "").trim()}
               avatarUrl={emp.authPic}
+              isTooltipEnabled
             />
           ))}
         </div>
@@ -241,10 +245,11 @@ const WorkLocationEmployeeSelector = ({
       <AvatarGroup
         avatars={selectedEmployees.map((emp) => ({
           firstName: emp.firstName ?? "",
-          lastName: emp.lastName ?? "",
-          image: emp.authPic ?? null
+          lastName: (emp.lastName ?? "").trim(),
+          image: emp.authPic || null
         }))}
         max={3}
+        isHoverModal
       />
     );
   };
@@ -332,8 +337,9 @@ const WorkLocationEmployeeSelector = ({
                       <Checkbox checked={true} />
                       <AvatarChip
                         firstName={emp.firstName ?? ""}
-                        lastName={emp.lastName ?? ""}
+                        lastName={(emp.lastName ?? "").trim()}
                         avatarUrl={emp.authPic}
+                        isTooltipEnabled
                       />
                     </div>
                   );
@@ -357,11 +363,7 @@ const WorkLocationEmployeeSelector = ({
               }}
             >
               <Checkbox checked={isAllSelected} />
-              <AvatarChip
-                firstName={translateText(["form.allEmployees"])}
-                lastName=""
-                avatarUrl={undefined}
-              />
+              {renderAllEmployeesChip()}
             </div>
           )}
 
@@ -388,8 +390,9 @@ const WorkLocationEmployeeSelector = ({
                     <Checkbox checked={false} />
                     <AvatarChip
                       firstName={emp.firstName ?? ""}
-                      lastName={emp.lastName ?? ""}
+                      lastName={(emp.lastName ?? "").trim()}
                       avatarUrl={emp.authPic}
+                      isTooltipEnabled
                     />
                   </div>
                 );
