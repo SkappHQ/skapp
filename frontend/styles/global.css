@@ -10,6 +10,11 @@ div.fixed.inset-0[aria-hidden="true"] {
   z-index: 1201 !important;
 }
 
+/* CRM Deal side panel — shift close button inward from the right edge */
+.crm-deal-side-panel aside[role="dialog"] > div > header > div:last-child {
+  margin-right: 0.4rem;
+}
+
 @theme {
   --color-primary: #93c5fd;
   --color-primary-accent: #408ce4;

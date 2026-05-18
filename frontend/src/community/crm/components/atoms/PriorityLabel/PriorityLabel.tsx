@@ -18,8 +18,8 @@ const PriorityLabel: FC<Props> = ({ priority, className = "" }) => {
     case CrmPriorityEnum.HIGH:
       return (
         <Label
-          backgroundColor="bg-label-bg-peach"
-          textColor="text-label-text-peach"
+          backgroundColor="bg-semantic-red-background"
+          textColor="text-semantic-red-text"
           className={className}
         >
           <span className="inline-flex items-center gap-1.5">
@@ -32,8 +32,8 @@ const PriorityLabel: FC<Props> = ({ priority, className = "" }) => {
     case CrmPriorityEnum.MEDIUM:
       return (
         <Label
-          backgroundColor="bg-label-bg-lemon"
-          textColor="text-label-text-lemon"
+          backgroundColor="bg-semantic-amber-background"
+          textColor="text-semantic-amber-text"
           className={className}
         >
           <span className="inline-flex items-center gap-1.5">
@@ -46,8 +46,8 @@ const PriorityLabel: FC<Props> = ({ priority, className = "" }) => {
     case CrmPriorityEnum.LOW:
       return (
         <Label
-          backgroundColor="bg-label-bg-mint"
-          textColor="text-label-text-mint"
+          backgroundColor="bg-semantic-green-background"
+          textColor="text-semantic-green-text"
           className={className}
         >
           <span className="inline-flex items-center gap-1.5">

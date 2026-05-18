@@ -71,7 +71,12 @@
       "stageRequired": "Stage is required",
       "contactRequired": "Contact is required",
       "ownerRequired": "Owner is required",
-      "ownerMustBeNumber": "Owner ID must be a valid number"
+      "ownerMustBeNumber": "Owner ID must be a valid number",
+      "amountInvalid": "Amount must be a valid positive number",
+      "addDealSuccessTitle": "Deal added",
+      "addDealSuccessDescription": "The deal has been successfully created.",
+      "addDealErrorTitle": "Failed to add deal",
+      "addDealErrorDescription": "Something went wrong. Please try again."
     }
   },
   "tasks": {

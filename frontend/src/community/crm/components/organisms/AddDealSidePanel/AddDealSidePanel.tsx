@@ -11,13 +11,17 @@ import { useFormik } from "formik";
 import {
   FC,
   ReactNode,
+  useEffect,
   useMemo,
   useState
 } from "react";
 import * as Yup from "yup";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useCreateDeal, useGetDealStages, useGetPriorities } from "~community/crm/api/crmDealApi";
+import { CrmDealStageEnum } from "~community/crm/enums/common";
 import PeoplePopupSearch from "~community/crm/components/molecules/PeoplePopupSearch/PeoplePopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
 import {
@@ -81,6 +85,7 @@ const PropertyRow: FC<{ label: string; children: ReactNode }> = ({
 
 const AddDealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
+  const { setToastMessage } = useToast();
   const [editingField, setEditingField] = useState<string | null>(null);
 
   const { isSidePanelOpen, closeSidePanel } = useAppStore((state) => ({
@@ -91,6 +96,16 @@ const AddDealSidePanel: FC = () => {
   // ---------- stages and priorities from API ----------
   const { data: stages = [] } = useGetDealStages();
   const { data: priorities = [] } = useGetPriorities();
+
+  // Set default stage to Lead (INITIAL) once stages are fetched
+  useEffect(() => {
+    if (stages.length > 0 && !formik.values.stageId) {
+      const leadStage = stages.find((s) => s.stageType === CrmDealStageEnum.INITIAL);
+      if (leadStage) {
+        formik.setFieldValue("stageId", String(leadStage.id));
+      }
+    }
+  }, [stages]);
 
   const stageOptions = useMemo<DropdownOption[]>(
     () =>
@@ -136,16 +151,34 @@ const AddDealSidePanel: FC = () => {
     name: Yup.string().trim().required(translateText(["dealNameRequired"])),
     stageId: Yup.string().required(translateText(["stageRequired"])),
     contactId: Yup.string().required(translateText(["contactRequired"])),
-    ownerId: Yup.string().required(translateText(["ownerRequired"]))
+    ownerId: Yup.string().required(translateText(["ownerRequired"])),
+    amount: Yup.string().test(
+      "is-valid-amount",
+      translateText(["amountInvalid"]),
+      (value) => !value || (/^\d+(\.\d+)?$/.test(value) && Number(value) > 0)
+    )
   });
 
   const { mutate: createDeal } = useCreateDeal(
     () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText(["addDealSuccessTitle"]),
+        description: translateText(["addDealSuccessDescription"])
+      });
       formik.resetForm();
       setEditingField(null);
       closeSidePanel();
     },
-    () => {}
+    () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["addDealErrorTitle"]),
+        description: translateText(["addDealErrorDescription"])
+      });
+    }
   );
 
   const formik = useFormik<AddDealFormValues>({
@@ -189,14 +222,15 @@ const AddDealSidePanel: FC = () => {
   );
 
   return (
-    <SidePanel
-      isOpen={isSidePanelOpen}
-      onClose={handleClose}
-      header={<span className="pl-2 text-2xl font-bold text-black">{translateText(["title"])}</span>}
-      width="lg"
-      animation="slide"
-      closeOnBackdropClick
-      closeAriaLabel="Close add deal panel"
+    <div className="crm-deal-side-panel">
+      <SidePanel
+        isOpen={isSidePanelOpen}
+        onClose={handleClose}
+        header={<span className="pl-2 text-2xl font-bold text-black">{translateText(["title"])}</span>}
+        width="xl"
+        animation="slide"
+        closeOnBackdropClick
+        closeAriaLabel="Close add deal panel"
       footer={
         <div className="flex justify-end px-6 py-3">
           <ButtonV2
@@ -275,21 +309,40 @@ const AddDealSidePanel: FC = () => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder={translateText(["amountPlaceholder"])}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                      if (["e", "E", "+", "-"].includes(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                     variant="sm"
                     fullWidth
                     autoFocus
+                    state={formik.touched.amount && formik.errors.amount ? "error" : "default"}
+                    errorMessage={formik.touched.amount && formik.errors.amount ? formik.errors.amount : undefined}
                   />
                 </div>
               ) : (
-                <button
-                  type="button"
-                  className={`text-[14px] text-left w-full pl-1 ${
-                    formik.values.amount ? "text-[#111827]" : "text-[#9CA3AF]"
-                  }`}
-                  onClick={() => setEditingField("amount")}
-                >
-                  {formik.values.amount || translateText(["noneText"])}
-                </button>
+                <div className="flex flex-col w-full">
+                  <button
+                    type="button"
+                    className={`text-[14px] text-left w-full pl-1 ${
+                      formik.touched.amount && formik.errors.amount
+                        ? "text-[#DC2626]"
+                        : formik.values.amount ? "text-[#111827]" : "text-[#9CA3AF]"
+                    }`}
+                    onClick={() => setEditingField("amount")}
+                  >
+                    {formik.values.amount || translateText(["noneText"])}
+                  </button>
+                  {formik.touched.amount && formik.errors.amount && (
+                    <p className="text-[#DC2626] text-[12px] mt-1">
+                      {formik.errors.amount}
+                    </p>
+                  )}
+                </div>
               )}
             </PropertyRow>
 
@@ -423,6 +476,7 @@ const AddDealSidePanel: FC = () => {
         </div>
       </div>
     </SidePanel>
+    </div>
   );
 };
 

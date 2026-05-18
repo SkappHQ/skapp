@@ -1,9 +1,11 @@
 ﻿import {
+  AvatarChip,
   BaseRowData,
   Column,
   GroupData,
   InputField,
   ListTable,
+  ProjectTableSkeletonLoader,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import {
@@ -16,7 +18,6 @@ import {
   useState
 } from "react";
 
-import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetDeals,
@@ -55,7 +56,9 @@ const DealTable: FC = () => {
   const [fetchPage, setFetchPage] = useState(0);
   const [allDeals, setAllDeals] = useState<CrmDealListItemType[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [inputValue, setInputValue] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isFetchingMoreRef = useRef(false);
 
@@ -69,7 +72,7 @@ const DealTable: FC = () => {
 
   // Accumulate pages as data arrives
   useEffect(() => {
-    if (!dealsData?.items || isFetching) return;
+    if (!dealsData?.items) return;
     if (dealsData.currentPage === 0) {
       setAllDeals(dealsData.items);
     } else {
@@ -77,7 +80,7 @@ const DealTable: FC = () => {
     }
     setHasMore(dealsData.currentPage < (dealsData.totalPages ?? 1) - 1);
     isFetchingMoreRef.current = false;
-  }, [dealsData, isFetching]);
+  }, [dealsData]);
 
   // Triggered by skapp-ui Table's built-in scroll detection
   const handleLoadMore = useCallback(async () => {
@@ -99,15 +102,18 @@ const DealTable: FC = () => {
   // Reset accumulated data when filters change
   const resetPagination = useCallback(() => {
     setFetchPage(0);
-    setAllDeals([]);
     setHasMore(true);
     isFetchingMoreRef.current = false;
   }, []);
 
   // Handlers
   const handleSearchChange = (value: string) => {
-    setSearchKeyword(value);
-    resetPagination();
+    setInputValue(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setSearchKeyword(value);
+      resetPagination();
+    }, 300);
   };
 
   const noSearchResultsTitle = useMemo(() => {
@@ -145,7 +151,7 @@ const DealTable: FC = () => {
     },
     {
       id: "value",
-      title: translateText(["valueColumn"]),
+      title: (<span className="w-full block text-right">{translateText(["valueColumn"])}</span>) as unknown as string,
       field: "value",
       width: 160,
       minWidth: 90,
@@ -210,7 +216,7 @@ const DealTable: FC = () => {
         id: String(deal.id),
         dealName: <span className="body2">{deal.name ?? ""}</span>,
         value: (
-          <span className="body2">
+          <span className="body2 w-full block text-right">
             {deal.amount
               ? `$${Number(deal.amount).toLocaleString()}`
               : "\u2014"}
@@ -233,10 +239,14 @@ const DealTable: FC = () => {
         ),
         dealOwner: (
           <AvatarChip
-            firstName={ownerFirst}
-            lastName={ownerLast}
-            avatarUrl={undefined}
-            chipStyles={{ maxWidth: "fit-content" }}
+            avatarProps={{
+              firstName: ownerFirst,
+              lastName: ownerLast,
+              src: "",
+              size: "sm"
+            }}
+            label={deal.ownerName ?? ""}
+            backgroundColor="bg-secondary-background"
           />
         )
       };
@@ -255,7 +265,7 @@ const DealTable: FC = () => {
     <div className="flex flex-col gap-6 w-full">
       <InputField
         placeholder={translateText(["searchPlaceholder"])}
-        value={searchKeyword}
+        value={inputValue}
         onChange={(e) => handleSearchChange(e.target.value)}
         type="search"
         variant="md"
@@ -270,7 +280,12 @@ const DealTable: FC = () => {
         className="max-w-[412px] w-full"
       />
       <div className="w-full h-fit max-h-[600px] flex rounded-lg overflow-auto shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full">
-        <ListTable<DealRow>
+        {isFetching && allDeals.length === 0 ? (
+          <table className="w-full">
+            <ProjectTableSkeletonLoader rowCount={8} />
+          </table>
+        ) : (
+          <ListTable<DealRow>
           columnHeaders={columnHeaders}
           data={tableData}
           hasMore={hasMore}
@@ -291,6 +306,7 @@ const DealTable: FC = () => {
           disableColumnDragging
           infiniteScrollLoadingMessage={translateText(["infiniteScrollLoadingMessage"])}
         />
+        )}
       </div>
     </div>
   );
