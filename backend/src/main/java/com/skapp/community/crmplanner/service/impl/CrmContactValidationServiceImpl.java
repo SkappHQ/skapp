@@ -23,7 +23,7 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 	@Override
 	public void validateCreateContactRequest(CrmContactCreateRequestDto requestDto) {
 		validateName(requestDto.getName());
-		validateEmail(requestDto.getEmail(), null);
+		validateEmail(requestDto.getEmail());
 		validateContactNumber(requestDto.getContactNumber());
 	}
 
@@ -43,7 +43,7 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 		}
 	}
 
-	private void validateEmail(String email, Long excludeContactId) {
+	private void validateEmail(String email) {
 		if (email == null || email.trim().isEmpty()) {
 			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_REQUIRED);
 		}
