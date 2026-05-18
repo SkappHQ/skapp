@@ -7,8 +7,12 @@ import com.skapp.community.common.model.User_;
 import com.skapp.community.common.payload.request.NotificationsFilterDto;
 import com.skapp.community.common.payload.response.NotificationTypeCountResponseDto;
 import com.skapp.community.common.repository.NotificationRepository;
+import com.skapp.community.leaveplanner.model.LeaveRequest;
+import com.skapp.community.leaveplanner.model.LeaveRequest_;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
+import com.skapp.community.timeplanner.model.TimeRequest;
+import com.skapp.community.timeplanner.model.TimeRequest_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -16,6 +20,7 @@ import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import com.skapp.community.common.type.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -106,6 +111,38 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.IS_ACTIVE), Boolean.TRUE));
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.USER_ID), userId));
 		predicates.add(criteriaBuilder.equal(root.get(Notification_.IS_TYPE_VIEWED), Boolean.FALSE));
+
+		// Exclude own leave request notifications (where the user is the requester)
+		Subquery<Integer> ownLeaveExistsSubquery = criteriaQuery.subquery(Integer.class);
+		Root<LeaveRequest> leaveRequestRoot = ownLeaveExistsSubquery.from(LeaveRequest.class);
+		ownLeaveExistsSubquery.select(criteriaBuilder.literal(1));
+		ownLeaveExistsSubquery.where(
+				criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.leaveRequestId).as(String.class),
+						root.get(Notification_.RESOURCE_ID)),
+				criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.employee).get(Employee_.employeeId),
+						notificationEmployeeJoin.get(Employee_.employeeId)));
+
+		Predicate notOwnLeaveRequest = criteriaBuilder.not(criteriaBuilder.and(
+				root.get(Notification_.NOTIFICATION_TYPE)
+					.in(NotificationType.LEAVE_REQUEST, NotificationType.LEAVE_REQUEST_NUDGE),
+				criteriaBuilder.exists(ownLeaveExistsSubquery)));
+
+		// Exclude own time entry notifications (where the user is the requester)
+		Subquery<Integer> ownTimeExistsSubquery = criteriaQuery.subquery(Integer.class);
+		Root<TimeRequest> timeRequestRoot = ownTimeExistsSubquery.from(TimeRequest.class);
+		ownTimeExistsSubquery.select(criteriaBuilder.literal(1));
+		ownTimeExistsSubquery.where(
+				criteriaBuilder.equal(timeRequestRoot.get(TimeRequest_.timeRequestId).as(String.class),
+						root.get(Notification_.RESOURCE_ID)),
+				criteriaBuilder.equal(timeRequestRoot.get(TimeRequest_.employee).get(Employee_.employeeId),
+						notificationEmployeeJoin.get(Employee_.employeeId)));
+
+		Predicate notOwnTimeEntry = criteriaBuilder.not(criteriaBuilder.and(
+				criteriaBuilder.equal(root.get(Notification_.NOTIFICATION_TYPE), NotificationType.TIME_ENTRY),
+				criteriaBuilder.exists(ownTimeExistsSubquery)));
+
+		predicates.add(notOwnLeaveRequest);
+		predicates.add(notOwnTimeEntry);
 
 		Predicate[] predicatesArray = new Predicate[predicates.size()];
 		predicates.toArray(predicatesArray);
