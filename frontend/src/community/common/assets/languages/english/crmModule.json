@@ -54,7 +54,9 @@
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
+      "filterButtonAriaLabel": "Filter companies",
       "search": "Search company",
+      "infiniteScrollLoadingMessage": "Loading companies...",
       "emptyDataState": {
         "title": "No companies available.",
         "description": "Create a company to get started."
@@ -65,10 +67,15 @@
       },
       "columns": {
         "nameHeader": "NAME",
+        "nameAriaLabel": "Company Name",
         "phoneHeader": "CONTACT NO.",
+        "phoneAriaLabel": "Contact Number",
         "tasksHeader": "OPEN TASKS",
+        "tasksAriaLabel": "Open Tasks",
         "pipelineHeader": "OPEN IN PIPELINE",
-        "accountValueHeader": "ACCOUNT VALUE"
+        "pipelineAriaLabel": "Open in Pipeline",
+        "accountValueHeader": "ACCOUNT VALUE",
+        "accountValueAriaLabel": "Account Value"
       },
       "validations": {
         "name": "Company name is required",

@@ -156,6 +156,7 @@ export const CompanyTable: React.FC = () => {
           icon={<FilterIcon />}
           style={styles.filterButton}
           type="button"
+          aria-label={translateText(["table", "filterButtonAriaLabel"])}
           disabled
         />
       </div>

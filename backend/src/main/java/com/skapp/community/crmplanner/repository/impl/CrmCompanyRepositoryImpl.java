@@ -45,7 +45,11 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 		Join<CrmCompany, CrmDeal> dealJoin = company.join(CrmModuleConstant.DEALS, JoinType.LEFT);
 
-		Expression<Long> taskCount = cb.countDistinct((taskJoin.get(CrmModuleConstant.ID)));
+		Expression<Long> taskCount = cb.countDistinct(cb.<Long>selectCase()
+			.when(cb.and(cb.isFalse(taskJoin.get(CrmModuleConstant.IS_DELETED)),
+					cb.isFalse(taskJoin.get(CrmModuleConstant.IS_COMPLETED))),
+					taskJoin.<Long>get(CrmModuleConstant.ID))
+			.otherwise(cb.nullLiteral(Long.class)));
 
 		Expression<Long> overdueCount = cb.countDistinct(cb.<Long>selectCase()
 			.when(cb.and(cb.isFalse(taskJoin.get(CrmModuleConstant.IS_DELETED)),
@@ -56,13 +60,15 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 			.otherwise(cb.nullLiteral(Long.class)));
 
 		Expression<BigDecimal> openDealCase = cb.<BigDecimal>selectCase()
-			.when(cb.notEqual(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
-					CrmModuleConstant.WON_STAGE_ID), dealJoin.get(CrmModuleConstant.AMOUNT))
+			.when(cb.and(cb.isFalse(dealJoin.get(CrmModuleConstant.IS_DELETED)),
+					cb.notEqual(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
+							CrmModuleConstant.WON_STAGE_ID)), dealJoin.get(CrmModuleConstant.AMOUNT))
 			.otherwise(BigDecimal.ZERO);
 
 		Expression<BigDecimal> closedDealCase = cb.<BigDecimal>selectCase()
-			.when(cb.equal(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
-					CrmModuleConstant.WON_STAGE_ID), dealJoin.get(CrmModuleConstant.AMOUNT))
+			.when(cb.and(cb.isFalse(dealJoin.get(CrmModuleConstant.IS_DELETED)),
+					cb.equal(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
+							CrmModuleConstant.WON_STAGE_ID)), dealJoin.get(CrmModuleConstant.AMOUNT))
 			.otherwise(BigDecimal.ZERO);
 
 		Expression<BigDecimal> openValue = cb.<BigDecimal>sum(openDealCase);
@@ -70,13 +76,15 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		Expression<BigDecimal> accountValue = cb.<BigDecimal>sum(closedDealCase);
 
 		Expression<Long> closedDealsCount = cb.countDistinct(cb.<Long>selectCase()
-			.when(cb.equal(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
-					CrmModuleConstant.WON_STAGE_ID), dealJoin.<Long>get(CrmModuleConstant.ID))
+			.when(cb.and(cb.isFalse(dealJoin.get(CrmModuleConstant.IS_DELETED)),
+					cb.equal(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
+							CrmModuleConstant.WON_STAGE_ID)), dealJoin.<Long>get(CrmModuleConstant.ID))
 			.otherwise(cb.nullLiteral(Long.class)));
 
 		Expression<Long> openDealsCount = cb.countDistinct(cb.<Long>selectCase()
-			.when(cb.notEqual(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
-					CrmModuleConstant.WON_STAGE_ID), dealJoin.<Long>get(CrmModuleConstant.ID))
+			.when(cb.and(cb.isFalse(dealJoin.get(CrmModuleConstant.IS_DELETED)),
+					cb.notEqual(dealJoin.get(CrmModuleConstant.STAGE).get(CrmModuleConstant.STAGE_ID),
+							CrmModuleConstant.WON_STAGE_ID)), dealJoin.<Long>get(CrmModuleConstant.ID))
 			.otherwise(cb.nullLiteral(Long.class)));
 
 		query.select(cb.construct(CrmCompanyMetricsDto.class,
