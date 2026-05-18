@@ -181,7 +181,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto getAllWorkLocations() {
 		log.info("getAllWorkLocations: execution started");
 
-		List<WorkLocation> workLocations = workLocationDao.findAll();
+		List<WorkLocation> workLocations = workLocationDao.findAllWorkLocationsOrderByNameAsc();
 
 		List<WorkLocationSummaryResponseDto> workLocationResponseDtos = workLocations.stream()
 			.map(this::mapWorkLocationToSummaryResponseDto)
