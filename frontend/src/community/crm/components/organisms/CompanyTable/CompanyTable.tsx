@@ -166,7 +166,7 @@ export const CompanyTable: React.FC = () => {
         emptyStateType={emptyStateType}
         isLoading={isLoading && companies.length === 0}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-        height="35.3125rem"
+        height="33rem"
         hasMore={hasNextPage}
         onRowClick={handleRowClick}
         onLoadMore={loadMore}
