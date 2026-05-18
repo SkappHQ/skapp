@@ -321,6 +321,13 @@ const WorkLocationForm = ({ id }: Props) => {
     );
   }
 
+  const nameFieldHelperText =
+    formik.touched.name && formik.errors.name
+      ? formik.errors.name
+      : isNameDuplicate
+        ? translateText(["validation.nameAlreadyExists"])
+        : "";
+
   return (
     <>
       <form
@@ -334,18 +341,8 @@ const WorkLocationForm = ({ id }: Props) => {
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            state={
-              (formik.touched.name && formik.errors.name) || isNameDuplicate
-                ? "error"
-                : "default"
-            }
-            helperText={
-              formik.touched.name && formik.errors.name
-                ? formik.errors.name
-                : isNameDuplicate
-                  ? translateText(["validation.nameAlreadyExists"])
-                  : ""
-            }
+            state={nameFieldHelperText ? "error" : "default"}
+            helperText={nameFieldHelperText}
             name="name"
             maxLength={50}
             className="w-full"
