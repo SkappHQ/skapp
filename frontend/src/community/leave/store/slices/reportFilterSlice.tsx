@@ -82,6 +82,9 @@ const reportsFiltersSlice = (set: any): any => ({
     }));
   },
 
+  // teamId is preserved because it is a page-level selection (managed by the
+  // parent reports page) and should persist across report-type switches and
+  // filter resets triggered by child table components.
   resetReportsParams: () => {
     set((state: any) => ({
       reportsParams: {
