@@ -247,48 +247,56 @@ const AddDealSidePanel: FC = () => {
         </div>
       }
     >
-      <div className="flex gap-6 items-start h-full">
-        {/* ── Left column ── */}
-        <div className="flex-[2_1_0] min-w-0 flex flex-col gap-6">
-          <InputField
-            label={translateText(["dealNameLabel"])}
-            placeholder={translateText(["dealNamePlaceholder"])}
-            required
-            name="name"
-            value={formik.values.name}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            state={formik.touched.name && formik.errors.name ? "error" : "default"}
-            errorMessage={formik.touched.name && formik.errors.name ? formik.errors.name : undefined}
-            fullWidth
-          />
-          <TextArea
-            label={translateText(["descriptionLabel"])}
-            placeholder={translateText(["descriptionPlaceholder"])}
-            value={formik.values.description}
-            onChange={(e) => formik.setFieldValue("description", e.target.value)}
-            onBlur={formik.handleBlur}
-            className="w-full h-[121px]"
-          />
+      <div className="flex flex-col gap-6 h-full">
+        {/* ── Top row: Deal name + Stage (parallel) ── */}
+        <div className="flex gap-6 items-start">
+          <div className="flex-[2_1_0] min-w-0">
+            <InputField
+              label={translateText(["dealNameLabel"])}
+              placeholder={translateText(["dealNamePlaceholder"])}
+              required
+              name="name"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              state={formik.touched.name && formik.errors.name ? "error" : "default"}
+              errorMessage={formik.touched.name && formik.errors.name ? formik.errors.name : undefined}
+              fullWidth
+            />
+          </div>
+          <div className="flex-[1_0_0] min-w-0 pt-[26px]">
+            <Dropdown
+              options={stageOptions}
+              value={formik.values.stageId}
+              onChange={(v) => formik.setFieldValue("stageId", v)}
+              variant="jsx-content"
+              className="rounded-lg"
+              width="55%"
+              placeholder={translateText(["stageLabel"])}
+              errorMessage={
+                formik.touched.stageId && formik.errors.stageId
+                  ? formik.errors.stageId
+                  : undefined
+              }
+            />
+          </div>
         </div>
 
-        {/* ── Right column ── */}
-        <div className="flex-[1_0_0] min-w-0 flex flex-col gap-4">
-          {/* Stage */}
-          <Dropdown
-            options={stageOptions}
-            value={formik.values.stageId}
-            onChange={(v) => formik.setFieldValue("stageId", v)}
-            variant="jsx-content"
-            className="rounded-lg"
-            width="219px"
-            placeholder={translateText(["stageLabel"])}
-            errorMessage={
-              formik.touched.stageId && formik.errors.stageId
-                ? formik.errors.stageId
-                : undefined
-            }
-          />
+        {/* ── Bottom row: Description + Property rows ── */}
+        <div className="flex gap-6 items-start flex-1">
+          <div className="flex-[2_1_0] min-w-0">
+            <TextArea
+              label={translateText(["descriptionLabel"])}
+              placeholder={translateText(["descriptionPlaceholder"])}
+              value={formik.values.description}
+              onChange={(e) => formik.setFieldValue("description", e.target.value)}
+              onBlur={formik.handleBlur}
+              className="w-full h-[121px]"
+            />
+          </div>
+
+          {/* ── Right column: Property rows ── */}
+          <div className="flex-[1_0_0] min-w-0 flex flex-col gap-4">
 
           {/* Property rows — bordered card with click-to-edit */}
           <div className="border border-[#E5E7EB] rounded-lg p-3 flex flex-col gap-2 w-full">
@@ -421,6 +429,7 @@ const AddDealSidePanel: FC = () => {
               />
             </PropertyRow>
           </div>
+        </div>
         </div>
       </div>
       </SidePanel>
