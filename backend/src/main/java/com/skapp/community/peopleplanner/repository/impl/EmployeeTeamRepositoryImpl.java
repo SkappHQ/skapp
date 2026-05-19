@@ -226,6 +226,20 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 	}
 
 	@Override
+	public List<Long> findTeamIdsByEmployeeId(Long employeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+
+		Root<EmployeeTeam> root = criteriaQuery.from(EmployeeTeam.class);
+
+		Predicate employeePredicate = criteriaBuilder.equal(root.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+				employeeId);
+
+		criteriaQuery.select(root.get(EmployeeTeam_.team).get(Team_.teamId)).where(employeePredicate).distinct(true);
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
 	public List<Employee> getEmployeesByTeamIds(List<Long> teams, Long currentUserId, boolean isAdmin) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);

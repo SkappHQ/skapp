@@ -18,6 +18,8 @@ public interface EmployeeTeamRepository {
 
 	List<Team> findTeamsByEmployeeId(Long employeeId);
 
+	List<Long> findTeamIdsByEmployeeId(Long employeeId);
+
 	List<Employee> getEmployeesByTeamIds(List<Long> teams, Long currentUserId, boolean isAdmin);
 
 	void deleteEmployeeTeamByTeamId(Long teamId);

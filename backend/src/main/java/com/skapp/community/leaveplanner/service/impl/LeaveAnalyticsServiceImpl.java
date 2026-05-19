@@ -134,6 +134,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -1522,11 +1523,11 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		}
 
 		if (leaveRole.equals(Role.LEAVE_MANAGER)) {
+			Long managerEmployeeId = currentUser.getEmployee().getEmployeeId();
 			List<Employee> employeeManagers = employeeDao.findManagersByEmployeeIdAndLoggedInManagerId(employeeId,
-					currentUser.getEmployee().getEmployeeId());
+					managerEmployeeId);
 
-			if (!employeeManagers.isEmpty()
-					|| isEmployeeUnderSupervisor(employeeId, currentUser.getEmployee().getEmployeeId())) {
+			if (!employeeManagers.isEmpty() || isEmployeeInSupervisedTeam(employeeId, managerEmployeeId)) {
 				HashMap<Long, LeaveEntitlementResponseDto> responseDtoList = processedLeaveEntitlements(employeeId,
 						leaveEntitlementsFilterDto);
 				return new ResponseEntityDto(false, responseDtoList.values());
@@ -1537,13 +1538,14 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		return new ResponseEntityDto();
 	}
 
-	private boolean isEmployeeUnderSupervisor(Long employeeId, Long supervisorId) {
+	private boolean isEmployeeInSupervisedTeam(Long employeeId, Long supervisorId) {
 		List<Long> leadingTeamIds = teamDao.findLeadingTeamIdsByManagerId(supervisorId);
 		if (leadingTeamIds.isEmpty()) {
 			return false;
 		}
-		List<Team> employeeTeams = employeeTeamDao.findTeamsByEmployeeId(employeeId);
-		return employeeTeams.stream().anyMatch(team -> leadingTeamIds.contains(team.getTeamId()));
+		Set<Long> leadingTeamIdSet = new HashSet<>(leadingTeamIds);
+		List<Long> employeeTeamIds = employeeTeamDao.findTeamIdsByEmployeeId(employeeId);
+		return employeeTeamIds.stream().anyMatch(leadingTeamIdSet::contains);
 	}
 
 	private HashMap<Long, LeaveEntitlementResponseDto> processedLeaveEntitlements(Long employeeId,
