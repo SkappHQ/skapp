@@ -24,7 +24,7 @@ public class CrmCompanyController {
 
 	@Operation(summary = "Get CRM companies for lookup",
 			description = "Retrieves a paginated list of CRM companies (id + name) for use in dropdowns and contact forms.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@GetMapping(value = "/companies/lookup", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getCompaniesLookup(CrmCompanyFilterDto filterDto) {
 
