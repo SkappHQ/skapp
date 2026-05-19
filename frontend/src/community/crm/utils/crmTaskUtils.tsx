@@ -7,11 +7,7 @@ import { ReactElement, ReactNode } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
-<<<<<<< Updated upstream
-import { CrmPriorityType } from "~community/crm/types/CrmDealTypes";
-=======
 import { CrmPriorityType } from "~community/crm/types/CommonTypes";
->>>>>>> Stashed changes
 
 export interface PriorityConfig {
   icon: ReactElement;
