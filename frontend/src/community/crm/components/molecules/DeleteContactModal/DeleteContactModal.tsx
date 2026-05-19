@@ -3,7 +3,7 @@ import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useDeleteContact } from "~community/crm/api/CrmApi";
+import { useDeleteContact } from "~community/crm/api/CrmContactsApi";
 import { CrmContactType } from "~community/crm/types/CommonTypes";
 
 import styles from "./styles";

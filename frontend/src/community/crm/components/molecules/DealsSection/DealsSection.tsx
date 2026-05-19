@@ -4,7 +4,7 @@ import { FC } from "react";
 
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetDealsByContactId } from "~community/crm/api/CrmApi";
+import { useGetDealsByContactId } from "~community/crm/api/CrmContactsApi";
 import AdvancedAccordion from "~community/crm/components/atoms/AdvancedAccordion/AdvancedAccordion";
 import type { AdvancedAccordionItem } from "~community/crm/components/atoms/AdvancedAccordion/AdvancedAccordion";
 import { CrmDealType } from "~community/crm/types/CommonTypes";

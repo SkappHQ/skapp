@@ -7,7 +7,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useGetContactById,
   useGetContactMetrics
-} from "~community/crm/api/CrmApi";
+} from "~community/crm/api/CrmContactsApi";
 import ContactActionMenu from "~community/crm/components/molecules/ContactActionMenu/ContactActionMenu";
 import ContactHeader from "~community/crm/components/molecules/ContactHeader/ContactHeader";
 import ContactMetrics, {
@@ -46,8 +46,12 @@ const ContactDetailPanel: FC = () => {
     closeContactDetailPanel
   } = useCrmStore();
 
-  const { data: contact, isLoading: isContactLoading } = useGetContactById(selectedContactId ?? 0);
-  const { data: metrics, isLoading: isMetricsLoading } = useGetContactMetrics(selectedContactId ?? 0);
+  const { data: contact, isLoading: isContactLoading } = useGetContactById(
+    selectedContactId ?? 0
+  );
+  const { data: metrics, isLoading: isMetricsLoading } = useGetContactMetrics(
+    selectedContactId ?? 0
+  );
 
   useEffect(() => {
     if (
@@ -74,7 +78,7 @@ const ContactDetailPanel: FC = () => {
           isOpen={isContactDetailPanelOpen}
           onClose={closeContactDetailPanel}
           closeOnBackdropClick
-          width="lg"
+          width="xl"
           ariaLabelledBy="contact-panel-title"
           header={
             isContactLoading ? (

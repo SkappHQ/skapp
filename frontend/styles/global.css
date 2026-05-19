@@ -341,10 +341,10 @@ thead .sticky-col {
 
 /* CRM Contact Detail Panel: override z-index above MUI AppBar (1100) and Drawer (1200) */
 .crm-contact-panel > div[aria-hidden="true"] {
-  z-index: 1250 !important; /* backdrop */
+  z-index: 1250 !important;
 }
 .crm-contact-panel > aside[role="dialog"] {
-  z-index: 1260 !important; /* panel */
+  z-index: 1260 !important;
 }
 
 /* CRM Contact Detail Panel: align header buttons to top of name block */
