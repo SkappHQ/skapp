@@ -1,5 +1,6 @@
 @import "pdfjs-dist/web/pdf_viewer.css";
 @import "@rootcodelabs/skapp-ui";
+@source "../node_modules/@rootcodelabs/skapp-ui";
 @import "tailwindcss";
 
 @theme {
@@ -67,6 +68,7 @@
   --color-semantic-green-200: #62b774;
   --color-semantic-green-text: #016630;
   --color-semantic-green-accent: #62b774;
+  --color-semantic-success: #00a63e;
 }
 
 .h1 {
@@ -335,4 +337,39 @@ thead .sticky-col {
 .focus-active {
   border-color: var(--focus-border-color) !important;
   box-shadow: 0px 0px 4px 0px var(--focus-shadow-color) !important;
+}
+
+
+
+
+.crm-contact-side-panel aside {
+  width: min(50vw, 48rem) !important;
+  min-width: 28rem;
+  max-width: 100vw;
+}
+
+@media (max-width: 1024px) {
+  .crm-contact-side-panel aside {
+    width: 100vw !important;
+    min-width: 0;
+  }
+}
+/* CRM Contact Detail Panel: override z-index above MUI AppBar (1100) and Drawer (1200) */
+.crm-contact-panel > div[aria-hidden="true"] {
+  z-index: 1250 !important; /* backdrop */
+}
+.crm-contact-panel > aside[role="dialog"] {
+  z-index: 1260 !important; /* panel */
+}
+
+/* CRM Contact Detail Panel: align header buttons to top of name block */
+.crm-contact-panel aside[role="dialog"] header {
+  align-items: flex-start !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* CRM Contact Detail Panel: align body padding with header (16px) so info row is left-flush with contact name */
+.crm-contact-panel aside[role="dialog"] > div > .overflow-y-auto {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
 }

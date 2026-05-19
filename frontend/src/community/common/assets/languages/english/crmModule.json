@@ -2,9 +2,136 @@
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",
-    "addContactBtn": "Add Contact",
+    "addContactBtn": "Create contact",
+    "exportDataBtn": "Export data",
     "detailsPageHead": "Contact Details | Skapp",
-    "detailsTitle": "Contact Details"
+    "detailsTitle": "Contact Details",
+    "search": {
+      "placeholder": "Search contacts",
+      "ariaLabel": "Search contacts",
+      "clearAriaLabel": "Clear contact search"
+    },
+    "companyFilter": {
+      "allCompanies": "All companies",
+      "ariaLabel": "Filter contacts by company"
+    },
+    "table": {
+      "ariaLabel": "Contacts table",
+      "ariaDescription": "Table displaying contacts with company, email, phone number, deal value, open tasks, and contact owner.",
+      "rowAriaLabel": "Open contact details for {{name}}",
+      "columns": {
+        "contact": "CONTACT",
+        "email": "EMAIL",
+        "contactNo": "CONTACT NO.",
+        "dealValue": "DEAL VALUE",
+        "openTasks": "OPEN TASKS",
+        "contactOwner": "CONTACT OWNER"
+      }
+    },
+    "emptyStates": {
+      "noContactsTitle": "No contacts",
+      "noContactsDescription": "No contacts have been added yet. Once you add contacts, they will be displayed here.",
+      "noResultsTitle": "No results found",
+      "noResultsDescription": "We couldn't find any matches for your search. Please try using a different term."
+    },
+    "sidePanel": {
+      "defaultTitle": "Contact details",
+      "title": "Contact details for {{name}}",
+      "moreActionsAriaLabel": "More contact actions",
+      "closeAriaLabel": "Close contact details"
+    },
+    "createContactModal": {
+      "title": "Create contact",
+      "contactName": "Contact name",
+      "enterContactName": "Enter contact name",
+      "email": "Email",
+      "enterEmail": "Enter email",
+      "company": "Company",
+      "enterCompany": "Enter company",
+      "searchCompany": "Search companies...",
+      "noCompanyFound": "No company found",
+      "addCompany": "Add company",
+      "contactNo": "Contact no.",
+      "enterContactNo": "Enter contact no.",
+      "contactOwner": "Contact owner",
+      "selectOwner": "Select owner",
+      "searchOwner": "Search owners...",
+      "noOwnerFound": "No owner found",
+      "cancel": "Cancel",
+      "save": "Save",
+      "contactNameRequired": "Contact name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address",
+      "createContactSuccess": "Contact has been created successfully.",
+      "createContactSuccessTitle": "Contact created",
+      "createContactError": "Failed to create contact. Please try again.",
+      "createContactErrorTitle": "Error"
+    },
+    "contactDetailsPanel": {
+      "lastUpdated": "Last Updated",
+      "metrics": {
+        "totalRevenue": "Total Revenue",
+        "revenueOnPipeline": "Revenue on Pipeline",
+        "activeDeals": "No. of active deals",
+        "openTasks": "Open Tasks",
+        "overdueTasks": "overdue"
+      },
+      "deals": {
+        "sectionHeader": "Deals",
+        "addDealButton": "Add deal",
+        "addDealButtonEmptyView": "Add deal",
+        "emptyTitle": "No deals",
+        "emptyDescription": "No deals associated with this contact",
+        "descriptionLabel": "Description",
+        "noDescription": "No description available."
+      },
+      "tasks": {
+        "sectionHeader": "Tasks",
+        "addTaskButton": "Add task +",
+        "addTaskButtonEmptyView": "Add task",
+        "addTaskPlaceholder": "Type a task name…",
+        "emptyTitle": "No tasks",
+        "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
+        "toggleErrorTitle": "Failed to update task",
+        "toggleErrorDescription": "Could not update the task status. Please try again."
+      },
+      "menu": {
+        "editContact": "Edit contact",
+        "deleteContact": "Delete contact"
+      },
+      "errors": {
+        "contactNotFoundTitle": "Contact not found",
+        "contactNotFoundDescription": "This contact is no longer available."
+      },
+      "editContactModal": {
+        "title": "Edit contact",
+        "nameLabel": "Contact name",
+        "emailLabel": "Email",
+        "companyLabel": "Company",
+        "contactNoLabel": "Contact no.",
+        "ownerLabel": "Contact owner",
+        "discardBtn": "Discard",
+        "saveBtn": "Save",
+        "successTitle": "Contact updated",
+        "successDescription": "The contact has been updated successfully.",
+        "errorTitle": "Failed to update contact",
+        "errorDescription": "Something went wrong. Please try again.",
+        "nameRequired": "Contact name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "emailDuplicate": "A contact with this email already exists."
+      },
+      "deleteContactModal": {
+        "title": "Are you sure?",
+        "description": "Are you sure you want to delete '{{name}}'? This will permanently remove this contact along with all associated deals and tasks. This action cannot be undone.",
+        "cancelBtn": "Cancel",
+        "deleteBtn": "Delete",
+        "successTitle": "Contact deleted",
+        "successDescription": "The contact has been deleted successfully.",
+        "errorTitle": "Failed to delete contact",
+        "errorDescription": "Something went wrong. Please try again."
+      }
+    }
   },
   "companies": {
     "pageHead": "Companies | Skapp",
@@ -21,11 +148,20 @@
     "title": "Deals",
     "addDealBtn": "Add Deal",
     "detailsPageHead": "Deal Details | Skapp",
-    "detailsTitle": "Deal Details"
+    "detailsTitle": "Deal Details",
+    "emptyTitle": "No Deals",
+    "emptyDescription": "No deals associated with this contact "
   },
   "tasks": {
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task"
+  },
+  "popupTitles": {
+    "addCompanyPopup": "Add Company",
+    "addContactPopup": "Create contact",
+    "addTaskBtn": "Add Task",
+    "emptyTitle": "No Tasks",
+    "emptyDescription": "No tasks yet. Create a task to follow up with this contact"
   }
 }

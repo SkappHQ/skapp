@@ -1,18 +1,29 @@
 import { JSX } from "react";
 
-const NewWindowIcon = (): JSX.Element => {
+import { IconProps } from "~community/common/types/IconTypes";
+
+const NewWindowIcon = ({
+  fill = "#3F3F46",
+  height = "16",
+  width = "16",
+  id,
+  svgProps,
+  onClick
+}: IconProps): JSX.Element => {
   return (
     <svg
-      width="16"
-      height="17"
-      viewBox="0 0 16 17"
+      id={id}
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      onClick={onClick}
+      {...svgProps}
     >
       <path
-        d="M11.3333 12.1572C10.9333 12.1572 10.6667 11.8906 10.6667 11.4906V6.42389L5.13333 11.9572C4.86667 12.2239 4.46667 12.2239 4.2 11.9572C3.93333 11.6906 3.93333 11.2906 4.2 11.0239L9.73333 5.49056H4.66667C4.26667 5.49056 4 5.22389 4 4.82389C4 4.42389 4.26667 4.15723 4.66667 4.15723H11.3333C11.7333 4.15723 12 4.42389 12 4.82389V11.4906C12 11.8906 11.7333 12.1572 11.3333 12.1572Z"
-        fill="black"
-        fillOpacity={1}
+        d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+        fill={fill}
       />
     </svg>
   );
