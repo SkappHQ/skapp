@@ -1,3 +1,4 @@
+import { ALL_LOCATIONS_ID } from "~community/common/constants/workLocationConstants";
 import { SetType, SortOrderTypes } from "~community/common/types/CommonTypes";
 import { HolidayDataFiltersSliceTypes } from "~community/people/types/SliceTypes";
 
@@ -16,6 +17,7 @@ const holidayDataFiltersSlice = (
   individualDeleteId: 0,
   selectedDeleteIds: [],
   selectedYear: "2024",
+  selectedWorkLocationId: ALL_LOCATIONS_ID,
 
   handleHolidayDataSort: (key: string, value: string) => {
     set((state: HolidayDataFiltersSliceTypes) => ({
@@ -100,6 +102,12 @@ const holidayDataFiltersSlice = (
     set((state: HolidayDataFiltersSliceTypes) => ({
       ...state,
       selectedYear: selectedYear
+    }));
+  },
+  setSelectedWorkLocationId: (selectedWorkLocationId: number) => {
+    set((state: HolidayDataFiltersSliceTypes) => ({
+      ...state,
+      selectedWorkLocationId
     }));
   }
 });
