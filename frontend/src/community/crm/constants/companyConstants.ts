@@ -1,0 +1,1 @@
+export const COMPANY_NAME_DEBOUNCE_DELAY = 500;
