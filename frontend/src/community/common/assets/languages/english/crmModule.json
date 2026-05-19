@@ -14,6 +14,13 @@
     "detailsTitle": "Company Details",
     "addCompanyModal": {
       "title": "Add Company"
+    },
+    "deleteCompanyModal": {
+      "menuItemText": "Delete company",
+      "title": "Delete Company",
+      "description": "Are you sure you want to delete '{{companyName}}'? This will permanently remove this company along with all associated deals and tasks. This action cannot be undone.",
+      "deleteButton": "Delete",
+      "cancelButton": "Cancel"
     }
   },
   "deals": {

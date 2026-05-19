@@ -1,11 +1,15 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
+
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const DeleteCompanyConfirmationModal = () => {
-  const { selectedCompany, setCompanyModalType } = useCrmStore();
+  const translateText = useTranslator("crmModule", "companies");
+  const { companyModalType, selectedCompany, setCompanyModalType } = useCrmStore();
 
   const handleDelete = () => {
     // TODO: call delete API
@@ -17,19 +21,30 @@ const DeleteCompanyConfirmationModal = () => {
   };
 
   return (
-    <UserPromptModal
-      description={`Are you sure you want to delete '${selectedCompany?.name ?? ""}'? This will permanently remove this company along with all associated deals and tasks. This action cannot be undone.`}
-      primaryBtn={{
-        label: "Delete",
-        onClick: handleDelete,
-        endIcon: IconName.DELETE_BUTTON_ICON,
-        buttonStyle: ButtonStyle.ERROR
-      }}
-      secondaryBtn={{
-        label: "Cancel",
-        onClick: handleCancel,
-        endIcon: IconName.CLOSE_ICON
-      }}
+    <SmallModal
+      isOpen={companyModalType === CrmModalTypes.DELETE_COMPANY_CONFIRMATION}
+      onClose={handleCancel}
+      modalHeader={translateText(["deleteCompanyModal", "title"])}
+      content={
+        <UserPromptModal
+          description={translateText(
+            ["deleteCompanyModal", "description"],
+            { companyName: selectedCompany?.name ?? "this company" }
+          )}
+          primaryBtn={{
+            label: translateText(["deleteCompanyModal", "deleteButton"]),
+            onClick: handleDelete,
+            endIcon: IconName.DELETE_BUTTON_ICON,
+            endIconFill: "currentColor",
+            buttonStyle: ButtonStyle.ERROR
+          }}
+          secondaryBtn={{
+            label: translateText(["deleteCompanyModal", "cancelButton"]),
+            onClick: handleCancel,
+            endIcon: IconName.CLOSE_ICON
+          }}
+        />
+      }
     />
   );
 };

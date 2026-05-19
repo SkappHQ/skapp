@@ -1,19 +1,7 @@
-import { FC, JSX } from "react";
+import { FC } from "react";
 
 import CompanyMetricCard from "~community/crm/components/atoms/CompanyMetricCard/CompanyMetricCard";
-
-interface ChipProps {
-  label: string;
-  color?: string;
-  bgColor?: string;
-  icon?: JSX.Element;
-}
-
-interface MetricItem {
-  title: string;
-  amount: string;
-  chip?: ChipProps;
-}
+import { MetricItem } from "~community/crm/types/CommonTypes";
 
 interface Props {
   metrics: MetricItem[];
@@ -22,9 +10,9 @@ interface Props {
 const CompanyMetricCards: FC<Props> = ({ metrics }) => {
   return (
     <div className="flex gap-4 w-full">
-      {metrics.map((metric, index) => (
+      {metrics.map((metric) => (
         <CompanyMetricCard
-          key={index}
+          key={metric.title}
           title={metric.title}
           amount={metric.amount}
           chip={metric.chip}

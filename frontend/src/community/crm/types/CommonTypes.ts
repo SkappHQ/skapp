@@ -1,4 +1,19 @@
+import { JSX } from "react";
+
 import { CrmDealStageEnum } from "../enums/common";
+
+export interface MetricChipProps {
+  label: string;
+  color: string;
+  bgColor: string;
+  icon?: JSX.Element;
+}
+
+export interface MetricItem {
+  title: string;
+  amount: string;
+  chip?: MetricChipProps;
+}
 
 export interface CrmCompanyType {
   id: number;
@@ -9,6 +24,8 @@ export interface CrmCompanyType {
   contactNumber: string | null;
   isDeleted: boolean;
 }
+
+export interface CrmCompanyMetricsType extends CrmCompanyType {}
 
 export interface CrmOwnerType {
   employeeId: number;

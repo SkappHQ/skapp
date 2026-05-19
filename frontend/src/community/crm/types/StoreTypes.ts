@@ -1,11 +1,12 @@
 import { CrmModalTypes } from "./ModalTypes";
+import { CrmCompanyMetricsType } from "./CommonTypes";
 
 interface ActionTypes {
-  setIsAddCompanyModalOpen: (isAddCompanyModalOpen: boolean) => void;
   setCompanyModalType: (companyModalType: CrmModalTypes) => void;
+  setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
 }
 
 export interface CrmStore extends ActionTypes {
-  isAddCompanyModalOpen: boolean;
   companyModalType: CrmModalTypes;
+  selectedCompany: CrmCompanyMetricsType | null;
 }

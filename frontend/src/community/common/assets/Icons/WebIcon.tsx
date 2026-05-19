@@ -5,15 +5,21 @@ import { IconProps } from "~community/common/types/IconTypes";
 const WebIcon = ({
   fill = "black",
   width = "20",
-  height = "20"
+  height = "20",
+  id,
+  svgProps,
+  onClick
 }: IconProps): JSX.Element => {
   return (
     <svg
+      id={id}
       width={width}
       height={height}
       viewBox="0 0 20 20"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      onClick={onClick}
+      {...svgProps}
     >
       <g clipPath="url(#clip0_web)">
         <path
