@@ -3,6 +3,7 @@ package com.skapp.community.timeplanner.service.impl;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.repository.WorkLocationGeofenceDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
@@ -35,6 +36,9 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 
 	@NonNull
 	private final WorkLocationGeofenceDao workLocationGeofenceDao;
+
+	@NonNull
+	private final WorkLocationDao workLocationDao;
 
 	@NonNull
 	private final MessageUtil messageUtil;
@@ -78,12 +82,19 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 					String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
 		}
 
+		boolean wasGeoFencingEnabled = false;
+		if (Boolean.FALSE.equals(attendanceConfigRequestDto.getIsGeoFencingEnabled())) {
+			AttendanceConfig geoConfig = attendanceConfigDao
+				.findByAttendanceConfigType(AttendanceConfigType.GEO_FENCING_ENABLED);
+			wasGeoFencingEnabled = geoConfig != null && Boolean.parseBoolean(geoConfig.getAttendanceConfigValue());
+		}
+
 		configMap.forEach(this::updateOrCreateConfig);
 
-		if (Boolean.FALSE.equals(attendanceConfigRequestDto.getIsGeoFencingEnabled())) {
-			workLocationGeofenceDao.clearAddressesForGeofencedLocations();
-			workLocationGeofenceDao.deleteAllGeofences();
-			log.info("updateAttendanceConfig: geo-fencing disabled, all geofence sites removed");
+		if (wasGeoFencingEnabled) {
+			workLocationDao.clearAddressesForGeofencedLocations();
+			workLocationGeofenceDao.deleteAllInBatch();
+			log.info("updateAttendanceConfig: geo-fencing disabled, cleared addresses and removed all geofence sites");
 		}
 
 		log.info("updateAttendanceConfig: execution ended");
