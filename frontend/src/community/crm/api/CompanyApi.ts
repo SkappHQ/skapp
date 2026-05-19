@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { ErrorResponse } from "~community/common/types/CommonTypes";
 
 import {
   CrmCompanyCreatePayload,
@@ -61,12 +60,12 @@ const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
     companyEndpoints.CREATE_COMPANY,
     companyDetails
   );
-  return response.data.results[0];
+  return response?.data?.results?.[0];
 };
 
 export const useCreateNewCompany = (
   onSuccess: () => void,
-  onError: (messageKey: string) => void
+  onError: () => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -78,28 +77,29 @@ export const useCreateNewCompany = (
         });
       onSuccess();
     },
-    onError: (error: ErrorResponse) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-    }
+    onError: onError
   });
 };
 
-export const useCheckCompanyNameExists = (name: string) => {
+export const useCheckCompanyNameExists = (
+  name: string,
+  enabled: boolean = true
+) => {
   return useQuery({
     queryKey: [...companyQueryKeys.CHECK_COMPANY_NAME_EXISTS, name],
     queryFn: async () => {
       const response = await authFetch.get(
         companyEndpoints.CHECK_COMPANY_NAME_EXISTS(name)
       );
-      return response?.data?.results?.[0]?.exists;
+      return response?.data?.results?.[0];
     },
-    enabled: name.length > 0
+    enabled
   });
 };
 
 export const useDeleteCompany = (
   onSuccess: () => void,
-  onError: (messageKey: string) => void
+  onError: () => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -115,8 +115,6 @@ export const useDeleteCompany = (
       });
       onSuccess();
     },
-    onError: (error: ErrorResponse) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-    }
+    onError: onError
   });
 };

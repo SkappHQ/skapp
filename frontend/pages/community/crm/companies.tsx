@@ -3,7 +3,7 @@ import { NextPage } from "next";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import CompanyPopupController from "~community/crm/components/organisms/CompanyPopupController/CompanyPopupController";
+import CompanyModalController from "~community/crm/components/organisms/CompanyPopupController/CompanyModalController";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import CrmSidePanelController from "~community/crm/components/organisms/CrmSidePanelController/CrmSidePanelController";
 import { useCrmStore } from "~community/crm/store/store";
@@ -33,7 +33,7 @@ const Companies: NextPage = () => {
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <>
-        <CompanyPopupController />
+        <CompanyModalController />
         <CrmSidePanelController />
         <CompanyTable />
       </>

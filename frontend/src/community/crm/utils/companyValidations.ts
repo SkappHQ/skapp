@@ -24,11 +24,8 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
           if (!inputContactNumber || inputContactNumber === "") {
             return true;
           }
-          const { countryCode } = this.parent;
 
-          const phoneNumber = countryCode + inputContactNumber;
-
-          return isValidPhoneNumber().test(phoneNumber);
+          return isValidPhoneNumber().test(inputContactNumber);
         }
       ),
     website: Yup.string()

@@ -8,7 +8,7 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import AddCompanyModal from "../../molecules/AddCompanyModal/AddCompanyModal";
 import DeleteCompanyConfirmationModal from "../../molecules/DeleteCompanyConfirmationModal/DeleteCompanyConfirmationModal";
 
-const CompanyPopupController = () => {
+const CompanyModalController = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const {
@@ -53,9 +53,8 @@ const CompanyPopupController = () => {
       onClose={handleCloseModal}
       modalHeader={getModalTitle(crmModalType)}
       content={getModalContent()}
-      className="w-[553px] h-fit"
     />
   );
 };
 
-export default CompanyPopupController;
+export default CompanyModalController;

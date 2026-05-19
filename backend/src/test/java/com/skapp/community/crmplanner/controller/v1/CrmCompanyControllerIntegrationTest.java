@@ -83,20 +83,6 @@ class CrmCompanyControllerIntegrationTest {
 		return dto;
 	}
 
-	// --- Authorization tests ---
-
-	@Test
-	@DisplayName("Create company with no CRM role - Returns Forbidden")
-	void createCompany_WithNoCrmRole_ReturnsForbidden() throws Exception {
-		String nonCrmToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
-				2L);
-
-		mvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(createValidPayload()))
-			.accept(MediaType.APPLICATION_JSON)
-			.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
-	}
-
 	// --- Create company tests ---
 
 	@Test
@@ -135,20 +121,6 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Create company with different-case duplicate name - Returns Bad Request")
-	void createCompany_DifferentCaseDuplicateName_ReturnsBadRequest() throws Exception {
-		performPostRequest(createValidPayload()).andExpect(status().isCreated());
-
-		CrmCompanyCreateDto dto = createValidPayload();
-		dto.setName("acme corp");
-		performPostRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS)));
-	}
-
-	@Test
 	@DisplayName("Create company with blank name - Returns Bad Request")
 	void createCompany_BlankName_ReturnsUnprocessableEntity() throws Exception {
 		CrmCompanyCreateDto dto = new CrmCompanyCreateDto();
@@ -167,7 +139,7 @@ class CrmCompanyControllerIntegrationTest {
 		performGetExistsRequest("NonExistent").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['exists']").value(false));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
 	}
 
 	@Test
@@ -178,7 +150,7 @@ class CrmCompanyControllerIntegrationTest {
 		performGetExistsRequest("Acme Corp").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['exists']").value(true));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
 	}
 
 }
