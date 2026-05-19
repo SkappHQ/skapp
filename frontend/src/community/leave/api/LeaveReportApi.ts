@@ -22,7 +22,7 @@ export const useGetEmployeeLeaveReport = (
 ) => {
   const filterIds = useLeaveStore((state) => state.reportsFilterOrderIds);
   const { data, isLoading, isSuccess } = useQuery({
-    enabled: isEnabled && !!teamId,
+    enabled: isEnabled,
     queryKey: reportsQueryKeys.getEmployeeLeaveReportByAdmin(
       year,
       leaveTypeId,
@@ -64,7 +64,7 @@ export const useGetEmployeeLeaveReportCSV = (
   isEnabled: boolean = true
 ) => {
   const { data, isLoading, isSuccess } = useQuery({
-    enabled: isEnabled && !!teamId,
+    enabled: isEnabled,
     queryKey: reportsQueryKeys.getEmployeeLeaveReportCSV(
       year,
       leaveTypeIds,
@@ -98,10 +98,11 @@ export const useGetEmployeeCustomAllocationReport = (
   size: number,
   sortKey: string,
   sortOrder: string,
-  leaveTypeId: string[]
+  leaveTypeId: string[],
+  isEnabled: boolean = true
 ) => {
   return useQuery({
-    enabled: !!teamId,
+    enabled: isEnabled,
     queryKey: reportsQueryKeys.getEmployeeCustomAllocation(
       year,
       teamId,
@@ -135,10 +136,11 @@ export const useGetEmployeeLeaveRequestsReport = (
   sortKey: string,
   sortOrder: string,
   leaveTypeId: string[],
-  leaveStatus: string[]
+  leaveStatus: string[],
+  isEnabled: boolean = true
 ) => {
   return useQuery({
-    enabled: !!teamId,
+    enabled: isEnabled,
     queryKey: reportsQueryKeys.getEmployeeLeaveRequests(
       year,
       teamId,
