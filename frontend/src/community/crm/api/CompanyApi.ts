@@ -99,7 +99,7 @@ export const useCheckCompanyNameExists = (
 
 export const useDeleteCompany = (
   onSuccess: () => void,
-  onError: (messageKey: string) => void
+  onError: () => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -115,8 +115,6 @@ export const useDeleteCompany = (
       });
       onSuccess();
     },
-    onError: (error: ErrorResponse) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-    }
+    onError: onError
   });
 };
