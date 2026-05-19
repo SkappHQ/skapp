@@ -41,7 +41,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
         {company.name}
       </p>
 
-      <div className="flex items-center justify-between max-w-[757px]">
+      <div className="flex items-center gap-[76px]">
         {infoItems.map(
           (item, index) =>
             item.value && (
@@ -82,7 +82,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
                       height="1.25rem"
                       fill="#68707F"
                     />
-                    <p className="text-sm leading-6 tracking-[0.5px] text-black">
+                    <p className="text-sm leading-6 tracking-[0.5px] max-w-[150px] text-black fit-content text-ellipsis overflow-hidden whitespace-nowrap">
                       {item.value}
                     </p>
                   </>

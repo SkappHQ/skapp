@@ -67,7 +67,7 @@ export const CompanyTable: React.FC = () => {
       industry: company.industry,
       website: company.website ?? "",
       address: company.address ?? "",
-      contactNumber: company.contactNumber ? `+${company.contactNumber}` : "-",
+      contactNumber: company.contactNumber ? `+${company.contactNumber}` : "",
       tasks: company.tasks ?? 0,
       overdue: company.overdue ?? 0,
       openValue: company.openValue ?? 0,

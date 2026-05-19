@@ -82,8 +82,8 @@ const TasksSection: FC<Props> = ({ companyId }) => {
     };
   }, [isAddingTask]);
 
-  const { data, isLoading } = useGetTasksByCompanyId(companyId);
-
+  const { data } = useGetTasksByCompanyId(companyId);
+  const isLoading = false;
   const mockTasks: CrmTaskType[] = [
     {
       id: 1,
@@ -129,7 +129,7 @@ const TasksSection: FC<Props> = ({ companyId }) => {
     }
   ];
 
-  const tasks: CrmTaskType[] = data?.items ?? mockTasks;
+  const tasks: CrmTaskType[] = mockTasks;
 
   // Optimistic local state: keeps the toggled value visible immediately
   // without waiting for the API round-trip / query invalidation.

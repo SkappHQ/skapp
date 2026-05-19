@@ -23,7 +23,7 @@ interface CompanyContactsProps {
 const columns: TableColumn<ContactRow>[] = [
   {
     key: "contact",
-    header: "Contact",
+    header: "CONTACT",
     render: (_value, row) => (
       <div className="flex flex-col gap-0.5">
         <span className="text-base font-semibold text-zinc-900">{row.name}</span>
@@ -89,7 +89,7 @@ const CompanyContacts: React.FC<CompanyContactsProps> = ({ contacts }) => {
         data={contacts}
         tableAriaLabel="Company contacts"
         height="auto"
-        className="[&_tbody_tr]:bg-white [&_tbody_tr:hover]:bg-white [&_tbody_tr]:border-b [&_tbody_tr]:border-zinc-200 [&_td_>div]:!h-auto [&_td_>div]:!py-2"
+        className=""
         emptyStateType="no-data"
         noDataState={{
           icon: (
