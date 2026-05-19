@@ -162,6 +162,14 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 			float horizontalPadding = 6.0f; // Increased horizontal padding
 			float borderRadius = 4.0f; // Border radius of 4px
 
+			float textWidth = font.getStringWidth(value) / 1000 * UUID_FONT_SIZE;
+			float textHeight = font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * UUID_FONT_SIZE;
+
+			float rectWidth = textWidth + (horizontalPadding * 2);
+			float rectHeight = textHeight + (verticalPadding * 2);
+
+			float rectX = UUID_X_POSITION - horizontalPadding;
+
 			for (int i = 0; i < numOfPages; i++) {
 				PDPage page = document.getPage(i);
 				float pageHeight = page.getMediaBox().getHeight();
@@ -169,20 +177,12 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
 						PDPageContentStream.AppendMode.APPEND, true, true)) {
 					float adjustedY = pageHeight - UUID_Y_POSITION;
-					float textWidth = font.getStringWidth(value) / 1000 * UUID_FONT_SIZE;
-					float textHeight = font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000
-							* UUID_FONT_SIZE;
-
-					float rectWidth = textWidth + (horizontalPadding * 2);
-					float rectHeight = textHeight + (verticalPadding * 2);
 
 					// Calculate positions for centered text in rectangle
 					float rectY = adjustedY - rectHeight;
-					float rectX = UUID_X_POSITION - horizontalPadding;
 
 					// Calculate text position to center it within the rectangle
 					float textY = rectY + verticalPadding + (textHeight * 0.25f);
-					float textX = UUID_X_POSITION;
 
 					// Draw rounded rectangle with white background
 					drawRoundedRectangle(contentStream, rectX, rectY, rectWidth, rectHeight, borderRadius,
@@ -192,7 +192,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 					contentStream.setNonStrokingColor(0, 0, 0); // Black color for text
 					contentStream.beginText();
 					contentStream.setFont(font, UUID_FONT_SIZE);
-					contentStream.newLineAtOffset(textX, textY);
+					contentStream.newLineAtOffset(UUID_X_POSITION, textY);
 					contentStream.showText(value);
 					contentStream.endText();
 				}
