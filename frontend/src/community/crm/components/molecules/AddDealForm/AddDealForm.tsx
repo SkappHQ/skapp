@@ -72,7 +72,6 @@ const AddDealForm: React.FC = () => {
   };
 
   const handleAddDeal = () => {
-    // TODO: call add deal API
     handleClose();
   };
 

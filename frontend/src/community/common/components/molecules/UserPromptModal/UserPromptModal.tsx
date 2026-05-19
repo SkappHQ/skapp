@@ -20,6 +20,7 @@ interface Props {
     buttonStyle?: ButtonStyle;
     startIcon?: IconName;
     endIcon?: IconName;
+    endIconFill?: string;
     className?: string;
   };
   secondaryBtn?: {
@@ -29,6 +30,7 @@ interface Props {
     buttonStyle?: ButtonStyle;
     startIcon?: IconName;
     endIcon?: IconName;
+    endIconFill?: string;
     className?: string;
   };
 }
@@ -70,7 +72,7 @@ const UserPromptModal = ({
             })}
             {...(secondaryBtn.endIcon &&
               !secondaryBtn.startIcon && {
-                icon: <Icon name={secondaryBtn.endIcon} />,
+                icon: <Icon name={secondaryBtn.endIcon} fill={secondaryBtn.endIconFill} />,
                 iconPosition: "end"
               })}
           >
@@ -88,7 +90,7 @@ const UserPromptModal = ({
           })}
           {...(primaryBtn.endIcon &&
             !primaryBtn.startIcon && {
-              icon: <Icon name={primaryBtn.endIcon} />,
+              icon: <Icon name={primaryBtn.endIcon} fill={primaryBtn.endIconFill} />,
               iconPosition: "end"
             })}
         >

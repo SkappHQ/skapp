@@ -36,6 +36,7 @@ const DeleteCompanyConfirmationModal = () => {
         label: translateText(["deleteCompanyModal", "buttons", "confirmDelete"]),
         onClick: handleDelete,
         endIcon: IconName.DELETE_BUTTON_ICON,
+        endIconFill: "currentColor",
         buttonStyle: ButtonStyle.ERROR
       }}
       secondaryBtn={{

@@ -64,13 +64,15 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
                       height="1.25rem"
                       fill="#2a61a0"
                     />
-                    {item.value.replace(/^https?:\/\//, "")}
-                    <Icon
-                      name={IconName.BROWSER_WINDOW_ICON}
-                      width="1rem"
-                      height="1rem"
-                      fill="#2a61a0"
-                    />
+                    <span className="flex items-center gap-1">
+                      {item.value.replace(/^https?:\/\//, "")}
+                      <Icon
+                        name={IconName.BROWSER_WINDOW_ICON}
+                        width="1rem"
+                        height="1rem"
+                        fill="#2a61a0"
+                      />
+                    </span>
                   </a>
                 ) : (
                   <>
