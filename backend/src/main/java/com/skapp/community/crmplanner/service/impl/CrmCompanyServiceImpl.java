@@ -18,6 +18,7 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
+import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,13 +37,14 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto checkCompanyNameExists(String name) {
-		log.info("checkCompanyNameExists: execution started for name: {}", name);
+		log.info("checkCompanyNameExists: execution started");
+		CrmValidations.validateCompanyName(name);
 		boolean exists = checkCompanyExists(name);
-		log.info("checkCompanyNameExists: execution ended, exists: {}", exists);
 
 		CrmCompanyNameExistsResponseDto responseDto = new CrmCompanyNameExistsResponseDto();
-		responseDto.setExists(exists);
+		responseDto.setIsExists(exists);
 
+		log.info("checkCompanyNameExists: execution ended");
 		return new ResponseEntityDto(false, responseDto);
 	}
 
@@ -51,11 +53,12 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	public ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany) {
 		log.info("createCompany: execution started");
 
-		if (crmCompany.getName() == null || crmCompany.getName().trim().isEmpty()) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_VALIDATION_NAME);
-		}
+		CrmValidations.validateCompanyName(crmCompany.getName());
+		CrmValidations.validateContactNumber(crmCompany.getContactNumber());
+		CrmValidations.validateWebsite(crmCompany.getWebsite());
+		CrmValidations.validateAddress(crmCompany.getAddress());
+		CrmValidations.validateIndustry(crmCompany.getIndustry());
 
-		crmCompany.setName(crmCompany.getName().trim());
 		if (checkCompanyExists(crmCompany.getName())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
 		}
@@ -65,7 +68,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
 
 		log.info("createCompany: execution ended successfully");
-
 		return new ResponseEntityDto(false, responseDto);
 	}
 
