@@ -3,6 +3,7 @@ package com.skapp.community.timeplanner.service.impl;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.WorkLocationGeofenceDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
@@ -31,6 +32,9 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 
 	@NonNull
 	private final AttendanceConfigDao attendanceConfigDao;
+
+	@NonNull
+	private final WorkLocationGeofenceDao workLocationGeofenceDao;
 
 	@NonNull
 	private final MessageUtil messageUtil;
@@ -75,6 +79,12 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		}
 
 		configMap.forEach(this::updateOrCreateConfig);
+
+		if (Boolean.FALSE.equals(attendanceConfigRequestDto.getIsGeoFencingEnabled())) {
+			workLocationGeofenceDao.clearAddressesForGeofencedLocations();
+			workLocationGeofenceDao.deleteAllGeofences();
+			log.info("updateAttendanceConfig: geo-fencing disabled, all geofence sites removed");
+		}
 
 		log.info("updateAttendanceConfig: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(TimeMessageConstant.TIME_SUCCESS_ATTENDANCE_CONFIG_UPDATED),

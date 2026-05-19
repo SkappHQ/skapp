@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface WorkLocationGeofenceDao extends JpaRepository<WorkLocationGeofence, Long> {
+public interface WorkLocationGeofenceDao
+		extends JpaRepository<WorkLocationGeofence, Long>, WorkLocationGeofenceRepository {
 
 	Optional<WorkLocationGeofence> findByWorkLocationWorkLocationId(Long workLocationId);
 
