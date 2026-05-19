@@ -18,7 +18,7 @@ import DeleteContactModal from "~community/crm/components/molecules/DeleteContac
 import EditContactModal from "~community/crm/components/molecules/EditContactModal/EditContactModal";
 import TasksSection from "~community/crm/components/molecules/TasksSection/TasksSection";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmContactMetricsType } from "~community/crm/types/CrmContactTypes";
+import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import { formatLastUpdated } from "~community/crm/utils/contactHeaderUtils";
 
 const DEFAULT_METRICS: CrmContactMetricsType = {

@@ -271,7 +271,7 @@ const AdvancedAccordion: React.FC<AdvancedAccordionProps> = ({
                 className={`overflow-hidden ${
                   isCard
                     ? isExpanded
-                      ? "border-t border-[#E5E7EB] px-3 py-3"
+                      ? "px-3 pt-1 pb-2"
                       : "hidden"
                     : `accordion-content border-secondary-accent border-r border-l transition-all duration-300 ease-in-out ${isExpanded ? "max-h-500 opacity-100" : "max-h-0 opacity-0"} rounded-b-lg border-b`
                 }`}

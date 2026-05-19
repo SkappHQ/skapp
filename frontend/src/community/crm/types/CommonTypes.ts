@@ -36,6 +36,7 @@ export interface CrmDealType {
   closingAt: string | null;
   amount: string | null;
   currencyCode: string | null;
+  // notes: string | null;
   company: CrmCompanyType | null;
   contact: CrmContactType;
   owner: CrmOwnerType;
@@ -75,4 +76,32 @@ export interface CrmPriorityType {
   id: number;
   name: string;
   orderIndex: number;
+}
+
+export interface CrmContactMetricsType {
+  totalRevenue: number;
+  revenueOnPipeline: number;
+  activeDeals: number;
+  openTasks: number;
+  overdueTasks: number;
+}
+
+export interface UpdateContactPayload {
+  name: string;
+  email: string;
+  contactNumber: string | null;
+}
+
+export interface CrmDealsResponseType {
+  items: CrmDealType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface CrmTasksResponseType {
+  items: CrmTaskType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
 }

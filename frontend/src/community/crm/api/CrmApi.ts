@@ -5,16 +5,15 @@ import {
   useQuery,
   useQueryClient
 } from "@tanstack/react-query";
-import { rejects } from "assert";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmContactMetricsType,
   CrmContactType,
+  CrmDealsResponseType,
+  CrmTasksResponseType,
   UpdateContactPayload
-} from "~community/crm/types/CrmContactTypes";
-import { CrmDealsResponseType } from "~community/crm/types/CrmDealTypes";
-import { CrmTasksResponseType } from "~community/crm/types/CrmTaskTypes";
+} from "~community/crm/types/CommonTypes";
 
 import { crmEndpoints } from "./utils/ApiEndpoints";
 import { crmQueryKeys } from "./utils/QueryKeys";
@@ -77,33 +76,23 @@ export const useGetTasksByContactId = (
   });
 };
 
-export const useCreateDeal = (
-  onSuccess: () => void,
-  onError: (error: string) => void
-): UseMutationResult<unknown, unknown, Record<string, unknown>, unknown> => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (dealData: Record<string, unknown>) =>
-      authFetch.post(crmEndpoints.CREATE_DEAL, dealData),
-    onSuccess: (_, variables) => {
-      onSuccess();
-      queryClient
-        .invalidateQueries({
-          queryKey: crmQueryKeys.GET_DEALS_BY_CONTACT(
-            variables.contactId as number
-          )
-        })
-        .catch(rejects);
-    },
-    onError: (error: any) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-    }
-  });
+const updateTaskCompletionFn = async ({
+  id,
+  isCompleted
+}: {
+  id: number;
+  isCompleted: boolean;
+}) => {
+  const response = await authFetch.patch(
+    crmEndpoints.UPDATE_TASK_COMPLETION(id),
+    { isCompleted }
+  );
+  return response.data;
 };
 
 export const useUpdateTaskCompletion = (
   onSuccess: () => void,
-  onError: (error: string) => void
+  onError: (error: Error) => void
 ): UseMutationResult<
   unknown,
   unknown,
@@ -112,25 +101,29 @@ export const useUpdateTaskCompletion = (
 > => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, isCompleted }: { id: number; isCompleted: boolean }) =>
-      authFetch.patch(crmEndpoints.UPDATE_TASK_COMPLETION(id), {
-        isCompleted
-      }),
+    mutationFn: updateTaskCompletionFn,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["crm-contact-tasks"] });
       onSuccess();
-      queryClient
-        .invalidateQueries({ queryKey: ["crm-contact-tasks"] })
-        .catch(rejects);
     },
-    onError: (error: any) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-    }
+    onError
   });
+};
+
+const updateContactFn = async ({
+  id,
+  data
+}: {
+  id: number;
+  data: UpdateContactPayload;
+}) => {
+  const response = await authFetch.patch(crmEndpoints.UPDATE_CONTACT(id), data);
+  return response.data;
 };
 
 export const useUpdateContact = (
   onSuccess: () => void,
-  onError: (error: string) => void
+  onError: (error: Error) => void
 ): UseMutationResult<
   unknown,
   unknown,
@@ -139,38 +132,33 @@ export const useUpdateContact = (
 > => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateContactPayload }) =>
-      authFetch.patch(crmEndpoints.UPDATE_CONTACT(id), data),
+    mutationFn: updateContactFn,
     onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: crmQueryKeys.GET_CONTACT_BY_ID(variables.id)
+      });
       onSuccess();
-      queryClient
-        .invalidateQueries({
-          queryKey: crmQueryKeys.GET_CONTACT_BY_ID(variables.id)
-        })
-        .catch(rejects);
     },
-    onError: (error: any) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-    }
+    onError
   });
+};
+
+const deleteContactFn = async (id: number) => {
+  const response = await authFetch.delete(crmEndpoints.DELETE_CONTACT(id));
+  return response.data;
 };
 
 export const useDeleteContact = (
   onSuccess: () => void,
-  onError: (error: string) => void
+  onError: (error: Error) => void
 ): UseMutationResult<unknown, unknown, number, unknown> => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) =>
-      authFetch.delete(crmEndpoints.DELETE_CONTACT(id)),
+    mutationFn: deleteContactFn,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmQueryKeys.GET_CONTACTS });
       onSuccess();
-      queryClient
-        .invalidateQueries({ queryKey: crmQueryKeys.GET_CONTACTS })
-        .catch(rejects);
     },
-    onError: (error: any) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-    }
+    onError
   });
 };

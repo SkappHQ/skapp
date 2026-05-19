@@ -3,7 +3,7 @@ import { FC } from "react";
 
 import { IconName } from "~community/common/types/IconTypes";
 import ContactInfoItem from "~community/crm/components/atoms/ContactInfoItem/ContactInfoItem";
-import { CrmContactType } from "~community/crm/types/CrmContactTypes";
+import { CrmContactType } from "~community/crm/types/CommonTypes";
 
 import styles from "./styles";
 

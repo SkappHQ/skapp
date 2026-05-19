@@ -3,7 +3,7 @@ import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import MetricCard from "~community/crm/components/atoms/MetricCard/MetricCard";
-import { CrmContactMetricsType } from "~community/crm/types/CrmContactTypes";
+import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import { formatCurrency } from "~community/crm/utils/contactMetricsUtils";
 
 import styles from "./styles";
@@ -22,23 +22,6 @@ const ContactMetrics: FC<Props> = ({ metrics }) => {
   return (
     <div className={styles.grid}>
       <MetricCard
-        label={translateText(["metrics", "totalRevenue"])}
-        value={formatCurrency(metrics.totalRevenue)}
-        valueVariant="green"
-      />
-
-      <MetricCard
-        label={translateText(["metrics", "revenueOnPipeline"])}
-        value={formatCurrency(metrics.revenueOnPipeline)}
-        valueVariant="blue"
-      />
-
-      <MetricCard
-        label={translateText(["metrics", "activeDeals"])}
-        value={String(metrics.activeDeals)}
-      />
-
-      <MetricCard
         label={translateText(["metrics", "openTasks"])}
         value={String(metrics.openTasks)}
         overdueBadge={
@@ -49,6 +32,22 @@ const ContactMetrics: FC<Props> = ({ metrics }) => {
               }
             : undefined
         }
+      />
+
+      <MetricCard
+        label={translateText(["metrics", "activeDeals"])}
+        value={String(metrics.activeDeals)}
+      />
+      <MetricCard
+        label={translateText(["metrics", "totalRevenue"])}
+        value={formatCurrency(metrics.totalRevenue)}
+        valueVariant="green"
+      />
+
+      <MetricCard
+        label={translateText(["metrics", "revenueOnPipeline"])}
+        value={formatCurrency(metrics.revenueOnPipeline)}
+        valueVariant="blue"
       />
     </div>
   );

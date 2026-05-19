@@ -7,7 +7,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetDealsByContactId } from "~community/crm/api/CrmApi";
 import AdvancedAccordion from "~community/crm/components/atoms/AdvancedAccordion/AdvancedAccordion";
 import type { AdvancedAccordionItem } from "~community/crm/components/atoms/AdvancedAccordion/AdvancedAccordion";
-import { CrmDealType } from "~community/crm/types/CrmDealTypes";
+import { CrmDealType } from "~community/crm/types/CommonTypes";
 import { formatDealAmountFull } from "~community/crm/utils/contactMetricsUtils";
 
 import styles from "./styles";

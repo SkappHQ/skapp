@@ -11,7 +11,7 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateContact } from "~community/crm/api/CrmApi";
-import { CrmContactType } from "~community/crm/types/CrmContactTypes";
+import { CrmContactType } from "~community/crm/types/CommonTypes";
 import {
   EditContactFormValues,
   validateEditContactForm
@@ -44,7 +44,8 @@ const EditContactModal: FC<Props> = ({ isOpen, onClose, contact }) => {
       });
       onClose();
     },
-    (errorKey: string) => {
+    (error: any) => {
+      const errorKey = error?.response?.data?.results?.[0]?.messageKey ?? "";
       if (errorKey.toLowerCase().includes("email")) {
         formik.setFieldError(
           "email",

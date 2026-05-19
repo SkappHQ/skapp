@@ -17,5 +17,5 @@ export const formatDealAmountFull = (amount: string | null): string => {
   if (!amount) return "—";
   const num = parseFloat(amount);
   if (isNaN(num)) return "—";
-  return `$${num.toLocaleString("en-US")}`;
+  return `$${num}`;
 };
