@@ -81,9 +81,9 @@ const PriorityDropdown: FC<Props> = ({
 
   const options = useMemo<DropdownOption[]>(
     () => [
-      { id: "High", value: "High", label: <PriorityLabel priority="High" /> },
-      { id: "Medium", value: "Medium", label: <PriorityLabel priority="Medium" /> },
-      { id: "Low", value: "Low", label: <PriorityLabel priority="Low" /> }
+      { id: "HIGH",   value: "HIGH",   label: <PriorityLabel priority="HIGH" /> },
+      { id: "MEDIUM", value: "MEDIUM", label: <PriorityLabel priority="MEDIUM" /> },
+      { id: "LOW",    value: "LOW",    label: <PriorityLabel priority="LOW" /> }
     ],
     []
   );

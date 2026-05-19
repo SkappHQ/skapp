@@ -14,7 +14,8 @@ interface Props {
 }
 
 const PriorityLabel: FC<Props> = ({ priority, className = "" }) => {
-  switch (priority.toLowerCase()) {
+  const displayText = priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase();
+  switch (priority.toUpperCase()) {
     case CrmPriorityEnum.HIGH:
       return (
         <Label
@@ -24,7 +25,7 @@ const PriorityLabel: FC<Props> = ({ priority, className = "" }) => {
         >
           <span className="inline-flex items-center gap-1.5">
             <HighPriorityIcon />
-            {priority}
+            {displayText}
           </span>
         </Label>
       );
@@ -38,7 +39,7 @@ const PriorityLabel: FC<Props> = ({ priority, className = "" }) => {
         >
           <span className="inline-flex items-center gap-1.5">
             <MediumPriorityIcon />
-            {priority}
+            {displayText}
           </span>
         </Label>
       );
@@ -52,7 +53,7 @@ const PriorityLabel: FC<Props> = ({ priority, className = "" }) => {
         >
           <span className="inline-flex items-center gap-1.5">
             <LowPriorityIcon />
-            {priority}
+            {displayText}
           </span>
         </Label>
       );
