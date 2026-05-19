@@ -1,15 +1,13 @@
-import { Stack } from "@mui/material";
 import {
   ButtonV2,
   CloseIcon,
-  EastArrowIcon
+  EastArrowIcon,
+  InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import InputField from "~community/common/components/molecules/InputField/InputField";
-import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -48,7 +46,7 @@ const CreateContactModal = () => {
 
   const { setIsAddContactModalOpen, setCrmModalType } = useCrmStore((state) => state);
 
-  const { isCrmAdmin, isCrmSalesManager, isCrmSalesRepresentative, isSuperadmin } = useSessionData();
+  const { isCrmAdmin, isCrmSalesManager, isCrmSalesRepresentative, isSuperAdmin } = useSessionData();
   const { data: me } = useGetUserPersonalDetails();
 
   const crmRole = useMemo((): ContactOwner["crmRole"] => {
@@ -158,22 +156,6 @@ const CreateContactModal = () => {
     setFieldError(name, "");
   };
 
-  const handleContactNumber = async (
-    phone: ChangeEvent<HTMLInputElement>
-  ): Promise<void> => {
-    const contactNumber = phone.target.value;
-    await setFieldValue("contactNumber", contactNumber);
-    setFieldError("contactNumber", "");
-
-    if (!values.countryCode) {
-      await setFieldValue("countryCode", countryCode);
-    }
-  };
-
-  const handleCountryChange = async (selectedCountryCode: string): Promise<void> => {
-    await setFieldValue("countryCode", selectedCountryCode);
-  };
-
   const handleOwnerSelect = (owner: ContactOwner) => {
     setSelectedOwner(owner);
     setFieldValue("ownerId", owner.employeeId);
@@ -185,28 +167,27 @@ const CreateContactModal = () => {
   };
 
   return (
-    <Stack gap={2}>
+    <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
-        inputName="name"
+        name="name"
         label={translateText(["contactName"])}
-        placeHolder={translateText(["enterContactName"])}
+        placeholder={translateText(["enterContactName"])}
         value={values.name}
-        error={errors.name}
+        errorMessage={errors.name || ""}
         required
         onChange={handleChange}
-        labelStyles={{ fontWeight: 500 }}
+        fullWidth
       />
 
       <InputField
-        inputName="email"
-        inputType="email"
+        name="email"
         label={translateText(["email"])}
-        placeHolder={translateText(["enterEmail"])}
+        placeholder={translateText(["enterEmail"])}
         value={values.email}
-        error={errors.email}
+        errorMessage={errors.email || ""}
         required
         onChange={handleChange}
-        labelStyles={{ fontWeight: 500 }}
+        fullWidth
       />
 
       <CompanySearchField
@@ -223,16 +204,13 @@ const CreateContactModal = () => {
         noResultsText={translateText(["noCompanyFound"])}
       />
 
-      <InputPhoneNumber
-        inputName="contactNumber"
+      <InputField
+        name="contactNumber"
         label={translateText(["contactNo"])}
-        placeHolder={translateText(["enterContactNo"])}
+        placeholder={translateText(["enterContactNo"])}
         value={values.contactNumber}
-        countryCodeValue={values.countryCode}
-        onChange={handleContactNumber}
-        onChangeCountry={handleCountryChange}
-        labelStyles={{ fontWeight: 500}}
-        fullComponentStyle={{ mt: "0rem", mb: "0rem" }}
+        onChange={handleChange}
+        fullWidth
       />
 
       <OwnerSearchField
@@ -243,10 +221,10 @@ const CreateContactModal = () => {
         onClear={handleOwnerClear}
         options={ownerOptions}
         noResultsText={translateText(["noOwnerFound"])}
-        readonly={isCrmSalesRepresentative && !isCrmSalesManager && !isCrmAdmin && !isSuperadmin}
+        readonly={isCrmSalesRepresentative && !isCrmSalesManager && !isCrmAdmin && !isSuperAdmin}
       />
 
-      <Stack direction="row" justifyContent="flex-end" gap={1.5} mt={2}>
+      <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
           variant="tertiary"
           icon={<CloseIcon />}
@@ -266,8 +244,8 @@ const CreateContactModal = () => {
         >
           {translateText(["save"])}
         </ButtonV2>
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };
 
