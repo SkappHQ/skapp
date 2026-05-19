@@ -219,7 +219,7 @@ export function middleware(request: NextRequest) {
     "isPasswordChangedForTheFirstTime"
   )?.value;
 
-  if (currentPath === ROUTES.REMOVE_PEOPLE) {
+  if (currentPath === ROUTES.REMOVE_PEOPLE && token) {
     return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
   }
 
