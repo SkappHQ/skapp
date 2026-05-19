@@ -27,6 +27,22 @@ export interface CrmCompanyType {
 
 export interface CrmCompanyMetricsType extends CrmCompanyType {}
 
+export interface CrmCompanyAddFormTypes {
+  name: string;
+  industry: string | null;
+  website: string | null;
+  address: string | null;
+  contactNumber: string | null;
+}
+
+export interface CrmCompanyCreatePayload {
+  name: string;
+  industry: string | null;
+  website: string | null;
+  address: string | null;
+  contactNumber: string | null;
+}
+
 export interface CrmOwnerType {
   employeeId: number;
   firstName: string;

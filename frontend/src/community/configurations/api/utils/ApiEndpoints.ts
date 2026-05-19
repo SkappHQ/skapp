@@ -19,6 +19,8 @@ export const workLocationEndpoints = {
     `${moduleAPIPath.COMMON}/work-location?searchKeyword=${encodeURIComponent(search)}&page=${page}&size=${size}`,
   GET_WORK_LOCATION_BY_ID: (id: number) =>
     `${moduleAPIPath.COMMON}/work-location/${id}`,
+  CHECK_WORK_LOCATION_NAME_EXISTS: (name: string) =>
+    `${moduleAPIPath.COMMON}/work-location/name-exists?name=${encodeURIComponent(name)}`,
   CREATE_WORK_LOCATION: `${moduleAPIPath.COMMON}/work-location`,
   UPDATE_WORK_LOCATION: (id: number) =>
     `${moduleAPIPath.COMMON}/work-location/${id}`,
