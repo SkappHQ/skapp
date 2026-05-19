@@ -226,17 +226,25 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 	}
 
 	@Override
-	public List<Long> findTeamIdsByEmployeeId(Long employeeId) {
+	public boolean existsEmployeeInSupervisedTeam(Long employeeId, Long supervisorId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
 
-		Root<EmployeeTeam> root = criteriaQuery.from(EmployeeTeam.class);
+		Root<EmployeeTeam> empTeam = criteriaQuery.from(EmployeeTeam.class);
 
-		Predicate employeePredicate = criteriaBuilder.equal(root.get(EmployeeTeam_.employee).get(Employee_.employeeId),
-				employeeId);
+		Subquery<Long> supervisorTeams = criteriaQuery.subquery(Long.class);
+		Root<EmployeeTeam> supTeam = supervisorTeams.from(EmployeeTeam.class);
+		supervisorTeams.select(supTeam.get(EmployeeTeam_.team).get(Team_.teamId))
+			.where(criteriaBuilder.equal(supTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId), supervisorId),
+					criteriaBuilder.isTrue(supTeam.get(EmployeeTeam_.isSupervisor)),
+					criteriaBuilder.isTrue(supTeam.get(EmployeeTeam_.team).get(Team_.isActive)));
 
-		criteriaQuery.select(root.get(EmployeeTeam_.team).get(Team_.teamId)).where(employeePredicate).distinct(true);
-		return entityManager.createQuery(criteriaQuery).getResultList();
+		criteriaQuery.select(criteriaBuilder.literal(1L))
+			.where(criteriaBuilder.equal(empTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId), employeeId),
+					empTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(supervisorTeams));
+
+		List<Long> result = entityManager.createQuery(criteriaQuery).setMaxResults(1).getResultList();
+		return !result.isEmpty();
 	}
 
 	@Override

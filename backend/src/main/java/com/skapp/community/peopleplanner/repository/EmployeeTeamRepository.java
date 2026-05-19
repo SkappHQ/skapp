@@ -18,7 +18,7 @@ public interface EmployeeTeamRepository {
 
 	List<Team> findTeamsByEmployeeId(Long employeeId);
 
-	List<Long> findTeamIdsByEmployeeId(Long employeeId);
+	boolean existsEmployeeInSupervisedTeam(Long employeeId, Long supervisorId);
 
 	List<Employee> getEmployeesByTeamIds(List<Long> teams, Long currentUserId, boolean isAdmin);
 
