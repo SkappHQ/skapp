@@ -33,6 +33,7 @@ import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { ModifiedFileType } from "~community/people/types/AddNewResourceTypes";
 import { EmployeeManagerType } from "~community/people/types/EmployeeTypes";
+import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
 import { TeamType } from "~community/people/types/TeamTypes";
 import generateThumbnail from "~community/people/utils/image/thumbnailGenerator";
 import { toPascalCase } from "~community/people/utils/jobFamilyUtils/commonUtils";
@@ -112,16 +113,20 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
     null
   );
 
-  const handleTermination = async () => {
-    const result = await refetchSupervisorRoles();
-    const freshData = result.data;
-    const hasSupervisorRoles =
-      (freshData?.supervisedEmployees?.length ?? 0) > 0 ||
-      (freshData?.supervisedTeams?.length ?? 0) > 0;
+  const checkHasSupervisorRoles = async () => {
+    const { data } = await refetchSupervisorRoles();
+    return (
+      (data?.supervisedEmployees?.length ?? 0) > 0 ||
+      (data?.supervisedTeams?.length ?? 0) > 0
+    );
+  };
 
-    if (hasSupervisorRoles) {
+  const handleTermination = async () => {
+    if (await checkHasSupervisorRoles()) {
       setSelectedEmployeeId(Number(employeeId));
-      setSupervisorReassignmentActionType("terminate");
+      setSupervisorReassignmentActionType(
+        SupervisorReassignmentActionType.TERMINATE
+      );
       setIsSupervisorReassignmentModalOpen(true);
       return;
     }
@@ -130,15 +135,11 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   };
 
   const handleDeletion = async () => {
-    const result = await refetchSupervisorRoles();
-    const freshData = result.data;
-    const hasSupervisorRoles =
-      (freshData?.supervisedEmployees?.length ?? 0) > 0 ||
-      (freshData?.supervisedTeams?.length ?? 0) > 0;
-
-    if (hasSupervisorRoles) {
+    if (await checkHasSupervisorRoles()) {
       setSelectedEmployeeId(Number(employeeId));
-      setSupervisorReassignmentActionType("delete");
+      setSupervisorReassignmentActionType(
+        SupervisorReassignmentActionType.DELETE
+      );
       setIsSupervisorReassignmentModalOpen(true);
       return;
     }

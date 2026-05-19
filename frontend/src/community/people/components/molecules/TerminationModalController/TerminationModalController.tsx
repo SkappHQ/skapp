@@ -1,10 +1,10 @@
 import { FC } from "react";
 
+import SupervisorReassignmentModal from "~community/people/components/organisms/SupervisorReassignmentModal/SupervisorReassignmentModal";
 import { usePeopleStore } from "~community/people/store/store";
 import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
 import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
-import SupervisorReassignmentModal from "../SupervisorReassignmentModal/SupervisorReassignmentModal";
 import TerminateConfirmationModal from "../TerminateConfirmationModal/TerminateConfirmationModal";
 
 const TerminationModalController: FC = () => {
@@ -18,27 +18,27 @@ const TerminationModalController: FC = () => {
     employee
   } = usePeopleStore((state) => state);
 
-  const employeeName = concatStrings([
-    employee?.personal?.general?.firstName ?? "",
-    employee?.personal?.general?.lastName ?? ""
-  ]).trim();
-
   return (
     <>
       <SupervisorReassignmentModal
         isOpen={
           isSupervisorReassignmentModalOpen &&
-          supervisorReassignmentActionType === "terminate"
+          supervisorReassignmentActionType ===
+            SupervisorReassignmentActionType.TERMINATE
         }
         onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
         employeeId={Number(selectedEmployeeId)}
-        employeeName={employeeName}
+        employeeName={concatStrings([
+          employee?.personal?.general?.firstName ?? "",
+          employee?.personal?.general?.lastName ?? ""
+        ]).trim()}
         actionType={SupervisorReassignmentActionType.TERMINATE}
         onActionSuccess={() => setIsSupervisorReassignmentModalOpen(false)}
       />
       <TerminateConfirmationModal
         isOpen={isTerminationConfirmationModalOpen}
         onClose={() => setTerminationConfirmationModalOpen(false)}
+        employeeId={Number(selectedEmployeeId)}
       />
     </>
   );

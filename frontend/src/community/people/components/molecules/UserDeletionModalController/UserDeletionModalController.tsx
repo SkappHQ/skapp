@@ -1,10 +1,10 @@
 import { FC } from "react";
 
+import SupervisorReassignmentModal from "~community/people/components/organisms/SupervisorReassignmentModal/SupervisorReassignmentModal";
 import { usePeopleStore } from "~community/people/store/store";
 import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
 import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
-import SupervisorReassignmentModal from "../SupervisorReassignmentModal/SupervisorReassignmentModal";
 import UserDeletionConfirmationModal from "../UserDeletionConfirmationModal/UserDeletionConfirmationModal";
 
 const UserDeletionModalController: FC = () => {
@@ -18,27 +18,27 @@ const UserDeletionModalController: FC = () => {
     employee
   } = usePeopleStore((state) => state);
 
-  const employeeName = concatStrings([
-    employee?.personal?.general?.firstName ?? "",
-    employee?.personal?.general?.lastName ?? ""
-  ]).trim();
-
   return (
     <>
       <SupervisorReassignmentModal
         isOpen={
           isSupervisorReassignmentModalOpen &&
-          supervisorReassignmentActionType === "delete"
+          supervisorReassignmentActionType ===
+            SupervisorReassignmentActionType.DELETE
         }
         onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
         employeeId={Number(selectedEmployeeId)}
-        employeeName={employeeName}
+        employeeName={concatStrings([
+          employee?.personal?.general?.firstName ?? "",
+          employee?.personal?.general?.lastName ?? ""
+        ]).trim()}
         actionType={SupervisorReassignmentActionType.DELETE}
         onActionSuccess={() => setIsSupervisorReassignmentModalOpen(false)}
       />
       <UserDeletionConfirmationModal
         isOpen={isDeletionConfirmationModalOpen}
         onClose={() => setDeletionConfirmationModalOpen(false)}
+        employeeId={Number(selectedEmployeeId)}
       />
     </>
   );

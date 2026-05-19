@@ -62,7 +62,10 @@ export const peopleQueryKeys = {
   SUPERVISED_BY_ME: ["supervised-by-me"],
   HAS_SUPERVISOR_ROLES: ["has-supervisor-roles"],
   EXPORT_PEOPLE_DIRECTORY: ["export-people-directory"],
-  SUPERVISOR_ROLES: (userId: number) => ["supervisor-roles", userId]
+  SUPERVISOR_ROLES: (userId: number) => [
+    "primary-supervisors-team-supervisors",
+    userId
+  ]
 };
 
 export const teamQueryKeys = {

@@ -58,7 +58,8 @@ import {
   L2EmergencyDetailsType,
   L2EmploymentFormDetailsType,
   L2PersonalDetailsType,
-  L2SystemPermissionsType
+  L2SystemPermissionsType,
+  SupervisorReassignmentActionType
 } from "./PeopleTypes";
 import { AddCalenderInputType } from "./SliceTypes";
 import {
@@ -252,7 +253,9 @@ interface actionsTypes {
 
   //supervisorReassignmentSlice
   setIsSupervisorReassignmentModalOpen: (value: boolean) => void;
-  setSupervisorReassignmentActionType: (value: "terminate" | "delete") => void;
+  setSupervisorReassignmentActionType: (
+    value: SupervisorReassignmentActionType
+  ) => void;
 
   //people slice
   setEmployee: (employee: L1EmployeeType) => void;
@@ -401,7 +404,7 @@ export interface Store extends actionsTypes {
 
   //supervisorReassignmentSlice
   isSupervisorReassignmentModalOpen: boolean;
-  supervisorReassignmentActionType: "terminate" | "delete";
+  supervisorReassignmentActionType: SupervisorReassignmentActionType;
 
   //people slice
   employee: L1EmployeeType;

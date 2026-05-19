@@ -575,27 +575,25 @@ export const useAddBulkUsers = (
 export const useTerminateUser = (
   onSuccess: () => void,
   onError: () => void,
-  employeeId?: number
+  employeeId: number
 ) => {
   const queryClient = useQueryClient();
 
-  const { selectedEmployeeId } = usePeopleStore((state) => state);
-  const targetId = employeeId ?? selectedEmployeeId;
   return useMutation({
     mutationFn: () => {
       const payload = {
-        userId: targetId,
+        userId: employeeId,
         isActive: false
       };
 
       return authFetch.patch(
-        peoplesEndpoints.TERMINATE_EMPLOYEE(targetId as number),
+        peoplesEndpoints.TERMINATE_EMPLOYEE(employeeId),
         payload
       );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(targetId))
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId))
       });
       queryClient
         .invalidateQueries({
@@ -699,19 +697,17 @@ export const useHasSupervisorRoles = (
 export const useDeleteUser = (
   onSuccess: () => void,
   onError: () => void,
-  employeeId?: number
+  employeeId: number
 ) => {
   const queryClient = useQueryClient();
 
-  const { selectedEmployeeId } = usePeopleStore((state) => state);
-  const targetId = employeeId ?? selectedEmployeeId;
   return useMutation({
     mutationFn: () => {
-      return authFetch.patch(peoplesEndpoints.DELETE_USER(targetId as number));
+      return authFetch.patch(peoplesEndpoints.DELETE_USER(employeeId));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(targetId))
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId))
       });
       queryClient
         .invalidateQueries({
@@ -858,7 +854,7 @@ export const useGetSupervisorRoles = (
     queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId),
     queryFn: async () =>
       await authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId)),
-    select: (data) => data?.data?.results[0] as SupervisorRolesData,
+    select: (data) => data?.data?.results[0],
     enabled: !!userId && enabled
   });
 };
@@ -873,16 +869,12 @@ export const useTransferSupervisors = (
     mutationFn: (payload: TransferSupervisorsPayload) =>
       authFetch.patch(peoplesEndpoints.TRANSFER_SUPERVISORS(userId), payload),
     onSuccess: () => {
-      queryClient
-        .invalidateQueries({
-          queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId)
-        })
-        .catch(rejects);
-      queryClient
-        .invalidateQueries({
-          queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
-        })
-        .catch(rejects);
+      queryClient.invalidateQueries({
+        queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId)
+      });
+      queryClient.invalidateQueries({
+        queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
+      });
       onSuccess();
     },
     onError

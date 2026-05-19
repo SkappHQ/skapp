@@ -257,22 +257,22 @@ export interface SupervisorRolesData {
   supervisedTeams: EmployeeDataTeamType[];
 }
 
-export interface PrimarySupervisorTransferItem {
+export interface PrimarySupervisorTransfer {
   employeeId: number;
   newPrimarySupervisorId: number;
 }
 
-export interface TeamSupervisorTransferItem {
+export interface TeamSupervisorTransfer {
   teamId: number;
   newTeamSupervisorId: number;
 }
 
 export interface TransferSupervisorsPayload {
-  primarySupervisors: PrimarySupervisorTransferItem[];
-  teamSupervisors: TeamSupervisorTransferItem[];
+  primarySupervisors: PrimarySupervisorTransfer[];
+  teamSupervisors: TeamSupervisorTransfer[];
 }
 
 export enum SupervisorReassignmentActionType {
-  TERMINATE = "terminate",
-  DELETE = "delete"
+  TERMINATE = "TERMINATE",
+  DELETE = "DELETE"
 }

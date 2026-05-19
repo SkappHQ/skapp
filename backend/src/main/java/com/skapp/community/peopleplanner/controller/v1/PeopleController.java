@@ -191,7 +191,7 @@ public class PeopleController {
 	@Operation(summary = "Get supervisor roles of a user",
 			description = "Returns the employees this user is primary supervisor for and the teams this user supervises")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
-	@GetMapping("/user/{userId}/supervisor-roles")
+	@GetMapping("/user/{userId}/primary-supervisors-team-supervisors")
 	public ResponseEntity<ResponseEntityDto> getSupervisorRoles(@PathVariable Long userId) {
 		ResponseEntityDto response = peopleService.getSupervisorRoles(userId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
