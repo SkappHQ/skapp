@@ -123,10 +123,10 @@ const AddCompanyModal: React.FC = () => {
   useEffect(() => {
     if (companyNameData?.isExists) {
       setFieldError("name", translateText(["validations", "companyExists"]));
-    } else {
+    } else if (values.name.trim().length > 0) {
       setFieldError("name", undefined);
     }
-  }, [companyNameData?.isExists, setFieldError, translateText]);
+  }, [companyNameData?.isExists, setFieldError, translateText, values.name]);
 
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
