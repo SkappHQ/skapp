@@ -191,8 +191,7 @@ const DropdownSearch: FC<Props> = ({
               height: !getValues() ? "6.25rem" : ""
             };
           },
-          ...selectStyles,
-          menuPortal: (styles) => ({ ...styles, zIndex: ZIndexEnums.NEWMODAL })
+          ...selectStyles
         }}
         menuPortalTarget={
           typeof window !== "undefined" ? document.body : undefined
