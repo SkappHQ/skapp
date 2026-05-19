@@ -1,7 +1,7 @@
 export enum CrmPriorityEnum {
-  LOW = "low",
-  MEDIUM = "medium",
-  HIGH = "high"
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH"
 }
 
 export enum CrmDealStageEnum {
