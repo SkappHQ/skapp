@@ -11,7 +11,7 @@ const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
     companyEndpoints.CREATE_COMPANY,
     companyDetails
   );
-  return response.data.results[0];
+  return response?.data?.results?.[0];
 };
 
 export const useCreateNewCompany = (
