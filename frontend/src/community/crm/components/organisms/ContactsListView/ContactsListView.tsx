@@ -41,13 +41,7 @@ interface ContactTableRow extends TableRowType {
 }
 
 const formatCurrency = (value: number): string => {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}m`;
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}k`;
-  }
-  return `$${value.toFixed(0)}`;
+  return `$${Math.round(value)}`;
 };
 
 const mapContactToTableRow = (contact: ContactListItem): ContactTableRow => ({
@@ -132,7 +126,7 @@ const OwnerCell = ({ owner }: { owner: ContactTableRow["owner"] }) => (
 
 const ContactsListView = () => {
   const translateText = useTranslator("crmModule", "contacts");
-  const { openContactSidePanel } = useCrmStore((state) => state);
+  const { openContactDetailPanel } = useCrmStore((state) => state);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCompany, setSelectedCompany] = useState("all");
@@ -255,11 +249,7 @@ const ContactsListView = () => {
   };
 
   const handleRowClick = (row: ContactTableRow) => {
-    openContactSidePanel({
-      id: Number(row.id),
-      name: row.contact.name,
-      company: row.contact.company !== "—" ? row.contact.company : null
-    });
+    openContactDetailPanel(Number(row.id));
   };
 
   return (

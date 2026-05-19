@@ -103,18 +103,19 @@ export interface CrmDealStageType {
   stageType: CrmDealStageEnum;
 }
 
-export interface ContactDeal {
-  id: number;
-  name: string;
-  amount: string;
-  closingAt: string | null;
-  stage: DealStage;
-  priority: Priority | null;
-  owner: ContactOwner;
-  company: CompanyLookup | null;
-}
+// export interface ContactDeal {
+//   id: number;
+//   name: string;
+//   amount: string;
+//   closingAt: string | null;
+//   stage: DealStage;
+//   priority: Priority | null;
+//   owner: ContactOwner;
+//   company: CompanyLookup | null;
+// }
 
-export interface CrmDealType {
+
+export interface ContactDeal {
   id: number;
   name: string;
   stage: CrmDealStageType;
@@ -122,11 +123,14 @@ export interface CrmDealType {
   closingAt: string | null;
   amount: string | null;
   currencyCode: string | null;
+  notes: string | null;
   company: CrmCompanyType | null;
   contact: CrmContactType;
   owner: CrmOwnerType;
   isDeleted: boolean;
 }
+export type ContactDealType = ContactDeal;
+export type CrmDealType = ContactDeal;
 
 // Task Types
 export interface TaskType {
@@ -176,6 +180,15 @@ export interface CrmPriorityType {
   id: number;
   name: string;
   orderIndex: number;
+}
+
+// Contact Metrics (side-panel view — from /contacts/{id}/metrics endpoint)
+export interface CrmContactMetricsType {
+  totalRevenue: number;
+  revenueOnPipeline: number;
+  activeDealsCount: number;
+  openTasksCount: number;
+  overdueTasksCount: number;
 }
 
 // API Response Types

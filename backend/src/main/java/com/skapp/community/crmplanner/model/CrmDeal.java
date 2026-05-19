@@ -32,6 +32,9 @@ public class CrmDeal extends Auditable<String> {
 	@Column(name = "name", nullable = false)
 	private String name;
 
+	@Column(name = "description")
+	private String description;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "stage_id", nullable = false)
 	private CrmDealStage stage;

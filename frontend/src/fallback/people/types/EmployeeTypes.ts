@@ -9,4 +9,7 @@ export interface EmployeeRoleLimit {
   esignAdminLimitExceeded: boolean;
   esignSenderLimitExceeded: boolean;
   pmAdminLimitExceeded: boolean;
+  crmAdminLimitExceeded: boolean;
+  crmSalesManagerLimitExceeded: boolean;
+  crmSalesRepresentativeLimitExceeded: boolean;
 }

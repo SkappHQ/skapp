@@ -13,6 +13,8 @@ interface ActionTypes {
   setCrmModalType: (crmModalType: CrmModalTypes) => void;
   openContactSidePanel: (contact: CrmSidePanelContact) => void;
   closeContactSidePanel: () => void;
+  openContactDetailPanel: (id: number) => void;
+  closeContactDetailPanel: () => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -22,4 +24,6 @@ export interface CrmStore extends ActionTypes {
   crmModalType: CrmModalTypes;
   isContactSidePanelOpen: boolean;
   selectedContactForPanel: CrmSidePanelContact | null;
+  isContactDetailPanelOpen: boolean;
+  selectedContactId: number | null;
 }

@@ -9,7 +9,10 @@ import {
 import { type FileUploadType } from "~community/common/types/CommonTypes";
 import { ToastProps } from "~community/common/types/ToastTypes";
 import { toCamelCase } from "~community/common/utils/commonUtil";
-import { HolidayType } from "~community/people/types/HolidayTypes";
+import {
+  HolidayCSVRowType,
+  HolidayType
+} from "~community/people/types/HolidayTypes";
 
 const validateHeaders = async (file: File): Promise<boolean> => {
   const readCSVHeaders = (file: File): Promise<string[]> => {
@@ -29,14 +32,25 @@ const validateHeaders = async (file: File): Promise<boolean> => {
     });
   };
 
+  const predefinedHeaders = [
+    "Date",
+    "Work Location",
+    "Name",
+    "Holiday Duration"
+  ];
+
   const includesInvalidHeaders = (headers: string[]): boolean => {
-    const predefinedHeaders = ["Date", "Name", "Holiday Duration"];
     return headers?.some((header) => !predefinedHeaders?.includes(header));
+  };
+
+  const includesAllRequiredHeaders = (headers: string[]): boolean => {
+    return predefinedHeaders.every((required) => headers.includes(required));
   };
 
   const headers = await readCSVHeaders(file);
 
-  const isValid = !includesInvalidHeaders(headers);
+  const isValid =
+    !includesInvalidHeaders(headers) && includesAllRequiredHeaders(headers);
 
   return isValid;
 };
@@ -46,13 +60,21 @@ const transformCSVHeaders = (header: string) => {
 };
 
 export const normalizeHolidayDates = (
-  holidays: HolidayType[]
+  holidays: HolidayCSVRowType[]
 ): HolidayType[] => {
   return holidays.map((holiday) => {
     const formattedDate = formatToStrictYMD(holiday.date);
+    const workLocations = holiday.workLocation
+      ? holiday.workLocation
+          .split(",")
+          .map((loc) => loc.trim())
+          .filter(Boolean)
+      : undefined;
     return {
-      ...holiday,
-      date: formattedDate ?? holiday.date
+      date: formattedDate ?? holiday.date,
+      name: holiday.name,
+      holidayDuration: holiday.holidayDuration,
+      workLocations
     };
   });
 };
@@ -139,7 +161,7 @@ export const setAttachment = async ({
         header: true,
         skipEmptyLines: true,
         transformHeader: transformCSVHeaders,
-        complete: function (recordDetails: { data: HolidayType[] }) {
+        complete: function (recordDetails: { data: HolidayCSVRowType[] }) {
           if (recordDetails?.data?.length === 0) {
             setToastMessage({
               title: translateText(["noRecordCSVTitle"]),

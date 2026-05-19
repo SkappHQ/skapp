@@ -46,7 +46,6 @@ const CrmContactsModalController = () => {
       onClose={handleClose}
       modalHeader={getModalTitle(crmModalType)}
       backdropVariant="dark"
-      className="w-auto"
       content={getModalContent()}
     />
   );

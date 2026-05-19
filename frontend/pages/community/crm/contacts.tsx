@@ -8,6 +8,7 @@ import CrmSidePanelController from "~community/crm/components/organisms/CrmSideP
 import ContactsListView from "~community/crm/components/organisms/ContactsListView/ContactsListView";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import ContactDetailPanel from "~community/crm/components/organisms/ContactDetailPanel/ContactDetailPanel";
 
 const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");

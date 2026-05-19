@@ -56,6 +56,7 @@ export interface L2SystemPermissionsType {
   esignRole?: Role;
   pmRole?: Role;
   invoiceRole?: Role;
+  crmRole?: Role;
 }
 
 export interface L2CommonDetailsType {

@@ -11,6 +11,10 @@ export const crmEndpoints = {
   UPDATE_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contacts/${id}`,
   DELETE_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contacts/delete/${id}`,
 
+  // Tasks
+  GET_TASKS_BY_CONTACT: (contactId: number) => `${moduleAPIPath.CRM}/contacts/${contactId}/tasks`,
+  UPDATE_TASK_COMPLETION: (taskId: number) => `${moduleAPIPath.CRM}/tasks/${taskId}/completion`,
+
   // Owners & Companies
   GET_OWNERS: `${moduleAPIPath.CRM}/owners`,
   GET_COMPANIES: `${moduleAPIPath.CRM}/companies/lookup`

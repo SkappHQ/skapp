@@ -1,6 +1,8 @@
 import {
-  type UseQueryResult,
+  // type UseQueryResult,
   useInfiniteQuery,
+  UseMutationResult,
+  UseQueryResult,
   useMutation,
   useQuery,
   useQueryClient
@@ -18,10 +20,12 @@ import {
   ContactTask,
   CreateContactPayload,
   CrmCompaniesResponseType,
+  CrmContactMetricsType,
   CrmContactsListResponseType,
   CrmOwnersResponseType,
   UpdateContactPayload
 } from "~community/crm/types/CommonTypes";
+import { CrmTasksResponseType } from "~community/crm/types/CrmTaskTypes";
 
 interface CompaniesParams {
   page?: number;
@@ -118,11 +122,11 @@ export const useGetCrmContactById = (
 export const useGetCrmContactMetrics = (
   id: number,
   enabled = true
-): UseQueryResult<ContactMetrics> => {
+): UseQueryResult<CrmContactMetricsType> => {
   return useQuery({
     queryKey: crmQueryKeys.CRM_CONTACT_METRICS(id),
     queryFn: () => authFetch.get(crmEndpoints.GET_CONTACT_METRICS(id)),
-    select: (data) => data?.data?.results?.[0] as ContactMetrics,
+    select: (data) => data?.data?.results?.[0] as CrmContactMetricsType,
     enabled: enabled && id > 0
   });
 };
@@ -268,6 +272,44 @@ export const useDeleteContact = ({
         error?.response?.data?.message ??
         error?.response?.data?.results?.[0]?.message ??
         "Failed to delete contact. Please try again.";
+      onError(message);
+    }
+  });
+};
+
+// Get Tasks by Contact ID
+export const useGetTasksByContactId = (
+  contactId: number,
+  enabled = true
+): UseQueryResult<ContactTask[]> => {
+  return useQuery({
+    queryKey: crmQueryKeys.CRM_TASKS_BY_CONTACT(contactId),
+    queryFn: () => authFetch.get(crmEndpoints.GET_TASKS_BY_CONTACT(contactId)),
+    select: (data) => (data?.data?.results ?? []) as ContactTask[],
+    enabled: enabled && contactId > 0
+  });
+};
+
+// Update Task Completion
+export const useUpdateTaskCompletion = (
+  onSuccess: () => void,
+  onError: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, isCompleted }: { id: number; isCompleted: boolean }) =>
+      authFetch.patch(crmEndpoints.UPDATE_TASK_COMPLETION(id), { isCompleted }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["crm-tasks-by-contact"] });
+      queryClient.invalidateQueries({ queryKey: ["crm-contact-tasks"] });
+      onSuccess();
+    },
+    onError: (error: AxiosError<{ message?: string; results?: Array<{ message: string }> }>) => {
+      const message =
+        error?.response?.data?.message ??
+        error?.response?.data?.results?.[0]?.message ??
+        "Failed to update task. Please try again.";
       onError(message);
     }
   });

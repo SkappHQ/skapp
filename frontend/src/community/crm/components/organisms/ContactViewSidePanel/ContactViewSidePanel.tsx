@@ -203,7 +203,7 @@ const ContactViewSidePanel = ({
                   Active Deals
                 </Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  {metrics?.activeDealCount ?? 0}
+                  {metrics?.activeDealsCount ?? 0}
                 </Typography>
               </Box>
               <Box sx={{ p: 1.5, bgcolor: "grey.100", borderRadius: 1 }}>
@@ -211,15 +211,15 @@ const ContactViewSidePanel = ({
                   Open Tasks
                 </Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  {metrics?.openTaskCount ?? 0}
-                  {(metrics?.overdueTaskCount ?? 0) > 0 && (
+                  {metrics?.openTasksCount ?? 0}
+                  {(metrics?.overdueTasksCount ?? 0) > 0 && (
                     <Typography
                       component="span"
                       variant="caption"
                       color="error.main"
                       sx={{ ml: 1 }}
                     >
-                      ({metrics?.overdueTaskCount} overdue)
+                      ({metrics?.overdueTasksCount} overdue)
                     </Typography>
                   )}
                 </Typography>
