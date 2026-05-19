@@ -7,15 +7,29 @@ import {
   PriorityIcon,
   TransparentEnterIcon
 } from "@rootcodelabs/skapp-ui";
+<<<<<<< Updated upstream
 import { FC, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+=======
+import { FC, useEffect, useState } from "react";
+>>>>>>> Stashed changes
 
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+<<<<<<< Updated upstream
 import { useGetTasksByContactId, useUpdateTaskCompletion } from "~community/crm/api/CrmApi";
 import CheckTask from "~community/crm/components/atoms/CheckTask/CheckTask";
 import { CrmTaskType } from "~community/crm/types/CrmTaskTypes";
+=======
+// import {
+//   useGetTasksByContactId,
+//   useUpdateTaskCompletion
+// } from "~community/crm/api/CrmApi";
+import { MOCK_TASKS_BY_CONTACT_ID } from "~community/crm/__mocks__/crmMockData";
+import CheckTask from "~community/crm/components/atoms/CheckTask/CheckTask";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
+>>>>>>> Stashed changes
 import {
   TASK_TYPE_OPTIONS,
   getDueDateDisplay,
@@ -29,12 +43,15 @@ interface Props {
   contactId: number;
 }
 
+<<<<<<< Updated upstream
 interface FormPos {
   top: number;
   left: number;
   width: number;
 }
 
+=======
+>>>>>>> Stashed changes
 const TasksSection: FC<Props> = ({ contactId }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -44,6 +61,7 @@ const TasksSection: FC<Props> = ({ contactId }) => {
   );
 
   const [isAddingTask, setIsAddingTask] = useState(false);
+<<<<<<< Updated upstream
 
   const formAnchorRef = useRef<HTMLDivElement>(null);
   const [formPos, setFormPos] = useState<FormPos | null>(null);
@@ -87,6 +105,33 @@ const TasksSection: FC<Props> = ({ contactId }) => {
   const { mutate: updateCompletion } = useUpdateTaskCompletion(() => {}, () => {});
   const handleToggleComplete = (id: number, isCompleted: boolean) => {
     updateCompletion({ id, isCompleted: !isCompleted });
+=======
+  const [tasks, setTasks] = useState<CrmTaskType[]>([]);
+
+  // Load mock data into state
+  useEffect(() => {
+    const data = MOCK_TASKS_BY_CONTACT_ID[contactId];
+    setTasks(data?.items ?? []);
+  }, [contactId]);
+
+  // const { data, isLoading } = useGetTasksByContactId(contactId);
+  // const tasks: CrmTaskType[] = data?.items ?? [];
+  // const { mutate: updateCompletion } = useUpdateTaskCompletion(
+  //   () => {},
+  //   () => {}
+  // );
+  // const handleToggleComplete = (id: number, isCompleted: boolean) => {
+  //   updateCompletion({ id, isCompleted: !isCompleted });
+  // };
+
+  const isLoading = false;
+  const handleToggleComplete = (id: number) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, isCompleted: !task.isCompleted } : task
+      )
+    );
+>>>>>>> Stashed changes
   };
 
   const hasTasks = tasks.length > 0;
@@ -130,9 +175,13 @@ const TasksSection: FC<Props> = ({ contactId }) => {
                   <div className={styles.taskRow}>
                     <CheckTask
                       checked={task.isCompleted}
+<<<<<<< Updated upstream
                       onChange={() =>
                         handleToggleComplete(task.id, task.isCompleted)
                       }
+=======
+                      onChange={() => handleToggleComplete(task.id)}
+>>>>>>> Stashed changes
                       size="size-5"
                       ariaLabel={
                         task.isCompleted ? "Mark incomplete" : "Mark complete"
@@ -192,9 +241,32 @@ const TasksSection: FC<Props> = ({ contactId }) => {
 
             {isAddingTask && (
               <div
+<<<<<<< Updated upstream
                 ref={formAnchorRef}
                 className={`h-[60px]${hasTasks ? " border-t border-[#e5e7eb]" : ""}`}
               />
+=======
+                className={hasTasks ? "border-t border-[#e5e7eb]" : ""}
+              >
+                <ItemAddForm
+                  itemTypeOptions={TASK_TYPE_OPTIONS}
+                  defaultSelectedItemType={TASK_TYPE_OPTIONS[0]?.value}
+                  onSave={(_value: string, _itemType?: string) => {
+                    // TODO: wire up create-task mutation
+                    setIsAddingTask(false);
+                  }}
+                  onCancel={() => setIsAddingTask(false)}
+                  inputFieldPlaceholder={translateText(["addTaskPlaceholder"])}
+                  maxLength={255}
+                  actionButton={{
+                    variant: "outlined",
+                    icon: <TransparentEnterIcon />
+                  }}
+                  className={hasTasks ? "rounded-b-lg" : "rounded-lg"}
+                  usePortal={true}
+                />
+              </div>
+>>>>>>> Stashed changes
             )}
           </div>
 
@@ -234,6 +306,7 @@ const TasksSection: FC<Props> = ({ contactId }) => {
           </button>
         </div>
       )}
+<<<<<<< Updated upstream
 
       {isAddingTask &&
         formPos &&
@@ -266,6 +339,8 @@ const TasksSection: FC<Props> = ({ contactId }) => {
           </div>,
           document.body
         )}
+=======
+>>>>>>> Stashed changes
     </div>
   );
 };
