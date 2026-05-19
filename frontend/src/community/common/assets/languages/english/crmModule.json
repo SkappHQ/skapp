@@ -38,11 +38,22 @@
         "industry": "Industry",
         "addCompany": "Add Company",
         "cancelAddCompany": "Cancel Add Company"
+      },
+      "validations": {
+        "name": "Company name is required",
+        "companyExists": "A company with this name already exists",
+        "website": "Please enter a valid website URL",
+        "contactNumber": "Contact number is invalid",
+        "companyNameLength": "Company name must be less than 30 characters",
+        "characterLength": "Entry must be less than 50 characters",
+        "addressLength": "Address must be less than 100 characters"
       }
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
+      "filterButtonAriaLabel": "Filter companies",
       "search": "Search company",
+      "infiniteScrollLoadingMessage": "Loading companies...",
       "emptyDataState": {
         "title": "No companies available.",
         "description": "Create a company to get started."
@@ -53,19 +64,15 @@
       },
       "columns": {
         "nameHeader": "NAME",
+        "nameAriaLabel": "Company Name",
         "phoneHeader": "CONTACT NO.",
+        "phoneAriaLabel": "Contact Number",
         "tasksHeader": "OPEN TASKS",
+        "tasksAriaLabel": "Open Tasks",
         "pipelineHeader": "OPEN IN PIPELINE",
-        "accountValueHeader": "ACCOUNT VALUE"
-      },
-      "validations": {
-        "name": "Company name is required",
-        "companyExists": "A company with this name already exists",
-        "website": "Please enter a valid website URL",
-        "contactNumber": "Contact number is invalid",
-        "companyNameLength": "Company name must be less than 30 characters",
-        "characterLength": "Entry must be less than 50 characters",
-        "addressLength": "Address must be less than 100 characters"
+        "pipelineAriaLabel": "Open in Pipeline",
+        "accountValueHeader": "ACCOUNT VALUE",
+        "accountValueAriaLabel": "Account Value"
       }
     },
     "companyToastMessages": {
