@@ -26,7 +26,7 @@ public class CrmContactController {
 	private final CrmContactService crmContactService;
 
 	@Operation(summary = "Create CRM contact", description = "Creates a CRM contact and assigns an owner.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@PostMapping(value = "/contacts", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> createContact(
 			@RequestBody CrmContactCreateRequestDto requestDto) {
@@ -36,7 +36,7 @@ public class CrmContactController {
 	}
 
 	@Operation(summary = "Get CRM owners", description = "Retrieves active CRM users who can be assigned as owners.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_SALES_MANAGER')")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_MANAGER')")
 	@GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getOwners(CrmContactOwnerFilterDto filterDto) {
 
