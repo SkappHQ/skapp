@@ -6,4 +6,6 @@ export interface CrmCompanyModalSliceTypes extends Pick<
   | "setCompanyModalType"
   | "selectedCompany"
   | "setSelectedCompany"
+  | "isAddCompanyModalOpen"
+  | "setIsAddCompanyModalOpen"
 > {}
