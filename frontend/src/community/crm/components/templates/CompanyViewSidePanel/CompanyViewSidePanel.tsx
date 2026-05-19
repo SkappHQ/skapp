@@ -4,6 +4,8 @@ import { createPortal } from "react-dom";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
+import AddDealForm from "~community/crm/components/molecules/AddDealForm/AddDealForm";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 
 import CompanyContacts from "../../molecules/CompanyContacts/CompanyContacts";
@@ -48,23 +50,36 @@ const getCompanyContacts = (company: CrmCompanyMetricsType) => [
   // TODO: Wire up contacts for the selected company
   {
     id: "1",
-    name: "John Doe",
-    email: "johndoe@email.com",
-    contactNo: "1234567890",
-    company: "",
-    revenue: "",
-    dealsClosed: 0,
-    openTasks: 0
+    name: "Samuel West",
+    email: "samuelwest@mail.com",
+    contactNo: "+94 439348842",
+    company: "Acme",
+    revenue: "$62000",
+    dealsClosed: 4,
+    openTasks: 2,
+    overdueTasks: 1
   },
   {
     id: "2",
-    name: "Jane Doe",
-    email: "janedoe@email.com",
-    contactNo: "1234567890",
-    company: "",
-    revenue: "",
-    dealsClosed: 0,
-    openTasks: 0
+    name: "Hannah Lee",
+    email: "hannah.lee@stark.com",
+    contactNo: "+1 2129876543",
+    company: "Stark Industries",
+    revenue: "$80000",
+    dealsClosed: 8,
+    openTasks: 9,
+    overdueTasks: 0
+  },
+  {
+    id: "3",
+    name: "Linda Martinez",
+    email: "linda.martinez@globex.com",
+    contactNo: "+44 2071234567",
+    company: "Globex Corp",
+    revenue: "$75000",
+    dealsClosed: 6,
+    openTasks: 11,
+    overdueTasks: 0
   }
 ];
 
@@ -79,6 +94,7 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
   onClose,
   selectedCompany
 }) => {
+  const { isAddDealFormOpen, setIsAddDealFormOpen } = useCrmStore();
   return createPortal(
     <div
       style={{
@@ -95,54 +111,66 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
         <SidePanel
           isOpen={isOpen}
           header={
-            <div className="w-full p-[0.5rem]">
-              {selectedCompany && (
-                <CompanyDetailHeader company={selectedCompany} />
-              )}
-            </div>
+            isAddDealFormOpen ? (
+              <div className="w-full p-[0.5rem]">
+                <p className="font-bold text-2xl leading-6 tracking-[0.07px]">Add deal</p>
+              </div>
+            ) : (
+              <div className="w-full p-[0.5rem]">
+                {selectedCompany && (
+                  <CompanyDetailHeader company={selectedCompany} />
+                )}
+              </div>
+            )
           }
-          headerActions={selectedCompany && <CompanyDetailHeaderActions company={selectedCompany} />}
+          headerActions={!isAddDealFormOpen && selectedCompany && <CompanyDetailHeaderActions company={selectedCompany} />}
           width="lg"
-          onClose={onClose}
+          onClose={isAddDealFormOpen ? () => setIsAddDealFormOpen(false) : onClose}
         >
           <div className="flex flex-col w-full">
-            {selectedCompany && (
-              <CompanyMetricCards
-                metrics={getCompanyMetrics(selectedCompany)}
-              />
+            {isAddDealFormOpen ? (
+              <AddDealForm />
+            ) : (
+              <>
+                {selectedCompany && (
+                  <CompanyMetricCards
+                    metrics={getCompanyMetrics(selectedCompany)}
+                  />
+                )}
+                {selectedCompany && <CompanyDeals />}
+                {selectedCompany && (
+                  <CompanyContacts contacts={getCompanyContacts(selectedCompany)} />
+                )}
+                <CompanyTasks
+                  tasks={[
+                    {
+                      id: "1",
+                      title: "Call supervisor",
+                      isCompleted: false,
+                      type: "call",
+                      dueDate: "",
+                      isOverdue: false,
+                      priority: "high"
+                    },
+                    {
+                      id: "2",
+                      title: "Send out proposal",
+                      isCompleted: false,
+                      type: "email",
+                      dueDate: "",
+                      isOverdue: false,
+                      priority: "low"
+                    }
+                  ]}
+                  onToggleComplete={function (id: string): void {
+                    throw new Error("Function not implemented.");
+                  }}
+                  onAddTask={function (): void {
+                    throw new Error("Function not implemented.");
+                  }}
+                />
+              </>
             )}
-            {selectedCompany && <CompanyDeals />}
-            {selectedCompany && (
-              <CompanyContacts contacts={getCompanyContacts(selectedCompany)} />
-            )}
-            <CompanyTasks
-              tasks={[
-                {
-                  id: "1",
-                  title: "Call supervisor",
-                  isCompleted: false,
-                  type: "call",
-                  dueDate: "",
-                  isOverdue: false,
-                  priority: "high"
-                },
-                {
-                  id: "2",
-                  title: "Send out proposal",
-                  isCompleted: false,
-                  type: "email",
-                  dueDate: "",
-                  isOverdue: false,
-                  priority: "low"
-                }
-              ]}
-              onToggleComplete={function (id: string): void {
-                throw new Error("Function not implemented.");
-              }}
-              onAddTask={function (): void {
-                throw new Error("Function not implemented.");
-              }}
-            />
           </div>
         </SidePanel>
       </div>

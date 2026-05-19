@@ -6,6 +6,7 @@ interface ActionTypes {
   setCompanyModalType: (companyModalType: CrmModalTypes) => void;
   setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
   setIsCompanyDetailDrawerOpen: (isCompanyDetailDrawerOpen: boolean) => void;
+  setIsAddDealFormOpen: (isAddDealFormOpen: boolean) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -13,4 +14,5 @@ export interface CrmStore extends ActionTypes {
   companyModalType: CrmModalTypes;
   selectedCompany: CrmCompanyMetricsType | null;
   isCompanyDetailDrawerOpen: boolean;
+  isAddDealFormOpen: boolean;
 }

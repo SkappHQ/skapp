@@ -21,7 +21,7 @@ interface DealFormData {
 const initialFormData: DealFormData = {
   dealName: "",
   description: "",
-  status: "Initial",
+  status: "Lead",
   value: "",
   priority: "",
   ownedBy: "",
@@ -30,7 +30,7 @@ const initialFormData: DealFormData = {
 };
 
 const statusOptions = [
-  { label: "Initial", iconColor: "#3b82f6" },
+  { label: "Lead", iconColor: "#3b82f6" },
   { label: "Open", iconColor: "#f59e0b" },
   { label: "Won", iconColor: "#22c55e" },
   { label: "Lost", iconColor: "#ef4444" }
@@ -95,7 +95,7 @@ const AddDealForm: React.FC = () => {
     <div className="flex flex-col h-full">
       <div className="flex flex-row gap-6 flex-1">
         {/* Left Column */}
-        <div className="flex flex-col gap-2.5 w-[637px]">
+        <div className="flex flex-col gap-2.5 flex-1 min-w-0">
           <InputField
             inputName="dealName"
             label="Deal name"
@@ -115,7 +115,7 @@ const AddDealForm: React.FC = () => {
         </div>
 
         {/* Right Column */}
-        <div className="flex flex-col gap-3 w-[296px]">
+        <div className="flex flex-col gap-3 w-[296px] shrink-0">
           {/* Status Dropdown */}
           <div className="relative" ref={statusRef}>
             <button
@@ -182,7 +182,7 @@ const AddDealForm: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="flex justify-end py-6">
+      <div className="flex justify-end pt-6 pb-2 mt-auto">
         <ButtonV2
           id="add-deal-btn"
           isFullWidth={false}

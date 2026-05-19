@@ -46,12 +46,6 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
           (item, index) =>
             item.value && (
               <div key={index} className="flex items-center gap-3">
-                <Icon
-                  name={item.icon}
-                  width="1.25rem"
-                  height="1.25rem"
-                  fill="#68707F"
-                />
                 {item.isLink ? (
                   <a
                     href={
@@ -61,10 +55,16 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-sm leading-6 tracking-[0.5px]"
+                    className="flex items-center gap-3 text-sm leading-6 tracking-[0.5px]"
                     style={{ color: "#2a61a0", textDecoration: "underline" }}
                   >
-                    {item.value}
+                    <Icon
+                      name={item.icon}
+                      width="1.25rem"
+                      height="1.25rem"
+                      fill="#2a61a0"
+                    />
+                    {item.value.replace(/^https?:\/\//, "")}
                     <Icon
                       name={IconName.BROWSER_WINDOW_ICON}
                       width="1rem"
@@ -73,9 +73,17 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
                     />
                   </a>
                 ) : (
-                  <p className="text-sm leading-6 tracking-[0.5px] text-black">
-                    {item.value}
-                  </p>
+                  <>
+                    <Icon
+                      name={item.icon}
+                      width="1.25rem"
+                      height="1.25rem"
+                      fill="#68707F"
+                    />
+                    <p className="text-sm leading-6 tracking-[0.5px] text-black">
+                      {item.value}
+                    </p>
+                  </>
                 )}
               </div>
             )

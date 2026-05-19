@@ -51,11 +51,11 @@ const columns: TableColumn<ContactRow>[] = [
     key: "revenue",
     header: "REVENUE",
     render: (_value, row) => (
-      <div className="flex flex-col gap-0.5">
-        <span className="text-base font-semibold text-zinc-900">
+      <div className="flex flex-col">
+        <span className="text-base text-zinc-900">
           {row.revenue}
         </span>
-        <span className="text-xs text-green-700">
+        <span className="text-xs text-zinc-500">
           {row.dealsClosed} Deals closed
         </span>
       </div>
@@ -69,7 +69,7 @@ const columns: TableColumn<ContactRow>[] = [
         <span className="text-base font-semibold text-zinc-900">
           {row.openTasks}
         </span>
-        {row.overdueTasks && row.overdueTasks > 0 && (
+        {row.overdueTasks > 0 && (
           <span className="text-xs font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
             {row.overdueTasks} overdue
           </span>
@@ -89,7 +89,7 @@ const CompanyContacts: React.FC<CompanyContactsProps> = ({ contacts }) => {
         data={contacts}
         tableAriaLabel="Company contacts"
         height="auto"
-        className="[&_tbody_tr]:bg-white [&_tbody_tr:hover]:bg-white border border-zinc-200 rounded-lg [&_td_>div]:!h-auto [&_td_>div]:!py-6"
+        className="[&_tbody_tr]:bg-white [&_tbody_tr:hover]:bg-white [&_tbody_tr]:border-b [&_tbody_tr]:border-zinc-200 [&_td_>div]:!h-auto [&_td_>div]:!py-2"
         emptyStateType="no-data"
         noDataState={{
           icon: (
