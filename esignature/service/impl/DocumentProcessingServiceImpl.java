@@ -157,6 +157,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 			PDType0Font font = loadFont(document);
 
+			// Set different paddings for horizontal and vertical sides
+			float verticalPadding = 1.0f;
+			float horizontalPadding = 6.0f; // Increased horizontal padding
+			float borderRadius = 4.0f; // Border radius of 4px
+
 			for (int i = 0; i < numOfPages; i++) {
 				PDPage page = document.getPage(i);
 				float pageHeight = page.getMediaBox().getHeight();
@@ -167,11 +172,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 					float textWidth = font.getStringWidth(value) / 1000 * UUID_FONT_SIZE;
 					float textHeight = font.getFontDescriptor().getFontBoundingBox().getHeight() / 1000
 							* UUID_FONT_SIZE;
-
-					// Set different paddings for horizontal and vertical sides
-					float verticalPadding = 1.0f;
-					float horizontalPadding = 6.0f; // Increased horizontal padding
-					float borderRadius = 4.0f; // Border radius of 4px
 
 					float rectWidth = textWidth + (horizontalPadding * 2);
 					float rectHeight = textHeight + (verticalPadding * 2);
