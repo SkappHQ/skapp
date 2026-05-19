@@ -123,6 +123,8 @@ const AddCompanyModal: React.FC = () => {
   useEffect(() => {
     if (companyNameData?.isExists) {
       setFieldError("name", translateText(["validations", "companyExists"]));
+    } else {
+      setFieldError("name", undefined);
     }
   }, [companyNameData?.isExists, setFieldError, translateText]);
 
