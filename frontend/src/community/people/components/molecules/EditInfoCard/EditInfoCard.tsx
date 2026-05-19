@@ -1,5 +1,6 @@
 import { Box, Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { AvatarChip } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { JSX, useEffect } from "react";
 import { type MouseEventHandler, useCallback, useMemo, useState } from "react";
@@ -12,7 +13,6 @@ import MailIcon from "~community/common/assets/Icons/MailIcon";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
-import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import BasicChipGroup from "~community/common/components/molecules/BasicChipGroup/BasicChipGroup";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
 import { appModes } from "~community/common/constants/configs";
@@ -116,8 +116,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   const checkHasSupervisorRoles = async () => {
     const { data } = await refetchSupervisorRoles();
     return (
-      (data?.supervisedEmployees?.length ?? 0) > 0 ||
-      (data?.supervisedTeams?.length ?? 0) > 0
+      !!data?.supervisedEmployees?.length || !!data?.supervisedTeams?.length
     );
   };
 
@@ -570,17 +569,18 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
                   {translateText(["primarySupervisor"])}
                 </Typography>
                 <AvatarChip
-                  firstName={supervisor?.manager?.firstName ?? ""}
-                  lastName={supervisor?.manager?.lastName ?? ""}
-                  avatarUrl={supervisor?.manager?.authPic ?? ""}
-                  chipStyles={{
-                    color: theme.palette.grey[700],
-                    "& .MuiChip-label": {
-                      pr: "0.5rem"
-                    }
+                  avatarProps={{
+                    id: String(supervisor?.manager?.employeeId ?? ""),
+                    firstName: supervisor?.manager?.firstName ?? undefined,
+                    lastName: supervisor?.manager?.lastName ?? undefined,
+                    src: supervisor?.manager?.authPic ?? undefined
                   }}
-                  isResponsiveLayout
-                  smallScreenWidth={625}
+                  label={[
+                    supervisor?.manager?.firstName,
+                    supervisor?.manager?.lastName
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 />
               </Stack>
             )}

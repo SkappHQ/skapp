@@ -1,8 +1,7 @@
-import { AutoCompleteDropdown } from "@rootcodelabs/skapp-ui";
+import { AutoCompleteDropdown, AvatarChip } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import { OptionType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -66,13 +65,15 @@ const SupervisorReassignmentModalSection: FC<
               >
                 {showAvatar ? (
                   <AvatarChip
-                    firstName={item.firstName ?? ""}
-                    lastName={item.lastName ?? ""}
-                    avatarUrl={item.avatarUrl}
-                    chipStyles={{
-                      justifyContent: "flex-start",
-                      color: "text.primary"
+                    avatarProps={{
+                      id: String(item.id),
+                      firstName: item.firstName,
+                      lastName: item.lastName,
+                      src: item.avatarUrl
                     }}
+                    label={[item.firstName, item.lastName]
+                      .filter(Boolean)
+                      .join(" ")}
                   />
                 ) : (
                   <p className="body2 truncate">{item.label}</p>

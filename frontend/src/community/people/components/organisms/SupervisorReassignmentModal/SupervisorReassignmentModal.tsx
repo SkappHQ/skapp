@@ -26,7 +26,7 @@ interface SupervisorReassignmentModalProps {
   isOpen: boolean;
   onCancel: () => void;
   employeeId: number;
-  employeeName: string;
+  employeeName: string | undefined;
   actionType: SupervisorReassignmentActionType;
   onActionSuccess: () => void;
 }

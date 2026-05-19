@@ -28,10 +28,14 @@ const TerminationModalController: FC = () => {
         }
         onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
         employeeId={Number(selectedEmployeeId)}
-        employeeName={concatStrings([
-          employee?.personal?.general?.firstName ?? "",
-          employee?.personal?.general?.lastName ?? ""
-        ]).trim()}
+        employeeName={
+          concatStrings(
+            [
+              employee?.personal?.general?.firstName,
+              employee?.personal?.general?.lastName
+            ].filter((s): s is string => Boolean(s))
+          ).trim() || undefined
+        }
         actionType={SupervisorReassignmentActionType.TERMINATE}
         onActionSuccess={() => setIsSupervisorReassignmentModalOpen(false)}
       />
