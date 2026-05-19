@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.payload.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,7 @@ public class CrmCompanyFilterDto {
 	@Max(100)
 	private int size = 10;
 
+	@Size(max = 100)
 	private String searchKeyword;
 
 }

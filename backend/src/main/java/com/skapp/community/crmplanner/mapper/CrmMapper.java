@@ -21,8 +21,6 @@ public interface CrmMapper {
 
 	@Mapping(target = "company", source = "company")
 	@Mapping(target = "owner", source = "owner")
-	@Mapping(target = "lastContactedAt", source = "lastContactAt")
-	@Mapping(target = "lastModifiedDate", source = "lastModifiedDate")
 	CrmContactResponseDto crmContactToCrmContactResponseDto(CrmContact contact);
 
 }

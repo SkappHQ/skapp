@@ -17,7 +17,7 @@ public class CrmContactResponseDto {
 
 	private String contactNumber;
 
-	private LocalDateTime lastContactedAt;
+	private LocalDateTime lastContactAt;
 
 	private LocalDateTime lastModifiedDate;
 
