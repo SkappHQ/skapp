@@ -19,7 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +93,6 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 	}
 
 	@Override
-	@Transactional
 	public void clearAddressesForGeofencedLocations() {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaUpdate<WorkLocation> update = cb.createCriteriaUpdate(WorkLocation.class);

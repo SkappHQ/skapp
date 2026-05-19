@@ -34,10 +34,8 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	@NonNull
 	private final AttendanceConfigDao attendanceConfigDao;
 
-	@NonNull
 	private final WorkLocationGeofenceDao workLocationGeofenceDao;
 
-	@NonNull
 	private final WorkLocationDao workLocationDao;
 
 	@NonNull
