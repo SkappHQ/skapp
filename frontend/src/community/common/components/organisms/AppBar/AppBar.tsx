@@ -18,6 +18,7 @@ import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { AppBarItemTypes } from "~community/common/types/CommonTypes";
@@ -40,7 +41,8 @@ const AppBar = () => {
 
   const queryMatches = useMediaQuery();
   const isBelow600 = queryMatches(MediaQueries.BELOW_600);
-  const { handleDrawer } = useDrawer(isBelow600);
+  const { handleDrawer } = useDrawer();
+  const translateAria = useTranslator("commonAria", "components", "appBar");
 
   const { user } = useAuth();
 
@@ -106,7 +108,7 @@ const AppBar = () => {
                     handleOpenMenu(AppBarItemTypes.NOTIFICATION);
                   }
                 }}
-                aria-label="Notifications"
+                aria-label={translateAria(["notifications"])}
               >
                 <Badge
                   sx={{
@@ -138,7 +140,7 @@ const AppBar = () => {
                     handleOpenMenu(AppBarItemTypes.ACCOUNT_DETAILS);
                   }
                 }}
-                aria-label="Account details"
+                aria-label={translateAria(["accountDetails"])}
               >
                 <Avatar
                   firstName={employee?.firstName || ""}
@@ -166,7 +168,7 @@ const AppBar = () => {
           <button
             className="flex cursor-pointer items-center justify-center w-10 h-10"
             onClick={handleDrawer}
-            aria-label="Toggle navigation"
+            aria-label={translateAria(["menuIcon"])}
           >
             <Icon name={IconName.MENU_ICON} width="1.5rem" height="1.5rem" />
           </button>

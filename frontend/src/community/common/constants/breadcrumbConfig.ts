@@ -275,8 +275,7 @@ export const dynamicBreadcrumbPatterns: Array<{
         invoice: "invoiceModuleRoles",
         "project-management": "projectManagementModuleRoles"
       };
-      const label =
-        moduleLabels[moduleName] || `breadcrumbs.${moduleName}ModuleRoles`;
+      const label = moduleLabels[moduleName] || `${moduleName}ModuleRoles`;
       return [
         {
           label: "configurations",

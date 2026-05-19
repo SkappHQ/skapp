@@ -4,17 +4,21 @@ import { JSX, useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   useGetEmployeeLeaveStatus,
-  useGetEmployeeStatus,
-  useUpdateEmployeeStatus
+  useGetEmployeeStatus
 } from "~community/attendance/api/AttendanceApi";
 import { useGetTodaysTimeRequestAvailability } from "~community/attendance/api/AttendanceEmployeeApi";
 import Timer from "~community/attendance/components/molecules/Timer/Timer";
+import { useRecordAttendance } from "~community/attendance/hooks/useRecordAttendance";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
-import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
+import {
+  ToastType,
+  TooltipPlacement
+} from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { DefaultDayCapacityType } from "~community/configurations/types/TimeConfigurationsTypes";
@@ -43,19 +47,29 @@ const ClockWidget = (): JSX.Element => {
     isLoading: isAvailabilityLoading
   } = useGetTodaysTimeRequestAvailability();
 
-  const { mutate } = useUpdateEmployeeStatus();
+  const { setToastMessage } = useToast();
+
+  const { recordAttendance, isPending } = useRecordAttendance(() => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["clockInErrorTitle"]),
+      description: translateText(["clockInErrorDescription"])
+    });
+  });
 
   const translateText = useTranslator("attendanceModule", "timeWidget");
 
   const isDisabled = useMemo(
     () =>
+      isPending ||
       status === AttendanceSlotType.HOLIDAY ||
       status === AttendanceSlotType.NON_WORKING_DAY ||
       status === AttendanceSlotType.LEAVE_DAY ||
       status === AttendanceSlotType.END ||
       isTimeRequestAvailableToday ||
       isAvailabilityLoading,
-    [status, isTimeRequestAvailableToday, isAvailabilityLoading]
+    [isPending, status, isTimeRequestAvailableToday, isAvailabilityLoading]
   );
 
   const title = useMemo(() => {
@@ -102,7 +116,8 @@ const ClockWidget = (): JSX.Element => {
   const handleClockIn = useCallback(() => {
     if (isDisabled) return;
     if (status === AttendanceSlotType.READY && !attendanceLeaveStatus.onLeave) {
-      mutate(setSlotType(AttendanceSlotType.START));
+      const slotType = setSlotType(AttendanceSlotType.START);
+      recordAttendance(slotType);
     } else {
       setIsAttendanceModalOpen(true);
     }
@@ -110,7 +125,7 @@ const ClockWidget = (): JSX.Element => {
     isDisabled,
     status,
     attendanceLeaveStatus.onLeave,
-    mutate,
+    recordAttendance,
     setSlotType,
     setIsAttendanceModalOpen
   ]);
@@ -121,7 +136,7 @@ const ClockWidget = (): JSX.Element => {
         className="flex flex-row items-center w-fit"
         aria-label={translateAria(["widget"])}
       >
-        <Timer disabled={false} />
+        <Timer disabled={isDisabled} />
       </div>
     );
   }

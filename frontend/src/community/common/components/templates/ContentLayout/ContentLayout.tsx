@@ -374,6 +374,7 @@ const ContentLayout = ({
         {isDividerVisible && (
           <Stack sx={mergeSx([classes.dividerWrapper, dividerStyles])}>
             {/* <Divider /> */}
+            {/* with new design, divider is removed but not finalized yet */}
           </Stack>
         )}
         {children}

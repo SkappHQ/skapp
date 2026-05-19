@@ -357,7 +357,10 @@
     "modules": "Modules",
     "integrations": "Integrations",
     "notifications": "Notifications",
+    "addNewResource": "Add New Resource",
     "editEmployeeProfile": "Edit Employee Profile",
-    "envelopeDetails": "Envelope Details"
+    "employeeProfile": "Employee Profile",
+    "envelopeDetails": "Envelope Details",
+    "holidayDetails": "Holiday Details"
   }
 }

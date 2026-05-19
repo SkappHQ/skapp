@@ -31,7 +31,7 @@ const NotificationBadge = ({
         flexShrink: 0
       }}
     >
-      {count}
+      {typeof count === "number" && count > 99 ? "99+" : count}
     </Box>
   );
 };

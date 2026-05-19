@@ -6,7 +6,6 @@ const styles = () => ({
     alignItems: "center",
     gap: "1.75rem",
     width: "auto",
-    padding: "0.375rem 0.625rem",
     borderRadius: "3.3125rem"
   },
   appBarMenuWrapper: {
