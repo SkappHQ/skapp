@@ -3,10 +3,8 @@ import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/component
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
-import { CrmPriorityType } from "~community/crm/types/CommonTypes";
 
 interface Props {
-  priorities: CrmPriorityType[];
   value: string;
   onChange: (value: string) => void;
   onSave?: (value: string) => void;
@@ -14,7 +12,6 @@ interface Props {
 }
 
 const PriorityDropdown: FC<Props> = ({
-  priorities,
   value,
   onChange,
   onSave,
@@ -83,18 +80,15 @@ const PriorityDropdown: FC<Props> = ({
   };
 
   const options = useMemo<DropdownOption[]>(
-    () =>
-      [...priorities]
-        .sort((a, b) => b.orderIndex - a.orderIndex)
-        .map((p) => ({
-          id: String(p.id),
-          value: String(p.id),
-          label: <PriorityLabel priority={p.name} />
-        })),
-    [priorities]
+    () => [
+      { id: "High", value: "High", label: <PriorityLabel priority="High" /> },
+      { id: "Medium", value: "Medium", label: <PriorityLabel priority="Medium" /> },
+      { id: "Low", value: "Low", label: <PriorityLabel priority="Low" /> }
+    ],
+    []
   );
 
-  const selectedPriority = priorities.find((p) => String(p.id) === inputValue);
+  const selectedPriority = inputValue || null;
 
   return (
     <div className="w-full">
@@ -120,7 +114,7 @@ const PriorityDropdown: FC<Props> = ({
         >
           <div className="flex items-center py-2 px-1 gap-2">
             {selectedPriority ? (
-              <PriorityLabel priority={selectedPriority.name} />
+              <PriorityLabel priority={selectedPriority} />
             ) : (
               <span className="text-[14px] text-[#9CA3AF]">{placeholder}</span>
             )}

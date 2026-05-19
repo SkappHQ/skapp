@@ -1,6 +1,7 @@
 import {
   UseMutationResult,
   UseQueryResult,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient
@@ -13,8 +14,7 @@ import {
   CrmDealCreateRequestType,
   CrmDealFilterParams,
   CrmDealPaginatedResponseType,
-  CrmDealStageType,
-  CrmPriorityType
+  CrmDealStageType
 } from "~community/crm/types/CommonTypes";
 
 import {
@@ -24,6 +24,7 @@ import {
 } from "./utils/ApiEndpoints";
 
 import {
+  CRM_DEALS_KEY,
   crmCompanyQueryKeys,
   crmContactQueryKeys,
   crmDealQueryKeys
@@ -40,26 +41,26 @@ export const useGetDealStages = (): UseQueryResult<CrmDealStageType[]> => {
   });
 };
 
-export const useGetPriorities = (): UseQueryResult<CrmPriorityType[]> => {
-  return useQuery({
-    queryKey: crmDealQueryKeys.PRIORITIES,
-    queryFn: async () => {
-      const response = await authFetch.get(crmDealEndpoints.GET_PRIORITIES);
-      return (response?.data?.results ?? []) as CrmPriorityType[];
-    },
-    staleTime: 5 * 60 * 1000
-  });
-};
-
-export const useGetDeals = (
-  params: CrmDealFilterParams
-): UseQueryResult<CrmDealPaginatedResponseType> => {
-  return useQuery({
+export const useGetDealsInfinite = (
+  params: Omit<CrmDealFilterParams, "page">
+) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
     queryKey: crmDealQueryKeys.GET_DEALS(params),
-    queryFn: async () => {
-      const response = await authFetch.get(crmDealEndpoints.GET_DEALS(params));
-      return (response?.data?.results?.[0] ??
-        { items: [], currentPage: 0, totalItems: 0, totalPages: 0 }) as CrmDealPaginatedResponseType;
+    queryFn: async ({ pageParam }) => {
+      const response = await authFetch.get(
+        crmDealEndpoints.GET_DEALS({ ...params, page: pageParam as number })
+      );
+      return (response?.data?.results?.[0] ?? {
+        items: [],
+        currentPage: 0,
+        totalItems: 0,
+        totalPages: 0
+      }) as CrmDealPaginatedResponseType;
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
+      return lastPage.currentPage + 1;
     }
   });
 };
@@ -74,7 +75,7 @@ export const useCreateDeal = (
     mutationFn: (payload: CrmDealCreateRequestType) =>
       authFetch.post(crmDealEndpoints.CREATE_DEAL, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL_DEALS });
+      queryClient.invalidateQueries({ queryKey: [CRM_DEALS_KEY] });
       onSuccess();
     },
     onError

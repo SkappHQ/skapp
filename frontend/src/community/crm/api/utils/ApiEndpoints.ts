@@ -4,7 +4,7 @@ import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
 export const crmDealEndpoints = {
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
   GET_DEALS: (params: CrmDealFilterParams): string => {
-    const { page, size, sortOrder, sortKey, searchKeyword, stageId, priorityId } = params;
+    const { page, size, sortOrder, sortKey, searchKeyword, stageId, priority } = params;
     const urlParams = new URLSearchParams({
       page: String(page),
       size: String(size)
@@ -13,11 +13,10 @@ export const crmDealEndpoints = {
     if (sortOrder) urlParams.set("sortOrder", sortOrder);
     if (searchKeyword) urlParams.set("searchKeyword", searchKeyword);
     if (stageId !== undefined) urlParams.set("stageId", String(stageId));
-    if (priorityId !== undefined) urlParams.set("priorityId", String(priorityId));
+    if (priority !== undefined) urlParams.set("priority", priority);
     return `${moduleAPIPath.CRM}/deal?${urlParams.toString()}`;
   },
-  GET_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stages`,
-  GET_PRIORITIES: `${moduleAPIPath.CRM}/priorities`
+  GET_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stages`
 };
 
 export const crmContactEndpoints = {

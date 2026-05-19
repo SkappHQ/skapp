@@ -20,7 +20,7 @@ import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useCreateDeal, useGetCrmCompanies, useGetCrmContacts, useGetDealStages, useGetPriorities } from "~community/crm/api/crmDealApi";
+import { useCreateDeal, useGetCrmCompanies, useGetCrmContacts, useGetDealStages } from "~community/crm/api/crmDealApi";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
 import PeoplePopupSearch from "~community/crm/components/molecules/PeoplePopupSearch/PeoplePopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
@@ -37,7 +37,7 @@ interface AddDealFormValues {
   stageId: string;
   contactId: string;
   ownerId: string;
-  priorityId: string;
+  priority: string;
   amount: string;
   companyId: string;
 }
@@ -82,9 +82,8 @@ const AddDealSidePanel: FC = () => {
     }))
   );
 
-  // ---------- stages, priorities, contacts, companies, and owner search from API ----------
+  // ---------- stages, contacts, companies, and owner search from API ----------
   const { data: stages = [] } = useGetDealStages();
-  const { data: priorities = [] } = useGetPriorities();
   const { data: contacts = [] } = useGetCrmContacts();
   const { data: companies = [] } = useGetCrmCompanies();
 
@@ -185,7 +184,7 @@ const AddDealSidePanel: FC = () => {
       stageId: "",
       contactId: "",
       ownerId: "",
-      priorityId: "",
+      priority: "",
       amount: "",
       companyId: ""
     },
@@ -196,7 +195,7 @@ const AddDealSidePanel: FC = () => {
         stageId: Number(values.stageId),
         contactId: Number(values.contactId),
         ownerId: Number(values.ownerId),
-        ...(values.priorityId && { priorityId: Number(values.priorityId) }),
+        ...(values.priority && { priority: values.priority }),
         ...(values.amount && { amount: values.amount }),
         ...(values.companyId && { companyId: Number(values.companyId) })
       });
@@ -346,9 +345,8 @@ const AddDealSidePanel: FC = () => {
             {/* Priority */}
             <PropertyRow label={translateText(["priorityLabel"])}>
               <PriorityDropdown
-                priorities={priorities}
-                value={formik.values.priorityId}
-                onChange={(v) => formik.setFieldValue("priorityId", v)}
+                value={formik.values.priority}
+                onChange={(v) => formik.setFieldValue("priority", v)}
                 placeholder={translateText(["noneText"])}
               />
             </PropertyRow>

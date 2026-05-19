@@ -33,7 +33,7 @@ export interface CrmDealType {
   id: number;
   name: string;
   stage: CrmDealStageType;
-  priority: CrmPriorityType | null;
+  priority: string | null;
   closingAt: string | null;
   amount: string | null;
   currencyCode: string | null;
@@ -55,7 +55,7 @@ export interface CrmTaskType {
   id: number;
   name: string;
   type: CrmTaskCategory;
-  priority: CrmPriorityType;
+  priority: string;
   isCompleted: boolean;
   dueAt: string | null;
   notes: string | null;
@@ -72,18 +72,12 @@ export interface CrmTaskCategory {
   orderIndex: number;
 }
 
-export interface CrmPriorityType {
-  id: number;
-  name: string;
-  orderIndex: number;
-}
-
 export interface CrmDealCreateRequestType {
   name: string;
   stageId: number;
   contactId: number;
   ownerId: number;
-  priorityId?: number;
+  priority?: string;
   closingAt?: string;
   amount?: string;
   companyId?: number;
@@ -95,8 +89,7 @@ export interface CrmDealListItemType {
   stageId: number;
   stageName: string;
   stageColor?: string;
-  priorityId: number | null;
-  priorityName: string | null;
+  priority: string | null;
   closingAt: string | null;
   amount: string | null;
   companyId: number | null;
@@ -123,5 +116,5 @@ export interface CrmDealFilterParams {
   sortKey: CrmDealSortEnum;
   searchKeyword?: string;
   stageId?: number;
-  priorityId?: number;
+  priority?: string;
 }

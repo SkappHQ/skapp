@@ -20,10 +20,10 @@ import {
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
-  useGetDeals,
+  useGetDealsInfinite,
   useGetDealStages
 } from "~community/crm/api/crmDealApi";
-import { CrmDealSortEnum, CrmDealStageEnum } from "~community/crm/enums/common";
+import { CrmDealSortEnum } from "~community/crm/enums/common";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
 
@@ -32,13 +32,6 @@ import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
 // ---------------------------------------------------------------------------
 
 const PAGE_SIZE = 15;
-
-const STAGE_FALLBACK_COLOR: Record<string, string> = {
-  [CrmDealStageEnum.INITIAL]: "#3B82F6",
-  [CrmDealStageEnum.OPEN]: "#F59E0B",
-  [CrmDealStageEnum.WON]: "#10B981",
-  [CrmDealStageEnum.LOST]: "#EF4444"
-};
 
 // ---------------------------------------------------------------------------
 // DealTable
@@ -51,14 +44,9 @@ const DealTable: FC = () => {
   // DealTable only needs to know if the panel is open to avoid row-click conflicts in future.
   // No store subscriptions needed here for now.
 
-  const [fetchPage, setFetchPage] = useState(0);
-  const [allDeals, setAllDeals] = useState<CrmDealListItemType[]>([]);
-  const [hasMore, setHasMore] = useState(true);
   const [inputValue, setInputValue] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isFetchingMoreRef = useRef(false);
 
   // Cleanup debounce on unmount to avoid setState on unmounted component
   useEffect(() => {
@@ -67,55 +55,40 @@ const DealTable: FC = () => {
     };
   }, []);
 
-  const { data: dealsData, isFetching } = useGetDeals({
-    page: fetchPage,
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading
+  } = useGetDealsInfinite({
     size: PAGE_SIZE,
     sortKey: CrmDealSortEnum.STAGE_TYPE,
     sortOrder: SortOrderTypes.ASC,
     searchKeyword: searchKeyword || undefined
   });
 
-  // Accumulate pages as data arrives; dedupe by id to prevent duplicates on refetch
-  useEffect(() => {
-    isFetchingMoreRef.current = false;
-    if (!dealsData?.items) return;
-    if (dealsData.currentPage === 0) {
-      setAllDeals(dealsData.items);
-    } else {
-      setAllDeals((prev) => {
-        const existingIds = new Set(prev.map((d) => d.id));
-        const newItems = dealsData.items.filter((d) => !existingIds.has(d.id));
-        return [...prev, ...newItems];
-      });
-    }
-    setHasMore(dealsData.currentPage < (dealsData.totalPages ?? 1) - 1);
-  }, [dealsData]);
+  const allDeals = useMemo(
+    () => data?.pages.flatMap((p) => p.items) ?? [],
+    [data]
+  );
 
   // Triggered by skapp-ui Table's built-in scroll detection
   const handleLoadMore = useCallback(async () => {
-    if (!hasMore || isFetching || isFetchingMoreRef.current) return;
-    isFetchingMoreRef.current = true;
-    setFetchPage((p) => p + 1);
-  }, [hasMore, isFetching]);
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const { data: stages = [] } = useGetDealStages();
 
   const stageColorMap = useMemo(() => {
     const map: Record<number, string> = {};
     stages.forEach((s) => {
-      map[s.id] = s.color || STAGE_FALLBACK_COLOR[s.stageType] || "#6B7280";
+      map[s.id] = s.color;
     });
     return map;
   }, [stages]);
-
-  // Reset accumulated data when filters change; also clear allDeals so the
-  // stale previous results are not shown while the new page-0 response loads
-  const resetPagination = useCallback(() => {
-    setAllDeals([]);
-    setFetchPage(0);
-    setHasMore(true);
-    isFetchingMoreRef.current = false;
-  }, []);
 
   // Handlers
   const handleSearchChange = (value: string) => {
@@ -123,7 +96,6 @@ const DealTable: FC = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setSearchKeyword(value);
-      resetPagination();
     }, 300);
   };
 
@@ -221,7 +193,7 @@ const DealTable: FC = () => {
   const tableRows = useMemo((): DealRow[] => {
     return allDeals.map((deal: CrmDealListItemType) => {
       const stageColor =
-        deal.stageColor ?? stageColorMap[deal.stageId] ?? "#6B7280";
+        deal.stageColor || stageColorMap[deal.stageId];
       const [ownerFirst = "", ...rest] = deal.ownerName.split(" ");
       const ownerLast = rest.join(" ");
       const parsedAmount = deal.amount !== null ? Number(deal.amount) : NaN;
@@ -294,7 +266,7 @@ const DealTable: FC = () => {
         className="max-w-[412px] w-full"
       />
       <div className="w-full h-fit max-h-[600px] flex rounded-lg overflow-auto shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full">
-        {isFetching && allDeals.length === 0 ? (
+        {isLoading ? (
           <table className="w-full">
             <ProjectTableSkeletonLoader rowCount={8} />
           </table>
@@ -302,7 +274,7 @@ const DealTable: FC = () => {
           <ListTable<DealRow>
           columnHeaders={columnHeaders}
           data={tableData}
-          hasMore={hasMore}
+          hasMore={hasNextPage ?? false}
           onLoadMore={handleLoadMore}
           emptyStateTitle={
             searchKeyword

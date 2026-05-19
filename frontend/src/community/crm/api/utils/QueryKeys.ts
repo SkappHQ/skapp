@@ -1,24 +1,21 @@
 import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
 
-const CRM_DEALS_KEY = "crm-deals";
+export const CRM_DEALS_KEY = "crm-deals";
 
 export const crmDealQueryKeys = {
-  ALL_DEALS: [CRM_DEALS_KEY],
-  GET_DEALS: (params: CrmDealFilterParams) => {
-    const { page, size, sortOrder, sortKey, searchKeyword, stageId, priorityId } = params;
+  GET_DEALS: (params: Omit<CrmDealFilterParams, "page">) => {
+    const { size, sortOrder, sortKey, searchKeyword, stageId, priority } = params;
     return [
       CRM_DEALS_KEY,
-      page,
       size,
       sortOrder,
       sortKey,
       searchKeyword,
       stageId,
-      priorityId
+      priority
     ].filter((v) => v !== undefined);
   },
-  DEAL_STAGES: ["crm-deal-stages"],
-  PRIORITIES: ["crm-priorities"]
+  DEAL_STAGES: ["crm-deal-stages"]
 };
 
 export const crmContactQueryKeys = {
