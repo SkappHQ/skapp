@@ -91,7 +91,7 @@ const reportsFiltersSlice = (set: any): any => ({
         year: new Date().getFullYear().toString(),
         leaveTypeId: "-1",
         jobRoleId: "",
-        teamId: state.reportsParams.teamId,
+        teamId: state.reportsParams?.teamId ?? "",
         page: 0,
         size: 5,
         sortKey: SortKeyTypes.NAME,
