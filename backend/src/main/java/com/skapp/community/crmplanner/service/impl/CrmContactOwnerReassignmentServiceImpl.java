@@ -25,6 +25,10 @@ public class CrmContactOwnerReassignmentServiceImpl implements CrmContactOwnerRe
 	@Override
 	@Transactional
 	public void reassignContactsOwnedByDeactivatedUsers(List<User> users) {
+		if (users == null || users.isEmpty()) {
+			return;
+		}
+
 		List<Employee> deactivatedEmployees = users.stream().map(User::getEmployee).filter(employee -> employee != null)
 			.toList();
 

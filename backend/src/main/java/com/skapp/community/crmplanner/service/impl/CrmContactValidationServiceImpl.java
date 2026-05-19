@@ -24,9 +24,14 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 		validateContactNumber(requestDto.getContactNumber());
 	}
 
+	private static final int MAX_NAME_LENGTH = 255;
+
 	private void validateName(String name) {
 		if (name == null || name.trim().isEmpty()) {
 			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_REQUIRED);
+		}
+		if (name.trim().length() > MAX_NAME_LENGTH) {
+			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_TOO_LONG);
 		}
 	}
 
