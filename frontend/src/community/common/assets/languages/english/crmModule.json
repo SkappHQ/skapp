@@ -4,7 +4,17 @@
     "title": "Contacts",
     "addContactBtn": "Add Contact",
     "detailsPageHead": "Contact Details | Skapp",
-    "detailsTitle": "Contact Details"
+    "detailsTitle": "Contact Details",
+    "contactDetailsPanel": {
+      "tasks": {
+        "sectionHeader": "Tasks",
+        "addTaskButton": "Add task",
+        "addTaskButtonEmptyView": "Add task",
+        "emptyTitle": "No tasks yet",
+        "emptyDescription": "Add a task to track your to-dos.",
+        "addTaskPlaceholder": "Task name"
+      }
+    }
   },
   "companies": {
     "pageHead": "Companies | Skapp",

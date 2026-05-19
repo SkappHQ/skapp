@@ -14,7 +14,7 @@ import CompanyDetailHeader, {
   CompanyDetailHeaderActions
 } from "../../molecules/CompanyDetailHeader/CompanyDetailHeader";
 import CompanyMetricCards from "../../molecules/CompanyMetricCards/CompanyMetricCards";
-import CompanyTasks from "../../molecules/CompanyTasks/CompanyTasks";
+import TasksSection from "../../molecules/TaskSection/TasksSection";
 
 const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
   {
@@ -141,34 +141,11 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
                 {selectedCompany && (
                   <CompanyContacts contacts={getCompanyContacts(selectedCompany)} />
                 )}
-                <CompanyTasks
-                  tasks={[
-                    {
-                      id: "1",
-                      title: "Call supervisor",
-                      isCompleted: false,
-                      type: "call",
-                      dueDate: "",
-                      isOverdue: false,
-                      priority: "high"
-                    },
-                    {
-                      id: "2",
-                      title: "Send out proposal",
-                      isCompleted: false,
-                      type: "email",
-                      dueDate: "",
-                      isOverdue: false,
-                      priority: "low"
-                    }
-                  ]}
-                  onToggleComplete={function (id: string): void {
-                    throw new Error("Function not implemented.");
-                  }}
-                  onAddTask={function (): void {
-                    throw new Error("Function not implemented.");
-                  }}
-                />
+                {selectedCompany && (
+                  <div className="pt-6">
+                    <TasksSection companyId={selectedCompany.id} />
+                  </div>
+                )}
               </>
             )}
           </div>

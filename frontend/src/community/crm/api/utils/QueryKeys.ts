@@ -1,3 +1,10 @@
+export const crmQueryKeys = {
+  GET_TASKS_BY_COMPANY: (companyId: number) => [
+    "get-tasks-by-company",
+    companyId
+  ]
+};
+
 export const companyQueryKeys = {
   GET_COMPANY_DATA: ["get-company-data"],
   GET_COMPANY_DATA_BY_SEARCH: (searchKeyword: string, limit: number) => [
