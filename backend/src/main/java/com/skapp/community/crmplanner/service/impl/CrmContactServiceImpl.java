@@ -73,7 +73,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
 		contact.setCompany(company);
 		contact.setOwner(owner);
-		contact.setIsDeleted(false);
 
 		CrmContact savedContact = crmContactDao.save(contact);
 

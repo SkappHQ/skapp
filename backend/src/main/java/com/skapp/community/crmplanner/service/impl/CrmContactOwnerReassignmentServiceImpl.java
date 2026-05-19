@@ -45,7 +45,6 @@ public class CrmContactOwnerReassignmentServiceImpl implements CrmContactOwnerRe
 			for (CrmContact contact : contacts) {
 				contact.setOwner(fallbackOwner);
 			}
-			crmContactDao.saveAll(contacts);
 		}, () -> {
 			List<Long> affectedContactIds = contacts.stream().map(CrmContact::getId).toList();
 			log.error(
