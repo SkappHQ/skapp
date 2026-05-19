@@ -116,7 +116,7 @@ export const CompanyTable: React.FC = () => {
           type="search"
           value={searchTerm}
           onChange={handleSearchChange}
-          customStyles={styles.searchInput}
+          customStyles={{ borderRadius: "rounded-[1.5rem]" }}
         />
         <IconButton
           isRounded={true}
@@ -135,7 +135,7 @@ export const CompanyTable: React.FC = () => {
         emptyStateType={emptyStateType}
         isLoading={isLoading && companies.length === 0}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-        height="35.3125rem"
+        height="33rem"
         hasMore={hasNextPage}
         onRowClick={() => {
           return;

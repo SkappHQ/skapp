@@ -9,9 +9,6 @@ const styles = {
     border: "1px solid #D4D4D8",
     gap: "8px",
     marginRight: "0"
-  },
-  searchInput: {
-    borderRadius: "rounded-[24px]"
   }
 };
 
