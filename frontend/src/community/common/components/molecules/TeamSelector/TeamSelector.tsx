@@ -49,14 +49,11 @@ const TeamSelector = ({
 
   const allTeamsLabel = translateTexts(["allLabel"]);
 
-  const allTeamsOption = useMemo<DropdownOption>(
-    () => ({
-      id: ALL_TEAMS_OPTION_ID,
-      value: ALL_TEAMS_OPTION_ID,
-      label: allTeamsLabel
-    }),
-    [allTeamsLabel]
-  );
+  const allTeamsOption: DropdownOption = {
+    id: ALL_TEAMS_OPTION_ID,
+    value: ALL_TEAMS_OPTION_ID,
+    label: allTeamsLabel
+  };
 
   const options = useMemo<DropdownOption[]>(
     () => [
@@ -126,14 +123,15 @@ const TeamSelector = ({
         popupAlignment="right"
         disabled={isTeamListEmpty && !isAdmin}
         renderTrigger={(
-          _value: DropdownValue | null,
+          value: DropdownValue | null,
           _isOpen: boolean,
           disabled: boolean,
           triggerProps: TriggerProps
         ) => {
+          const option = value as DropdownOption | null;
           const label =
-            !isTeamListEmpty && selectedValue
-              ? (selectedValue.label as string)
+            !isTeamListEmpty && option
+              ? (option.label as string)
               : translateTexts(["allLabel"]);
           return (
             <Box ref={triggerProps.ref} sx={{ display: "inline-flex" }}>
