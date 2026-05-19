@@ -87,7 +87,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
 
 export default CompanyDetailHeader;
 
-export const CompanyDetailHeaderActions: React.FC = () => {
+export const CompanyDetailHeaderActions: React.FC<{ company: CrmCompanyType }> = ({ company }) => {
   const { setCompanyModalType } = useCrmStore();
 
   return (
