@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { ErrorResponse } from "~community/common/types/CommonTypes";
 
 import { CrmCompanyCreatePayload } from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
@@ -17,7 +16,7 @@ const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
 
 export const useCreateNewCompany = (
   onSuccess: () => void,
-  onError: (messageKey: string) => void
+  onError: () => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -29,9 +28,7 @@ export const useCreateNewCompany = (
         });
       onSuccess();
     },
-    onError: (error: ErrorResponse) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-    }
+    onError: onError
   });
 };
 
