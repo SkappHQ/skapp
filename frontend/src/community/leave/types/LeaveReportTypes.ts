@@ -79,7 +79,7 @@ export type ApiResponse = {
   totalPages: number;
 };
 
-export interface ReportsParams {
+export type ReportsParams = {
   year: string;
   leaveTypeId: string;
   jobRoleId: string;
@@ -89,7 +89,7 @@ export interface ReportsParams {
   sortKey: string;
   sortOrder: string;
   leaveStatus: string;
-}
+};
 
 export type processedCustomAllocationType = {
   employeeName: string;
