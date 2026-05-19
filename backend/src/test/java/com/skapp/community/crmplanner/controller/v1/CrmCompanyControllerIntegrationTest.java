@@ -139,7 +139,7 @@ class CrmCompanyControllerIntegrationTest {
 		performGetExistsRequest("NonExistent").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['exists']").value(false));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
 	}
 
 	@Test
@@ -150,7 +150,7 @@ class CrmCompanyControllerIntegrationTest {
 		performGetExistsRequest("Acme Corp").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['exists']").value(true));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
 	}
 
 }

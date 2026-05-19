@@ -35,15 +35,18 @@ export const useCreateNewCompany = (
   });
 };
 
-export const useCheckCompanyNameExists = (name: string) => {
+export const useCheckCompanyNameExists = (
+  name: string,
+  enabled: boolean = true
+) => {
   return useQuery({
     queryKey: [...companyQueryKeys.CHECK_COMPANY_NAME_EXISTS, name],
     queryFn: async () => {
       const response = await authFetch.get(
         companyEndpoints.CHECK_COMPANY_NAME_EXISTS(name)
       );
-      return response?.data?.results?.[0]?.exists;
+      return response?.data?.results?.[0];
     },
-    enabled: name.length > 0
+    enabled
   });
 };

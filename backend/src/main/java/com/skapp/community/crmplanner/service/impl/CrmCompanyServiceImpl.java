@@ -35,7 +35,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		boolean exists = checkCompanyExists(name);
 
 		CrmCompanyNameExistsResponseDto responseDto = new CrmCompanyNameExistsResponseDto();
-		responseDto.setExists(exists);
+		responseDto.setIsExists(exists);
 
 		log.info("checkCompanyNameExists: execution ended");
 		return new ResponseEntityDto(false, responseDto);

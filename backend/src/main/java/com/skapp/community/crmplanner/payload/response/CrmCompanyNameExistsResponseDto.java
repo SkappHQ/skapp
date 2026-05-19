@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class CrmCompanyNameExistsResponseDto {
 
-	private boolean exists;
+	private Boolean isExists;
 
 }

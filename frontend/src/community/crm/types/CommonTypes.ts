@@ -15,7 +15,6 @@ export interface CrmCompanyAddFormTypes {
   industry: string | null;
   website: string | null;
   address: string | null;
-  countryCode: string | null;
   contactNumber: string | null;
 }
 
