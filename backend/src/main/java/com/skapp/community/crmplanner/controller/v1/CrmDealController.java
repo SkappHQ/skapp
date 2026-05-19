@@ -43,4 +43,12 @@ public class CrmDealController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get priorities", description = "Returns all CRM priorities ordered by index.")
+	@GetMapping(value = "/priorities", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getPriorities() {
+		ResponseEntityDto response = crmDealService.getPriorities();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

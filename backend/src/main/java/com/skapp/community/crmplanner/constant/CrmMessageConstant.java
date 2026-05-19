@@ -10,9 +10,10 @@ public enum CrmMessageConstant implements MessageConstant {
 
 	// Deal error constants
 	CRM_ERROR_DEAL_NAME_REQUIRED("api.error.crm.deal.name-required"),
+	CRM_ERROR_DEAL_NAME_TOO_LONG("api.error.crm.deal.name-too-long"),
+	CRM_ERROR_DEAL_NAME_INVALID_CHARS("api.error.crm.deal.name-invalid-chars"),
 	CRM_ERROR_DEAL_STAGE_ID_REQUIRED("api.error.crm.deal.stage-id-required"),
 	CRM_ERROR_DEAL_STAGE_NOT_FOUND("api.error.crm.deal.stage-not-found"),
-	CRM_ERROR_DEAL_PRIORITY_NOT_FOUND("api.error.crm.deal.priority-not-found"),
 	CRM_ERROR_DEAL_COMPANY_NOT_FOUND("api.error.crm.deal.company-not-found"),
 	CRM_ERROR_DEAL_CONTACT_NOT_FOUND("api.error.crm.deal.contact-not-found"),
 	CRM_ERROR_DEAL_CONTACT_COMPANY_MISMATCH("api.error.crm.deal.contact-company-mismatch"),

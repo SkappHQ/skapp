@@ -5,7 +5,6 @@ import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
-import com.skapp.community.crmplanner.model.CrmPriority_;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -36,7 +35,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmDeal> findAllDeals(CrmDealFilterDto filterDto, Pageable pageable) {
+	public Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<CrmDeal> query = cb.createQuery(CrmDeal.class);
@@ -87,20 +86,19 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			predicates.add(cb.equal(deal.get(CrmDeal_.stage).get(CrmDealStage_.id), filterDto.getStageId()));
 		}
 
-		if (filterDto.getPriorityId() != null) {
-			predicates.add(cb.equal(deal.get(CrmDeal_.priority).get(CrmPriority_.id), filterDto.getPriorityId()));
+		if (filterDto.getPriority() != null) {
+			predicates.add(cb.equal(deal.get(CrmDeal_.priority), filterDto.getPriority()));
 		}
 
 		return predicates;
 	}
 
 	private Path<?> resolvePath(Root<CrmDeal> root, String property) {
-		String[] parts = property.split("\\.");
-		Path<?> path = root.get(parts[0]);
-		for (int i = 1; i < parts.length; i++) {
-			path = path.get(parts[i]);
+		int dot = property.indexOf('.');
+		if (dot == -1) {
+			return root.get(property);
 		}
-		return path;
+		return root.get(property.substring(0, dot)).get(property.substring(dot + 1));
 	}
 
 }

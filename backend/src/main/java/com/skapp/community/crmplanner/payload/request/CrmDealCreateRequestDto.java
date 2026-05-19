@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.payload.request;
 
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +14,7 @@ public class CrmDealCreateRequestDto {
 
 	private Long stageId;
 
-	private Long priorityId;
+	private CrmDealPriority priority;
 
 	private LocalDateTime closingAt;
 

@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.payload.request;
 
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealSort;
 
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class CrmDealFilterDto {
 
 	private Long stageId;
 
-	private Long priorityId;
+	private CrmDealPriority priority;
 
 	public Sort.Direction getSortOrder() {
 		return sortOrder != null ? sortOrder : Sort.Direction.DESC;

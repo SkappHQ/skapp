@@ -7,6 +7,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface CrmDealRepository {
 
-	Page<CrmDeal> findAllDeals(CrmDealFilterDto filterDto, Pageable pageable);
+	Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Pageable pageable);
 
 }
