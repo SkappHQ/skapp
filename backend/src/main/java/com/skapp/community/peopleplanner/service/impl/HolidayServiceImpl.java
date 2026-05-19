@@ -434,16 +434,20 @@ public class HolidayServiceImpl implements HolidayService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_DURATION_INVALID);
 		}
 
-		if (holidayDto.getWorkLocations() == null || holidayDto.getWorkLocations().isEmpty()
-				|| holidayDto.getWorkLocations()
+		List<String> trimmedWorkLocations = holidayDto.getWorkLocations() == null ? Collections.emptyList()
+				: holidayDto.getWorkLocations()
 					.stream()
-					.anyMatch(locationString -> locationString == null || locationString.isBlank())) {
+					.filter(locationString -> locationString != null && !locationString.trim().isEmpty())
+					.map(String::trim)
+					.toList();
+
+		if (trimmedWorkLocations.isEmpty()) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION);
 		}
 
-		validateWorkLocations(holidayDto.getWorkLocations(), validWorkLocationNames);
+		validateWorkLocations(trimmedWorkLocations, validWorkLocationNames);
 
-		long overlappingHolidayCount = countOverlappingHolidays(systemHolidays, holidayDto.getWorkLocations());
+		long overlappingHolidayCount = countOverlappingHolidays(systemHolidays, trimmedWorkLocations);
 		if (overlappingHolidayCount >= PeopleConstants.MAXIMUM_HOLIDAYS_PER_DAY) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_MAXIMUM_PER_DAY);
 		}
