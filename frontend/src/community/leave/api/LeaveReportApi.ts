@@ -98,9 +98,11 @@ export const useGetEmployeeCustomAllocationReport = (
   size: number,
   sortKey: string,
   sortOrder: string,
-  leaveTypeId: string[]
+  leaveTypeId: string[],
+  isEnabled: boolean = true
 ) => {
   return useQuery({
+    enabled: isEnabled,
     queryKey: reportsQueryKeys.getEmployeeCustomAllocation(
       year,
       teamId,
@@ -134,9 +136,11 @@ export const useGetEmployeeLeaveRequestsReport = (
   sortKey: string,
   sortOrder: string,
   leaveTypeId: string[],
-  leaveStatus: string[]
+  leaveStatus: string[],
+  isEnabled: boolean = true
 ) => {
   return useQuery({
+    enabled: isEnabled,
     queryKey: reportsQueryKeys.getEmployeeLeaveRequests(
       year,
       teamId,

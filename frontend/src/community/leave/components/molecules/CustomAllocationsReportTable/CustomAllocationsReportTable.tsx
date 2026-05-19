@@ -58,7 +58,8 @@ const CustomAllocationsReportTable: FC = () => {
       reportsParams.size,
       reportsParams.sortKey,
       reportsParams.sortOrder,
-      reportsParams.leaveTypeId
+      reportsParams.leaveTypeId,
+      !!reportsParams.teamId
     );
 
   const headerLabels: string[] = [
@@ -75,7 +76,8 @@ const CustomAllocationsReportTable: FC = () => {
     reportsParams.leaveTypeId,
     reportsParams.teamId,
     headerLabels,
-    []
+    [],
+    !!reportsParams.teamId
   );
 
   const { data: leaveTypes } = useGetLeaveTypes();

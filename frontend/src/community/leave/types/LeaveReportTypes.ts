@@ -79,6 +79,18 @@ export type ApiResponse = {
   totalPages: number;
 };
 
+export type ReportsParams = {
+  year: string;
+  leaveTypeId: string;
+  jobRoleId: string;
+  teamId: string;
+  page: number;
+  size: number;
+  sortKey: string;
+  sortOrder: string;
+  leaveStatus: string;
+};
+
 export type processedCustomAllocationType = {
   employeeName: string;
   teams: string;
