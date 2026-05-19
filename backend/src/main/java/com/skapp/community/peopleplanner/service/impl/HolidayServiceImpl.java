@@ -393,11 +393,6 @@ public class HolidayServiceImpl implements HolidayService {
 			AtomicInteger holidaysOnCurrentDate, AtomicInteger holidaysOnPastDates, int year,
 			List<String> validWorkLocationNames) {
 
-		long overlappingHolidayCount = countOverlappingHolidays(systemHolidays, holidayDto.getWorkLocations());
-		if (overlappingHolidayCount >= PeopleConstants.MAXIMUM_HOLIDAYS_PER_DAY) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_MAXIMUM_PER_DAY);
-		}
-
 		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 		if (holidayDate == null) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_DATE);
@@ -439,11 +434,19 @@ public class HolidayServiceImpl implements HolidayService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_DURATION_INVALID);
 		}
 
-		if (holidayDto.getWorkLocations() == null || holidayDto.getWorkLocations().isEmpty()) {
+		if (holidayDto.getWorkLocations() == null || holidayDto.getWorkLocations().isEmpty()
+				|| holidayDto.getWorkLocations()
+					.stream()
+					.allMatch(locationString -> locationString == null || locationString.isBlank())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION);
 		}
 
 		validateWorkLocations(holidayDto.getWorkLocations(), validWorkLocationNames);
+
+		long overlappingHolidayCount = countOverlappingHolidays(systemHolidays, holidayDto.getWorkLocations());
+		if (overlappingHolidayCount >= PeopleConstants.MAXIMUM_HOLIDAYS_PER_DAY) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_MAXIMUM_PER_DAY);
+		}
 
 	}
 

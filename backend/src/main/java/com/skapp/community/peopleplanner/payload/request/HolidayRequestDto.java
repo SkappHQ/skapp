@@ -20,6 +20,7 @@ public class HolidayRequestDto {
 	@NotNull
 	private String holidayDuration;
 
+	@NotEmpty
 	private List<String> workLocations;
 
 }
