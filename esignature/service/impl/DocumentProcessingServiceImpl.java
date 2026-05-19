@@ -155,7 +155,6 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 				document.setAllSecurityToBeRemoved(true);
 			}
 
-			// Load font once outside the loop to avoid repeated font embedding per page
 			PDType0Font font = loadFont(document);
 
 			for (int i = 0; i < numOfPages; i++) {
