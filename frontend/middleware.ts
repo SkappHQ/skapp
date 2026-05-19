@@ -220,6 +220,10 @@ export function middleware(request: NextRequest) {
     "isPasswordChangedForTheFirstTime"
   )?.value;
 
+  if (currentPath === ROUTES.REMOVE_PEOPLE) {
+    return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
+  }
+
   if (
     isPasswordChangedForTheFirstTime === "false" &&
     currentPath !== ROUTES.AUTH.RESET_PASSWORD
