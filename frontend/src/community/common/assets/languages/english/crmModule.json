@@ -20,7 +20,7 @@
       "ariaDescription": "Table displaying contacts with company, email, phone number, deal value, open tasks, and contact owner.",
       "rowAriaLabel": "Open contact details for {{name}}",
       "columns": {
-        "contact": "Contact",
+        "contact": "CONTACT",
         "email": "EMAIL",
         "contactNo": "CONTACT NO.",
         "dealValue": "DEAL VALUE",
