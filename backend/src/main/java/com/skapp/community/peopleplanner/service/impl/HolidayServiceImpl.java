@@ -437,7 +437,7 @@ public class HolidayServiceImpl implements HolidayService {
 		if (holidayDto.getWorkLocations() == null || holidayDto.getWorkLocations().isEmpty()
 				|| holidayDto.getWorkLocations()
 					.stream()
-					.allMatch(locationString -> locationString == null || locationString.isBlank())) {
+					.anyMatch(locationString -> locationString == null || locationString.isBlank())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION);
 		}
 
