@@ -10,6 +10,7 @@ public class CrmConstants {
 
 	public static final int PHONE_MAX_LENGTH = 15;
 
-	private CrmConstants() {}
+	private CrmConstants() {
+	}
 
 }

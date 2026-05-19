@@ -34,8 +34,7 @@ class CrmValidationsTest {
 		@DisplayName("Name exceeding max length - throws CRM_ERROR_COMPANY_NAME_TOO_LONG")
 		void validateCompanyName_TooLong_ThrowsTooLong() {
 			String tooLong = "A".repeat(CrmConstants.COMPANY_NAME_MAX_LENGTH + 1);
-			ModuleException ex = assertThrows(ModuleException.class,
-					() -> CrmValidations.validateCompanyName(tooLong));
+			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateCompanyName(tooLong));
 			assertEquals(CrmMessageConstant.CRM_ERROR_COMPANY_NAME_TOO_LONG, ex.getMessageKey());
 		}
 
@@ -103,8 +102,7 @@ class CrmValidationsTest {
 		@Test
 		@DisplayName("Invalid URL - throws CRM_ERROR_WEBSITE_INVALID")
 		void validateWebsite_InvalidUrl_ThrowsInvalid() {
-			ModuleException ex = assertThrows(ModuleException.class,
-					() -> CrmValidations.validateWebsite("not-a-url"));
+			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateWebsite("not-a-url"));
 			assertEquals(CrmMessageConstant.CRM_ERROR_WEBSITE_INVALID, ex.getMessageKey());
 		}
 

@@ -61,7 +61,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
 
 		log.info("createCompany: execution ended successfully");
-
 		return new ResponseEntityDto(false, responseDto);
 	}
 
