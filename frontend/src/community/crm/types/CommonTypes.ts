@@ -81,6 +81,7 @@ export interface CrmDealCreateRequestType {
   closingAt?: string;
   amount?: string;
   companyId?: number;
+  description?: string;
 }
 
 export interface CrmDealListItemType {

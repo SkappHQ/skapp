@@ -2,7 +2,8 @@ import {
   ButtonV2,
   Dropdown,
   InputField,
-  SidePanel
+  SidePanel,
+  TextArea
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/Dropdown/Dropdown";
 import { useFormik } from "formik";
@@ -40,6 +41,7 @@ interface AddDealFormValues {
   priority: string;
   amount: string;
   companyId: string;
+  description: string;
 }
 
 const getOptionLabel = (options: DropdownOption[], value: string): string => {
@@ -186,7 +188,8 @@ const AddDealSidePanel: FC = () => {
       ownerId: "",
       priority: "",
       amount: "",
-      companyId: ""
+      companyId: "",
+      description: ""
     },
     validationSchema,
     onSubmit: (values) => {
@@ -197,7 +200,8 @@ const AddDealSidePanel: FC = () => {
         ownerId: Number(values.ownerId),
         ...(values.priority && { priority: values.priority }),
         ...(values.amount && { amount: values.amount }),
-        ...(values.companyId && { companyId: Number(values.companyId) })
+        ...(values.companyId && { companyId: Number(values.companyId) }),
+        ...(values.description && { description: values.description })
       });
     }
   });
@@ -265,6 +269,14 @@ const AddDealSidePanel: FC = () => {
             state={formik.touched.name && formik.errors.name ? "error" : "default"}
             errorMessage={formik.touched.name && formik.errors.name ? formik.errors.name : undefined}
             fullWidth
+          />
+          <TextArea
+            label={translateText(["descriptionLabel"])}
+            placeholder={translateText(["descriptionPlaceholder"])}
+            value={formik.values.description}
+            onChange={(e) => formik.setFieldValue("description", e.target.value)}
+            onBlur={formik.handleBlur}
+            className="w-full h-[121px]"
           />
         </div>
 
