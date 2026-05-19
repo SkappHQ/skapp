@@ -23,9 +23,11 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateDeal, useGetCrmCompanies, useGetCrmContacts, useGetDealStages } from "~community/crm/api/crmDealApi";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
+import CompanyPopupSearch from "~community/crm/components/molecules/CompanyPopupSearch/CompanyPopupSearch";
+import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import PeoplePopupSearch from "~community/crm/components/molecules/PeoplePopupSearch/PeoplePopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
-import { CrmOwnerType } from "~community/crm/types/CommonTypes";
+import { CrmCompanyType, CrmContactType, CrmOwnerType } from "~community/crm/types/CommonTypes";
 import { useGetSearchedEmployees } from "~community/people/api/PeopleApi";
 import { useAppStore } from "~store/store";
 
@@ -44,12 +46,6 @@ interface AddDealFormValues {
   description: string;
 }
 
-const getOptionLabel = (options: DropdownOption[], value: string): string => {
-  if (!value) return "";
-  const opt = options.find((o) => o.value === value || o.id === value);
-  if (!opt) return "";
-  return typeof opt.label === "string" ? opt.label : "";
-};
 // ---------------------------------------------------------------------------
 // PropertyRow — shared row shell (layout only, no raw interactive elements)
 // ---------------------------------------------------------------------------
@@ -118,26 +114,6 @@ const AddDealSidePanel: FC = () => {
         )
       })),
     [stages]
-  );
-
-  const contactOptions = useMemo<DropdownOption[]>(
-    () =>
-      contacts.map((c) => ({
-        id: String(c.id),
-        label: c.name,
-        value: String(c.id)
-      })),
-    [contacts]
-  );
-
-  const companyOptions = useMemo<DropdownOption[]>(
-    () =>
-      companies.map((co) => ({
-        id: String(co.id),
-        label: co.name,
-        value: String(co.id)
-      })),
-    [companies]
   );
 
   // ---------------------------------------------------------------------------------------
@@ -228,6 +204,22 @@ const AddDealSidePanel: FC = () => {
         ? null
         : (owners.find((u) => String(u.employeeId) === formik.values.ownerId) ?? null),
     [formik.values.ownerId, owners]
+  );
+
+  const selectedContact = useMemo<CrmContactType | null>(
+    () =>
+      !formik.values.contactId
+        ? null
+        : (contacts.find((c) => String(c.id) === formik.values.contactId) ?? null),
+    [formik.values.contactId, contacts]
+  );
+
+  const selectedCompany = useMemo<CrmCompanyType | null>(
+    () =>
+      !formik.values.companyId
+        ? null
+        : (companies.find((co) => String(co.id) === formik.values.companyId) ?? null),
+    [formik.values.companyId, companies]
   );
 
   return (
@@ -390,90 +382,43 @@ const AddDealSidePanel: FC = () => {
               </div>
             </PropertyRow>
 
-            {/* Contact name — click to edit */}
+            {/* Contact name */}
             <PropertyRow label={translateText(["contactNameLabel"])}>
-              {editingField === "contactId" ? (
-                <div
-                  className="flex-1 min-w-0"
-                  onBlur={(e) => {
-                    if (!e.currentTarget.contains(e.relatedTarget as Node | null))
-                      setEditingField(null);
-                  }}
-                >
-                  <Dropdown
-                    options={contactOptions}
-                    value={formik.values.contactId}
-                    onChange={(v) => {
-                      formik.setFieldValue("contactId", v);
-                      setEditingField(null);
-                    }}
-                    width="100%"
-                    placeholder={translateText(["noneText"])}
-                    padding="py-1 px-3"
-                    errorMessage={
-                      formik.touched.contactId && formik.errors.contactId
-                        ? formik.errors.contactId
-                        : undefined
-                    }
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col w-full">
-                  <button
-                    type="button"
-                    className={`text-[14px] text-left w-full pl-1 ${
-                      formik.touched.contactId && formik.errors.contactId
-                        ? "text-[#DC2626]"
-                        : formik.values.contactId ? "text-[#111827]" : "text-[#9CA3AF]"
-                    }`}
-                    onClick={() => setEditingField("contactId")}
-                  >
-                    {getOptionLabel(contactOptions, formik.values.contactId) ||
-                      translateText(["noneText"])}
-                  </button>
-                  {formik.touched.contactId && formik.errors.contactId && (
-                    <p className="text-[#DC2626] text-[12px] mt-1">
-                      {formik.errors.contactId}
-                    </p>
-                  )}
-                </div>
-              )}
+              <div className="flex flex-col w-full">
+                <ContactPopupSearch
+                  contacts={contacts}
+                  selectedContact={selectedContact}
+                  onChange={(c) =>
+                    formik.setFieldValue("contactId", c ? String(c.id) : "")
+                  }
+                  placeholder={translateText(["noneText"])}
+                  searchPlaceholder="Search contacts"
+                  ariaInvalid={!!(formik.touched.contactId && formik.errors.contactId)}
+                  ariaErrorMessage={
+                    formik.touched.contactId && formik.errors.contactId
+                      ? formik.errors.contactId
+                      : undefined
+                  }
+                />
+                {formik.touched.contactId && formik.errors.contactId && (
+                  <p className="text-[#DC2626] text-[12px] mt-1">
+                    {formik.errors.contactId}
+                  </p>
+                )}
+              </div>
             </PropertyRow>
 
-            {/* Company name — click to edit */}
+            {/* Company name */}
             <PropertyRow label={translateText(["companyNameLabel"])}>
-              {editingField === "companyId" ? (
-                <div
-                  className="flex-1 min-w-0"
-                  onBlur={(e) => {
-                    if (!e.currentTarget.contains(e.relatedTarget as Node | null))
-                      setEditingField(null);
-                  }}
-                >
-                  <Dropdown
-                    options={companyOptions}
-                    value={formik.values.companyId}
-                    onChange={(v) => {
-                      formik.setFieldValue("companyId", v);
-                      setEditingField(null);
-                    }}
-                    width="100%"
-                    placeholder={translateText(["noneText"])}
-                    padding="py-1 px-3"
-                  />
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className={`text-[14px] text-left w-full pl-1 ${
-                    formik.values.companyId ? "text-[#111827]" : "text-[#9CA3AF]"
-                  }`}
-                  onClick={() => setEditingField("companyId")}
-                >
-                  {getOptionLabel(companyOptions, formik.values.companyId) ||
-                    translateText(["noneText"])}
-                </button>
-              )}
+              <CompanyPopupSearch
+                companies={companies}
+                selectedCompany={selectedCompany}
+                onChange={(co) =>
+                  formik.setFieldValue("companyId", co ? String(co.id) : "")
+                }
+                placeholder={translateText(["noneText"])}
+                searchPlaceholder="Search companies"
+              />
             </PropertyRow>
           </div>
         </div>
