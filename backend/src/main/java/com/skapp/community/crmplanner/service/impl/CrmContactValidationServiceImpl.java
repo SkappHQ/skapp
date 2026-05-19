@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.service.impl;
 
-import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
@@ -28,16 +28,16 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 
 	private void validateName(String name) {
 		if (name == null || name.trim().isEmpty()) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_REQUIRED);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_REQUIRED);
 		}
 		if (name.trim().length() > MAX_NAME_LENGTH) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_TOO_LONG);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_TOO_LONG);
 		}
 	}
 
 	private void validateEmail(String email) {
 		if (email == null || email.trim().isEmpty()) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_REQUIRED);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_REQUIRED);
 		}
 
 		String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
@@ -46,7 +46,7 @@ public class CrmContactValidationServiceImpl implements CrmContactValidationServ
 		boolean emailExists = crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(normalizedEmail);
 
 		if (emailExists) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
 	}
 

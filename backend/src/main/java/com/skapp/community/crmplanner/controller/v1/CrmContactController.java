@@ -6,7 +6,6 @@ import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,7 +26,7 @@ public class CrmContactController {
 	private final CrmContactService crmContactService;
 
 	@Operation(summary = "Create CRM contact", description = "Creates a CRM contact and assigns an owner.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_SALES_REPRESENTATIVE')")
 	@PostMapping(value = "/contacts", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> createContact(
 			@RequestBody CrmContactCreateRequestDto requestDto) {
@@ -37,9 +36,9 @@ public class CrmContactController {
 	}
 
 	@Operation(summary = "Get CRM owners", description = "Retrieves active CRM users who can be assigned as owners.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_SALES_MANAGER')")
 	@GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> getOwners(@Valid CrmContactOwnerFilterDto filterDto) {
+	public ResponseEntity<ResponseEntityDto> getOwners(CrmContactOwnerFilterDto filterDto) {
 
 		ResponseEntityDto response = crmContactService.getContactOwners(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);

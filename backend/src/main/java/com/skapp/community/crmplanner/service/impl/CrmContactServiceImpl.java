@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.service.impl;
 
-import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -85,7 +85,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto getContactOwners(CrmContactOwnerFilterDto filterDto) {
 		log.info("getContactOwners: execution started");
 
-		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		int page = Math.max(0, filterDto.getPage());
+		int size = Math.max(1, Math.min(100, filterDto.getSize()));
+
+		Pageable pageable = PageRequest.of(page, size);
 		Page<Employee> contactOwnerPage = crmContactOwnerRepository.findContactOwners(filterDto, pageable);
 
 		List<CrmContactOwnerResponseDto> ownerResponseDtos = contactOwnerPage.getContent()
@@ -109,13 +112,13 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		return crmCompanyDao.findByIdAndIsDeletedFalse(companyId)
-			.orElseThrow(() -> new ValidationException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 	}
 
 	private Employee resolveOwner(Long ownerId, User currentUser) {
 		Employee currentEmployee = currentUser.getEmployee();
 		if (currentEmployee == null) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
 		}
 
 		EmployeeRole currentEmployeeRole = currentEmployee.getEmployeeRole();
@@ -125,7 +128,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
 			if (ownerId != null && !ownerId.equals(currentEmployee.getEmployeeId())) {
-				throw new ValidationException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
 			}
 			return currentEmployee;
 		}
@@ -135,7 +138,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		if (!isSuperAdmin && currentCrmRole != Role.CRM_ADMIN && currentCrmRole != Role.CRM_SALES_MANAGER) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
 		}
 
 		return validateAssignableOwner(ownerId);
@@ -143,17 +146,17 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private Employee validateAssignableOwner(Long ownerId) {
 		Employee owner = employeeDao.findById(ownerId)
-			.orElseThrow(() -> new ValidationException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND));
 
 		if (owner.getUser() == null || !Boolean.TRUE.equals(owner.getUser().getIsActive())) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_OWNER_INACTIVE);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INACTIVE);
 		}
 
 		EmployeeRole ownerRole = owner.getEmployeeRole();
 		boolean isOwnerSuperAdmin = ownerRole != null && Boolean.TRUE.equals(ownerRole.getIsSuperAdmin());
 		Role ownerCrmRole = ownerRole != null ? ownerRole.getCrmRole() : null;
 		if (!isOwnerSuperAdmin && !ASSIGNABLE_CRM_ROLES.contains(ownerCrmRole)) {
-			throw new ValidationException(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE);
 		}
 
 		return owner;

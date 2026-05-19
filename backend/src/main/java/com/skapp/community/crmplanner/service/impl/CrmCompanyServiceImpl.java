@@ -32,7 +32,10 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	public ResponseEntityDto getCompanies(CrmCompanyFilterDto filterDto) {
 		log.info("getCompanies: execution started");
 
-		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		int page = Math.max(0, filterDto.getPage());
+		int size = Math.max(1, Math.min(100, filterDto.getSize()));
+
+		Pageable pageable = PageRequest.of(page, size);
 		Page<CrmCompany> companyPage = crmCompanyDao.findCompanies(filterDto, pageable);
 
 		List<CrmCompanyLookupResponseDto> companyResponseDtos = companyPage.getContent()

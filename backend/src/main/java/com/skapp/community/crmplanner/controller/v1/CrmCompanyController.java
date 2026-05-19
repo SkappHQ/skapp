@@ -5,7 +5,6 @@ import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,9 +24,9 @@ public class CrmCompanyController {
 
 	@Operation(summary = "Get CRM companies for lookup",
 			description = "Retrieves a paginated list of CRM companies (id + name) for use in dropdowns and contact forms.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_ADMIN','ROLE_CRM_SALES_MANAGER','ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_CRM_SALES_REPRESENTATIVE')")
 	@GetMapping(value = "/companies/lookup", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> getCompaniesLookup(@Valid CrmCompanyFilterDto filterDto) {
+	public ResponseEntity<ResponseEntityDto> getCompaniesLookup(CrmCompanyFilterDto filterDto) {
 
 		ResponseEntityDto response = crmCompanyService.getCompanies(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
