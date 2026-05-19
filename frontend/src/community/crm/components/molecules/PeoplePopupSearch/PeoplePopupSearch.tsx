@@ -23,8 +23,8 @@ const PeoplePopupSearch: FC<Props> = ({
   users,
   selectedUser,
   onChange,
-  placeholder = "None",
-  searchPlaceholder = "Search members...",
+  placeholder,
+  searchPlaceholder,
   onSearch,
   ariaInvalid,
   ariaErrorMessage
@@ -65,6 +65,7 @@ const PeoplePopupSearch: FC<Props> = ({
     const { ref, onKeyDown, ...rest } = triggerProps;
 
     if (selectedUser) {
+      const displayName = `${selectedUser.firstName}${selectedUser.lastName ? ` ${selectedUser.lastName}` : ""}`;
       return (
         <div
           ref={ref as React.Ref<HTMLDivElement>}
@@ -81,7 +82,7 @@ const PeoplePopupSearch: FC<Props> = ({
             firstName={selectedUser.firstName}
             lastName={selectedUser.lastName ?? undefined}
           />
-          <span className="text-[14px] text-[#111827]">{selectedUser.firstName}</span>
+          <span className="text-[14px] text-[#111827]">{displayName}</span>
         </div>
       );
     }

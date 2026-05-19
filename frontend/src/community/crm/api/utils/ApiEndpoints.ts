@@ -16,7 +16,7 @@ export const crmDealEndpoints = {
     if (priorityId !== undefined) urlParams.set("priorityId", String(priorityId));
     return `${moduleAPIPath.CRM}/deal?${urlParams.toString()}`;
   },
-  GET_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
+  GET_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stages`,
   GET_PRIORITIES: `${moduleAPIPath.CRM}/priorities`
 };
 

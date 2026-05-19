@@ -2,11 +2,9 @@ import {
   ButtonV2,
   Dropdown,
   InputField,
-  SidePanel,
-  TextArea
+  SidePanel
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/Dropdown/Dropdown";
-import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { useFormik } from "formik";
 import {
   FC,
@@ -16,24 +14,19 @@ import {
   useState
 } from "react";
 import * as Yup from "yup";
+import { useShallow } from "zustand/react/shallow";
 
+import PlusIcon from "~community/common/assets/Icons/PlusIcon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useCreateDeal, useGetCrmCompanies, useGetCrmContacts, useGetDealStages, useGetPriorities } from "~community/crm/api/crmDealApi";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
 import PeoplePopupSearch from "~community/crm/components/molecules/PeoplePopupSearch/PeoplePopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
 import { CrmOwnerType } from "~community/crm/types/CommonTypes";
+import { useGetSearchedEmployees } from "~community/people/api/PeopleApi";
 import { useAppStore } from "~store/store";
-
-const MOCK_OWNERS: CrmOwnerType[] = [
-  { employeeId: 1, firstName: "Anusha",  lastName: "Mahindarathne",  authPic: null },
-  { employeeId: 2, firstName: "Person1", lastName: "Person1",        authPic: null },
-  { employeeId: 3, firstName: "CRM",     lastName: "Admin",          authPic: null },
-  { employeeId: 4, firstName: "CRM",     lastName: "Manager",        authPic: null },
-  { employeeId: 5, firstName: "CRM",     lastName: "Representative", authPic: null }
-];
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,11 +34,9 @@ const MOCK_OWNERS: CrmOwnerType[] = [
 
 interface AddDealFormValues {
   name: string;
-  description: string;
   stageId: string;
   contactId: string;
   ownerId: string;
-  ownerName: string;
   priorityId: string;
   amount: string;
   companyId: string;
@@ -84,26 +75,31 @@ const AddDealSidePanel: FC = () => {
   const { setToastMessage } = useToast();
   const [editingField, setEditingField] = useState<string | null>(null);
 
-  const { isSidePanelOpen, closeSidePanel } = useAppStore((state) => ({
-    isSidePanelOpen: state.isSidePanelOpen,
-    closeSidePanel: state.closeSidePanel
-  }));
+  const { isSidePanelOpen, closeSidePanel } = useAppStore(
+    useShallow((state) => ({
+      isSidePanelOpen: state.isSidePanelOpen,
+      closeSidePanel: state.closeSidePanel
+    }))
+  );
 
-  // ---------- stages and priorities from API ----------
+  // ---------- stages, priorities, contacts, companies, and owner search from API ----------
   const { data: stages = [] } = useGetDealStages();
   const { data: priorities = [] } = useGetPriorities();
   const { data: contacts = [] } = useGetCrmContacts();
   const { data: companies = [] } = useGetCrmCompanies();
 
-  // Set default stage to Lead (INITIAL) once stages are fetched
-  useEffect(() => {
-    if (stages.length > 0 && !formik.values.stageId) {
-      const leadStage = stages.find((s) => s.stageType === CrmDealStageEnum.INITIAL);
-      if (leadStage) {
-        formik.setFieldValue("stageId", String(leadStage.id));
-      }
-    }
-  }, [stages]);
+  const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
+  const { data: searchedEmployees = [] } = useGetSearchedEmployees(ownerSearchTerm);
+  const owners = useMemo<CrmOwnerType[]>(
+    () =>
+      searchedEmployees.map((e) => ({
+        employeeId: e.employeeId,
+        firstName: e.firstName,
+        lastName: e.lastName || null,
+        authPic: e.authPic || null
+      })),
+    [searchedEmployees]
+  );
 
   const stageOptions = useMemo<DropdownOption[]>(
     () =>
@@ -145,17 +141,21 @@ const AddDealSidePanel: FC = () => {
 
   // ---------------------------------------------------------------------------------------
 
-  const validationSchema = Yup.object({
-    name: Yup.string().trim().required(translateText(["dealNameRequired"])),
-    stageId: Yup.string().required(translateText(["stageRequired"])),
-    contactId: Yup.string().required(translateText(["contactRequired"])),
-    ownerId: Yup.string().required(translateText(["ownerRequired"])),
-    amount: Yup.string().test(
-      "is-valid-amount",
-      translateText(["amountInvalid"]),
-      (value) => !value || (/^\d+(\.\d+)?$/.test(value) && Number(value) > 0)
-    )
-  });
+  const validationSchema = useMemo(
+    () =>
+      Yup.object({
+        name: Yup.string().trim().required(translateText(["dealNameRequired"])),
+        stageId: Yup.string().required(translateText(["stageRequired"])),
+        contactId: Yup.string().required(translateText(["contactRequired"])),
+        ownerId: Yup.string().required(translateText(["ownerRequired"])),
+        amount: Yup.string().test(
+          "is-valid-amount",
+          translateText(["amountInvalid"]),
+          (value) => !value || (/^\d+(\.\d+)?$/.test(value) && Number(value) > 0)
+        )
+      }),
+    [translateText]
+  );
 
   const { mutate: createDeal } = useCreateDeal(
     () => {
@@ -182,11 +182,9 @@ const AddDealSidePanel: FC = () => {
   const formik = useFormik<AddDealFormValues>({
     initialValues: {
       name: "",
-      description: "",
       stageId: "",
       contactId: "",
       ownerId: "",
-      ownerName: "",
       priorityId: "",
       amount: "",
       companyId: ""
@@ -211,12 +209,22 @@ const AddDealSidePanel: FC = () => {
     closeSidePanel();
   };
 
+  // Set default stage to Lead (INITIAL) once stages are fetched
+  useEffect(() => {
+    if (stages.length > 0 && !formik.values.stageId) {
+      const leadStage = stages.find((s) => s.stageType === CrmDealStageEnum.INITIAL);
+      if (leadStage) {
+        formik.setFieldValue("stageId", String(leadStage.id));
+      }
+    }
+  }, [stages, formik.values.stageId, formik.setFieldValue]);
+
   const selectedOwner = useMemo<CrmOwnerType | null>(
     () =>
       !formik.values.ownerId
         ? null
-        : (MOCK_OWNERS.find((u) => String(u.employeeId) === formik.values.ownerId) ?? null),
-    [formik.values.ownerId]
+        : (owners.find((u) => String(u.employeeId) === formik.values.ownerId) ?? null),
+    [formik.values.ownerId, owners]
   );
 
   return (
@@ -227,8 +235,8 @@ const AddDealSidePanel: FC = () => {
         header={<span className="pl-2 text-2xl font-bold text-black">{translateText(["title"])}</span>}
         width="xl"
         animation="slide"
-        closeOnBackdropClick
-        closeAriaLabel="Close add deal panel"
+        closeOnBackdropClick={!formik.dirty}
+        closeAriaLabel={translateText(["closePanelAriaLabel"])}
       footer={
         <div className="flex justify-end px-6 py-3">
           <ButtonV2
@@ -258,15 +266,6 @@ const AddDealSidePanel: FC = () => {
             state={formik.touched.name && formik.errors.name ? "error" : "default"}
             errorMessage={formik.touched.name && formik.errors.name ? formik.errors.name : undefined}
             fullWidth
-          />
-          <TextArea
-            label={translateText(["descriptionLabel"])}
-            placeholder={translateText(["descriptionPlaceholder"])}
-            name="description"
-            value={formik.values.description}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            rows={6}
           />
         </div>
 
@@ -358,18 +357,14 @@ const AddDealSidePanel: FC = () => {
             <PropertyRow label={translateText(["ownedByLabel"])}>
               <div className="flex flex-col w-full">
                 <PeoplePopupSearch
-                  users={MOCK_OWNERS}
+                  users={owners}
                   selectedUser={selectedOwner}
+                  onSearch={setOwnerSearchTerm}
                   onChange={(user) => {
                     formik.setFieldValue("ownerId", user ? String(user.employeeId) : "");
-                    formik.setFieldValue(
-                      "ownerName",
-                      user
-                        ? `${user.firstName}${user.lastName ? " " + user.lastName : ""}`
-                        : ""
-                    );
                   }}
                   placeholder={translateText(["noneText"])}
+                  searchPlaceholder={translateText(["ownerSearchPlaceholder"])}
                   ariaInvalid={!!(formik.touched.ownerId && formik.errors.ownerId)}
                   ariaErrorMessage={
                     formik.touched.ownerId && formik.errors.ownerId
@@ -473,7 +468,7 @@ const AddDealSidePanel: FC = () => {
           </div>
         </div>
       </div>
-    </SidePanel>
+      </SidePanel>
     </div>
   );
 };

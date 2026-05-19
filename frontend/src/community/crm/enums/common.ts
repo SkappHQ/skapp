@@ -16,11 +16,6 @@ export enum CrmTaskStatusEnum {
   COMPLETED = "COMPLETED"
 }
 
-export enum CrmDealSortOrder {
-  NEWEST = "DESC",
-  OLDEST = "ASC"
-}
-
 export enum CrmDealSortEnum {
   CREATED_DATE = "CREATED_DATE",
   NAME = "NAME",

@@ -3,16 +3,14 @@
 @source "../node_modules/@rootcodelabs/skapp-ui/dist/esm/index.esm.js";
 @import "tailwindcss";
 
-.crm-deal-side-panel aside.fixed[role="dialog"] {
+/* SidePanel from @rootcodelabs/skapp-ui renders via ReactDOM.createPortal to
+   document.body, so ancestor-scoped selectors have no effect. These rules must
+   be global. They are intentionally specific to the skapp-ui aside/backdrop shape. */
+aside.fixed[role="dialog"] {
   z-index: 1202 !important;
 }
-.crm-deal-side-panel div.fixed.inset-0[aria-hidden="true"] {
+div.fixed.inset-0[aria-hidden="true"] {
   z-index: 1201 !important;
-}
-
-/* CRM Deal side panel — shift close button inward from the right edge */
-.crm-deal-side-panel aside[role="dialog"] > div > header > div:last-child {
-  margin-right: 0.4rem;
 }
 
 @theme {

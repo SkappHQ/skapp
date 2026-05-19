@@ -10,7 +10,6 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   onSave?: (value: string) => void;
-  onCancel?: () => void;
   placeholder?: string;
 }
 
@@ -19,7 +18,6 @@ const PriorityDropdown: FC<Props> = ({
   value,
   onChange,
   onSave,
-  onCancel: _onCancel,
   placeholder = "None"
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -55,9 +53,8 @@ const PriorityDropdown: FC<Props> = ({
         setIsEditing(false);
         if (onSave) {
           onSave(inputValue);
-        } else {
-          onChange(inputValue);
         }
+        onChange(inputValue);
       }
     };
 

@@ -26,7 +26,6 @@ import {
 import { CrmDealSortEnum, CrmDealStageEnum } from "~community/crm/enums/common";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
-import { useAppStore } from "~store/store";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -48,10 +47,9 @@ const STAGE_FALLBACK_COLOR: Record<string, string> = {
 const DealTable: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
 
-  const { openCreatePanel, openSidePanel } = useAppStore((state) => ({
-    openCreatePanel: state.openCreatePanel,
-    openSidePanel: state.openSidePanel
-  }));
+  // Side-panel actions are driven via deals.tsx (openCreatePanel on the header button);
+  // DealTable only needs to know if the panel is open to avoid row-click conflicts in future.
+  // No store subscriptions needed here for now.
 
   const [fetchPage, setFetchPage] = useState(0);
   const [allDeals, setAllDeals] = useState<CrmDealListItemType[]>([]);
@@ -62,6 +60,13 @@ const DealTable: FC = () => {
 
   const isFetchingMoreRef = useRef(false);
 
+  // Cleanup debounce on unmount to avoid setState on unmounted component
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
   const { data: dealsData, isFetching } = useGetDeals({
     page: fetchPage,
     size: PAGE_SIZE,
@@ -70,16 +75,20 @@ const DealTable: FC = () => {
     searchKeyword: searchKeyword || undefined
   });
 
-  // Accumulate pages as data arrives
+  // Accumulate pages as data arrives; dedupe by id to prevent duplicates on refetch
   useEffect(() => {
+    isFetchingMoreRef.current = false;
     if (!dealsData?.items) return;
     if (dealsData.currentPage === 0) {
       setAllDeals(dealsData.items);
     } else {
-      setAllDeals((prev) => [...prev, ...dealsData.items]);
+      setAllDeals((prev) => {
+        const existingIds = new Set(prev.map((d) => d.id));
+        const newItems = dealsData.items.filter((d) => !existingIds.has(d.id));
+        return [...prev, ...newItems];
+      });
     }
     setHasMore(dealsData.currentPage < (dealsData.totalPages ?? 1) - 1);
-    isFetchingMoreRef.current = false;
   }, [dealsData]);
 
   // Triggered by skapp-ui Table's built-in scroll detection
@@ -99,8 +108,10 @@ const DealTable: FC = () => {
     return map;
   }, [stages]);
 
-  // Reset accumulated data when filters change
+  // Reset accumulated data when filters change; also clear allDeals so the
+  // stale previous results are not shown while the new page-0 response loads
   const resetPagination = useCallback(() => {
+    setAllDeals([]);
     setFetchPage(0);
     setHasMore(true);
     isFetchingMoreRef.current = false;
@@ -116,12 +127,13 @@ const DealTable: FC = () => {
     }, 300);
   };
 
-  const noSearchResultsTitle = useMemo(() => {
-    const base = translateText(["noSearchResultsTitle"]);
-    return searchKeyword
-      ? base.replace("{{searchKeyword}}", `'${searchKeyword}'`)
-      : base;
-  }, [translateText, searchKeyword]);
+  const noSearchResultsTitle = useMemo(
+    () =>
+      searchKeyword
+        ? translateText(["noSearchResultsTitle"], { searchKeyword: `'${searchKeyword}'` })
+        : translateText(["noSearchResultsTitle"]),
+    [translateText, searchKeyword]
+  );
 
   // -------------------------------------------------------------------------
   // Table columns & rows
@@ -151,7 +163,7 @@ const DealTable: FC = () => {
     },
     {
       id: "value",
-      title: (<span className="w-full block text-right">{translateText(["valueColumn"])}</span>) as unknown as string,
+      title: translateText(["valueColumn"]),
       field: "value",
       width: 160,
       minWidth: 90,
@@ -210,15 +222,16 @@ const DealTable: FC = () => {
     return allDeals.map((deal: CrmDealListItemType) => {
       const stageColor =
         deal.stageColor ?? stageColorMap[deal.stageId] ?? "#6B7280";
-      const [ownerFirst = "", ...rest] = (deal.ownerName ?? "").split(" ");
+      const [ownerFirst = "", ...rest] = deal.ownerName.split(" ");
       const ownerLast = rest.join(" ");
+      const parsedAmount = deal.amount !== null ? Number(deal.amount) : NaN;
       return {
         id: String(deal.id),
-        dealName: <span className="body2">{deal.name ?? ""}</span>,
+        dealName: <span className="body2">{deal.name}</span>,
         value: (
           <span className="body2 w-full block text-right">
-            {deal.amount
-              ? `$${Number(deal.amount).toLocaleString()}`
+            {Number.isFinite(parsedAmount) && parsedAmount > 0
+              ? `$${parsedAmount.toLocaleString()}`
               : "\u2014"}
           </span>
         ),
@@ -235,7 +248,7 @@ const DealTable: FC = () => {
           <span className="body2">{deal.companyName ?? "\u2014"}</span>
         ),
         contactName: (
-          <span className="body2">{deal.contactName ?? "\u2014"}</span>
+          <span className="body2">{deal.contactName}</span>
         ),
         dealOwner: (
           <AvatarChip
@@ -243,10 +256,10 @@ const DealTable: FC = () => {
               id: String(deal.ownerId),
               firstName: ownerFirst,
               lastName: ownerLast,
-              src: "",
+              src: undefined,
               size: "sm"
             }}
-            label={deal.ownerName ?? ""}
+            label={deal.ownerName}
             backgroundColor="bg-secondary-background"
           />
         )
@@ -271,7 +284,7 @@ const DealTable: FC = () => {
         type="search"
         variant="md"
         rightIcon={<SearchIcon />}
-        ariaLabelClearButton="Clear search"
+        ariaLabelClearButton={translateText(["clearSearchAriaLabel"])}
         customStyles={{
           borderRadius: "rounded-full",
           padding: "px-6",
