@@ -100,12 +100,9 @@ const AddEditHolidayModal = ({
   >(getDefaultWorkLocations(newHolidayDetails?.workLocations));
 
   const workLocationList: DropdownListType[] = useMemo(() => {
-    const sorted = [...(workLocations ?? [])].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
     return [
       { label: translateText(["allLocations"]), value: ALL_LOCATIONS_ID },
-      ...sorted.map((loc) => ({
+      ...(workLocations ?? []).map((loc) => ({
         label: loc.name,
         value: loc.workLocationId
       }))

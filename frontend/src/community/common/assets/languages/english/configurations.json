@@ -136,13 +136,14 @@
       "editAction": "Edit",
       "deleteAction": "Delete",
       "addButton": "Add Location",
-      "emptyState": "No work locations have been added yet.",
+      "emptyStateTitle": "No locations available",
+      "emptyStateDescription": "No locations have been added yet. Once you add locations, they will be displayed here.",
       "searchPlaceholder": "Search by location name"
     },
     "form": {
       "nameLabel": "Work location name",
       "namePlaceholder": "Enter work location name",
-      "assignEmployeesLabel": "Assigned Employees",
+      "assignEmployeesLabel": "Assigned employees",
       "allEmployees": "All Employees",
       "employeeMultiSelect": {
         "ariaLabelClearButton": "Clear search",
@@ -189,7 +190,8 @@
     "validation": {
       "nameRequired": "Please enter work location name",
       "nameMaxLength": "Work location name should be less than 50 characters",
-      "nameInvalidChars": "Work location name should only contain letters, numbers, and spaces"
+      "nameInvalidChars": "Work location name should only contain letters, numbers, and spaces",
+      "nameAlreadyExists": "Work location already exists"
     },
     "toasts": {
       "createSuccess": {

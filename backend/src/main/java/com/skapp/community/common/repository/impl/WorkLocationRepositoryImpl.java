@@ -51,16 +51,11 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 	}
 
 	@Override
-	public List<WorkLocation> findAllWorkLocations(WorkLocationFilterDto workLocationFilterDto) {
+	public List<WorkLocation> findAllWorkLocationsOrderByNameAsc() {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<WorkLocation> query = cb.createQuery(WorkLocation.class);
 		Root<WorkLocation> workLocation = query.from(WorkLocation.class);
-
-		List<Predicate> predicates = buildPredicates(cb, workLocation, workLocationFilterDto);
-		if (!predicates.isEmpty()) {
-			query.where(predicates.toArray(new Predicate[0]));
-		}
 
 		query.orderBy(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
 

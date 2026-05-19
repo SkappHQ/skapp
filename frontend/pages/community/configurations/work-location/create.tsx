@@ -2,6 +2,7 @@ import { type NextPage } from "next";
 import { useRouter } from "next/router";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import WorkLocationForm from "~community/configurations/components/organisms/WorkLocationForm/WorkLocationForm";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
@@ -15,7 +16,7 @@ const WorkLocationCreatePage: NextPage = () => {
     if (isFormDirty) {
       setIsUnsavedModalOpen(true);
     } else {
-      router.back();
+      router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
     }
   };
 
