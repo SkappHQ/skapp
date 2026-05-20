@@ -17,7 +17,7 @@ import {
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
-import { TierEnum } from "~enterprise/common/enums/Common";
+import { TenantStatusEnums } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
@@ -220,7 +220,19 @@ export function middleware(request: NextRequest) {
   )?.value;
 
   if (currentPath === ROUTES.REMOVE_PEOPLE && token) {
-    return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
+    const tenantStatus = claims?.tenantStatus;
+    const isDowngradeStatus =
+      tenantStatus ===
+        TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED ||
+      tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED;
+    const isFreeTier = !isCoreOrProTier(
+      claims?.tier ? [claims.tier] : (claims?.tiers ?? [])
+    );
+    if (isDowngradeStatus && isFreeTier) {
+      return NextResponse.next();
+    } else {
+      return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
+    }
   }
 
   if (
