@@ -51,9 +51,10 @@ const Configurations: NextPage = () => {
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);
+    const basePath = router.asPath.split("?")[0];
     router.replace(
       { pathname: router.pathname, query: { ...router.query, tab: id } },
-      undefined,
+      `${basePath}?tab=${id}`,
       { shallow: true, scroll: false }
     );
   };
