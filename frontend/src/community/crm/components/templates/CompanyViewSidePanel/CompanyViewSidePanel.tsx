@@ -80,6 +80,28 @@ const getCompanyContacts = (company: CrmCompanyMetricsType) => [
     dealsClosed: 6,
     openTasks: 11,
     overdueTasks: 0
+  },
+  {
+    id: "4",
+    name: "Michael Brown",
+    email: "michael.brown@initech.com",
+    contactNo: "+1 4159876543",
+    company: "Initech",
+    revenue: "$90000",
+    dealsClosed: 10,
+    openTasks: 5,
+    overdueTasks: 2
+  },
+  {
+    id: "5",
+    name: "Emily Davis",
+    email: "emily.davis@initech.com",
+    contactNo: "+1 4159876544",
+    company: "Initech",
+    revenue: "$95000",
+    dealsClosed: 12,
+    openTasks: 6,
+    overdueTasks: 3
   }
 ];
 

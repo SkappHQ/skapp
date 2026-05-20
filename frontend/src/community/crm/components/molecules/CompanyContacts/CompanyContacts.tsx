@@ -89,7 +89,7 @@ const CompanyContacts: React.FC<CompanyContactsProps> = ({ contacts }) => {
         data={contacts}
         tableAriaLabel="Company contacts"
         height="auto"
-        className=""
+        className="max-h-[15.625rem] overflow-y-auto"
         emptyStateType="no-data"
         noDataState={{
           icon: (
