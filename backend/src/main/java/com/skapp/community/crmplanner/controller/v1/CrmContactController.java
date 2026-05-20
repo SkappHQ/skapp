@@ -19,19 +19,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/crm")
-@Tag(name = "CRM Contact Controller", description = "Endpoints for CRM contact management")
+@RequestMapping("/v1/contact")
+@Tag(name = "CRM Contacts Controller", description = "Operations related to CRM Contacts")
 public class CrmContactController {
 
-	private final CrmContactService crmContactService;
+	private final CrmContactService contactService;
 
 	@Operation(summary = "Create CRM contact", description = "Creates a CRM contact and assigns an owner.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	@PostMapping(value = "/contacts", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> createContact(
 			@RequestBody CrmContactCreateRequestDto requestDto) {
 
-		ResponseEntityDto response = crmContactService.createContact(requestDto);
+		ResponseEntityDto response = contactService.createContact(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
@@ -40,7 +40,7 @@ public class CrmContactController {
 	@GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getOwners(CrmContactOwnerFilterDto filterDto) {
 
-		ResponseEntityDto response = crmContactService.getContactOwners(filterDto);
+		ResponseEntityDto response = contactService.getContactOwners(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

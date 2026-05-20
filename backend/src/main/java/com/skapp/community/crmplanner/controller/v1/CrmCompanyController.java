@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,15 @@ import lombok.RequiredArgsConstructor;
 public class CrmCompanyController {
 
 	private final CrmCompanyService companyService;
+
+	@Operation(summary = "Get CRM companies for lookup",
+			description = "Retrieves a paginated list of CRM companies (id + name) for use in dropdowns and contact forms.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping(value = "/lookup", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResponseEntityDto> getCompaniesLookup(CrmCompanyFilterDto filterDto) {
+		ResponseEntityDto response = companyService.getCompanies(filterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 	@Operation(summary = "Check if a company name exists",
 			description = "Check if a company with the given name already exists")
