@@ -7,6 +7,8 @@ public class CrmConstants {
 
 	public static final int COMPANY_NAME_MAX_LENGTH = 30;
 
+	public static final int CONTACT_NAME_MAX_LENGTH = 255;
+
 	public static final int ADDRESS_MAX_LENGTH = 100;
 
 	public static final int CHARACTER_MAX_LENGTH = 50;

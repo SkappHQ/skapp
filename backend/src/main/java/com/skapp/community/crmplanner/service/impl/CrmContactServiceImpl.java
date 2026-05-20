@@ -17,14 +17,12 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.service.CrmContactService;
-import com.skapp.community.crmplanner.service.CrmContactValidationService;
+import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Locale;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 @Service
@@ -50,8 +49,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
-	private final CrmContactValidationService crmContactValidationService;
-
 	private final UserService userService;
 
 	private final CrmMapper crmMapper;
@@ -62,7 +59,13 @@ public class CrmContactServiceImpl implements CrmContactService {
 		log.info("createContact: execution started");
 
 		User currentUser = userService.getCurrentUser();
-		crmContactValidationService.validateCreateContactRequest(requestDto);
+		CrmValidations.validateContactName(requestDto.getName());
+		CrmValidations.validateContactEmail(requestDto.getEmail());
+		CrmValidations.validateContactNumber(requestDto.getContactNumber());
+
+		if (checkContactExists(requestDto.getEmail())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
+		}
 
 		CrmCompany company = resolveCompany(requestDto.getCompanyId());
 		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
@@ -160,6 +163,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		return owner;
+	}
+
+	private boolean checkContactExists(String email) {
+		return crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(email.trim().toLowerCase(Locale.ROOT));
 	}
 
 	private String normalizeNullableText(String value) {
