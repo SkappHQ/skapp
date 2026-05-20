@@ -265,12 +265,13 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
             <SupervisorReassignmentModalSection
               title={translateText(["primarySupervisorsSection"])}
               items={supervisedEmployees.map((supervisedEmployee) => ({
-                id: supervisedEmployee.employeeId,
+                employeeId: supervisedEmployee.employeeId,
                 firstName: supervisedEmployee.firstName,
                 lastName: supervisedEmployee.lastName,
-                avatarUrl: supervisedEmployee.authPic
+                authPic: supervisedEmployee.authPic
               }))}
               showAvatar={true}
+              isTeamSection={false}
               isSearchLoading={isSearchLoading}
               assignments={primarySupervisorAssignments}
               getResults={(supervisedEmployeeId) =>
@@ -312,10 +313,11 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
             <SupervisorReassignmentModalSection
               title={translateText(["teamSupervisorsSection"])}
               items={supervisedTeams.map((team) => ({
-                id: team.teamId,
-                label: team.teamName
+                teamId: team.teamId,
+                teamName: team.teamName
               }))}
               showAvatar={false}
+              isTeamSection={true}
               isSearchLoading={isSearchLoading}
               assignments={teamSupervisorAssignments}
               getResults={(teamId) =>

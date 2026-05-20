@@ -274,7 +274,8 @@
     "deleteSuccessTitle": "User Deleted",
     "deleteSuccessDescription": "{{name}} has been successfully deleted and all supervisor assignments have been reassigned.",
     "actionErrorTitle": "Oops! Something went wrong",
-    "actionErrorDescription": "Failed to complete the action. Please try again."
+    "actionErrorDescription": "Failed to complete the action. Please try again.",
+    "loadingEmployees": "Loading employees..."
   },
 
   "discardChangesModal": {

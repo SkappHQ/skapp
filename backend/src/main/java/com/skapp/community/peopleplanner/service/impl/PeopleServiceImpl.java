@@ -1238,7 +1238,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getSupervisorRoles(Long userId) {
+	public ResponseEntityDto getSupervisedEmployeesAndTeams(Long userId) {
 		log.info("getSupervisorRoles: execution started");
 
 		Employee employee = employeeDao.findById(userId)

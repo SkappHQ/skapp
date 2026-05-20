@@ -1,22 +1,23 @@
 import { AutoCompleteDropdown, AvatarChip } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { OptionType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
+import {
+  AllEmployeeDataType,
+  EmployeeDataTeamType
+} from "~community/people/types/PeopleTypes";
+import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
-interface SectionItem {
-  id: number;
-  firstName?: string;
-  lastName?: string;
-  avatarUrl?: string;
-  label?: string;
-}
+type SectionItem = AllEmployeeDataType | EmployeeDataTeamType;
 
 interface SupervisorReassignmentModalSectionProps {
   title: string;
   items: SectionItem[];
   showAvatar: boolean;
+  isTeamSection: boolean;
   isSearchLoading: boolean;
   assignments: Record<number, OptionType>;
   getResults: (entityId: number) => ReactNode[];
@@ -34,6 +35,7 @@ const SupervisorReassignmentModalSection: FC<
   title,
   items,
   showAvatar,
+  isTeamSection,
   isSearchLoading,
   assignments,
   getResults,
@@ -44,16 +46,69 @@ const SupervisorReassignmentModalSection: FC<
   onSearch,
   onRemove
 }) => {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const translateText = useTranslator("peopleModule", "supervisorReassignment");
+  const translateConfig = useTranslator("configurations", "workLocation");
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    onSearch(term);
+  };
+
+  const handleBlur = () => {
+    setSearchTerm("");
+    onBlur();
+  };
+
   return (
     <div className="flex flex-col gap-3">
       <p className="subtitle2">{title}</p>
       <div className="flex flex-col gap-3">
         {items.map((item) => {
-          const assigned = assignments[item.id];
+          let id: number;
+          let nameRow: ReactNode;
+
+          if (isTeamSection) {
+            const team = item as EmployeeDataTeamType;
+            id = team.teamId;
+            nameRow = <p className="body2 truncate">{team.teamName}</p>;
+          } else {
+            const employee = item as AllEmployeeDataType;
+            id = employee.employeeId;
+            nameRow = (
+              <AvatarChip
+                avatarProps={{
+                  id: String(id),
+                  firstName: employee.firstName,
+                  lastName: employee.lastName,
+                  src: employee.authPic
+                }}
+                label={concatStrings([
+                  employee.firstName,
+                  employee.lastName
+                ]).trim()}
+              />
+            );
+          }
+
+          const assigned = assignments[id];
+
+          const getNoResultsText = () => {
+            if (isSearchLoading) return translateText(["loadingEmployees"]);
+
+            if (!searchTerm.trim())
+              return translateConfig([
+                "form",
+                "employeeMultiSelect",
+                "ariaLabelSearch"
+              ]);
+
+            return translateText(["noEmployeesFound"]);
+          };
 
           return (
             <div
-              key={item.id}
+              key={id}
               className="flex flex-row items-center justify-between gap-3 min-h-10.25"
             >
               <div
@@ -63,36 +118,20 @@ const SupervisorReassignmentModalSection: FC<
                     : "w-31.25 overflow-hidden shrink-0"
                 }
               >
-                {showAvatar ? (
-                  <AvatarChip
-                    avatarProps={{
-                      id: String(item.id),
-                      firstName: item.firstName,
-                      lastName: item.lastName,
-                      src: item.avatarUrl
-                    }}
-                    label={[item.firstName, item.lastName]
-                      .filter(Boolean)
-                      .join(" ")}
-                  />
-                ) : (
-                  <p className="body2 truncate">{item.label}</p>
-                )}
+                {nameRow}
               </div>
               <div className="w-62.5 shrink-0">
                 {!assigned ? (
                   <AutoCompleteDropdown
                     hasCard={false}
                     className="w-full!"
-                    onBlur={onBlur}
+                    onBlur={handleBlur}
                     placeholder={placeholder}
-                    onSearch={onSearch}
+                    onSearch={handleSearch}
                     accessibilityTexts={{
-                      noResultsFoundText: isSearchLoading
-                        ? undefined
-                        : noResultsText
+                      noResultsFoundText: getNoResultsText()
                     }}
-                    results={getResults(item.id)}
+                    results={getResults(id)}
                   />
                 ) : (
                   <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
@@ -103,7 +142,7 @@ const SupervisorReassignmentModalSection: FC<
                       type="button"
                       aria-label={removeAriaLabel}
                       className="shrink-0 text-secondary-icon hover:text-secondary-text leading-none"
-                      onClick={() => onRemove(item.id)}
+                      onClick={() => onRemove(id)}
                     >
                       <Icon name={IconName.CLOSE_ICON} width="16" height="16" />
                     </button>

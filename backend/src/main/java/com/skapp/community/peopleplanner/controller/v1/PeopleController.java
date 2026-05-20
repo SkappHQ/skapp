@@ -188,12 +188,12 @@ public class PeopleController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get supervisor roles of a user",
+	@Operation(summary = "Get supervised employees and teams of a user",
 			description = "Returns the employees this user is primary supervisor for and the teams this user supervises")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
-	@GetMapping("/user/{userId}/primary-supervisors-team-supervisors")
-	public ResponseEntity<ResponseEntityDto> getSupervisorRoles(@PathVariable Long userId) {
-		ResponseEntityDto response = peopleService.getSupervisorRoles(userId);
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
+	@GetMapping("/user/{userId}/supervised-employees-teams")
+	public ResponseEntity<ResponseEntityDto> getSupervisedEmployeesAndTeams(@PathVariable Long userId) {
+		ResponseEntityDto response = peopleService.getSupervisedEmployeesAndTeams(userId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

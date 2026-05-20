@@ -62,7 +62,7 @@ public interface PeopleService {
 
 	void updateUserStatus(Long userId, AccountStatus status, boolean isDelete);
 
-	ResponseEntityDto getSupervisorRoles(Long userId);
+	ResponseEntityDto getSupervisedEmployeesAndTeams(Long userId);
 
 	ResponseEntityDto transferSupervisors(Long userId, TransferSupervisorsRequestDto requestDto);
 
