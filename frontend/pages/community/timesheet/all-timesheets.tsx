@@ -11,6 +11,7 @@ import PeopleAndTeamAutocompleteSearch, {
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
@@ -19,6 +20,7 @@ import { useGetEmployeesAndTeamsForAnalytics } from "~community/people/api/Peopl
 import { usePeopleStore } from "~community/people/store/store";
 
 const AllTimesheetsPage: NextPage = () => {
+  useBreadcrumbs(["timesheet"], ["allTimesheets"]);
   const translateText = useTranslator("attendanceModule", "timesheet");
   const router = useRouter();
 

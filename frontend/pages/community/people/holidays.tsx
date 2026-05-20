@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
@@ -15,6 +17,7 @@ import {
 } from "~community/people/types/HolidayTypes";
 
 const Holidays: NextPage = () => {
+  useBreadcrumbs(["people", ROUTES.PEOPLE.BASE], ["holidays"]);
   const translateText = useTranslator("peopleModule", "holidays");
 
   const [setPopupTitle] = useState<string | undefined>();

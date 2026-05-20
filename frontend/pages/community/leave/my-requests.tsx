@@ -4,6 +4,7 @@ import { type NextPage } from "next";
 
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
@@ -15,6 +16,7 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const MyRequests: NextPage = () => {
+  useBreadcrumbs(["leave"], ["myLeaveRequests"]);
   const translateText = useTranslator("leaveModule", "myRequests");
   const translateAria = useTranslator(
     "leaveAria",

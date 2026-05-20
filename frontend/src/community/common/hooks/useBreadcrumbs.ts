@@ -1,49 +1,38 @@
 import { BreadcrumbItem } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
-import breadcrumbConfig, {
-  dynamicBreadcrumbPatterns
-} from "~community/common/constants/breadcrumbConfig";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useBreadcrumbContext } from "~community/common/providers/BreadcrumbProvider";
 
-const HIDDEN_BREADCRUMB_ROUTES = [
-  ROUTES.DASHBOARD.BASE,
-  ROUTES.CONFIGURATIONS.BASE,
-  ROUTES.SETTINGS.BASE,
-  ROUTES.NOTIFICATIONS
-];
+export type BreadcrumbSegment = [label: string, href?: string];
 
-const useBreadcrumbs = (): BreadcrumbItem[] => {
+const buildBreadcrumbTrail = (
+  segments: BreadcrumbSegment[]
+): BreadcrumbItem[] =>
+  segments.map(([label, href]) => (href ? { label, href } : { label }));
+
+const useBreadcrumbs = (...segments: BreadcrumbSegment[]): BreadcrumbItem[] => {
   const { asPath } = useRouter();
   const translateText = useTranslator("breadcrumbs");
+  const { breadcrumbs: contextBreadcrumbs, setBreadcrumbs } =
+    useBreadcrumbContext();
 
-  // Strip query params and hash from the path
-  const cleanPath = asPath.split("?")[0].split("#")[0];
-
-  // Don't show breadcrumbs on certain base pages
-  if (HIDDEN_BREADCRUMB_ROUTES.includes(cleanPath)) {
-    return [];
-  }
-
-  let items: BreadcrumbItem[] = [];
-
-  // 1. Try exact match from static config
-  if (breadcrumbConfig[cleanPath]) {
-    items = breadcrumbConfig[cleanPath];
-  } else {
-    // 2. Try dynamic patterns
-    for (const { pattern, getBreadcrumbs } of dynamicBreadcrumbPatterns) {
-      const matches = cleanPath.match(pattern);
-      if (matches) {
-        items = getBreadcrumbs(matches);
-        break;
-      }
+  useEffect(() => {
+    if (segments.length > 0) {
+      setBreadcrumbs(buildBreadcrumbTrail(segments));
     }
-  }
 
-  // Translate labels
-  return items.map((item) => ({
+    return () => {
+      if (segments.length > 0) {
+        setBreadcrumbs([]);
+      }
+    };
+  }, [JSON.stringify(segments), setBreadcrumbs]);
+
+  // Translate labels and return for rendering
+  return contextBreadcrumbs.map((item) => ({
     ...item,
     label: translateText([item.label])
   }));

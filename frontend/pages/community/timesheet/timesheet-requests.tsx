@@ -5,11 +5,18 @@ import { useGetManagerTimeSheetRequests } from "~community/attendance/api/attend
 import ManagerTimesheetRequestTable from "~community/attendance/components/molecules/ManagerTimesheetRequestTable/ManagerTimesheetRequestTable";
 import useApproveDenyTimeRequest from "~community/attendance/hooks/useApproveDenyTimeRequest";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
 import { TableNames } from "~community/common/enums/Table";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 
 const TimesheetRequestsPage: NextPage = () => {
+  useBreadcrumbs(
+    ["timesheet"],
+    ["allTimesheets", ROUTES.TIMESHEET.ALL_TIMESHEETS],
+    ["timeEntryRequests"]
+  );
   const translateText = useTranslator("attendanceModule", "timesheet");
 
   const { approveTimesheetRequest, declineTimesheetRequest } =

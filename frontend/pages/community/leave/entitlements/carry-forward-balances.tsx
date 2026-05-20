@@ -9,6 +9,7 @@ import AvatarChip from "~community/common/components/molecules/AvatarChip/Avatar
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import useBlockPageReload from "~community/common/hooks/useBlockPageReload/useBlockPageReload";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetUseCarryForwardLeaveEntitlements } from "~community/leave/api/LeaveApi";
@@ -25,6 +26,11 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const CarryForwardBalances: NextPage = () => {
+  useBreadcrumbs(
+    ["leave"],
+    ["leaveEntitlements", ROUTES.LEAVE.LEAVE_ENTITLEMENTS],
+    ["carryForwardingBalance"]
+  );
   const router = useRouter();
 
   const translateText = useTranslator("leaveModule", "leaveCarryForward");

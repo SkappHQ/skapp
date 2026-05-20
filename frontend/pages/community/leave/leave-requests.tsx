@@ -9,6 +9,7 @@ import PeopleAndTeamAutocompleteSearch, {
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
@@ -23,6 +24,7 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveRequests: NextPage = () => {
+  useBreadcrumbs(["leave", ROUTES.LEAVE.BASE], ["allLeaveRequests"]);
   const translateText = useTranslator("leaveModule", "leaveRequests");
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
   const router = useRouter();

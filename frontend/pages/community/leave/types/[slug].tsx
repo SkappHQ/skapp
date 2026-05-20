@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveTypeActivationToggleButton from "~community/leave/components/molecules/LeaveTypeActivationToggleButton/LeaveTypeActivationToggleButton";
 import UnsavedChangesModal from "~community/leave/components/molecules/UserPromptModals/UnsavedChangesModal/UnsavedChangesModal";
@@ -19,6 +20,12 @@ const LeaveType: NextPage = () => {
   const translateText = useTranslator("leaveModule", "leaveTypes");
   const router = useRouter();
   const { slug } = router.query;
+
+  useBreadcrumbs(
+    ["leave"],
+    ["leaveTypes", ROUTES.LEAVE.TYPES],
+    ["editLeaveType"]
+  );
 
   const {
     isLeaveTypeFormDirty,

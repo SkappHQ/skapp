@@ -9,6 +9,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { accountPageTestId } from "~community/common/constants/testIds";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import useGetProfileDetails from "~community/common/hooks/useGetProfileDetails";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -38,6 +39,8 @@ import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 
 const Account: NextPage = () => {
+  useBreadcrumbs(["account"]);
+
   const router = useRouter();
 
   const environment = useGetEnvironment();

@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
@@ -12,6 +14,7 @@ import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnum
 import { usePeopleStore } from "~community/people/store/store";
 
 const JobFamily: NextPage = () => {
+  useBreadcrumbs(["people", ROUTES.PEOPLE.BASE], ["jobFamilies"]);
   const translateText = useTranslator("peopleModule", "jobFamily");
 
   const { data: allJobFamiliesData, isPending: isJobFamilyPending } =

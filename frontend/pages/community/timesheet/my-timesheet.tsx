@@ -5,9 +5,11 @@ import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timeshe
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const MyTimeSheet: NextPage = () => {
+  useBreadcrumbs(["timesheet"], ["myTimesheet"]);
   const translateText = useTranslator("attendanceModule", "timesheet");
   const { setIsEmployeeTimesheetModalOpen, setEmployeeTimesheetModalType } =
     useAttendanceStore((state) => state);

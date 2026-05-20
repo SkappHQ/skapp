@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
@@ -13,6 +15,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { TeamModelTypes } from "~community/people/types/TeamTypes";
 
 const Teams: NextPage = () => {
+  useBreadcrumbs(["people", ROUTES.PEOPLE.BASE], ["teams"]);
   const translateText = useTranslator("peopleModule", "teams");
   const [teamSearchTerm, setTeamSearchTerm] = useState<string>("");
 

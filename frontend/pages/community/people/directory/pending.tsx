@@ -2,10 +2,11 @@ import { Box } from "@mui/material";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -15,6 +16,11 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Pending = () => {
+  useBreadcrumbs(
+    ["people"],
+    ["directory", ROUTES.PEOPLE.DIRECTORY],
+    ["pendingInvitations"]
+  );
   const translateText = useTranslator("peopleModule", "peoples");
   const { user } = useAuth();
   const router = useRouter();

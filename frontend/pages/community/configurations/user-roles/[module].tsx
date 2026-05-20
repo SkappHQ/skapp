@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { getUserRoleRestrictions } from "~community/configurations/api/userRolesApi";
@@ -17,6 +18,21 @@ import { mapApiModuleToEnum } from "~community/configurations/utils/userRoles/ap
 const Module: NextPage = () => {
   const router = useRouter();
   const { module } = router.query;
+
+  const moduleLabels: Record<string, string> = {
+    attendance: "attendanceModuleRoles",
+    people: "peopleModuleRoles",
+    leave: "leaveModuleRoles",
+    esign: "esignatureModuleRoles",
+    invoice: "invoiceModuleRoles",
+    "project-management": "projectManagementModuleRoles"
+  };
+  const breadcrumbLabel =
+    moduleLabels[module as string] || `${module}ModuleRoles`;
+  useBreadcrumbs(
+    ["configurations", ROUTES.CONFIGURATIONS.BASE],
+    [breadcrumbLabel]
+  );
 
   const formattedModule = useMemo(() => {
     return mapApiModuleToEnum(module?.toString());

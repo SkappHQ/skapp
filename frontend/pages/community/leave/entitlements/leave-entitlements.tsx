@@ -6,6 +6,7 @@ import LeaveCarryForward from "~community/common/components/molecules/LeaveCarry
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
@@ -19,6 +20,7 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveEntitlements: NextPage = () => {
+  useBreadcrumbs(["leave"], ["leaveEntitlements"]);
   const translateText = useTranslator("leaveModule", "leaveEntitlements");
 
   const { data: leaveTypesList } = useGetLeaveTypes(false, true);

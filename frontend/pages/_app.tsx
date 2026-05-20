@@ -13,6 +13,7 @@ import FullScreenLoader from "~community/common/components/molecules/FullScreenL
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
+import { BreadcrumbProvider } from "~community/common/providers/BreadcrumbProvider";
 import TanStackProvider from "~community/common/providers/TanStackProvider";
 import { ToastProvider } from "~community/common/providers/ToastProvider";
 import { WebSocketProvider } from "~community/common/providers/WebSocketProvider";
@@ -130,12 +131,14 @@ function MyApp({
               <TanStackProvider>
                 <ThemeProvider theme={newTheme}>
                   <I18nextProvider i18n={i18n}>
-                    <ErrorBoundary FallbackComponent={Error}>
-                      <RouteChangeLoader />
-                      <BaseLayout>
-                        <Component {...pageProps} />
-                      </BaseLayout>
-                    </ErrorBoundary>
+                    <BreadcrumbProvider>
+                      <ErrorBoundary FallbackComponent={Error}>
+                        <RouteChangeLoader />
+                        <BaseLayout>
+                          <Component {...pageProps} />
+                        </BaseLayout>
+                      </ErrorBoundary>
+                    </BreadcrumbProvider>
                     <ReactQueryDevtools
                       initialIsOpen={false}
                       position="bottom"
@@ -150,15 +153,17 @@ function MyApp({
             <TanStackProvider>
               <ThemeProvider theme={newTheme}>
                 <I18nextProvider i18n={i18n}>
-                  <AnnouncementProvider>
-                    <ErrorBoundary FallbackComponent={Error}>
-                      <RouteChangeLoader />
-                      <BaseLayout>
-                        <Component {...pageProps} />
-                      </BaseLayout>
-                    </ErrorBoundary>
-                    <AnnouncementWrapper />
-                  </AnnouncementProvider>
+                  <BreadcrumbProvider>
+                    <AnnouncementProvider>
+                      <ErrorBoundary FallbackComponent={Error}>
+                        <RouteChangeLoader />
+                        <BaseLayout>
+                          <Component {...pageProps} />
+                        </BaseLayout>
+                      </ErrorBoundary>
+                      <AnnouncementWrapper />
+                    </AnnouncementProvider>
+                  </BreadcrumbProvider>
                   <ReactQueryDevtools initialIsOpen={false} position="bottom" />
                 </I18nextProvider>
               </ThemeProvider>
