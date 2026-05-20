@@ -104,7 +104,6 @@ const AddCompanyModal: React.FC = () => {
     values,
     errors,
     handleChange,
-    handleBlur,
     isSubmitting,
     setFieldError,
     setSubmitting,
