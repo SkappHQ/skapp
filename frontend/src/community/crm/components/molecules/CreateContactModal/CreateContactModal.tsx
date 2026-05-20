@@ -252,8 +252,8 @@ const CreateContactModal = () => {
         </ButtonV2>
         <ButtonV2
           variant="primary"
-          icon={<EastArrowIcon />}
-          iconPosition="end"
+          // icon={<EastArrowIcon />}
+          // iconPosition="end"
           type="button"
           disabled={isPending}
           onClick={async () => {
