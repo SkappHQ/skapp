@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import {
   ButtonV2,
   DropdownOption,
@@ -78,13 +77,13 @@ const TeamSelector = ({
       setIsAdmin(true);
       setTeamId(-1);
       setTeamsData(allTeamsData);
-      setSelectedValue(allTeamsData?.length !== 0 ? allTeamsOption : null);
+      setSelectedValue(allTeamsData?.length === 0 ? null : allTeamsOption);
     } else {
       setTeamId(-1);
       setTeamsData(managerAllTeamsData?.managerTeams);
       setIsAdmin(false);
       setSelectedValue(
-        managerAllTeamsData?.managerTeams.length !== 0 ? allTeamsOption : null
+        managerAllTeamsData?.managerTeams.length === 0 ? null : allTeamsOption
       );
     }
   }, [
@@ -105,16 +104,16 @@ const TeamSelector = ({
 
     if (option.id === ALL_TEAMS_OPTION_ID) {
       setTeamId(-1);
-      setTeamName && setTeamName(translateTexts(["allLabel"]));
+      setTeamName?.(translateTexts(["allLabel"]));
     } else {
       setTeamId(option.id);
-      setTeamName && setTeamName(option.label as string);
+      setTeamName?.(option.label as string);
     }
     setSelectedValue(option);
   };
 
   return (
-    <Box sx={{ paddingLeft: "1rem" }}>
+    <div className="pl-4">
       <DropdownWithSearchablePopup
         options={options}
         value={selectedValue}
@@ -136,10 +135,15 @@ const TeamSelector = ({
               ? (selectedValue.label as string)
               : translateTexts(["allLabel"]);
           return (
-            <Box ref={triggerProps.ref} sx={{ display: "inline-flex" }}>
+            <div
+              ref={triggerProps.ref as React.RefObject<HTMLDivElement>}
+              className="inline-flex"
+            >
               <ButtonV2
                 onClick={triggerProps.onClick}
-                onKeyDown={(e) => triggerProps.onKeyDown(e)}
+                onKeyDown={
+                  triggerProps.onKeyDown as React.KeyboardEventHandler<HTMLButtonElement>
+                }
                 aria-expanded={triggerProps["aria-expanded"]}
                 aria-haspopup={triggerProps["aria-haspopup"]}
                 variant={"tertiary"}
@@ -150,11 +154,11 @@ const TeamSelector = ({
               >
                 {label}
               </ButtonV2>
-            </Box>
+            </div>
           );
         }}
       />
-    </Box>
+    </div>
   );
 };
 
