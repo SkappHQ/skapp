@@ -16,6 +16,7 @@
       "ariaLabel": "Filter contacts by company"
     },
     "table": {
+      "loadingMore": "Loading more contacts...",
       "ariaLabel": "Contacts table",
       "ariaDescription": "Table displaying contacts with company, email, phone number, deal value, open tasks, and contact owner.",
       "rowAriaLabel": "Open contact details for {{name}}",
