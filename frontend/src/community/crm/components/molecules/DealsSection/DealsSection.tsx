@@ -9,6 +9,7 @@ import AdvancedAccordion from "~community/crm/components/atoms/AdvancedAccordion
 import type { AdvancedAccordionItem } from "~community/crm/components/atoms/AdvancedAccordion/AdvancedAccordion";
 import { CrmDealType } from "~community/crm/types/CommonTypes";
 import { formatDealAmountFull } from "~community/crm/utils/contactMetricsUtils";
+import { withDefaultStatusBadgeColor } from "~community/crm/utils/statusBadgeUtils";
 
 import styles from "./styles";
 
@@ -60,7 +61,7 @@ const DealsSection: FC<Props> = ({ contactId }) => {
     };
   };
 
-  const dealItems: AdvancedAccordionItem[] = deals.map(toDealItem);
+  const dealItems: AdvancedAccordionItem[] = deals.map(toDealItem).map(withDefaultStatusBadgeColor);
 
   return (
     <div className={styles.wrapper}>

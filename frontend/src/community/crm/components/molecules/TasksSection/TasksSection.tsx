@@ -13,7 +13,10 @@ import { createPortal } from "react-dom";
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetTasksByContactId, useUpdateTaskCompletion } from "~community/crm/api/CrmContactsApi";
+import {
+  useGetTasksByContactId,
+  useUpdateTaskCompletion
+} from "~community/crm/api/CrmContactsApi";
 import CheckTask from "~community/crm/components/atoms/CheckTask/CheckTask";
 import { ContactTask } from "~community/crm/types/CommonTypes";
 import {
@@ -22,6 +25,7 @@ import {
   getPriorityConfig,
   getTaskTypeConfig
 } from "~community/crm/utils/crmTaskUtils";
+
 
 import styles from "./styles";
 
@@ -84,9 +88,12 @@ const TasksSection: FC<Props> = ({ contactId }) => {
 
   const { data, isLoading } = useGetTasksByContactId(contactId);
   const tasks: ContactTask[] = data ?? [];
-  const { mutate: updateCompletion } = useUpdateTaskCompletion(() => {}, () => {});
+  const { mutate: updateCompletion } = useUpdateTaskCompletion(
+    () => {},
+    () => {}
+  );
   const handleToggleComplete = (id: number, isCompleted: boolean) => {
-    updateCompletion({ id, isCompleted: !isCompleted });
+    updateCompletion({ id, isCompleted });
   };
 
   const hasTasks = tasks.length > 0;
@@ -130,8 +137,8 @@ const TasksSection: FC<Props> = ({ contactId }) => {
                   <div className={styles.taskRow}>
                     <CheckTask
                       checked={task.isCompleted}
-                      onChange={() =>
-                        handleToggleComplete(task.id, task.isCompleted)
+                      onChange={(checked) =>
+                        handleToggleComplete(task.id, checked)
                       }
                       size="size-5"
                       ariaLabel={

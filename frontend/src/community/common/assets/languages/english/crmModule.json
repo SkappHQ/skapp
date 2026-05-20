@@ -68,13 +68,13 @@
       "createContactErrorTitle": "Error"
     },
     "contactDetailsPanel": {
-      "lastUpdated": "Last Updated",
+      "lastUpdated": "Last updated",
       "metrics": {
-        "totalRevenue": "Total Revenue",
-        "revenueOnPipeline": "Revenue on Pipeline",
+        "totalRevenue": "Total revenue",
+        "revenueOnPipeline": "Revenue on pipeline",
         "activeDeals": "No. of active deals",
-        "openTasks": "Open Tasks",
-        "overdueTasks": "overdue"
+        "openTasks": "Open tasks",
+        "overdueTasks": "Overdue"
       },
       "deals": {
         "sectionHeader": "Deals",

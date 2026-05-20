@@ -46,8 +46,11 @@ const ContactDetailPanel: FC = () => {
     closeContactDetailPanel
   } = useCrmStore();
 
-  const { data: contact, isLoading: isContactLoading } = useGetCrmContactById(selectedContactId ?? 0);
-  const { data: metrics, isLoading: isMetricsLoading } = useGetCrmContactMetrics(selectedContactId ?? 0);
+  const { data: contact, isLoading: isContactLoading } = useGetCrmContactById(
+    selectedContactId ?? 0
+  );
+  const { data: metrics, isLoading: isMetricsLoading } =
+    useGetCrmContactMetrics(selectedContactId ?? 0);
 
   useEffect(() => {
     if (
@@ -74,7 +77,7 @@ const ContactDetailPanel: FC = () => {
           isOpen={isContactDetailPanelOpen}
           onClose={closeContactDetailPanel}
           closeOnBackdropClick
-          width="xl max-w-[1100px]"
+          width="xl max-w-[1200px]"
           ariaLabelledBy="contact-panel-title"
           header={
             isContactLoading ? (

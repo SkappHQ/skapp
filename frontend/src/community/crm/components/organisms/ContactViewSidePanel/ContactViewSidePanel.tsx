@@ -168,9 +168,7 @@ const ContactViewSidePanel = ({
 
           {/* Metrics Section */}
           <Box sx={{ mb: 3 }}>
-            <Typography  sx={{ fontWeight: 600, mb: 1 }}>
-              Metrics
-            </Typography>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>Metrics</Typography>
             <Box
               sx={{
                 display: "grid",
@@ -178,23 +176,27 @@ const ContactViewSidePanel = ({
                 gap: 2
               }}
             >
-              <Box
-                sx={{ p: 1.5, bgcolor: "success.light", borderRadius: 1 }}
-              >
+              <Box sx={{ p: 1.5, bgcolor: "success.light", borderRadius: 1 }}>
                 <Typography variant="caption" color="text.secondary">
                   Total Revenue
                 </Typography>
-                <Typography variant="body1" color="success.main" sx={{ fontWeight: 600 }}>
+                <Typography
+                  variant="body1"
+                  color="success.main"
+                  sx={{ fontWeight: 600 }}
+                >
                   {formatCurrency(metrics?.totalRevenue ?? 0)}
                 </Typography>
               </Box>
-              <Box
-                sx={{ p: 1.5, bgcolor: "info.light", borderRadius: 1 }}
-              >
+              <Box sx={{ p: 1.5, bgcolor: "info.light", borderRadius: 1 }}>
                 <Typography variant="caption" color="text.secondary">
                   Pipeline Revenue
                 </Typography>
-                <Typography variant="body1" color="info.main" sx={{ fontWeight: 600 }}>
+                <Typography
+                  variant="body1"
+                  color="info.main"
+                  sx={{ fontWeight: 600 }}
+                >
                   {formatCurrency(metrics?.revenueOnPipeline ?? 0)}
                 </Typography>
               </Box>
@@ -231,7 +233,7 @@ const ContactViewSidePanel = ({
 
           {/* Deals Section */}
           <Box sx={{ mb: 3 }}>
-            <Typography  sx={{ fontWeight: 600, mb: 1 }}>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>
               Deals ({deals?.length ?? 0})
             </Typography>
             {deals && deals.length > 0 ? (
@@ -302,7 +304,7 @@ const ContactViewSidePanel = ({
 
           {/* Tasks Section */}
           <Box>
-            <Typography  sx={{ fontWeight: 600, mb: 1 }}>
+            <Typography sx={{ fontWeight: 600, mb: 1 }}>
               Tasks ({tasks?.length ?? 0})
             </Typography>
             {tasks && tasks.length > 0 ? (

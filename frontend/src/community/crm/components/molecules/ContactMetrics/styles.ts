@@ -1,5 +1,5 @@
 const styles = {
-  grid: "flex items-stretch gap-4"
+  grid: "flex justify-between items-stretch gap-[16px]"
 };
 
 export default styles;

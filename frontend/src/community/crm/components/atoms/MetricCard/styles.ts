@@ -1,5 +1,5 @@
 const styles = {
-  card: "bg-white border border-[#d1d5dc] rounded-[8px] p-3 flex flex-col gap-1 flex-1 min-w-0",
+  card: "bg-white border border-[#d1d5dc] rounded-[8px] p-3 flex flex-col gap-1 flex-1  max-h-[73px]",
   label: "text-sm text-[#4a5565] font-normal leading-[1.5]",
   valueRow: "flex items-center gap-3",
   value: "text-base font-semibold leading-6",

@@ -178,7 +178,8 @@ const ContactsListView = () => {
   );
 
   const tableData = useMemo(() => {
-    const allItems = contactsData?.pages.flatMap((page) => page?.items ?? []) ?? [];
+    const allItems =
+      contactsData?.pages.flatMap((page) => page?.items ?? []) ?? [];
     return allItems.map(mapContactToTableRow);
   }, [contactsData]);
 
@@ -259,7 +260,7 @@ const ContactsListView = () => {
           <InputField
             aria-label={translateText(["search", "ariaLabel"])}
             ariaLabelClearButton={translateText(["search", "clearAriaLabel"])}
-            className="w-full max-w-[26rem]"
+            className="w-full max-w-[412px]"
             customStyles={{
               borderRadius: "rounded-full"
             }}

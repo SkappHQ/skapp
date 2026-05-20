@@ -66,6 +66,7 @@ import ExpandIcon from "~community/common/assets/Icons/ExpandIcon";
 import EyeIcon from "~community/common/assets/Icons/EyeIcon";
 import FileIcon from "~community/common/assets/Icons/FileIcon";
 import FileUploadIcon from "~community/common/assets/Icons/FileUploadIcon";
+import FileUploadIconV2 from "~community/common/assets/Icons/FileUploadIconV2";
 import FilterIcon from "~community/common/assets/Icons/FilterIcon";
 import FinanceModuleIcon from "~community/common/assets/Icons/FinanceModuleIcon";
 import ForwardArrow from "~community/common/assets/Icons/ForwardArrow";
@@ -172,12 +173,11 @@ interface Props extends IconProps {
   ariaLabel?: string;
 }
 
-export const IconMapping: Partial<
-  Record<IconName, (props: IconProps) => JSX.Element>
-> = {
+export const IconMapping: Record<IconName, (props: IconProps) => JSX.Element> = {
   [IconName.ADD_ICON]: AddIcon,
   [IconName.CLOSE_ICON]: CloseIcon,
   [IconName.FILE_UPLOAD_ICON]: FileUploadIcon,
+  [IconName.FILE_UPLOAD_ICON_V2]: FileUploadIconV2,
   [IconName.INFORMATION_ICON]: InformationIcon,
   [IconName.INFO_ICON]: InfoIcon,
   [IconName.PLUS_ICON]: PlusIcon,

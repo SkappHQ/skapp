@@ -36,6 +36,9 @@ const ContactHeader: FC<Props> = ({ contact, isLoading }) => {
             <ContactInfoItem
               icon={IconName.BUILDING_ICON}
               value={contact.company.name}
+              isLink={true}
+              linkHref={"#"}
+              endIcon={IconName.NEW_WINDOW_ICON}
             />
           )}
         </div>
