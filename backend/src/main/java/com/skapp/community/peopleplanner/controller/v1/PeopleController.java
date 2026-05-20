@@ -199,7 +199,7 @@ public class PeopleController {
 
 	@Operation(summary = "Transfer supervisor roles of a user",
 			description = "Reassigns primary supervisor and team supervisor roles from the given user to new supervisors before termination or deletion")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	@PatchMapping("/user/{userId}/transfer-supervisors")
 	public ResponseEntity<ResponseEntityDto> transferSupervisors(@PathVariable Long userId,
 			@RequestBody TransferSupervisorsRequestDto requestDto) {
