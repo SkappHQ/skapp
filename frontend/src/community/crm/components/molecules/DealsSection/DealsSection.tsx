@@ -29,6 +29,7 @@ const DealsSection: FC<Props> = ({ contactId }) => {
   const deals: CrmDealType[] = data ?? [];
 
   const toDealItem = (deal: CrmDealType): AdvancedAccordionItem => {
+    deal.notes = "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
     const ownerName =
       deal.owner.firstName +
       (deal.owner.lastName ? ` ${deal.owner.lastName}` : "");

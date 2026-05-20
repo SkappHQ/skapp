@@ -77,7 +77,7 @@ const ContactDetailPanel: FC = () => {
           isOpen={isContactDetailPanelOpen}
           onClose={closeContactDetailPanel}
           closeOnBackdropClick
-          width="xl max-w-[1200px]"
+          width="xl"
           ariaLabelledBy="contact-panel-title"
           header={
             isContactLoading ? (

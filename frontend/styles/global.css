@@ -342,14 +342,16 @@ thead .sticky-col {
 
 
 
-.crm-contact-side-panel aside {
-  width: min(50vw, 48rem) !important;
-  min-width: 28rem;
-  max-width: 100vw;
+.crm-contact-panel aside {
+  /* //className="[&_aside]:!min-w-[68vw] [&_aside]:!max-w-[62.813rem]" */
+  min-width: 68vw !important;
+    max-width: 62.813rem !important;
 }
 
+
+
 @media (max-width: 1024px) {
-  .crm-contact-side-panel aside {
+  .crm-contact-panel aside {
     width: 100vw !important;
     min-width: 0;
   }

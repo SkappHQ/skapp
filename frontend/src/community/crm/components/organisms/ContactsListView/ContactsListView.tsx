@@ -220,6 +220,7 @@ const ContactsListView = () => {
       columnAriaLabel: translateText(["table", "columns", "dealValue"]),
       header: translateText(["table", "columns", "dealValue"]),
       key: "dealValue",
+      className: "text-right",
       render: (value) => (
         <DealValueCell dealValue={value as ContactTableRow["dealValue"]} />
       ),
