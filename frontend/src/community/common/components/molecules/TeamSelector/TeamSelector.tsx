@@ -1,17 +1,17 @@
-import { Box } from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { JSX, MouseEvent, useEffect, useState } from "react";
+import {
+  ButtonV2,
+  DropdownOption,
+  DropdownValue,
+  DropdownWithSearchablePopup,
+  TriggerProps
+} from "@rootcodelabs/skapp-ui";
+import { JSX, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
-import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
-import Popper from "~community/common/components/molecules/Popper/Popper";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { ManagerTeamType } from "~community/common/types/CommonTypes";
-import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import {
   useGetAllManagerTeams,
   useGetAllTeams
@@ -24,17 +24,14 @@ interface Props {
   moduleAdminType?: AdminTypes;
 }
 
+const ALL_TEAMS_OPTION_ID = -1;
+
 const TeamSelector = ({
   setTeamId,
   setTeamName,
   moduleAdminType
 }: Props): JSX.Element => {
-  const translateTexts = useTranslator("attendanceModule", "timesheet");
-  const theme: Theme = useTheme();
-
-  const [showOverlay, setShowOverlay] = useState<boolean>(false);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [selectedOptionId, setSelectedOptionId] = useState<number>(0);
+  const translateTexts = useTranslator("commonComponents", "teamSelector");
 
   const { data: allTeamsData } = useGetAllTeams();
   const { data: managerAllTeamsData } = useGetAllManagerTeams();
@@ -45,17 +42,34 @@ const TeamSelector = ({
 
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const isTeamListEmpty = teamsData?.length === 0;
-  const [selectedOptionName, setSelectedOptionName] = useState<string>("");
-  const closeMenu = (): void => {
-    setAnchorEl(null);
-    setShowOverlay(false);
-  };
+  const [selectedValue, setSelectedValue] = useState<DropdownOption | null>(
+    null
+  );
 
-  useEffect(() => {
-    checkUserRole();
-  }, [user, managerAllTeamsData, allTeamsData]);
+  const allTeamsLabel = translateTexts(["allLabel"]);
 
-  const checkUserRole = () => {
+  const allTeamsOption = useMemo<DropdownOption>(
+    () => ({
+      id: ALL_TEAMS_OPTION_ID,
+      value: ALL_TEAMS_OPTION_ID,
+      label: allTeamsLabel
+    }),
+    [allTeamsLabel]
+  );
+
+  const options = useMemo<DropdownOption[]>(
+    () => [
+      allTeamsOption,
+      ...(teamsData?.map((item) => ({
+        id: item.teamId,
+        value: item.teamId,
+        label: item.teamName
+      })) ?? [])
+    ],
+    [allTeamsOption, teamsData]
+  );
+
+  const checkUserRole = useCallback(() => {
     if (
       user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
       (moduleAdminType && user?.roles?.includes(moduleAdminType))
@@ -63,99 +77,88 @@ const TeamSelector = ({
       setIsAdmin(true);
       setTeamId(-1);
       setTeamsData(allTeamsData);
-      setSelectedOptionName(
-        allTeamsData?.length !== 0 ? translateTexts(["allLabel"]) : ""
-      );
+      setSelectedValue(allTeamsData?.length === 0 ? null : allTeamsOption);
     } else {
       setTeamId(-1);
       setTeamsData(managerAllTeamsData?.managerTeams);
       setIsAdmin(false);
-      setSelectedOptionName(
-        managerAllTeamsData?.managerTeams.length !== 0
-          ? translateTexts(["allLabel"])
-          : translateTexts(["noTeamTxt"])
+      setSelectedValue(
+        managerAllTeamsData?.managerTeams.length === 0 ? null : allTeamsOption
       );
     }
-  };
+  }, [
+    user,
+    managerAllTeamsData,
+    allTeamsData,
+    moduleAdminType,
+    allTeamsOption,
+    setTeamId
+  ]);
 
-  const onSelectOption = (id: number): void => {
-    if (id !== 0) {
-      const selectedTeam = teamsData?.find((item) => item?.teamId === id);
-      if (selectedTeam) {
-        setSelectedOptionName(selectedTeam?.teamName);
-        setSelectedOptionId(id);
-        setShowOverlay(false);
-        setTeamId(id);
-        setTeamName && setTeamName(selectedTeam?.teamName);
-      }
-    } else {
+  useEffect(() => {
+    checkUserRole();
+  }, [checkUserRole]);
+
+  const handleChange = (value: DropdownValue | null): void => {
+    const option = value as DropdownOption;
+
+    if (option.id === ALL_TEAMS_OPTION_ID) {
       setTeamId(-1);
-      setSelectedOptionName(translateTexts(["allLabel"]));
-      setSelectedOptionId(0);
-      setShowOverlay(false);
-      setTeamName && setTeamName(translateTexts(["allLabel"]));
+      setTeamName?.(translateTexts(["allLabel"]));
+    } else {
+      setTeamId(option.id);
+      setTeamName?.(option.label as string);
     }
+    setSelectedValue(option);
   };
 
   return (
-    <>
-      <Box sx={{ paddingLeft: "1rem" }}>
-        <ButtonV2
-          variant={"tertiary"}
-          size={"md"}
-          disabled={isTeamListEmpty && !isAdmin}
-          onClick={(event: MouseEvent<HTMLElement>) => {
-            setAnchorEl(event.currentTarget);
-            setShowOverlay(true);
-          }}
-          icon={<DropDownArrow />}
-          iconPosition="end"
-        >
-          {!isTeamListEmpty ? selectedOptionName : translateTexts(["allLabel"])}
-        </ButtonV2>
-      </Box>
-      <Popper
-        anchorEl={anchorEl}
-        open={Boolean(showOverlay)}
-        position={"bottom-end"}
-        handleClose={() => closeMenu()}
-        menuType={MenuTypes.SORT}
-        isManager={true}
-        disablePortal={true}
-        id="popper"
-        isFlip={true}
-        timeout={300}
-        ariaLabel="Your teams"
-        styles={{
-          boxShadow: `0rem .55rem 1.25rem ${theme.palette.grey[300]}`,
-          zIndex: ZIndexEnums.DEFAULT
+    <div className="pl-4">
+      <DropdownWithSearchablePopup
+        options={options}
+        value={selectedValue}
+        onChange={handleChange}
+        searchable={true}
+        searchPlaceholder={translateTexts(["searchTeamPlaceholder"])}
+        maxHeight="max-h-44"
+        popupWidth="w-[16.25rem]"
+        popupAlignment="right"
+        disabled={isTeamListEmpty && !isAdmin}
+        renderTrigger={(
+          _value: DropdownValue | null,
+          _isOpen: boolean,
+          disabled: boolean,
+          triggerProps: TriggerProps
+        ) => {
+          const label =
+            !isTeamListEmpty && selectedValue
+              ? (selectedValue.label as string)
+              : translateTexts(["allLabel"]);
+          return (
+            <div
+              ref={triggerProps.ref as React.RefObject<HTMLDivElement>}
+              className="inline-flex"
+            >
+              <ButtonV2
+                onClick={triggerProps.onClick}
+                onKeyDown={
+                  triggerProps.onKeyDown as React.KeyboardEventHandler<HTMLButtonElement>
+                }
+                aria-expanded={triggerProps["aria-expanded"]}
+                aria-haspopup={triggerProps["aria-haspopup"]}
+                variant={"tertiary"}
+                size={"md"}
+                disabled={disabled}
+                icon={<DropDownArrow />}
+                iconPosition="end"
+              >
+                {label}
+              </ButtonV2>
+            </div>
+          );
         }}
-      >
-        <Box
-          sx={{
-            backgroundColor: "common.white"
-          }}
-        >
-          <SortRow
-            text={translateTexts(["allLabel"])}
-            selected={selectedOptionId === 0}
-            onClick={() => {
-              onSelectOption(0);
-            }}
-          />
-          {teamsData?.map((item) => (
-            <SortRow
-              key={item?.teamId}
-              text={item?.teamName}
-              selected={selectedOptionId === item?.teamId}
-              onClick={() => {
-                onSelectOption(item?.teamId as number);
-              }}
-            />
-          ))}
-        </Box>
-      </Popper>
-    </>
+      />
+    </div>
   );
 };
 
