@@ -47,28 +47,28 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 		Expression<Long> taskCount = cb.countDistinct(cb.<Long>selectCase()
 			.when(cb.and(cb.isFalse(taskJoin.get(CrmConstants.IS_DELETED)),
-					cb.isFalse(taskJoin.get(CrmConstants.IS_COMPLETED))),
-					taskJoin.<Long>get(CrmConstants.ID))
+					cb.isFalse(taskJoin.get(CrmConstants.IS_COMPLETED))), taskJoin.<Long>get(CrmConstants.ID))
 			.otherwise(cb.nullLiteral(Long.class)));
 
 		Expression<Long> overdueCount = cb.countDistinct(cb.<Long>selectCase()
-				.when(cb.and(cb.isFalse(taskJoin.get(CrmConstants.IS_DELETED)),
-						cb.isFalse(taskJoin.get(CrmConstants.IS_COMPLETED)),
-						cb.isNotNull(taskJoin.get(CrmConstants.DUE_AT)),
-						cb.lessThan(taskJoin.<java.time.LocalDateTime>get(CrmConstants.DUE_AT), cb.localDateTime())),
-						taskJoin.<Long>get(CrmConstants.ID))
-				.otherwise(cb.nullLiteral(Long.class)));
+			.when(cb.and(cb.isFalse(taskJoin.get(CrmConstants.IS_DELETED)),
+					cb.isFalse(taskJoin.get(CrmConstants.IS_COMPLETED)),
+					cb.isNotNull(taskJoin.get(CrmConstants.DUE_AT)),
+					cb.lessThan(taskJoin.<java.time.LocalDateTime>get(CrmConstants.DUE_AT), cb.localDateTime())),
+					taskJoin.<Long>get(CrmConstants.ID))
+			.otherwise(cb.nullLiteral(Long.class)));
 
 		Expression<BigDecimal> openDealCase = cb.<BigDecimal>selectCase()
 			.when(cb.and(cb.isFalse(dealJoin.get(CrmConstants.IS_DELETED)),
 					cb.notEqual(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID),
-							CrmConstants.WON_STAGE_ID)), dealJoin.get(CrmConstants.AMOUNT))
+							CrmConstants.WON_STAGE_ID)),
+					dealJoin.get(CrmConstants.AMOUNT))
 			.otherwise(BigDecimal.ZERO);
 
 		Expression<BigDecimal> closedDealCase = cb.<BigDecimal>selectCase()
 			.when(cb.and(cb.isFalse(dealJoin.get(CrmConstants.IS_DELETED)),
-					cb.equal(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID),
-							CrmConstants.WON_STAGE_ID)), dealJoin.get(CrmConstants.AMOUNT))
+					cb.equal(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID), CrmConstants.WON_STAGE_ID)),
+					dealJoin.get(CrmConstants.AMOUNT))
 			.otherwise(BigDecimal.ZERO);
 
 		Expression<BigDecimal> openValue = cb.<BigDecimal>sum(openDealCase);
@@ -77,21 +77,22 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 		Expression<Long> closedDealsCount = cb.countDistinct(cb.<Long>selectCase()
 			.when(cb.and(cb.isFalse(dealJoin.get(CrmConstants.IS_DELETED)),
-					cb.equal(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID),
-							CrmConstants.WON_STAGE_ID)), dealJoin.<Long>get(CrmConstants.ID))
+					cb.equal(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID), CrmConstants.WON_STAGE_ID)),
+					dealJoin.<Long>get(CrmConstants.ID))
 			.otherwise(cb.nullLiteral(Long.class)));
 
 		Expression<Long> openDealsCount = cb.countDistinct(cb.<Long>selectCase()
 			.when(cb.and(cb.isFalse(dealJoin.get(CrmConstants.IS_DELETED)),
 					cb.notEqual(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID),
-							CrmConstants.WON_STAGE_ID)), dealJoin.<Long>get(CrmConstants.ID))
+							CrmConstants.WON_STAGE_ID)),
+					dealJoin.<Long>get(CrmConstants.ID))
 			.otherwise(cb.nullLiteral(Long.class)));
 
 		query.select(cb.construct(CrmCompanyMetricsDto.class,
 
-				company.get(CrmConstants.ID), company.get(CrmConstants.NAME),
-				company.get(CrmConstants.CONTACT_NUMBER), company.get(CrmConstants.INDUSTRY),
-				company.get(CrmConstants.WEBSITE), company.get(CrmConstants.ADDRESS),
+				company.get(CrmConstants.ID), company.get(CrmConstants.NAME), company.get(CrmConstants.CONTACT_NUMBER),
+				company.get(CrmConstants.INDUSTRY), company.get(CrmConstants.WEBSITE),
+				company.get(CrmConstants.ADDRESS),
 
 				taskCount, overdueCount, openValue, accountValue, closedDealsCount, openDealsCount
 
@@ -102,8 +103,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		predicates.add(cb.isFalse(company.get(CrmConstants.IS_DELETED)));
 
 		if (StringUtils.hasText(searchKeyword)) {
-			predicates
-					.add(cb.like(cb.lower(company.get(CrmConstants.NAME)), "%" + searchKeyword.toLowerCase() + "%"));
+			predicates.add(cb.like(cb.lower(company.get(CrmConstants.NAME)), "%" + searchKeyword.toLowerCase() + "%"));
 		}
 		query.where(predicates.toArray(new Predicate[0]));
 
@@ -113,9 +113,9 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		query.orderBy(cb.asc(company.get(CrmConstants.NAME)));
 
 		List<CrmCompanyMetricsDto> content = entityManager.createQuery(query)
-				.setFirstResult((int) pageable.getOffset())
-				.setMaxResults(pageable.getPageSize())
-				.getResultList();
+			.setFirstResult((int) pageable.getOffset())
+			.setMaxResults(pageable.getPageSize())
+			.getResultList();
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmCompany> countRoot = countQuery.from(CrmCompany.class);
@@ -123,10 +123,10 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		countPredicates.add(cb.isFalse(countRoot.get(CrmConstants.IS_DELETED)));
 		if (StringUtils.hasText(searchKeyword)) {
 			countPredicates
-					.add(cb.like(cb.lower(countRoot.get(CrmConstants.NAME)), "%" + searchKeyword.toLowerCase() + "%"));
+				.add(cb.like(cb.lower(countRoot.get(CrmConstants.NAME)), "%" + searchKeyword.toLowerCase() + "%"));
 		}
 		countQuery.select(cb.countDistinct(countRoot.get(CrmConstants.ID)))
-				.where(countPredicates.toArray(new Predicate[0]));
+			.where(countPredicates.toArray(new Predicate[0]));
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(content, pageable, total);
