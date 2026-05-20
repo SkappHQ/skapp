@@ -23,7 +23,7 @@ public class CrmDealStageController {
 
 	@Operation(summary = "Get deal stages", description = "Returns all active deal stages ordered by index.")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getDealStages() {
 		ResponseEntityDto response = crmDealStageService.getDealStages();
 		return new ResponseEntity<>(response, HttpStatus.OK);
