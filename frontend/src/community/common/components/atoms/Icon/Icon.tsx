@@ -16,7 +16,6 @@ import BadgeCheckIcon from "~community/common/assets/Icons/BadgeCheckIcon";
 import BellIcon from "~community/common/assets/Icons/BellIcon";
 import BinIcon from "~community/common/assets/Icons/BinIcon";
 import BlockedIcon from "~community/common/assets/Icons/BlockedIcon";
-import BrowserWindowIcon from "~community/common/assets/Icons/BrowserWindowIcon";
 import BuildingIcon from "~community/common/assets/Icons/BuildingIcon";
 import CRMModuleIcon from "~community/common/assets/Icons/CRMModuleIcon";
 import CalendarIcon from "~community/common/assets/Icons/CalendarIcon";
@@ -344,7 +343,6 @@ export const IconMapping: Partial<
   [IconName.LOCATION_ICON]: LocationIcon,
   [IconName.BUILDING_ICON]: BuildingIcon,
   [IconName.WEB_ICON]: WebIcon,
-  [IconName.BROWSER_WINDOW_ICON]: BrowserWindowIcon
   // Add more icons here as needed
 };
 

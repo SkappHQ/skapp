@@ -13,13 +13,13 @@ const CompanyMetricCards: FC<Props> = ({ metrics }) => {
       {metrics.map((metric) => (
         <Card
           key={metric.title}
-          className="flex flex-col gap-1 flex-1 min-w-0 p-3 overflow-hidden border border-secondary-accent rounded-lg"
+          className="flex flex-col gap-1 flex-1 min-w-0 p-3 overflow-hidden border border-secondary-accent rounded-lg bg-white"
         >
-          <p className="text-sm font-normal leading-5 text-secondary-text">
+          <p className="body2 text-secondary-text">
             {metric.title}
           </p>
           <div className="flex items-center gap-2">
-            <p className="text-base font-semibold leading-6 text-black">
+            <p className="body1 font-semibold text-black">
               {metric.amount}
             </p>
             {metric.chip && (

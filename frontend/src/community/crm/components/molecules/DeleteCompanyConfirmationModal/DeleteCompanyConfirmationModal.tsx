@@ -9,7 +9,8 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const DeleteCompanyConfirmationModal = () => {
   const translateText = useTranslator("crmModule", "companies");
-  const { companyModalType, selectedCompany, setCompanyModalType } = useCrmStore();
+  const { companyModalType, selectedCompany, setCompanyModalType } =
+    useCrmStore();
 
   const handleDelete = () => {
     // TODO: call delete API
@@ -27,10 +28,15 @@ const DeleteCompanyConfirmationModal = () => {
       modalHeader={translateText(["deleteCompanyModal", "title"])}
       content={
         <UserPromptModal
-          description={translateText(
-            ["deleteCompanyModal", "description"],
-            { companyName: selectedCompany?.name ?? "this company" }
-          )}
+          description={
+            <span className="body2 text-secondary-text">
+              {selectedCompany?.name
+                ? translateText(["deleteCompanyModal", "description"], {
+                    companyName: selectedCompany.name
+                  })
+                : ""}
+            </span>
+          }
           primaryBtn={{
             label: translateText(["deleteCompanyModal", "deleteButton"]),
             onClick: handleDelete,

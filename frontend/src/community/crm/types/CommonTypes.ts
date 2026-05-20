@@ -25,7 +25,6 @@ export interface CrmCompanyType {
   isDeleted: boolean;
 }
 
-export interface CrmCompanyMetricsType extends CrmCompanyType {}
 
 export interface CrmCompanyAddFormTypes {
   name: string;
