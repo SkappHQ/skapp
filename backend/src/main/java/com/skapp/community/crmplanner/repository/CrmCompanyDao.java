@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long> {
 
 	Optional<CrmCompany> findByIdAndIsDeletedFalse(Long id);
+	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 
 }

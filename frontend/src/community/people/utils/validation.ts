@@ -141,5 +141,8 @@ export const addHolidayValidation = (translator: TranslatorFunctionType) =>
           return value > new Date();
         }
       ),
-    duration: Yup.string().required(translator(["requireDurationError"]))
+    duration: Yup.string().required(translator(["requireDurationError"])),
+    workLocation: Yup.array()
+      .of(Yup.number())
+      .min(1, translator(["requireWorkLocationError"]))
   });

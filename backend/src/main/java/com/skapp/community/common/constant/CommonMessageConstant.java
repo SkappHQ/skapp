@@ -14,6 +14,7 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_SUCCESS_WORK_LOCATION_CREATED("api.success.common.work-location-created"),
 	COMMON_SUCCESS_WORK_LOCATION_UPDATED("api.success.common.work-location-updated"),
 	COMMON_SUCCESS_WORK_LOCATION_DELETED("api.success.common.work-location-deleted"),
+	COMMON_SUCCESS_WORK_LOCATION_NAME_AVAILABLE("api.success.common.work-location-name-available"),
 
 	// Error message constants
 	COMMON_ERROR_ACCESS_DENIED("api.error.common.access-denied"),

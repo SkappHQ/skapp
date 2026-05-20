@@ -2,18 +2,33 @@ import { debounce } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import {
+  ChangeEvent,
+  JSX,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 
+import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
+import MultivalueDropdownList from "~community/common/components/molecules/MultiValueDropdownList/MultivalueDropdownList";
+import ROUTES from "~community/common/constants/routes";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
+import { ALL_LOCATIONS_ID } from "~community/common/constants/workLocationConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { theme } from "~community/common/theme/theme";
-import { LeaveStates } from "~community/common/types/CommonTypes";
+import {
+  DropdownListType,
+  LeaveStates
+} from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { formatDate } from "~community/common/utils/commonUtil";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
@@ -30,7 +45,10 @@ import {
   holidayBulkUploadResponse,
   holidayModalTypes
 } from "~community/people/types/HolidayTypes";
-import { holidayDatePreprocessor } from "~community/people/utils/holidayUtils/commonUtils";
+import {
+  getDefaultWorkLocations,
+  holidayDatePreprocessor
+} from "~community/people/utils/holidayUtils/commonUtils";
 import { addHolidayValidation } from "~community/people/utils/validation";
 
 type Props = {
@@ -44,8 +62,11 @@ const AddEditHolidayModal = ({
 }: Props): JSX.Element => {
   const translateText = useTranslator("peopleModule", "holidays");
   const translateAria = useTranslator("peopleAria", "holiday");
+  const router = useRouter();
 
   const { setToastMessage } = useToast();
+
+  const { data: workLocations } = useGetAllWorkLocations();
 
   const {
     setIsHolidayModalOpen,
@@ -74,6 +95,19 @@ const AddEditHolidayModal = ({
   const [holidayData, setHolidayData] = useState<holiday[] | undefined>(
     holidays
   );
+  const [selectedWorkLocationIds, setSelectedWorkLocationIds] = useState<
+    number[]
+  >(getDefaultWorkLocations(newHolidayDetails?.workLocations));
+
+  const workLocationList: DropdownListType[] = useMemo(() => {
+    return [
+      { label: translateText(["allLocations"]), value: ALL_LOCATIONS_ID },
+      ...(workLocations ?? []).map((loc) => ({
+        label: loc.name,
+        value: loc.workLocationId
+      }))
+    ];
+  }, [workLocations]);
 
   const currentYear = DateTime.now().year;
   const numericSelectedYear = parseInt(selectedYear, 10);
@@ -130,22 +164,28 @@ const AddEditHolidayModal = ({
     holidayDate: newHolidayDetails?.holidayDate || "",
     holidayColor:
       newHolidayDetails?.holidayColor || theme.palette.text.blackText,
-    duration: newHolidayDetails?.duration || ""
+    duration: newHolidayDetails?.duration || "",
+    workLocation: getDefaultWorkLocations(newHolidayDetails?.workLocations)
   };
 
   const handleAddNewHoliday = useCallback(async (): Promise<void> => {
     const dateFormatted = formatDate(newHolidayDetails?.holidayDate);
 
+    const selectedWorkLocationNames = workLocationList
+      .filter((loc) => selectedWorkLocationIds.includes(Number(loc.value)))
+      .map((loc) => loc.label as string);
+
     const payload = {
       date: dateFormatted ?? "",
       name: newHolidayDetails?.holidayReason,
-      holidayDuration: newHolidayDetails?.duration
+      holidayDuration: newHolidayDetails?.duration,
+      workLocations: selectedWorkLocationNames
     };
 
     mutate({ holidayData: payload, selectedYear });
     resetHolidayDetails();
     setIsHolidayModalOpen(false);
-  }, [newHolidayDetails, mutate]);
+  }, [newHolidayDetails, mutate, selectedWorkLocationIds, workLocationList]);
 
   const {
     values,
@@ -160,6 +200,40 @@ const AddEditHolidayModal = ({
     onSubmit: handleAddNewHoliday,
     validateOnChange: false
   });
+
+  const handleWorkLocationChange = useCallback(
+    (value: (string | number)[]) => {
+      const numericValue = value.map(Number);
+      const wasAllSelected = selectedWorkLocationIds.includes(ALL_LOCATIONS_ID);
+      const isAllNowSelected = numericValue.includes(ALL_LOCATIONS_ID);
+
+      let newValue: number[];
+      if (isAllNowSelected && !wasAllSelected) {
+        newValue = [ALL_LOCATIONS_ID];
+      } else if (isAllNowSelected && numericValue.length > 1) {
+        newValue = numericValue.filter(
+          (workLocationValue) => workLocationValue !== ALL_LOCATIONS_ID
+        );
+      } else {
+        newValue = numericValue;
+      }
+
+      setSelectedWorkLocationIds(newValue);
+      setHolidayDetails({
+        ...newHolidayDetails,
+        workLocations: newValue
+      });
+      setFieldValue("workLocation", newValue);
+      setFieldError("workLocation", "");
+    },
+    [
+      selectedWorkLocationIds,
+      setFieldValue,
+      setFieldError,
+      setHolidayDetails,
+      newHolidayDetails
+    ]
+  );
 
   const findHolidayAvailability = useCallback(
     (date: string | undefined): boolean | undefined => {
@@ -232,10 +306,10 @@ const AddEditHolidayModal = ({
       duration !== translateText(["duration"]) &&
       newHolidayDetails.duration !== HolidayDurationType.HALFDAY
     ) {
-      void setFieldValue("duration", duration);
-      void setFieldError("duration", "");
+      setFieldValue("duration", duration);
+      setFieldError("duration", "");
     } else {
-      void setFieldValue("duration", "");
+      setFieldValue("duration", "");
     }
   }, [newHolidayDetails.duration]);
 
@@ -278,9 +352,13 @@ const AddEditHolidayModal = ({
     }
   };
 
+  const handleOnAddNewClickBtn = () => {
+    router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`);
+  };
+
   return (
     <form onSubmit={handleSubmit}>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-6">
         <InputField
           inputName="holidayReason"
           inputType="text"
@@ -345,6 +423,23 @@ const AddEditHolidayModal = ({
           accessibility={{
             ariaLabel: translateAria(["selectDateField"])
           }}
+        />
+        <MultivalueDropdownList
+          inputName="workLocationId"
+          label={translateText(["workLocation"])}
+          isMultiValue
+          value={selectedWorkLocationIds}
+          placeholder={translateText(["workLocationPlaceholder"])}
+          onChange={handleWorkLocationChange}
+          componentStyle={{}}
+          isCheckSelected
+          isErrorFocusOutlineNeeded={false}
+          itemList={workLocationList}
+          isRequired
+          onAddNewClickBtn={handleOnAddNewClickBtn}
+          addNewClickBtnText={translateText(["addNewWorkLocation"])}
+          ariaLabel={translateAria(["selectWorkLocation"])}
+          error={errors.workLocation as string}
         />
         <DurationSelector
           label={translateText(["duration"])}
