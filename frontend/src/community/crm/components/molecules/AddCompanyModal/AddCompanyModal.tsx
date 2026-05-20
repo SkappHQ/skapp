@@ -138,7 +138,6 @@ const AddCompanyModal: React.FC = () => {
         label={translateText(["labels", "name"])}
         placeholder={translateText(["placeholders", "name"])}
         onChange={handleChange}
-        onBlur={handleBlur as any}
         aria-label={translateText(["ariaLabels", "companyName"])}
         maxLength={characterLengths.NAME_LENGTH}
         required
@@ -167,7 +166,6 @@ const AddCompanyModal: React.FC = () => {
         label={translateText(["labels", "website"])}
         placeholder={translateText(["placeholders", "website"])}
         onChange={handleChange}
-        onBlur={handleBlur as any}
         aria-label={translateText(["ariaLabels", "website"])}
         fullWidth
       />
@@ -180,7 +178,6 @@ const AddCompanyModal: React.FC = () => {
         label={translateText(["labels", "address"])}
         placeholder={translateText(["placeholders", "address"])}
         onChange={handleChange}
-        onBlur={handleBlur as any}
         aria-label={translateText(["ariaLabels", "address"])}
         fullWidth
       />
@@ -193,7 +190,6 @@ const AddCompanyModal: React.FC = () => {
         label={translateText(["labels", "industry"])}
         placeholder={translateText(["placeholders", "industry"])}
         onChange={handleChange}
-        onBlur={handleBlur as any}
         aria-label={translateText(["ariaLabels", "industry"])}
         fullWidth
       />
