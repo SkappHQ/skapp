@@ -21,7 +21,7 @@ const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
     title: "Account value",
     amount: `$${company.accountValue ?? "0"}`,
     chip: {
-      label: "test",
+      label: "+$8.2k last 30 days",
       color: "#166534",
       bgColor: "#ECFCCB",
       icon: (
@@ -142,7 +142,7 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
                   <CompanyContacts contacts={getCompanyContacts(selectedCompany)} />
                 )}
                 {selectedCompany && (
-                  <div className="pt-6">
+                  <div className="pt-6 pb-4">
                     <TasksSection companyId={selectedCompany.id} />
                   </div>
                 )}
