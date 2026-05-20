@@ -1,4 +1,5 @@
 import { FC, JSX } from "react";
+import { formatCurrency } from "~community/crm/utils/formatters";
 
 interface ChipProps {
   label: string;
@@ -9,7 +10,7 @@ interface ChipProps {
 
 interface Props {
   title: string;
-  amount: string;
+  amount: string | number;
   chip?: ChipProps;
 }
 
@@ -21,7 +22,15 @@ const CompanyMetricCard: FC<Props> = ({ title, amount, chip }) => {
       </p>
       <div className="flex items-center gap-2">
         <p className="text-base font-semibold leading-6 text-black">
-          {amount}
+          {(() => {
+            if (typeof amount === "number") return formatCurrency(amount);
+            if (typeof amount === "string") {
+              if (amount.startsWith("$")) return amount;
+              const parsed = parseFloat(amount.replace(/[^0-9.-]+/g, ""));
+              return Number.isNaN(parsed) ? amount : formatCurrency(parsed);
+            }
+            return String(amount);
+          })()}
         </p>
         {chip && (
           <span

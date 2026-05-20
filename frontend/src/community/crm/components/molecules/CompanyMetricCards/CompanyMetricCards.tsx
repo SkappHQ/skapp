@@ -11,7 +11,7 @@ interface ChipProps {
 
 interface MetricItem {
   title: string;
-  amount: string;
+  amount: string | number;
   chip?: ChipProps;
 }
 

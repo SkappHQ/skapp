@@ -19,7 +19,7 @@ import TasksSection from "../../molecules/TaskSection/TasksSection";
 const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
   {
     title: "Account value",
-    amount: `$${company.accountValue ?? "0"}`,
+    amount: company.accountValue ?? 0,
     chip: {
       label: "+$8.2k last 30 days",
       color: "#166534",
