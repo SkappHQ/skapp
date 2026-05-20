@@ -31,6 +31,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -43,6 +44,8 @@ import java.util.Set;
 @Component
 @Primary
 public class EpJwtAuthFilter extends OncePerRequestFilter {
+
+	private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
 	private static final Set<String> PUBLIC_URLS = Set.of("/v3/api-docs", "/v3/api-docs.yaml", "/swagger-ui.html",
 			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css", "/favicon.ico",
@@ -80,7 +83,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 			"/v1/announcement", "/v1/announcement/list", "/v1/announcement/image/signed-url",
 			"/internal/v1/ep/user/guest", "/internal/v1/ep/user/guest/requests", "/internal/v1/ep/ai/prompt-log",
 			"/internal/v1/ep/ai/prompt-log/message", "/internal/v1/ep/leave/insight-context",
-			"/internal/v1/ep/time/config");
+			"/internal/v1/ep/time/config", "/external/adms/*/iclock/cdata", "/external/adms/*/iclock/getrequest");
 
 	private final JwtService jwtService;
 
@@ -91,7 +94,7 @@ public class EpJwtAuthFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		String path = request.getRequestURI();
-		return PUBLIC_URLS.stream().anyMatch(path::equals);
+		return PUBLIC_URLS.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
 	}
 
 	@Override
