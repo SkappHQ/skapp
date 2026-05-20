@@ -59,12 +59,12 @@ VALUES (default, 1, 1, 1, 'PRIMARY'),
        (default, 3, 1, 1, 'PRIMARY'),
        (default, 4, 1, 1, 'PRIMARY');
 
-INSERT INTO employee_role (employee_id, people_role, leave_role, attendance_role, is_super_admin)
-VALUES (1, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', true),
-       (2, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', false),
-       (3, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', false),
-       (4, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', false),
-       (5, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', false);
+INSERT INTO employee_role (employee_id, people_role, leave_role, attendance_role, crm_role, is_super_admin)
+VALUES (1, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', 'CRM_ADMIN', true),
+       (2, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', null, false),
+       (3, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', null, false),
+       (4, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', null, false),
+       (5, 'PEOPLE_ADMIN', 'LEAVE_ADMIN', 'ATTENDANCE_ADMIN', null, false);
 
 INSERT INTO team (team_id, team_name, is_active)
 VALUES (default, 'DEV', true),

@@ -87,7 +87,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
     reportsParams.size,
     reportsParams.sortKey,
     reportsParams.sortOrder,
-    isProTier
+    isProTier && !!reportsParams.teamId
   );
 
   const reportData = useMemo(() => {
@@ -100,7 +100,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
     reportsParams.teamId,
     headerLabels,
     [],
-    isProTier
+    isProTier && !!reportsParams.teamId
   );
 
   const CSVdata = useMemo(() => {

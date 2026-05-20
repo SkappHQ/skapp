@@ -14,10 +14,11 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableRetry
 @EntityScan(basePackages = { "com.skapp.community.peopleplanner.model", "com.skapp.community.common.model",
 		"com.skapp.community.timeplanner.model", "com.skapp.community.leaveplanner.model",
-		"com.skapp.community.okrplanner.model" })
-@EnableJpaRepositories(basePackages = { "com.skapp.community.common.repository",
-		"com.skapp.community.peopleplanner.repository", "com.skapp.community.leaveplanner.repository",
-		"com.skapp.community.timeplanner.repository", "com.skapp.community.okrplanner.repository" })
+		"com.skapp.community.okrplanner.model", "com.skapp.community.crmplanner.model" })
+@EnableJpaRepositories(
+		basePackages = { "com.skapp.community.common.repository", "com.skapp.community.peopleplanner.repository",
+				"com.skapp.community.leaveplanner.repository", "com.skapp.community.timeplanner.repository",
+				"com.skapp.community.okrplanner.repository", "com.skapp.community.crmplanner.repository" })
 public class TestSkappApplication implements AsyncConfigurer {
 
 }
