@@ -20,19 +20,14 @@ interface Params {
   searchKeyword?: string;
 }
 const fetchCompanyMetrics = async ({ page, size, searchKeyword }: Params) => {
-  try {
-    const response = await authFetch.get(companyEndpoints.GET_COMPANY_METRICS, {
-      params: {
-        page,
-        size,
-        ...(searchKeyword ? { searchKeyword } : {})
-      }
-    });
-    return response?.data as CrmCompanyMetricsResponseType;
-  } catch (error) {
-    console.error("Error fetching companies:", error);
-    throw error;
-  }
+  const response = await authFetch.get(companyEndpoints.GET_COMPANY_METRICS, {
+    params: {
+      page,
+      size,
+      ...(searchKeyword ? { searchKeyword } : {})
+    }
+  });
+  return response?.data?.results?.[0] as CrmCompanyMetricsResponseType;
 };
 
 export const useGetCompanyMetrics = (

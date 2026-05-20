@@ -50,10 +50,10 @@ public class CrmCompanyController {
 			description = "Returns all details related to company info, tasks and deals")
 	@GetMapping("/metrics")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<PageDto> getCompanyMetrics(@RequestParam(defaultValue = "0") int page,
+	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "8") int size, @RequestParam(required = false) String searchKeyword) {
 		Pageable pageable = PageRequest.of(page, size);
-		PageDto responseDto = companyService.getCompanyMetrics(searchKeyword, pageable);
+		ResponseEntityDto responseDto = companyService.getCompanyMetrics(searchKeyword, pageable);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 

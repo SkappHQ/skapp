@@ -12,6 +12,6 @@ public interface CrmCompanyService {
 
 	ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany);
 
-	PageDto getCompanyMetrics(String searchKeyword, Pageable pageable);
+	ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable);
 
 }

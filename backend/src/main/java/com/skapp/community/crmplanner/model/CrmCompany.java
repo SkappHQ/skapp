@@ -46,10 +46,10 @@ public class CrmCompany extends Auditable<String> {
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted = false;
 
-	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "company")
 	private List<CrmTask> tasks;
 
-	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "company")
 	private List<CrmDeal> deals;
 
 }

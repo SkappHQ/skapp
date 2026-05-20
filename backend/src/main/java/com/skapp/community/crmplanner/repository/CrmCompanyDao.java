@@ -10,8 +10,6 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 @Repository
 public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long> {
 
-	Page<CrmCompany> findByIsDeletedFalse(Pageable pageable);
-
 	Page<CrmCompany> findByIsDeletedFalseAndNameContainingIgnoreCase(String name, Pageable pageable);
 
 	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);

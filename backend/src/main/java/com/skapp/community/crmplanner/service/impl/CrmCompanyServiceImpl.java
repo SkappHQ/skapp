@@ -76,7 +76,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	}
 
 	@Override
-	public PageDto getCompanyMetrics(String searchKeyword, Pageable pageable) {
+	public ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable) {
 		log.info("getCompanyMetrics: execution started");
 		Page<CrmCompanyMetricsDto> page = crmCompanyRepository.getCompanyMetrics(pageable, searchKeyword);
 
@@ -87,7 +87,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		response.setTotalPages(page.getTotalPages());
 		log.info("getCompanyMetrics: execution ended");
 
-		return response;
+		return new ResponseEntityDto(false, response);
 	}
 
 }
