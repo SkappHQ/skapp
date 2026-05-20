@@ -11,11 +11,12 @@ import { OptionType } from "~community/common/types/CommonTypes";
 import {
   useDeleteUser,
   useGetSearchedEmployees,
-  useGetSupervisorRoles,
+  useGetSupervisedEmployeesAndTeams,
   useTerminateUser,
   useTransferSupervisors
 } from "~community/people/api/PeopleApi";
 import SupervisorReassignmentModalSection from "~community/people/components/molecules/SupervisorReassignmentModalSection/SupervisorReassignmentModalSection";
+import { usePeopleStore } from "~community/people/store/store";
 import {
   SupervisorReassignmentActionType,
   TransferSupervisorsPayload
@@ -26,22 +27,25 @@ interface SupervisorReassignmentModalProps {
   isOpen: boolean;
   onCancel: () => void;
   employeeId: number;
-  employeeName: string | undefined;
   actionType: SupervisorReassignmentActionType;
   onActionSuccess: () => void;
 }
-
 const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   isOpen,
   onCancel,
   employeeId,
-  employeeName,
   actionType,
   onActionSuccess
 }) => {
   const translateText = useTranslator("peopleModule", "supervisorReassignment");
   const { setToastMessage } = useToast();
   const router = useRouter();
+
+  const employee = usePeopleStore((state) => state.employee);
+  const employeeName = concatStrings([
+    employee?.personal?.general?.firstName as string,
+    employee?.personal?.general?.lastName as string
+  ]).trim();
 
   const [primarySupervisorAssignments, setPrimarySupervisorAssignments] =
     useState<Record<number, OptionType>>({});
@@ -52,7 +56,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: supervisorRoles, isLoading: isSupervisorRolesLoading } =
-    useGetSupervisorRoles(employeeId, isOpen);
+    useGetSupervisedEmployeesAndTeams(employeeId, isOpen);
   const { data: searchedEmployees, isLoading: isSearchLoading } =
     useGetSearchedEmployees(searchTerm);
 
@@ -205,6 +209,48 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       ? translateText(["proceedAndTerminateButton"])
       : translateText(["proceedAndDeleteButton"]);
 
+  const handlePrimarySupervisorMouseDown = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    employee: any,
+    supervisedEmployeeId: number
+  ) => {
+    e.preventDefault();
+    handleSelectPrimarySupervisor(
+      employee.employeeId,
+      concatStrings([employee.firstName, employee.lastName]).trim(),
+      supervisedEmployeeId
+    );
+  };
+
+  const handleTeamSupervisorMouseDown = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    employee: any,
+    teamId: number
+  ) => {
+    e.preventDefault();
+    handleSelectTeamSupervisor(
+      employee.employeeId,
+      concatStrings([employee.firstName, employee.lastName]).trim(),
+      teamId
+    );
+  };
+
+  const handleRemovePrimarySupervisor = (supervisedEmployeeId: number) => {
+    setPrimarySupervisorAssignments((prev) => {
+      const next = { ...prev };
+      delete next[supervisedEmployeeId];
+      return next;
+    });
+  };
+
+  const handleRemoveTeamSupervisor = (teamId: number) => {
+    setTeamSupervisorAssignments((prev) => {
+      const next = { ...prev };
+      delete next[teamId];
+      return next;
+    });
+  };
+
   const modalContent = (
     <div className="flex flex-col gap-6 w-full">
       <div className="flex flex-col gap-4">
@@ -238,17 +284,13 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
                       key={employee.employeeId}
                       type="button"
                       className="w-full text-left"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        handleSelectPrimarySupervisor(
-                          employee.employeeId,
-                          concatStrings([
-                            employee.firstName,
-                            employee.lastName
-                          ]).trim(),
+                      onMouseDown={(e) =>
+                        handlePrimarySupervisorMouseDown(
+                          e,
+                          employee,
                           supervisedEmployeeId
-                        );
-                      }}
+                        )
+                      }
                     >
                       {concatStrings([
                         employee.firstName,
@@ -262,13 +304,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               removeAriaLabel={translateText(["removeAssignment"])}
               onBlur={handleDropdownBlur}
               onSearch={setSearchTerm}
-              onRemove={(supervisedEmployeeId) =>
-                setPrimarySupervisorAssignments((prev) => {
-                  const next = { ...prev };
-                  delete next[supervisedEmployeeId];
-                  return next;
-                })
-              }
+              onRemove={handleRemovePrimarySupervisor}
             />
           )}
 
@@ -288,17 +324,9 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
                     key={employee.employeeId}
                     type="button"
                     className="w-full text-left"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSelectTeamSupervisor(
-                        employee.employeeId,
-                        concatStrings([
-                          employee.firstName,
-                          employee.lastName
-                        ]).trim(),
-                        teamId
-                      );
-                    }}
+                    onMouseDown={(e) =>
+                      handleTeamSupervisorMouseDown(e, employee, teamId)
+                    }
                   >
                     {concatStrings([
                       employee.firstName,
@@ -312,13 +340,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               removeAriaLabel={translateText(["removeAssignment"])}
               onBlur={handleDropdownBlur}
               onSearch={setSearchTerm}
-              onRemove={(teamId) =>
-                setTeamSupervisorAssignments((prev) => {
-                  const next = { ...prev };
-                  delete next[teamId];
-                  return next;
-                })
-              }
+              onRemove={handleRemoveTeamSupervisor}
             />
           )}
         </div>

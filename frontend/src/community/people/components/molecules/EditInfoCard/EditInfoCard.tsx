@@ -26,7 +26,7 @@ import {
   getTimeElapsedSinceDate
 } from "~community/common/utils/dateTimeUtils";
 import { EIGHTY_PERCENT } from "~community/common/utils/getConstants";
-import { useGetSupervisorRoles } from "~community/people/api/PeopleApi";
+import { useGetSupervisedEmployeesAndTeams } from "~community/people/api/PeopleApi";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
 import { AccountStatusEnums } from "~community/people/enums/DirectoryEnums";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
@@ -99,7 +99,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
 
   const { setToastMessage } = useToast();
 
-  const { refetch: refetchSupervisorRoles } = useGetSupervisorRoles(
+  const { refetch: refetchSupervisorRoles } = useGetSupervisedEmployeesAndTeams(
     Number(employeeId)
   );
 

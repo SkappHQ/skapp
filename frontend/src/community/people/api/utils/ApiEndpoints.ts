@@ -32,7 +32,7 @@ export const peoplesEndpoints = {
     `${moduleAPIPath.PEOPLE}/${employeeId}/has-supervisory-roles`,
   EXPORT_PEOPLE_DIRECTORY: `/people/employees/export`,
   GET_SUPERVISOR_ROLES: (userId: number) =>
-    `${moduleAPIPath.PEOPLE}/user/${userId}/primary-supervisors-team-supervisors`,
+    `${moduleAPIPath.PEOPLE}/user/${userId}/supervised-employees-teams`,
   TRANSFER_SUPERVISORS: (userId: number) =>
     `${moduleAPIPath.PEOPLE}/user/${userId}/transfer-supervisors`
 };

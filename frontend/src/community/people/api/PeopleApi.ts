@@ -592,19 +592,11 @@ export const useTerminateUser = (
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId))
-      });
-      queryClient
-        .invalidateQueries({
-          queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
-        })
-        .catch(rejects);
-      queryClient
-        .invalidateQueries({
-          queryKey: [peopleQueryKeys.SUPERVISED_BY_ME]
-        })
-        .catch(rejects);
+      [
+        peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
+        peopleQueryKeys.HAS_SUPERVISOR_ROLES,
+        [peopleQueryKeys.SUPERVISED_BY_ME]
+      ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
     onError
@@ -706,19 +698,11 @@ export const useDeleteUser = (
       return authFetch.patch(peoplesEndpoints.DELETE_USER(employeeId));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId))
-      });
-      queryClient
-        .invalidateQueries({
-          queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
-        })
-        .catch(rejects);
-      queryClient
-        .invalidateQueries({
-          queryKey: [peopleQueryKeys.SUPERVISED_BY_ME]
-        })
-        .catch(rejects);
+      [
+        peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
+        peopleQueryKeys.HAS_SUPERVISOR_ROLES,
+        [peopleQueryKeys.SUPERVISED_BY_ME]
+      ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
     onError
@@ -846,7 +830,7 @@ export const useEditEmployee = (employeeId: string) => {
   });
 };
 
-export const useGetSupervisorRoles = (
+export const useGetSupervisedEmployeesAndTeams = (
   userId: number,
   enabled: boolean = true
 ): UseQueryResult<SupervisorRolesData> => {
@@ -869,12 +853,10 @@ export const useTransferSupervisors = (
     mutationFn: (payload: TransferSupervisorsPayload) =>
       authFetch.patch(peoplesEndpoints.TRANSFER_SUPERVISORS(userId), payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId)
-      });
-      queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
-      });
+      [
+        peopleQueryKeys.SUPERVISOR_ROLES(userId),
+        peopleQueryKeys.HAS_SUPERVISOR_ROLES
+      ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
     onError
