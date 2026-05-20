@@ -711,7 +711,7 @@ public class LeaveServiceImpl implements LeaveService {
 	}
 
 	private void validateAndFilterTeams(List<Long> teamIds) {
-		if (teamIds == null || (teamIds.size() == 1 && teamIds.contains(-1L))) {
+		if (teamIds == null || teamIds.isEmpty() || (teamIds.size() == 1 && teamIds.contains(-1L))) {
 			return;
 		}
 
