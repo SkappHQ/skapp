@@ -88,7 +88,7 @@ const ContactDetailPanel: FC = () => {
             ) : (
               <div
                 id="contact-panel-title"
-                className="flex flex-col gap-[8px] items-start"
+                className="flex flex-col gap-[8px] items-start ml-[24px]"
               >
                 <p className="font-bold text-[24px] leading-[24px] tracking-[0.0703px] text-black">
                   {contact?.name ?? ""}
@@ -109,7 +109,7 @@ const ContactDetailPanel: FC = () => {
             />
           }
         >
-          <div className="flex flex-col gap-6 pb-4">
+          <div className="flex flex-col gap-6 pb-4 ml-[24px]">
             {/* Contact info */}
             <ContactHeader
               contact={contact ?? undefined}
