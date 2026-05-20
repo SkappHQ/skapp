@@ -3,7 +3,6 @@ import { FC } from "react";
 import SupervisorReassignmentModal from "~community/people/components/organisms/SupervisorReassignmentModal/SupervisorReassignmentModal";
 import { usePeopleStore } from "~community/people/store/store";
 import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
-import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
 import UserDeletionConfirmationModal from "../UserDeletionConfirmationModal/UserDeletionConfirmationModal";
 
