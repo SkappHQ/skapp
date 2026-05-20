@@ -1,6 +1,5 @@
 import { InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { useEffect, useMemo, useRef, useState } from "react";
-
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 
 interface CompanySearchFieldProps {
@@ -30,9 +29,9 @@ const CompanySearchField = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const filteredResults = useMemo(() => {
-    return options.filter((o) =>
-      o.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return options
+      .filter((o) => o.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .slice(0, 4);
   }, [options, searchTerm]);
 
   // Close dropdown when clicking outside
