@@ -43,8 +43,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
 
   const employee = usePeopleStore((state) => state.employee);
   const employeeName = concatStrings([
-    employee?.personal?.general?.firstName as string,
-    employee?.personal?.general?.lastName as string
+    employee?.personal?.general?.firstName as string
   ]).trim();
 
   const [primarySupervisorAssignments, setPrimarySupervisorAssignments] =
@@ -300,9 +299,6 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
                     </button>
                   ))
               }
-              placeholder={translateText(["selectSupervisorPlaceholder"])}
-              noResultsText={translateText(["noEmployeesFound"])}
-              removeAriaLabel={translateText(["removeAssignment"])}
               onBlur={handleDropdownBlur}
               onSearch={setSearchTerm}
               onRemove={handleRemovePrimarySupervisor}
@@ -337,9 +333,6 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
                   </button>
                 ))
               }
-              placeholder={translateText(["selectSupervisorPlaceholder"])}
-              noResultsText={translateText(["noEmployeesFound"])}
-              removeAriaLabel={translateText(["removeAssignment"])}
               onBlur={handleDropdownBlur}
               onSearch={setSearchTerm}
               onRemove={handleRemoveTeamSupervisor}

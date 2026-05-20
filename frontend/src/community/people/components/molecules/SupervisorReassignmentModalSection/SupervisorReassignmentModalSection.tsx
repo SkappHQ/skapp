@@ -21,9 +21,6 @@ interface SupervisorReassignmentModalSectionProps {
   isSearchLoading: boolean;
   assignments: Record<number, OptionType>;
   getResults: (entityId: number) => ReactNode[];
-  placeholder: string;
-  noResultsText: string;
-  removeAriaLabel: string;
   onBlur: () => void;
   onSearch: (term: string) => void;
   onRemove: (entityId: number) => void;
@@ -39,9 +36,6 @@ const SupervisorReassignmentModalSection: FC<
   isSearchLoading,
   assignments,
   getResults,
-  placeholder,
-  noResultsText,
-  removeAriaLabel,
   onBlur,
   onSearch,
   onRemove
@@ -49,6 +43,8 @@ const SupervisorReassignmentModalSection: FC<
   const [searchTerm, setSearchTerm] = useState<string>("");
   const translateText = useTranslator("peopleModule", "supervisorReassignment");
   const translateConfig = useTranslator("configurations", "workLocation");
+  const removeButtonAriaLabel = translateText(["removeAssignment"]);
+  const placeholderText = translateText(["selectSupervisorPlaceholder"]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -126,7 +122,7 @@ const SupervisorReassignmentModalSection: FC<
                     hasCard={false}
                     className="w-full!"
                     onBlur={handleBlur}
-                    placeholder={placeholder}
+                    placeholder={placeholderText}
                     onSearch={handleSearch}
                     accessibilityTexts={{
                       noResultsFoundText: getNoResultsText()
@@ -140,7 +136,7 @@ const SupervisorReassignmentModalSection: FC<
                     </span>
                     <button
                       type="button"
-                      aria-label={removeAriaLabel}
+                      aria-label={removeButtonAriaLabel}
                       className="shrink-0 text-secondary-icon hover:text-secondary-text leading-none"
                       onClick={() => onRemove(id)}
                     >
