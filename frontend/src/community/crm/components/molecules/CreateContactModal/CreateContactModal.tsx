@@ -7,6 +7,8 @@ import {
 import { useFormik } from "formik";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
+// import { isValidPhoneNumber } from "~community/common/regex/regexPatterns";
+// Use InputField from @rootcodelabs/skapp-ui only
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -91,6 +93,7 @@ const CreateContactModal = () => {
     email: Yup.string()
       .required(translateText(["emailRequired"]))
       .email(translateText(["emailInvalid"]))
+    // Add phone validation here if needed
   });
 
   const { mutate, isPending } = useCreateContact({
@@ -171,22 +174,30 @@ const CreateContactModal = () => {
       <InputField
         name="name"
         label={translateText(["contactName"])}
+        value={values.name || ""}
         placeholder={translateText(["enterContactName"])}
-        value={values.name}
+        onChange={async (e: ChangeEvent<HTMLInputElement>) => {
+          handleChange(e);
+        }}
         errorMessage={errors.name || ""}
+        state={errors.name ? "error" : "default"}
+        aria-label={translateText(["contactName"])}
         required
-        onChange={handleChange}
         fullWidth
       />
 
       <InputField
         name="email"
         label={translateText(["email"])}
+        value={values.email || ""}
         placeholder={translateText(["enterEmail"])}
-        value={values.email}
+        onChange={async (e: ChangeEvent<HTMLInputElement>) => {
+          handleChange(e);
+        }}
         errorMessage={errors.email || ""}
+        state={errors.email ? "error" : "default"}
+        aria-label={translateText(["email"])}
         required
-        onChange={handleChange}
         fullWidth
       />
 
@@ -207,9 +218,14 @@ const CreateContactModal = () => {
       <InputField
         name="contactNumber"
         label={translateText(["contactNo"])}
+        value={values.contactNumber || ""}
         placeholder={translateText(["enterContactNo"])}
-        value={values.contactNumber}
-        onChange={handleChange}
+        onChange={async (e: ChangeEvent<HTMLInputElement>) => {
+          handleChange(e);
+        }}
+        errorMessage={errors.contactNumber || ""}
+        state={errors.contactNumber ? "error" : "default"}
+        aria-label={translateText(["contactNo"])}
         fullWidth
       />
 
@@ -240,7 +256,20 @@ const CreateContactModal = () => {
           iconPosition="end"
           type="button"
           disabled={isPending}
-          onClick={() => handleSubmit()}
+          onClick={async () => {
+            // Mark all fields as touched
+            formik.setTouched({
+              name: true,
+              email: true,
+              company: true,
+              contactNumber: true,
+              ownerId: true
+            });
+            const errors = await formik.validateForm();
+            if (Object.keys(errors).length === 0) {
+              handleSubmit();
+            }
+          }}
         >
           {translateText(["save"])}
         </ButtonV2>
