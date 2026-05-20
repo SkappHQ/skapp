@@ -110,6 +110,7 @@ export const CompanyTable: React.FC = () => {
       render(openValue) {
         return formatCurrency(openValue);
       },
+      className: "justify-end text-right",
       width: "20%"
     },
     {
@@ -123,6 +124,7 @@ export const CompanyTable: React.FC = () => {
       render(value, row) {
         return formatAccountValue(value, row);
       },
+      className: "justify-end text-right",
       width: "20%"
     }
   ];

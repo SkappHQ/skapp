@@ -8,8 +8,8 @@ export const formatDealAmount = (amount: string | null): string => {
   if (!amount) return "—";
   const num = parseFloat(amount);
   if (isNaN(num)) return "—";
-  if (num === 0) return "$0";
-  return num >= 1000 ? `$${(num / 1000).toFixed(0)}k` : `$${num}`;
+  if (num === 0) return "0";
+  return num >= 1000 ? `${(num / 1000).toFixed(0)}k` : `$${num}`;
 };
 
 /** Full amount without abbreviation — used in deal accordion cards */

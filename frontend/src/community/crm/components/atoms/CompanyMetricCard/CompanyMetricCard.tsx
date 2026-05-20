@@ -24,11 +24,6 @@ const CompanyMetricCard: FC<Props> = ({ title, amount, chip }) => {
         <p className="text-base font-semibold leading-6 text-black">
           {(() => {
             if (typeof amount === "number") return formatCurrency(amount);
-            if (typeof amount === "string") {
-              if (amount.startsWith("$")) return amount;
-              const parsed = parseFloat(amount.replace(/[^0-9.-]+/g, ""));
-              return Number.isNaN(parsed) ? amount : formatCurrency(parsed);
-            }
             return String(amount);
           })()}
         </p>

@@ -6,8 +6,8 @@ import { CrmCompanyMetricsType } from "../types/CommonTypes";
 type NumericValue = string | number | null;
 
 export const formatCurrency = (value: NumericValue): ReactNode => {
-  if (value == null || value === 0) return "-";
-  return <div className="flex items-baseline tabular-nums">{`$${value}`}</div>;
+  if (value == null || value === 0) return <div className="text-right">-</div>;
+  return <div className="flex items-baseline tabular-nums justify-end">{`$${value}`}</div>;
 };
 
 export const formatPhoneNumber = (value: NumericValue): ReactNode => {
@@ -37,9 +37,9 @@ export const formatAccountValue = (
   value: NumericValue,
   row: CrmCompanyMetricsType
 ): ReactNode => {
-  if (value == null || value === 0) return "-";
+  if (value == null || value === 0) return <div className="text-right">-</div>;
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 text-right">
       <div className="text-gray-900">{`$${value}`}</div>
       <div className="text-sm text-slate-600">{`${row.closedDeals} Deals closed`}</div>
     </div>
