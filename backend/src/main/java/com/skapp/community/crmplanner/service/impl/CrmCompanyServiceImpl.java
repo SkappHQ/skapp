@@ -90,4 +90,19 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		return new ResponseEntityDto(false, response);
 	}
 
+	@Override
+	public ResponseEntityDto deleteCompany(Long id) {
+		log.info("deleteCompany: execution started");
+
+		CrmCompany company = crmCompanyDao.findById(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+
+		company.setIsDeleted(true);
+		CrmCompanyResponseDto responseDto = crmCompanyMapper
+			.crmCompanyToCrmCompanyResponseDto(crmCompanyDao.save(company));
+
+		log.info("deleteCompany: execution ended successfully");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
 }

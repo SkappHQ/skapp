@@ -5,7 +5,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,8 +31,7 @@ public class CrmCompanyController {
 
 	private final CrmCompanyService companyService;
 
-	@Operation(summary = "Check if a company name exists",
-			description = "Check if a company with the given name already exists")
+	@Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
 	@GetMapping("/exists")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> checkCompanyNameExists(@RequestParam String name) {
@@ -46,13 +47,20 @@ public class CrmCompanyController {
 		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 	}
 
-	@Operation(summary = "Get company metrics",
-			description = "Returns all details related to company info, tasks and deals")
+	@Operation(summary = "Get company metrics", description = "Returns all details related to company info, tasks and deals")
 	@GetMapping("/metrics")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {
 		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
 		ResponseEntityDto responseDto = companyService.getCompanyMetrics(requestDto.getSearchKeyword(), pageable);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Delete a company by ID", description = "Delete a company by ID")
+	@DeleteMapping("/{id}/delete")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> deleteCompany(@PathVariable Long id) {
+		ResponseEntityDto responseDto = companyService.deleteCompany(id);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
