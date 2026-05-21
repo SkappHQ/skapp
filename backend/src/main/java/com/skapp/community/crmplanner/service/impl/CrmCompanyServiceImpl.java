@@ -22,7 +22,6 @@ import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
@@ -31,15 +30,21 @@ import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
-	@Qualifier("crmCompanyRepositoryImpl")
 	private final CrmCompanyRepository crmCompanyRepository;
 
 	private final CrmMapper crmCompanyMapper;
+
+	public CrmCompanyServiceImpl(CrmCompanyDao crmCompanyDao,
+			@Qualifier("crmCompanyRepositoryImpl") CrmCompanyRepository crmCompanyRepository,
+			CrmMapper crmCompanyMapper) {
+		this.crmCompanyDao = crmCompanyDao;
+		this.crmCompanyRepository = crmCompanyRepository;
+		this.crmCompanyMapper = crmCompanyMapper;
+	}
 
 	@Override
 	@Transactional(readOnly = true)
