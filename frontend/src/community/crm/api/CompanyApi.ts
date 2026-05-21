@@ -14,17 +14,17 @@ import {
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
-interface Params {
-  page?: number;
-  size?: number;
-  searchKeyword?: string;
+interface CompanyMetricSearchParams {
+  page: number;
+  size: number;
+  searchKeyword: string;
 }
-const fetchCompanyMetrics = async ({ page, size, searchKeyword }: Params) => {
+const fetchCompanyMetrics = async ({ page, size, searchKeyword }: CompanyMetricSearchParams) => {
   const response = await authFetch.get(companyEndpoints.GET_COMPANY_METRICS, {
     params: {
       page,
       size,
-      ...(searchKeyword ? { searchKeyword } : {})
+      searchKeyword
     }
   });
   return response?.data?.results?.[0] as CrmCompanyMetricsResponseType;
