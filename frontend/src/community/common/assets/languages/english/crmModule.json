@@ -27,7 +27,7 @@
         "industry": "Select industry"
       },
       "buttons": {
-        "addCompany": "Save",
+        "save": "Save",
         "cancelAddCompany": "Cancel"
       },
       "ariaLabels": {
@@ -36,7 +36,7 @@
         "website": "Website",
         "address": "Address",
         "industry": "Industry",
-        "addCompany": "Save",
+        "save": "Save",
         "cancelAddCompany": "Cancel Add Company"
       },
       "validations": {
