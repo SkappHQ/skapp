@@ -8,8 +8,7 @@ import {
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 import {
-  CrmCompanyCreatePayload,
-  CrmCompanyMetricsResponseType
+  CrmCompanyCreatePayload
 } from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
@@ -27,12 +26,12 @@ const fetchCompanyMetrics = async ({ page, size, searchKeyword }: CompanyMetricS
       searchKeyword
     }
   });
-  return response?.data?.results?.[0] as CrmCompanyMetricsResponseType;
+  return response?.data?.results?.[0];
 };
 
 export const useGetCompanyMetrics = (
   searchKeyword: string,
-  limit: number = 8
+  limit: number
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,

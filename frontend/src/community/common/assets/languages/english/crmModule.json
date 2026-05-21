@@ -55,6 +55,7 @@
       "search": "Search company",
       "infiniteScrollLoadingMessage": "Loading companies...",
       "closedDealsLabel": "Deals closed",
+      "overdueLabel": "overdue",
       "emptyDataState": {
         "title": "No companies available.",
         "description": "Create a company to get started."

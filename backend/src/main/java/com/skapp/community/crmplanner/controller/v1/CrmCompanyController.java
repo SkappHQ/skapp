@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyMetricRequestDto;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,11 +50,9 @@ public class CrmCompanyController {
 			description = "Returns all details related to company info, tasks and deals")
 	@GetMapping("/metrics")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "8") int size, @RequestParam(required = false) String searchKeyword) {
-		int clampedSize = Math.min(size, 100);
-		Pageable pageable = PageRequest.of(page, clampedSize);
-		ResponseEntityDto responseDto = companyService.getCompanyMetrics(searchKeyword, pageable);
+	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {
+		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
+		ResponseEntityDto responseDto = companyService.getCompanyMetrics(requestDto.getSearchKeyword(), pageable);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 

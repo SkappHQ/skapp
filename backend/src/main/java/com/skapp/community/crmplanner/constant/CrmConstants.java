@@ -13,8 +13,4 @@ public class CrmConstants {
 
 	public static final int PHONE_MAX_LENGTH = 15;
 
-	public static final String WON_STAGE_TYPE = "WON";
-
-	public static final Long DEFAULT_WON_STAGE_ID = 5L;
-
 }

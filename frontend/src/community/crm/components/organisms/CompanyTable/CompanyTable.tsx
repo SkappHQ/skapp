@@ -16,7 +16,7 @@ import { useGetCompanyMetrics } from "~community/crm/api/CompanyApi";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 import {
-  formatCurrency,
+  formatValue,
   formatPhoneNumber,
   formatTasks
 } from "~community/crm/utils/companyTableHelpers";
@@ -36,7 +36,7 @@ export const CompanyTable: React.FC = () => {
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
   const companies = useMemo(() => {
-    return data?.pages.flatMap((page) => page?.items ?? []) ?? [];
+    return data?.pages.flatMap((page) => page?.items ?? []);
   }, [data]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +72,7 @@ export const CompanyTable: React.FC = () => {
               <Label
                 backgroundColor="bg-semantic-red-background"
                 textColor="text-semantic-red-text"
-              >{`${row.overdue} overdue`}
+              >{`${row.overdue} ${translateText(["table", "overdueLabel"])}`}
               </Label>
             )}
           </div>
@@ -85,7 +85,7 @@ export const CompanyTable: React.FC = () => {
       header: translateText(["table", "columns", "pipelineHeader"]),
       key: "openValue",
       render(openValue) {
-        return (<div className="flex justify-end" >{formatCurrency(openValue)}</div>);
+        return (<div className="flex justify-end" >{formatValue(openValue)}</div>);
       },
       className: "text-right",
       width: "20%"
@@ -101,7 +101,7 @@ export const CompanyTable: React.FC = () => {
       render(value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{formatCurrency(value)}</div>
+            <div>{formatValue(value)}</div>
             <div className="subtitle4 text-secondary-text" >
               {row.closedDeals > 0 ? `${row.closedDeals} ${translateText(["table", "closedDealsLabel"])}` : ""}
             </div>
@@ -147,11 +147,11 @@ export const CompanyTable: React.FC = () => {
 
       <Table
         columns={columns as TableColumn<any>[]}
-        data={companies}
+        data={companies ?? []}
         emptyStateType={emptyStateType}
-        isLoading={isLoading && companies.length === 0}
+        isLoading={isLoading && companies?.length === 0}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-        height="33rem"
+        height="34.5rem"
         hasMore={hasNextPage}
         onLoadMore={loadMore}
         infiniteScrollLoadingMessage={translateText([

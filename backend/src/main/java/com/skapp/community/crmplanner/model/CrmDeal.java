@@ -15,10 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
-import org.hibernate.annotations.Formula;
 
 @Entity
 @Getter
@@ -51,9 +48,6 @@ public class CrmDeal extends Auditable<String> {
 
 	@Column(name = "amount")
 	private String amount;
-
-	@Formula("CAST(amount AS DECIMAL(15,2))")
-	private BigDecimal amountNumeric;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "company_id")
