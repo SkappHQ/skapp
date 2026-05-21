@@ -1,8 +1,10 @@
 package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
+import com.skapp.community.crmplanner.util.CrmValidations;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -33,34 +35,30 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 		List<Predicate> predicates = buildPredicates(cb, company, filterDto);
 		query.where(predicates.toArray(new Predicate[0]));
-		query.orderBy(cb.asc(cb.lower(company.<String>get("name"))));
+		query.orderBy(cb.asc(cb.lower(company.get(CrmCompany_.name))));
 
 		TypedQuery<CrmCompany> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
 		typedQuery.setMaxResults(pageable.getPageSize());
 
-		return new PageImpl<>(typedQuery.getResultList(), pageable, getTotalCount(cb, filterDto));
+		return new PageImpl<>(typedQuery.getResultList(), pageable, getTotalCompanyCount(cb, filterDto));
 	}
 
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<CrmCompany> company,
 			CrmCompanyFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(cb.isFalse(company.<Boolean>get("isDeleted")));
+		predicates.add(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escaped = escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
-			predicates.add(cb.like(cb.lower(company.<String>get("name")), "%" + escaped + "%", '\\'));
+			String escaped = CrmValidations.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			predicates.add(cb.like(cb.lower(company.get(CrmCompany_.name)), "%" + escaped + "%", '\\'));
 		}
 
 		return predicates;
 	}
 
-	private String escapeLikePattern(String input) {
-		return input.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
-	}
-
-	private Long getTotalCount(CriteriaBuilder cb, CrmCompanyFilterDto filterDto) {
+	private Long getTotalCompanyCount(CriteriaBuilder cb, CrmCompanyFilterDto filterDto) {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmCompany> company = countQuery.from(CrmCompany.class);
 		countQuery.select(cb.count(company));

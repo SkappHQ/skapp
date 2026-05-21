@@ -10,9 +10,16 @@ import lombok.experimental.UtilityClass;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Pattern;
 
 @UtilityClass
 public class CrmValidations {
+
+	private static final Pattern LIKE_WILDCARD_PATTERN = Pattern.compile("([\\\\%_])");
+
+	public static String escapeLikePattern(String input) {
+		return LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
+	}
 
 	public static void validateContactName(String name) {
 		if (name == null || name.isBlank()) {

@@ -88,10 +88,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto getContactOwners(CrmContactOwnerFilterDto filterDto) {
 		log.info("getContactOwners: execution started");
 
-		int page = Math.max(0, filterDto.getPage());
-		int size = Math.max(1, Math.min(100, filterDto.getSize()));
-
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<Employee> contactOwnerPage = crmContactOwnerRepository.findContactOwners(filterDto, pageable);
 
 		List<CrmContactOwnerResponseDto> ownerResponseDtos = contactOwnerPage.getContent()
@@ -170,7 +167,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 	}
 
 	private String normalizeNullableText(String value) {
-		return value == null || value.trim().isEmpty() ? null : value.trim();
+		return value == null || value.isEmpty() ? null : value;
 	}
 
 }
