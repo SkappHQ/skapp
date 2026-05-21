@@ -59,19 +59,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmValidations.validateContactName(requestDto.getName());
 		CrmValidations.validateContactEmail(requestDto.getEmail());
 		CrmValidations.validateContactNumber(requestDto.getContactNumber());
+		CrmValidations.validateOwnerId(requestDto.getOwnerId());
+		CrmValidations.validateCompanyId(requestDto.getCompanyId());
 
-		if (requestDto.getOwnerId() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
-		}
-		if (requestDto.getCompanyId() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND);
-		}
-
-		if (checkContactExists(requestDto.getEmail())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
-		}
-
-		CrmCompany company = resolveCompany(requestDto.getCompanyId());
+		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
 		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
@@ -108,11 +99,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactOwners: execution ended");
 		return new ResponseEntityDto(false, pageDto);
-	}
-
-	private CrmCompany resolveCompany(Long companyId) {
-		return crmCompanyDao.findByIdAndIsDeletedFalse(companyId)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 	}
 
 	private Employee resolveOwner(Long ownerId, User currentUser) {
@@ -156,10 +142,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		return owner;
-	}
-
-	private boolean checkContactExists(String email) {
-		return crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(email.trim().toLowerCase(Locale.ROOT));
 	}
 
 	private String normalizeNullableText(String value) {

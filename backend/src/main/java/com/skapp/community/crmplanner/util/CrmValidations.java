@@ -18,6 +18,18 @@ public class CrmValidations {
 
 	private static final Pattern LIKE_WILDCARD_PATTERN = Pattern.compile("([\\\\%_])");
 
+	public static void validateOwnerId(Long ownerId) {
+		if (ownerId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+		}
+	}
+
+	public static void validateCompanyId(Long companyId) {
+		if (companyId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND);
+		}
+	}
+
 	public static void validateContactName(String name) {
 		if (name == null || name.isBlank()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_REQUIRED);
