@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,19 +26,17 @@ public class CrmContactController {
 
 	@Operation(summary = "Create CRM contact", description = "Creates a CRM contact and assigns an owner.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping
 	public ResponseEntity<ResponseEntityDto> createContact(
 			@RequestBody CrmContactCreateRequestDto requestDto) {
-
 		ResponseEntityDto response = contactService.createContact(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@Operation(summary = "Get CRM owners", description = "Retrieves active CRM users who can be assigned as owners.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_MANAGER')")
-	@GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping("/owners")
 	public ResponseEntity<ResponseEntityDto> getOwners(CrmContactOwnerFilterDto filterDto) {
-
 		ResponseEntityDto response = contactService.getContactOwners(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

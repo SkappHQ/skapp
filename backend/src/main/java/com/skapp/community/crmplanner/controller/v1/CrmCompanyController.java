@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.controller.v1;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +33,7 @@ public class CrmCompanyController {
 	@Operation(summary = "Get CRM companies for lookup",
 			description = "Retrieves a paginated list of CRM companies (id + name) for use in dropdowns and contact forms.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	@GetMapping(value = "/lookup", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping("/lookup")
 	public ResponseEntity<ResponseEntityDto> getCompaniesLookup(CrmCompanyFilterDto filterDto) {
 		ResponseEntityDto response = companyService.getCompanies(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
