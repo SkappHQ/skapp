@@ -14,7 +14,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
@@ -78,7 +78,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	@Override
 	public ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable) {
 		log.info("getCompanyMetrics: execution started");
-		Page<CrmCompanyMetricsDto> page = crmCompanyRepository.getCompanyMetrics(pageable, searchKeyword);
+		Page<CrmCompanyMetricsResponseDto> page = crmCompanyRepository.getCompanyMetrics(pageable, searchKeyword);
 
 		PageDto response = new PageDto();
 		response.setItems(page.getContent());

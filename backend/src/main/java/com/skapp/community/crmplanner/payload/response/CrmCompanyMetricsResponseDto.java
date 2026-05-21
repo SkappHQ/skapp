@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CrmCompanyMetricsDto {
+public class CrmCompanyMetricsResponseDto {
 
 	private Long id;
 
