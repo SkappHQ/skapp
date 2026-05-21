@@ -14,7 +14,6 @@ export interface PriorityConfig {
 }
 
 export interface TaskTypeConfig {
-  bg: string;
   iconName: IconName;
 }
 
@@ -48,16 +47,15 @@ export type TaskTypeValue = (typeof TASK_TYPES)[number]["value"];
 export const getTaskTypeConfig = (typeName: string): TaskTypeConfig => {
   switch (typeName.toLowerCase()) {
     case "email":
-      return { bg: "#8e51ff", iconName: IconName.EMAIL_ICON };
+      return { iconName: IconName.ROUND_EMAIL_ICON };
     case "call":
-    case "phone":
-      return { bg: "#00bba7", iconName: IconName.LOCAL_PHONE_ICON };
+      return { iconName: IconName.ROUND_PHONE_ICON };
     case "meeting":
-      return { bg: "#3b82f6", iconName: IconName.CALENDAR_ICON };
+      return { iconName: IconName.ROUND_MEETING_ICON };
     case "other":
-      return { bg: "#6b7280", iconName: IconName.MORE_ICON };
+      return { iconName: IconName.ROUND_MORE_ICON };
     default:
-      return { bg: "#8e51ff", iconName: IconName.EMAIL_ICON };
+      return { iconName: IconName.ROUND_EMAIL_ICON };
   }
 };
 
@@ -76,11 +74,8 @@ export const TASK_TYPE_OPTIONS: TaskTypeOption[] = [
 ].map((t) => {
   const config = getTaskTypeConfig(t.value);
   const iconEl = (
-    <div
-      className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
-      style={{ backgroundColor: config.bg }}
-    >
-      <Icon name={config.iconName} fill="white" width="12" height="12" />
+    <div>
+      <Icon name={config.iconName} fill="white" width="20" height="20" />
     </div>
   );
   return {

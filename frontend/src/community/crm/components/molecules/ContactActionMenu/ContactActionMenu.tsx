@@ -5,6 +5,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
 
 import styles from "./styles";
+import DeleteButtonIcon from "~community/common/assets/Icons/DeleteButtonIcon";
 
 interface Props {
   editLabel: string;
@@ -95,7 +96,7 @@ const ContactActionMenu: FC<Props> = ({
             size="sm"
             isFullWidth
             iconPosition="start"
-            icon={<TrashIcon />}
+            icon={<DeleteButtonIcon fill={cls.deleteIconFill} />}
             role="menuitem"
             className={cls.deleteItem}
             onClick={handleDelete}

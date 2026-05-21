@@ -89,8 +89,8 @@ const TasksSection: FC<Props> = ({ contactId }) => {
   const { data, isLoading } = useGetTasksByContactId(contactId);
   const tasks: ContactTask[] = data ?? [];
   const { mutate: updateCompletion } = useUpdateTaskCompletion(
-    () => {},
-    () => {}
+    () => { },
+    () => { }
   );
   const handleToggleComplete = (id: number, isCompleted: boolean) => {
     updateCompletion({ id, isCompleted });
@@ -146,16 +146,11 @@ const TasksSection: FC<Props> = ({ contactId }) => {
                       }
                     />
 
-                    <div
-                      className={styles.typeIconCircle}
-                      style={{ backgroundColor: typeConfig.bg }}
-                      aria-hidden="true"
-                    >
+                    <div>
                       <Icon
                         name={typeConfig.iconName}
-                        fill="white"
-                        width="12"
-                        height="12"
+                        width="20"
+                        height="20"
                       />
                     </div>
 

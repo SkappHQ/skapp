@@ -11,7 +11,6 @@ const styles = {
   linkText:
     "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-[#2a61a0] underline",
   iconFill: "#68707F",
-  linkIconFill: "#2a61a0",
   endIconFill: "#2a61a0"
 };
 

@@ -6,6 +6,8 @@ import ContactInfoItem from "~community/crm/components/atoms/ContactInfoItem/Con
 import { ContactDetail } from "~community/crm/types/CommonTypes";
 
 import styles from "./styles";
+import { formatLastUpdated } from "~community/crm/utils/contactHeaderUtils";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface Props {
   contact?: ContactDetail;
@@ -14,34 +16,49 @@ interface Props {
 
 const ContactHeader: FC<Props> = ({ contact, isLoading }) => {
   const cls = styles;
+  const translateText = useTranslator(
+    "crmModule",
+    "contacts",
+    "contactDetailsPanel"
+  );
 
   return (
-    <div className={cls.wrapper}>
+    <div id="contact-panel-title" className={cls.wrapper}>
       {isLoading ? (
-        <div className={cls.infoSkeleton}>
-          <Skeleton width="60%" height={20} animation="wave" />
-          <Skeleton width="80%" height={20} animation="wave" />
-          <Skeleton width="70%" height={20} animation="wave" />
+        <div className="flex flex-col gap-[8px]">
+          <Skeleton width={180} height={28} animation="wave" />
+          <Skeleton width={120} height={16} animation="wave" />
         </div>
       ) : contact ? (
-        <div className={cls.infoRow}>
-          <ContactInfoItem icon={IconName.EMAIL_ICON} value={contact.email} />
+        <>
+          <div className={cls.contactHeader}>
+            <p className={cls.contactName}>
+              {contact.name}
+            </p>
+            <p className={cls.lastUpdated}>
+              {translateText(["lastUpdated"])} :{" "}
+              {formatLastUpdated(contact.lastContactedAt ?? null)}
+            </p>
+          </div>
+          <div className={cls.infoRow}>
+            <ContactInfoItem icon={IconName.EMAIL_ICON} value={contact.email} />
 
-          <ContactInfoItem
-            icon={IconName.LOCAL_PHONE_ICON}
-            value={contact.contactNumber}
-          />
-
-          {contact.company && (
             <ContactInfoItem
-              icon={IconName.BUILDING_ICON}
-              value={contact.company.name}
-              isLink={true}
-              linkHref={"#"}
-              endIcon={IconName.NEW_WINDOW_ICON}
+              icon={IconName.LOCAL_PHONE_ICON}
+              value={contact.contactNumber}
             />
-          )}
-        </div>
+
+            {contact.company && (
+              <ContactInfoItem
+                icon={IconName.BUILDING_ICON}
+                value={contact.company.name}
+                isLink={true}
+                linkHref={"#"}
+                endIcon={IconName.POP_OUT_ICON}
+              />
+            )}
+          </div>
+        </>
       ) : null}
     </div>
   );

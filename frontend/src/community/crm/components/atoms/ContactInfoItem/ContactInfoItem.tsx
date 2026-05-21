@@ -21,12 +21,11 @@ const ContactInfoItem: FC<Props> = ({
   endIcon
 }) => {
   const cls = styles;
-  const iconFill = isLink && linkHref ? cls.linkIconFill : cls.iconFill;
 
   const inner = (
     <>
       <span className={cls.iconWrapper}>
-        <Icon name={icon} fill={iconFill} width="20" height="20" />
+        <Icon name={icon} fill={cls.iconFill} width="20" height="20" />
       </span>
       {isLink && linkHref ? (
         <span className={cls.link}>
@@ -48,7 +47,7 @@ const ContactInfoItem: FC<Props> = ({
     </>
   );
 
-  if (isLink && linkHref) {
+  if (isLink) {
     return (
       <a
         href={linkHref}

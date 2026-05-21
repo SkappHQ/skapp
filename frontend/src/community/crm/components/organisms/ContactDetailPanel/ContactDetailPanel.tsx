@@ -1,4 +1,3 @@
-import { Skeleton } from "@mui/material";
 import { SidePanel } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
@@ -19,7 +18,6 @@ import EditContactModal from "~community/crm/components/molecules/EditContactMod
 import TasksSection from "~community/crm/components/molecules/TasksSection/TasksSection";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
-import { formatLastUpdated } from "~community/crm/utils/contactHeaderUtils";
 
 const DEFAULT_METRICS: CrmContactMetricsType = {
   totalRevenue: 0,
@@ -80,25 +78,10 @@ const ContactDetailPanel: FC = () => {
           width="xl"
           ariaLabelledBy="contact-panel-title"
           header={
-            isContactLoading ? (
-              <div className="flex flex-col gap-[8px]">
-                <Skeleton width={180} height={28} animation="wave" />
-                <Skeleton width={120} height={16} animation="wave" />
-              </div>
-            ) : (
-              <div
-                id="contact-panel-title"
-                className="flex flex-col gap-[8px] items-start"
-              >
-                <p className="font-bold text-[24px] leading-[24px] tracking-[0.0703px] text-black">
-                  {contact?.name ?? ""}
-                </p>
-                <p className="font-normal text-[14px] leading-[1.5] text-[#4a5565]">
-                  {translateText(["lastUpdated"])} :{" "}
-                  {formatLastUpdated(contact?.lastContactedAt ?? null)}
-                </p>
-              </div>
-            )
+            <ContactHeader
+              contact={contact ?? undefined}
+              isLoading={isContactLoading}
+            />
           }
           headerActions={
             <ContactActionMenu
@@ -110,12 +93,6 @@ const ContactDetailPanel: FC = () => {
           }
         >
           <div className="flex flex-col gap-6 pb-4">
-            {/* Contact info */}
-            <ContactHeader
-              contact={contact ?? undefined}
-              isLoading={isContactLoading}
-            />
-
             {/* Metrics */}
             {isMetricsLoading ? (
               <ContactMetricsSkeleton />

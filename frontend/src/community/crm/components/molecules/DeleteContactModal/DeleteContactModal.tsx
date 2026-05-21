@@ -1,4 +1,4 @@
-import { CloseIcon, SmallModal, TrashIcon } from "@rootcodelabs/skapp-ui";
+import { CloseIcon, SmallModal } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -7,6 +7,7 @@ import { useDeleteContact } from "~community/crm/api/CrmContactsApi";
 import { ContactDetail } from "~community/crm/types/CommonTypes";
 
 import styles from "./styles";
+import DeleteButtonIcon from "~community/common/assets/Icons/DeleteButtonIcon";
 
 interface Props {
   isOpen: boolean;
@@ -78,7 +79,7 @@ const DeleteContactModal: FC<Props> = ({
         buttonRight: {
           variant: "error",
           children: translateText(["deleteContactModal", "deleteBtn"]),
-          icon: <TrashIcon />,
+          icon: <DeleteButtonIcon fill="#7F1D1D" />,
           iconPosition: "end",
           onClick: () => deleteContact(contact.id),
           isLoading: isPending,
