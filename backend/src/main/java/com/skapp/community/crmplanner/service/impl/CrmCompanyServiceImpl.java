@@ -24,6 +24,7 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,10 +40,10 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
+	@Qualifier("crmCompanyRepositoryImpl")
 	private final CrmCompanyRepository crmCompanyRepository;
 
 	private final CrmMapper crmCompanyMapper;
-	private final CrmMapper crmMapper;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -54,7 +55,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		List<CrmCompanyLookupResponseDto> companyResponseDtos = companyPage.getContent()
 			.stream()
-			.map(crmMapper::crmCompanyToCrmCompanyLookupResponseDto)
+			.map(crmCompanyMapper::crmCompanyToCrmCompanyLookupResponseDto)
 			.toList();
 
 		PageDto pageDto = new PageDto();
