@@ -11,6 +11,7 @@ export interface CrmCompanyType {
 }
 
 export interface CrmCompanyMetricsType {
+  id: number;
   name: string;
   contactNumber: string;
   industry: string | null;

@@ -36,7 +36,7 @@
         "website": "Website",
         "address": "Address",
         "industry": "Industry",
-        "addCompany": "Add Company",
+        "addCompany": "Save",
         "cancelAddCompany": "Cancel Add Company"
       },
       "validations": {
