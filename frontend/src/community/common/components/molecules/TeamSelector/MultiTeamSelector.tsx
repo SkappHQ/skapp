@@ -122,7 +122,6 @@ const MultiTeamSelector = ({
       setSelectedOptionNames([translateTexts(["allLabel"])]);
       setSelectedOptionIds([-1]);
       setTeamIds([-1]);
-      setTeamNames && setTeamNames([translateTexts(["allLabel"])]);
     }
   };
 
