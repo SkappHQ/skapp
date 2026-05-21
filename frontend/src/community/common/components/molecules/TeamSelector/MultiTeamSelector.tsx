@@ -122,6 +122,7 @@ const MultiTeamSelector = ({
       setSelectedOptionNames([translateTexts(["allLabel"])]);
       setSelectedOptionIds([-1]);
       setTeamIds([-1]);
+      setTeamNames && setTeamNames([translateTexts(["allLabel"])]);
     }
   };
 
@@ -136,7 +137,7 @@ const MultiTeamSelector = ({
         }}
       >
         <Box display={"flex"} gap={1} alignItems={"center"}>
-          {selectedOptionNames[0] !== translateTexts(["allLabel"]) && selectedOptionNames.length > 1 &&
+          {selectedOptionNames?.length > 1 &&
             selectedOptionNames?.map((option, index) => {
               return (
                 <Chip
