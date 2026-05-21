@@ -145,7 +145,7 @@ const ClockWidget = (): JSX.Element => {
     <Tooltip title={title} placement={TooltipPlacement.BOTTOM}>
       <span onMouseEnter={handleMouseEnter}>
         <button
-          className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all${
+          className={`flex h-9 w-9 items-center justify-center rounded-full border ${
             isDisabled
               ? " cursor-default opacity-50 grayscale border-secondary-accent bg-tertiary-background"
               : " cursor-pointer border-primary-accent bg-primary-background hover:opacity-85"

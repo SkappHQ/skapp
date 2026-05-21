@@ -91,6 +91,7 @@ const AppBar = () => {
   return (
     <>
       <PageHeader
+        ariaLabel={translateAria(["appBar"])}
         breadcrumbs={breadcrumbs}
         onNavigate={(href) => router.push(href)}
       >
