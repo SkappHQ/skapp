@@ -152,4 +152,5 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
 	}
+
 }
