@@ -17,10 +17,6 @@ public class CrmValidations {
 
 	private static final Pattern LIKE_WILDCARD_PATTERN = Pattern.compile("([\\\\%_])");
 
-	public static String escapeLikePattern(String input) {
-		return LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
-	}
-
 	public static void validateContactName(String name) {
 		if (name == null || name.isBlank()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_REQUIRED);
@@ -103,6 +99,10 @@ public class CrmValidations {
 		if (industry.length() > CrmConstants.CHARACTER_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_TOO_LONG);
 		}
+	}
+
+	public static String escapeLikePattern(String input) {
+		return LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
 	}
 
 }

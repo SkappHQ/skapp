@@ -1,5 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 
@@ -52,6 +55,16 @@ public class CrmCompanyController {
 	public ResponseEntity<ResponseEntityDto> createCompany(@RequestBody CrmCompanyCreateDto crmCompany) {
 		ResponseEntityDto responseDto = companyService.createCompany(crmCompany);
 		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Get company metrics",
+			description = "Returns all details related to company info, tasks and deals")
+	@GetMapping("/metrics")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {
+		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
+		ResponseEntityDto responseDto = companyService.getCompanyMetrics(requestDto.getSearchKeyword(), pageable);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
 }

@@ -54,7 +54,12 @@ import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
-import { AllEmployeeDataResponse, L1EmployeeType } from "../types/PeopleTypes";
+import {
+  AllEmployeeDataResponse,
+  L1EmployeeType,
+  SupervisorRolesData,
+  TransferSupervisorsPayload
+} from "../types/PeopleTypes";
 
 const getBannerData = async (): Promise<number> => {
   const url = peoplesEndpoints.GET_PENDING_EMPLOYEE_COUNT;
@@ -569,27 +574,29 @@ export const useAddBulkUsers = (
 
 export const useTerminateUser = (
   onSuccess: () => void,
-  onError: () => void
+  onError: () => void,
+  employeeId: number
 ) => {
   const queryClient = useQueryClient();
 
-  const { selectedEmployeeId } = usePeopleStore((state) => state);
   return useMutation({
     mutationFn: () => {
       const payload = {
-        userId: selectedEmployeeId,
+        userId: employeeId,
         isActive: false
       };
 
       return authFetch.patch(
-        peoplesEndpoints.TERMINATE_EMPLOYEE(selectedEmployeeId as number),
+        peoplesEndpoints.TERMINATE_EMPLOYEE(employeeId),
         payload
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(selectedEmployeeId))
-      });
+      [
+        peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
+        peopleQueryKeys.HAS_SUPERVISOR_ROLES,
+        [peopleQueryKeys.SUPERVISED_BY_ME]
+      ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
     onError
@@ -679,20 +686,23 @@ export const useHasSupervisorRoles = (
   });
 };
 
-export const useDeleteUser = (onSuccess: () => void, onError: () => void) => {
+export const useDeleteUser = (
+  onSuccess: () => void,
+  onError: () => void,
+  employeeId: number
+) => {
   const queryClient = useQueryClient();
 
-  const { selectedEmployeeId } = usePeopleStore((state) => state);
   return useMutation({
     mutationFn: () => {
-      return authFetch.patch(
-        peoplesEndpoints.DELETE_USER(selectedEmployeeId as number)
-      );
+      return authFetch.patch(peoplesEndpoints.DELETE_USER(employeeId));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(Number(selectedEmployeeId))
-      });
+      [
+        peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
+        peopleQueryKeys.HAS_SUPERVISOR_ROLES,
+        [peopleQueryKeys.SUPERVISED_BY_ME]
+      ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
     onError
@@ -817,5 +827,38 @@ export const useEditEmployee = (employeeId: string) => {
     onSettled: async () => {
       await queryClient.invalidateQueries();
     }
+  });
+};
+
+export const useGetSupervisedEmployeesAndTeams = (
+  userId: number,
+  enabled: boolean = true
+): UseQueryResult<SupervisorRolesData> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId),
+    queryFn: async () =>
+      await authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId)),
+    select: (data) => data?.data?.results[0],
+    enabled: !!userId && enabled
+  });
+};
+
+export const useTransferSupervisors = (
+  userId: number,
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: TransferSupervisorsPayload) =>
+      authFetch.patch(peoplesEndpoints.TRANSFER_SUPERVISORS(userId), payload),
+    onSuccess: () => {
+      [
+        peopleQueryKeys.SUPERVISOR_ROLES(userId),
+        peopleQueryKeys.HAS_SUPERVISOR_ROLES
+      ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
+      onSuccess();
+    },
+    onError
   });
 };

@@ -1,5 +1,10 @@
 package com.skapp.community.crmplanner.service.impl;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -11,9 +16,12 @@ import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.util.CrmValidations;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,6 +39,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
+	private final CrmCompanyRepository crmCompanyRepository;
+
+	private final CrmMapper crmCompanyMapper;
 	private final CrmMapper crmMapper;
 
 	@Override
@@ -85,9 +96,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
 		}
 
-		CrmCompany newCompany = crmMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
+		CrmCompany newCompany = crmCompanyMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
 		CrmCompany result = crmCompanyDao.save(newCompany);
-		CrmCompanyResponseDto responseDto = crmMapper.crmCompanyToCrmCompanyResponseDto(result);
+		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
 
 		log.info("createCompany: execution ended successfully");
 		return new ResponseEntityDto(false, responseDto);
@@ -95,6 +106,21 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private boolean checkCompanyExists(String name) {
 		return crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
+	}
+
+	@Override
+	public ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable) {
+		log.info("getCompanyMetrics: execution started");
+		Page<CrmCompanyMetricsResponseDto> page = crmCompanyRepository.getCompanyMetrics(pageable, searchKeyword);
+
+		PageDto response = new PageDto();
+		response.setItems(page.getContent());
+		response.setCurrentPage(page.getNumber());
+		response.setTotalItems(page.getTotalElements());
+		response.setTotalPages(page.getTotalPages());
+		log.info("getCompanyMetrics: execution ended");
+
+		return new ResponseEntityDto(false, response);
 	}
 
 }
