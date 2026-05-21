@@ -221,14 +221,12 @@ export function middleware(request: NextRequest) {
 
   if (currentPath === ROUTES.REMOVE_PEOPLE && token) {
     const tenantStatus = claims?.tenantStatus;
-    const isDowngradeStatus =
+
+    if (
       tenantStatus ===
         TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED ||
-      tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED;
-    const isFreeTier = !isCoreOrProTier(
-      claims?.tier ? [claims.tier] : (claims?.tiers ?? [])
-    );
-    if (isDowngradeStatus && isFreeTier) {
+      tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
+    ) {
       return NextResponse.next();
     } else {
       return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
