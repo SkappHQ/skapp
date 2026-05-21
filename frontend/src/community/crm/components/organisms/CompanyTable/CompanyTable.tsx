@@ -70,10 +70,8 @@ export const CompanyTable: React.FC = () => {
             {formatTasks(value)}
             {row.overdue > 0 && (
               <Label
-                style={{
-                  backgroundColor: "var(--color-semantic-red-background)",
-                  color: "var(--color-semantic-red-text)"
-                }}
+                backgroundColor="bg-semantic-red-background"
+                textColor="text-semantic-red-text"
               >{`${row.overdue} overdue`}
               </Label>
             )}
@@ -104,9 +102,9 @@ export const CompanyTable: React.FC = () => {
         return (
           <div className="flex flex-col gap-1 text-right">
             <div>{formatCurrency(value)}</div>
-            <div className="subtitle4" style={{
-              color: "var(--color-secondary-text)"
-            }}>{row.closedDeals > 0 ? `${row.closedDeals} Deals closed` : ""}</div>
+            <div className="subtitle4 text-color-secondary-text" >
+              {row.closedDeals > 0 ? `${row.closedDeals} ${translateText(["table", "columns", "closedDealsLabel"])}` : ""}
+              </div>
           </div>)
       },
       className: "text-right",

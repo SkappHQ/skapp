@@ -54,6 +54,7 @@
       "filterButtonAriaLabel": "Filter companies",
       "search": "Search company",
       "infiniteScrollLoadingMessage": "Loading companies...",
+      "closedDealsLabel": "Deals closed",
       "emptyDataState": {
         "title": "No companies available.",
         "description": "Create a company to get started."
