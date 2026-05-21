@@ -59,8 +59,8 @@ public class CrmContactOwnerRepositoryImpl implements CrmContactOwnerRepository 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isTrue(user.get(User_.isActive)));
 		predicates.add(cb.or(cb.isTrue(employeeRole.get(EmployeeRole_.isSuperAdmin)),
-				employeeRole.get(EmployeeRole_.crmRole)
-					.in(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER, Role.CRM_SALES_REPRESENTATIVE)));
+				cb.and(cb.isNotNull(employeeRole.get(EmployeeRole_.crmRole)),
+						cb.notEqual(employeeRole.get(EmployeeRole_.crmRole), Role.CRM_NONE))));
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {

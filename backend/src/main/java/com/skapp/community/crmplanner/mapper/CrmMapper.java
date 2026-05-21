@@ -21,7 +21,6 @@ public interface CrmMapper {
 	CrmCompanyResponseDto crmCompanyToCrmCompanyResponseDto(CrmCompany crmCompany);
 
 	@Mapping(target = "email", source = "user.email")
-	@Mapping(target = "crmRole", source = "employeeRole.crmRole")
 	CrmContactOwnerResponseDto employeeToCrmContactOwnerResponseDto(Employee employee);
 
 	CrmContactResponseDto crmContactToCrmContactResponseDto(CrmContact contact);

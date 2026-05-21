@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -31,15 +32,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class CrmContactServiceImpl implements CrmContactService {
-
-	private static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
-			Role.CRM_SALES_REPRESENTATIVE);
 
 	private final CrmContactDao crmContactDao;
 
@@ -62,6 +59,13 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmValidations.validateContactName(requestDto.getName());
 		CrmValidations.validateContactEmail(requestDto.getEmail());
 		CrmValidations.validateContactNumber(requestDto.getContactNumber());
+
+		if (requestDto.getOwnerId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+		}
+		if (requestDto.getCompanyId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND);
+		}
 
 		if (checkContactExists(requestDto.getEmail())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
@@ -107,10 +111,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 	}
 
 	private CrmCompany resolveCompany(Long companyId) {
-		if (companyId == null) {
-			return null;
-		}
-
 		return crmCompanyDao.findByIdAndIsDeletedFalse(companyId)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 	}
@@ -127,13 +127,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 		Role currentCrmRole = currentEmployeeRole != null ? currentEmployeeRole.getCrmRole() : null;
 
 		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
-			if (ownerId != null && !ownerId.equals(currentEmployee.getEmployeeId())) {
+			if (!ownerId.equals(currentEmployee.getEmployeeId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
 			}
-			return currentEmployee;
-		}
-
-		if (ownerId == null) {
 			return currentEmployee;
 		}
 
@@ -155,7 +151,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		EmployeeRole ownerRole = owner.getEmployeeRole();
 		boolean isOwnerSuperAdmin = ownerRole != null && Boolean.TRUE.equals(ownerRole.getIsSuperAdmin());
 		Role ownerCrmRole = ownerRole != null ? ownerRole.getCrmRole() : null;
-		if (!isOwnerSuperAdmin && !ASSIGNABLE_CRM_ROLES.contains(ownerCrmRole)) {
+		if (!isOwnerSuperAdmin && !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(ownerCrmRole)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE);
 		}
 

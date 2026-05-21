@@ -1,9 +1,15 @@
 package com.skapp.community.crmplanner.constant;
 
+import com.skapp.community.common.type.Role;
 import lombok.experimental.UtilityClass;
+
+import java.util.Set;
 
 @UtilityClass
 public class CrmConstants {
+
+	public static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
+			Role.CRM_SALES_REPRESENTATIVE);
 
 	public static final int COMPANY_NAME_MAX_LENGTH = 30;
 
