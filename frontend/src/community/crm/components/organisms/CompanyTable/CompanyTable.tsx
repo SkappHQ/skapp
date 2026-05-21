@@ -51,7 +51,7 @@ export const CompanyTable: React.FC = () => {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
       key: companyTableColumns.NAME,
-      width: "20%"
+      width: "25%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "phoneAriaLabel"]),
@@ -69,7 +69,7 @@ export const CompanyTable: React.FC = () => {
       render(value, row) {
         return formatTasks(value, row);
       },
-      width: "20%"
+      width: "15%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "pipelineAriaLabel"]),
@@ -78,6 +78,7 @@ export const CompanyTable: React.FC = () => {
       render(openValue) {
         return formatCurrency(openValue);
       },
+      className: "text-right",
       width: "20%"
     },
     {
@@ -91,6 +92,7 @@ export const CompanyTable: React.FC = () => {
       render(value, row) {
         return formatAccountValue(value, row);
       },
+      className: "text-right",
       width: "20%"
     }
   ];
