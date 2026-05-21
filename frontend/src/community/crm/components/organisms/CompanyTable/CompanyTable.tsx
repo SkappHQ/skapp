@@ -102,9 +102,9 @@ export const CompanyTable: React.FC = () => {
         return (
           <div className="flex flex-col gap-1 text-right">
             <div>{formatCurrency(value)}</div>
-            <div className="subtitle4 text-color-secondary-text" >
-              {row.closedDeals > 0 ? `${row.closedDeals} ${translateText(["table", "columns", "closedDealsLabel"])}` : ""}
-              </div>
+            <div className="subtitle4 text-secondary-text" >
+              {row.closedDeals > 0 ? `${row.closedDeals} ${translateText(["table", "closedDealsLabel"])}` : ""}
+            </div>
           </div>)
       },
       className: "text-right",
