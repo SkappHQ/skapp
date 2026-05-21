@@ -2,7 +2,6 @@ package com.skapp.community.crmplanner.service;
 
 import org.springframework.data.domain.Pageable;
 
-import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 

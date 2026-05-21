@@ -37,9 +37,13 @@ public class CrmConstants {
 
 	public static final String STAGE = "stage";
 
+	public static final String STAGE_TYPE = "stageType";
+
 	public static final String STAGE_ID = "id";
 
-	public static final Integer WON_STAGE_ID = 3;
+	public static final String WON_STAGE_TYPE = "WON";
+
+	public static final Long DEFAULT_WON_STAGE_ID = 5L;
 
 	public static final String AMOUNT = "amountNumeric";
 
