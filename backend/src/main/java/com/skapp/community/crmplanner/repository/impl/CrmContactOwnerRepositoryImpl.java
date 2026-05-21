@@ -5,7 +5,7 @@ import com.skapp.community.common.model.User_;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
-import com.skapp.community.crmplanner.util.CrmValidations;
+import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeRole_;
@@ -64,7 +64,7 @@ public class CrmContactOwnerRepositoryImpl implements CrmContactOwnerRepository 
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escaped = CrmValidations.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
 			String likePattern = "%" + escaped + "%";
 			predicates.add(cb.or(cb.like(cb.lower(employee.get(Employee_.firstName)), likePattern, '\\'),
 					cb.like(cb.lower(employee.get(Employee_.lastName)), likePattern, '\\'),

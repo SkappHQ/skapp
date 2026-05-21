@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
 
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
@@ -22,7 +21,7 @@ import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.util.CrmValidations;
+import com.skapp.community.common.util.StringUtils;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -33,13 +32,6 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 @Repository
@@ -130,8 +122,8 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 		predicates.add(cb.isFalse(root.get(CrmCompany_.isDeleted)));
 
-		if (StringUtils.hasText(searchKeyword)) {
-			String escapedKeyword = CrmValidations.escapeLikePattern(searchKeyword);
+		if (searchKeyword != null && !searchKeyword.isBlank()) {
+			String escapedKeyword = StringUtils.escapeLikePattern(searchKeyword);
 
 			String likePattern = "%" + escapedKeyword + "%";
 			predicates.add(cb.like(cb.lower(root.get(CrmCompany_.name)), likePattern));
@@ -159,7 +151,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		CriteriaQuery<CrmCompany> query = cb.createQuery(CrmCompany.class);
 		Root<CrmCompany> company = query.from(CrmCompany.class);
 
-		List<Predicate> predicates = buildPredicatesForFindComapanies(cb, company, filterDto);
+		List<Predicate> predicates = buildPredicatesToFindComapanies(cb, company, filterDto);
 		query.where(predicates.toArray(new Predicate[0]));
 		query.orderBy(cb.asc(cb.lower(company.get(CrmCompany_.name))));
 
@@ -170,14 +162,14 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		return new PageImpl<>(typedQuery.getResultList(), pageable, getTotalCompanyCount(cb, filterDto));
 	}
 
-	private List<Predicate> buildPredicatesForFindComapanies(CriteriaBuilder cb, Root<CrmCompany> company,
+	private List<Predicate> buildPredicatesToFindComapanies(CriteriaBuilder cb, Root<CrmCompany> company,
 	                                        CrmCompanyFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escaped = CrmValidations.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
 			predicates.add(cb.like(cb.lower(company.get(CrmCompany_.name)), "%" + escaped + "%", '\\'));
 		}
 
@@ -189,7 +181,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		Root<CrmCompany> company = countQuery.from(CrmCompany.class);
 		countQuery.select(cb.count(company));
 
-		List<Predicate> predicates = buildPredicates(cb, company, filterDto);
+		List<Predicate> predicates = buildPredicatesToFindComapanies(cb, company, filterDto);
 		countQuery.where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(countQuery).getSingleResult();

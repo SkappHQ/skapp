@@ -11,12 +11,9 @@ import lombok.experimental.UtilityClass;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.regex.Pattern;
 
 @UtilityClass
 public class CrmValidations {
-
-	private static final Pattern LIKE_WILDCARD_PATTERN = Pattern.compile("([\\\\%_])");
 
 	public static void validateOwnerId(Long ownerId) {
 		if (ownerId == null) {
@@ -112,10 +109,6 @@ public class CrmValidations {
 		if (industry.length() > CrmConstants.CHARACTER_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_TOO_LONG);
 		}
-	}
-
-	public static String escapeLikePattern(String input) {
-		return LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
 	}
 
 }
