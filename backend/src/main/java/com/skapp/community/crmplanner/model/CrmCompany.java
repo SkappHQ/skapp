@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.skapp.community.common.model.Auditable;
 
 import jakarta.persistence.Column;
@@ -45,9 +46,11 @@ public class CrmCompany extends Auditable<String> {
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted = false;
 
+	@JsonIgnore
 	@OneToMany(mappedBy = "company")
 	private List<CrmTask> tasks;
 
+	@JsonIgnore
 	@OneToMany(mappedBy = "company")
 	private List<CrmDeal> deals;
 

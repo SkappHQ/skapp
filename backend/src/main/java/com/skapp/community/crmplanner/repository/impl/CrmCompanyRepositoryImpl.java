@@ -107,8 +107,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		}
 		query.where(predicates.toArray(new Predicate[0]));
 
-		query.groupBy(company.get(CrmConstants.ID), company.get(CrmConstants.NAME),
-				company.get(CrmConstants.CONTACT_NUMBER));
+		query.groupBy(company.get(CrmConstants.ID));
 
 		query.orderBy(cb.asc(company.get(CrmConstants.NAME)));
 
