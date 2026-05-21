@@ -11,7 +11,8 @@ import LeaveManagerModalController from "~community/leave/components/organisms/L
 const ResourceAvailability: NextPage = () => {
   useBreadcrumbs(
     ["dashboard", ROUTES.DASHBOARD.BASE],
-    ["leave", "resourceAvailability"]
+    ["leave"],
+    ["resourceAvailability"]
   );
   const translateText = useTranslator("leaveModule", "dashboard");
   const router = useRouter();

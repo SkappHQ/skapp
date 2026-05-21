@@ -10,7 +10,8 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 const ClockInSummary: NextPage = () => {
   useBreadcrumbs(
     ["dashboard", ROUTES.DASHBOARD.BASE],
-    ["attendance", "clockInSummary"]
+    ["attendance"],
+    ["clockInSummary"]
   );
   const translateText = useTranslator("attendanceModule", "dashboards");
   const router = useRouter();
