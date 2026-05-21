@@ -20,115 +20,124 @@ import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
 public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
-	private final EntityManager entityManager;
+    private final EntityManager entityManager;
 
-	@Override
-	public Page<CrmCompanyMetricsDto> getCompanyMetrics(Pageable pageable, String searchKeyword) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    @Override
+    public Page<CrmCompanyMetricsDto> getCompanyMetrics(Pageable pageable, String searchKeyword) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<CrmCompanyMetricsDto> query = cb.createQuery(CrmCompanyMetricsDto.class);
+        Root<CrmCompany> company = query.from(CrmCompany.class);
 
-		CriteriaQuery<CrmCompanyMetricsDto> query = cb.createQuery(CrmCompanyMetricsDto.class);
+        Subquery<Long> taskSubquery = query.subquery(Long.class);
+        Root<CrmTask> subTask = taskSubquery.from(CrmTask.class);
+        taskSubquery.select(cb.count(subTask.get(CrmConstants.ID)))
+            .where(
+                cb.equal(subTask.get(CrmConstants.COMPANY), company), // Correlation
+                cb.isFalse(subTask.get(CrmConstants.IS_DELETED)),
+                cb.isFalse(subTask.get(CrmConstants.IS_COMPLETED))
+            );
 
-		Root<CrmCompany> company = query.from(CrmCompany.class);
+        Subquery<Long> overdueSubquery = query.subquery(Long.class);
+        Root<CrmTask> subOverdueTask = overdueSubquery.from(CrmTask.class);
+        overdueSubquery.select(cb.count(subOverdueTask.get(CrmConstants.ID)))
+            .where(
+                cb.equal(subOverdueTask.get(CrmConstants.COMPANY), company), // Correlation
+                cb.isFalse(subOverdueTask.get(CrmConstants.IS_DELETED)),
+                cb.isFalse(subOverdueTask.get(CrmConstants.IS_COMPLETED)),
+                cb.isNotNull(subOverdueTask.get(CrmConstants.DUE_AT)),
+                cb.lessThan(subOverdueTask.get(CrmConstants.DUE_AT), cb.localDateTime())
+            );
 
-		Join<CrmCompany, CrmTask> taskJoin = company.join(CrmConstants.TASKS, JoinType.LEFT);
+        Subquery<BigDecimal> openValueSubquery = query.subquery(BigDecimal.class);
+        Root<CrmDeal> openDeal = openValueSubquery.from(CrmDeal.class);
+        openValueSubquery.select(cb.coalesce(cb.sum(openDeal.get(CrmConstants.AMOUNT)), BigDecimal.ZERO))
+            .where(
+                cb.equal(openDeal.get(CrmConstants.COMPANY), company), // Correlation
+                cb.isFalse(openDeal.get(CrmConstants.IS_DELETED)),
+                cb.notEqual(openDeal.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID), CrmConstants.WON_STAGE_ID)
+            );
 
-		Join<CrmCompany, CrmDeal> dealJoin = company.join(CrmConstants.DEALS, JoinType.LEFT);
+        Subquery<BigDecimal> accountValueSubquery = query.subquery(BigDecimal.class);
+        Root<CrmDeal> closedDeal = accountValueSubquery.from(CrmDeal.class);
+        accountValueSubquery.select(cb.coalesce(cb.sum(closedDeal.get(CrmConstants.AMOUNT)), BigDecimal.ZERO))
+            .where(
+                cb.equal(closedDeal.get(CrmConstants.COMPANY), company), // Correlation
+                cb.isFalse(closedDeal.get(CrmConstants.IS_DELETED)),
+                cb.equal(closedDeal.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID), CrmConstants.WON_STAGE_ID)
+            );
 
-		Expression<Long> taskCount = cb.countDistinct(cb.<Long>selectCase()
-			.when(cb.and(cb.isFalse(taskJoin.get(CrmConstants.IS_DELETED)),
-					cb.isFalse(taskJoin.get(CrmConstants.IS_COMPLETED))), taskJoin.<Long>get(CrmConstants.ID))
-			.otherwise(cb.nullLiteral(Long.class)));
+        Subquery<Long> closedCountSubquery = query.subquery(Long.class);
+        Root<CrmDeal> closedCountDeal = closedCountSubquery.from(CrmDeal.class);
+        closedCountSubquery.select(cb.count(closedCountDeal.get(CrmConstants.ID)))
+            .where(
+                cb.equal(closedCountDeal.get(CrmConstants.COMPANY), company),
+                cb.isFalse(closedCountDeal.get(CrmConstants.IS_DELETED)),
+                cb.equal(closedCountDeal.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID), CrmConstants.WON_STAGE_ID)
+            );
 
-		Expression<Long> overdueCount = cb.countDistinct(cb.<Long>selectCase()
-			.when(cb.and(cb.isFalse(taskJoin.get(CrmConstants.IS_DELETED)),
-					cb.isFalse(taskJoin.get(CrmConstants.IS_COMPLETED)),
-					cb.isNotNull(taskJoin.get(CrmConstants.DUE_AT)),
-					cb.lessThan(taskJoin.<java.time.LocalDateTime>get(CrmConstants.DUE_AT), cb.localDateTime())),
-					taskJoin.<Long>get(CrmConstants.ID))
-			.otherwise(cb.nullLiteral(Long.class)));
+        Subquery<Long> openCountSubquery = query.subquery(Long.class);
+        Root<CrmDeal> openCountDeal = openCountSubquery.from(CrmDeal.class);
+        openCountSubquery.select(cb.count(openCountDeal.get(CrmConstants.ID)))
+            .where(
+                cb.equal(openCountDeal.get(CrmConstants.COMPANY), company),
+                cb.isFalse(openCountDeal.get(CrmConstants.IS_DELETED)),
+                cb.notEqual(openCountDeal.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID), CrmConstants.WON_STAGE_ID)
+            );
 
-		Expression<BigDecimal> openDealCase = cb.<BigDecimal>selectCase()
-			.when(cb.and(cb.isFalse(dealJoin.get(CrmConstants.IS_DELETED)),
-					cb.notEqual(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID),
-							CrmConstants.WON_STAGE_ID)),
-					dealJoin.get(CrmConstants.AMOUNT))
-			.otherwise(BigDecimal.ZERO);
+        query.select(cb.construct(CrmCompanyMetricsDto.class,
+                company.get(CrmConstants.ID), 
+                company.get(CrmConstants.NAME), 
+                company.get(CrmConstants.CONTACT_NUMBER),
+                company.get(CrmConstants.INDUSTRY), 
+                company.get(CrmConstants.WEBSITE),
+                company.get(CrmConstants.ADDRESS),
 
-		Expression<BigDecimal> closedDealCase = cb.<BigDecimal>selectCase()
-			.when(cb.and(cb.isFalse(dealJoin.get(CrmConstants.IS_DELETED)),
-					cb.equal(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID), CrmConstants.WON_STAGE_ID)),
-					dealJoin.get(CrmConstants.AMOUNT))
-			.otherwise(BigDecimal.ZERO);
+                // Subqueries expressions in place of the old broken aggregates
+                taskSubquery, 
+                overdueSubquery, 
+                openValueSubquery, 
+                accountValueSubquery, 
+                closedCountSubquery, 
+                openCountSubquery
+        ));
 
-		Expression<BigDecimal> openValue = cb.<BigDecimal>sum(openDealCase);
+        query.where(buildPredicates(cb, company, searchKeyword));
+        query.orderBy(cb.asc(company.get(CrmConstants.NAME)), cb.asc(company.get(CrmConstants.ID)));
 
-		Expression<BigDecimal> accountValue = cb.<BigDecimal>sum(closedDealCase);
+        List<CrmCompanyMetricsDto> content = entityManager.createQuery(query)
+            .setFirstResult((int) pageable.getOffset())
+            .setMaxResults(pageable.getPageSize())
+            .getResultList();
 
-		Expression<Long> closedDealsCount = cb.countDistinct(cb.<Long>selectCase()
-			.when(cb.and(cb.isFalse(dealJoin.get(CrmConstants.IS_DELETED)),
-					cb.equal(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID), CrmConstants.WON_STAGE_ID)),
-					dealJoin.<Long>get(CrmConstants.ID))
-			.otherwise(cb.nullLiteral(Long.class)));
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<CrmCompany> countRoot = countQuery.from(CrmCompany.class);
 
-		Expression<Long> openDealsCount = cb.countDistinct(cb.<Long>selectCase()
-			.when(cb.and(cb.isFalse(dealJoin.get(CrmConstants.IS_DELETED)),
-					cb.notEqual(dealJoin.get(CrmConstants.STAGE).get(CrmConstants.STAGE_ID),
-							CrmConstants.WON_STAGE_ID)),
-					dealJoin.<Long>get(CrmConstants.ID))
-			.otherwise(cb.nullLiteral(Long.class)));
+        countQuery.select(cb.countDistinct(countRoot.get(CrmConstants.ID)))
+            .where(buildPredicates(cb, countRoot, searchKeyword));
+        Long total = entityManager.createQuery(countQuery).getSingleResult();
 
-		query.select(cb.construct(CrmCompanyMetricsDto.class,
+        return new PageImpl<>(content, pageable, total);
+    }
 
-				company.get(CrmConstants.ID), company.get(CrmConstants.NAME), company.get(CrmConstants.CONTACT_NUMBER),
-				company.get(CrmConstants.INDUSTRY), company.get(CrmConstants.WEBSITE),
-				company.get(CrmConstants.ADDRESS),
+	private <T> Predicate[] buildPredicates(CriteriaBuilder cb, From<?, T> root, String searchKeyword) {
+        List<Predicate> predicates = new ArrayList<>();
 
-				taskCount, overdueCount, openValue, accountValue, closedDealsCount, openDealsCount
+        predicates.add(cb.isFalse(root.get(CrmConstants.IS_DELETED)));
 
-		));
+        if (StringUtils.hasText(searchKeyword)) {
+            predicates.add(cb.like(cb.lower(root.get(CrmConstants.NAME)), "%" + searchKeyword.toLowerCase() + "%"));
+        }
 
-		List<Predicate> predicates = new ArrayList<>();
-
-		predicates.add(cb.isFalse(company.get(CrmConstants.IS_DELETED)));
-
-		if (StringUtils.hasText(searchKeyword)) {
-			predicates.add(cb.like(cb.lower(company.get(CrmConstants.NAME)), "%" + searchKeyword.toLowerCase() + "%"));
-		}
-		query.where(predicates.toArray(new Predicate[0]));
-
-		query.groupBy(company.get(CrmConstants.ID));
-
-		query.orderBy(cb.asc(company.get(CrmConstants.NAME)));
-
-		List<CrmCompanyMetricsDto> content = entityManager.createQuery(query)
-			.setFirstResult((int) pageable.getOffset())
-			.setMaxResults(pageable.getPageSize())
-			.getResultList();
-
-		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<CrmCompany> countRoot = countQuery.from(CrmCompany.class);
-		List<Predicate> countPredicates = new ArrayList<>();
-		countPredicates.add(cb.isFalse(countRoot.get(CrmConstants.IS_DELETED)));
-		if (StringUtils.hasText(searchKeyword)) {
-			countPredicates
-				.add(cb.like(cb.lower(countRoot.get(CrmConstants.NAME)), "%" + searchKeyword.toLowerCase() + "%"));
-		}
-		countQuery.select(cb.countDistinct(countRoot.get(CrmConstants.ID)))
-			.where(countPredicates.toArray(new Predicate[0]));
-		Long total = entityManager.createQuery(countQuery).getSingleResult();
-
-		return new PageImpl<>(content, pageable, total);
-	}
-
+        return predicates.toArray(new Predicate[0]);
+    }
 }
