@@ -43,7 +43,7 @@ export const crmContactEndpoints = {
   GET_CONTACTS: (searchKeyword?: string): string => {
     const params = new URLSearchParams({ page: "0", size: "100" });
     if (searchKeyword) params.set("searchKeyword", searchKeyword);
-    return `${moduleAPIPath.CRM}/contact?${params.toString()}`;
+    return `${moduleAPIPath.CRM}/contacts?${params.toString()}`;
   }
 };
 
@@ -51,6 +51,6 @@ export const crmCompanyEndpoints = {
   GET_COMPANIES: (searchKeyword?: string): string => {
     const params = new URLSearchParams({ page: "0", size: "100" });
     if (searchKeyword) params.set("searchKeyword", searchKeyword);
-    return `${moduleAPIPath.CRM}/company?${params.toString()}`;
+    return `${moduleAPIPath.CRM}/companies/lookup?${params.toString()}`;
   }
 };
