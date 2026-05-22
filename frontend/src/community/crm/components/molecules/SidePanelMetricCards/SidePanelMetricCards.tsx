@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { Card } from "@rootcodelabs/skapp-ui";
 import { MetricItem } from "~community/crm/types/CommonTypes";
-import { getChipStyles } from "~community/crm/utils/sidePanelHelpers";
+import { getChipStyles } from "~community/crm/utils/crmMetricUtils";
 import { formatValue } from "~community/crm/utils/companyTableHelpers";
 
 interface Props {

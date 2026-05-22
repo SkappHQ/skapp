@@ -1,6 +1,4 @@
-
 import { CrmMetricChipThemeEnum } from "~community/crm/enums/common";
-
 
 export const getChipStyles = (theme: CrmMetricChipThemeEnum) => {
   switch (theme) {
@@ -12,5 +10,3 @@ export const getChipStyles = (theme: CrmMetricChipThemeEnum) => {
       return "bg-[#ECFCCA] text-[var(--color-semantic-green-text)]";
   }
 };
-
-
