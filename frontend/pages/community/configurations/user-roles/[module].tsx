@@ -66,9 +66,9 @@ const Module: NextPage = () => {
 
   return (
     <ContentLayout
-      pageHead={translateUserRoles(["pageHead"])}
-      title={translateUserRoles([`${module}Title`])}
-      primaryButtonText={translateUserRoles(["setRestrictionsBtnText"])}
+      pageHead={translateText(["pageHead"])}
+      title={translateText([`${module}Title`])}
+      primaryButtonText={translateText(["setRestrictionsBtnText"])}
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryBtnIconName={IconName.RESTRICTIONS_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
