@@ -327,7 +327,7 @@ const ContentLayout = ({
             {secondaryBtnText && (
               <ButtonV2
                 isFullWidth={isBelow600}
-                variant={"secondary"}
+                variant={"tertiary"}
                 size={"md"}
                 onClick={onSecondaryButtonClick}
                 data-testid={contentLayoutTestId.buttons.secondaryButton}

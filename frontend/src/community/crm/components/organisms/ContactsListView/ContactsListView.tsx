@@ -41,6 +41,8 @@ interface ContactTableRow extends TableRowType {
 }
 
 const formatCurrency = (value: number): string => {
+  //if 0 show -
+  if (value === 0) return "-";
   return `$${Math.round(value)}`;
 };
 
@@ -48,13 +50,14 @@ const mapContactToTableRow = (contact: ContactListItem): ContactTableRow => ({
   id: String(contact.id),
   contact: {
     name: contact.name,
-    company: contact.company?.name ?? "—"
+    company: contact.company?.name ?? "-"
   },
   email: contact.email,
-  contactNumber: contact.contactNumber ?? "—",
+  contactNumber: contact.contactNumber ?? "-",
   dealValue: {
     value: formatCurrency(contact.closedDealValue),
-    closedDeals: `${contact.closedDealCount} Deal${contact.closedDealCount !== 1 ? "s" : ""} closed`
+    //if 0 show -
+    closedDeals: contact.closedDealCount === 0 ? "" : `${contact.closedDealCount} Deal${contact.closedDealCount !== 1 ? "s" : ""} closed`
   },
   openTasks: {
     count: contact.openTaskCount,
@@ -98,9 +101,10 @@ const OpenTasksCell = ({
   openTasks: ContactTableRow["openTasks"];
 }) => (
   <div className="flex items-center gap-1">
-    <span className="body2 text-black">{openTasks.count}</span>
+    <span className="body2 text-black ml-2">{openTasks.count}</span>
     {openTasks.overdue && (
       <Label
+        className="ml-1.5"
         backgroundColor="bg-semantic-red-background"
         textColor="text-semantic-red-text"
       >
@@ -224,7 +228,7 @@ const ContactsListView = () => {
       render: (value) => (
         <DealValueCell dealValue={value as ContactTableRow["dealValue"]} />
       ),
-      width: "17%"
+      width: "10%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "openTasks"]),
@@ -233,7 +237,7 @@ const ContactsListView = () => {
       render: (value) => (
         <OpenTasksCell openTasks={value as ContactTableRow["openTasks"]} />
       ),
-      width: "13%"
+      width: "20%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "contactOwner"]),
@@ -293,7 +297,7 @@ const ContactsListView = () => {
             })
           }
           hasMore={hasNextPage}
-          height="35rem"
+          height="37rem"
           isLoading={isLoading || isFetchingNextPage}
           infiniteScrollLoadingMessage={translateText(["table", "loadingMore"])}
           scrollThreshold={0.8}
