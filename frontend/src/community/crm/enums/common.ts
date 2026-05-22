@@ -5,6 +5,11 @@ export enum CrmDealStageEnum {
   LOST = "LOST"
 }
 
+export enum CrmMetricChipThemeEnum {
+  SUCCESS = "SUCCESS",
+  ERROR = "ERROR"
+}
+
 export enum CrmTaskStatusEnum {
   PENDING = "PENDING",
   COMPLETED = "COMPLETED"

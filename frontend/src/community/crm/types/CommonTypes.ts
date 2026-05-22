@@ -1,17 +1,17 @@
 import { JSX } from "react";
 
-import { CrmDealStageEnum } from "../enums/common";
+import { CrmDealStageEnum, CrmMetricChipThemeEnum } from "../enums/common";
 
 export interface MetricChipProps {
   label: string;
-  color: string;
-  bgColor: string;
+  theme: CrmMetricChipThemeEnum;
   icon?: React.ReactNode;
 }
 
 export interface MetricItem {
   title: string;
-  amount: string;
+  amount: string | number;
+  isCurrency?: boolean;
   chip?: MetricChipProps;
 }
 

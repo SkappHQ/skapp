@@ -2,12 +2,14 @@ import { FC } from "react";
 
 import { Card } from "@rootcodelabs/skapp-ui";
 import { MetricItem } from "~community/crm/types/CommonTypes";
+import { getChipStyles } from "~community/crm/utils/sidePanelHelpers";
+import { formatValue } from "~community/crm/utils/companyTableHelpers";
 
 interface Props {
   metrics: MetricItem[];
 }
 
-const CompanyMetricCards: FC<Props> = ({ metrics }) => {
+const SidePanelMetricCards: FC<Props> = ({ metrics }) => {
   return (
     <div className="flex gap-4 w-full">
       {metrics.map((metric) => (
@@ -19,13 +21,12 @@ const CompanyMetricCards: FC<Props> = ({ metrics }) => {
             {metric.title}
           </p>
           <div className="flex items-center gap-2">
-            <p className="body1 font-semibold text-black">
-              {metric.amount}
+            <p className="subtitle2 text-black">
+              {metric.isCurrency ? formatValue(metric.amount as string | number) : metric.amount}
             </p>
             {metric.chip && (
               <span
-                className="inline-flex items-center gap-1 rounded-[30px] px-3 py-0.5 text-xs font-medium whitespace-nowrap"
-                style={{ backgroundColor: metric.chip.bgColor, color: metric.chip.color }}
+                className={`inline-flex items-center gap-1 rounded-[30px] px-3 py-0.5 text-xs font-medium whitespace-nowrap ${getChipStyles(metric.chip.theme)}`}
               >
                 {metric.chip.icon}
                 {metric.chip.label}
@@ -38,4 +39,4 @@ const CompanyMetricCards: FC<Props> = ({ metrics }) => {
   );
 };
 
-export default CompanyMetricCards;
+export default SidePanelMetricCards;
