@@ -83,7 +83,7 @@ const ContactDetailPanel: FC = () => {
               isLoading={isContactLoading}
               onCompanyClick={(companyId: any) => {
                 // TODO: Open company side panel once the slice/controller is implemented
-                console.log("Open company side panel for company ID:", companyId);
+
               }}
             />
           }

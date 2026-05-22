@@ -71,24 +71,6 @@ const ContactInfoItem: FC<Props> = ({
   return <div className={cls.row}>{inner}</div>;
 };
 
-export interface ContactInfoItemSkeletonProps {
-  widthClass?: string;
-  hasEndIcon?: boolean;
-}
 
-export const ContactInfoItemSkeleton: FC<ContactInfoItemSkeletonProps> = ({
-  widthClass = "w-[80px]",
-  hasEndIcon = false
-}) => {
-  return (
-    <div className="flex items-center gap-[12px] animate-pulse">
-      <div className="h-5 w-5 rounded bg-[#F5F5F5] shrink-0" />
-      <div className={`h-[14px] ${widthClass} rounded bg-[#F5F5F5]`} />
-      {hasEndIcon && (
-        <div className="h-4 w-4 rounded bg-[#F5F5F5] shrink-0 ml-[4px]" />
-      )}
-    </div>
-  );
-};
 
 export default ContactInfoItem;
