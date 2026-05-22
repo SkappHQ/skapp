@@ -224,6 +224,6 @@ export function matchInvalidEmailCharactersSearchPattern(): RegExp {
   return /[^a-zA-Z0-9 @._%+-]/g;
 }
 
-export function removeHttpsWwwFromUrl(input: string): string {
-  return input.replace(/^(https?:\/\/)?(www\.)?/, "");
+export function removeHttpsFromUrl(input: string): string {
+  return input.replace(/^https?:\/\//, "");
 }
