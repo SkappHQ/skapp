@@ -13,4 +13,6 @@ public interface WorkLocationRepository {
 
 	List<WorkLocation> findAllWorkLocationsOrderByNameAsc();
 
+	void clearAddressesForGeofencedLocations();
+
 }

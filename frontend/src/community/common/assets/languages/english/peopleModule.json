@@ -256,6 +256,28 @@
     "deleteWarningTeamSupervisorDescription": "This user is assigned as a supervisor for team/s. Please update their assignments before changing the user role."
   },
 
+  "supervisorReassignment": {
+    "modalTitle": "Change supervisors",
+    "subtitle": "Please update the supervisor assignments for the list below:",
+    "primarySupervisorsSection": "Reassign Primary Supervisors",
+    "teamSupervisorsSection": "Reassign Team Supervisors",
+    "selectSupervisorPlaceholder": "Select supervisor",
+    "noEmployeesFound": "No employees found",
+    "closeModalAriaLabel": "Close change supervisors modal",
+    "removeAssignment": "Remove assignment",
+    "proceedAndTerminateButton": "Reassign and terminate user",
+    "proceedAndDeleteButton": "Reassign and delete user",
+    "cancelButton": "Cancel",
+    "allReassignedValidationMessage": "Please reassign all supervisors before proceeding.",
+    "terminateSuccessTitle": "User Terminated",
+    "terminateSuccessDescription": "{{name}} has been successfully terminated and all supervisor assignments have been reassigned.",
+    "deleteSuccessTitle": "User Deleted",
+    "deleteSuccessDescription": "{{name}} has been successfully deleted and all supervisor assignments have been reassigned.",
+    "actionErrorTitle": "Oops! Something went wrong",
+    "actionErrorDescription": "Failed to complete the action. Please try again.",
+    "loadingEmployees": "Loading employees..."
+  },
+
   "discardChangesModal": {
     "title": "Unsaved Changes",
     "leaveTabDescription": "You have unsaved changes. To proceed, would you like to save or discard them?",
