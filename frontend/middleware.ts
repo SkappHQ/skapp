@@ -225,21 +225,19 @@ export function middleware(request: NextRequest) {
     const roles = claims?.roles || [];
     const isSuperAdmin = roles.includes(ROLE_SUPER_ADMIN);
 
-    if (!isSuperAdmin) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-      );
+    if (isSuperAdmin) {
+      if (
+        tenantStatus ===
+          TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED ||
+        tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
+      ) {
+        return NextResponse.next();
+      } else {
+        return NextResponse.redirect(
+          new URL(ROUTES.DASHBOARD.BASE, request.url)
+        );
+      }
     }
-
-    if (
-      tenantStatus ===
-        TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED ||
-      tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
-    ) {
-      return NextResponse.next();
-    }
-
-    return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
   }
 
   if (
