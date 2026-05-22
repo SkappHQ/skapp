@@ -220,7 +220,7 @@ export function middleware(request: NextRequest) {
     "isPasswordChangedForTheFirstTime"
   )?.value;
 
-  if (currentPath === ROUTES.REMOVE_PEOPLE && token) {
+  if (currentPath === ROUTES.REMOVE_PEOPLE) {
     const tenantStatus = claims?.tenantStatus;
 
     if (
