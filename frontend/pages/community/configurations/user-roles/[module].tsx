@@ -28,19 +28,18 @@ const Module: NextPage = () => {
     projectManagement: "projectManagementModuleRoles"
   };
   const breadcrumbLabel = moduleLabels[module as string];
-  const translateText = useTranslator("breadcrumbs");
+  const translateBreadcrumbs = useTranslator("breadcrumbs");
+  const translateUserRoles = useTranslator("configurations", "userRoles");
   if (breadcrumbLabel) {
     useBreadcrumbs([
       { label: "configurations", href: ROUTES.CONFIGURATIONS.BASE },
-      { label: translateText([breadcrumbLabel]) }
+      { label: breadcrumbLabel }
     ]);
   }
 
   const formattedModule = useMemo(() => {
     return mapApiModuleToEnum(module?.toString());
   }, [module]);
-
-  const translateUserRoles = useTranslator("configurations", "userRoles");
 
   const { setIsUserRoleModalOpen, setModuleType } = useConfigurationStore();
 
@@ -66,9 +65,9 @@ const Module: NextPage = () => {
 
   return (
     <ContentLayout
-      pageHead={translateText(["pageHead"])}
-      title={translateText([`${module}Title`])}
-      primaryButtonText={translateText(["setRestrictionsBtnText"])}
+      pageHead={translateUserRoles(["pageHead"])}
+      title={translateUserRoles([`${module}Title`])}
+      primaryButtonText={translateUserRoles(["setRestrictionsBtnText"])}
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryBtnIconName={IconName.RESTRICTIONS_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
