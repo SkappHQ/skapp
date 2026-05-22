@@ -222,6 +222,14 @@ export function middleware(request: NextRequest) {
 
   if (currentPath === ROUTES.REMOVE_PEOPLE) {
     const tenantStatus = claims?.tenantStatus;
+    const roles = claims?.roles || [];
+    const isSuperAdmin = roles.includes(ROLE_SUPER_ADMIN);
+
+    if (!isSuperAdmin) {
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+      );
+    }
 
     if (
       tenantStatus ===
@@ -229,9 +237,9 @@ export function middleware(request: NextRequest) {
       tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
     ) {
       return NextResponse.next();
-    } else {
-      return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
     }
+
+    return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
   }
 
   if (
