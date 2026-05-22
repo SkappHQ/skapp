@@ -32,6 +32,7 @@ import i18n from "~i18n";
 import "../styles/global.css";
 import Error from "./_error";
 import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
+import AppSidePanel from "../src/components/organisms/SidePanel/AppSidePanel";
 import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 
 // Initialize the font
@@ -135,6 +136,7 @@ function MyApp({
                       <BaseLayout>
                         <Component {...pageProps} />
                       </BaseLayout>
+                      <AppSidePanel />
                     </ErrorBoundary>
                     <ReactQueryDevtools
                       initialIsOpen={false}
@@ -156,6 +158,7 @@ function MyApp({
                       <BaseLayout>
                         <Component {...pageProps} />
                       </BaseLayout>
+                      <AppSidePanel />
                     </ErrorBoundary>
                     <AnnouncementWrapper />
                   </AnnouncementProvider>

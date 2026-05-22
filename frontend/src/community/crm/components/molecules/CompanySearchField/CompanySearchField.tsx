@@ -29,9 +29,10 @@ const CompanySearchField = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const filteredResults = useMemo(() => {
-    return options
-      .filter((o) => o.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      .slice(0, 4);
+    const filtered = options.filter((o) =>
+      o.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    return searchTerm ? filtered : filtered.slice(0, 4);
   }, [options, searchTerm]);
 
   // Close dropdown when clicking outside

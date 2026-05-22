@@ -39,9 +39,10 @@ const OwnerSearchField = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const filteredResults = useMemo(() => {
-    return options.filter((o) =>
+    const filtered = options.filter((o) =>
       getFullName(o).toLowerCase().includes(searchTerm.toLowerCase())
     );
+    return searchTerm ? filtered : filtered.slice(0, 4);
   }, [options, searchTerm]);
 
   const closeAndRestore = () => {
