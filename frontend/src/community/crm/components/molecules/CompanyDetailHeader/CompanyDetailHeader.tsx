@@ -1,6 +1,7 @@
 import React from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { removeHttpsWwwFromUrl } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
 import { CrmCompanyType } from "~community/crm/types/CommonTypes";
 
@@ -32,8 +33,6 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
     }
   ];
 
-  const URL_PREFIX_REGEX = /^https?:\/\//;
-
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between max-w-[75%]">
@@ -59,7 +58,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
                       fill="var(--color-primary-text)"
                     />
                     <span className="flex items-center gap-1">
-                      {item.value.replace(URL_PREFIX_REGEX, "")}
+                      {removeHttpsWwwFromUrl(item.value)}
                       <Icon
                         name={IconName.POP_OUT_ICON}
                         width="1rem"
@@ -76,9 +75,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
                       height="1.25rem"
                       fill="var(--color-secondary-icon)"
                     />
-                    <p className="body2 text-black">
-                      {item.value}
-                    </p>
+                    <p className="body2 text-black">{item.value}</p>
                   </>
                 )}
               </div>
