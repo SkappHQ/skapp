@@ -8,7 +8,7 @@ import {
   useGetCrmContactMetrics
 } from "~community/crm/api/CrmContactsApi";
 import ContactActionMenu from "~community/crm/components/molecules/ContactActionMenu/ContactActionMenu";
-import ContactHeader from "~community/crm/components/molecules/ContactHeader/ContactHeader";
+import ContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import ContactMetrics, {
   ContactMetricsSkeleton
 } from "~community/crm/components/molecules/ContactMetrics/ContactMetrics";
@@ -81,6 +81,10 @@ const ContactDetailPanel: FC = () => {
             <ContactHeader
               contact={contact ?? undefined}
               isLoading={isContactLoading}
+              onCompanyClick={(companyId) => {
+                // TODO: Open company side panel once the slice/controller is implemented
+                console.log("Open company side panel for company ID:", companyId);
+              }}
             />
           }
           headerActions={

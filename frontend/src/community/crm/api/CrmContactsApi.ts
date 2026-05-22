@@ -25,7 +25,6 @@ import {
   CrmOwnersResponseType,
   UpdateContactPayload
 } from "~community/crm/types/CommonTypes";
-import { CrmTasksResponseType } from "~community/crm/types/CrmTaskTypes";
 
 interface CompaniesParams {
   page?: number;

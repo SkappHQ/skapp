@@ -1,8 +1,11 @@
-import { Skeleton } from "@mui/material";
 import { FC } from "react";
 
 import { IconName } from "~community/common/types/IconTypes";
-import ContactInfoItem from "~community/crm/components/atoms/ContactInfoItem/ContactInfoItem";
+import ContactInfoItem from "~community/crm/components/atoms/SidePanelContactInfoItem/SidePanelContactInfoItem";
+import {
+  ContactHeaderSkeleton,
+  ContactInfoItemSkeleton
+} from "~community/crm/components/atoms/SidePanelContactInfoItem/ContactInfoItemSkeleton";
 import { ContactDetail } from "~community/crm/types/CommonTypes";
 
 import styles from "./styles";
@@ -12,9 +15,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 interface Props {
   contact?: ContactDetail;
   isLoading?: boolean;
+  onCompanyClick?: (companyId: number) => void;
 }
 
-const ContactHeader: FC<Props> = ({ contact, isLoading }) => {
+const ContactHeader: FC<Props> = ({ contact, isLoading, onCompanyClick }) => {
   const cls = styles;
   const translateText = useTranslator(
     "crmModule",
@@ -25,10 +29,7 @@ const ContactHeader: FC<Props> = ({ contact, isLoading }) => {
   return (
     <div id="contact-panel-title" className={cls.wrapper}>
       {isLoading ? (
-        <div className="flex flex-col gap-[8px]">
-          <Skeleton width={180} height={28} animation="wave" />
-          <Skeleton width={120} height={16} animation="wave" />
-        </div>
+        <ContactHeaderSkeleton />
       ) : contact ? (
         <>
           <div className={cls.contactHeader}>
@@ -52,8 +53,8 @@ const ContactHeader: FC<Props> = ({ contact, isLoading }) => {
               <ContactInfoItem
                 icon={IconName.BUILDING_ICON}
                 value={contact.company.name}
-                isLink={true}
-                linkHref={"#"}
+                // TODO: Open company side panel
+                onClick={() => onCompanyClick?.(contact.company!.id)}
                 endIcon={IconName.POP_OUT_ICON}
               />
             )}
