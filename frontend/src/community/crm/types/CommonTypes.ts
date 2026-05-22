@@ -1,4 +1,5 @@
-import { CrmDealStageEnum } from "../enums/common";
+import { SortOrderTypes } from "~community/common/types/CommonTypes";
+import { CrmDealSortEnum, CrmDealStageEnum } from "../enums/common";
 
 // Pagination
 export interface PaginatedResponseType<T> {
@@ -93,6 +94,15 @@ export interface CrmContactType {
 export interface DealStage {
   id: number;
   name: string;
+  stage: CrmDealStageType;
+  priority: string | null;
+  closingAt: string | null;
+  amount: string | null;
+  currencyCode: string | null;
+  company: CrmCompanyType | null;
+  contact: CrmContactType;
+  owner: CrmOwnerType;
+  isDeleted: boolean;
 }
 
 export interface CrmDealStageType {
@@ -159,7 +169,7 @@ export interface CrmTaskType {
   id: number;
   name: string;
   type: CrmTaskCategory;
-  priority: CrmPriorityType;
+  priority: string;
   isCompleted: boolean;
   dueAt: string | null;
   notes: string | null;
@@ -176,10 +186,52 @@ export interface Priority {
   name: string;
 }
 
-export interface CrmPriorityType {
+export interface CrmDealCreateRequestType {
+  name: string;
+  stageId: number;
+  contactId: number;
+  ownerId: number;
+  priority?: string;
+  closingAt?: string;
+  amount?: string;
+  companyId?: number;
+  description?: string;
+}
+
+export interface CrmDealListItemType {
   id: number;
   name: string;
-  orderIndex: number;
+  stageId: number;
+  stageName: string;
+  stageColor?: string;
+  priority: string | null;
+  closingAt: string | null;
+  amount: string | null;
+  companyId: number | null;
+  companyName: string | null;
+  contactId: number;
+  contactName: string;
+  ownerId: number;
+  ownerName: string;
+  openTaskCount?: number;
+  overdueTaskCount?: number;
+}
+
+export interface CrmDealPaginatedResponseType {
+  items: CrmDealListItemType[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmDealFilterParams {
+  page: number;
+  size: number;
+  sortOrder: SortOrderTypes;
+  sortKey: CrmDealSortEnum;
+  searchKeyword?: string;
+  stageId?: number;
+  priority?: string;
 }
 
 // Contact Metrics (side-panel view — from /contacts/{id}/metrics endpoint)

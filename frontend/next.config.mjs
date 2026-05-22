@@ -2,6 +2,7 @@
 const nextConfig = {
   output: "standalone",
   reactStrictMode: false,
+  transpilePackages: ["@rootcodelabs/skapp-ui"],
   async rewrites() {
     const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
     return [
