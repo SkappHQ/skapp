@@ -6,7 +6,7 @@ export interface MetricChipProps {
   label: string;
   color: string;
   bgColor: string;
-  icon?: JSX.Element;
+  icon?: React.ReactNode;
 }
 
 export interface MetricItem {
