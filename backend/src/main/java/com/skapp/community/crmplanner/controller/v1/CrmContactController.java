@@ -27,8 +27,7 @@ public class CrmContactController {
 	@Operation(summary = "Create CRM contact", description = "Creates a CRM contact and assigns an owner.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@PostMapping
-	public ResponseEntity<ResponseEntityDto> createContact(
-			@RequestBody CrmContactCreateRequestDto requestDto) {
+	public ResponseEntity<ResponseEntityDto> createContact(@RequestBody CrmContactCreateRequestDto requestDto) {
 		ResponseEntityDto response = contactService.createContact(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}

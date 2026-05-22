@@ -10,6 +10,7 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponse
 public interface CrmCompanyRepository {
 
 	Page<CrmCompany> findCompanies(CrmCompanyFilterDto filterDto, Pageable pageable);
+
 	public Page<CrmCompanyMetricsResponseDto> getCompanyMetrics(Pageable pageable, String searchKeyword);
 
 }
