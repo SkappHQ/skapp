@@ -6,13 +6,13 @@ import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 const CrmCompanyModalSlice = (set: SetType<CrmCompanyModalSliceTypes>) => ({
   companyModalType: CrmModalTypes.NONE,
   selectedCompany: null as CrmCompanyMetricsType | null,
-  isAddCompanyModalOpen: false,
+  isCompanyModalOpen: false,
   setCompanyModalType: (companyModalType: CrmModalTypes) =>
     set({ companyModalType: companyModalType }),
   setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) =>
     set({ selectedCompany: selectedCompany }),
-  setIsAddCompanyModalOpen: (isAddCompanyModalOpen: boolean) =>
-    set({ isAddCompanyModalOpen: isAddCompanyModalOpen })
+  setIsCompanyModalOpen: (isCompanyModalOpen: boolean) =>
+    set({ isCompanyModalOpen: isCompanyModalOpen })
 });
 
 export default CrmCompanyModalSlice;

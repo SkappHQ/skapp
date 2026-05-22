@@ -37,8 +37,8 @@ const AddCompanyModal: React.FC = () => {
     "companyToastMessages"
   );
 
-  const { setIsAddCompanyModalOpen } = useCrmStore((store) => ({
-    setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
+  const { setIsCompanyModalOpen } = useCrmStore((store) => ({
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen
   }));
 
 
@@ -71,7 +71,7 @@ const AddCompanyModal: React.FC = () => {
   };
 
   const handleCloseModal = (): void => {
-    setIsAddCompanyModalOpen(false);
+    setIsCompanyModalOpen(false);
   };
 
   const { mutate: createNewCompany, isPending } = useCreateNewCompany(
