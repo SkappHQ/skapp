@@ -15,7 +15,14 @@ import { useGetAllManagerTeams } from "~community/people/api/TeamApi";
 import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverlay/UpgradeOverlay";
 
 const LeaveReportPage: NextPage = () => {
-  useBreadcrumbs(["leave"], ["leaveAnalytics"]);
+  useBreadcrumbs([
+    {
+      label: "leave"
+    },
+    {
+      label: "leaveAnalytics"
+    }
+  ]);
   const translateText = useTranslator("leaveModule", "leaveReports");
 
   const { data: teams } = useGetAllManagerTeams();

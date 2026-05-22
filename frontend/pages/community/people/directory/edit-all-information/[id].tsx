@@ -66,11 +66,18 @@ const EditAllInformation: NextPage = () => {
   const router = useRouter();
   const translateText = useTranslator("peopleModule");
 
-  useBreadcrumbs(
-    ["people"],
-    ["directory", ROUTES.PEOPLE.DIRECTORY],
-    ["editEmployeeProfile"]
-  );
+  useBreadcrumbs([
+    {
+      label: "people"
+    },
+    {
+      label: "directory",
+      href: ROUTES.PEOPLE.DIRECTORY
+    },
+    {
+      label: "editEmployeeProfile"
+    }
+  ]);
 
   const { setToastMessage, toastMessage } = useToast();
 

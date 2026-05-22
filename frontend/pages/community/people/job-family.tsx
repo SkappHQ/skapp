@@ -14,7 +14,14 @@ import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnum
 import { usePeopleStore } from "~community/people/store/store";
 
 const JobFamily: NextPage = () => {
-  useBreadcrumbs(["people", ROUTES.PEOPLE.BASE], ["jobFamilies"]);
+  useBreadcrumbs([
+    {
+      label: "people"
+    },
+    {
+      label: "jobFamilies"
+    }
+  ]);
   const translateText = useTranslator("peopleModule", "jobFamily");
 
   const { data: allJobFamiliesData, isPending: isJobFamilyPending } =

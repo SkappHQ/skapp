@@ -20,7 +20,14 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveEntitlements: NextPage = () => {
-  useBreadcrumbs(["leave"], ["leaveEntitlements"]);
+  useBreadcrumbs([
+    {
+      label: "leave"
+    },
+    {
+      label: "leaveEntitlements"
+    }
+  ]);
   const translateText = useTranslator("leaveModule", "leaveEntitlements");
 
   const { data: leaveTypesList } = useGetLeaveTypes(false, true);

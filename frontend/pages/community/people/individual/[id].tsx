@@ -3,11 +3,18 @@ import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import PeopleIndividual from "~community/people/components/template/PeopleIndividual/PeopleIndividual";
 
 const Individual = () => {
-  useBreadcrumbs(
-    ["people"],
-    ["directory", ROUTES.PEOPLE.DIRECTORY],
-    ["employeeProfile"]
-  );
+  useBreadcrumbs([
+    {
+      label: "people"
+    },
+    {
+      label: "directory",
+      href: ROUTES.PEOPLE.DIRECTORY
+    },
+    {
+      label: "employeeProfile"
+    }
+  ]);
   return <PeopleIndividual />;
 };
 

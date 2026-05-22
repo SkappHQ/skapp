@@ -15,7 +15,14 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Directory: NextPage = () => {
-  useBreadcrumbs(["people", ROUTES.PEOPLE.BASE], ["directory"]);
+  useBreadcrumbs([
+    {
+      label: "people"
+    },
+    {
+      label: "directory"
+    }
+  ]);
   const translateText = useTranslator("peopleModule", "peoples");
   const { user } = useAuth();
 

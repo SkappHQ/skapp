@@ -25,20 +25,22 @@ const Module: NextPage = () => {
     leave: "leaveModuleRoles",
     esign: "esignatureModuleRoles",
     invoice: "invoiceModuleRoles",
-    "project-management": "projectManagementModuleRoles"
+    projectManagement: "projectManagementModuleRoles"
   };
-  const breadcrumbLabel =
-    moduleLabels[module as string] || `${module}ModuleRoles`;
-  useBreadcrumbs(
-    ["configurations", ROUTES.CONFIGURATIONS.BASE],
-    [breadcrumbLabel]
-  );
+  const breadcrumbLabel = moduleLabels[module as string];
+  const translateText = useTranslator("breadcrumbs");
+  if (breadcrumbLabel) {
+    useBreadcrumbs([
+      { label: "configurations", href: ROUTES.CONFIGURATIONS.BASE },
+      { label: translateText([breadcrumbLabel]) }
+    ]);
+  }
 
   const formattedModule = useMemo(() => {
     return mapApiModuleToEnum(module?.toString());
   }, [module]);
 
-  const translateText = useTranslator("configurations", "userRoles");
+  const translateUserRoles = useTranslator("configurations", "userRoles");
 
   const { setIsUserRoleModalOpen, setModuleType } = useConfigurationStore();
 
@@ -64,9 +66,9 @@ const Module: NextPage = () => {
 
   return (
     <ContentLayout
-      pageHead={translateText(["pageHead"])}
-      title={translateText([`${module}Title`])}
-      primaryButtonText={translateText(["setRestrictionsBtnText"])}
+      pageHead={translateUserRoles(["pageHead"])}
+      title={translateUserRoles([`${module}Title`])}
+      primaryButtonText={translateUserRoles(["setRestrictionsBtnText"])}
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryBtnIconName={IconName.RESTRICTIONS_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}

@@ -9,7 +9,14 @@ import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const MyTimeSheet: NextPage = () => {
-  useBreadcrumbs(["timesheet"], ["myTimesheet"]);
+  useBreadcrumbs([
+    {
+      label: "timesheet"
+    },
+    {
+      label: "myTimesheet"
+    }
+  ]);
   const translateText = useTranslator("attendanceModule", "timesheet");
   const { setIsEmployeeTimesheetModalOpen, setEmployeeTimesheetModalType } =
     useAttendanceStore((state) => state);

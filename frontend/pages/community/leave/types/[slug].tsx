@@ -21,11 +21,18 @@ const LeaveType: NextPage = () => {
   const router = useRouter();
   const { slug } = router.query;
 
-  useBreadcrumbs(
-    ["leave"],
-    ["leaveTypes", ROUTES.LEAVE.TYPES],
-    ["editLeaveType"]
-  );
+  useBreadcrumbs([
+    {
+      label: "leave"
+    },
+    {
+      label: "leaveTypes",
+      href: ROUTES.LEAVE.TYPES
+    },
+    {
+      label: slug === LeaveTypeFormTypes.EDIT ? "editLeaveType" : "addLeaveType"
+    }
+  ]);
 
   const {
     isLeaveTypeFormDirty,

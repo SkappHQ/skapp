@@ -15,7 +15,14 @@ import { usePeopleStore } from "~community/people/store/store";
 import { TeamModelTypes } from "~community/people/types/TeamTypes";
 
 const Teams: NextPage = () => {
-  useBreadcrumbs(["people", ROUTES.PEOPLE.BASE], ["teams"]);
+  useBreadcrumbs([
+    {
+      label: "people"
+    },
+    {
+      label: "teams"
+    }
+  ]);
   const translateText = useTranslator("peopleModule", "teams");
   const [teamSearchTerm, setTeamSearchTerm] = useState<string>("");
 

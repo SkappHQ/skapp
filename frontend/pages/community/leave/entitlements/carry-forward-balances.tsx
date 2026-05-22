@@ -26,11 +26,18 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const CarryForwardBalances: NextPage = () => {
-  useBreadcrumbs(
-    ["leave"],
-    ["leaveEntitlements", ROUTES.LEAVE.LEAVE_ENTITLEMENTS],
-    ["carryForwardingBalance"]
-  );
+  useBreadcrumbs([
+    {
+      label: "leave"
+    },
+    {
+      label: "leaveEntitlements",
+      href: ROUTES.LEAVE.LEAVE_ENTITLEMENTS
+    },
+    {
+      label: "carryForwardingBalance"
+    }
+  ]);
   const router = useRouter();
 
   const translateText = useTranslator("leaveModule", "leaveCarryForward");

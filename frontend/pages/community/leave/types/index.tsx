@@ -13,7 +13,14 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveTypes: NextPage = () => {
-  useBreadcrumbs(["leave"], ["leaveTypes"]);
+  useBreadcrumbs([
+    {
+      label: "leave"
+    },
+    {
+      label: "leaveTypes"
+    }
+  ]);
   const translateText = useTranslator("leaveModule", "leaveTypes");
 
   const router = useRouter();

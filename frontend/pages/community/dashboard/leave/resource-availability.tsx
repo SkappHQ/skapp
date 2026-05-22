@@ -9,11 +9,18 @@ import ResourceAvailabilityCalendar from "~community/leave/components/organisms/
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
 
 const ResourceAvailability: NextPage = () => {
-  useBreadcrumbs(
-    ["dashboard", ROUTES.DASHBOARD.BASE],
-    ["leave"],
-    ["resourceAvailability"]
-  );
+  useBreadcrumbs([
+    {
+      label: "dashboard",
+      href: ROUTES.DASHBOARD.BASE
+    },
+    {
+      label: "leave"
+    },
+    {
+      label: "resourceAvailability"
+    }
+  ]);
   const translateText = useTranslator("leaveModule", "dashboard");
   const router = useRouter();
 

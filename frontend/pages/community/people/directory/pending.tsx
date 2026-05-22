@@ -16,11 +16,18 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Pending = () => {
-  useBreadcrumbs(
-    ["people"],
-    ["directory", ROUTES.PEOPLE.DIRECTORY],
-    ["pendingInvitations"]
-  );
+  useBreadcrumbs([
+    {
+      label: "people"
+    },
+    {
+      label: "directory",
+      href: ROUTES.PEOPLE.DIRECTORY
+    },
+    {
+      label: "pendingInvitations"
+    }
+  ]);
   const translateText = useTranslator("peopleModule", "peoples");
   const { user } = useAuth();
   const router = useRouter();

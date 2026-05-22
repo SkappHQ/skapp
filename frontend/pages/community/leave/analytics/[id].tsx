@@ -46,7 +46,14 @@ const TeamTimeSheetAnalytics: NextPage = () => {
   const router = useRouter();
   const translateText = useTranslator("attendanceModule", "dashboards");
 
-  useBreadcrumbs(["leave"], ["leaveAnalytics"]);
+  useBreadcrumbs([
+    {
+      label: "leave"
+    },
+    {
+      label: "leaveAnalytics"
+    }
+  ]);
 
   const [activeStep, setActiveStep] = useState("leaveAnalytics");
 

@@ -11,7 +11,14 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import PendingLeaveRequestTable from "~community/leave/components/molecules/PendingLeaveRequestTable/PendingLeaveRequestTable";
 
 const PendingLeave: NextPage = () => {
-  useBreadcrumbs(["leave"], ["pendingLeaveRequests"]);
+  useBreadcrumbs([
+    {
+      label: "leave"
+    },
+    {
+      label: "pendingLeaveRequests"
+    }
+  ]);
   const translateText = useTranslator("leaveModule", "pendingRequests");
 
   const [searchTerm, setSearchTerm] = useState<string | undefined>(undefined);

@@ -39,7 +39,7 @@ import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 
 const Account: NextPage = () => {
-  useBreadcrumbs(["account"]);
+  useBreadcrumbs([{ label: "account" }]);
 
   const router = useRouter();
 

@@ -20,7 +20,14 @@ import { useGetEmployeesAndTeamsForAnalytics } from "~community/people/api/Peopl
 import { usePeopleStore } from "~community/people/store/store";
 
 const AllTimesheetsPage: NextPage = () => {
-  useBreadcrumbs(["timesheet"], ["allTimesheets"]);
+  useBreadcrumbs([
+    {
+      label: "timesheet"
+    },
+    {
+      label: "allTimesheets"
+    }
+  ]);
   const translateText = useTranslator("attendanceModule", "timesheet");
   const router = useRouter();
 

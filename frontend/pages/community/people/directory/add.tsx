@@ -5,11 +5,18 @@ import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import PeopleDirectoryAdd from "~community/people/components/template/PeopleDirectoryAdd/PeopleDirectoryAdd";
 
 const AddPeople: NextPage = () => {
-  useBreadcrumbs(
-    ["people"],
-    ["directory", ROUTES.PEOPLE.DIRECTORY],
-    ["addTeamMembers"]
-  );
+  useBreadcrumbs([
+    {
+      label: "people"
+    },
+    {
+      label: "directory",
+      href: ROUTES.PEOPLE.DIRECTORY
+    },
+    {
+      label: "addTeamMembers"
+    }
+  ]);
   return <PeopleDirectoryAdd />;
 };
 

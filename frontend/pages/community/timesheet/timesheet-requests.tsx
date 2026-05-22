@@ -12,11 +12,18 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 
 const TimesheetRequestsPage: NextPage = () => {
-  useBreadcrumbs(
-    ["timesheet"],
-    ["allTimesheets", ROUTES.TIMESHEET.ALL_TIMESHEETS],
-    ["timeEntryRequests"]
-  );
+  useBreadcrumbs([
+    {
+      label: "timesheet"
+    },
+    {
+      label: "allTimesheets",
+      href: ROUTES.TIMESHEET.ALL_TIMESHEETS
+    },
+    {
+      label: "timeEntryRequests"
+    }
+  ]);
   const translateText = useTranslator("attendanceModule", "timesheet");
 
   const { approveTimesheetRequest, declineTimesheetRequest } =

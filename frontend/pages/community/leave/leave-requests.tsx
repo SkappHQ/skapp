@@ -24,7 +24,14 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveRequests: NextPage = () => {
-  useBreadcrumbs(["leave", ROUTES.LEAVE.BASE], ["allLeaveRequests"]);
+  useBreadcrumbs([
+    {
+      label: "leave"
+    },
+    {
+      label: "allLeaveRequests"
+    }
+  ]);
   const translateText = useTranslator("leaveModule", "leaveRequests");
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
   const router = useRouter();

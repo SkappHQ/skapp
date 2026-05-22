@@ -5,11 +5,18 @@ import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import AddNewResourceFlow from "~community/people/components/organisms/AddNewResourceFlow/AddNewResourceFlow";
 
 const AddNewResource: NextPage = () => {
-  useBreadcrumbs(
-    ["people"],
-    ["directory", ROUTES.PEOPLE.DIRECTORY],
-    ["addNewResource"]
-  );
+  useBreadcrumbs([
+    {
+      label: "people"
+    },
+    {
+      label: "directory",
+      href: ROUTES.PEOPLE.DIRECTORY
+    },
+    {
+      label: "addNewResource"
+    }
+  ]);
   return <AddNewResourceFlow />;
 };
 

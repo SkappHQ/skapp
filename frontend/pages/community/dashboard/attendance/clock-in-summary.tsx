@@ -8,11 +8,18 @@ import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const ClockInSummary: NextPage = () => {
-  useBreadcrumbs(
-    ["dashboard", ROUTES.DASHBOARD.BASE],
-    ["attendance"],
-    ["clockInSummary"]
-  );
+  useBreadcrumbs([
+    {
+      label: "dashboard",
+      href: ROUTES.DASHBOARD.BASE
+    },
+    {
+      label: "attendance"
+    },
+    {
+      label: "clockInSummary"
+    }
+  ]);
   const translateText = useTranslator("attendanceModule", "dashboards");
   const router = useRouter();
 

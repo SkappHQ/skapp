@@ -17,7 +17,14 @@ import {
 } from "~community/people/types/HolidayTypes";
 
 const Holidays: NextPage = () => {
-  useBreadcrumbs(["people", ROUTES.PEOPLE.BASE], ["holidays"]);
+  useBreadcrumbs([
+    {
+      label: "people"
+    },
+    {
+      label: "holidays"
+    }
+  ]);
   const translateText = useTranslator("peopleModule", "holidays");
 
   const [setPopupTitle] = useState<string | undefined>();

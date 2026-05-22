@@ -8,10 +8,18 @@ import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const LateArrivalsSummary: NextPage = () => {
-  useBreadcrumbs(
-    ["dashboard", ROUTES.DASHBOARD.BASE],
-    ["attendance", "lateArrivalsSummary"]
-  );
+  useBreadcrumbs([
+    {
+      label: "dashboard",
+      href: ROUTES.DASHBOARD.BASE
+    },
+    {
+      label: "attendance"
+    },
+    {
+      label: "lateArrivalsTableSummary"
+    }
+  ]);
   const translateText = useTranslator("attendanceModule", "dashboards");
   const router = useRouter();
 
