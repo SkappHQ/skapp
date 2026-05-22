@@ -1,15 +1,9 @@
-import {
-  ButtonV2,
-  CloseIcon,
-  EastArrowIcon,
-  InputField
-} from "@rootcodelabs/skapp-ui";
+import { ButtonV2, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
-// import { isValidPhoneNumber } from "~community/common/regex/regexPatterns";
-// Use InputField from @rootcodelabs/skapp-ui only
 
+import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -24,7 +18,7 @@ import {
 import CompanySearchField from "~community/crm/components/molecules/CompanySearchField/CompanySearchField";
 import OwnerSearchField from "~community/crm/components/molecules/OwnerSearchField/OwnerSearchField";
 import { useCrmStore } from "~community/crm/store/store";
-import { ContactOwner } from "~community/crm/types/CommonTypes";
+import { ContactOwner, CreateContactPayload } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 interface CreateContactFormValues {
@@ -38,16 +32,16 @@ interface CreateContactFormValues {
 }
 
 const CreateContactModal = () => {
+  const { setToastMessage } = useToast();
+
   const translateText = useTranslator(
     "crmModule",
     "contacts",
     "createContactModal"
   );
+
   const countryCode = useGetDefaultCountryCode();
-  const { setToastMessage } = useToast();
-
   const { setIsAddContactModalOpen, setCrmModalType } = useCrmStore((state) => state);
-
   const { isCrmAdmin, isCrmSalesManager, isCrmSalesRepresentative, isSuperAdmin } = useSessionData();
   const { data: me } = useGetUserPersonalDetails();
 
@@ -71,7 +65,7 @@ const CreateContactModal = () => {
 
   const [selectedOwner, setSelectedOwner] = useState<ContactOwner | null>(null);
 
-  const { data: companiesData }= useGetCrmCompanies({ page: 0, size: 100 });
+  const { data: companiesData } = useGetCrmCompanies({ page: 0, size: 100 });
   const { data: ownersData } = useGetCrmOwners({ page: 0, size: 100 });
 
   const companyOptions = (companiesData?.items ?? []).map((c) => ({
@@ -88,34 +82,50 @@ const CreateContactModal = () => {
     crmRole: o.crmRole
   }));
 
-  const validationSchema = Yup.object({
-    name: Yup.string().required(translateText(["contactNameRequired"])),
-    email: Yup.string()
-      .required(translateText(["emailRequired"]))
-      .email(translateText(["emailInvalid"]))
-    // Add phone validation here if needed
+  const handleSuccess = () => {
+    setSubmitting(false);
+    handleCloseModal();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["createContactSuccessTitle"]),
+      description: translateText(["createContactSuccess"])
+    });
+  };
+
+  const handleError = (message: string) => {
+    setSubmitting(false);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["createContactErrorTitle"]),
+      description: message
+    });
+  };
+
+  const handleCloseModal = (): void => {
+    setIsAddContactModalOpen(false);
+    setCrmModalType(CrmModalTypes.ADD_CONTACT_MODAL);
+  };
+
+  const { mutate: createContact, isPending } = useCreateContact({
+    onSuccess: handleSuccess,
+    onError: handleError
   });
 
-  const { mutate, isPending } = useCreateContact({
-    onSuccess: () => {
-      setIsAddContactModalOpen(false);
-      setCrmModalType(CrmModalTypes.ADD_CONTACT_MODAL);
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["createContactSuccessTitle"]),
-        description: translateText(["createContactSuccess"])
-      });
-    },
-    onError: (message: string) => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["createContactErrorTitle"]),
-        description: message
-      });
-    }
-  });
+  const submitContact = (values: CreateContactFormValues) => {
+    const payload: CreateContactPayload = {
+      name: values.name.trim(),
+      email: values.email.trim(),
+      companyId: values.companyId ?? undefined,
+      contactNumber: values.contactNumber
+        ? `+${values.countryCode}${values.contactNumber}`
+        : undefined,
+      ownerId: values.ownerId ?? undefined
+    };
+
+    createContact(payload);
+  };
 
   const formik = useFormik<CreateContactFormValues>({
     initialValues: {
@@ -127,37 +137,34 @@ const CreateContactModal = () => {
       countryCode,
       ownerId: defaultOwner?.employeeId ?? null
     },
-    validationSchema,
+    onSubmit: submitContact,
+    validationSchema: Yup.object({
+      name: Yup.string().required(translateText(["contactNameRequired"])),
+      email: Yup.string()
+        .required(translateText(["emailRequired"]))
+        .email(translateText(["emailInvalid"]))
+    }),
     validateOnChange: false,
-    validateOnBlur: true,
-    onSubmit: (values) => {
-      mutate({
-        name: values.name,
-        email: values.email,
-        companyId: values.companyId || undefined,
-        contactNumber:
-          values.contactNumber
-            ? `+${values.countryCode}${values.contactNumber}`
-            : undefined,
-        ownerId: values.ownerId || undefined
-      });
-    }
+    validateOnBlur: false,
+    enableReinitialize: true
   });
+
+  const {
+    values,
+    errors,
+    handleChange,
+    isSubmitting,
+    setFieldValue,
+    setSubmitting,
+    submitForm
+  } = formik;
 
   useEffect(() => {
     if (defaultOwner && !selectedOwner) {
       setSelectedOwner(defaultOwner);
-      formik.setFieldValue("ownerId", defaultOwner.employeeId);
+      setFieldValue("ownerId", defaultOwner.employeeId);
     }
   }, [defaultOwner]);
-
-  const { values, errors, setFieldValue, setFieldError, handleSubmit } = formik;
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFieldValue(name, value);
-    setFieldError(name, "");
-  };
 
   const handleOwnerSelect = (owner: ContactOwner) => {
     setSelectedOwner(owner);
@@ -174,30 +181,26 @@ const CreateContactModal = () => {
       <InputField
         name="name"
         label={translateText(["contactName"])}
-        value={values.name || ""}
         placeholder={translateText(["enterContactName"])}
-        onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-          handleChange(e);
-        }}
+        value={values.name}
         errorMessage={errors.name || ""}
         state={errors.name ? "error" : "default"}
-        aria-label={translateText(["contactName"])}
         required
+        onChange={handleChange}
+        aria-label={translateText(["contactName"])}
         fullWidth
       />
 
       <InputField
         name="email"
         label={translateText(["email"])}
-        value={values.email || ""}
         placeholder={translateText(["enterEmail"])}
-        onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-          handleChange(e);
-        }}
+        value={values.email}
         errorMessage={errors.email || ""}
         state={errors.email ? "error" : "default"}
-        aria-label={translateText(["email"])}
         required
+        onChange={handleChange}
+        aria-label={translateText(["email"])}
         fullWidth
       />
 
@@ -218,13 +221,11 @@ const CreateContactModal = () => {
       <InputField
         name="contactNumber"
         label={translateText(["contactNo"])}
-        value={values.contactNumber || ""}
         placeholder={translateText(["enterContactNo"])}
-        onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-          handleChange(e);
-        }}
+        value={values.contactNumber}
         errorMessage={errors.contactNumber || ""}
         state={errors.contactNumber ? "error" : "default"}
+        onChange={handleChange}
         aria-label={translateText(["contactNo"])}
         fullWidth
       />
@@ -243,33 +244,21 @@ const CreateContactModal = () => {
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
           variant="tertiary"
+          type="button"
+          disabled={isSubmitting}
+          onClick={handleCloseModal}
           icon={<CloseIcon />}
           iconPosition="end"
-          type="button"
-          onClick={() => { setIsAddContactModalOpen(false); setCrmModalType(CrmModalTypes.ADD_CONTACT_MODAL); }}
+          aria-label={translateText(["cancel"])}
         >
           {translateText(["cancel"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
-          // icon={<EastArrowIcon />}
-          // iconPosition="end"
           type="button"
-          disabled={isPending}
-          onClick={async () => {
-            // Mark all fields as touched
-            formik.setTouched({
-              name: true,
-              email: true,
-              company: true,
-              contactNumber: true,
-              ownerId: true
-            });
-            const errors = await formik.validateForm();
-            if (Object.keys(errors).length === 0) {
-              handleSubmit();
-            }
-          }}
+          onClick={() => submitForm()}
+          disabled={isSubmitting || isPending}
+          aria-label={translateText(["save"])}
         >
           {translateText(["save"])}
         </ButtonV2>
