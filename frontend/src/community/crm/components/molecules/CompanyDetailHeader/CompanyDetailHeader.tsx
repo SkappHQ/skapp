@@ -1,4 +1,3 @@
-import { Theme, useTheme } from "@mui/material/styles";
 import React from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
