@@ -2,8 +2,12 @@ package com.skapp.community.common.constant;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.regex.Pattern;
+
 @UtilityClass
 public class ValidationConstant {
+
+	public static final Pattern LIKE_WILDCARD_PATTERN = Pattern.compile("([\\\\%_])");
 
 	/**
 	 * This pattern validates the hexadecimal color code should consist of letters A-F and

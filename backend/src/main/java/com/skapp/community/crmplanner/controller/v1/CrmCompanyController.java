@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyMetricRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +29,15 @@ import lombok.RequiredArgsConstructor;
 public class CrmCompanyController {
 
 	private final CrmCompanyService companyService;
+
+	@Operation(summary = "Get CRM companies for lookup",
+			description = "Retrieves a paginated list of CRM companies (id + name) for use in dropdowns and contact forms.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping("/lookup")
+	public ResponseEntity<ResponseEntityDto> getCompaniesLookup(CrmCompanyFilterDto filterDto) {
+		ResponseEntityDto response = companyService.getCompanies(filterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 	@Operation(summary = "Check if a company name exists",
 			description = "Check if a company with the given name already exists")
