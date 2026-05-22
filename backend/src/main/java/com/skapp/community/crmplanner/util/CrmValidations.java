@@ -35,6 +35,10 @@ public class CrmValidations {
 		if (name.trim().length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_TOO_LONG);
 		}
+
+		if (!name.trim().matches(CrmConstants.CONTACT_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID);
+		}
 	}
 
 	public static void validateContactEmail(String email) {

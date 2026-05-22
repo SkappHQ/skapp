@@ -10,6 +10,7 @@ public enum CrmMessageConstant implements MessageConstant {
 
 	CRM_ERROR_CONTACT_NAME_REQUIRED("api.error.crm.contact-name-required"),
 	CRM_ERROR_CONTACT_NAME_TOO_LONG("api.error.crm.contact-name-too-long"),
+	CRM_ERROR_CONTACT_NAME_INVALID("api.error.crm.contact-name-invalid"),
 	CRM_ERROR_CONTACT_EMAIL_REQUIRED("api.error.crm.contact-email-required"),
 	CRM_ERROR_CONTACT_EMAIL_INVALID("api.error.crm.contact-email-invalid"),
 	CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS("api.error.crm.contact-email-already-exists"),
