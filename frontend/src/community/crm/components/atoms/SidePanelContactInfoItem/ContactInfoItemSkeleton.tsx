@@ -14,7 +14,7 @@ export const ContactInfoItemSkeleton: FC<ContactInfoItemSkeletonProps> = ({
             <div className="h-[13.33px] w-[16.67px] rounded-[4px] bg-[#F5F5F5] shrink-0" />
             <div className={`h-[10px]  ${widthClass} rounded-[4px] bg-[#F5F5F5]`} />
             {hasEndIcon && (
-                <div className="h-4 w-4 rounded-bg-[#F5F5F5] shrink-0 ml-[4px]" />
+                <div className="h-4 w-4 rounded bg-[#F5F5F5] shrink-0 ml-[4px]" />
             )}
         </div>
     );

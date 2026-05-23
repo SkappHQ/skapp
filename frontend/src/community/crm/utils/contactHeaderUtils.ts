@@ -1,10 +1,9 @@
-export const formatLastUpdated = (lastContactAt: string | null): string => {
-  if (!lastContactAt) return "Never";
+export const formatLastUpdated = (lastContactAt: string): string => {
+  if (!lastContactAt) return "";
   const date = new Date(lastContactAt);
   const day = date.getDate();
   const month = date.toLocaleString("en-US", { month: "long" });
   const year = date.getFullYear();
-  // Helper for ordinal suffix
   const getOrdinal = (n: number) => {
     if (n > 3 && n < 21) return "th";
     switch (n % 10) {
