@@ -12,7 +12,7 @@ interface Props {
     onClick?: () => void;
 }
 
-const ContactInfoItem: FC<Props> = ({
+const SidePanelContactInfoItem: FC<Props> = ({
     icon,
     value,
     endIcon,
@@ -77,4 +77,4 @@ const ContactInfoItem: FC<Props> = ({
 
 
 
-export default ContactInfoItem;
+export default SidePanelContactInfoItem;

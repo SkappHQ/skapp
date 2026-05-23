@@ -2,7 +2,7 @@ import { FC } from "react";
 
 
 import { IconName } from "~community/common/types/IconTypes";
-import ContactInfoItem from "~community/crm/components/atoms/SidePanelContactInfoItem/SidePanelContactInfoItem";
+import SidePanelContactInfoItem from "~community/crm/components/atoms/SidePanelContactInfoItem/SidePanelContactInfoItem";
 import {
     ContactHeaderSkeleton
 } from "~community/crm/components/atoms/SidePanelContactInfoItem/ContactInfoItemSkeleton";
@@ -19,7 +19,7 @@ interface Props {
     onCompanyClick?: (companyId: number) => void;
 }
 
-const ContactHeader: FC<Props> = ({ contact, isLoading, onCompanyClick }) => {
+const SidePanelContactHeader: FC<Props> = ({ contact, isLoading, onCompanyClick }) => {
     const cls = styles;
     const translateText = useTranslator(
         "crmModule",
@@ -42,16 +42,16 @@ const ContactHeader: FC<Props> = ({ contact, isLoading, onCompanyClick }) => {
                         </p>
                     </div>
                     <div className={cls.infoRow}>
-                        <ContactInfoItem icon={IconName.EMAIL_ICON} value={contact.email} />
+                        <SidePanelContactInfoItem icon={IconName.EMAIL_ICON} value={contact.email} />
 
-                        <ContactInfoItem
+                        <SidePanelContactInfoItem
                             icon={IconName.LOCAL_PHONE_ICON}
                             value={contact.contactNumber}
                         />
 
                         {contact.company && (
-                            <ContactInfoItem
-                                icon={<BuildingIcon />}
+                            <SidePanelContactInfoItem
+                                icon={<BuildingIcon color={cls.iconFill} />}
                                 value={contact.company.name}
                                 // TODO: Open company side panel
                                 onClick={
@@ -71,4 +71,4 @@ const ContactHeader: FC<Props> = ({ contact, isLoading, onCompanyClick }) => {
     );
 };
 
-export default ContactHeader;
+export default SidePanelContactHeader;
