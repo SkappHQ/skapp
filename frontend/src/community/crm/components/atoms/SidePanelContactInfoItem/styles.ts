@@ -6,12 +6,12 @@ const styles = {
   plainText:
     "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-black",
   emptyText:
-    "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-[#9ca3af]",
+    "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-primary-test",
   link: "flex items-center gap-[4px]",
   linkText:
-    "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-[#2a61a0] underline",
-  iconFill: "#68707F",
-  endIconFill: "#2a61a0"
+    "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-primary-text underline",
+  iconFill: "var(--color-secondary-icon)",
+  endIconFill: "var(--color-primary-text)"
 };
 
 export default styles;
