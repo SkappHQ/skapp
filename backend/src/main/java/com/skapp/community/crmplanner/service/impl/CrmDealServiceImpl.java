@@ -69,7 +69,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_INVALID_CHARS);
 		}
 
-		if (requestDto.getPriority() != null && !Arrays.asList(CrmDealPriority.values()).contains(requestDto.getPriority())) {
+		if (requestDto.getPriority() != null
+				&& !Arrays.asList(CrmDealPriority.values()).contains(requestDto.getPriority())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND);
 		}
 
@@ -82,10 +83,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
 
 		CrmCompany company = null;
 		if (requestDto.getCompanyId() != null) {
@@ -93,7 +94,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_COMPANY_MISMATCH);
 			}
 			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
+					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
 		}
 
 		if (requestDto.getOwnerId() == null) {
@@ -103,6 +104,11 @@ public class CrmDealServiceImpl implements CrmDealService {
 		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
 		if (owner == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
+		}
+
+		if (owner.getEmployeeRole() == null || owner.getEmployeeRole().getCrmRole() == null
+				|| !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(owner.getEmployeeRole().getCrmRole())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_INVALID_ROLE);
 		}
 
 		CrmDeal deal = new CrmDeal();
