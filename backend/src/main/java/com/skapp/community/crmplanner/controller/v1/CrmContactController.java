@@ -44,7 +44,7 @@ public class CrmContactController {
 
 	@Operation(summary = "Delete CRM contact",
 			description = "Soft-deletes a contact and all associated deals and tasks.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_CRM_ADMIN', 'ROLE_CRM_SALES_MANAGER')")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
 	@PatchMapping("/{id}/delete")
 	public ResponseEntity<ResponseEntityDto> deleteContact(@PathVariable Long id) {
 		ResponseEntityDto response = contactService.deleteContact(id);
