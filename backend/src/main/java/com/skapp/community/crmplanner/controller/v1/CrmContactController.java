@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,7 +45,7 @@ public class CrmContactController {
 	@Operation(summary = "Delete CRM contact",
 			description = "Soft-deletes a contact and all associated deals and tasks.")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
-	@PatchMapping("/{id}/delete")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<ResponseEntityDto> deleteContact(@PathVariable Long id) {
 		ResponseEntityDto response = contactService.deleteContact(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
