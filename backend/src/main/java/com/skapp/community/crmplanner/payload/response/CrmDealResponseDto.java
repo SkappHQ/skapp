@@ -14,6 +14,8 @@ public class CrmDealResponseDto {
 
 	private String name;
 
+	private String description;
+
 	private Long stageId;
 
 	private String stageName;

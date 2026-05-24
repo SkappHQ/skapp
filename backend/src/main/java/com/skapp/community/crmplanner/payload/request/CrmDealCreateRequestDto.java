@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 public class CrmDealCreateRequestDto {
 
 	private String name;
+	
+	private String description;
 
 	private Long stageId;
 

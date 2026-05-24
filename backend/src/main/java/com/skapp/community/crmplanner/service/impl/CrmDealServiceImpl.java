@@ -6,7 +6,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.mapper.CrmDealMapper;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -48,7 +48,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	private final EmployeeDao employeeDao;
 
-	private final CrmDealMapper crmDealMapper;
+	private final CrmMapper crmMapper;
 
 	private final PageTransformer pageTransformer;
 
@@ -67,6 +67,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		if (requestDto.getName().chars().anyMatch(Character::isISOControl)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_INVALID_CHARS);
+		}
+
+		if (requestDto.getPriority() != null && !Arrays.asList(CrmDealPriority.values()).contains(requestDto.getPriority())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND);
 		}
 
 		if (requestDto.getStageId() == null) {
@@ -103,6 +107,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDeal deal = new CrmDeal();
 		deal.setName(requestDto.getName());
+		deal.setDescription(requestDto.getDescription());
 		deal.setStage(stage);
 		deal.setPriority(requestDto.getPriority());
 		deal.setClosingAt(requestDto.getClosingAt());
@@ -112,7 +117,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setOwner(owner);
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		CrmDealResponseDto responseDto = crmDealMapper.crmDealToCrmDealResponseDto(savedDeal);
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
 		log.info("createDeal: deal created with id={}", savedDeal.getId());
 		return new ResponseEntityDto(false, responseDto);
@@ -127,24 +132,13 @@ public class CrmDealServiceImpl implements CrmDealService {
 		Page<CrmDeal> dealsPage = crmDealDao.findDeals(filterDto,
 				PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort));
 
-		List<CrmDealResponseDto> deals = crmDealMapper.crmDealsToCrmDealResponseDtos(dealsPage.getContent());
+		List<CrmDealResponseDto> deals = crmMapper.crmDealsToCrmDealResponseDtos(dealsPage.getContent());
 
 		PageDto pageDto = pageTransformer.transform(dealsPage);
 		pageDto.setItems(deals);
 
 		log.info("getDeals: execution ended with {} result(s)", deals.size());
 		return new ResponseEntityDto(false, pageDto);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto getPriorities() {
-		log.info("getPriorities: execution started");
-
-		List<CrmDealPriority> priorities = Arrays.asList(CrmDealPriority.values());
-
-		log.info("getPriorities: execution ended with {} result(s)", priorities.size());
-		return new ResponseEntityDto(false, priorities);
 	}
 
 }
