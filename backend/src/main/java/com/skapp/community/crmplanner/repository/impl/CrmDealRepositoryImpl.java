@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.repository.impl;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
+import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
@@ -34,7 +35,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmDealSummary> query = cb.createQuery(CrmDealSummary.class);
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
-		Join<?, ?> stage = deal.join(CrmDeal_.stage);
+		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage);
 
 		query.select(cb.construct(CrmDealSummary.class,
 				deal.get(CrmDeal_.contact).get(CrmContact_.id),

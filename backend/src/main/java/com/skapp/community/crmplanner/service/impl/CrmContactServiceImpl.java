@@ -37,7 +37,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -124,37 +123,20 @@ public class CrmContactServiceImpl implements CrmContactService {
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<CrmContact> contactPage = crmContactDao.findContacts(filterDto, pageable);
 
-		List<CrmContact> contacts = contactPage.getContent();
-		List<CrmContactListItemDto> contactDtos;
+		List<Long> contactIds = contactPage.getContent().stream().map(CrmContact::getId).toList();
 
-		if (contacts.isEmpty()) {
-			contactDtos = Collections.emptyList();
-		}
-		else {
-			List<Long> contactIds = contacts.stream().map(CrmContact::getId).toList();
+		Map<Long, CrmDealSummary> dealSummaryMap = crmDealDao.findClosedDealSummaryByContactIds(contactIds)
+			.stream()
+			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
 
-			Map<Long, CrmDealSummary> dealSummaryMap = crmDealDao.findClosedDealSummaryByContactIds(contactIds)
-				.stream()
-				.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
+		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao.findOpenTaskSummaryByContactIds(contactIds)
+			.stream()
+			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
 
-			Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao.findOpenTaskSummaryByContactIds(contactIds)
-				.stream()
-				.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
-
-			contactDtos = contacts.stream().map(c -> {
-				CrmContactListItemDto dto = crmMapper.crmContactToCrmContactListItemDto(c);
-
-				CrmDealSummary deals = dealSummaryMap.get(c.getId());
-				dto.setClosedDealValue(deals != null ? deals.getTotalClosedValue() : BigDecimal.ZERO);
-				dto.setClosedDealCount(deals != null ? deals.getClosedDealCount() : 0L);
-
-				CrmTaskSummary tasks = taskSummaryMap.get(c.getId());
-				dto.setOpenTaskCount(tasks != null ? tasks.getOpenTaskCount() : 0L);
-				dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
-
-				return dto;
-			}).toList();
-		}
+		List<CrmContactListItemDto> contactDtos = contactPage.getContent()
+			.stream()
+			.map(c -> enrichWithMetrics(c, dealSummaryMap, taskSummaryMap))
+			.toList();
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(contactDtos);
@@ -164,6 +146,21 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactMetrics: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	private CrmContactListItemDto enrichWithMetrics(CrmContact contact, Map<Long, CrmDealSummary> dealSummaryMap,
+			Map<Long, CrmTaskSummary> taskSummaryMap) {
+		CrmContactListItemDto dto = crmMapper.crmContactToCrmContactListItemDto(contact);
+
+		CrmDealSummary deals = dealSummaryMap.get(contact.getId());
+		dto.setClosedDealValue(deals != null ? deals.getTotalClosedValue() : BigDecimal.ZERO);
+		dto.setClosedDealCount(deals != null ? deals.getClosedDealCount() : 0L);
+
+		CrmTaskSummary tasks = taskSummaryMap.get(contact.getId());
+		dto.setOpenTaskCount(tasks != null ? tasks.getOpenTaskCount() : 0L);
+		dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
+
+		return dto;
 	}
 
 	private Employee resolveOwner(Long ownerId, User currentUser) {
