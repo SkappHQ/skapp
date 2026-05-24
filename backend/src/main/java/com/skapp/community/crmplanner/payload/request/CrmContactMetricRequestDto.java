@@ -3,8 +3,6 @@ package com.skapp.community.crmplanner.payload.request;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 public class CrmContactMetricRequestDto {
@@ -15,6 +13,6 @@ public class CrmContactMetricRequestDto {
 
 	private String searchKeyword;
 
-	private List<Long> companyIds;
+	private Long companyId;
 
 }

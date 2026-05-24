@@ -83,9 +83,9 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.like(cb.lower(owner.get(Employee_.lastName)), likePattern, '\\')));
 		}
 
-		List<Long> companyIds = filterDto.getCompanyIds();
-		if (companyIds != null && !companyIds.isEmpty()) {
-			predicates.add(company.get(CrmCompany_.id).in(companyIds));
+		Long companyId = filterDto.getCompanyId();
+		if (companyId != null) {
+			predicates.add(cb.equal(company.get(CrmCompany_.id), companyId));
 		}
 
 		return predicates.toArray(new Predicate[0]);
