@@ -50,7 +50,7 @@ const ContactHeader: FC<Props> = ({ contact, isLoading, onCompanyClick }) => {
 
                         {contact.company && (
                             <ContactInfoItem
-                                icon={<BuildingIcon color={cls.iconFill} />}
+                                icon={IconName.BUILDING_ICON}
                                 value={contact.company.name}
                                 // TODO: Open company side panel
                                 onClick={

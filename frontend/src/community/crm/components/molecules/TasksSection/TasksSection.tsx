@@ -1,4 +1,4 @@
-﻿import { Skeleton } from "@mui/material";
+import { Skeleton } from "@mui/material";
 import {
   Avatar,
   EmptyDataView,
@@ -11,7 +11,6 @@ import { FC, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetTasksByContactId,
@@ -121,7 +120,6 @@ const TasksSection: FC<Props> = ({ contactId }) => {
         <div className={styles.taskSection}>
           <div className={styles.taskList}>
             {tasks.map((task, idx) => {
-              const typeConfig = getTaskTypeConfig(task.type.name);
               const priorityConfig = getPriorityConfig(task.priority);
               const dueDateDisplay = getDueDateDisplay(
                 task.dueAt,
@@ -147,11 +145,7 @@ const TasksSection: FC<Props> = ({ contactId }) => {
                     />
 
                     <div>
-                      <Icon
-                        name={typeConfig.iconName}
-                        width="20"
-                        height="20"
-                      />
+                      {getTaskTypeConfig(task.type.name)}
                     </div>
 
                     <div className={styles.taskContent}>

@@ -1,20 +1,17 @@
 import {
+  EmailFilledIcon,
   HighPriorityIcon,
   LowPriorityIcon,
-  MediumPriorityIcon
+  MediumPriorityIcon,
+  MeetingFilledIcon,
+  OtherFilledIcon,
+  PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
 import { ReactElement, ReactNode } from "react";
-
-import Icon from "~community/common/components/atoms/Icon/Icon";
-import { IconName } from "~community/common/types/IconTypes";
 
 export interface PriorityConfig {
   icon: ReactElement;
   bgColor: string;
-}
-
-export interface TaskTypeConfig {
-  iconName: IconName;
 }
 
 export interface DueDateDisplay {
@@ -44,18 +41,18 @@ export const TASK_TYPES = [
 
 export type TaskTypeValue = (typeof TASK_TYPES)[number]["value"];
 
-export const getTaskTypeConfig = (typeName: string): TaskTypeConfig => {
+export const getTaskTypeConfig = (typeName: string): ReactNode => {
   switch (typeName.toLowerCase()) {
     case "email":
-      return { iconName: IconName.ROUND_EMAIL_ICON };
+      return <EmailFilledIcon />;
     case "call":
-      return { iconName: IconName.ROUND_PHONE_ICON };
+      return <PhoneFilledIcon />;
     case "meeting":
-      return { iconName: IconName.ROUND_MEETING_ICON };
+      return <MeetingFilledIcon />;
     case "other":
-      return { iconName: IconName.ROUND_MORE_ICON };
+      return <OtherFilledIcon />;
     default:
-      return { iconName: IconName.ROUND_EMAIL_ICON };
+      return <EmailFilledIcon />;
   }
 };
 
@@ -72,10 +69,9 @@ export const TASK_TYPE_OPTIONS: TaskTypeOption[] = [
   { id: "meeting", label: "Meeting", value: "meeting" },
   { id: "other", label: "Other", value: "other" }
 ].map((t) => {
-  const config = getTaskTypeConfig(t.value);
   const iconEl = (
     <div>
-      <Icon name={config.iconName} fill="white" width="20" height="20" />
+      {getTaskTypeConfig(t.value)}
     </div>
   );
   return {
