@@ -37,8 +37,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
 		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage);
 
-		query.select(cb.construct(CrmDealSummary.class,
-				deal.get(CrmDeal_.contact).get(CrmContact_.id),
+		query.select(cb.construct(CrmDealSummary.class, deal.get(CrmDeal_.contact).get(CrmContact_.id),
 				cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO),
 				cb.count(deal.get(CrmDeal_.id))));
 

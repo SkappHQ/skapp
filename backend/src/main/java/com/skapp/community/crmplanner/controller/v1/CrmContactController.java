@@ -50,5 +50,4 @@ public class CrmContactController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-
 }

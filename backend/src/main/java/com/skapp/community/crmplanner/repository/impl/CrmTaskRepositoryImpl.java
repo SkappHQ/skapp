@@ -31,8 +31,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		CriteriaQuery<CrmTaskSummary> query = cb.createQuery(CrmTaskSummary.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
-		query.select(cb.construct(CrmTaskSummary.class,
-				task.get(CrmTask_.contact).get(CrmContact_.id),
+		query.select(cb.construct(CrmTaskSummary.class, task.get(CrmTask_.contact).get(CrmContact_.id),
 				cb.count(task.get(CrmTask_.id)),
 				cb.sum(cb.<Long>selectCase()
 					.when(cb.and(cb.isNotNull(task.get(CrmTask_.dueAt)),
@@ -40,8 +39,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 					.otherwise(0L))));
 
 		query.where(task.get(CrmTask_.contact).get(CrmContact_.id).in(contactIds),
-				cb.isFalse(task.get(CrmTask_.isCompleted)),
-				cb.isFalse(task.get(CrmTask_.isDeleted)));
+				cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isFalse(task.get(CrmTask_.isDeleted)));
 
 		query.groupBy(task.get(CrmTask_.contact).get(CrmContact_.id));
 

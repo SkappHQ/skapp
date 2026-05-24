@@ -58,12 +58,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return new PageImpl<>(typedQuery.getResultList(), pageable, getTotalCount(cb, filterDto));
 	}
 
-	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<CrmContact> contact,
-			CriteriaQuery<CrmContact> query) {
+	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<CrmContact> contact, CriteriaQuery<CrmContact> query) {
 		Subquery<BigDecimal> dealValueSub = query.subquery(BigDecimal.class);
 		Root<CrmDeal> deal = dealValueSub.from(CrmDeal.class);
-		dealValueSub
-			.select(cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+		dealValueSub.select(cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
 			.where(cb.equal(deal.get(CrmDeal_.contact), contact),
 					cb.equal(deal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON),
 					cb.isFalse(deal.get(CrmDeal_.isDeleted)));
@@ -71,9 +69,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return List.of(cb.desc(dealValueSub), cb.asc(contact.get(CrmContact_.id)));
 	}
 
-	private Predicate[] buildPredicates(CriteriaBuilder cb, Root<CrmContact> contact,
-			Join<CrmContact, Employee> owner, Join<CrmContact, CrmCompany> company,
-			CrmContactMetricRequestDto filterDto) {
+	private Predicate[] buildPredicates(CriteriaBuilder cb, Root<CrmContact> contact, Join<CrmContact, Employee> owner,
+			Join<CrmContact, CrmCompany> company, CrmContactMetricRequestDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
@@ -100,8 +97,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Join<CrmContact, Employee> owner = contact.join(CrmContact_.owner, JoinType.INNER);
 		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
 
-		countQuery.select(cb.count(contact))
-			.where(buildPredicates(cb, contact, owner, company, filterDto));
+		countQuery.select(cb.count(contact)).where(buildPredicates(cb, contact, owner, company, filterDto));
 
 		return entityManager.createQuery(countQuery).getSingleResult();
 	}
