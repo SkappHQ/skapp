@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,11 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,5 +36,15 @@ public class CrmContactController {
 		ResponseEntityDto response = contactService.getContactOwners(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@Operation(summary = "Get contacts metrics",
+			description = "Returns all details related to contact info, tasks and deals")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping(value = "/metrics")
+	public ResponseEntity<ResponseEntityDto> getContacts(CrmContactMetricRequestDto filterDto) {
+		ResponseEntityDto response = contactService.getContactMetrics(filterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 
 }
