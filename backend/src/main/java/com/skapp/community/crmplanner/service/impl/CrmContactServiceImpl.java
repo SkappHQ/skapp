@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -17,6 +18,8 @@ import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDt
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -42,11 +45,17 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
+	private final CrmDealDao crmDealDao;
+
+	private final CrmTaskDao crmTaskDao;
+
 	private final EmployeeDao employeeDao;
 
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final UserService userService;
+
+	private final MessageUtil messageUtil;
 
 	private final CrmMapper crmMapper;
 
@@ -99,6 +108,25 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactOwners: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteContact(Long id) {
+		log.info("deleteContact: execution started");
+
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		crmTaskDao.softDeleteByContactId(id);
+		crmTaskDao.softDeleteByDealContactId(id);
+		crmDealDao.softDeleteByContactId(id);
+
+		contact.setIsDeleted(true);
+		crmContactDao.save(contact);
+
+		log.info("deleteContact: execution ended");
+		return new ResponseEntityDto(false, messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_CONTACT_DELETED));
 	}
 
 	private Employee resolveOwner(Long ownerId, User currentUser) {
