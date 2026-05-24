@@ -12,6 +12,8 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
@@ -118,9 +120,17 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
-		crmTaskDao.softDeleteByContactId(id);
-		crmTaskDao.softDeleteByDealContactId(id);
-		crmDealDao.softDeleteByContactId(id);
+		List<CrmTask> directTasks = crmTaskDao.findByContact_IdAndIsDeletedFalse(id);
+		directTasks.forEach(t -> t.setIsDeleted(true));
+		crmTaskDao.saveAll(directTasks);
+
+		List<CrmTask> dealTasks = crmTaskDao.findByDeal_Contact_IdAndIsDeletedFalse(id);
+		dealTasks.forEach(t -> t.setIsDeleted(true));
+		crmTaskDao.saveAll(dealTasks);
+
+		List<CrmDeal> deals = crmDealDao.findByContact_IdAndIsDeletedFalse(id);
+		deals.forEach(d -> d.setIsDeleted(true));
+		crmDealDao.saveAll(deals);
 
 		contact.setIsDeleted(true);
 		crmContactDao.save(contact);
