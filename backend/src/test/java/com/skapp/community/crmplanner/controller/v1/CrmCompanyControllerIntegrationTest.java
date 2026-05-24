@@ -122,7 +122,7 @@ class CrmCompanyControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Create company with blank name - Returns Bad Request")
-	void createCompany_BlankName_ReturnsUnprocessableEntity() throws Exception {
+	void createCompany_BlankName_ReturnsBadRequest() throws Exception {
 		CrmCompanyCreateDto dto = new CrmCompanyCreateDto();
 		dto.setName("");
 

@@ -9,6 +9,8 @@ import java.util.Optional;
 @Repository
 public interface CrmContactDao extends JpaRepository<CrmContact, Long> {
 
+	boolean existsByEmailIgnoreCaseAndIsDeletedFalse(String email);
+
 	Optional<CrmContact> findByIdAndIsDeletedFalse(Long id);
 
 }

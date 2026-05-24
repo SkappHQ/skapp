@@ -255,7 +255,7 @@ const WorkLocationEmployeeSelector = ({
   const renderTriggerContent = () => {
     if (selectedCount === 0) {
       return (
-        <span className="body3 text-secondary-text ml-2">
+        <span className="body1 text-secondary-text">
           {translateText(["form.assignEmployeesLabel"])}
         </span>
       );
@@ -311,7 +311,7 @@ const WorkLocationEmployeeSelector = ({
         aria-expanded={popperOpen}
         aria-haspopup="listbox"
         aria-label={translateText(["form.assignEmployeesLabel"])}
-        className="bg-secondary-background h-12 rounded-lg flex items-center w-full cursor-pointer px-3 focus:outline-2 focus:outline-black focus:-outline-offset-[2px]"
+        className="bg-tertiary-background h-12 rounded-lg flex items-center w-full cursor-pointer px-3 focus:outline-1 focus:outline-primary-accent focus:-outline-offset-[2px]"
         onClick={handleTriggerClick}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {

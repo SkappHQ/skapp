@@ -257,7 +257,7 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		predicates.add(criteriaBuilder.isTrue(employeeRoot.get(Employee_.user).get(User_.isActive)));
 		predicates.add(criteriaBuilder.equal(employeeRoot.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
 
-		if (teams != null && !teams.isEmpty() && teams.contains(-1L)) {
+		if (teams == null || teams.isEmpty() || teams.contains(-1L)) {
 			if (isAdmin) {
 				Join<Employee, User> userJoin = employeeRoot.join(Employee_.user);
 				Predicate isActivePredicate = criteriaBuilder.isTrue(userJoin.get(User_.isActive));
@@ -281,7 +281,7 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 						employeeRoot.get(Employee_.employeeId).in(supervisedTeamsSubquery)));
 			}
 		}
-		else if (teams != null && !teams.isEmpty()) {
+		else {
 			Join<Employee, EmployeeTeam> employeeTeamJoin = employeeRoot.join(Employee_.employeeTeams, JoinType.LEFT);
 			Predicate teamPredicate = employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId).in(teams);
 			predicates.add(teamPredicate);

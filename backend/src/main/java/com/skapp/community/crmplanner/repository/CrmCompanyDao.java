@@ -7,7 +7,9 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long> {
+public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long>, CrmCompanyRepository {
+
+	Optional<CrmCompany> findByIdAndIsDeletedFalse(Long id);
 
 	Optional<CrmCompany> findByIdAndIsDeletedFalse(Long id);
 	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
