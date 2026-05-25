@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 import { JSX, useEffect } from "react";
 import { type MouseEventHandler, useCallback, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
 import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
 import MailIcon from "~community/common/assets/Icons/MailIcon";
@@ -331,7 +331,11 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   // }, [selectedEmployee]);
 
   const openFileBrowser = () => {
-    if (storageAvailableData?.availableSpace <= EIGHTY_PERCENT) {
+    if (
+      environment === appModes.ENTERPRISE ||
+      (environment === appModes.COMMUNITY &&
+        storageAvailableData?.availableSpace <= EIGHTY_PERCENT)
+    ) {
       open();
     } else {
       setToastMessage({
