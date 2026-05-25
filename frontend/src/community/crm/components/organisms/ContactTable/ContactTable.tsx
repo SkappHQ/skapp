@@ -88,13 +88,13 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      width: "22%"
+      width: "17%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "emailAriaLabel"]),
       header: translateText(["table", "columns", "emailHeader"]),
       key: "email",
-      width: "22%"
+      width: "21%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "phoneAriaLabel"]),
@@ -125,8 +125,8 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      className: "text-right",
-      width: "12%"
+      className: "text-right pr-10.5",
+      width: "10%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
@@ -146,7 +146,8 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      width: "12%"
+      className: "pl-24",
+      width: "20%"
     },
     {
       columnAriaLabel: translateText([
