@@ -17,6 +17,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -45,8 +46,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
-		Join<CrmContact, Employee> owner = contact.join(CrmContact_.owner, JoinType.INNER);
-		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
+		Fetch<CrmContact, Employee> ownerFetch = contact.fetch(CrmContact_.owner, JoinType.INNER);
+		ownerFetch.fetch(Employee_.user, JoinType.LEFT);
+		Join<CrmContact, Employee> owner = (Join<CrmContact, Employee>) ownerFetch;
+		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company, JoinType.LEFT);
 
 		query.where(buildPredicates(cb, contact, owner, company, filterDto));
 		query.orderBy(buildOrderBy(cb, contact, query));

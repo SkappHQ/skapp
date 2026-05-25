@@ -125,6 +125,16 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		List<Long> contactIds = contactPage.getContent().stream().map(CrmContact::getId).toList();
 
+		if (contactIds.isEmpty()) {
+			PageDto pageDto = new PageDto();
+			pageDto.setItems(List.of());
+			pageDto.setCurrentPage(contactPage.getNumber());
+			pageDto.setTotalItems(contactPage.getTotalElements());
+			pageDto.setTotalPages(contactPage.getTotalPages());
+			log.info("getContactMetrics: execution ended");
+			return new ResponseEntityDto(false, pageDto);
+		}
+
 		Map<Long, CrmDealSummary> dealSummaryMap = crmDealDao.findClosedDealSummaryByContactIds(contactIds)
 			.stream()
 			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
