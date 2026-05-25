@@ -16,3 +16,15 @@ export interface CrmContactsResponseType {
   currentPage: number;
   totalPages: number;
 }
+
+export interface CrmSidePanelContactRow {
+  id: string;
+  name: string;
+  company: string;
+  email: string;
+  contactNo: string;
+  revenue: string;
+  dealsClosed: number;
+  openTasks: number;
+  overdueTasks?: number;
+}

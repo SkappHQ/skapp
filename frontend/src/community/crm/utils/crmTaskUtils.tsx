@@ -1,17 +1,20 @@
-import { HighPriorityIcon, LowPriorityIcon, MediumPriorityIcon } from "@rootcodelabs/skapp-ui";
-import React from "react";
+import {
+  HighPriorityIcon,
+  LowPriorityIcon,
+  MediumPriorityIcon
+} from "@rootcodelabs/skapp-ui";
+import { ReactElement, ReactNode } from "react";
 
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
-import { CrmPriorityType, CrmTaskCategory } from "~community/crm/types/CommonTypes";
-
-export interface TaskTypeConfig {
-  bg: string;
-  iconName: IconName;
-}
 
 export interface PriorityConfig {
-  icon: React.ReactNode;
+  icon: ReactElement;
   bgColor: string;
+}
+
+export interface TaskTypeConfig {
+  iconName: IconName;
 }
 
 export interface DueDateDisplay {
@@ -19,92 +22,97 @@ export interface DueDateDisplay {
   colorClass: string;
 }
 
-export interface TaskTypeOption {
-  id: string;
-  label: string;
-  value: string;
-}
-
-const taskTypeConfigMap: Record<string, TaskTypeConfig> = {
-  call: { bg: "#14b8a6", iconName: IconName.PHONE_ICON },
-  email: { bg: "#a855f7", iconName: IconName.EMAIL_ICON },
-  meeting: { bg: "#3b82f6", iconName: IconName.CALENDAR_ICON },
-  task: { bg: "#6b7280", iconName: IconName.CHECK_CIRCLE_ICON }
-};
-
-const defaultTaskTypeConfig: TaskTypeConfig = {
-  bg: "#6b7280",
-  iconName: IconName.CHECK_CIRCLE_ICON
-};
-
-export const TASK_TYPE_OPTIONS: TaskTypeOption[] = [
-  { id: "call", label: "Call", value: "call" },
-  { id: "email", label: "Email", value: "email" },
-  { id: "meeting", label: "Meeting", value: "meeting" },
-  { id: "task", label: "Task", value: "task" }
-];
-
-export const getTaskTypeConfig = (typeName: string): TaskTypeConfig => {
-  return taskTypeConfigMap[typeName?.toLowerCase()] ?? defaultTaskTypeConfig;
-};
-
-export const getPriorityConfig = (priority: CrmPriorityType): PriorityConfig => {
-  switch (priority?.name?.toLowerCase()) {
+export const getPriorityConfig = (
+  priority: { name: string }
+): PriorityConfig => {
+  switch (priority.name.toLowerCase()) {
     case "high":
-      return { icon: <HighPriorityIcon />, bgColor: "#fee2e2" };
+      return { icon: <HighPriorityIcon />, bgColor: "bg-[#FFD6D9]" };
     case "medium":
-      return { icon: <MediumPriorityIcon />, bgColor: "#fef3c7" };
-    case "low":
-      return { icon: <LowPriorityIcon />, bgColor: "#dbeafe" };
+      return { icon: <MediumPriorityIcon />, bgColor: "bg-[#FFF3C1]" };
     default:
-      return { icon: <LowPriorityIcon />, bgColor: "#f3f4f6" };
+      return { icon: <LowPriorityIcon />, bgColor: "bg-[#D8F999]" };
   }
 };
 
-const formatDate = (dateStr: string): string => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  });
+export const TASK_TYPES = [
+  { value: "email" as const, label: "Email" },
+  { value: "call" as const, label: "Call" },
+  { value: "meeting" as const, label: "Meeting" },
+  { value: "other" as const, label: "Other" }
+];
+
+export type TaskTypeValue = (typeof TASK_TYPES)[number]["value"];
+
+export const getTaskTypeConfig = (typeName: string): TaskTypeConfig => {
+  switch (typeName.toLowerCase()) {
+    case "email":
+      return { iconName: IconName.ROUND_EMAIL_ICON };
+    case "call":
+      return { iconName: IconName.ROUND_PHONE_ICON };
+    case "meeting":
+      return { iconName: IconName.ROUND_MEETING_ICON };
+    case "other":
+      return { iconName: IconName.ROUND_MORE_ICON };
+    default:
+      return { iconName: IconName.ROUND_EMAIL_ICON };
+  }
 };
+
+export interface TaskTypeOption {
+  id: string;
+  label: ReactNode;
+  value: string;
+  icon: ReactElement;
+}
+
+export const TASK_TYPE_OPTIONS: TaskTypeOption[] = [
+  { id: "email", label: "Email", value: "email" },
+  { id: "call", label: "Call", value: "call" },
+  { id: "meeting", label: "Meeting", value: "meeting" },
+  { id: "other", label: "Other", value: "other" }
+].map((t) => {
+  const config = getTaskTypeConfig(t.value);
+  const iconEl = (
+    <div>
+      <Icon name={config.iconName} fill="white" width="20" height="20" />
+    </div>
+  );
+  return {
+    id: t.id,
+    value: t.value,
+    icon: iconEl,
+    label: (
+      <div className="flex items-center gap-2">
+        {iconEl}
+        <span className="font-medium">{t.label}</span>
+      </div>
+    )
+  };
+});
 
 export const getDueDateDisplay = (
   dueAt: string | null,
   isCompleted: boolean
 ): DueDateDisplay => {
-  if (!dueAt) return { text: "No due date", colorClass: "text-zinc-400" };
+  if (!dueAt) return { text: "No due date", colorClass: "text-[#9ca3af]" };
 
-  if (isCompleted) {
-    return { text: formatDate(dueAt), colorClass: "text-zinc-400" };
-  }
-
-  const dueDate = new Date(dueAt);
-  const now = new Date();
-
+  const due = new Date(dueAt);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const dueDateDay = new Date(dueAt);
-  dueDateDay.setHours(0, 0, 0, 0);
+  const dueDay = new Date(due);
+  dueDay.setHours(0, 0, 0, 0);
 
-  const diffMs = dueDateDay.getTime() - today.getTime();
-  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-
-  if (dueDate < now && diffDays < 0) {
-    return {
-      text: `Overdue · ${formatDate(dueAt)}`,
-      colorClass: "text-red-600"
-    };
+  if (!isCompleted && dueDay < today) {
+    return { text: "Overdue", colorClass: "text-[#82181a]" };
   }
-
-  if (diffDays === 0) {
-    return { text: "Due today", colorClass: "text-amber-600" };
+  if (dueDay.getTime() === today.getTime()) {
+    return { text: "Today", colorClass: "text-[#D97706]" };
   }
-
-  if (diffDays === 1) {
-    return { text: "Due tomorrow", colorClass: "text-amber-500" };
-  }
-
-  return { text: `Due ${formatDate(dueAt)}`, colorClass: "text-zinc-500" };
+  return {
+    text:
+      "Due on " +
+      due.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    colorClass: "text-[#6B7280]"
+  };
 };

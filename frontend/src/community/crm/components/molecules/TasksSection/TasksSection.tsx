@@ -13,9 +13,12 @@ import { createPortal } from "react-dom";
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetTasksByCompanyId, useUpdateTaskCompletion } from "~community/crm/api/CrmApi";
+import {
+  useGetTasksByCompanyId,
+  useUpdateTaskCompletion
+} from "~community/crm/api/CrmApi";
 import CheckTask from "~community/crm/components/atoms/CheckTask/CheckTask";
-import { CrmTaskType } from "~community/crm/types/CrmTaskTypes";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
 import {
   TASK_TYPE_OPTIONS,
   getDueDateDisplay,
@@ -34,6 +37,85 @@ interface FormPos {
   left: number;
   width: number;
 }
+
+const MOCK_TASKS: CrmTaskType[] = [
+  {
+    id: 101,
+    name: "Follow up email regarding pricing details",
+    type: { id: 1, name: "email", orderIndex: 1 },
+    priority: { id: 1, name: "high", orderIndex: 1 },
+    isCompleted: false,
+    dueAt: new Date(Date.now() + 86400000).toISOString(),
+    notes: "Send the updated pricing sheet with volume discounts.",
+    owner: {
+      employeeId: 1,
+      firstName: "Alex",
+      lastName: "Mercer",
+      authPic: null
+    },
+    contact: null,
+    company: null,
+    deal: null,
+    isDeleted: false
+  },
+  {
+    id: 102,
+    name: "Introductory phone call with decision maker",
+    type: { id: 2, name: "call", orderIndex: 2 },
+    priority: { id: 2, name: "medium", orderIndex: 2 },
+    isCompleted: false,
+    dueAt: new Date().toISOString(),
+    notes: "Qualify budget and timeline.",
+    owner: {
+      employeeId: 2,
+      firstName: "Sarah",
+      lastName: "Connor",
+      authPic: null
+    },
+    contact: null,
+    company: null,
+    deal: null,
+    isDeleted: false
+  },
+  {
+    id: 103,
+    name: "Product demonstration and Q&A session",
+    type: { id: 3, name: "meeting", orderIndex: 3 },
+    priority: { id: 3, name: "high", orderIndex: 1 },
+    isCompleted: true,
+    dueAt: new Date(Date.now() - 86400000).toISOString(),
+    notes: "Walk through key integration options.",
+    owner: {
+      employeeId: 1,
+      firstName: "Alex",
+      lastName: "Mercer",
+      authPic: null
+    },
+    contact: null,
+    company: null,
+    deal: null,
+    isDeleted: false
+  },
+  {
+    id: 104,
+    name: "Review contract terms and prepare proposal",
+    type: { id: 4, name: "other", orderIndex: 4 },
+    priority: { id: 4, name: "low", orderIndex: 3 },
+    isCompleted: false,
+    dueAt: new Date(Date.now() + 5 * 86400000).toISOString(),
+    notes: "Align with legal department on standard terms.",
+    owner: {
+      employeeId: 3,
+      firstName: "John",
+      lastName: "Doe",
+      authPic: null
+    },
+    contact: null,
+    company: null,
+    deal: null,
+    isDeleted: false
+  }
+];
 
 const TasksSection: FC<Props> = ({ companyId }) => {
   const translateText = useTranslator(
@@ -83,87 +165,28 @@ const TasksSection: FC<Props> = ({ companyId }) => {
   }, [isAddingTask]);
 
   const { data } = useGetTasksByCompanyId(companyId);
+  const apiTasks: CrmTaskType[] = data?.items ?? [];
+  const [tasks, setTasks] = useState<CrmTaskType[]>([]);
+
   const isLoading = false;
-  const mockTasks: CrmTaskType[] = [
-    {
-      id: 1,
-      name: "Follow up on proposal",
-      type: { id: 1, name: "Call", orderIndex: 1 },
-      priority: { id: 1, name: "High", orderIndex: 1 },
-      isCompleted: false,
-      dueAt: new Date(Date.now() - 86400000).toISOString(),
-      notes: null,
-      owner: { employeeId: 1, firstName: "John", lastName: "Doe", authPic: null },
-      contact: null,
-      company: null,
-      deal: null,
-      isDeleted: false
-    },
-    {
-      id: 2,
-      name: "Send contract for review",
-      type: { id: 2, name: "Email", orderIndex: 2 },
-      priority: { id: 2, name: "Medium", orderIndex: 2 },
-      isCompleted: false,
-      dueAt: new Date(Date.now() + 86400000).toISOString(),
-      notes: null,
-      owner: { employeeId: 2, firstName: "Jane", lastName: "Smith", authPic: null },
-      contact: null,
-      company: null,
-      deal: null,
-      isDeleted: false
-    },
-    {
-      id: 3,
-      name: "Schedule demo meeting",
-      type: { id: 3, name: "Meeting", orderIndex: 3 },
-      priority: { id: 3, name: "Low", orderIndex: 3 },
-      isCompleted: true,
-      dueAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-      notes: null,
-      owner: { employeeId: 1, firstName: "John", lastName: "Doe", authPic: null },
-      contact: null,
-      company: null,
-      deal: null,
-      isDeleted: false
+
+  useEffect(() => {
+    if (apiTasks.length > 0) {
+      setTasks(apiTasks);
+    } else {
+      setTasks((prev) => (prev.length > 0 ? prev : MOCK_TASKS));
     }
-  ];
-
-  const tasks: CrmTaskType[] = mockTasks;
-
-  // Optimistic local state: keeps the toggled value visible immediately
-  // without waiting for the API round-trip / query invalidation.
-  const [completionOverrides, setCompletionOverrides] = useState<
-    Map<number, boolean>
-  >(new Map());
+  }, [apiTasks]);
 
   const { mutate: updateCompletion } = useUpdateTaskCompletion(
-    () => {},
-    () => {}
+    () => { },
+    () => { }
   );
-
-  // newCompleted is the post-click value passed by CheckTask's onChange.
-  const handleToggleComplete = (id: number, newCompleted: boolean) => {
-    setCompletionOverrides((prev) => new Map(prev).set(id, newCompleted));
-
-    // Only call the API when real server data is present.
-    // When falling back to mock tasks (data?.items is undefined) there is no
-    // backend endpoint to hit, so we keep the toggle as pure local state.
-    if (!data?.items) return;
-
-    updateCompletion(
-      { id, isCompleted: newCompleted },
-      {
-        onError: () => {
-          // Revert the optimistic update on API failure
-          setCompletionOverrides((prev) => {
-            const next = new Map(prev);
-            next.delete(id);
-            return next;
-          });
-        }
-      }
+  const handleToggleComplete = (id: number, isCompleted: boolean) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, isCompleted } : t))
     );
+    updateCompletion({ id, isCompleted });
   };
 
   const hasTasks = tasks.length > 0;
@@ -191,13 +214,11 @@ const TasksSection: FC<Props> = ({ companyId }) => {
         <div className={styles.taskSection}>
           <div className={styles.taskList}>
             {tasks.map((task, idx) => {
-              const isCompleted =
-                completionOverrides.get(task.id) ?? task.isCompleted;
               const typeConfig = getTaskTypeConfig(task.type.name);
               const priorityConfig = getPriorityConfig(task.priority);
               const dueDateDisplay = getDueDateDisplay(
                 task.dueAt,
-                isCompleted
+                task.isCompleted
               );
               const isLast = idx === tasks.length - 1 && !isAddingTask;
 
@@ -208,33 +229,29 @@ const TasksSection: FC<Props> = ({ companyId }) => {
                 >
                   <div className={styles.taskRow}>
                     <CheckTask
-                      checked={isCompleted}
-                      onChange={(newChecked) =>
-                        handleToggleComplete(task.id, newChecked)
+                      checked={task.isCompleted}
+                      onChange={(checked) =>
+                        handleToggleComplete(task.id, checked)
                       }
                       size="size-5"
                       ariaLabel={
-                        isCompleted ? "Mark incomplete" : "Mark complete"
+                        task.isCompleted ? "Mark incomplete" : "Mark complete"
                       }
                     />
 
-                    <div
-                      className={styles.typeIconCircle}
-                      style={{ backgroundColor: typeConfig.bg }}
-                      aria-hidden="true"
-                    >
+                    <div className={styles.typeIconCircle}>
                       <Icon
                         name={typeConfig.iconName}
-                        fill="white"
-                        width="12"
-                        height="12"
+                        width="20px"
+                        height="20px"
+                        svgProps={{ className: "w-5! h-5!" }}
                       />
                     </div>
 
                     <div className={styles.taskContent}>
                       <p
                         className={
-                          isCompleted
+                          task.isCompleted
                             ? styles.taskNameCompleted
                             : styles.taskName
                         }

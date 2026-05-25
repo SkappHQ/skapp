@@ -19,6 +19,24 @@
   "companies": {
     "pageHead": "Companies | Skapp",
     "title": "Companies",
+    "companyDetailsSidePanel": {
+      "sidePanelCompanyContacts": {
+        "title": "Contacts",
+        "columns": {
+          "contact": "CONTACT",
+          "email": "EMAIL",
+          "contactNo": "CONTACT NO.",
+          "revenue": "REVENUE",
+          "openTasks": "OPEN TASKS"
+        },
+        "dealsClosed": "{{count}} Deals closed",
+        "overdue": "{{count}} overdue",
+        "noContacts": "No contacts",
+        "noContactsDescription": "No contacts associated with this company",
+        "ariaLabel": "Company contacts",
+        "rowAriaLabel": "Contact row for {{name}} from {{company}} with email {{email}}, contact number {{contactNo}}, revenue {{revenue}}, and {{openTasks}} open tasks"
+      }
+    },
     "addCompanyBtn": "Add company",
     "addCompanyModal": {
       "title": "Add Company",

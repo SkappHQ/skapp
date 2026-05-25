@@ -47,24 +47,24 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
             item.value && (
               <div key={index} className="flex items-center gap-3">
                 {item.isLink ? (
-                  <a
-                    href={
-                      item.value.startsWith("http")
-                        ? item.value
-                        : `https://${item.value}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-sm leading-6 tracking-[0.5px]"
-                    style={{ color: "#2a61a0", textDecoration: "underline" }}
-                  >
+                  <>
                     <Icon
                       name={item.icon}
                       width="1.25rem"
                       height="1.25rem"
-                      fill="#2a61a0"
+                      fill="#68707F"
                     />
-                    <span className="flex items-center gap-1">
+                    <a
+                      href={
+                        item.value.startsWith("http")
+                          ? item.value
+                          : `https://${item.value}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm leading-6 tracking-[0.5px]"
+                      style={{ color: "#2a61a0", textDecoration: "underline" }}
+                    >
                       {item.value.replace(/^https?:\/\//, "")}
                       <Icon
                         name={IconName.BROWSER_WINDOW_ICON}
@@ -72,8 +72,8 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
                         height="1rem"
                         fill="#2a61a0"
                       />
-                    </span>
-                  </a>
+                    </a>
+                  </>
                 ) : (
                   <>
                     <Icon

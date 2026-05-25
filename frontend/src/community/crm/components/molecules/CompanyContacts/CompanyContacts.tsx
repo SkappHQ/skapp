@@ -1,8 +1,8 @@
-import { Table, TableColumn } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
-import { IconName } from "~community/common/types/IconTypes";
+import Table from "~community/common/components/molecules/Table/Table";
+import { TableNames } from "~community/common/enums/Table";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 
 export interface ContactRow {
   id: string;
@@ -20,88 +20,110 @@ interface CompanyContactsProps {
   contacts: ContactRow[];
 }
 
-const columns: TableColumn<ContactRow>[] = [
-  {
-    key: "contact",
-    header: "CONTACT",
-    render: (_value, row) => (
-      <div className="flex flex-col gap-0.5">
-        <span className="text-base font-semibold text-zinc-900">{row.name}</span>
-        <span className="text-xs text-zinc-500">{row.company}</span>
-      </div>
-    )
-  },
-  {
-    key: "email",
-    header: "EMAIL",
-    width: "25%",
-    render: (_value, row) => (
-      <span className="text-base text-zinc-900">{row.email}</span>
-    )
-  },
-  {
-    key: "contactNo",
-    header: "CONTACT NO.",
-    width: "20%",
-    render: (_value, row) => (
-      <span className="text-base text-zinc-900">{row.contactNo}</span>
-    )
-  },
-  {
-    key: "revenue",
-    header: "REVENUE",
-    render: (_value, row) => (
-      <div className="flex flex-col">
-        <span className="text-base text-zinc-900">
-          {row.revenue}
-        </span>
-        <span className="text-xs text-zinc-500">
-          {row.dealsClosed} Deals closed
-        </span>
-      </div>
-    )
-  },
-  {
-    key: "openTasks",
-    header: "OPEN TASKS",
-    render: (_value, row) => (
-      <div className="flex items-center gap-2">
-        <span className="text-base font-semibold text-zinc-900">
-          {row.openTasks}
-        </span>
-        {row.overdueTasks > 0 && (
-          <span className="text-xs font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
-            {row.overdueTasks} overdue
-          </span>
-        )}
-      </div>
-    )
-  }
-];
-
 const CompanyContacts: React.FC<CompanyContactsProps> = ({ contacts }) => {
+  const translateText = useTranslator("crmModule", "contacts");
+
+  const tableHeaders = [
+    { id: "contact", label: translateText(["table", "columns", "contact"]) },
+    { id: "email", label: translateText(["table", "columns", "email"]) },
+    { id: "contactNo", label: translateText(["table", "columns", "contactNo"]) },
+    { id: "revenue", label: translateText(["table", "columns", "revenue"]) },
+    { id: "openTasks", label: translateText(["table", "columns", "openTasks"]) }
+  ];
+
+  const transformToTableRows = () => {
+    return contacts.map((row) => ({
+      id: row.id,
+      ariaLabel: {
+        row: translateText(["table", "rowAriaLabel"], {
+          name: row.name,
+          company: row.company,
+          email: row.email,
+          contactNo: row.contactNo,
+          revenue: row.revenue,
+          openTasks: row.openTasks.toString()
+        })
+      },
+      contact: (
+        <div className="flex flex-col gap-0.5">
+          <span className="body1 text-zinc-900 leading-[16px]">{row.name}</span>
+          <span className="text-xs text-zinc-500">{row.company}</span>
+        </div>
+      ),
+      email: <span className="text-base text-zinc-900">{row.email}</span>,
+      contactNo: <span className="text-base text-zinc-900">{row.contactNo}</span>,
+      revenue: (
+        <div className="flex flex-col">
+          <span className="text-base text-zinc-900">{row.revenue}</span>
+          <span className="text-xs text-zinc-500">
+            {translateText(["table", "dealsClosed"], { count: row.dealsClosed.toString() })}
+          </span>
+        </div>
+      ),
+      openTasks: (
+        <div className="flex items-center gap-2">
+          <span className="body1 text-zinc-900">{row.openTasks}</span>
+          {row.overdueTasks !== undefined && row.overdueTasks > 0 && (
+            <span className="text-xs font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
+              {translateText(["table", "overdue"], { count: row.overdueTasks.toString() })}
+            </span>
+          )}
+        </div>
+      )
+    }));
+  };
+
   return (
-    <div className="flex flex-col pt-6">
-      <h3 className="text-lg font-bold text-zinc-900">Contacts</h3>
+    <div className="flex flex-col pt-6 w-full">
+      <h3 className="text-lg font-bold text-zinc-900">{translateText(["title"])}</h3>
       <div className="w-full h-px bg-zinc-200 my-3"></div>
-      <Table<ContactRow>
-        columns={columns}
-        data={contacts}
-        tableAriaLabel="Company contacts"
-        height="auto"
-        className="max-h-[15.625rem] overflow-y-auto"
-        emptyStateType="no-data"
-        noDataState={{
-          icon: (
-            <Icon
-              name={IconName.SEARCH_ICON}
-              width="24px"
-              height="24px"
-              fill="#a1a1aa"
-            />
-          ),
-          title: "No contacts",
-          description: "No contacts associated with this company"
+      <Table
+        tableName={TableNames.COMPANY_CONTACTS_PANEL}
+        headers={tableHeaders}
+        rows={transformToTableRows()}
+        tableHead={{
+          customStyles: {
+            row: {
+              borderTopLeftRadius: "0.625rem",
+              borderTopRightRadius: "0.625rem"
+            },
+            cell: {
+              border: "none"
+            }
+          }
+        }}
+        tableBody={{
+          emptyState: {
+            noData: {
+              title: translateText(["table", "noContacts"]),
+              description: translateText(["table", "noContactsDescription"])
+            }
+          },
+          loadingState: {
+            skeleton: {
+              rows: 3
+            }
+          }
+        }}
+        tableFoot={{
+          pagination: {
+            isEnabled: false
+          }
+        }}
+        customStyles={{
+          wrapper: {
+            minHeight: "auto",
+            backgroundColor: "transparent"
+          },
+          container: {
+            maxHeight: "15.625rem",
+            backgroundColor: "transparent",
+            borderRadius: "0.625rem",
+            overflow: "auto"
+          },
+          table: {
+            backgroundColor: "transparent"
+          }
         }}
       />
     </div>

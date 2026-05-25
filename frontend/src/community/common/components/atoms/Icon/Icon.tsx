@@ -161,6 +161,10 @@ import WarningIcon from "~community/common/assets/Icons/WarningIcon";
 import WarningSignIcon from "~community/common/assets/Icons/WarningSignIcon";
 import WebIcon from "~community/common/assets/Icons/WebIcon";
 import WrenchIcon from "~community/common/assets/Icons/WrenchIcon";
+import RoundEmailIcon from "~community/common/assets/Icons/RoundEmailIcon";
+import RoundPhoneIcon from "~community/common/assets/Icons/RoundPhoneIcon";
+import RoundMeetingIcon from "~community/common/assets/Icons/RoundMeetingIcon";
+import RoundMoreIcon from "~community/common/assets/Icons/RoundMoreIcon";
 import { IconName, IconProps } from "~community/common/types/IconTypes";
 import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
 import GreyRoundedTickIcon from "~enterprise/settings/assets/Icons/GreyRoundedTickIcon";
@@ -344,7 +348,11 @@ export const IconMapping: Partial<
   [IconName.LOCATION_ICON]: LocationIcon,
   [IconName.BUILDING_ICON]: BuildingIcon,
   [IconName.WEB_ICON]: WebIcon,
-  [IconName.BROWSER_WINDOW_ICON]: BrowserWindowIcon
+  [IconName.BROWSER_WINDOW_ICON]: BrowserWindowIcon,
+  [IconName.ROUND_EMAIL_ICON]: RoundEmailIcon,
+  [IconName.ROUND_PHONE_ICON]: RoundPhoneIcon,
+  [IconName.ROUND_MEETING_ICON]: RoundMeetingIcon,
+  [IconName.ROUND_MORE_ICON]: RoundMoreIcon
   // Add more icons here as needed
 };
 

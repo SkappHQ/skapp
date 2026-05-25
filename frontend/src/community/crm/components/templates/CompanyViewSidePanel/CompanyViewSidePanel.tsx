@@ -7,14 +7,15 @@ import { IconName } from "~community/common/types/IconTypes";
 import AddDealForm from "~community/crm/components/molecules/AddDealForm/AddDealForm";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelContactRow } from "~community/crm/types/CrmContactTypes";
 
-import CompanyContacts from "../../molecules/CompanyContacts/CompanyContacts";
 import CompanyDeals from "../../molecules/CompanyDeals/CompanyDeals";
 import CompanyDetailHeader, {
   CompanyDetailHeaderActions
 } from "../../molecules/CompanyDetailHeader/CompanyDetailHeader";
 import CompanyMetricCards from "../../molecules/CompanyMetricCards/CompanyMetricCards";
-import TasksSection from "../../molecules/TaskSection/TasksSection";
+import SidePanelCompanyContacts from "../../molecules/SidePanelCompanyContacts/SidePanelCompanyContacts";
+import TasksSection from "../../molecules/TasksSection/TasksSection";
 
 const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
   {
@@ -46,7 +47,7 @@ const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
   }
 ];
 
-const getCompanyContacts = (company: CrmCompanyMetricsType) => [
+const getCompanyContacts = (company: CrmCompanyMetricsType): CrmSidePanelContactRow[] => [
   // TODO: Wire up contacts for the selected company
   {
     id: "1",
@@ -161,7 +162,7 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
                 )}
                 {selectedCompany && <CompanyDeals />}
                 {selectedCompany && (
-                  <CompanyContacts contacts={getCompanyContacts(selectedCompany)} />
+                  <SidePanelCompanyContacts contacts={getCompanyContacts(selectedCompany)} />
                 )}
                 {selectedCompany && (
                   <div className="pt-6 pb-4">
