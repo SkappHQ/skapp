@@ -8,10 +8,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
 
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
@@ -21,9 +21,10 @@ import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.util.CrmValidations;
+import com.skapp.community.common.util.StringUtils;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.From;
@@ -31,6 +32,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
+import java.util.Locale;
 
 @Repository
 @RequiredArgsConstructor
@@ -118,8 +120,8 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 		predicates.add(cb.isFalse(root.get(CrmCompany_.isDeleted)));
 
-		if (StringUtils.hasText(searchKeyword)) {
-			String escapedKeyword = CrmValidations.escapeLikePattern(searchKeyword);
+		if (searchKeyword != null && !searchKeyword.isBlank()) {
+			String escapedKeyword = StringUtils.escapeLikePattern(searchKeyword);
 
 			String likePattern = "%" + escapedKeyword + "%";
 			predicates.add(cb.like(cb.lower(root.get(CrmCompany_.name)), likePattern));
@@ -138,6 +140,48 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.isFalse(stage.get(CrmDealStage_.isDeleted)));
 
 		return entityManager.createQuery(query).getSingleResult();
+	}
+
+	@Override
+	public Page<CrmCompany> findCompanies(CrmCompanyFilterDto filterDto, Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmCompany> query = cb.createQuery(CrmCompany.class);
+		Root<CrmCompany> company = query.from(CrmCompany.class);
+
+		List<Predicate> predicates = buildPredicatesToFindComapanies(cb, company, filterDto);
+		query.where(predicates.toArray(new Predicate[0]));
+		query.orderBy(cb.asc(cb.lower(company.get(CrmCompany_.name))));
+
+		TypedQuery<CrmCompany> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+
+		return new PageImpl<>(typedQuery.getResultList(), pageable, getTotalCompanyCount(cb, filterDto));
+	}
+
+	private List<Predicate> buildPredicatesToFindComapanies(CriteriaBuilder cb, Root<CrmCompany> company,
+			CrmCompanyFilterDto filterDto) {
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(company.get(CrmCompany_.isDeleted)));
+
+		String searchKeyword = filterDto.getSearchKeyword();
+		if (searchKeyword != null && !searchKeyword.isBlank()) {
+			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			predicates.add(cb.like(cb.lower(company.get(CrmCompany_.name)), "%" + escaped + "%", '\\'));
+		}
+
+		return predicates;
+	}
+
+	private Long getTotalCompanyCount(CriteriaBuilder cb, CrmCompanyFilterDto filterDto) {
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmCompany> company = countQuery.from(CrmCompany.class);
+		countQuery.select(cb.count(company));
+
+		List<Predicate> predicates = buildPredicatesToFindComapanies(cb, company, filterDto);
+		countQuery.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 
 }

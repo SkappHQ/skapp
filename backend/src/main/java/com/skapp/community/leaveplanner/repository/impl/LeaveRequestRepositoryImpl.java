@@ -999,7 +999,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		Join<LeaveRequest, Employee> employeeJoin = leaveRequestRoot.join(LeaveRequest_.employee);
 		List<Predicate> predicates = new ArrayList<>();
 
-		if (teams != null && !teams.isEmpty() && teams.contains(-1L)) {
+		if (teams == null || teams.isEmpty() || teams.contains(-1L)) {
 			if (isLeaveAdmin) {
 				Predicate leaveDatePredicate = criteriaBuilder.and(
 						criteriaBuilder.lessThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.startDate), current),
@@ -1029,7 +1029,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			}
 
 		}
-		else if (teams != null && !teams.isEmpty()) {
+		else {
 			Join<Employee, EmployeeTeam> employeeTeamJoin = employeeJoin.join(Employee_.employeeTeams);
 			Predicate teamPredicate = employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId).in(teams);
 			predicates.add(teamPredicate);
