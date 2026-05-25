@@ -15,8 +15,6 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Order;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -42,15 +40,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
 		query.where(buildPredicates(cb, deal, filterDto).toArray(new Predicate[0]));
 
-		if (pageable.getSort().isSorted()) {
-			List<Order> orders = new ArrayList<>();
-			pageable.getSort().forEach(order -> {
-				Path<?> path = resolvePath(deal, order.getProperty());
-				Order sortOrder = order.isAscending() ? cb.asc(path) : cb.desc(path);
-				orders.add(sortOrder);
-			});
-			query.orderBy(orders);
-		}
+		// Always sort by stage.orderIndex ascending
+		query.orderBy(cb.asc(deal.get(CrmDeal_.stage).get("orderIndex")));
 
 		TypedQuery<CrmDeal> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
@@ -59,7 +50,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
 		countQuery.select(cb.count(countRoot))
-			.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
+				.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(typedQuery.getResultList(), pageable, total);
@@ -91,14 +82,6 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		}
 
 		return predicates;
-	}
-
-	private Path<?> resolvePath(Root<CrmDeal> root, String property) {
-		int dot = property.indexOf('.');
-		if (dot == -1) {
-			return root.get(property);
-		}
-		return root.get(property.substring(0, dot)).get(property.substring(dot + 1));
 	}
 
 }
