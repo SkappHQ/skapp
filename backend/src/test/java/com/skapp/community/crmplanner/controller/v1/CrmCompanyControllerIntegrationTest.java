@@ -25,9 +25,9 @@ import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,6 +42,8 @@ class CrmCompanyControllerIntegrationTest {
 	private static final String BASE_PATH = "/v1/company";
 
 	private static final String EXISTS_PATH = BASE_PATH + "/exists";
+
+	private static final String DELETE_PATH = BASE_PATH + "/{id}";
 
 	private final JsonMapper objectMapper;
 
@@ -75,7 +77,7 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	private ResultActions performDeleteRequest(Long id) throws Exception {
-		return performRequest(patch(BASE_PATH + "/delete/{id}", id).accept(MediaType.APPLICATION_JSON));
+		return performRequest(delete(DELETE_PATH, id).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmCompanyCreateDto createValidPayload() {
@@ -172,7 +174,22 @@ class CrmCompanyControllerIntegrationTest {
 
 		performDeleteRequest(companyId).andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED)));
+
+		performGetExistsRequest("Acme Corp").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+	}
+
+	@Test
+	@DisplayName("Delete company without CRM manager role - Returns Forbidden")
+	void deleteCompany_WithoutManagerRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performDeleteRequest(1L).andDo(print()).andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -180,7 +197,9 @@ class CrmCompanyControllerIntegrationTest {
 	void deleteNonExistingCompany_ReturnsBadRequest() throws Exception {
 		performDeleteRequest(0L).andDo(print())
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 	}
 
 }
