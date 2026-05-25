@@ -360,6 +360,11 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		}
 
 		User currentUser = userService.getCurrentUser();
+
+		if (teamIds.contains(-1L) && !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
+			teamIds = teamDao.findLeadingTeamIdsByManagerId(currentUser.getEmployee().getEmployeeId());
+		}
+
 		List<LeaveType> leaveTypes = typeIds.contains(-1L) ? leaveTypeDao.findAllByIsActive(true)
 				: leaveTypeDao.findByTypeIdInAndIsActive(typeIds, true);
 
@@ -997,6 +1002,10 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
 		boolean isLeaveAdmin = employeeRole.getLeaveRole() != null
 				&& employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
+
+		if (teamIds.contains(-1L) && !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
+			teamIds = teamDao.findLeadingTeamIdsByManagerId(currentUser.getEmployee().getEmployeeId());
+		}
 
 		LocalDate twoMonthsBackCurrentDay = currentDate.minusDays(59);
 		LocalDate oneMonthBackCurrentDay = currentDate.minusDays(29);
