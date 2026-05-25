@@ -43,7 +43,7 @@ public class CrmDeal extends Auditable<String> {
 	private CrmDealStage stage;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "priority")
+	@Column(name = "priority", nullable = false)
 	private CrmDealPriority priority;
 
 	@Column(name = "closing_at")

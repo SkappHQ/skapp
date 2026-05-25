@@ -659,7 +659,7 @@ CREATE TABLE IF NOT EXISTS `crm_deal`
     `name`               text    NOT NULL,
     `description`        text             DEFAULT NULL,
     `stage_id`           bigint  NOT NULL,
-    `priority`           text             DEFAULT NULL,
+    `priority`           text    NOT NULL,
     `closing_at`         datetime(6)      DEFAULT NULL,
     `amount`             text             DEFAULT NULL,
     `company_id`         bigint           DEFAULT NULL,

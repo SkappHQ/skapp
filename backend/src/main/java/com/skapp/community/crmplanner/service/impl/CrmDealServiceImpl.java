@@ -69,8 +69,11 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_INVALID_CHARS);
 		}
 
-		if (requestDto.getPriority() != null
-				&& !Arrays.asList(CrmDealPriority.values()).contains(requestDto.getPriority())) {
+		if (requestDto.getPriority() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND);
+		}
+		
+		if (!Arrays.asList(CrmDealPriority.values()).contains(requestDto.getPriority())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND);
 		}
 
