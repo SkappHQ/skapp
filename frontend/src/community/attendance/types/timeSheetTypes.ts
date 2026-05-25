@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 
 import { daysTypes } from "~community/common/constants/stringConstants";
 import { LeaveStates } from "~community/common/types/CommonTypes";
+import { RecordLocationStatus } from "../enums/timesheetEnums";
 
 export interface TimesheetEmployeeType {
   employeeId: number;
@@ -21,6 +22,8 @@ export interface TimeRecordType {
     };
   };
   workedHours: number;
+  clockInLocationStatus?: RecordLocationStatus;
+  clockOutLocationStatus?: RecordLocationStatus;
 }
 
 export interface TimeRecordDataType {

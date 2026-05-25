@@ -1,6 +1,8 @@
 import { type Theme, useTheme } from "@mui/material/styles";
+import { LocationPinIcon } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, JSX, useMemo } from "react";
 
+import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeRecordDataResponseType,
@@ -95,6 +97,16 @@ const EmployeeTimeRecordsTable = ({
 
             const holidayDuration = getHolidayDurationType(holidays);
 
+            const showLocationPin =
+              timeSheetRecord.clockInLocationStatus ===
+                RecordLocationStatus.OUTSIDE ||
+              timeSheetRecord.clockOutLocationStatus ===
+                RecordLocationStatus.OUTSIDE ||
+              timeSheetRecord.clockInLocationStatus ===
+                RecordLocationStatus.UNAVAILABLE ||
+              timeSheetRecord.clockOutLocationStatus ===
+                RecordLocationStatus.UNAVAILABLE;
+
             const workedHours =
               formatDuration(timeSheetRecord?.workedHours) ?? "";
 
@@ -167,7 +179,30 @@ const EmployeeTimeRecordsTable = ({
               );
             }
 
-            acc[timeSheetRecord.date] = data;
+
+            // Tooltip message logic for location pin
+            const getLocationMessage = (status: RecordLocationStatus | undefined) => {
+              if (status === RecordLocationStatus.INSIDE) return "Inside work location";
+              if (status === RecordLocationStatus.OUTSIDE) return "Outside work location";
+              return "Location unavailable";
+            };
+
+            let finalCellData = data;
+            if (showLocationPin) {
+              const clockInMsg = getLocationMessage(timeSheetRecord.clockInLocationStatus);
+              const clockOutMsg = getLocationMessage(timeSheetRecord.clockOutLocationStatus);
+              const tooltip = `Clock-in: ${clockInMsg} | Clock-out: ${clockOutMsg}`;
+              finalCellData = (
+                <div className="flex flex-row items-center gap-1">
+                  {data}
+                  <div title={tooltip}>
+                    <LocationPinIcon />
+                  </div>
+                </div>
+              );
+            }
+
+            acc[timeSheetRecord.date] = finalCellData;
             return acc;
           },
           {}
