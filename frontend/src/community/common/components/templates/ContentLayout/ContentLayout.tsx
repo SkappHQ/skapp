@@ -236,10 +236,6 @@ const ContentLayout = ({
 
   useEffect(() => {
     setBreadcrumbs(breadcrumbs);
-
-    return () => {
-      setBreadcrumbs([]);
-    };
   }, []);
 
   return (
