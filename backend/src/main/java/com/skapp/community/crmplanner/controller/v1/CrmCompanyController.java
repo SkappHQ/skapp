@@ -41,7 +41,8 @@ public class CrmCompanyController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Check if a company name exists", description = "Check if a company with the given name already exists")
+	@Operation(summary = "Check if a company name exists",
+			description = "Check if a company with the given name already exists")
 	@GetMapping("/exists")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> checkCompanyNameExists(@RequestParam String name) {
@@ -57,7 +58,8 @@ public class CrmCompanyController {
 		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 	}
 
-	@Operation(summary = "Get company metrics", description = "Returns all details related to company info, tasks and deals")
+	@Operation(summary = "Get company metrics",
+			description = "Returns all details related to company info, tasks and deals")
 	@GetMapping("/metrics")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {

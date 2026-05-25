@@ -116,10 +116,11 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto deleteCompany(Long id) {
 		log.info("deleteCompany: execution started");
 
-		CrmCompany company = crmCompanyDao.findById(id)
+		CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 
 		company.setIsDeleted(true);
