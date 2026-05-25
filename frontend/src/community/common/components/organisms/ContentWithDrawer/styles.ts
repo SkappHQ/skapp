@@ -2,7 +2,6 @@ const styles = () => ({
   protectedWrapper: {
     flexDirection: "row",
     width: "100%",
-    height: "100dvh",
     overflowX: "clip"
   },
   contentWrapper: {
