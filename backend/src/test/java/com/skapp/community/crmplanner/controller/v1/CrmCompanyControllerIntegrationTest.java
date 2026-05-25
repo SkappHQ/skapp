@@ -163,8 +163,8 @@ class CrmCompanyControllerIntegrationTest {
 	// --- Delete company tests ---
 
 	@Test
-	@DisplayName("Delete existing company - Returns OK")
-	void deleteCompany_ReturnsOk() throws Exception {
+	@DisplayName("Delete existing company twice - Returns Bad Request on second attempt")
+	void deleteCompanyTwice_ReturnsBadRequest() throws Exception {
 		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
 		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
 			.path("results")
@@ -182,6 +182,12 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+
+		performDeleteRequest(companyId).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_ALREADY_DELETED)));
 	}
 
 	@Test
