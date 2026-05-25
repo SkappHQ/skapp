@@ -129,21 +129,26 @@ const InputField = ({
 
   // TODO: Refactor this to a util function and write test cases for it, also try to use switch instead of if else
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
+    let newValue = e.target.value;
     if (inputType === "password") {
-      value = value.replace(matchWhitespace(), "");
+      newValue = newValue.replace(matchWhitespace(), "");
     } else if (inputType === "number") {
-      const numericValue = parseFloat(value);
-      if (!isNaN(numericValue)) {
-        if (min !== undefined && numericValue < min) value = min.toString();
-        if (max !== undefined && numericValue > max) value = max.toString();
+      const numericValue = Number.parseFloat(newValue);
+      if (!Number.isNaN(numericValue)) {
+        if (min !== undefined && numericValue < min) newValue = min.toString();
+        if (max !== undefined && numericValue > max) newValue = max.toString();
       }
     } else if (inputType === "text" || inputType === "email") {
-      value = value.trimStart();
+      newValue = newValue.trimStart();
     }
 
-    if (!maxLength || maxLength >= value.length) {
-      e.target.value = value;
+    const prevLength = String(value ?? "").length;
+    if (
+      !maxLength ||
+      maxLength >= newValue.length ||
+      newValue.length < prevLength
+    ) {
+      e.target.value = newValue;
       onChange?.(e);
     }
   };
