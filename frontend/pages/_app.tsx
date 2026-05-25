@@ -13,7 +13,6 @@ import FullScreenLoader from "~community/common/components/molecules/FullScreenL
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
-import { BreadcrumbProvider } from "~community/common/providers/BreadcrumbProvider";
 import TanStackProvider from "~community/common/providers/TanStackProvider";
 import { ToastProvider } from "~community/common/providers/ToastProvider";
 import { WebSocketProvider } from "~community/common/providers/WebSocketProvider";
@@ -22,18 +21,18 @@ import { themeSelector } from "~community/common/theme/themeSelector";
 import { MyAppPropsType } from "~community/common/types/CommonTypes";
 import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
 import "~enterprise/common/components/atoms/driverJsPopover/styles.css";
+import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
 import {
   isNonProdMaintenanceMode,
   isProdMaintenanceMode
 } from "~enterprise/common/constants/dbKeys";
+import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 import { database } from "~enterprise/common/utils/firebase";
 import { initializeHotjar } from "~enterprise/common/utils/monitoring";
 import i18n from "~i18n";
 
 import "../styles/global.css";
 import Error from "./_error";
-import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
-import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 
 // Initialize the font
 const inter = Inter({
@@ -131,14 +130,12 @@ function MyApp({
               <TanStackProvider>
                 <ThemeProvider theme={newTheme}>
                   <I18nextProvider i18n={i18n}>
-                    <BreadcrumbProvider>
-                      <ErrorBoundary FallbackComponent={Error}>
-                        <RouteChangeLoader />
-                        <BaseLayout>
-                          <Component {...pageProps} />
-                        </BaseLayout>
-                      </ErrorBoundary>
-                    </BreadcrumbProvider>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <RouteChangeLoader />
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
                     <ReactQueryDevtools
                       initialIsOpen={false}
                       position="bottom"
@@ -153,17 +150,15 @@ function MyApp({
             <TanStackProvider>
               <ThemeProvider theme={newTheme}>
                 <I18nextProvider i18n={i18n}>
-                  <BreadcrumbProvider>
-                    <AnnouncementProvider>
-                      <ErrorBoundary FallbackComponent={Error}>
-                        <RouteChangeLoader />
-                        <BaseLayout>
-                          <Component {...pageProps} />
-                        </BaseLayout>
-                      </ErrorBoundary>
-                      <AnnouncementWrapper />
-                    </AnnouncementProvider>
-                  </BreadcrumbProvider>
+                  <AnnouncementProvider>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <RouteChangeLoader />
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
+                    <AnnouncementWrapper />
+                  </AnnouncementProvider>
                   <ReactQueryDevtools initialIsOpen={false} position="bottom" />
                 </I18nextProvider>
               </ThemeProvider>

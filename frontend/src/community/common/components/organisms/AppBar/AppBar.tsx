@@ -18,7 +18,6 @@ import {
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useBreadcrumbContext } from "~community/common/providers/BreadcrumbProvider";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { AppBarItemTypes } from "~community/common/types/CommonTypes";
@@ -36,8 +35,6 @@ const AppBar = () => {
   const [menuTitle, setMenuTitle] = useState<AppBarItemTypes | null>(null);
   const [showClockWidget, setShowClockWidget] = useState(false);
 
-  const { breadcrumbs } = useBreadcrumbContext();
-
   const queryMatches = useMediaQuery();
   const isBelow600 = queryMatches(MediaQueries.BELOW_600);
   const { handleDrawer } = useDrawer();
@@ -45,7 +42,11 @@ const AppBar = () => {
 
   const { user } = useAuth();
   const userInfoRef = useRef<HTMLDivElement | null>(null);
-  const { notifyData, setNotifyData } = useCommonStore((state) => state);
+
+  const { notifyData, setNotifyData, breadcrumbs } = useCommonStore(
+    (state) => state
+  );
+
   const { data: employee } = useGetUserPersonalDetails();
 
   const handleCloseMenu = (): void => {

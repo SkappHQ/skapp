@@ -26,7 +26,7 @@ import {
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useBreadcrumbContext } from "~community/common/providers/BreadcrumbProvider";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -213,7 +213,8 @@ const ContentLayout = ({
   const usedStoragePercentage = useMemo(() => {
     return 100 - storageAvailabilityData?.availableSpace;
   }, [storageAvailabilityData]);
-  const { setBreadcrumbs } = useBreadcrumbContext();
+
+  const setBreadcrumbs = useCommonStore((state) => state.setBreadcrumbs);
 
   const { data: checkUserLimit, isSuccess: isCheckUserLimitSuccess } =
     useCheckUserLimit(isEnterpriseMode, !!user);
@@ -235,6 +236,10 @@ const ContentLayout = ({
 
   useEffect(() => {
     setBreadcrumbs(breadcrumbs);
+
+    return () => {
+      setBreadcrumbs([]);
+    };
   }, []);
 
   return (
