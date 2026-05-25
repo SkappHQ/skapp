@@ -1,9 +1,11 @@
 import { BreadcrumbItem } from "@rootcodelabs/skapp-ui";
+import { useRouter } from "next/router";
 import {
   ReactNode,
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState
 } from "react";
 
@@ -12,16 +14,29 @@ interface BreadcrumbContextValue {
   setBreadcrumbs: (items: BreadcrumbItem[]) => void;
 }
 
-const BreadcrumbContext = createContext<BreadcrumbContextValue | undefined>(
-  undefined
-);
+const BreadcrumbContext = createContext<BreadcrumbContextValue>({
+  breadcrumbs: [],
+  setBreadcrumbs: () => {}
+});
 
 export const BreadcrumbProvider = ({ children }: { children: ReactNode }) => {
   const [breadcrumbs, setBreadcrumbsState] = useState<BreadcrumbItem[]>([]);
-
+  const router = useRouter();
   const setBreadcrumbs = useCallback((items: BreadcrumbItem[]) => {
     setBreadcrumbsState(items);
   }, []);
+
+  useEffect(() => {
+    const handleStart = (url: string): void => {
+      url !== router.asPath && setBreadcrumbs([]);
+    };
+
+    router.events.on("routeChangeStart", handleStart);
+
+    return () => {
+      router.events.off("routeChangeStart", handleStart);
+    };
+  }, [router.asPath, router.events]);
 
   return (
     <BreadcrumbContext.Provider value={{ breadcrumbs, setBreadcrumbs }}>
@@ -37,5 +52,6 @@ export const useBreadcrumbContext = (): BreadcrumbContextValue => {
       "useBreadcrumbContext must be used within a BreadcrumbProvider"
     );
   }
+
   return context;
 };

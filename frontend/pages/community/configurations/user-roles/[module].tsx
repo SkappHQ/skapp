@@ -3,9 +3,8 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import ROUTES from "~community/common/constants/routes";
+import { Modules } from "~community/common/enums/CommonEnums";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { getUserRoleRestrictions } from "~community/configurations/api/userRolesApi";
@@ -13,33 +12,16 @@ import ModuleRolesTable from "~community/configurations/components/molecules/Mod
 import RestrictedUserRolesModal from "~community/configurations/components/organisms/RestrictedUserRolesModal/RestrictedUserRolesModal";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import { UserRoleRestrictionsType } from "~community/configurations/types/UserRolesTypes";
-import { mapApiModuleToEnum } from "~community/configurations/utils/userRoles/apiUtils";
 
 const Module: NextPage = () => {
   const router = useRouter();
   const { module } = router.query;
 
-  const moduleLabels: Record<string, string> = {
-    attendance: "attendanceModuleRoles",
-    people: "peopleModuleRoles",
-    leave: "leaveModuleRoles",
-    esign: "esignatureModuleRoles",
-    invoice: "invoiceModuleRoles",
-    projectManagement: "projectManagementModuleRoles"
-  };
-  const breadcrumbLabel = moduleLabels[module as string];
-  const translateBreadcrumbs = useTranslator("breadcrumbs");
-  const translateUserRoles = useTranslator("configurations", "userRoles");
-  if (breadcrumbLabel) {
-    useBreadcrumbs([
-      { label: "configurations", href: ROUTES.CONFIGURATIONS.BASE },
-      { label: breadcrumbLabel }
-    ]);
-  }
-
   const formattedModule = useMemo(() => {
-    return mapApiModuleToEnum(module?.toString());
+    return module?.toString().toUpperCase() as Modules;
   }, [module]);
+
+  const translateText = useTranslator("configurations");
 
   const { setIsUserRoleModalOpen, setModuleType } = useConfigurationStore();
 
@@ -59,15 +41,15 @@ const Module: NextPage = () => {
     setModuleType(formattedModule);
   };
 
-  const onBackClick = () => {
-    router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=user-roles`);
-  };
-
   return (
     <ContentLayout
-      pageHead={translateUserRoles(["pageHead"])}
-      title={translateUserRoles([`${module}Title`])}
-      primaryButtonText={translateUserRoles(["setRestrictionsBtnText"])}
+      breadcrumbs={[
+        { label: translateText(["title"]) },
+        { label: translateText([`userRoles.${module}Title`]) }
+      ]}
+      pageHead={translateText(["userRoles.pageHead"])}
+      title={translateText([`userRoles.${module}Title`])}
+      primaryButtonText={translateText(["userRoles.setRestrictionsBtnText"])}
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryBtnIconName={IconName.RESTRICTIONS_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}

@@ -11,7 +11,6 @@ import PeopleAndTeamAutocompleteSearch, {
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
@@ -20,15 +19,7 @@ import { useGetEmployeesAndTeamsForAnalytics } from "~community/people/api/Peopl
 import { usePeopleStore } from "~community/people/store/store";
 
 const AllTimesheetsPage: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "timesheet"
-    },
-    {
-      label: "allTimesheets"
-    }
-  ]);
-  const translateText = useTranslator("attendanceModule", "timesheet");
+  const translateText = useTranslator("attendanceModule");
   const router = useRouter();
 
   const { user } = useAuth();
@@ -104,9 +95,17 @@ const AllTimesheetsPage: NextPage = () => {
       notificationType={NotificationSummaryType.TIME_ENTRY}
     >
       <ContentLayout
-        title={translateText(["allTimesheets.title"])}
+        breadcrumbs={[
+          {
+            label: translateText(["dashboards.stepTimeSheet"])
+          },
+          {
+            label: translateText(["timesheet.allTimesheets.title"])
+          }
+        ]}
+        title={translateText(["timesheet.allTimesheets.title"])}
         isDividerVisible={true}
-        pageHead={translateText(["allTimesheets.pageHead"])}
+        pageHead={translateText(["timesheet.allTimesheets.pageHead"])}
       >
         <Stack sx={{ gap: 2 }}>
           <PeopleAndTeamAutocompleteSearch

@@ -6,7 +6,6 @@ import LeaveCarryForward from "~community/common/components/molecules/LeaveCarry
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
@@ -20,15 +19,7 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveEntitlements: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "leave"
-    },
-    {
-      label: "leaveEntitlements"
-    }
-  ]);
-  const translateText = useTranslator("leaveModule", "leaveEntitlements");
+  const translateText = useTranslator("leaveModule");
 
   const { data: leaveTypesList } = useGetLeaveTypes(false, true);
 
@@ -66,14 +57,22 @@ const LeaveEntitlements: NextPage = () => {
 
   return (
     <ContentLayout
-      title={translateText(["title"])}
-      pageHead={translateText(["pageHead"])}
+      breadcrumbs={[
+        {
+          label: translateText(["analytics.stepLeave"])
+        },
+        {
+          label: translateText(["leaveEntitlements.title"])
+        }
+      ]}
+      title={translateText(["leaveEntitlements.title"])}
+      pageHead={translateText(["leaveEntitlements.pageHead"])}
       isDividerVisible
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryButtonText={
         leaveEntitlementTableData &&
         leaveEntitlementTableData?.items.length > 0 &&
-        translateText(["bulkUploadBtnTxt"])
+        translateText(["leaveEntitlements.bulkUploadBtnTxt"])
       }
       primaryBtnIconName={IconName.UP_ARROW_ICON}
       onPrimaryButtonClick={() =>

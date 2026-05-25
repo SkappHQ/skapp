@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveTypesTable from "~community/leave/components/molecules/LeaveTypesTable/LeaveTypesTable";
 import { LeaveTypeFormTypes } from "~community/leave/enums/LeaveTypeEnums";
@@ -13,15 +12,7 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveTypes: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "leave"
-    },
-    {
-      label: "leaveTypes"
-    }
-  ]);
-  const translateText = useTranslator("leaveModule", "leaveTypes");
+  const translateText = useTranslator("leaveModule");
 
   const router = useRouter();
 
@@ -39,9 +30,17 @@ const LeaveTypes: NextPage = () => {
   return (
     <>
       <ContentLayout
-        title={translateText(["title"])}
-        pageHead={translateText(["pageHead"])}
-        primaryButtonText={translateText(["addLeaveBtnTxt"])}
+        breadcrumbs={[
+          {
+            label: translateText(["analytics.stepLeave"])
+          },
+          {
+            label: translateText(["leaveTypes.title"])
+          }
+        ]}
+        title={translateText(["leaveTypes.title"])}
+        pageHead={translateText(["leaveTypes.pageHead"])}
+        primaryButtonText={translateText(["leaveTypes.addLeaveBtnTxt"])}
         onPrimaryButtonClick={() => {
           router.push(
             ROUTES.LEAVE.ADD_EDIT_LEAVE_TYPES(LeaveTypeFormTypes.ADD)

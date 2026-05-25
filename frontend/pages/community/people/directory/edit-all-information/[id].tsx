@@ -12,7 +12,6 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import ROUTES from "~community/common/constants/routes";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
@@ -65,19 +64,6 @@ import useS3Download from "~enterprise/common/hooks/useS3Download";
 const EditAllInformation: NextPage = () => {
   const router = useRouter();
   const translateText = useTranslator("peopleModule");
-
-  useBreadcrumbs([
-    {
-      label: "people"
-    },
-    {
-      label: "directory",
-      href: ROUTES.PEOPLE.DIRECTORY
-    },
-    {
-      label: "editEmployeeProfile"
-    }
-  ]);
 
   const { setToastMessage, toastMessage } = useToast();
 

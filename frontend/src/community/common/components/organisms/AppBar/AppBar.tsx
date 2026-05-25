@@ -12,13 +12,13 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import AppBarMenu from "~community/common/components/molecules/AppBarMenu/AppBarMenu";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appBarTestId } from "~community/common/constants/testIds";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import useDrawer from "~community/common/hooks/useDrawer";
 import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useBreadcrumbContext } from "~community/common/providers/BreadcrumbProvider";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { AppBarItemTypes } from "~community/common/types/CommonTypes";
@@ -36,7 +36,7 @@ const AppBar = () => {
   const [menuTitle, setMenuTitle] = useState<AppBarItemTypes | null>(null);
   const [showClockWidget, setShowClockWidget] = useState(false);
 
-  const breadcrumbs = useBreadcrumbs([]);
+  const { breadcrumbs } = useBreadcrumbContext();
 
   const queryMatches = useMediaQuery();
   const isBelow600 = queryMatches(MediaQueries.BELOW_600);

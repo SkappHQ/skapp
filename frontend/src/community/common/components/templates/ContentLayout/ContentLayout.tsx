@@ -7,7 +7,7 @@ import {
   useTheme
 } from "@mui/material";
 import { type SxProps } from "@mui/system";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { BreadcrumbItem, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { JSX, memo, useEffect, useMemo } from "react";
@@ -26,6 +26,7 @@ import {
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useBreadcrumbContext } from "~community/common/providers/BreadcrumbProvider";
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -88,6 +89,7 @@ interface Props {
     secondaryButton?: string;
   };
   isCloseButton?: boolean;
+  breadcrumbs?: BreadcrumbItem[];
 }
 
 const ContentLayout = ({
@@ -118,7 +120,8 @@ const ContentLayout = ({
   customStyles,
   ariaDescribedBy,
   showBackButtonTooltip = true,
-  isCloseButton = false
+  isCloseButton = false,
+  breadcrumbs = []
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
@@ -210,6 +213,7 @@ const ContentLayout = ({
   const usedStoragePercentage = useMemo(() => {
     return 100 - storageAvailabilityData?.availableSpace;
   }, [storageAvailabilityData]);
+  const { setBreadcrumbs } = useBreadcrumbContext();
 
   const { data: checkUserLimit, isSuccess: isCheckUserLimitSuccess } =
     useCheckUserLimit(isEnterpriseMode, !!user);
@@ -228,6 +232,10 @@ const ContentLayout = ({
     setIsUserLimitExceeded,
     setShowUserLimitBanner
   ]);
+
+  useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+  }, []);
 
   return (
     <>

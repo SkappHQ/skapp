@@ -4,7 +4,6 @@ import { useEffect } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveTypeActivationToggleButton from "~community/leave/components/molecules/LeaveTypeActivationToggleButton/LeaveTypeActivationToggleButton";
 import UnsavedChangesModal from "~community/leave/components/molecules/UserPromptModals/UnsavedChangesModal/UnsavedChangesModal";
@@ -17,22 +16,9 @@ import { useLeaveStore } from "~community/leave/store/store";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 const LeaveType: NextPage = () => {
-  const translateText = useTranslator("leaveModule", "leaveTypes");
+  const translateText = useTranslator("leaveModule");
   const router = useRouter();
   const { slug } = router.query;
-
-  useBreadcrumbs([
-    {
-      label: "leave"
-    },
-    {
-      label: "leaveTypes",
-      href: ROUTES.LEAVE.TYPES
-    },
-    {
-      label: slug === LeaveTypeFormTypes.EDIT ? "editLeaveType" : "addLeaveType"
-    }
-  ]);
 
   const {
     isLeaveTypeFormDirty,
@@ -92,12 +78,27 @@ const LeaveType: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateText(["analytics.stepLeave"])
+        },
+        {
+          label: translateText(["leaveTypes.title"]),
+          href: ROUTES.LEAVE.TYPES
+        },
+        {
+          label:
+            slug === LeaveTypeFormTypes.EDIT
+              ? translateText(["leaveTypes.editLeaveType"])
+              : translateText(["leaveTypes.addLeaveType"])
+        }
+      ]}
       title={
         slug === LeaveTypeFormTypes.EDIT
-          ? translateText(["editLeaveType"])
-          : translateText(["addLeaveType"])
+          ? translateText(["leaveTypes.editLeaveType"])
+          : translateText(["leaveTypes.addLeaveType"])
       }
-      pageHead={translateText(["pageHead"])}
+      pageHead={translateText(["leaveTypes.pageHead"])}
       isDividerVisible
       isBackButtonVisible
       onBackClick={handleBackBtnClick}

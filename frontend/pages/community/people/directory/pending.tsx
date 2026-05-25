@@ -6,7 +6,6 @@ import { useEffect } from "react";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -16,19 +15,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Pending = () => {
-  useBreadcrumbs([
-    {
-      label: "people"
-    },
-    {
-      label: "directory",
-      href: ROUTES.PEOPLE.DIRECTORY
-    },
-    {
-      label: "pendingInvitations"
-    }
-  ]);
-  const translateText = useTranslator("peopleModule", "peoples");
+  const translateText = useTranslator("peopleModule");
   const { user } = useAuth();
   const router = useRouter();
 
@@ -61,16 +48,28 @@ const Pending = () => {
         <title>{translateText(["title"])}</title>
       </Head>
       <ContentLayout
-        title={translateText(["pendingInvitations.title"])}
-        pageHead={translateText(["pendingInvitations.pageHead"])}
+        breadcrumbs={[
+          {
+            label: translateText(["dashboard.people"])
+          },
+          {
+            label: translateText(["peoples.title"]),
+            href: ROUTES.PEOPLE.DIRECTORY
+          },
+          {
+            label: translateText(["breadcrumbs.pendingInvitations"])
+          }
+        ]}
+        title={translateText(["peoples.pendingInvitations.title"])}
+        pageHead={translateText(["peoples.pendingInvitations.pageHead"])}
         primaryButtonText={
           isAdmin && !isPendingInvitationListOpen
-            ? translateText(["addPeople"])
+            ? translateText(["peoples.addPeople"])
             : undefined
         }
         secondaryBtnText={
           isAdmin && !isPendingInvitationListOpen
-            ? translateText(["addBulkPeople"])
+            ? translateText(["peoples.addBulkPeople"])
             : undefined
         }
         secondaryBtnIconName={IconName.UP_ARROW_ICON}

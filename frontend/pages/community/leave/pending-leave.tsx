@@ -6,19 +6,10 @@ import { useState } from "react";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import PendingLeaveRequestTable from "~community/leave/components/molecules/PendingLeaveRequestTable/PendingLeaveRequestTable";
 
 const PendingLeave: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "leave"
-    },
-    {
-      label: "pendingLeaveRequests"
-    }
-  ]);
   const translateText = useTranslator("leaveModule", "pendingRequests");
 
   const [searchTerm, setSearchTerm] = useState<string | undefined>(undefined);

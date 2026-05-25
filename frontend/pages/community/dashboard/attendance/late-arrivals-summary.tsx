@@ -4,27 +4,26 @@ import { useRouter } from "next/router";
 import ClockInData from "~community/common/components/organisms/ClockInData/ClockInData";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const LateArrivalsSummary: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "dashboard",
-      href: ROUTES.DASHBOARD.BASE
-    },
-    {
-      label: "attendance"
-    },
-    {
-      label: "lateArrivalsTableSummary"
-    }
-  ]);
   const translateText = useTranslator("attendanceModule", "dashboards");
   const router = useRouter();
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateText(["dashboard"]),
+          href: ROUTES.DASHBOARD.BASE
+        },
+        {
+          label: translateText(["attendanceDashboard.attendance"])
+        },
+        {
+          label: translateText(["attendanceDashboard.lateArrivalsTableSummary"])
+        }
+      ]}
       pageHead={translateText(["attendanceDashboard.lateArrivalsTableSummary"])}
       title={translateText(["attendanceDashboard.lateArrivalsTableSummary"])}
       isDividerVisible={true}

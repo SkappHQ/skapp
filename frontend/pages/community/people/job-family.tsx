@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
@@ -14,15 +12,7 @@ import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnum
 import { usePeopleStore } from "~community/people/store/store";
 
 const JobFamily: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "people"
-    },
-    {
-      label: "jobFamilies"
-    }
-  ]);
-  const translateText = useTranslator("peopleModule", "jobFamily");
+  const translateText = useTranslator("peopleModule");
 
   const { data: allJobFamiliesData, isPending: isJobFamilyPending } =
     useGetAllJobFamilies();
@@ -44,13 +34,21 @@ const JobFamily: NextPage = () => {
 
   return (
     <ContentLayout
-      pageHead={translateText(["tabTitle"])}
-      title={translateText(["title"])}
+      breadcrumbs={[
+        {
+          label: translateText(["dashboard.people"])
+        },
+        {
+          label: translateText(["jobFamily.title"])
+        }
+      ]}
+      pageHead={translateText(["jobFamily.tabTitle"])}
+      title={translateText(["jobFamily.title"])}
       isDividerVisible
       primaryButtonText={
         Boolean(allJobFamiliesData?.length ?? 0) &&
         isPeopleAdmin &&
-        translateText(["addJobFamily"])
+        translateText(["jobFamily.addJobFamily"])
       }
       onPrimaryButtonClick={() =>
         setJobFamilyModalType(JobFamilyActionModalEnums.ADD_JOB_FAMILY)
@@ -61,7 +59,9 @@ const JobFamily: NextPage = () => {
           <SearchBox
             value={jobFamilySearchTerm}
             setSearchTerm={setJobFamilySearchTerm}
-            placeHolder={translateText(["jobFamilySearchPlaceholder"])}
+            placeHolder={translateText([
+              "jobFamily.jobFamilySearchPlaceholder"
+            ])}
           />
         )}
         <JobFamilyTable

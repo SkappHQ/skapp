@@ -25,7 +25,6 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { AnalyticsTypes } from "~community/common/types/CommonTypes";
@@ -45,15 +44,6 @@ const TeamTimeSheetAnalytics: NextPage = () => {
   const theme: Theme = useTheme();
   const router = useRouter();
   const translateText = useTranslator("attendanceModule", "dashboards");
-
-  useBreadcrumbs([
-    {
-      label: "leave"
-    },
-    {
-      label: "leaveAnalytics"
-    }
-  ]);
 
   const [activeStep, setActiveStep] = useState("leaveAnalytics");
 

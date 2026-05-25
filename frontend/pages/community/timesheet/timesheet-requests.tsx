@@ -7,24 +7,11 @@ import useApproveDenyTimeRequest from "~community/attendance/hooks/useApproveDen
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { TableNames } from "~community/common/enums/Table";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 
 const TimesheetRequestsPage: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "timesheet"
-    },
-    {
-      label: "allTimesheets",
-      href: ROUTES.TIMESHEET.ALL_TIMESHEETS
-    },
-    {
-      label: "timeEntryRequests"
-    }
-  ]);
-  const translateText = useTranslator("attendanceModule", "timesheet");
+  const translateText = useTranslator("attendanceModule");
 
   const { approveTimesheetRequest, declineTimesheetRequest } =
     useApproveDenyTimeRequest();
@@ -37,8 +24,20 @@ const TimesheetRequestsPage: NextPage = () => {
     useGetManagerTimeSheetRequests();
   return (
     <ContentLayout
-      pageHead={translateText(["timeEntryRequests.pageHead"])}
-      title={translateText(["timeEntryRequests.title"])}
+      breadcrumbs={[
+        {
+          label: translateText(["dashboards.stepTimeSheet"])
+        },
+        {
+          label: translateText(["timesheet.allTimesheets.title"]),
+          href: ROUTES.TIMESHEET.ALL_TIMESHEETS
+        },
+        {
+          label: translateText(["timesheet.timeEntryRequests.title"])
+        }
+      ]}
+      pageHead={translateText(["timesheet.timeEntryRequests.pageHead"])}
+      title={translateText(["timesheet.timeEntryRequests.title"])}
       isDividerVisible={true}
       isBackButtonVisible={true}
       onBackClick={router.back}

@@ -9,7 +9,6 @@ import PeopleAndTeamAutocompleteSearch, {
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
@@ -24,15 +23,7 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveRequests: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "leave"
-    },
-    {
-      label: "allLeaveRequests"
-    }
-  ]);
-  const translateText = useTranslator("leaveModule", "leaveRequests");
+  const translateText = useTranslator("leaveModule");
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
   const router = useRouter();
   const { user } = useAuth();
@@ -119,8 +110,16 @@ const LeaveRequests: NextPage = () => {
       notificationType={NotificationSummaryType.LEAVE_REQUEST}
     >
       <ContentLayout
-        pageHead={translateText(["pageHead"])}
-        title={translateText(["title"])}
+        breadcrumbs={[
+          {
+            label: translateText(["analytics.stepLeave"])
+          },
+          {
+            label: translateText(["leaveRequests.title"])
+          }
+        ]}
+        pageHead={translateText(["leaveRequests.pageHead"])}
+        title={translateText(["leaveRequests.title"])}
         isDividerVisible={true}
       >
         <Box

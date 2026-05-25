@@ -4,8 +4,6 @@ import { useState } from "react";
 
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
@@ -15,15 +13,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { TeamModelTypes } from "~community/people/types/TeamTypes";
 
 const Teams: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "people"
-    },
-    {
-      label: "teams"
-    }
-  ]);
-  const translateText = useTranslator("peopleModule", "teams");
+  const translateText = useTranslator("peopleModule");
   const [teamSearchTerm, setTeamSearchTerm] = useState<string>("");
 
   const { setTeamModalType, setIsTeamModalOpen } = usePeopleStore((state) => ({
@@ -38,12 +28,20 @@ const Teams: NextPage = () => {
   return (
     <>
       <ContentLayout
-        pageHead={translateText(["tabTitle"])}
-        title={translateText(["title"])}
+        breadcrumbs={[
+          {
+            label: translateText(["dashboard.people"])
+          },
+          {
+            label: translateText(["teams.title"])
+          }
+        ]}
+        pageHead={translateText(["teams.tabTitle"])}
+        title={translateText(["teams.title"])}
         primaryButtonText={
           isPeopleAdmin &&
           (allTeams?.length ?? 0) !== 0 &&
-          translateText(["addTeam"])
+          translateText(["teams.addTeam"])
         }
         onPrimaryButtonClick={() => {
           setIsTeamModalOpen(true);
@@ -55,7 +53,7 @@ const Teams: NextPage = () => {
           <SearchBox
             value={teamSearchTerm}
             setSearchTerm={setTeamSearchTerm}
-            placeHolder={translateText(["teamSearchPlaceholder"])}
+            placeHolder={translateText(["teams.teamSearchPlaceholder"])}
           />
           <TeamsTable
             teamSearchTerm={teamSearchTerm}
@@ -63,7 +61,7 @@ const Teams: NextPage = () => {
               setIsTeamModalOpen(true);
               setTeamModalType(TeamModelTypes.ADD_TEAM);
             }}
-            teamAddButtonText={translateText(["addTeam"])}
+            teamAddButtonText={translateText(["teams.addTeam"])}
             isAdmin={isPeopleAdmin}
           />
           <TeamModalController />

@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import ROUTES from "~community/common/constants/routes";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
@@ -17,15 +15,7 @@ import {
 } from "~community/people/types/HolidayTypes";
 
 const Holidays: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "people"
-    },
-    {
-      label: "holidays"
-    }
-  ]);
-  const translateText = useTranslator("peopleModule", "holidays");
+  const translateText = useTranslator("peopleModule");
 
   const [setPopupTitle] = useState<string | undefined>();
   const [holidayDataItems, setHolidayDataItems] = useState<Holiday[]>([]);
@@ -90,8 +80,16 @@ const Holidays: NextPage = () => {
   return (
     <>
       <ContentLayout
-        title={translateText(["holidays"])}
-        pageHead={translateText(["title"])}
+        breadcrumbs={[
+          {
+            label: translateText(["dashboard.people"])
+          },
+          {
+            label: translateText(["holidays.holidays"])
+          }
+        ]}
+        title={translateText(["holidays.holidays"])}
+        pageHead={translateText(["holidays.title"])}
         isDividerVisible={true}
         onPrimaryButtonClick={handleAddHoliday}
         primaryButtonText={isAdmin && primaryButtonText}

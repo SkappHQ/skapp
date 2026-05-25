@@ -4,7 +4,6 @@ import { MouseEvent, useState } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import useBreadcrumbs from "~community/common/hooks/useBreadcrumbs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import CustomAllocationsReportTable from "~community/leave/components/molecules/CustomAllocationsReportTable/CustomAllocationsReportTable";
 import LeaveEntitlementsReportsTable from "~community/leave/components/molecules/LeaveEntitlementsReportsTable/LeaveEntitlementsReportsTable";
@@ -15,14 +14,6 @@ import { useGetAllManagerTeams } from "~community/people/api/TeamApi";
 import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverlay/UpgradeOverlay";
 
 const LeaveReportPage: NextPage = () => {
-  useBreadcrumbs([
-    {
-      label: "leave"
-    },
-    {
-      label: "leaveAnalytics"
-    }
-  ]);
   const translateText = useTranslator("leaveModule", "leaveReports");
 
   const { data: teams } = useGetAllManagerTeams();

@@ -37,7 +37,6 @@ const ContentWithDrawer = ({ children }: Props) => {
               flexDirection: "column",
               width: "100%",
               flex: 1,
-              minHeight: 0,
               overflowX: "hidden"
             }}
           >

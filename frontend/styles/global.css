@@ -135,13 +135,6 @@ button {
   font-family: inherit;
 }
 
-@layer base {
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-}
-
 * {
   box-sizing: border-box;
 }
