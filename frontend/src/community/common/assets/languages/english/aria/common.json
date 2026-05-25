@@ -28,7 +28,9 @@
     },
     "appBar": {
       "appBar": "App bar",
-      "menuIcon": "Expand menu"
+      "menuIcon": "Expand menu",
+      "notifications": "Notifications",
+      "accountDetails": "Account details"
     },
     "avatar": {
       "alt": "Employee avatar",
