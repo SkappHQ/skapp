@@ -1515,10 +1515,13 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 
 		Join<Employee, WorkLocation> workLocationJoin = root.join(Employee_.workLocation, JoinType.INNER);
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
 
 		criteriaQuery.multiselect(workLocationJoin.get(WorkLocation_.workLocationId), criteriaBuilder.count(root));
 		criteriaQuery.where(workLocationJoin.get(WorkLocation_.workLocationId).in(workLocationIds),
-				root.get(Employee_.accountStatus).in(AccountStatus.ACTIVE, AccountStatus.PENDING));
+				root.get(Employee_.accountStatus).in(AccountStatus.ACTIVE, AccountStatus.PENDING),
+				criteriaBuilder.or(roleJoin.get(EmployeeRole_.PM_ROLE).isNull(),
+						criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE)));
 		criteriaQuery.groupBy(workLocationJoin.get(WorkLocation_.workLocationId));
 
 		Map<Long, Long> result = new HashMap<>();
@@ -1526,6 +1529,50 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			result.put(tuple.get(0, Long.class), tuple.get(1, Long.class));
 		}
 		return result;
+	}
+
+	@Override
+	public List<Employee> findActiveEmployeesExcludingGuests(Long workLocationId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(root.get(Employee_.accountStatus).in(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+
+		if (workLocationId != null) {
+			predicates.add(criteriaBuilder.equal(root.get(Employee_.workLocation).get(WorkLocation_.workLocationId),
+					workLocationId));
+		}
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.select(root);
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(Employee_.employeeId)));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public Long countActiveEmployeesExcludingGuests() {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(root.get(Employee_.accountStatus).in(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.select(criteriaBuilder.count(root));
+
+		return entityManager.createQuery(criteriaQuery).getSingleResult();
 	}
 
 }

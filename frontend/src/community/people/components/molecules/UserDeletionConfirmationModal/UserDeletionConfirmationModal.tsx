@@ -15,11 +15,13 @@ import { useDeleteUser } from "~community/people/api/PeopleApi";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  employeeId: number;
 }
 
 const UserDeletionConfirmationModal: React.FC<Props> = ({
   isOpen,
-  onClose
+  onClose,
+  employeeId
 }) => {
   const translateText = useTranslator("peopleModule", "deletion");
   const { setToastMessage } = useToast();
@@ -48,7 +50,7 @@ const UserDeletionConfirmationModal: React.FC<Props> = ({
     onClose();
   };
 
-  const { mutate: deleteUser } = useDeleteUser(onSuccess, onError);
+  const { mutate: deleteUser } = useDeleteUser(onSuccess, onError, employeeId);
 
   const onClick = () => {
     deleteUser();

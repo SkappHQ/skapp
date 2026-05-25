@@ -18,6 +18,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_SUCCESS_EMPLOYEE_ADDED("api.success.people.employee-added"),
 	PEOPLE_SUCCESS_EMPLOYEE_TERMINATED("api.success.people.employee-terminated"),
 	PEOPLE_SUCCESS_EMPLOYEE_DELETED("api.success.people.employee-deleted"),
+	PEOPLE_SUCCESS_TRANSFER_SUPERVISORS("api.success.people.transfer-supervisors"),
 	PEOPLE_SUCCESS_DELETE_HOLIDAYS("api.success.people.delete-holidays"),
 	PEOPLE_SUCCESS_DELETE_SELECTED_HOLIDAYS("api.success.people.delete-selected-holidays"),
 
@@ -83,7 +84,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_HOLIDAY_PAST_DATE_NOT_ALLOWED("api.error.people.holiday.past-date-not-allowed"),
 	PEOPLE_ERROR_HOLIDAY_NAME_REQUIRED("api.error.people.holiday.name-required"),
 	PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION("api.error.people.holiday.required-work-location"),
-	PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION("api.error.people.holiday.invalid-work-location"),
+	PEOPLE_ERROR_HOLIDAY_WORK_LOCATION_NOT_FOUND("api.error.people.holiday.work-location-not-found"),
 	PEOPLE_ERROR_HOLIDAY_NAME_CHAR_LIMIT("api.error.people.holiday.name-char-limit"),
 	PEOPLE_ERROR_HOLIDAY_NAME_SPECIAL_CHAR("api.error.people.holiday.name-special-char"),
 	PEOPLE_ERROR_HOLIDAY_DURATION_INVALID("api.error.people.holiday.duration-invalid"),
@@ -210,6 +211,12 @@ public enum PeopleMessageConstant implements MessageConstant {
 			"api.error.people.validation-only-one-current-employment-allowed"),
 	PEOPLE_ERROR_VALIDATION_CANNOT_ADD_OTHER_SUPERVISORS_WITHOUT_PRIMARY_SUPERVISOR(
 			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),
+	PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND("api.error.people.transfer-supervisors.new-supervisor-not-found"),
+	PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN("api.error.people.transfer-supervisors.self-assign"),
+	PEOPLE_ERROR_TRANSFER_PRIMARY_SUPERVISOR_RECORD_NOT_FOUND(
+			"api.error.people.transfer-supervisors.primary-record-not-found"),
+	PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND(
+			"api.error.people.transfer-supervisors.team-record-not-found"),
 	PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND("api.error.people.validation-work-location-not-found");
 
 	private final String messageKey;

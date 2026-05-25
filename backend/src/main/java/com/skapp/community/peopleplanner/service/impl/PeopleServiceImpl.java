@@ -48,6 +48,7 @@ import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
+import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDataValidationDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDetailsDto;
@@ -58,6 +59,9 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
+import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
+import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
+import com.skapp.community.peopleplanner.payload.request.TransferSupervisorsRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
@@ -87,6 +91,8 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeManagerRespons
 import com.skapp.community.peopleplanner.payload.response.EmployeePeriodResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeTeamDto;
 import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
+import com.skapp.community.peopleplanner.payload.response.SupervisorRolesResponseDto;
+import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.export.EmployeeDataExportDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -1228,6 +1234,134 @@ public class PeopleServiceImpl implements PeopleService {
 
 		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_DELETED),
 				false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getSupervisedEmployeesAndTeams(Long userId) {
+		log.info("getSupervisorRoles: execution started");
+
+		Employee employee = employeeDao.findById(userId)
+			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+
+		List<EmployeeManager> primaryManagerRecords = employeeManagerDao
+			.findByManagerAndManagerTypeAndEmployeeAccountStatusIn(employee, ManagerType.PRIMARY,
+					List.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+
+		List<EmployeeBasicDetailsResponseDto> supervisedEmployees = primaryManagerRecords.stream()
+			.map(EmployeeManager::getEmployee)
+			.map(peopleMapper::employeeToEmployeeBasicDetailsResponseDto)
+			.toList();
+
+		List<EmployeeTeam> supervisorTeamRecords = employeeTeamDao
+			.findByEmployeeAndIsSupervisorTrueAndTeamIsActiveTrue(employee);
+
+		List<TeamBasicDetailsResponseDto> supervisedTeams = supervisorTeamRecords.stream()
+			.map(EmployeeTeam::getTeam)
+			.map(peopleMapper::teamToTeamBasicDetailsResponseDto)
+			.toList();
+
+		SupervisorRolesResponseDto responseDto = new SupervisorRolesResponseDto();
+		responseDto.setSupervisedEmployees(supervisedEmployees);
+		responseDto.setSupervisedTeams(supervisedTeams);
+
+		log.info("getSupervisorRoles: execution ended");
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto transferSupervisors(Long userId, TransferSupervisorsRequestDto requestDto) {
+		log.info("transferSupervisors: execution started");
+
+		Employee currentSupervisor = employeeDao.findById(userId)
+			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+
+		if (requestDto.getPrimarySupervisors() != null) {
+			requestDto.getPrimarySupervisors()
+				.forEach(primarySupervisorTransferRequest -> processPrimaryManagerTransfer(currentSupervisor,
+						primarySupervisorTransferRequest));
+		}
+
+		if (requestDto.getTeamSupervisors() != null) {
+			requestDto.getTeamSupervisors()
+				.forEach(teamSupervisorTransferRequest -> processTeamSupervisorTransfer(currentSupervisor,
+						teamSupervisorTransferRequest));
+		}
+
+		log.info("transferSupervisors: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_TRANSFER_SUPERVISORS),
+				false);
+	}
+
+	private void processPrimaryManagerTransfer(Employee currentPrimarySupervisor,
+			PrimarySupervisorTransferDto primarySupervisorTransferRequest) {
+		if (primarySupervisorTransferRequest.getEmployeeId() == null) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL);
+		}
+
+		if (primarySupervisorTransferRequest.getNewPrimarySupervisorId() == null) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL);
+		}
+
+		Employee employee = employeeDao.findById(primarySupervisorTransferRequest.getEmployeeId())
+			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+		Employee newPrimarySupervisor = employeeDao
+			.findById(primarySupervisorTransferRequest.getNewPrimarySupervisorId())
+			.orElseThrow(
+					() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND));
+
+		if (newPrimarySupervisor.getEmployeeId().equals(employee.getEmployeeId())) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
+		}
+
+		EmployeeManager primarySupervisorRecord = employeeManagerDao
+			.findByManagerAndEmployeeAndManagerType(currentPrimarySupervisor, employee, ManagerType.PRIMARY)
+			.orElseThrow(() -> new ModuleException(
+					PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_PRIMARY_SUPERVISOR_RECORD_NOT_FOUND));
+		primarySupervisorRecord.setManager(newPrimarySupervisor);
+		employeeManagerDao.save(primarySupervisorRecord);
+	}
+
+	private void processTeamSupervisorTransfer(Employee currentSupervisor,
+			TeamSupervisorTransferDto teamSupervisorTransferRequest) {
+		if (teamSupervisorTransferRequest.getTeamId() == null) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_MEMBER_IDS_CANNOT_NULL);
+		}
+
+		if (teamSupervisorTransferRequest.getNewTeamSupervisorId() == null) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL);
+		}
+
+		Team team = teamDao.findById(teamSupervisorTransferRequest.getTeamId())
+			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
+		Employee newSupervisor = employeeDao.findById(teamSupervisorTransferRequest.getNewTeamSupervisorId())
+			.orElseThrow(
+					() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND));
+
+		if (newSupervisor.getEmployeeId().equals(currentSupervisor.getEmployeeId())) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
+		}
+
+		EmployeeTeam currentSupervisorTeam = employeeTeamDao.findByTeamAndEmployee(team, currentSupervisor)
+			.filter(record -> Boolean.TRUE.equals(record.getIsSupervisor()))
+			.orElseThrow(() -> new ModuleException(
+					PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND));
+
+		currentSupervisorTeam.setIsSupervisor(false);
+		employeeTeamDao.save(currentSupervisorTeam);
+
+		employeeTeamDao.findByTeamAndEmployee(team, newSupervisor).ifPresentOrElse(existingRecord -> {
+			existingRecord.setIsSupervisor(true);
+			employeeTeamDao.save(existingRecord);
+		}, () -> {
+			EmployeeTeam newSupervisorTeam = new EmployeeTeam();
+			newSupervisorTeam.setTeam(team);
+			newSupervisorTeam.setEmployee(newSupervisor);
+			newSupervisorTeam.setIsSupervisor(true);
+			employeeTeamDao.save(newSupervisorTeam);
+		});
 	}
 
 	@Override

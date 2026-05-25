@@ -304,11 +304,15 @@ export enum RoleModuleEnum {
   ATTENDANCE = "attendance",
   ESIGN = "esign",
   INVOICE = "invoice",
-  PM = "pm"
+  PM = "pm",
+  CRM = "crm"
 }
 
 export enum RoleNameEnum {
   ADMIN = "Admin",
   MANAGER = "Manager",
-  SENDER = "Sender"
+  SENDER = "Sender",
+  SALES_MANAGER = "Sales Manager",
+  SALES_REPRESENTATIVE = "Sales Representative",
+  NONE = "None"
 }

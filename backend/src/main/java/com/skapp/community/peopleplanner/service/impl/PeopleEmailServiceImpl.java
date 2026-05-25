@@ -18,7 +18,9 @@ import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,21 +83,27 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 				emailDynamicFields.getWorkEmail());
 	}
 
+	@Async
+	@Transactional(readOnly = true)
 	@Override
 	public void sendNewHolidayDeclarationEmail(Holiday holiday) {
-		PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
-		emailDynamicFields.setOrganizationName(getOrganizationName());
-		emailDynamicFields.setHolidayDate(holiday.getDate().toString());
-		emailDynamicFields.setHolidayName(holiday.getName());
+		try {
+			PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
+			emailDynamicFields.setOrganizationName(getOrganizationName());
+			emailDynamicFields.setHolidayDate(holiday.getDate().toString());
+			emailDynamicFields.setHolidayName(holiday.getName());
 
-		List<User> users = userDao.findAllByIsActiveTrue();
-		users.forEach(user -> {
-			emailDynamicFields
-				.setEmployeeOrManagerName(user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
-			emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED, emailDynamicFields,
-					user.getEmail());
-		});
-
+			List<User> users = userDao.findAllByIsActiveTrue();
+			users.forEach(user -> {
+				emailDynamicFields.setEmployeeOrManagerName(
+						user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
+				emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED, emailDynamicFields,
+						user.getEmail());
+			});
+		}
+		catch (Exception e) {
+			log.error("Error sending new holiday declaration email for holiday: {}", holiday.getName(), e);
+		}
 	}
 
 	@Override

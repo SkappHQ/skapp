@@ -50,7 +50,8 @@ const LeaveRequestsReportTable: FC = () => {
     reportsParams.sortKey,
     reportsParams.sortOrder,
     reportsParams.leaveTypeId,
-    reportsParams.leaveStatus
+    reportsParams.leaveStatus,
+    !!reportsParams.teamId
   );
 
   const headerLabels: string[] = [
@@ -67,7 +68,8 @@ const LeaveRequestsReportTable: FC = () => {
     reportsParams.leaveTypeId,
     reportsParams.teamId,
     headerLabels,
-    reportsParams.leaveStatus
+    reportsParams.leaveStatus,
+    !!reportsParams.teamId
   );
 
   const { data: leaveTypes } = useGetLeaveTypes();

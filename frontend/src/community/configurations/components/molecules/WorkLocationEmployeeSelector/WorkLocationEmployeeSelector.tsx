@@ -1,13 +1,25 @@
 import { CircularProgress } from "@mui/material";
+import { Checkbox } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 
-import { AvatarChip, AvatarGroup, Checkbox } from "@rootcodelabs/skapp-ui";
+import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
+import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
-import { testPassiveEventSupport } from "~community/common/utils/commonUtil";
+import {
+  WorkLocationEmployee,
+  WorkLocationFormValues
+} from "~community/configurations/types/WorkLocationTypes";
 import {
   useGetEmployeeData,
   useGetSearchedEmployees
@@ -21,23 +33,44 @@ import {
   AllEmployeeDataResponse,
   AllEmployeeDataType
 } from "~community/people/types/PeopleTypes";
-import { WorkLocationEmployee, WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
   preloadedEmployees?: WorkLocationEmployee[];
 }
 
-const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props) => {
+const WorkLocationEmployeeSelector = ({
+  formik,
+  preloadedEmployees = []
+}: Props) => {
   const translateText = useTranslator("configurations", "workLocation");
 
   const [employeeSearchText, setEmployeeSearchText] = useState("");
   const [popperOpen, setPopperOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
-  const listInnerRef = useRef<HTMLDivElement>(null);
-  const supportsPassive = testPassiveEventSupport();
+  const listInnerRef = useRef<HTMLDivElement | null>(null);
+  const scrollCleanupRef = useRef<(() => void) | null>(null);
+  const searchTextRef = useRef(employeeSearchText);
+
+  useEffect(() => {
+    searchTextRef.current = employeeSearchText;
+  });
   const [boxWidth, setBoxWidth] = useState(0);
+  const [employeeMap, setEmployeeMap] = useState<
+    Map<number, AllEmployeeDataType>
+  >(() => {
+    const initialMap = new Map<number, AllEmployeeDataType>();
+    for (const emp of preloadedEmployees) {
+      initialMap.set(emp.employeeId, {
+        employeeId: emp.employeeId,
+        firstName: emp.firstName,
+        lastName: emp.lastName ?? "",
+        authPic: emp.authPic ?? ""
+      });
+    }
+    return initialMap;
+  });
 
   const { setEmployeeDataParams } = usePeopleStore((state) => state);
 
@@ -56,10 +89,13 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
   } = useGetEmployeeData();
   const { data: searchResults } = useGetSearchedEmployees(employeeSearchText);
 
-  const allEmployees: AllEmployeeDataType[] =
-    employeePages?.pages?.flatMap(
-      (page: AllEmployeeDataResponse) => page?.items ?? []
-    ) ?? [];
+  const allEmployees: AllEmployeeDataType[] = useMemo(
+    () =>
+      employeePages?.pages?.flatMap(
+        (page: AllEmployeeDataResponse) => page?.items ?? []
+      ) ?? [],
+    [employeePages]
+  );
 
   const displayEmployees = useMemo(() => {
     return employeeSearchText.length > 0
@@ -67,60 +103,107 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
       : allEmployees;
   }, [employeeSearchText, searchResults, allEmployees]);
 
-  useEffect(() => {
-    const listInnerElement = listInnerRef.current;
+  // Attach scroll listener via callback ref so it fires when the DOM element
+  // actually mounts inside the Popper (not before).
+  const listRefCallback = useCallback(
+    (node: HTMLDivElement | null) => {
+      // Clean up previous listener
+      if (scrollCleanupRef.current) {
+        scrollCleanupRef.current();
+        scrollCleanupRef.current = null;
+      }
 
-    const onScroll = () => {
-      if (listInnerRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = listInnerRef.current;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight;
-        if (isNearBottom && !isFetchingNextPage && hasNextPage) {
+      listInnerRef.current = node;
+
+      if (!node) return;
+
+      const onScroll = () => {
+        const { scrollTop, scrollHeight, clientHeight } = node;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10;
+        if (
+          isNearBottom &&
+          !isFetchingNextPage &&
+          hasNextPage &&
+          searchTextRef.current.length === 0
+        ) {
           fetchNextPage();
         }
-      }
-    };
-
-    if (!isFetchingNextPage && listInnerElement) {
-      listInnerElement.addEventListener(
-        "touchmove",
-        onScroll,
-        supportsPassive ? { passive: true } : false
-      );
-
-      listInnerElement.addEventListener(
-        "wheel",
-        onScroll,
-        supportsPassive ? { passive: true } : false
-      );
-
-      return () => {
-        listInnerElement.removeEventListener("touchmove", onScroll);
-        listInnerElement.removeEventListener("wheel", onScroll);
       };
+
+      node.addEventListener("scroll", onScroll);
+      scrollCleanupRef.current = () =>
+        node.removeEventListener("scroll", onScroll);
+    },
+    [isFetchingNextPage, hasNextPage, fetchNextPage]
+  );
+
+  // Auto-fetch next page if the list doesn't overflow (no scrollbar = no scroll event).
+  useEffect(() => {
+    const el = listInnerRef.current;
+    if (
+      el &&
+      popperOpen &&
+      !isFetchingNextPage &&
+      hasNextPage &&
+      searchTextRef.current.length === 0 &&
+      el.scrollHeight <= el.clientHeight
+    ) {
+      fetchNextPage();
     }
-  }, [isFetchingNextPage, hasNextPage, supportsPassive, fetchNextPage]);
+  }, [
+    popperOpen,
+    allEmployees,
+    employeeSearchText,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  ]);
 
   const selectedIds: number[] = formik.values.employeeIds ?? [];
   const isAllSelected = formik.values.isAllEmployees;
 
-  const selectedEmployees = useMemo(() => {
-    return selectedIds.map((id) => {
-      const fromList = allEmployees.find((e) => Number(e.employeeId) === id);
-      if (fromList) return fromList;
-      const fromPreloaded = preloadedEmployees.find((e) => e.employeeId === id);
-      if (fromPreloaded) {
-        return {
-          employeeId: fromPreloaded.employeeId,
-          firstName: fromPreloaded.firstName,
-          lastName: fromPreloaded.lastName ?? "",
-          authPic: fromPreloaded.authPic ?? ""
-        } as AllEmployeeDataType;
+  useEffect(() => {
+    setEmployeeMap((prev) => {
+      let changed = false;
+      const next = new Map(prev);
+      for (const emp of allEmployees) {
+        if (!next.has(emp.employeeId)) {
+          next.set(emp.employeeId, emp);
+          changed = true;
+        }
       }
-      return undefined;
-    }).filter(Boolean) as AllEmployeeDataType[];
-  }, [selectedIds, allEmployees, preloadedEmployees]);
+      for (const emp of (searchResults ?? []) as AllEmployeeDataType[]) {
+        if (!next.has(emp.employeeId)) {
+          next.set(emp.employeeId, emp);
+          changed = true;
+        }
+      }
+      for (const emp of preloadedEmployees) {
+        if (!next.has(emp.employeeId)) {
+          next.set(emp.employeeId, {
+            employeeId: emp.employeeId,
+            firstName: emp.firstName,
+            lastName: emp.lastName ?? "",
+            authPic: emp.authPic ?? ""
+          });
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [allEmployees, searchResults, preloadedEmployees]);
 
-  const selectedCount = isAllSelected ? allEmployees.length : selectedIds.length;
+  const selectedEmployees = useMemo(
+    () =>
+      selectedIds
+        .map((id) => employeeMap.get(id))
+        .filter(Boolean) as AllEmployeeDataType[],
+    [selectedIds, employeeMap]
+  );
+
+  const selectedCount = isAllSelected
+    ? allEmployees.length
+    : selectedIds.length;
 
   useEffect(() => {
     if (boxRef.current) {
@@ -160,22 +243,26 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
     }
   };
 
+  const renderAllEmployeesChip = () => (
+    <AvatarChip
+      firstName={translateText(["form.allEmployees"]).trim()}
+      lastName=""
+      avatarUrl={undefined}
+      isTooltipEnabled
+    />
+  );
+
   const renderTriggerContent = () => {
     if (selectedCount === 0) {
       return (
-        <span className="body3 text-secondary-text ml-2">
+        <span className="body1 text-secondary-text">
           {translateText(["form.assignEmployeesLabel"])}
         </span>
       );
     }
 
     if (isAllSelected) {
-      return (
-        <AvatarChip
-          label={translateText(["form.allEmployees"])}
-          showAvatar={false}
-        />
-      );
+      return renderAllEmployeesChip();
     }
 
     if (selectedCount <= 2) {
@@ -184,32 +271,30 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
           {selectedEmployees.map((emp) => (
             <AvatarChip
               key={emp.employeeId}
-              label={
-                selectedCount === 1
-                  ? `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()
-                  : (emp.firstName ?? "")
-              }
-              avatarProps={{
-                id: String(emp.employeeId),
-                firstName: emp.firstName,
-                lastName: emp.lastName,
-                src: emp.authPic
-              }}
+              firstName={emp.firstName ?? ""}
+              lastName={(emp.lastName ?? "").trim()}
+              avatarUrl={emp.authPic}
+              isTooltipEnabled
             />
           ))}
         </div>
       );
     }
 
+    const remainingEmployees = selectedEmployees.slice(3);
+    const remainingTitle = remainingEmployees
+      .map((emp) => `${emp.firstName ?? ""} ${(emp.lastName ?? "").trim()}`.trim())
+      .join(", ");
+
     return (
       <AvatarGroup
         avatars={selectedEmployees.map((emp) => ({
-          id: String(emp.employeeId),
-          firstName: emp.firstName,
-          lastName: emp.lastName,
-          src: emp.authPic
+          firstName: emp.firstName ?? "",
+          lastName: (emp.lastName ?? "").trim(),
+          image: emp.authPic || null
         }))}
-        maxVisible={3}
+        max={4}
+        title={remainingTitle || undefined}
       />
     );
   };
@@ -226,7 +311,7 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
         aria-expanded={popperOpen}
         aria-haspopup="listbox"
         aria-label={translateText(["form.assignEmployeesLabel"])}
-        className="bg-secondary-background h-12 rounded-lg flex items-center w-full cursor-pointer px-3 focus:outline-2 focus:outline-black focus:-outline-offset-[2px]"
+        className="bg-tertiary-background h-12 rounded-lg flex items-center w-full cursor-pointer px-3 focus:outline-1 focus:outline-primary-accent focus:-outline-offset-[2px]"
         onClick={handleTriggerClick}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -260,51 +345,110 @@ const WorkLocationEmployeeSelector = ({ formik, preloadedEmployees = [] }: Props
           backgroundColor: "var(--color-tertiary-background)"
         }}
       >
-      <SearchBox
-        placeHolder={translateText(["form.assignEmployeesLabel"])}
-        value={employeeSearchText}
-        setSearchTerm={setEmployeeSearchText}
-        autoFocus
-      />
-        <div ref={listInnerRef} className="max-h-56 overflow-y-auto">
-          <div
-            className="flex items-center px-3 py-1 cursor-pointer hover:bg-secondary-background"
-            onClick={toggleAllEmployees}
-          >
-            <Checkbox
-              checked={isAllSelected}
-            />
-            <AvatarChip
-              label={translateText(["form.allEmployees"])}
-              showAvatar={false}
-            />
-          </div>
+        <SearchBox
+          placeHolder={translateText(["form.assignEmployeesLabel"])}
+          value={employeeSearchText}
+          setSearchTerm={setEmployeeSearchText}
+          autoFocus
+        />
+        <div ref={listRefCallback} role="listbox" className="max-h-56 overflow-y-auto">
+          {!isAllSelected && selectedEmployees.length > 0 && (
+            <>
+              {selectedEmployees
+                .filter(
+                  (emp) =>
+                    employeeSearchText.length === 0 ||
+                    `${emp.firstName ?? ""} ${emp.lastName ?? ""}`
+                      .toLowerCase()
+                      .includes(employeeSearchText.toLowerCase())
+                )
+                .map((emp) => {
+                  const empId = emp.employeeId;
+                  return (
+                    <div
+                      key={empId}
+                      role="option"
+                      tabIndex={0}
+                      aria-selected={true}
+                      className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                      onClick={() => toggleEmployee(empId)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggleEmployee(empId);
+                        }
+                      }}
+                    >
+                      <Checkbox checked={true} />
+                      <AvatarChip
+                        firstName={emp.firstName ?? ""}
+                        lastName={(emp.lastName ?? "").trim()}
+                        avatarUrl={emp.authPic}
+                        isTooltipEnabled
+                      />
+                    </div>
+                  );
+                })}
+              <hr className="border-secondary-accent my-2 mx-3" />
+            </>
+          )}
+
+          {employeeSearchText.length === 0 && (
+            <div
+              role="option"
+              tabIndex={0}
+              aria-selected={isAllSelected}
+              className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+              onClick={toggleAllEmployees}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  toggleAllEmployees();
+                }
+              }}
+            >
+              <Checkbox checked={isAllSelected} />
+              {renderAllEmployeesChip()}
+            </div>
+          )}
 
           {!isAllSelected &&
-            displayEmployees.map((emp) => {
-              const empId = Number(emp.employeeId);
-              const isSelected = selectedIds.includes(empId);
-              return (
-                <div
-                  key={empId}
-                  className="flex items-center px-3 py-1 cursor-pointer hover:bg-secondary-background"
-                  onClick={() => toggleEmployee(empId)}
-                >
-                  <Checkbox
-                    checked={isSelected}
-                  />
-                  <AvatarChip
-                    label={`${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()}
-                    avatarProps={{
-                      id: String(emp.employeeId),
-                      firstName: emp.firstName,
-                      lastName: emp.lastName,
-                      src: emp.authPic
+            displayEmployees
+              .filter((emp) => !selectedIds.includes(emp.employeeId))
+              .map((emp) => {
+                const empId = emp.employeeId;
+                return (
+                  <div
+                    key={empId}
+                    role="option"
+                    tabIndex={0}
+                    aria-selected={false}
+                    className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                    onClick={() => toggleEmployee(empId)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleEmployee(empId);
+                      }
                     }}
-                  />
-                </div>
-              );
-            })}
+                  >
+                    <Checkbox checked={false} />
+                    <AvatarChip
+                      firstName={emp.firstName ?? ""}
+                      lastName={(emp.lastName ?? "").trim()}
+                      avatarUrl={emp.authPic}
+                      isTooltipEnabled
+                    />
+                  </div>
+                );
+              })}
+
+          {employeeSearchText.length > 0 &&
+            displayEmployees.length === 0 && (
+              <p className="text-center text-secondary-text body2 py-4">
+                {translateText(["form.noSearchResults"])}
+              </p>
+            )}
 
           {isFetchingNextPage && (
             <div className="flex justify-center py-2">
