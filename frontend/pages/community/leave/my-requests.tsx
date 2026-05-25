@@ -15,7 +15,7 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const MyRequests: NextPage = () => {
-  const translateText = useTranslator("leaveModule", "myRequests");
+  const translateText = useTranslator("leaveModule");
   const translateAria = useTranslator(
     "leaveAria",
     "myRequests",
@@ -37,8 +37,16 @@ const MyRequests: NextPage = () => {
 
   return (
     <ContentLayout
-      pageHead={translateText(["pageHead"])}
-      title={translateText(["title"])}
+      breadcrumbs={[
+        {
+          label: translateText(["analytics.stepLeave"])
+        },
+        {
+          label: translateText(["myRequests.title"])
+        }
+      ]}
+      pageHead={translateText(["myRequests.pageHead"])}
+      title={translateText(["myRequests.title"])}
       isDividerVisible={true}
       customRightContent={
         isEntitlementAvailableNextYear &&

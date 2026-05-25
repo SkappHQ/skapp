@@ -508,6 +508,8 @@
     "selectAllText": "Select All"
   },
   "dashboard": {
+    "dashboard": "Dashboard",
+    "leave": "Leave",
     "all": "all employees",
     "records": "Records of",
     "todayAvailability": "Today’s availability",

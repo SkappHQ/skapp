@@ -12,6 +12,18 @@ const LateArrivalsSummary: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateText(["dashboard"]),
+          href: ROUTES.DASHBOARD.BASE
+        },
+        {
+          label: translateText(["attendanceDashboard.attendance"])
+        },
+        {
+          label: translateText(["attendanceDashboard.lateArrivalsTableSummary"])
+        }
+      ]}
       pageHead={translateText(["attendanceDashboard.lateArrivalsTableSummary"])}
       title={translateText(["attendanceDashboard.lateArrivalsTableSummary"])}
       isDividerVisible={true}
