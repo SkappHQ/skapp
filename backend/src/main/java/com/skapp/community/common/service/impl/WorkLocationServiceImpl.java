@@ -112,9 +112,13 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 			geofence.setLongitude(workLocationRequestDto.getGeofence().getLongitude());
 			geofence.setRadiusMeters(workLocationRequestDto.getGeofence().getRadiusMeters());
 			workLocationGeofenceDao.save(geofence);
+			onGeofenceRemovedOrUpdated(id);
 		}
 		else {
-			workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
+			workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(existingGeofence -> {
+				workLocationGeofenceDao.delete(existingGeofence);
+				onGeofenceRemovedOrUpdated(id);
+			});
 		}
 
 		workLocation = workLocationDao.save(workLocation);
@@ -306,6 +310,10 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		log.info("checkWorkLocationNameExists: execution ended");
 
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	protected void onGeofenceRemovedOrUpdated(Long workLocationId) {
+		// No-op in community; enterprise overrides to clear time record locations
 	}
 
 }

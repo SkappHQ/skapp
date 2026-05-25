@@ -92,6 +92,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		if (wasGeoFencingEnabled) {
 			workLocationDao.clearAddressesForGeofencedLocations();
 			workLocationGeofenceDao.deleteAllInBatch();
+			onGeoFencingDisabled();
 			log.info("updateAttendanceConfig: geo-fencing disabled, cleared addresses and removed all geofence sites");
 		}
 
@@ -152,6 +153,10 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_ATTENDANCE_CONFIG_NOT_FOUND);
 		}
 		return Boolean.parseBoolean(config.getAttendanceConfigValue());
+	}
+
+	protected void onGeoFencingDisabled() {
+		// No-op in community; enterprise overrides to clear time record locations
 	}
 
 }
