@@ -973,7 +973,7 @@ public class TimeServiceImpl implements TimeService {
 		timeRecordFilterDto.setEndDate(endDate);
 		Pageable timeRecordsPageable = PageRequest.of(timeRecordFilterDto.getPage(), Integer.MAX_VALUE,
 				timeRecordFilterDto.getSortOrder(), timeRecordFilterDto.getSortKey().toString());
-		List<EmployeeTimeRecord> timeRecords = timeRecordDao.findEmployeesTimeRecordsWithTeams(employeeIds,
+		List<EmployeeTimeRecord> timeRecords = findEmployeesTimeRecordsWithTeams(employeeIds,
 				teamIdsToFilter.contains(-1L) ? null : teamIdsToFilter, startDate, endDate,
 				timeRecordsPageable.getPageSize(), timeRecordsPageable.getOffset());
 
@@ -990,11 +990,12 @@ public class TimeServiceImpl implements TimeService {
 
 			List<TimeRecordChipResponseDto> timeRecordRow = new ArrayList<>();
 			for (EmployeeTimeRecord timeRecord : employeeTimeRecords) {
-				TimeRecordChipResponseDto timeRecordChip = new TimeRecordChipResponseDto();
+				TimeRecordChipResponseDto timeRecordChip = createTimeRecordChipDto();
 				timeRecordChip.setTimeRecordId(timeRecord.getTimeRecordId());
 				timeRecordChip.setDate(timeRecord.getDate());
 				timeRecordChip.setWorkedHours(timeRecord.getWorkedHours());
 				timeRecordChip.setLeaveRequest(getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
+				populateEnterpriseChipFields(timeRecordChip, timeRecord);
 				timeRecordRow.add(timeRecordChip);
 			}
 
@@ -2168,6 +2169,30 @@ public class TimeServiceImpl implements TimeService {
 	 */
 	protected void handleCalendarEventsDeletion(LeaveRequest leaveRequest) {
 		// This feature is available only for Pro tenants.
+	}
+
+	/**
+	 * Factory method to create a TimeRecordChipResponseDto. Enterprise implementation
+	 * overrides this to return EpTimeRecordChipResponseDto.
+	 * @return a new TimeRecordChipResponseDto instance.
+	 */
+	protected TimeRecordChipResponseDto createTimeRecordChipDto() {
+		return new TimeRecordChipResponseDto();
+	}
+
+	/**
+	 * Extension point for populating enterprise-specific fields on a time record chip DTO
+	 * from the projection data. Enterprise implementation is in EpTimeServiceImpl.
+	 * @param chip the chip response DTO to populate.
+	 * @param record the employee time record projection containing the source data.
+	 */
+	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord) {
+		// Enterprise implementation is in EpTimeServiceImpl
+	}
+
+	protected List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,
+			LocalDate startDate, LocalDate endDate, int limit, long offset) {
+		return timeRecordDao.findEmployeesTimeRecordsWithTeams(employeeIds, teamIds, startDate, endDate, limit, offset);
 	}
 
 }
