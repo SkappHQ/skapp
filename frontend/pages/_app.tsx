@@ -11,6 +11,7 @@ import { I18nextProvider, useSSR } from "react-i18next";
 import { AuthProvider } from "~community/auth/providers/AuthProvider";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
+import { SUPPORTED_LANGUAGES } from "~community/common/constants/commonConstants";
 import { I18N_LANGUAGE_COOKIE_NAME } from "~community/common/constants/commonConstants";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
@@ -53,7 +54,7 @@ function MyApp({
   useSSR(initialI18nStore, initialLanguage);
   useEffect(() => {
     const lang = getCookieValue(I18N_LANGUAGE_COOKIE_NAME);
-    if (lang && lang !== i18n.language) {
+    if (lang && SUPPORTED_LANGUAGES.includes(lang) && lang !== i18n.language) {
       i18n.changeLanguage(lang);
     }
   }, []);

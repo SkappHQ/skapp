@@ -1,5 +1,8 @@
 import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
-import { I18N_LANGUAGE_COOKIE_NAME } from "~community/common/constants/commonConstants";
+import {
+  I18N_LANGUAGE_COOKIE_NAME,
+  SUPPORTED_LANGUAGES
+} from "~community/common/constants/commonConstants";
 import { unitConversion } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import {
@@ -136,19 +139,20 @@ export const setAccessToken = (token: string) => {
   }
 };
 
-export const setUserLanguage = (token: string) => {
-  let claims;
+export const setUserLanguage = async (token: string) => {
+  const claims = extractClaimsFromToken(token);
+  const value = claims?.lang;
 
-  claims = extractClaimsFromToken(token);
+  if (typeof value !== "string" || !value) return;
+  if (!SUPPORTED_LANGUAGES.includes(value)) return;
 
   if (typeof window !== "undefined") {
-    const value = claims.lang;
     const expiryDate = new Date(
       Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
 
     document.cookie = `${I18N_LANGUAGE_COOKIE_NAME}=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
-    i18n.changeLanguage(value);
+    await i18n.changeLanguage(value);
   }
 };
 
@@ -272,7 +276,7 @@ const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
       isPasswordChangedForTheFirstTime ?? true
     );
 
-    setUserLanguage(accessToken);
+    await setUserLanguage(accessToken);
 
     return { status: SignInStatus.SUCCESS };
   } else {
