@@ -1,6 +1,7 @@
 import { Stack } from "@mui/material";
 import { ReactNode } from "react";
 
+import ContentAreaLoader from "~community/common/components/molecules/ContentAreaLoader/ContentAreaLoader";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import {
   initialState,
@@ -21,6 +22,7 @@ const ContentWithoutDrawer = ({ children }: Props) => {
   return (
     <>
       <Stack sx={classes.unProtectedWrapper}>
+        <ContentAreaLoader />
         {children}
         <ToastMessage
           key={toastMessage.key}

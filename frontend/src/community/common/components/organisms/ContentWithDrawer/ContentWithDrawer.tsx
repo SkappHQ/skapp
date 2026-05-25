@@ -2,6 +2,7 @@ import { Stack } from "@mui/material";
 import { ReactNode } from "react";
 
 import TimeWidgetPopupController from "~community/attendance/components/organisms/TimeWidgetPopupController/TimeWidgetPopupController";
+import ContentAreaLoader from "~community/common/components/molecules/ContentAreaLoader/ContentAreaLoader";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import AppBar from "~community/common/components/organisms/AppBar/AppBar";
 import Drawer from "~community/common/components/organisms/Drawer/Drawer";
@@ -37,9 +38,11 @@ const ContentWithDrawer = ({ children }: Props) => {
               flexDirection: "column",
               width: "100%",
               height: "100%",
-              overflowX: "hidden"
+              overflowX: "hidden",
+              position: "relative"
             }}
           >
+            <ContentAreaLoader />
             <Stack
               id="content-with-drawer-main-content"
               tabIndex={0}
@@ -67,8 +70,8 @@ const ContentWithDrawer = ({ children }: Props) => {
         handleToastClick={toastMessage.handleToastClick}
         isIcon={toastMessage.isIcon}
         onClose={() => {
-            setToastMessage((state) => ({ ...state, open: false }));
-          }}
+          setToastMessage((state) => ({ ...state, open: false }));
+        }}
       />
       <TimeWidgetPopupController />
       <MyRequestModalController />
