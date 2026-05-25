@@ -1,6 +1,6 @@
 import {
-  FilterIcon,
-  IconButton,
+  AvatarChip,
+  Dropdown,
   InputField,
   Label,
   ProjectTableSkeletonLoader,
@@ -13,34 +13,60 @@ import { ChangeEvent, useMemo, useState } from "react";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetContactMetrics } from "~community/crm/api/CrmContactsApi";
+import {
+  useGetContactMetrics,
+  useGetCrmCompanies
+} from "~community/crm/api/CrmContactsApi";
 import {
   CONTACT_NAME_DEBOUNCE_DELAY,
   DEFAULT_PAGE_SIZE
 } from "~community/crm/constants/contactConstants";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import {
-  formatPhoneNumber,
   formatTasks,
   formatValue
 } from "~community/crm/utils/companyTableHelpers";
+
+const ALL_COMPANIES = "all";
 
 export const ContactTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState<string>(ALL_COMPANIES);
   const debouncedSearch = useDebounce(searchTerm, CONTACT_NAME_DEBOUNCE_DELAY);
+
+  const companyId =
+    selectedCompany === ALL_COMPANIES ? undefined : Number(selectedCompany);
+
   const emptyStateType =
-    debouncedSearch.trim() === ""
+    debouncedSearch.trim() === "" && companyId === undefined
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
+    useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, companyId);
 
-  const contacts = useMemo(
-    () => data?.pages.flatMap((page) => page?.items ?? []),
-    [data]
+  const { data: companiesData } = useGetCrmCompanies({ page: 0, size: 100 });
+
+  const contacts = useMemo(() => {
+    return data?.pages.flatMap((page) => page?.items ?? []);
+  }, [data]);
+
+  const companyOptions = useMemo(
+    () => [
+      {
+        id: ALL_COMPANIES,
+        label: translateText(["table", "companyFilter", "allCompanies"]),
+        value: ALL_COMPANIES
+      },
+      ...(companiesData?.items ?? []).map((company) => ({
+        id: String(company.id),
+        label: company.name,
+        value: String(company.id)
+      }))
+    ],
+    [companiesData, translateText]
   );
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -52,39 +78,32 @@ export const ContactTable: React.FC = () => {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
       key: "name",
-      width: "25%"
+      render(value, row) {
+        return (
+          <div className="flex flex-col gap-1">
+            <div>{value}</div>
+            <div className="subtitle4 text-secondary-text">
+              {row.company?.name ?? "-"}
+            </div>
+          </div>
+        );
+      },
+      width: "22%"
+    },
+    {
+      columnAriaLabel: translateText(["table", "columns", "emailAriaLabel"]),
+      header: translateText(["table", "columns", "emailHeader"]),
+      key: "email",
+      width: "22%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "phoneAriaLabel"]),
       header: translateText(["table", "columns", "phoneHeader"]),
       key: "contactNumber",
       render(value) {
-        return (
-          <div className="flex items-baseline">{formatPhoneNumber(value)}</div>
-        );
+        return <div className="flex items-baseline">{value ?? "-"}</div>;
       },
-      width: "20%"
-    },
-    {
-      columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
-      header: translateText(["table", "columns", "tasksHeader"]),
-      key: "openTaskCount",
-      render(value, row) {
-        return (
-          <div className="flex flex-row items-center gap-2">
-            {formatTasks(value)}
-            {row.overdueTaskCount > 0 && (
-              <Label
-                backgroundColor="bg-semantic-red-background"
-                textColor="text-semantic-red-text"
-              >
-                {`${row.overdueTaskCount} ${translateText(["table", "overdueLabel"])}`}
-              </Label>
-            )}
-          </div>
-        );
-      },
-      width: "15%"
+      width: "17%"
     },
     {
       columnAriaLabel: translateText([
@@ -107,7 +126,52 @@ export const ContactTable: React.FC = () => {
         );
       },
       className: "text-right",
-      width: "40%"
+      width: "12%"
+    },
+    {
+      columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
+      header: translateText(["table", "columns", "tasksHeader"]),
+      key: "openTaskCount",
+      render(value, row) {
+        return (
+          <div className="flex flex-row items-center gap-2">
+            {formatTasks(value)}
+            {row.overdueTaskCount > 0 && (
+              <Label
+                backgroundColor="bg-semantic-red-background"
+                textColor="text-semantic-red-text"
+              >{`${row.overdueTaskCount} ${translateText(["table", "overdueLabel"])}`}
+              </Label>
+            )}
+          </div>
+        );
+      },
+      width: "12%"
+    },
+    {
+      columnAriaLabel: translateText([
+        "table",
+        "columns",
+        "contactOwnerAriaLabel"
+      ]),
+      header: translateText(["table", "columns", "contactOwnerHeader"]),
+      key: "owner",
+      render(value) {
+        const owner = value as CrmContactMetricsType["owner"];
+        return (
+          <AvatarChip
+            avatarProps={{
+              id: `owner-${owner.employeeId}`,
+              src: owner.authPic ?? undefined,
+              firstName: owner.firstName,
+              lastName: owner.lastName
+            }}
+            label={`${owner.firstName} ${owner.lastName}`.trim()}
+            backgroundColor="bg-zinc-100"
+          />
+        );
+      },
+      width: "15%"
     }
   ];
 
@@ -134,13 +198,15 @@ export const ContactTable: React.FC = () => {
           onChange={handleSearchChange}
           customStyles={{ borderRadius: "rounded-[1.5rem]" }}
         />
-        <IconButton
-          isRounded={true}
-          variant="outlined"
-          icon={<FilterIcon />}
-          type="button"
-          aria-label={translateText(["table", "filterButtonAriaLabel"])}
-          disabled
+        <Dropdown
+          ariaLabel={translateText(["table", "companyFilter", "ariaLabel"])}
+          className="rounded-full"
+          id="contact-company-filter"
+          menuWidth="content"
+          options={companyOptions}
+          value={selectedCompany}
+          variant="secondary"
+          onChange={(value) => setSelectedCompany(value)}
         />
       </div>
 
@@ -150,7 +216,7 @@ export const ContactTable: React.FC = () => {
         emptyStateType={emptyStateType}
         isLoading={isLoading && contacts?.length === 0}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-        height="34.5rem"
+        height="37.2rem"
         hasMore={hasNextPage}
         onLoadMore={loadMore}
         infiniteScrollLoadingMessage={translateText([
@@ -160,11 +226,7 @@ export const ContactTable: React.FC = () => {
         noDataState={{
           icon: <SearchIcon />,
           title: translateText(["table", "emptyDataState", "title"]),
-          description: translateText([
-            "table",
-            "emptyDataState",
-            "description"
-          ])
+          description: translateText(["table", "emptyDataState", "description"])
         }}
         noSearchResultsState={{
           icon: <SearchIcon />,

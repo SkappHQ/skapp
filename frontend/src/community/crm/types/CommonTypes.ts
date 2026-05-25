@@ -66,6 +66,18 @@ export interface CrmContactType {
   isDeleted: boolean;
 }
 
+export interface CompanyLookup {
+  id: number;
+  name: string;
+}
+
+export interface CrmCompaniesResponseType {
+  items: CompanyLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
 export interface CrmContactMetricsType {
   id: number;
   name: string;

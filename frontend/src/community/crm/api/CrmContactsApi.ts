@@ -1,44 +1,89 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+  type UseQueryResult,
+  useInfiniteQuery,
+  useQuery
+} from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { contactEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { contactQueryKeys } from "~community/crm/api/utils/QueryKeys";
-import { CrmContactMetricsResponseType } from "~community/crm/types/CommonTypes";
+import {
+  CrmCompaniesResponseType,
+  CrmContactMetricsResponseType
+} from "~community/crm/types/CommonTypes";
 
 interface ContactMetricsSearchParams {
   page: number;
   size: number;
   searchKeyword: string;
+  companyId?: number;
 }
 
 const fetchContactMetrics = async ({
   page,
   size,
-  searchKeyword
+  searchKeyword,
+  companyId
 }: ContactMetricsSearchParams): Promise<CrmContactMetricsResponseType> => {
   const response = await authFetch.get(contactEndpoints.GET_CONTACT_METRICS, {
     params: {
       page,
       size,
-      ...(searchKeyword ? { searchKeyword } : {})
+      ...(searchKeyword ? { searchKeyword } : {}),
+      ...(companyId !== undefined ? { companyId } : {})
     }
   });
   return response?.data?.results?.[0];
 };
 
-export const useGetContactMetrics = (searchKeyword: string, limit: number) => {
+export const useGetContactMetrics = (
+  searchKeyword: string,
+  limit: number,
+  companyId?: number
+) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: contactQueryKeys.GET_CONTACT_DATA_BY_SEARCH(searchKeyword, limit),
+    queryKey: contactQueryKeys.GET_CONTACT_DATA_BY_SEARCH(
+      searchKeyword,
+      limit,
+      companyId
+    ),
     queryFn: ({ pageParam }) =>
       fetchContactMetrics({
         page: pageParam,
         size: limit,
-        searchKeyword
+        searchKeyword,
+        companyId
       }),
     getNextPageParam: (lastPage) => {
       if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
       return lastPage.currentPage + 1;
+    }
+  });
+};
+
+interface CompaniesLookupParams {
+  page?: number;
+  size?: number;
+  searchKeyword?: string;
+}
+
+export const useGetCrmCompanies = (
+  params: CompaniesLookupParams = {}
+): UseQueryResult<CrmCompaniesResponseType> => {
+  const { page = 0, size = 100, searchKeyword } = params;
+
+  return useQuery({
+    queryKey: contactQueryKeys.CRM_COMPANIES(params),
+    queryFn: async () => {
+      const response = await authFetch.get(contactEndpoints.GET_COMPANIES, {
+        params: {
+          page,
+          size,
+          ...(searchKeyword ? { searchKeyword } : {})
+        }
+      });
+      return response?.data?.results?.[0];
     }
   });
 };

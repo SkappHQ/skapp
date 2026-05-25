@@ -1,5 +1,6 @@
 export const contactEndpoints = {
-  GET_CONTACT_METRICS: "/contact/metrics"
+  GET_CONTACT_METRICS: "/contact/metrics",
+  GET_COMPANIES: "/company/lookup"
 };
 
 export const companyEndpoints = {
