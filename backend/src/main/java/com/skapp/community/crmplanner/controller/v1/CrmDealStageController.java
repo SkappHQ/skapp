@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/crm/deal/stages")
+@RequestMapping("/v1/crm/deal/stage")
 @Tag(name = "CRM Deal Stage Controller", description = "Operations related to CRM deal stages")
 public class CrmDealStageController {
 

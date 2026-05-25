@@ -95,6 +95,78 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateDealName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_REQUIRED);
+		}
+
+		if (name.length() > CrmConstants.DEAL_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_TOO_LONG);
+		}
+
+		if (!name.matches(CrmConstants.DEAL_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealDescription(String description) {
+		if (description == null || description.isBlank()) {
+			return;
+		}
+
+		if (description.trim().length() > CrmConstants.DEAL_DESCRIPTION_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_DESCRIPTION_TOO_LONG);
+		}
+	}
+
+	public static void validateDealAmount(String amount) {
+		if (amount == null || amount.isEmpty()) {
+			return;
+		}
+
+		if (amount.length() > CrmConstants.DEAL_AMOUNT_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_AMOUNT_TOO_LONG);
+		}
+
+		if (!amount.matches(CrmConstants.DEAL_AMOUNT_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_AMOUNT_INVALID);
+		}
+
+		try {
+			java.math.BigDecimal amountValue = new java.math.BigDecimal(amount);
+			if (amountValue.compareTo(java.math.BigDecimal.ZERO) < 0) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_AMOUNT_INVALID);
+			}
+		}
+		catch (NumberFormatException e) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_AMOUNT_INVALID);
+		}
+	}
+
+	public static void validateDealPriority(com.skapp.community.crmplanner.type.CrmDealPriority priority) {
+		if (priority == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND);
+		}
+	}
+
+	public static void validateDealStageId(Long stageId) {
+		if (stageId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_ID_REQUIRED);
+		}
+	}
+
+	public static void validateDealContactId(Long contactId) {
+		if (contactId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND);
+		}
+	}
+
+	public static void validateDealOwnerId(Long ownerId) {
+		if (ownerId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
+		}
+	}
+
 	public static void validateAddress(String address) {
 		if (address == null || address.isBlank()) {
 			return;

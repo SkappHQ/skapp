@@ -20,6 +20,7 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
+import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -57,33 +57,13 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto) {
 		log.info("createDeal: creating deal with name={}", requestDto.getName());
 
-		if (requestDto.getName() == null || requestDto.getName().isBlank()) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_REQUIRED);
-		}
-
-		if (requestDto.getName().length() > CrmConstants.DEAL_NAME_MAX_LENGTH) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_TOO_LONG);
-		}
-
-		if (requestDto.getName().chars().anyMatch(Character::isISOControl)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_INVALID_CHARS);
-		}
-
-		if (requestDto.getPriority() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND);
-		}
-		
-		if (!Arrays.asList(CrmDealPriority.values()).contains(requestDto.getPriority())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND);
-		}
-
-		if (requestDto.getStageId() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_ID_REQUIRED);
-		}
-
-		if (requestDto.getContactId() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND);
-		}
+		CrmValidations.validateDealName(requestDto.getName());
+		CrmValidations.validateDealDescription(requestDto.getDescription());
+		CrmValidations.validateDealAmount(requestDto.getAmount());
+		CrmValidations.validateDealPriority(requestDto.getPriority());
+		CrmValidations.validateDealStageId(requestDto.getStageId());
+		CrmValidations.validateDealContactId(requestDto.getContactId());
+		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
@@ -98,10 +78,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 			}
 			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
 					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
-		}
-
-		if (requestDto.getOwnerId() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
 		}
 
 		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
