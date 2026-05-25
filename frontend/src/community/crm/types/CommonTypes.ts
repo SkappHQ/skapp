@@ -84,14 +84,8 @@ export interface CrmContactMetricsType {
   email: string;
   contactNumber: string | null;
   lastContactAt: string | null;
-  company: { id: number; name: string } | null;
-  owner: {
-    employeeId: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    authPic: string | null;
-  };
+  company: CompanyLookup | null;
+  owner: CrmOwnerType;
   closedDealValue: number;
   closedDealCount: number;
   openTaskCount: number;

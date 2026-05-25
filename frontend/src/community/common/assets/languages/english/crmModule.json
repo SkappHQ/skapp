@@ -6,7 +6,6 @@
     "detailsPageHead": "Contact Details | Skapp",
     "table": {
       "clearButtonAriaLabel": "Clear search",
-      "filterButtonAriaLabel": "Filter contacts",
       "search": "Search contact",
       "infiniteScrollLoadingMessage": "Loading contacts...",
       "closedDealsLabel": "Deals closed",

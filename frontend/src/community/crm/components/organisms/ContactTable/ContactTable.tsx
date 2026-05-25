@@ -18,23 +18,31 @@ import {
   useGetCrmCompanies
 } from "~community/crm/api/CrmContactsApi";
 import {
-  CONTACT_NAME_DEBOUNCE_DELAY,
+  COMPANY_NAME_DEBOUNCE_DELAY,
   DEFAULT_PAGE_SIZE
-} from "~community/crm/constants/contactConstants";
-import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
+} from "~community/crm/constants/companyConstants";
+import {
+  CompanyLookup,
+  CrmContactMetricsType,
+  CrmOwnerType
+} from "~community/crm/types/CommonTypes";
 import {
   formatTasks,
   formatValue
 } from "~community/crm/utils/companyTableHelpers";
 
 const ALL_COMPANIES = "all";
+const COMPANY_FILTER_PAGE_SIZE = 100;
+
+const ownerFullName = (owner: CrmOwnerType): string =>
+  [owner.firstName, owner.lastName].filter(Boolean).join(" ");
 
 export const ContactTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCompany, setSelectedCompany] = useState<string>(ALL_COMPANIES);
-  const debouncedSearch = useDebounce(searchTerm, CONTACT_NAME_DEBOUNCE_DELAY);
+  const debouncedSearch = useDebounce(searchTerm, COMPANY_NAME_DEBOUNCE_DELAY);
 
   const companyId =
     selectedCompany === ALL_COMPANIES ? undefined : Number(selectedCompany);
@@ -47,7 +55,10 @@ export const ContactTable: React.FC = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, companyId);
 
-  const { data: companiesData } = useGetCrmCompanies({ page: 0, size: 100 });
+  const { data: companiesData } = useGetCrmCompanies({
+    page: 0,
+    size: COMPANY_FILTER_PAGE_SIZE
+  });
 
   const contacts = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
@@ -60,7 +71,7 @@ export const ContactTable: React.FC = () => {
         label: translateText(["table", "companyFilter", "allCompanies"]),
         value: ALL_COMPANIES
       },
-      ...(companiesData?.items ?? []).map((company) => ({
+      ...(companiesData?.items ?? []).map((company: CompanyLookup) => ({
         id: String(company.id),
         label: company.name,
         value: String(company.id)
@@ -125,7 +136,7 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      className: "text-right pr-10.5",
+      className: "text-right",
       width: "10%"
     },
     {
@@ -146,7 +157,6 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      className: "pl-24",
       width: "20%"
     },
     {
@@ -157,17 +167,17 @@ export const ContactTable: React.FC = () => {
       ]),
       header: translateText(["table", "columns", "contactOwnerHeader"]),
       key: "owner",
-      render(value) {
-        const owner = value as CrmContactMetricsType["owner"];
+      render(_, row) {
+        const { owner } = row;
         return (
           <AvatarChip
             avatarProps={{
-              id: `owner-${owner.employeeId}`,
+              id: `contact-${row.id}-owner-${owner.employeeId}`,
               src: owner.authPic ?? undefined,
               firstName: owner.firstName,
-              lastName: owner.lastName
+              lastName: owner.lastName ?? ""
             }}
-            label={`${owner.firstName} ${owner.lastName}`.trim()}
+            label={ownerFullName(owner)}
             backgroundColor="bg-zinc-100"
           />
         );
@@ -215,7 +225,7 @@ export const ContactTable: React.FC = () => {
         columns={columns as TableColumn<any>[]}
         data={contacts ?? []}
         emptyStateType={emptyStateType}
-        isLoading={isLoading && contacts?.length === 0}
+        isLoading={isLoading && (!contacts || contacts.length === 0)}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="37.2rem"
         hasMore={hasNextPage}

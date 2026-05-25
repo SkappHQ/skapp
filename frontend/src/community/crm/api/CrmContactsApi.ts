@@ -56,6 +56,7 @@ export const useGetContactMetrics = (
         companyId
       }),
     getNextPageParam: (lastPage) => {
+      if (!lastPage) return undefined;
       if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
       return lastPage.currentPage + 1;
     }
@@ -74,7 +75,7 @@ export const useGetCrmCompanies = (
   const { page = 0, size = 100, searchKeyword } = params;
 
   return useQuery({
-    queryKey: contactQueryKeys.CRM_COMPANIES(params),
+    queryKey: contactQueryKeys.CRM_COMPANIES(page, size, searchKeyword),
     queryFn: async () => {
       const response = await authFetch.get(contactEndpoints.GET_COMPANIES, {
         params: {

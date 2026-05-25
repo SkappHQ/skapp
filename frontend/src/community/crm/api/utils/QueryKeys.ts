@@ -9,8 +9,12 @@ export const contactQueryKeys = {
     limit,
     ...(companyId !== undefined ? [companyId] : [])
   ],
-  CRM_COMPANIES: (params?: object) =>
-    ["crm-companies", params].filter((val) => val !== undefined)
+  CRM_COMPANIES: (page: number, size: number, searchKeyword?: string) => [
+    "crm-companies",
+    page,
+    size,
+    searchKeyword ?? ""
+  ]
 };
 
 export const companyQueryKeys = {
