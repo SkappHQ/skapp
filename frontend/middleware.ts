@@ -17,7 +17,7 @@ import {
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
-import { TierEnum } from "~enterprise/common/enums/Common";
+import { TenantStatusEnums } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
@@ -219,6 +219,26 @@ export function middleware(request: NextRequest) {
   const isPasswordChangedForTheFirstTime = request.cookies.get(
     "isPasswordChangedForTheFirstTime"
   )?.value;
+
+  if (currentPath === ROUTES.REMOVE_PEOPLE) {
+    const tenantStatus = claims?.tenantStatus;
+    const roles = claims?.roles || [];
+    const isSuperAdmin = roles.includes(ROLE_SUPER_ADMIN);
+
+    if (isSuperAdmin) {
+      if (
+        tenantStatus ===
+          TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED ||
+        tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
+      ) {
+        return NextResponse.next();
+      } else {
+        return NextResponse.redirect(
+          new URL(ROUTES.DASHBOARD.BASE, request.url)
+        );
+      }
+    }
+  }
 
   if (
     isPasswordChangedForTheFirstTime === "false" &&

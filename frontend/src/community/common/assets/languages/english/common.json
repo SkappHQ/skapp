@@ -36,6 +36,10 @@
       "allLabel": "All Employees",
       "noTeamTxt": "No teams assigned "
     },
+    "teamSelector": {
+      "allLabel": "All Employees",
+      "searchTeamPlaceholder": "Search teams"
+    },
     "dateRangePicker": {
       "label": "Date: "
     },

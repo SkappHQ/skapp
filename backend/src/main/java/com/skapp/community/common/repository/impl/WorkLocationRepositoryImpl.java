@@ -2,14 +2,18 @@ package com.skapp.community.common.repository.impl;
 
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocation_;
+import com.skapp.community.common.model.WorkLocationGeofence;
+import com.skapp.community.common.model.WorkLocationGeofence_;
 import com.skapp.community.common.payload.request.WorkLocationFilterDto;
 import com.skapp.community.common.repository.WorkLocationRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -51,16 +55,11 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 	}
 
 	@Override
-	public List<WorkLocation> findAllWorkLocations(WorkLocationFilterDto workLocationFilterDto) {
+	public List<WorkLocation> findAllWorkLocationsOrderByNameAsc() {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<WorkLocation> query = cb.createQuery(WorkLocation.class);
 		Root<WorkLocation> workLocation = query.from(WorkLocation.class);
-
-		List<Predicate> predicates = buildPredicates(cb, workLocation, workLocationFilterDto);
-		if (!predicates.isEmpty()) {
-			query.where(predicates.toArray(new Predicate[0]));
-		}
 
 		query.orderBy(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
 
@@ -91,6 +90,22 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		}
 
 		return entityManager.createQuery(countQuery).getSingleResult();
+	}
+
+	@Override
+	public void clearAddressesForGeofencedLocations() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaUpdate<WorkLocation> update = cb.createCriteriaUpdate(WorkLocation.class);
+		Root<WorkLocation> root = update.from(WorkLocation.class);
+
+		Subquery<Long> subquery = update.subquery(Long.class);
+		Root<WorkLocationGeofence> geofenceRoot = subquery.from(WorkLocationGeofence.class);
+		subquery.select(geofenceRoot.get(WorkLocationGeofence_.workLocation).get(WorkLocation_.workLocationId));
+
+		update.set(root.get(WorkLocation_.address), (String) null);
+		update.where(root.get(WorkLocation_.workLocationId).in(subquery));
+
+		entityManager.createQuery(update).executeUpdate();
 	}
 
 }

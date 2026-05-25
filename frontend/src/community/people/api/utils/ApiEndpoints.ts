@@ -30,7 +30,11 @@ export const peoplesEndpoints = {
     `${moduleAPIPath.PEOPLE}/user/delete/${employeeId}`,
   HAS_SUPERVISOR_ROLES: (employeeId: number) =>
     `${moduleAPIPath.PEOPLE}/${employeeId}/has-supervisory-roles`,
-  EXPORT_PEOPLE_DIRECTORY: `/people/employees/export`
+  EXPORT_PEOPLE_DIRECTORY: `/people/employees/export`,
+  GET_SUPERVISOR_ROLES: (userId: number) =>
+    `${moduleAPIPath.PEOPLE}/user/${userId}/supervised-employees-teams`,
+  TRANSFER_SUPERVISORS: (userId: number) =>
+    `${moduleAPIPath.PEOPLE}/user/${userId}/transfer-supervisors`
 };
 
 export const authEndpoints = {
