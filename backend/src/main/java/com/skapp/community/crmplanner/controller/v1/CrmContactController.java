@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,7 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +33,15 @@ public class CrmContactController {
 	public ResponseEntity<ResponseEntityDto> createContact(@RequestBody CrmContactCreateRequestDto requestDto) {
 		ResponseEntityDto response = contactService.createContact(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Edit CRM contact", description = "Updates an existing CRM contact.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PutMapping("/{id}")
+	public ResponseEntity<ResponseEntityDto> editContact(@PathVariable Long id,
+			@RequestBody CrmContactEditRequestDto requestDto) {
+		ResponseEntityDto response = contactService.editContact(id, requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Get CRM owners", description = "Retrieves active CRM users who can be assigned as owners.")
