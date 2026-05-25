@@ -4,6 +4,7 @@ import Backend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
 
 import { english } from "~community/common/assets/languages/english/english";
+import { I18N_LANGUAGE_COOKIE_NAME } from "~community/common/constants/commonConstants";
 import { english as enterpriseEnglish } from "~enterprise/common/assets/languages/english/english";
 
 const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
@@ -15,6 +16,10 @@ i18n
   .init({
     fallbackLng: "en",
     debug: false,
+    detection: {
+      order: ["cookie"],
+      lookupCookie: I18N_LANGUAGE_COOKIE_NAME
+    },
     resources: {
       en: {
         translation: isEnterpriseMode ? enterpriseEnglish : english

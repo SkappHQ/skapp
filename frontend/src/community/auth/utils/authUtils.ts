@@ -1,4 +1,5 @@
 import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
+import { I18N_LANGUAGE_COOKIE_NAME } from "~community/common/constants/commonConstants";
 import { unitConversion } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import {
@@ -22,6 +23,7 @@ import {
 } from "~enterprise/auth/utils/authUtils";
 import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
+import i18n from "~i18n";
 
 import { config } from "../../../../middleware";
 import { COOKIE_EXPIRY_DAYS } from "../constants/authConstants";
@@ -130,8 +132,23 @@ export const setAccessToken = (token: string) => {
     const expiryDate = new Date(
       Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
-
     document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+  }
+};
+
+export const setUserLanguage = (token: string) => {
+  let claims;
+
+  claims = extractClaimsFromToken(token);
+
+  if (typeof window !== "undefined") {
+    const value = claims.lang;
+    const expiryDate = new Date(
+      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
+    );
+
+    document.cookie = `${I18N_LANGUAGE_COOKIE_NAME}=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+    i18n.changeLanguage(value);
   }
 };
 
@@ -161,6 +178,7 @@ export const clearCookies = async (): Promise<void> => {
       "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
     document.cookie =
       "isPasswordChangedForTheFirstTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
+    document.cookie = `${I18N_LANGUAGE_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax`;
   }
 };
 
@@ -253,6 +271,8 @@ const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
     setIsPasswordChangedForTheFirstTime(
       isPasswordChangedForTheFirstTime ?? true
     );
+
+    setUserLanguage(accessToken);
 
     return { status: SignInStatus.SUCCESS };
   } else {

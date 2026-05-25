@@ -11,6 +11,7 @@ import { I18nextProvider, useSSR } from "react-i18next";
 import { AuthProvider } from "~community/auth/providers/AuthProvider";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
+import { I18N_LANGUAGE_COOKIE_NAME } from "~community/common/constants/commonConstants";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import TanStackProvider from "~community/common/providers/TanStackProvider";
@@ -20,19 +21,20 @@ import { theme } from "~community/common/theme/theme";
 import { themeSelector } from "~community/common/theme/themeSelector";
 import { MyAppPropsType } from "~community/common/types/CommonTypes";
 import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
+import { getCookieValue } from "~community/common/utils/commonUtil";
 import "~enterprise/common/components/atoms/driverJsPopover/styles.css";
+import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
 import {
   isNonProdMaintenanceMode,
   isProdMaintenanceMode
 } from "~enterprise/common/constants/dbKeys";
+import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 import { database } from "~enterprise/common/utils/firebase";
 import { initializeHotjar } from "~enterprise/common/utils/monitoring";
 import i18n from "~i18n";
 
 import "../styles/global.css";
 import Error from "./_error";
-import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
-import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 
 // Initialize the font
 const inter = Inter({
@@ -49,6 +51,12 @@ function MyApp({
 }: MyAppPropsType) {
   const [newTheme, setNewTheme] = useState<Theme>(theme);
   useSSR(initialI18nStore, initialLanguage);
+  useEffect(() => {
+    const lang = getCookieValue(I18N_LANGUAGE_COOKIE_NAME);
+    if (lang && lang !== i18n.language) {
+      i18n.changeLanguage(lang);
+    }
+  }, []);
   const router = useRouter();
 
   useEffect(() => {
