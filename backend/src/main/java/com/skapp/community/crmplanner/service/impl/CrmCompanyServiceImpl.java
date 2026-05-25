@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -35,6 +36,8 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmMapper crmCompanyMapper;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -124,11 +127,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 
 		company.setIsDeleted(true);
-		CrmCompanyResponseDto responseDto = crmCompanyMapper
-			.crmCompanyToCrmCompanyResponseDto(crmCompanyDao.save(company));
 
 		log.info("deleteCompany: execution ended successfully");
-		return new ResponseEntityDto(false, responseDto);
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED), false);
 	}
 
 }
