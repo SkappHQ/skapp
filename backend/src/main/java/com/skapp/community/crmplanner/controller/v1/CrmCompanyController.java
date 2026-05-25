@@ -70,7 +70,7 @@ public class CrmCompanyController {
 
 	@Operation(summary = "Delete a company by ID", description = "Delete a company by ID")
 	@PatchMapping("/delete/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> deleteCompany(@PathVariable Long id) {
 		ResponseEntityDto responseDto = companyService.deleteCompany(id);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
