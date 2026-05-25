@@ -35,8 +35,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -117,26 +119,28 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto deleteContact(Long id) {
 		log.info("deleteContact: execution started");
 
-		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+		CrmContact contact = crmContactDao.findById(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
-		List<CrmTask> directTasks = crmTaskDao.findByContact_IdAndIsDeletedFalse(id);
-		directTasks.forEach(t -> t.setIsDeleted(true));
-		crmTaskDao.saveAll(directTasks);
+		if (Boolean.TRUE.equals(contact.getIsDeleted())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_ALREADY_DELETED);
+		}
 
-		List<CrmTask> dealTasks = crmTaskDao.findByDeal_Contact_IdAndIsDeletedFalse(id);
-		dealTasks.forEach(t -> t.setIsDeleted(true));
-		crmTaskDao.saveAll(dealTasks);
+		Set<CrmTask> tasks = new HashSet<>();
+		tasks.addAll(crmTaskDao.findByContact_IdAndIsDeletedFalse(id));
+		tasks.addAll(crmTaskDao.findByDeal_Contact_IdAndIsDeletedFalse(id));
+		tasks.forEach(task -> task.setIsDeleted(true));
+		crmTaskDao.saveAll(tasks);
 
 		List<CrmDeal> deals = crmDealDao.findByContact_IdAndIsDeletedFalse(id);
-		deals.forEach(d -> d.setIsDeleted(true));
+		deals.forEach(deal -> deal.setIsDeleted(true));
 		crmDealDao.saveAll(deals);
 
 		contact.setIsDeleted(true);
 		crmContactDao.save(contact);
 
 		log.info("deleteContact: execution ended");
-		return new ResponseEntityDto(false, messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_CONTACT_DELETED));
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_CONTACT_DELETED), false);
 	}
 
 	private Employee resolveOwner(Long ownerId, User currentUser) {
