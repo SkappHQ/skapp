@@ -114,3 +114,14 @@ export interface CrmPriorityType {
   name: string;
   orderIndex: number;
 }
+
+export interface CrmTaskAddFormTypes {
+  name: string;
+  type: string | null;
+  dueDate: string | null;
+  priority: string | null;
+  contactName: string;
+  deal: string;
+  owner: string | null;
+  notes: string;
+}
