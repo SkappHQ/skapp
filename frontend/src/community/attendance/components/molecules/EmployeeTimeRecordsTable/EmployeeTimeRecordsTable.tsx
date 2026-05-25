@@ -63,6 +63,17 @@ const EmployeeTimeRecordsTable = ({
     });
   }, [recordData, getHolidaysArrayByDate, translateText]);
 
+  const getLocationMessage = (
+    status: RecordLocationStatus | undefined,
+    translateText: ReturnType<typeof useTranslator>
+  ): string => {
+    if (status === RecordLocationStatus.INSIDE)
+      return translateText(["locationInsideWorkLocation"]);
+    if (status === RecordLocationStatus.OUTSIDE)
+      return translateText(["locationOutsideWorkLocation"]);
+    return translateText(["locationUnavailable"]);
+  };
+
   const rows = useMemo(() => {
     if (
       !isRecordLoading &&
@@ -179,23 +190,23 @@ const EmployeeTimeRecordsTable = ({
               );
             }
 
-
-            // Tooltip message logic for location pin
-            const getLocationMessage = (status: RecordLocationStatus | undefined) => {
-              if (status === RecordLocationStatus.INSIDE) return "Inside work location";
-              if (status === RecordLocationStatus.OUTSIDE) return "Outside work location";
-              return "Location unavailable";
-            };
+            const locationTooltipTitle = translateText(["locationPinTooltip"], {
+              clockIn: getLocationMessage(
+                timeSheetRecord.clockInLocationStatus,
+                translateText
+              ),
+              clockOut: getLocationMessage(
+                timeSheetRecord.clockOutLocationStatus,
+                translateText
+              )
+            });
 
             let finalCellData = data;
             if (showLocationPin) {
-              const clockInMsg = getLocationMessage(timeSheetRecord.clockInLocationStatus);
-              const clockOutMsg = getLocationMessage(timeSheetRecord.clockOutLocationStatus);
-              const tooltip = `Clock-in: ${clockInMsg} | Clock-out: ${clockOutMsg}`;
               finalCellData = (
                 <div className="flex flex-row items-center gap-1">
                   {data}
-                  <div title={tooltip}>
+                  <div title={locationTooltipTitle}>
                     <LocationPinIcon />
                   </div>
                 </div>
