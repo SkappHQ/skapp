@@ -1,12 +1,12 @@
 import { Box, useTheme } from "@mui/material";
 import { JSX } from "react";
 
+import { MAX_NOTIFICATION_COUNT } from "~community/common/constants/commonConstants";
+
 interface NotificationBadgeProps {
   count: number;
   show?: boolean;
 }
-
-const MAX_NOTIFICATION_COUNT = 99;
 
 const NotificationBadge = ({
   count,
