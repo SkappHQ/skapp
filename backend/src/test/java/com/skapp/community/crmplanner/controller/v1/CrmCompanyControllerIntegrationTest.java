@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -54,6 +56,8 @@ class CrmCompanyControllerIntegrationTest {
 	private final MockMvc mvc;
 
 	private final MessageUtil messageUtil;
+
+	private final CrmCompanyDao crmCompanyDao;
 
 	private String authToken;
 
@@ -178,6 +182,10 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED)));
 
+		// ensure delete is committed for existence check
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+
 		performGetExistsRequest("Acme Corp").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -188,6 +196,9 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_ALREADY_DELETED)));
+
+		// cleanup for future tests
+		crmCompanyDao.deleteById(companyId);
 	}
 
 	@Test
