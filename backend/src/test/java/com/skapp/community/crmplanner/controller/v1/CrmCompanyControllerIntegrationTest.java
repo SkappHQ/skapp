@@ -27,6 +27,7 @@ import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -71,6 +72,10 @@ class CrmCompanyControllerIntegrationTest {
 
 	private ResultActions performGetExistsRequest(String name) throws Exception {
 		return performRequest(get(EXISTS_PATH).param("name", name).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performDeleteRequest(Long id) throws Exception {
+		return performRequest(patch(BASE_PATH + "/delete/{id}", id).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmCompanyCreateDto createValidPayload() {
@@ -151,6 +156,31 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	// --- Delete company tests ---
+
+	@Test
+	@DisplayName("Delete existing company - Returns OK")
+	void deleteCompany_ReturnsOk() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		performDeleteRequest(companyId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Delete non existent company - Returns Bad Request")
+	void deleteNonExistingCompany_ReturnsBadRequest() throws Exception {
+		performDeleteRequest(0L).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
 	}
 
 }
