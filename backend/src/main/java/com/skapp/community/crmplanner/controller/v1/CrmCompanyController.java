@@ -68,7 +68,7 @@ public class CrmCompanyController {
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Delete a company by ID", description = "Delete a company by ID")
+	@Operation(summary = "Delete a company by ID", description = "Soft deletes company by ID if not already deleted")
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> deleteCompany(@PathVariable Long id) {
