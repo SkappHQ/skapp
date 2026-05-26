@@ -18,24 +18,21 @@ import {
   useGetCrmCompanies
 } from "~community/crm/api/CrmContactsApi";
 import {
+  ALL_COMPANIES,
+  COMPANY_FILTER_PAGE_SIZE,
   COMPANY_NAME_DEBOUNCE_DELAY,
   DEFAULT_PAGE_SIZE
-} from "~community/crm/constants/companyConstants";
+} from "~community/crm/constants/contactConstants";
 import {
   CompanyLookup,
-  CrmContactMetricsType,
-  CrmOwnerType
+  CrmContactMetricsType
 } from "~community/crm/types/CommonTypes";
 import {
+  formatPhoneNumber,
   formatTasks,
-  formatValue
-} from "~community/crm/utils/companyTableHelpers";
-
-const ALL_COMPANIES = "all";
-const COMPANY_FILTER_PAGE_SIZE = 100;
-
-const ownerFullName = (owner: CrmOwnerType): string =>
-  [owner.firstName, owner.lastName].filter(Boolean).join(" ");
+  formatValue,
+  ownerFullName
+} from "~community/crm/utils/contactTableHelpers";
 
 export const ContactTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
@@ -112,7 +109,11 @@ export const ContactTable: React.FC = () => {
       header: translateText(["table", "columns", "phoneHeader"]),
       key: "contactNumber",
       render(value) {
-        return <div className="flex items-baseline">{value ?? "-"}</div>;
+        return (
+          <div className="flex items-baseline">
+            {formatPhoneNumber(value as string | null)}
+          </div>
+        );
       },
       width: "17%"
     },

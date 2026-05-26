@@ -64,16 +64,16 @@ export const useGetContactMetrics = (
 };
 
 interface CompaniesLookupParams {
-  page?: number;
-  size?: number;
+  page: number;
+  size: number;
   searchKeyword?: string;
 }
 
-export const useGetCrmCompanies = (
-  params: CompaniesLookupParams = {}
-): UseQueryResult<CrmCompaniesResponseType> => {
-  const { page = 0, size = 100, searchKeyword } = params;
-
+export const useGetCrmCompanies = ({
+  page,
+  size,
+  searchKeyword
+}: CompaniesLookupParams): UseQueryResult<CrmCompaniesResponseType> => {
   return useQuery({
     queryKey: contactQueryKeys.CRM_COMPANIES(page, size, searchKeyword),
     queryFn: async () => {
