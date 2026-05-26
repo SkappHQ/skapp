@@ -179,7 +179,7 @@ export const ContactTable: React.FC = () => {
               lastName: owner.lastName ?? ""
             }}
             label={ownerFullName(owner)}
-            backgroundColor="bg-zinc-100"
+            backgroundColor="bg-tertiary-background"
           />
         );
       },
