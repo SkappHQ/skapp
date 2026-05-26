@@ -196,12 +196,12 @@ export const handleDateValidation = ({
 
       isApplyLeaveModalBtnDisabled = !hasNonHolidayDate;
 
-      const isSingleDateSelection =
+      const isEffectivelySingleDay =
         selectedDates.length === 1 ||
         (selectedDates.length === 2 &&
           selectedDates[0].hasSame(selectedDates[1], "day"));
 
-      if (isSingleDateSelection || !hasNonHolidayDate) {
+      if (isEffectivelySingleDay || !hasNonHolidayDate) {
         const hasMultipleHolidays = holidays.length > 1;
 
         const toastType = ToastType.WARN;
