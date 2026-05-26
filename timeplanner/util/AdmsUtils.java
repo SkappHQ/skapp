@@ -11,6 +11,8 @@ public class AdmsUtils {
 
 	public static final DateTimeFormatter PUNCH_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+	// ATTLOG format: pin \t datetime \t status \t verifyType [\t workCode]
+	// First 4 fields are required for a valid attendance record; workCode is optional.
 	private static final int MIN_ATTLOG_FIELDS = 4;
 
 	public static boolean isValidAttLogLine(String line) {
