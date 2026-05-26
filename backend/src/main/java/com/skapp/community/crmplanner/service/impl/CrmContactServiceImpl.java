@@ -119,12 +119,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto deleteContact(Long id) {
 		log.info("deleteContact: execution started");
 
-		CrmContact contact = crmContactDao.findById(id)
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
-
-		if (Boolean.TRUE.equals(contact.getIsDeleted())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_ALREADY_DELETED);
-		}
 
 		Set<CrmTask> tasks = new HashSet<>();
 		tasks.addAll(crmTaskDao.findByContact_IdAndIsDeletedFalse(id));
