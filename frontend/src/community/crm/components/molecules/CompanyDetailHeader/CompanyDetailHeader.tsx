@@ -1,33 +1,51 @@
-import React from "react";
+import React, { JSX } from "react";
+
+import {
+  BuildingIcon,
+  LocationIcon,
+  PhoneIcon,
+  BrowserIcon
+} from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { removeHttpsWwwFromUrl } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
+import { IconProps } from "~community/common/types/IconTypes";
 import { CrmCompanyType } from "~community/crm/types/CommonTypes";
+
+interface InfoItem {
+  icon: (props: IconProps) => JSX.Element;
+  key: string;
+  value: string;
+  isLink: boolean;
+}
 
 interface Props {
   company: CrmCompanyType;
 }
 
 const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
-  const infoItems = [
+  const infoItems: InfoItem[] = [
     {
-      icon: IconName.WEB_ICON,
+      icon: BrowserIcon,
+      key: "web",
       value: company.website,
       isLink: true
     },
     {
-      icon: IconName.PHONE_ICON,
+      icon: PhoneIcon,
+      key: "phone",
       value: company.contactNumber,
       isLink: false
     },
     {
-      icon: IconName.LOCATION_ICON,
+      icon: LocationIcon,
+      key: "location",
       value: company.address,
       isLink: false
     },
     {
-      icon: IconName.BUILDING_ICON,
+      icon: BuildingIcon,
+      key: "building",
       value: company.industry,
       isLink: false
     }
@@ -39,7 +57,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
         {infoItems.map(
           (item) =>
             item.value && (
-              <div key={item.icon} className="flex items-center gap-3">
+              <div key={item.key} className="flex items-center gap-3">
                 {item.isLink ? (
                   <a
                     href={`${item.value}`}
@@ -51,14 +69,13 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
                       textDecoration: "underline"
                     }}
                   >
-                    <Icon
-                      name={item.icon}
+                    <item.icon
                       width="1.25rem"
                       height="1.25rem"
                       fill="var(--color-primary-text)"
                     />
                     <span className="flex items-center gap-1">
-                      {removeHttpsWwwFromUrl(item.value)}
+                      {item.value}
                       <Icon
                         name={IconName.POP_OUT_ICON}
                         width="1rem"
@@ -69,8 +86,7 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
                   </a>
                 ) : (
                   <>
-                    <Icon
-                      name={item.icon}
+                    <item.icon
                       width="1.25rem"
                       height="1.25rem"
                       fill="var(--color-secondary-icon)"
