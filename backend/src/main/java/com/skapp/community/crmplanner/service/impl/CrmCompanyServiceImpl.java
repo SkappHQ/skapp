@@ -135,7 +135,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		List<CrmDeal> deals = crmDealDao.findAllByCompanyIdAndIsDeletedFalse(id);
 		deals.forEach(deal -> deal.setIsDeleted(true));
 		crmDealDao.saveAll(deals);
-		
+
 		company.setIsDeleted(true);
 		crmCompanyDao.save(company);
 
