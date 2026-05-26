@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("CRM Company Controller Integration Tests")
 class CrmCompanyControllerIntegrationTest {
 
-	private static final String BASE_PATH = "/v1/company";
+	private static final String BASE_PATH = "/v1/crm/company";
 
 	private static final String EXISTS_PATH = BASE_PATH + "/exists";
 
