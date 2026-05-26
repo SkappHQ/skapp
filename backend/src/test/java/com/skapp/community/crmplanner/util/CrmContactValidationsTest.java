@@ -137,7 +137,7 @@ class CrmContactValidationsTest {
 		@Test
 		@DisplayName("Valid email - does not throw")
 		void validateContactEmail_ValidEmail_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateContactEmail("sanjula.lakpahana@rootcode.io"));
+			assertDoesNotThrow(() -> CrmValidations.validateContactEmail("jane.cooper@example.com"));
 		}
 
 	}
