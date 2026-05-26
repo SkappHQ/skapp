@@ -29,7 +29,7 @@ const SidePanelContactHeader: FC<Props> = ({
   );
 
   return (
-    <div id="contact-panel-title" className={cls.wrapper}>
+    <div className={cls.wrapper}>
       {isLoading ? (
         <ContactHeaderSkeleton />
       ) : contact ? (
@@ -59,7 +59,7 @@ const SidePanelContactHeader: FC<Props> = ({
                 onClick={
                   onCompanyClick
                     ? () => {
-                        if (contact.company) onCompanyClick(contact.company.id);
+                        onCompanyClick(contact.company.id);
                       }
                     : undefined
                 }

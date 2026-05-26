@@ -3,7 +3,7 @@ import { FC, KeyboardEvent, ReactElement } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
 
-import styles from "./styles";
+import styles, { COLORS } from "./styles";
 
 interface Props {
   icon: IconName | ReactElement;
@@ -26,7 +26,7 @@ const SidePanelContactInfoItem: FC<Props> = ({
     <>
       <span className={cls.iconWrapper}>
         {typeof icon === "string" ? (
-          <Icon name={icon} fill={cls.iconFill} width="20" height="20" />
+          <Icon name={icon} fill={COLORS.iconFill} width="20" height="20" />
         ) : (
           icon
         )}
@@ -37,7 +37,7 @@ const SidePanelContactInfoItem: FC<Props> = ({
           {endIcon && (
             <Icon
               name={endIcon}
-              fill={cls.endIconFill}
+              fill={COLORS.endIconFill}
               width="16"
               height="16"
             />
@@ -66,6 +66,7 @@ const SidePanelContactInfoItem: FC<Props> = ({
         onClick={onClick}
         onKeyDown={handleKeyDown}
         className={cls.linkRow}
+        aria-label={value ?? "-"}
       >
         {inner}
       </div>

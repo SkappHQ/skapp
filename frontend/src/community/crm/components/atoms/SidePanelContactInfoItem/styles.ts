@@ -1,3 +1,8 @@
+export const COLORS = {
+  iconFill: "var(--color-secondary-icon)",
+  endIconFill: "var(--color-primary-text)"
+};
+
 const styles = {
   row: "flex items-center gap-[12px]",
   linkRow:
@@ -9,9 +14,7 @@ const styles = {
     "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-primary-text",
   link: "flex items-center gap-[4px]",
   linkText:
-    "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-primary-text underline",
-  iconFill: "var(--color-secondary-icon)",
-  endIconFill: "var(--color-primary-text)"
+    "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-primary-text underline"
 };
 
 export default styles;
