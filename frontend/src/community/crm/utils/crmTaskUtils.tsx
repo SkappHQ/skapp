@@ -1,10 +1,10 @@
 import {
+  ChecklistVerificationFilledIcon,
   EmailFilledIcon,
   HighPriorityIcon,
   LowPriorityIcon,
   MediumPriorityIcon,
   MeetingFilledIcon,
-  OtherFilledIcon,
   PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
 import { ReactElement, ReactNode } from "react";
@@ -19,9 +19,9 @@ export interface DueDateDisplay {
   colorClass: string;
 }
 
-export const getPriorityConfig = (
-  priority: { name: string }
-): PriorityConfig => {
+export const getPriorityConfig = (priority: {
+  name: string;
+}): PriorityConfig => {
   switch (priority.name.toLowerCase()) {
     case "high":
       return { icon: <HighPriorityIcon />, bgColor: "bg-[#FFD6D9]" };
@@ -50,7 +50,7 @@ export const getTaskTypeConfig = (typeName: string): ReactNode => {
     case "meeting":
       return <MeetingFilledIcon />;
     case "other":
-      return <OtherFilledIcon />;
+      return <ChecklistVerificationFilledIcon />;
     default:
       return <EmailFilledIcon />;
   }
@@ -69,11 +69,7 @@ export const TASK_TYPE_OPTIONS: TaskTypeOption[] = [
   { id: "meeting", label: "Meeting", value: "meeting" },
   { id: "other", label: "Other", value: "other" }
 ].map((t) => {
-  const iconEl = (
-    <div>
-      {getTaskTypeConfig(t.value)}
-    </div>
-  );
+  const iconEl = <div>{getTaskTypeConfig(t.value)}</div>;
   return {
     id: t.id,
     value: t.value,

@@ -1,4 +1,5 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
+
 import { CrmDealSortEnum, CrmDealStageEnum } from "../enums/common";
 
 // Pagination
@@ -85,6 +86,7 @@ export interface CrmContactType {
   email: string;
   contactNumber: string | null;
   lastContactAt: string | null;
+  lastModifiedDate: string;
   company: CrmCompanyType | null;
   owner: CrmOwnerType;
   isDeleted: boolean;
@@ -123,7 +125,6 @@ export interface CrmDealStageType {
 //   owner: ContactOwner;
 //   company: CompanyLookup | null;
 // }
-
 
 export interface ContactDeal {
   id: number;
