@@ -32,8 +32,8 @@ public class CrmCompanyController {
 
 	@Operation(summary = "Get CRM companies for lookup",
 			description = "Retrieves a paginated list of CRM companies (id + name) for use in dropdowns and contact forms.")
-	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@GetMapping("/lookup")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompaniesLookup(CrmCompanyFilterDto filterDto) {
 		ResponseEntityDto response = companyService.getCompanies(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
