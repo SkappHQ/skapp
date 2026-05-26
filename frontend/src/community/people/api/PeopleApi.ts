@@ -595,6 +595,7 @@ export const useTerminateUser = (
       [
         peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
         peopleQueryKeys.HAS_SUPERVISOR_ROLES,
+        peopleQueryKeys.SUPERVISOR_ROLES(employeeId),
         [peopleQueryKeys.SUPERVISED_BY_ME]
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
@@ -701,6 +702,7 @@ export const useDeleteUser = (
       [
         peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
         peopleQueryKeys.HAS_SUPERVISOR_ROLES,
+        peopleQueryKeys.SUPERVISOR_ROLES(employeeId),
         [peopleQueryKeys.SUPERVISED_BY_ME]
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
@@ -853,10 +855,9 @@ export const useTransferSupervisors = (
     mutationFn: (payload: TransferSupervisorsPayload) =>
       authFetch.patch(peoplesEndpoints.TRANSFER_SUPERVISORS(userId), payload),
     onSuccess: () => {
-      [
-        peopleQueryKeys.SUPERVISOR_ROLES(userId),
-        peopleQueryKeys.HAS_SUPERVISOR_ROLES
-      ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
+      queryClient.invalidateQueries({
+        queryKey: peopleQueryKeys.HAS_SUPERVISOR_ROLES
+      });
       onSuccess();
     },
     onError
