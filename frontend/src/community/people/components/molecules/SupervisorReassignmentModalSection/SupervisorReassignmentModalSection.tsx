@@ -1,10 +1,19 @@
-import { AutoCompleteDropdown } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useState } from "react";
+import Select, {
+  type DropdownIndicatorProps,
+  type InputActionMeta,
+  components
+} from "react-select";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
+import { useGetSelectStyles } from "~community/common/components/molecules/DropDownSearch/styles";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { OptionType } from "~community/common/types/CommonTypes";
+import {
+  DropdownListType,
+  OptionType
+} from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import {
   AllEmployeeDataType,
@@ -18,13 +27,23 @@ interface SupervisorReassignmentModalSectionProps {
   items: SectionItem[];
   showAvatar: boolean;
   isTeamSection: boolean;
-  isSearchLoading: boolean;
   assignments: Record<number, OptionType>;
-  getResults: (entityId: number) => ReactNode[];
-  onBlur: () => void;
+  isSearchLoading: boolean;
+  getItemOptions: (entityId: number) => DropdownListType[];
+  onSelect: (
+    entityId: number,
+    employeeId: number,
+    employeeName: string
+  ) => void;
   onSearch: (term: string) => void;
   onRemove: (entityId: number) => void;
 }
+
+const DropdownIndicator = (props: DropdownIndicatorProps): ReactNode => (
+  <components.DropdownIndicator {...props}>
+    <Icon name={IconName.SEARCH_ICON} width="15" height="15" />
+  </components.DropdownIndicator>
+);
 
 const SupervisorReassignmentModalSection: FC<
   SupervisorReassignmentModalSectionProps
@@ -33,28 +52,20 @@ const SupervisorReassignmentModalSection: FC<
   items,
   showAvatar,
   isTeamSection,
-  isSearchLoading,
   assignments,
-  getResults,
-  onBlur,
+  isSearchLoading,
+  getItemOptions,
+  onSelect,
   onSearch,
   onRemove
 }) => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
   const translateText = useTranslator("peopleModule", "supervisorReassignment");
-  const translateConfig = useTranslator("configurations", "workLocation");
+  const selectStyles = useGetSelectStyles("");
   const removeButtonAriaLabel = translateText(["removeAssignment"]);
   const placeholderText = translateText(["selectSupervisorPlaceholder"]);
+  const noResultsText = translateText(["noEmployeesFound"]);
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    onSearch(term);
-  };
-
-  const handleBlur = () => {
-    setSearchTerm("");
-    onBlur();
-  };
+  const [inputValues, setInputValues] = useState<Record<number, string>>({});
 
   return (
     <div className="flex flex-col gap-3">
@@ -76,24 +87,46 @@ const SupervisorReassignmentModalSection: FC<
                 firstName={employee.firstName}
                 lastName={employee.lastName}
                 avatarUrl={employee.authPic}
-                chipStyles={{ justifyContent: "flex-start" }}
+                chipStyles={{
+                  justifyContent: "flex-start",
+                  backgroundColor: "transparent",
+                  color: "inherit",
+                  "& .MuiChip-label": {
+                    typography: "body2",
+                    paddingRight: 0
+                  }
+                }}
               />
             );
           }
 
           const assigned = assignments[id];
+          const currentInput = inputValues[id] ?? "";
 
-          const getNoResultsText = () => {
-            if (isSearchLoading) return translateText(["loadingEmployees"]);
+          const handleInputChange = (
+            inputText: string,
+            { action }: InputActionMeta
+          ) => {
+            if (action === "input-change") {
+              setInputValues((prev) => ({ ...prev, [id]: inputText }));
+              onSearch(inputText);
+            }
+          };
 
-            if (!searchTerm.trim())
-              return translateConfig([
-                "form",
-                "employeeMultiSelect",
-                "ariaLabelSearch"
-              ]);
+          const handleMenuClose = () => {
+            setInputValues((prev) => ({ ...prev, [id]: "" }));
+            onSearch("");
+          };
 
-            return translateText(["noEmployeesFound"]);
+          const handleChange = (selectedOption: unknown) => {
+            const supervisorOption = selectedOption as DropdownListType;
+            if (supervisorOption) {
+              onSelect(
+                id,
+                supervisorOption.value as number,
+                supervisorOption.label as string
+              );
+            }
           };
 
           return (
@@ -112,19 +145,50 @@ const SupervisorReassignmentModalSection: FC<
               </div>
               <div className="w-62.5 shrink-0">
                 {!assigned ? (
-                  <AutoCompleteDropdown
-                    hasCard={false}
-                    className="w-full!"
-                    onBlur={handleBlur}
+                  <Select
+                    inputValue={currentInput}
+                    onInputChange={handleInputChange}
+                    value={null}
+                    options={getItemOptions(id)}
                     placeholder={placeholderText}
-                    onSearch={handleSearch}
-                    accessibilityTexts={{
-                      noResultsFoundText: getNoResultsText()
+                    onChange={handleChange}
+                    onMenuClose={handleMenuClose}
+                    menuIsOpen={currentInput.trim().length > 0}
+                    filterOption={() => true}
+                    noOptionsMessage={() =>
+                      isSearchLoading ? null : noResultsText
+                    }
+                    styles={{
+                      ...selectStyles,
+                      menuPortal: (base) => ({
+                        ...base,
+                        zIndex: ZIndexEnums.NEWMODAL
+                      }),
+                      menuList: (base) => ({
+                        ...base,
+                        marginTop: 0,
+                        maxHeight: "10.625rem",
+                        overflowY: "auto"
+                      }),
+                      menu: (base) => ({
+                        ...base,
+                        marginTop: 0
+                      }),
+                      valueContainer: (base) => ({
+                        ...base,
+                        marginLeft: "1rem",
+                        padding: "auto",
+                        height: "2.5625rem",
+                        overflowY: "auto"
+                      })
                     }}
-                    results={getResults(id)}
+                    menuPortalTarget={
+                      typeof window !== "undefined" ? document.body : undefined
+                    }
+                    components={{ DropdownIndicator }}
                   />
                 ) : (
-                  <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
+                  <div className="h-10.25 flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3">
                     <span className="body2 truncate flex-1">
                       {assigned.name}
                     </span>
