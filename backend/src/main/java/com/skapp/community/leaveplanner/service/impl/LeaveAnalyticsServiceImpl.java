@@ -360,6 +360,17 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		}
 
 		User currentUser = userService.getCurrentUser();
+
+		if (teamIds.contains(-1L) && !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
+			teamIds = teamDao.findLeadingTeamIdsByManagerId(currentUser.getEmployee().getEmployeeId());
+			if (teamIds.isEmpty()) {
+				LeaveUtilizationResponseDto emptyResponse = new LeaveUtilizationResponseDto();
+				emptyResponse.setTotalLeaves(Collections.emptyMap());
+				emptyResponse.setTotalLeavesWithType(Collections.emptyList());
+				return new ResponseEntityDto(false, emptyResponse);
+			}
+		}
+
 		List<LeaveType> leaveTypes = typeIds.contains(-1L) ? leaveTypeDao.findAllByIsActive(true)
 				: leaveTypeDao.findByTypeIdInAndIsActive(typeIds, true);
 
@@ -997,6 +1008,17 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
 		boolean isLeaveAdmin = employeeRole.getLeaveRole() != null
 				&& employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
+
+		if (teamIds.contains(-1L) && !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
+			teamIds = teamDao.findLeadingTeamIdsByManagerId(currentUser.getEmployee().getEmployeeId());
+			if (teamIds.isEmpty()) {
+				OrganizationalAbsenceRateAnalyticsDto absenceRateAnalyticsDto = new OrganizationalAbsenceRateAnalyticsDto();
+				absenceRateAnalyticsDto.setCurrentAbsenceRate(0.0f);
+				absenceRateAnalyticsDto.setMonthBeforeAbsenceRate(0.0f);
+				absenceRateAnalyticsDto.setType(OrganizationalLeaveAnalyticsKPIAbsenceType.CURRENT_ABSENCE_RATE);
+				return new ResponseEntityDto(false, absenceRateAnalyticsDto);
+			}
+		}
 
 		LocalDate twoMonthsBackCurrentDay = currentDate.minusDays(59);
 		LocalDate oneMonthBackCurrentDay = currentDate.minusDays(29);
