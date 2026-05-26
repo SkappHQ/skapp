@@ -265,7 +265,7 @@ const DealTable: FC = () => {
         }}
         className="max-w-[412px] w-full"
       />
-      <div className="w-full h-fit max-h-[600px] flex rounded-lg overflow-auto shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full">
+      <div className="w-full h-[600px] flex rounded-lg shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full">
         {isLoading ? (
           <table className="w-full">
             <ProjectTableSkeletonLoader rowCount={8} />
