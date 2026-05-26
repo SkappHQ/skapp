@@ -72,7 +72,7 @@ const DealsTable: FC<Props> = ({
     },
     {
       id: "value",
-      title: <span className="w-full block text-right">{translateText(["valueColumn"])}</span>,
+      title: translateText(["valueColumn"]),
       field: "value",
       width: 160,
       minWidth: 90,

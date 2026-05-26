@@ -18,7 +18,6 @@
       }
     ],
     "paths": {
-      "~store/*": ["./src/store/*"],
       "~community/*": ["./src/community/*"],
       "~enterprise/*": ["./src/enterprise/*", "./src/fallback/*"],
       "~styles/*": ["./styles/*"],

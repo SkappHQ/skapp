@@ -1,6 +1,5 @@
 @import "pdfjs-dist/web/pdf_viewer.css";
-@import "@rootcodelabs/skapp-ui/dist/tailwind.css";
-@source "../node_modules/@rootcodelabs/skapp-ui/dist/esm/index.esm.js";
+@import "@rootcodelabs/skapp-ui";
 @import "tailwindcss";
 
 @theme {

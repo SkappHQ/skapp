@@ -32,9 +32,9 @@ export const useGetDealsInfinite = (
     initialPageParam: 0,
     queryKey: crmDealQueryKeys.GET_DEALS(params),
     queryFn: async ({ pageParam }) => {
-      const response = await authFetch.get(
-        crmDealEndpoints.GET_DEALS({ ...params, page: pageParam as number })
-      );
+      const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
+        params: { ...params, page: pageParam as number }
+      });
       return (response?.data?.results?.[0] ?? {
         items: [],
         currentPage: 0,
