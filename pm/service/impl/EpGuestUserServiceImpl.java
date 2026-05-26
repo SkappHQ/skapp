@@ -633,14 +633,22 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<GuestInvitationValidationResponseDto> validateGuestInvitations(List<String> emails) {
+		if (emails == null || emails.isEmpty()) {
+			return List.of();
+		}
 		log.info("validateGuestInvitations: Validating guest invitations for {} email(s)", emails.size());
 
-		return emails.stream().filter(email -> email != null && !email.isBlank()).distinct().map(email -> {
-			GuestInvitationValidationResponseDto result = new GuestInvitationValidationResponseDto();
-			result.setEmail(email);
-			result.setStatus(resolveValidationStatus(email));
-			return result;
-		}).toList();
+		return emails.stream()
+			.filter(email -> email != null && !email.isBlank())
+			.map(email -> email.trim().toLowerCase())
+			.distinct()
+			.map(email -> {
+				GuestInvitationValidationResponseDto result = new GuestInvitationValidationResponseDto();
+				result.setEmail(email);
+				result.setStatus(resolveValidationStatus(email));
+				return result;
+			})
+			.toList();
 	}
 
 	private GuestInvitationValidationStatus resolveValidationStatus(String email) {
