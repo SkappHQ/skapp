@@ -17,7 +17,7 @@ i18n
     fallbackLng: "en",
     debug: false,
     detection: {
-      order: ["cookie", "navigator"],
+      order: ["cookie"],
       lookupCookie: I18N_LANGUAGE_COOKIE_NAME
     },
     resources: {

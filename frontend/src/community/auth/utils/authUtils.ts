@@ -141,18 +141,18 @@ export const setAccessToken = (token: string) => {
 
 export const setUserLanguage = async (token: string) => {
   const claims = extractClaimsFromToken(token);
-  const value = claims?.lang;
+  const languageValue = claims?.lang;
 
-  if (typeof value !== "string" || !value) return;
-  if (!SUPPORTED_LANGUAGES.includes(value)) return;
+  if (typeof languageValue !== "string" || !languageValue) return;
+  if (!SUPPORTED_LANGUAGES.includes(languageValue)) return;
 
   if (typeof window !== "undefined") {
     const expiryDate = new Date(
       Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
 
-    document.cookie = `${I18N_LANGUAGE_COOKIE_NAME}=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
-    await i18n.changeLanguage(value);
+    document.cookie = `${I18N_LANGUAGE_COOKIE_NAME}=${languageValue}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+    await i18n.changeLanguage(languageValue);
   }
 };
 
