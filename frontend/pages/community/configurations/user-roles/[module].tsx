@@ -22,7 +22,7 @@ const Module: NextPage = () => {
     return mapApiModuleToEnum(module?.toString());
   }, [module]);
 
-  const translateText = useTranslator("configurations", "userRoles");
+  const translateText = useTranslator("configurations");
 
   const { setIsUserRoleModalOpen, setModuleType } = useConfigurationStore();
 
@@ -41,16 +41,19 @@ const Module: NextPage = () => {
     setIsUserRoleModalOpen(true);
     setModuleType(formattedModule);
   };
-
   const onBackClick = () => {
     router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=user-roles`);
   };
 
   return (
     <ContentLayout
-      pageHead={translateText(["pageHead"])}
-      title={translateText([`${module}Title`])}
-      primaryButtonText={translateText(["setRestrictionsBtnText"])}
+      breadcrumbs={[
+        { label: translateText(["title"]) },
+        { label: translateText([`userRoles.${module}Title`]) }
+      ]}
+      pageHead={translateText(["userRoles.pageHead"])}
+      title={translateText([`userRoles.${module}Title`])}
+      primaryButtonText={translateText(["userRoles.setRestrictionsBtnText"])}
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryBtnIconName={IconName.RESTRICTIONS_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
