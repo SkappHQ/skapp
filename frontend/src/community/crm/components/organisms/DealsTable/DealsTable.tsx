@@ -75,7 +75,11 @@ const DealsTable: FC<Props> = ({
       },
       {
         id: "value",
-        title: translateText(["valueColumn"]),
+        title: (
+          <span className="w-full block text-right">
+            {translateText(["valueColumn"])}
+          </span>
+        ) as unknown as string,
         field: "value",
         width: 160,
         minWidth: 90,
@@ -104,7 +108,7 @@ const DealsTable: FC<Props> = ({
         resizable: false,
         draggable: false,
         visible: true,
-        sortable: false
+        sortable: false,
       },
       {
         id: "contactName",
