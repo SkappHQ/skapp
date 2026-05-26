@@ -3,6 +3,7 @@ package com.skapp.enterprise.timeplanner.controller.v1;
 import com.skapp.enterprise.timeplanner.service.AdmsService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/external/adms/{tenantId}/iclock")
+@Profile("!ep-prd")
 public class AdmsController {
 
 	private final AdmsService admsService;
