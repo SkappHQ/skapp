@@ -10,4 +10,6 @@ public interface CrmContactService {
 
 	ResponseEntityDto getContactOwners(CrmContactOwnerFilterDto filterDto);
 
+	ResponseEntityDto getContactById(Long id);
+
 }
