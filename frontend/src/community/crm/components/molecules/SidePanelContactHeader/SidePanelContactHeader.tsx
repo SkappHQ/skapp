@@ -56,7 +56,6 @@ const SidePanelContactHeader: FC<Props> = ({
               <SidePanelContactInfoItem
                 icon={<BuildingIcon stroke={COLORS.iconFill} />}
                 value={company.name}
-                // TODO: Open company side panel
                 onClick={
                   onCompanyClick
                     ? () => {
