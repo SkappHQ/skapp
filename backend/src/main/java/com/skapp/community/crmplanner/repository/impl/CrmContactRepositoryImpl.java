@@ -58,7 +58,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		typedQuery.setFirstResult((int) pageable.getOffset());
 		typedQuery.setMaxResults(pageable.getPageSize());
 
-		return new PageImpl<>(typedQuery.getResultList(), pageable, getTotalCount(cb, filterDto));
+		return new PageImpl<>(typedQuery.getResultList(), pageable, getContactTotalCount(cb, filterDto));
 	}
 
 	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<CrmContact> contact, CriteriaQuery<CrmContact> query) {
@@ -94,7 +94,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return predicates.toArray(new Predicate[0]);
 	}
 
-	private Long getTotalCount(CriteriaBuilder cb, CrmContactMetricRequestDto filterDto) {
+	private Long getContactTotalCount(CriteriaBuilder cb, CrmContactMetricRequestDto filterDto) {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmContact> contact = countQuery.from(CrmContact.class);
 		Join<CrmContact, Employee> owner = contact.join(CrmContact_.owner, JoinType.INNER);
