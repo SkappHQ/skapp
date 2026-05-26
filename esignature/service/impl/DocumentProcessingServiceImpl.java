@@ -57,11 +57,11 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float DEFAULT_FONT_SIZE = 12f;
 
-	private static final float UUID_FONT_SIZE = 10f;
+	private static final float UUID_FONT_SIZE = 8f;
 
 	private static final float UUID_X_POSITION = 40;
 
-	private static final float UUID_Y_POSITION = 20;
+	private static final float UUID_Y_POSITION = 10;
 
 	// sign by template params
 
