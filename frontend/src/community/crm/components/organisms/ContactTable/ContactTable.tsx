@@ -137,7 +137,7 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      className: "text-right",
+      className: "text-right pr-10.5",
       width: "10%"
     },
     {
@@ -158,7 +158,8 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      width: "20%"
+      width: "20%",
+      className: "pl-24",
     },
     {
       columnAriaLabel: translateText([
