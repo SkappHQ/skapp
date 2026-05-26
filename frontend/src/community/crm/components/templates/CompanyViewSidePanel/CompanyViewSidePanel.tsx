@@ -48,62 +48,62 @@ const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
 ];
 
 const getCompanyContacts = (company: CrmCompanyMetricsType): CrmSidePanelContactRow[] => [
-  // TODO: Wire up contacts for the selected company
-  {
-    id: "1",
-    name: "Samuel West",
-    email: "samuelwest@mail.com",
-    contactNo: "+94 439348842",
-    company: "Acme",
-    revenue: "$62000",
-    dealsClosed: 4,
-    openTasks: 2,
-    overdueTasks: 1
-  },
-  {
-    id: "2",
-    name: "Hannah Lee",
-    email: "hannah.lee@stark.com",
-    contactNo: "+1 2129876543",
-    company: "Stark Industries",
-    revenue: "$80000",
-    dealsClosed: 8,
-    openTasks: 9,
-    overdueTasks: 0
-  },
-  {
-    id: "3",
-    name: "Linda Martinez",
-    email: "linda.martinez@globex.com",
-    contactNo: "+44 2071234567",
-    company: "Globex Corp",
-    revenue: "$75000",
-    dealsClosed: 6,
-    openTasks: 11,
-    overdueTasks: 0
-  },
-  {
-    id: "4",
-    name: "Michael Brown",
-    email: "michael.brown@initech.com",
-    contactNo: "+1 4159876543",
-    company: "Initech",
-    revenue: "$90000",
-    dealsClosed: 10,
-    openTasks: 5,
-    overdueTasks: 2
-  },
-  {
-    id: "5",
-    name: "Emily Davis",
-    email: "emily.davis@initech.com",
-    contactNo: "+1 4159876544",
-    company: "Initech",
-    revenue: "$95000",
-    dealsClosed: 12,
-    openTasks: 6,
-    overdueTasks: 3
-  }
+  // // TODO: Wire up contacts for the selected company
+  // {
+  //   id: "1",
+  //   name: "Samuel West",
+  //   email: "samuelwest@mail.com",
+  //   contactNo: "+94 439348842",
+  //   company: "Acme",
+  //   revenue: "$62000",
+  //   dealsClosed: 4,
+  //   openTasks: 2,
+  //   overdueTasks: 1
+  // },
+  // {
+  //   id: "2",
+  //   name: "Hannah Lee",
+  //   email: "hannah.lee@stark.com",
+  //   contactNo: "+1 2129876543",
+  //   company: "Stark Industries",
+  //   revenue: "$80000",
+  //   dealsClosed: 8,
+  //   openTasks: 9,
+  //   overdueTasks: 0
+  // },
+  // {
+  //   id: "3",
+  //   name: "Linda Martinez",
+  //   email: "linda.martinez@globex.com",
+  //   contactNo: "+44 2071234567",
+  //   company: "Globex Corp",
+  //   revenue: "$75000",
+  //   dealsClosed: 6,
+  //   openTasks: 11,
+  //   overdueTasks: 0
+  // },
+  // {
+  //   id: "4",
+  //   name: "Michael Brown",
+  //   email: "michael.brown@initech.com",
+  //   contactNo: "+1 4159876543",
+  //   company: "Initech",
+  //   revenue: "$90000",
+  //   dealsClosed: 10,
+  //   openTasks: 5,
+  //   overdueTasks: 2
+  // },
+  // {
+  //   id: "5",
+  //   name: "Emily Davis",
+  //   email: "emily.davis@initech.com",
+  //   contactNo: "+1 4159876544",
+  //   company: "Initech",
+  //   revenue: "$95000",
+  //   dealsClosed: 12,
+  //   openTasks: 6,
+  //   overdueTasks: 3
+  // }
 ];
 
 interface CompanyViewSidePanelProps {
