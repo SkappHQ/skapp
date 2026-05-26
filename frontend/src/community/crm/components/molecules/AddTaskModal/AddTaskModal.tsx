@@ -25,6 +25,7 @@ const AddTaskModal: React.FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
+  // TODO: for reference. should be replaced when backend integrated
   const PRIORITY_OPTIONS = [
     {
       id: "high",
@@ -247,6 +248,7 @@ const AddTaskModal: React.FC = () => {
         <label className="subtitle1 leading-normal text-black">
           {translateText(["labels", "taskOwner"])}
         </label>
+        {/* TODO: Replace with role based selection */}
         <div className="h-12 rounded-lg bg-gray-100 flex items-center px-3">
           <AvatarChip
             label={"Jane Doe"}

@@ -5,6 +5,7 @@ import App, { AppContext } from "next/app";
 import { Inter } from "next/font/google";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import "react-day-picker/dist/style.css";
 import { ErrorBoundary } from "react-error-boundary";
 import { I18nextProvider, useSSR } from "react-i18next";
 
