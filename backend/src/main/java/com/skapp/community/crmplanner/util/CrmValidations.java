@@ -4,7 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.peopleplanner.util.Validations;
 import lombok.experimental.UtilityClass;
 
@@ -120,7 +120,7 @@ public class CrmValidations {
 	}
 
 	public static void validateDealAmount(String amount) {
-		if (amount == null || amount.isEmpty()) {
+		if (amount == null || amount.isBlank()) {
 			return;
 		}
 
@@ -131,19 +131,9 @@ public class CrmValidations {
 		if (!amount.matches(CrmConstants.DEAL_AMOUNT_REGEX)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_AMOUNT_INVALID);
 		}
-
-		try {
-			java.math.BigDecimal amountValue = new java.math.BigDecimal(amount);
-			if (amountValue.compareTo(java.math.BigDecimal.ZERO) < 0) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_AMOUNT_INVALID);
-			}
-		}
-		catch (NumberFormatException e) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_AMOUNT_INVALID);
-		}
 	}
 
-	public static void validateDealPriority(com.skapp.community.crmplanner.type.CrmDealPriority priority) {
+	public static void validateDealPriority(CrmDealPriority priority) {
 		if (priority == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND);
 		}

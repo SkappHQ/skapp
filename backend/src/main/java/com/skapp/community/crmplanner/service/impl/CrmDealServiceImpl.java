@@ -113,7 +113,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getDeals(CrmDealFilterDto filterDto) {
 		log.info("getDeals: execution started");
 
-		Sort sort = Sort.by(filterDto.getSortOrder(), filterDto.getSortKey().getDbField());
+		Sort sort = Sort.by(filterDto.getSortOrder(), filterDto.getSortKey().getSortField());
 		Page<CrmDeal> dealsPage = crmDealDao.findDeals(filterDto,
 				PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort));
 

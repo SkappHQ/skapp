@@ -36,16 +36,40 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	public Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<CrmDeal> query = cb.createQuery(CrmDeal.class);
-		Root<CrmDeal> deal = query.from(CrmDeal.class);
-		query.where(buildPredicates(cb, deal, filterDto).toArray(new Predicate[0]));
+		CriteriaQuery<Long> idQuery = cb.createQuery(Long.class);
+		Root<CrmDeal> dealRoot = idQuery.from(CrmDeal.class);
+		idQuery.select(dealRoot.get(CrmDeal_.id));
+		idQuery.where(buildPredicates(cb, dealRoot, filterDto).toArray(new Predicate[0]));
 
-		// Always sort by stage.orderIndex ascending
-		query.orderBy(cb.asc(deal.get(CrmDeal_.stage).get("orderIndex")));
+		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)));
 
-		TypedQuery<CrmDeal> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
+		TypedQuery<Long> idTypedQuery = entityManager.createQuery(idQuery);
+		idTypedQuery.setFirstResult((int) pageable.getOffset());
+		idTypedQuery.setMaxResults(pageable.getPageSize());
+		List<Long> dealIds = idTypedQuery.getResultList();
+
+		if (dealIds.isEmpty()) {
+			CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+			Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
+			countQuery.select(cb.count(countRoot))
+					.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
+			Long total = entityManager.createQuery(countQuery).getSingleResult();
+			return new PageImpl<>(new ArrayList<>(), pageable, total);
+		}
+
+		CriteriaQuery<CrmDeal> fetchQuery = cb.createQuery(CrmDeal.class);
+		Root<CrmDeal> deal = fetchQuery.from(CrmDeal.class);
+
+		deal.fetch(CrmDeal_.stage, JoinType.LEFT);
+		deal.fetch(CrmDeal_.company, JoinType.LEFT);
+		deal.fetch(CrmDeal_.contact, JoinType.LEFT);
+		deal.fetch(CrmDeal_.owner, JoinType.LEFT);
+
+		fetchQuery.select(deal).where(deal.get(CrmDeal_.id).in(dealIds));
+
+		fetchQuery.orderBy(cb.asc(deal.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)));
+
+		List<CrmDeal> deals = entityManager.createQuery(fetchQuery).getResultList();
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
@@ -53,7 +77,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 				.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
-		return new PageImpl<>(typedQuery.getResultList(), pageable, total);
+		return new PageImpl<>(deals, pageable, total);
 	}
 
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<CrmDeal> deal, CrmDealFilterDto filterDto) {

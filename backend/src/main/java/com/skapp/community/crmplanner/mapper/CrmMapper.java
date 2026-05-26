@@ -20,13 +20,10 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CrmMapper {
 
-	@Mapping(target = "stageId", source = "stage.id")
 	@Mapping(target = "stageName", source = "stage.name")
-	@Mapping(target = "companyId", source = "company.id")
+	@Mapping(target = "stageColor", source = "stage.color")
 	@Mapping(target = "companyName", source = "company.name")
-	@Mapping(target = "contactId", source = "contact.id")
 	@Mapping(target = "contactName", source = "contact.name")
-	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "ownerName", source = "owner.fullName")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
 

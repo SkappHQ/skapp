@@ -15,22 +15,14 @@ public class CrmDealFilterDto {
 
 	private int size = 10;
 
-	private Sort.Direction sortOrder = Sort.Direction.DESC;
+	private Sort.Direction sortOrder = Sort.Direction.ASC;
 
-	private CrmDealSort sortKey = CrmDealSort.CREATED_DATE;
+	private CrmDealSort sortKey = CrmDealSort.STAGE_ORDER;
 
 	private String searchKeyword;
 
 	private Long stageId;
 
 	private CrmDealPriority priority;
-
-	public Sort.Direction getSortOrder() {
-		return sortOrder != null ? sortOrder : Sort.Direction.DESC;
-	}
-
-	public CrmDealSort getSortKey() {
-		return sortKey != null ? sortKey : CrmDealSort.CREATED_DATE;
-	}
 
 }
