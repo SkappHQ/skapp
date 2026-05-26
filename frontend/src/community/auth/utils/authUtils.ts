@@ -152,7 +152,10 @@ export const setUserLanguage = async (token: string) => {
     );
 
     document.cookie = `${I18N_LANGUAGE_COOKIE_NAME}=${languageValue}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
-    await i18n.changeLanguage(languageValue);
+    await i18n.changeLanguage(languageValue).catch((error) => {
+      console.error("[i18n] Failed to change language:", error);
+      i18n.changeLanguage(i18n.options.fallbackLng as string);
+    });
   }
 };
 
