@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -632,42 +633,34 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<GuestInvitationValidationResponseDto> validateGuestInvitations(List<String> emails, Long projectId) {
-		log.info("validateGuestInvitations: Validating guest invitations for {} email(s), projectId: {}", emails.size(),
-				projectId);
+	public List<GuestInvitationValidationResponseDto> validateGuestInvitations(List<String> emails) {
+		if (emails == null || emails.isEmpty()) {
+			return List.of();
+		}
+		log.info("validateGuestInvitations: Validating guest invitations for {} email(s)", emails.size());
 
-		return emails.stream().filter(email -> email != null && !email.isBlank()).distinct().map(email -> {
-			GuestInvitationValidationResponseDto result = new GuestInvitationValidationResponseDto();
-			result.setEmail(email);
-			result.setStatus(resolveValidationStatus(email, projectId));
-			return result;
-		}).toList();
+		return emails.stream()
+			.filter(email -> email != null && !email.isBlank())
+			.map(email -> email.trim().toLowerCase())
+			.distinct()
+			.map(email -> {
+				GuestInvitationValidationResponseDto result = new GuestInvitationValidationResponseDto();
+				result.setEmail(email);
+				result.setStatus(resolveValidationStatus(email));
+				return result;
+			})
+			.toList();
 	}
 
-	private GuestInvitationValidationStatus resolveValidationStatus(String email, Long projectId) {
+	private GuestInvitationValidationStatus resolveValidationStatus(String email) {
+		if (!Pattern.compile(Validation.EMAIL_REGEX).matcher(email).matches()) {
+			return GuestInvitationValidationStatus.INVALID_EMAIL;
+		}
+
 		Optional<User> existingUserOpt = userDao.findByEmail(email);
 
 		if (existingUserOpt.isPresent()) {
-			User existingUser = existingUserOpt.get();
-			Employee employee = existingUser.getEmployee();
-
-			if (employee != null && employee.getAccountStatus() == AccountStatus.DEACTIVATED) {
-				return GuestInvitationValidationStatus.USER_ACCOUNT_DEACTIVATED;
-			}
-
-			if (employee == null || employee.getEmployeeRole() == null
-					|| employee.getEmployeeRole().getPmRole() != Role.PM_GUEST_EMPLOYEE) {
-				return GuestInvitationValidationStatus.USER_ALREADY_EXISTS;
-			}
-
-			if (projectId != null) {
-				List<ProjectRequestDto> userProjects = epGuestUserCacheService
-					.getUserAssignedProjects(existingUser.getUserId());
-				boolean isAlreadyInProject = userProjects.stream().anyMatch(p -> projectId.equals(p.getProjectId()));
-				if (isAlreadyInProject) {
-					return GuestInvitationValidationStatus.USER_ALREADY_IN_PROJECT;
-				}
-			}
+			return GuestInvitationValidationStatus.USER_ALREADY_EXISTS;
 		}
 
 		Optional<GuestUserRequest> pendingRequest = guestUserRequestDao.findByEmailIgnoreCase(email);

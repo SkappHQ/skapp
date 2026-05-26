@@ -49,6 +49,6 @@ public interface EpGuestUserService {
 
 	ResponseEntityDto revokeGuestUserRequest(Long requestId);
 
-	List<GuestInvitationValidationResponseDto> validateGuestInvitations(List<String> emails, Long projectId);
+	List<GuestInvitationValidationResponseDto> validateGuestInvitations(List<String> emails);
 
 }
