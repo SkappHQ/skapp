@@ -28,6 +28,7 @@ const CarryForwardBalances: NextPage = () => {
   const router = useRouter();
 
   const translateText = useTranslator("leaveModule", "leaveCarryForward");
+  const translateBreadcrumbs = useTranslator("leaveModule");
 
   const shouldRender = useBlockPageReload();
 
@@ -157,6 +158,16 @@ const CarryForwardBalances: NextPage = () => {
   return (
     <>
       <ContentLayout
+        breadcrumbs={[
+          { label: translateBreadcrumbs(["dashboard.dashboard.leave"]) },
+          {
+            label: translateBreadcrumbs(["leaveEntitlements.title"]),
+            href: ROUTES.LEAVE.LEAVE_ENTITLEMENTS
+          },
+          {
+            label: translateText(["carryForwardingBalance.title"])
+          }
+        ]}
         pageHead={translateText(["carryForwardingBalance.pageHead"])}
         title={translateText(["carryForwardingBalance.title"])}
         isDividerVisible={true}

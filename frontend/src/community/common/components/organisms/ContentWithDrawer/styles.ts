@@ -2,13 +2,13 @@ const styles = () => ({
   protectedWrapper: {
     flexDirection: "row",
     width: "100%",
-    overflowX: "hidden"
+    overflowX: "clip"
   },
   contentWrapper: {
     width: "100%",
+    height: "100%",
     boxSizing: "border-box",
-    transition: "width 0.3s ease",
-    overflowX: "hidden"
+    transition: "width 0.3s ease"
   }
 });
 

@@ -244,3 +244,35 @@ export interface AllEmployeeDataResponse {
   totalItems?: number;
   pages?: any;
 }
+
+export interface SupervisedEmployee {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  authPic?: string;
+}
+
+export interface SupervisorRolesData {
+  supervisedEmployees: SupervisedEmployee[];
+  supervisedTeams: EmployeeDataTeamType[];
+}
+
+export interface PrimarySupervisorTransfer {
+  employeeId: number;
+  newPrimarySupervisorId: number;
+}
+
+export interface TeamSupervisorTransfer {
+  teamId: number;
+  newTeamSupervisorId: number;
+}
+
+export interface TransferSupervisorsPayload {
+  primarySupervisors: PrimarySupervisorTransfer[];
+  teamSupervisors: TeamSupervisorTransfer[];
+}
+
+export enum SupervisorReassignmentActionType {
+  TERMINATE = "TERMINATE",
+  DELETE = "DELETE"
+}
