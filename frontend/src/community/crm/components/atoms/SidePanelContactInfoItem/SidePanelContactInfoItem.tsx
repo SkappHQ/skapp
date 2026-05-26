@@ -3,7 +3,7 @@ import { FC, KeyboardEvent, ReactElement } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
 
-import styles, { COLORS } from "./styles";
+import cls, { COLORS } from "./styles";
 
 interface Props {
   icon: IconName | ReactElement;
@@ -18,8 +18,6 @@ const SidePanelContactInfoItem: FC<Props> = ({
   endIcon,
   onClick
 }) => {
-  const cls = styles;
-
   const isInteractive = !!onClick && !!value;
 
   const inner = (

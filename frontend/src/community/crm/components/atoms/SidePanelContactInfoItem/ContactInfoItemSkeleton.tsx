@@ -28,9 +28,9 @@ export const ContactHeaderSkeleton: FC = () => {
         <div className="h-[10px] w-[135px] rounded-[4px] bg-gray-100" />
       </div>
       <div className="flex items-center justify-between max-w-[629px] w-full">
-        <ContactInfoItemSkeleton widthClass="w-[85.8px]" />
-        <ContactInfoItemSkeleton widthClass="w-[67.8px]" />
-        <ContactInfoItemSkeleton widthClass="w-[34.2px]" hasEndIcon />
+        <ContactInfoItemSkeleton widthClass="w-[86px]" />
+        <ContactInfoItemSkeleton widthClass="w-[68px]" />
+        <ContactInfoItemSkeleton widthClass="w-[34px]" hasEndIcon />
       </div>
     </div>
   );

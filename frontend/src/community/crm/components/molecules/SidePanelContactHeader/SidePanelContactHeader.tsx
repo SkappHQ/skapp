@@ -8,7 +8,7 @@ import { ContactHeaderSkeleton } from "~community/crm/components/atoms/SidePanel
 import SidePanelContactInfoItem from "~community/crm/components/atoms/SidePanelContactInfoItem/SidePanelContactInfoItem";
 import { CrmContactType } from "~community/crm/types/CommonTypes";
 
-import styles from "./styles";
+import cls, { COLORS } from "./styles";
 
 interface Props {
   contact?: CrmContactType;
@@ -21,12 +21,13 @@ const SidePanelContactHeader: FC<Props> = ({
   isLoading,
   onCompanyClick
 }) => {
-  const cls = styles;
   const translateText = useTranslator(
     "crmModule",
     "contacts",
     "contactDetailsPanel"
   );
+
+  const company = contact?.company;
 
   return (
     <div className={cls.wrapper}>
@@ -35,7 +36,7 @@ const SidePanelContactHeader: FC<Props> = ({
       ) : contact ? (
         <>
           <div className={cls.contactHeader}>
-            <p className={cls.contactName}>{contact.name}</p>
+            <h2 className={cls.contactName}>{contact.name}</h2>
             <p className={cls.lastUpdated}>
               {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffixLocal(contact.lastModifiedDate)}`}
             </p>
@@ -51,15 +52,15 @@ const SidePanelContactHeader: FC<Props> = ({
               value={contact.contactNumber}
             />
 
-            {contact.company && (
+            {company && (
               <SidePanelContactInfoItem
-                icon={<BuildingIcon stroke={cls.iconFill} />}
-                value={contact.company.name}
+                icon={<BuildingIcon stroke={COLORS.iconFill} />}
+                value={company.name}
                 // TODO: Open company side panel
                 onClick={
                   onCompanyClick
                     ? () => {
-                        onCompanyClick(contact.company.id);
+                        onCompanyClick(company.id);
                       }
                     : undefined
                 }
