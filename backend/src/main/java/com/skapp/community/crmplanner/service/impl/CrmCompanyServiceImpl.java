@@ -133,10 +133,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 
 		List<CrmDeal> deals = crmDealDao.findAllByCompanyIdAndIsDeletedFalse(id);
-		if (!deals.isEmpty()) {
-			deals.forEach(deal -> deal.setIsDeleted(true));
-			crmDealDao.saveAll(deals);
-		}
+		deals.forEach(deal -> deal.setIsDeleted(true));
+		crmDealDao.saveAll(deals);
+		
 		company.setIsDeleted(true);
 		crmCompanyDao.save(company);
 
