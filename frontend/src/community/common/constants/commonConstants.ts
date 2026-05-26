@@ -35,4 +35,4 @@ export const DEFAULT_SCROLL_AMOUNT_PX = 100;
 
 export const I18N_LANGUAGE_COOKIE_NAME = "locale";
 
-export const SUPPORTED_LANGUAGES = ["en", "sv"];
+export const SUPPORTED_LANGUAGES = ["en"];
