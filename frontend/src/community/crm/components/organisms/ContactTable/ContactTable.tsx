@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -20,7 +20,6 @@ import {
 import {
   ALL_COMPANIES,
   DEFAULT_PAGE_SIZE,
-  CONTACT_FILTER_PAGE_SIZE,
   CONTACT_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/contactConstants";
 import {
@@ -52,10 +51,60 @@ export const ContactTable: React.FC = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, companyId);
 
-  const { data: companiesData } = useGetCrmCompanies({
-    page: 0,
-    size: COMPANY_FILTER_PAGE_SIZE
+  const {
+    data: companiesData,
+    fetchNextPage: fetchNextCompaniesPage,
+    hasNextPage: hasNextCompaniesPage,
+    isFetchingNextPage: isFetchingNextCompaniesPage
+  } = useGetCrmCompanies({
+    size: DEFAULT_PAGE_SIZE,
   });
+
+  const companies = useMemo(
+    () => companiesData?.pages.flatMap((page) => page?.items ?? []) ?? [],
+    [companiesData]
+  );
+
+  useEffect(() => {
+    const COMPANY_FILTER_MENU_ID = "contact-company-filter-menu";
+    const SCROLL_THRESHOLD_PX = 50;
+
+    const maybeFetchNext = (menu: HTMLElement) => {
+      if (!hasNextCompaniesPage || isFetchingNextCompaniesPage) return;
+      const { scrollTop, scrollHeight, clientHeight } = menu;
+      const reachedBottom =
+        scrollHeight - scrollTop - clientHeight < SCROLL_THRESHOLD_PX;
+      const notScrollable = scrollHeight <= clientHeight;
+      if (reachedBottom || notScrollable) {
+        void fetchNextCompaniesPage();
+      }
+    };
+
+    const handleMenuScroll = (event: Event) => {
+      const target = event.target as HTMLElement | null;
+      if (!target || target.id !== COMPANY_FILTER_MENU_ID) return;
+      maybeFetchNext(target);
+    };
+
+    const observer = new MutationObserver(() => {
+      const menu = document.getElementById(COMPANY_FILTER_MENU_ID);
+      if (menu) maybeFetchNext(menu);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    const existingMenu = document.getElementById(COMPANY_FILTER_MENU_ID);
+    if (existingMenu) maybeFetchNext(existingMenu);
+
+    document.addEventListener("scroll", handleMenuScroll, true);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("scroll", handleMenuScroll, true);
+    };
+  }, [
+    fetchNextCompaniesPage,
+    hasNextCompaniesPage,
+    isFetchingNextCompaniesPage
+  ]);
 
   const contacts = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
@@ -68,13 +117,13 @@ export const ContactTable: React.FC = () => {
         label: translateText(["table", "companyFilter", "allCompanies"]),
         value: ALL_COMPANIES
       },
-      ...(companiesData?.items ?? []).map((company: CompanyLookup) => ({
+      ...companies.map((company: CompanyLookup) => ({
         id: String(company.id),
         label: company.name,
         value: String(company.id)
       }))
     ],
-    [companiesData, translateText]
+    [companies, translateText]
   );
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {

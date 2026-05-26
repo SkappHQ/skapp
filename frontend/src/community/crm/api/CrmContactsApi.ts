@@ -1,8 +1,4 @@
-import {
-  type UseQueryResult,
-  useInfiniteQuery,
-  useQuery
-} from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { contactEndpoints } from "~community/crm/api/utils/ApiEndpoints";
@@ -64,27 +60,31 @@ export const useGetContactMetrics = (
 };
 
 interface CompaniesLookupParams {
-  page: number;
   size: number;
   searchKeyword?: string;
 }
 
 export const useGetCrmCompanies = ({
-  page,
   size,
   searchKeyword
-}: CompaniesLookupParams): UseQueryResult<CrmCompaniesResponseType> => {
-  return useQuery({
-    queryKey: contactQueryKeys.CRM_COMPANIES(page, size, searchKeyword),
-    queryFn: async () => {
+}: CompaniesLookupParams) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: contactQueryKeys.CRM_COMPANIES(size, searchKeyword),
+    queryFn: async ({ pageParam }) => {
       const response = await authFetch.get(contactEndpoints.GET_COMPANIES, {
         params: {
-          page,
+          page: pageParam,
           size,
           ...(searchKeyword ? { searchKeyword } : {})
         }
       });
-      return response?.data?.results?.[0];
+      return response?.data?.results?.[0] as CrmCompaniesResponseType;
+    },
+    getNextPageParam: (lastPage) => {
+      if (!lastPage) return undefined;
+      if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
+      return lastPage.currentPage + 1;
     }
   });
 };
