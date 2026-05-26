@@ -135,7 +135,7 @@ const DealTable: FC = () => {
     },
     {
       id: "value",
-      title: translateText(["valueColumn"]),
+      title: <span className="w-full block text-right">{translateText(["valueColumn"])} </span>,
       field: "value",
       width: 160,
       minWidth: 90,
@@ -204,7 +204,7 @@ const DealTable: FC = () => {
           <span className="body2 w-full block text-right">
             {Number.isFinite(parsedAmount) && parsedAmount > 0
               ? `$${parsedAmount.toLocaleString()}`
-              : "\u2014"}
+              : "-"}
           </span>
         ),
         stage: (
@@ -217,7 +217,7 @@ const DealTable: FC = () => {
           </div>
         ),
         companyName: (
-          <span className="body2">{deal.companyName ?? "\u2014"}</span>
+          <span className="body2">{deal.companyName ?? "-"}</span>
         ),
         contactName: (
           <span className="body2">{deal.contactName}</span>

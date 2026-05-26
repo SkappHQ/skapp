@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useEffect } from "react";
 
-import { useShallow } from "zustand/react/shallow";
+
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -12,12 +12,7 @@ import { useAppStore } from "~store/store";
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
 
-  const { openCreatePanel, closeSidePanel } = useAppStore(
-    useShallow((state) => ({
-      openCreatePanel: state.openCreatePanel,
-      closeSidePanel: state.closeSidePanel
-    }))
-  );
+  const { openCreatePanel, closeSidePanel } = useAppStore();
 
   useEffect(() => {
     // Close any leftover panel state when entering this page (e.g. a previous

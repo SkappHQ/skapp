@@ -3,8 +3,7 @@ import {
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
-  useQuery,
-  useQueryClient
+  useQuery
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
@@ -24,20 +23,19 @@ import {
 } from "./utils/ApiEndpoints";
 
 import {
+  CRM_COMPANIES_KEY,
+  CRM_CONTACTS_KEY,
   CRM_DEALS_KEY,
-  crmCompanyQueryKeys,
-  crmContactQueryKeys,
-  crmDealQueryKeys
+  crmQueryKeys
 } from "./utils/QueryKeys";
 
 export const useGetDealStages = (): UseQueryResult<CrmDealStageType[]> => {
   return useQuery({
-    queryKey: crmDealQueryKeys.DEAL_STAGES,
+    queryKey: crmQueryKeys.STAGES(CRM_DEALS_KEY),
     queryFn: async () => {
       const response = await authFetch.get(crmDealEndpoints.GET_DEAL_STAGES);
       return (response?.data?.results ?? []) as CrmDealStageType[];
-    },
-    staleTime: 5 * 60 * 1000
+    }
   });
 };
 
@@ -46,7 +44,7 @@ export const useGetDealsInfinite = (
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: crmDealQueryKeys.GET_DEALS(params),
+    queryKey: crmQueryKeys.FILTERED(CRM_DEALS_KEY, params),
     queryFn: async ({ pageParam }) => {
       const response = await authFetch.get(
         crmDealEndpoints.GET_DEALS({ ...params, page: pageParam as number })
@@ -69,15 +67,10 @@ export const useCreateDeal = (
   onSuccess: () => void,
   onError: (error: unknown) => void
 ): UseMutationResult<unknown, unknown, CrmDealCreateRequestType> => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (payload: CrmDealCreateRequestType) =>
       authFetch.post(crmDealEndpoints.CREATE_DEAL, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [CRM_DEALS_KEY] });
-      onSuccess();
-    },
+    onSuccess,
     onError
   });
 };
@@ -86,7 +79,7 @@ export const useGetCrmContacts = (
   searchKeyword?: string
 ): UseQueryResult<CrmContactType[]> => {
   return useQuery({
-    queryKey: crmContactQueryKeys.LIST(searchKeyword),
+    queryKey: crmQueryKeys.LIST(CRM_CONTACTS_KEY, searchKeyword),
     queryFn: async () => {
       const response = await authFetch.get(
         crmContactEndpoints.GET_CONTACTS(searchKeyword)
@@ -94,8 +87,7 @@ export const useGetCrmContacts = (
       const results =
         response?.data?.results?.[0]?.items ?? response?.data?.results ?? [];
       return results as CrmContactType[];
-    },
-    staleTime: 2 * 60 * 1000
+    }
   });
 };
 
@@ -103,7 +95,7 @@ export const useGetCrmCompanies = (
   searchKeyword?: string
 ): UseQueryResult<CrmCompanyType[]> => {
   return useQuery({
-    queryKey: crmCompanyQueryKeys.LIST(searchKeyword),
+    queryKey: crmQueryKeys.LIST(CRM_COMPANIES_KEY, searchKeyword),
     queryFn: async () => {
       const response = await authFetch.get(
         crmCompanyEndpoints.GET_COMPANIES(searchKeyword)
@@ -111,8 +103,7 @@ export const useGetCrmCompanies = (
       const results =
         response?.data?.results?.[0]?.items ?? response?.data?.results ?? [];
       return results as CrmCompanyType[];
-    },
-    staleTime: 2 * 60 * 1000
+    }
   });
 };
 
