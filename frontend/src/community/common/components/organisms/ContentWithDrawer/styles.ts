@@ -6,9 +6,9 @@ const styles = () => ({
   },
   contentWrapper: {
     width: "100%",
+    minWidth: 0, // In a flex row, flex items have min-width: auto by default,when it 0 flex item can shrink,
     height: "100%",
     boxSizing: "border-box",
-    overflowX: "hidden",
     transition: "width 0.3s ease"
   }
 });
