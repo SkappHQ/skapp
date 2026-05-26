@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/company")
+@RequestMapping("/v1/crm/company")
 @Tag(name = "CRM Companies Controller", description = "Operations related to CRM Companies")
 public class CrmCompanyController {
 
