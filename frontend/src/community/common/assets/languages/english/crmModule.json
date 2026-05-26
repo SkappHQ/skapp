@@ -113,7 +113,8 @@
         "priority": "Select priority",
         "contactName": "Enter name",
         "deal": "Enter deal",
-        "taskOwner": "Select task owner"
+        "taskOwner": "Select task owner",
+        "notes": "Add message"
       },
       "priorityOptions": {
         "high": "High",

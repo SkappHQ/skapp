@@ -7,12 +7,11 @@ import {
   Dropdown,
   InputField,
   Label,
-  SearchIcon,
-  TextArea,
-  UserChip
+  SearchInputField,
+  TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import React from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -23,24 +22,44 @@ import { addTaskValidations } from "~community/crm/utils/taskValidations";
 
 const AddTaskModal: React.FC = () => {
   const { setToastMessage } = useToast();
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
   const PRIORITY_OPTIONS = [
     {
       id: "high",
-      label: translateText(["priorityOptions", "high"]),
+      label: (
+        <Label
+          backgroundColor="bg-semantic-red-background"
+          textColor="text-semantic-red-text"
+        >
+          {translateText(["priorityOptions", "high"])}
+        </Label>
+      ),
       value: "HIGH"
     },
     {
       id: "medium",
-      label: translateText(["priorityOptions", "medium"]),
+      label: (
+        <Label
+          backgroundColor="bg-semantic-amber-background"
+          textColor="text-semantic-amber-text"
+        >
+          {translateText(["priorityOptions", "medium"])}
+        </Label>
+      ),
       value: "MEDIUM"
     },
     {
       id: "low",
-      label: translateText(["priorityOptions", "low"]),
+      label: (
+        <Label
+          backgroundColor="bg-semantic-green-background"
+          textColor="text-semantic-green-text"
+        >
+          {translateText(["priorityOptions", "low"])}
+        </Label>
+      ),
       value: "LOW"
     }
   ];
@@ -49,17 +68,13 @@ const AddTaskModal: React.FC = () => {
     setIsAddTaskModalOpen: store.setIsAddTaskModalOpen
   }));
 
-  // TODO: Import task API hooks once available
-  // import { useCreateNewTask } from "~community/crm/api/TaskApi";
-
-  // const { data: taskTypes } = useGetTaskTypes();
   const taskTypeOptions: { id: string; label: string; value: string }[] = [];
 
   const initialValues: CrmTaskAddFormTypes = {
     name: "",
     type: null,
     dueDate: null,
-    priority: null,
+    priority: PRIORITY_OPTIONS[1].value,
     contactName: "",
     deal: "",
     owner: null,
@@ -90,19 +105,10 @@ const AddTaskModal: React.FC = () => {
     setIsAddTaskModalOpen(false);
   };
 
-  // TODO: Uncomment when API hook is available
-  // const { mutate: createNewTask, isPending } = useCreateNewTask(
-  //   handleSuccess,
-  //   handleError
-  // );
-
   const createTask = (values: CrmTaskAddFormTypes) => {
     // TODO: Build payload and call API
-    // const payload: CrmTaskCreatePayload = { ... };
-    // createNewTask(payload);
-    void values;
-    void handleSuccess;
-    void handleError;
+    handleSuccess();
+    handleError();
   };
 
   const formik = useFormik({
@@ -158,7 +164,7 @@ const AddTaskModal: React.FC = () => {
         }
         popoverPosition="bottom-right"
       >
-        <div className="w-full">
+        <div>
           <InputField
             name="dueDate"
             value={
@@ -191,47 +197,73 @@ const AddTaskModal: React.FC = () => {
         className="rounded-[0.5rem]"
       />
 
-      <InputField
-        name="contactName"
-        value={values.contactName}
-        errorMessage={errors.contactName}
-        state={errors.contactName ? "error" : "default"}
-        label={translateText(["labels", "contactName"])}
-        placeholder={translateText(["placeholders", "contactName"])}
-        onChange={handleChange}
-        aria-label={translateText(["ariaLabels", "contactName"])}
-        rightIcon={<SearchIcon />}
-        fullWidth
-      />
+      <div className="flex flex-col w-full gap-1">
+        <label className="subtitle1 leading-normal text-black">
+          {translateText(["labels", "contactName"])}
+        </label>
+        <SearchInputField
+          inputId="contact"
+          searchText={values.contactName}
+          onSearchTextChange={(val) => setFieldValue("contactName", val)}
+          filteredResults={["John Doe", "Jane Smith"]}
+          onItemSelect={(item) => setFieldValue("contactName", item || "")}
+          selectedItemText={values.contactName}
+          renderItem={(item: string) => (
+            <div>
+              <AvatarChip label={item} />
+            </div>
+          )}
+          placeholder={translateText(["placeholders", "contactName"])}
+        />
+        {errors.contactName && (
+          <div className="text-xs text-red-500 mt-1">{errors.contactName}</div>
+        )}
+      </div>
 
-      <InputField
-        name="deal"
-        value={values.deal}
-        errorMessage={errors.deal}
-        state={errors.deal ? "error" : "default"}
-        label={translateText(["labels", "deal"])}
-        placeholder={translateText(["placeholders", "deal"])}
-        onChange={handleChange}
-        aria-label={translateText(["ariaLabels", "deal"])}
-        rightIcon={<SearchIcon />}
-        fullWidth
-      />
+      <div className="flex flex-col w-full gap-1">
+        <label className="subtitle1 leading-normal text-black">
+          {translateText(["labels", "deal"])}
+        </label>
+        <SearchInputField
+          inputId="deal"
+          searchText={values.deal}
+          onSearchTextChange={(val) => setFieldValue("deal", val)}
+          filteredResults={["John Doe", "Jane Smith"]}
+          onItemSelect={(item) => setFieldValue("deal", item || "")}
+          selectedItemText={values.deal}
+          renderItem={(item: string) => (
+            <div>
+              <AvatarChip label={item} />
+            </div>
+          )}
+          placeholder={translateText(["placeholders", "deal"])}
+        />
+        {errors.deal && (
+          <div className="text-xs text-red-500 mt-1">{errors.deal}</div>
+        )}
+      </div>
 
-      <InputField
-        label={translateText(["labels", "taskOwner"])}
-        name="owner"
-        value={values.owner ?? ""}
-        placeholder={
-          values.owner ? "" : translateText(["placeholders", "taskOwner"])
-        }
-        onChange={handleChange}
-        aria-label={translateText(["ariaLabels", "taskOwner"])}
-        fullWidth
-      />
+      <div className="flex flex-col w-full gap-1">
+        <label className="subtitle1 leading-normal text-black">
+          {translateText(["labels", "taskOwner"])}
+        </label>
+        <div className="h-12 rounded-lg bg-gray-100 flex items-center px-3">
+          <AvatarChip
+            label={"Jane Doe"}
+            avatarProps={{
+              id : "owner-avatar",
+              firstName: "Jane",
+              lastName: "Doe",
+              size: "sm"
+            }}
+          />
+        </div>
+      </div>
 
       <TextArea
         name="notes"
         value={values.notes}
+        placeholder={translateText(["placeholders", "notes"])}
         label={translateText(["labels", "notes"])}
         onChange={handleChange}
         aria-label={translateText(["ariaLabels", "notes"])}
