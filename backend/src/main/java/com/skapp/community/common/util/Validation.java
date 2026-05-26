@@ -25,7 +25,7 @@ public class Validation {
 
 	public static final String NUMERIC_REGEX = "^[0-9]*$";
 
-	public static final String EMAIL_REGEX = "^[a-zA-Z0-9_%+-]+(\\.[a-zA-Z0-9_%+-]+)*@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+$";
+	public static final String EMAIL_REGEX = "^(([^<>()[\\]\\\\.,;:\\s@\"`~!$%^&*=}'?#]+(\\.[^<>()[\\]\\\\.,;:\\s@\"`~!$%^&*=}'?#]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}))$";
 
 	public static final String ADDRESS_REGEX = "^[\\p{L}\\p{M}\\s\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF"
 			+ "\\u0100-\\u017F\\u010C\\u010D\\u0106\\u0107\\u0160\\u0161"
