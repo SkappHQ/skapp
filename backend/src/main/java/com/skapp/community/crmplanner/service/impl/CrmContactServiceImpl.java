@@ -95,6 +95,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmValidations.validateContactEmail(requestDto.getEmail());
 		CrmValidations.validateContactNumber(requestDto.getContactNumber());
 		CrmValidations.validateOwnerId(requestDto.getOwnerId());
+		CrmValidations.validateCompanyId(requestDto.getCompanyId());
 
 		String normalizedEmail = requestDto.getEmail().trim().toLowerCase(Locale.ROOT);
 		if (!normalizedEmail.equals(contact.getEmail())
@@ -102,11 +103,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
 
-		if (requestDto.getCompanyId() != null) {
-			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-			contact.setCompany(company);
-		}
+		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
+		contact.setCompany(company);
 
 		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
 
