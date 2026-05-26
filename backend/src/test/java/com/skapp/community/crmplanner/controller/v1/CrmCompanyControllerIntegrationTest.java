@@ -1,12 +1,23 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.support.SecurityTestUtils;
+
+import static org.junit.Assert.assertTrue;
+
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -58,6 +69,14 @@ class CrmCompanyControllerIntegrationTest {
 	private final MessageUtil messageUtil;
 
 	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmDealDao crmDealDao;
+
+	private final CrmDealStageDao crmDealStageDao;
+
+	private final CrmContactDao crmContactDao;
+
+	private final EmployeeDao employeeDao;
 
 	private String authToken;
 
@@ -195,10 +214,50 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_ALREADY_DELETED)));
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 
 		// cleanup for future tests
 		crmCompanyDao.deleteById(companyId);
+	}
+
+	@Test
+	@DisplayName("Delete company with associated deals - Soft deletes all linked deals")
+	void deleteCompany_WithAssociatedDeals_SoftDeletesDeals() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmDealStage stage = new CrmDealStage();
+		stage.setName("Test Stage");
+		stage.setColor("#123456");
+		stage.setOrderIndex(1);
+		stage.setStageType(CrmDealStageType.OPEN);
+		crmDealStageDao.save(stage);
+
+		CrmContact contact = new CrmContact();
+		contact.setName("Test Contact");
+		contact.setEmail("deal.test@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(contact);
+
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Test Deal");
+		deal.setStage(stage);
+		deal.setCompany(crmCompanyDao.getReferenceById(companyId));
+		deal.setContact(contact);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		Long dealId = crmDealDao.save(deal).getId();
+
+		performDeleteRequest(companyId).andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED)));
+
+		CrmDeal deletedDeal = crmDealDao.findById(dealId).orElseThrow();
+		assertTrue(deletedDeal.getIsDeleted());
 	}
 
 	@Test
@@ -207,16 +266,6 @@ class CrmCompanyControllerIntegrationTest {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performDeleteRequest(1L).andDo(print()).andExpect(status().isForbidden());
-	}
-
-	@Test
-	@DisplayName("Delete non existent company - Returns Bad Request")
-	void deleteCompany_NotFound_ReturnsBadRequest() throws Exception {
-		performDeleteRequest(Long.MAX_VALUE).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 	}
 
 }

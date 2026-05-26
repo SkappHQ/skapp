@@ -18,7 +18,9 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseD
 import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
@@ -34,6 +36,8 @@ import java.util.List;
 public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmDealDao crmDealDao;
 
 	private final CrmMapper crmCompanyMapper;
 
@@ -125,11 +129,13 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		CrmValidations.validateCompanyId(id);
 
-		CrmCompany company = crmCompanyDao.findById(id)
+		CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 
-		if (Boolean.TRUE.equals(company.getIsDeleted())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_ALREADY_DELETED);
+		List<CrmDeal> deals = crmDealDao.findAllByCompanyIdAndIsDeletedFalse(id);
+		if (!deals.isEmpty()) {
+			deals.forEach(deal -> deal.setIsDeleted(true));
+			crmDealDao.saveAll(deals);
 		}
 		company.setIsDeleted(true);
 		crmCompanyDao.save(company);
