@@ -137,7 +137,7 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      className: "text-right pr-10.5",
+      className: "text-right pr-[2.625rem]",
       width: "10%"
     },
     {
