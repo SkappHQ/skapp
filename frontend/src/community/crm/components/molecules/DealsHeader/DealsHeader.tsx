@@ -35,7 +35,10 @@ const DealsHeader: FC<Props> = ({ inputValue, onSearchChange, onAddDeal }) => {
         type="search"
         variant="md"
         rightIcon={<SearchIcon />}
-        ariaLabelClearButton={translateText(["dealsTable", "clearSearchAriaLabel"])}
+        ariaLabelClearButton={translateText([
+          "dealsTable",
+          "clearSearchAriaLabel"
+        ])}
         customStyles={{
           borderRadius: "rounded-full",
           padding: "px-6",

@@ -1,22 +1,14 @@
 ﻿import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  useGetDealsInfinite
-} from "~community/crm/api/crmDealApi";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import { CrmDealSortEnum } from "~community/crm/enums/common";
+import { useGetDealsInfinite } from "~community/crm/api/crmDealApi";
 import DealsHeader from "~community/crm/components/molecules/DealsHeader/DealsHeader";
 import DealsTable from "~community/crm/components/organisms/DealsTable/DealsTable";
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const PAGE_SIZE = 15;
-
-// ---------------------------------------------------------------------------
-// DealsSection — coordinator: owns search state and all API handling
-// ---------------------------------------------------------------------------
+import {
+  DEAL_PAGE_SIZE,
+  DEAL_SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/dealConstants";
+import { CrmDealSortEnum } from "~community/crm/enums/common";
 
 const DealsSection: FC = () => {
   const [inputValue, setInputValue] = useState("");
@@ -34,21 +26,16 @@ const DealsSection: FC = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setSearchKeyword(value);
-    }, 300);
+    }, DEAL_SEARCH_DEBOUNCE_DELAY);
   };
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading
-  } = useGetDealsInfinite({
-    size: PAGE_SIZE,
-    sortKey: CrmDealSortEnum.STAGE_ORDER,
-    sortOrder: SortOrderTypes.ASC,
-    searchKeyword: searchKeyword || undefined
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useGetDealsInfinite({
+      size: DEAL_PAGE_SIZE,
+      sortKey: CrmDealSortEnum.STAGE_ORDER,
+      sortOrder: SortOrderTypes.ASC,
+      searchKeyword: searchKeyword || undefined
+    });
 
   const allDeals = useMemo(
     () => data?.pages.flatMap((p) => p.items) ?? [],
@@ -79,4 +66,3 @@ const DealsSection: FC = () => {
 };
 
 export default DealsSection;
-

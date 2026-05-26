@@ -49,7 +49,9 @@ const DealsTable: FC<Props> = ({
   const noSearchResultsTitle = useMemo(
     () =>
       searchKeyword
-        ? translateText(["noSearchResultsTitle"], { searchKeyword: `'${searchKeyword}'` })
+        ? translateText(["noSearchResultsTitle"], {
+            searchKeyword: `'${searchKeyword}'`
+          })
         : translateText(["noSearchResultsTitle"]),
     [translateText, searchKeyword]
   );
@@ -58,128 +60,133 @@ const DealsTable: FC<Props> = ({
   // Columns
   // -------------------------------------------------------------------------
 
-  const columnHeaders = useMemo((): Column<DealRow>[] => [
-    {
-      id: "dealName",
-      title: translateText(["dealColumn"]),
-      field: "dealName",
-      width: 300,
-      minWidth: 160,
-      resizable: false,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "value",
-      title: translateText(["valueColumn"]),
-      field: "value",
-      width: 160,
-      minWidth: 90,
-      resizable: false,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "stage",
-      title: translateText(["stageColumn"]),
-      field: "stage",
-      width: 160,
-      minWidth: 100,
-      resizable: false,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "companyName",
-      title: translateText(["companyNameColumn"]),
-      field: "companyName",
-      width: 200,
-      minWidth: 120,
-      resizable: false,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "contactName",
-      title: translateText(["contactNameColumn"]),
-      field: "contactName",
-      width: 200,
-      minWidth: 120,
-      resizable: false,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "dealOwner",
-      title: translateText(["dealOwnerColumn"]),
-      field: "dealOwner",
-      width: 200,
-      minWidth: 120,
-      resizable: false,
-      draggable: false,
-      visible: true,
-      sortable: false
-    }
-  ], [translateText]);
+  const columnHeaders = useMemo(
+    (): Column<DealRow>[] => [
+      {
+        id: "dealName",
+        title: translateText(["dealColumn"]),
+        field: "dealName",
+        width: 300,
+        minWidth: 160,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "value",
+        title: translateText(["valueColumn"]),
+        field: "value",
+        width: 160,
+        minWidth: 90,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "stage",
+        title: translateText(["stageColumn"]),
+        field: "stage",
+        width: 160,
+        minWidth: 100,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "companyName",
+        title: translateText(["companyNameColumn"]),
+        field: "companyName",
+        width: 200,
+        minWidth: 120,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "contactName",
+        title: translateText(["contactNameColumn"]),
+        field: "contactName",
+        width: 200,
+        minWidth: 120,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "dealOwner",
+        title: translateText(["dealOwnerColumn"]),
+        field: "dealOwner",
+        width: 200,
+        minWidth: 120,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      }
+    ],
+    [translateText]
+  );
 
   // -------------------------------------------------------------------------
   // Rows
   // -------------------------------------------------------------------------
 
-  const tableRows = useMemo((): DealRow[] =>
-    allDeals.map((deal: CrmDealListItemType) => {
-      const stageColor = deal.stageColor;
-      const [ownerFirst = "", ...rest] = deal.ownerName.split(" ");
-      const ownerLast = rest.join(" ");
-      const parsedAmount = deal.amount !== null ? Number(deal.amount) : NaN;
+  const tableRows = useMemo(
+    (): DealRow[] =>
+      allDeals.map((deal: CrmDealListItemType) => {
+        const stageColor = deal.stageColor;
+        const [ownerFirst = "", ...rest] = deal.ownerName.split(" ");
+        const ownerLast = rest.join(" ");
+        const parsedAmount = deal.amount !== null ? Number(deal.amount) : NaN;
 
-      return {
-        id: String(deal.id),
-        dealName: <span className="body2">{deal.name}</span>,
-        value: (
-          <span className="body2 w-full block text-right">
-            {Number.isFinite(parsedAmount) && parsedAmount > 0
-              ? `$${parsedAmount.toLocaleString()}`
-              : "-"}
-          </span>
-        ),
-        stage: (
-          <div className="inline-flex items-center gap-2">
-            <div
-              className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: stageColor }}
+        return {
+          id: String(deal.id),
+          dealName: <span className="body2">{deal.name}</span>,
+          value: (
+            <span className="body2 w-full block text-right">
+              {Number.isFinite(parsedAmount) && parsedAmount > 0
+                ? `$${parsedAmount.toLocaleString()}`
+                : "-"}
+            </span>
+          ),
+          stage: (
+            <div className="inline-flex items-center gap-2">
+              <div
+                className="size-2 rounded-full shrink-0"
+                style={{ backgroundColor: stageColor }}
+              />
+              <span className="body2">{deal.stageName}</span>
+            </div>
+          ),
+          companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
+          contactName: <span className="body2">{deal.contactName}</span>,
+          dealOwner: (
+            <AvatarChip
+              avatarProps={{
+                id: String(deal.ownerId),
+                firstName: ownerFirst,
+                lastName: ownerLast,
+                src: undefined,
+                size: "sm"
+              }}
+              label={deal.ownerName}
+              backgroundColor="bg-secondary-background"
             />
-            <span className="body2">{deal.stageName}</span>
-          </div>
-        ),
-        companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
-        contactName: <span className="body2">{deal.contactName}</span>,
-        dealOwner: (
-          <AvatarChip
-            avatarProps={{
-              id: String(deal.ownerId),
-              firstName: ownerFirst,
-              lastName: ownerLast,
-              src: undefined,
-              size: "sm"
-            }}
-            label={deal.ownerName}
-            backgroundColor="bg-secondary-background"
-          />
-        )
-      };
-    }),
+          )
+        };
+      }),
     [allDeals]
   );
 
-  const tableData = useMemo((): GroupData<DealRow>[] => [
-    { items: tableRows }
-  ], [tableRows]);
+  const tableData = useMemo(
+    (): GroupData<DealRow>[] => [{ items: tableRows }],
+    [tableRows]
+  );
 
   // -------------------------------------------------------------------------
   // Render
@@ -211,7 +218,9 @@ const DealsTable: FC<Props> = ({
           showKebabMenu={false}
           showColumnVisibilityToggle={false}
           disableColumnDragging
-          infiniteScrollLoadingMessage={translateText(["infiniteScrollLoadingMessage"])}
+          infiniteScrollLoadingMessage={translateText([
+            "infiniteScrollLoadingMessage"
+          ])}
         />
       )}
     </div>
