@@ -33,7 +33,6 @@ import i18n from "~i18n";
 
 import "../styles/global.css";
 import Error from "./_error";
-import AppSidePanel from "../src/components/organisms/SidePanel/AppSidePanel";
 
 // Initialize the font
 const inter = Inter({
@@ -136,7 +135,6 @@ function MyApp({
                       <BaseLayout>
                         <Component {...pageProps} />
                       </BaseLayout>
-                      <AppSidePanel />
                     </ErrorBoundary>
                     <ReactQueryDevtools
                       initialIsOpen={false}
@@ -158,7 +156,6 @@ function MyApp({
                       <BaseLayout>
                         <Component {...pageProps} />
                       </BaseLayout>
-                      <AppSidePanel />
                     </ErrorBoundary>
                     <AnnouncementWrapper />
                   </AnnouncementProvider>

@@ -3,16 +3,6 @@
 @source "../node_modules/@rootcodelabs/skapp-ui/dist/esm/index.esm.js";
 @import "tailwindcss";
 
-/* SidePanel from @rootcodelabs/skapp-ui renders via ReactDOM.createPortal to
-   document.body, so ancestor-scoped selectors have no effect. These rules must
-   be global. They are intentionally specific to the skapp-ui aside/backdrop shape. */
-aside.fixed[role="dialog"] {
-  z-index: 1202 !important;
-}
-div.fixed.inset-0[aria-hidden="true"] {
-  z-index: 1201 !important;
-}
-
 @theme {
   --color-primary: #93c5fd;
   --color-primary-accent: #408ce4;

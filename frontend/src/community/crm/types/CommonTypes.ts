@@ -110,18 +110,6 @@ export interface CrmTaskCategory {
   orderIndex: number;
 }
 
-export interface CrmDealCreateRequestType {
-  name: string;
-  stageId: number;
-  contactId: number;
-  ownerId: number;
-  priority?: string;
-  closingAt?: string;
-  amount?: string;
-  companyId?: number;
-  description?: string;
-}
-
 export interface CrmDealListItemType {
   id: number;
   name: string;
