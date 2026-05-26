@@ -33,6 +33,6 @@ export const EVENTS_TO_IDENTIFY_IDLE_USER = [
 export const MODAL_HEADER_ICON_GAP = "3.5rem";
 export const DEFAULT_SCROLL_AMOUNT_PX = 100;
 
-export const I18N_LANGUAGE_COOKIE_NAME = "locale";
+export const I18N_LANGUAGE_COOKIE_NAME = "i18nextLng";
 
 export const SUPPORTED_LANGUAGES = ["en"];
