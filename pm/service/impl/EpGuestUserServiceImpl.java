@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -652,6 +653,10 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	}
 
 	private GuestInvitationValidationStatus resolveValidationStatus(String email) {
+		if (!Pattern.compile(Validation.EMAIL_REGEX).matcher(email).matches()) {
+			return GuestInvitationValidationStatus.INVALID_EMAIL;
+		}
+
 		Optional<User> existingUserOpt = userDao.findByEmail(email);
 
 		if (existingUserOpt.isPresent()) {
