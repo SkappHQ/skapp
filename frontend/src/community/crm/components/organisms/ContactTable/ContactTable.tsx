@@ -19,9 +19,9 @@ import {
 } from "~community/crm/api/CrmContactsApi";
 import {
   ALL_COMPANIES,
-  COMPANY_FILTER_PAGE_SIZE,
-  COMPANY_NAME_DEBOUNCE_DELAY,
-  DEFAULT_PAGE_SIZE
+  DEFAULT_PAGE_SIZE,
+  CONTACT_FILTER_PAGE_SIZE,
+  CONTACT_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/contactConstants";
 import {
   CompanyLookup,
@@ -39,7 +39,7 @@ export const ContactTable: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCompany, setSelectedCompany] = useState<string>(ALL_COMPANIES);
-  const debouncedSearch = useDebounce(searchTerm, COMPANY_NAME_DEBOUNCE_DELAY);
+  const debouncedSearch = useDebounce(searchTerm, CONTACT_SEARCH_DEBOUNCE_DELAY);
 
   const companyId =
     selectedCompany === ALL_COMPANIES ? undefined : Number(selectedCompany);
