@@ -4,6 +4,10 @@
     "title": "Contacts",
     "addContactBtn": "Add Contact",
     "detailsPageHead": "Contact Details | Skapp",
+    "detailsTitle": "Contact Details",
+    "contactDetailsPanel": {
+      "lastUpdated": "Last updated"
+    },
     "table": {
       "clearButtonAriaLabel": "Clear search",
       "search": "Search contact",
