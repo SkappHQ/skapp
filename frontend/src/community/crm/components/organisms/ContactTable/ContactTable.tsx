@@ -16,7 +16,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetContactMetrics,
   useGetCrmCompanies
-} from "~community/crm/api/ContactsApi";
+} from "~community/crm/api/ContactApi";
 import {
   ALL_COMPANIES,
   DEFAULT_PAGE_SIZE,
@@ -82,7 +82,7 @@ export const ContactTable: React.FC = () => {
 
     const handleMenuScroll = (event: Event) => {
       const target = event.target as HTMLElement | null;
-      if (!target || target.id !== COMPANY_FILTER_MENU_ID) return;
+      if (target?.id !== COMPANY_FILTER_MENU_ID) return;
       maybeFetchNext(target);
     };
 

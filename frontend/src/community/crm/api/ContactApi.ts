@@ -26,7 +26,7 @@ const fetchContactMetrics = async ({
       page,
       size,
       ...(searchKeyword ? { searchKeyword } : {}),
-      ...(companyId !== undefined ? { companyId } : {})
+      ...(companyId === undefined ? {} : { companyId })
     }
   });
   return response?.data?.results?.[0];

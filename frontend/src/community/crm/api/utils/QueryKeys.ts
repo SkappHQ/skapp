@@ -7,7 +7,7 @@ export const contactQueryKeys = {
     "crm-contacts",
     searchKeyword,
     limit,
-    ...(companyId !== undefined ? [companyId] : [])
+    ...(companyId === undefined ? [] : [companyId])
   ],
   CRM_COMPANIES: (size: number, searchKeyword?: string) => [
     "crm-companies",
