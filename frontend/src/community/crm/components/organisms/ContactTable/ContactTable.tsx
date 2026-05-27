@@ -16,7 +16,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetContactMetrics,
   useGetCrmCompanies
-} from "~community/crm/api/CrmContactsApi";
+} from "~community/crm/api/ContactsApi";
 import {
   ALL_COMPANIES,
   DEFAULT_PAGE_SIZE,
