@@ -11,10 +11,6 @@ import { I18nextProvider, useSSR } from "react-i18next";
 import { AuthProvider } from "~community/auth/providers/AuthProvider";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
-import {
-  I18N_LANGUAGE_COOKIE_NAME,
-  SUPPORTED_LANGUAGES
-} from "~community/common/constants/commonConstants";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import TanStackProvider from "~community/common/providers/TanStackProvider";
@@ -56,15 +52,7 @@ function MyApp({
   const effectiveLanguage =
     globalThis.window === undefined ? initialLanguage : i18n.language;
   useSSR(initialI18nStore, effectiveLanguage);
-  useEffect(() => {
-    const lang = getCookieValue(I18N_LANGUAGE_COOKIE_NAME);
-    if (lang && SUPPORTED_LANGUAGES.includes(lang) && lang !== i18n.language) {
-      i18n.changeLanguage(lang).catch((error) => {
-        console.error("[i18n] Failed to change language:", error);
-        i18n.changeLanguage(i18n.options.fallbackLng as string);
-      });
-    }
-  }, []);
+
   const router = useRouter();
 
   useEffect(() => {

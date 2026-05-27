@@ -1,8 +1,5 @@
 import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
-import {
-  I18N_LANGUAGE_COOKIE_NAME,
-  SUPPORTED_LANGUAGES
-} from "~community/common/constants/commonConstants";
+import { SUPPORTED_LANGUAGES } from "~community/common/constants/commonConstants";
 import { unitConversion } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import {
