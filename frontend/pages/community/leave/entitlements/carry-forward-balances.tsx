@@ -159,7 +159,7 @@ const CarryForwardBalances: NextPage = () => {
     <>
       <ContentLayout
         breadcrumbs={[
-          { label: translateBreadcrumbs(["dashboard.dashboard.leave"]) },
+          { label: translateBreadcrumbs(["analytics.stepLeave"]) },
           {
             label: translateBreadcrumbs(["leaveEntitlements.title"]),
             href: ROUTES.LEAVE.LEAVE_ENTITLEMENTS
