@@ -1,5 +1,9 @@
 import { Box, Stack, Theme, Typography, useTheme } from "@mui/material";
 import {
+  FilterIcon,
+  IconButton as FilterIconButton
+} from "@rootcodelabs/skapp-ui";
+import {
   ChangeEvent,
   FC,
   MouseEvent,
@@ -8,9 +12,7 @@ import {
   useState
 } from "react";
 
-import FilterIcon from "~community/common/assets/Icons/FilterIcon";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
@@ -39,11 +41,9 @@ import {
 } from "~community/leave/utils/LeaveAnalyticsUtils";
 import { getLeaveRequestStatus } from "~community/leave/utils/LeavePreprocessors";
 import {
-  removeFiltersByLabel,
   requestTypeSelector,
   requestedLeaveTypesPreProcessor
 } from "~community/leave/utils/LeaveRequestFilterActions";
-import ShowSelectedFilters from "~community/people/components/molecules/ShowSelectedFilters/ShowSelectedFilters";
 import useTier from "~enterprise/common/hooks/useTier";
 import leaveHistoryMockData from "~enterprise/leave/data/leaveHistoryMockData.json";
 
@@ -76,15 +76,11 @@ const UserLeaveHistory: FC<Props> = ({
     resetLeaveRequestParams,
     leaveRequestsFilter,
     leaveRequestFilterOrder,
-    setLeaveRequestFilterOrder,
-    setLeaveRequestsFilter,
     setLeaveRequestParams
   } = useLeaveStore((state) => ({
     resetLeaveRequestParams: state.resetLeaveRequestParams,
     leaveRequestsFilter: state.leaveRequestsFilter,
     leaveRequestFilterOrder: state.leaveRequestFilterOrder,
-    setLeaveRequestFilterOrder: state.setLeaveRequestFilterOrder,
-    setLeaveRequestsFilter: state.setLeaveRequestsFilter,
     setLeaveRequestParams: state.setLeaveRequestParams
   }));
 
@@ -400,19 +396,6 @@ const UserLeaveHistory: FC<Props> = ({
     );
   };
 
-  const removeFilters = (label?: string) => {
-    removeFiltersByLabel(
-      leaveRequestsFilter,
-      setLeaveRequestFilterOrder,
-      setLeaveRequestsFilter,
-      setLeaveRequestParams,
-      leaveTypeButtons,
-      filterArray,
-      setFilterArray,
-      label
-    );
-  };
-
   const handleFilterClick = (event: MouseEvent<HTMLElement>): void => {
     setFilterEl(event.currentTarget);
     setFilterOpen((previousOpen) => !previousOpen);
@@ -457,30 +440,25 @@ const UserLeaveHistory: FC<Props> = ({
   };
 
   const renderFilterBy = () => {
+    const filterCount = leaveRequestFilterOrder.length;
+    const hasFilters = filterCount > 0;
+
     return (
       <Box>
         <Stack direction="row" alignItems="center" gap={0.5}>
-          {filterArray.length > 0 && <Typography>Filter :</Typography>}
-          <ShowSelectedFilters
-            filterOptions={leaveRequestFilterOrder}
-            onDeleteIcon={removeFilters}
-          />
-          <IconButton
-            icon={<FilterIcon />}
+          <FilterIconButton
+            icon={
+              <FilterIcon
+                color={hasFilters ? "var(--color-primary-accent)" : undefined}
+              />
+            }
             tabIndex={getTabIndex(isFreeTier)}
             onClick={handleFilterClick}
-            buttonStyles={{
-              border: "0.0625rem solid",
-              borderColor: "grey.500",
-              bgcolor: theme.palette.grey[100],
-              p: "0.625rem 1.25rem",
-              transition: "0.2s ease",
-              "&:hover": {
-                boxShadow: `inset 0 0 0 0.125rem ${theme.palette.grey[500]}`
-              }
-            }}
+            aria-label={translateAria(["leaveHistoryFilterButton"])}
             aria-describedby={filterId}
-            ariaLabel={translateAria(["leaveHistoryFilterButton"])}
+            variant={hasFilters ? "outlined" : "default"}
+            isRounded={true}
+            badge={hasFilters ? { count: filterCount, show: true } : undefined}
           />
         </Stack>
         <LeaveRequestMenu

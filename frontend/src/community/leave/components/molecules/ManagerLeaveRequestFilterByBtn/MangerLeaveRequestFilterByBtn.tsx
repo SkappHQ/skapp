@@ -1,14 +1,11 @@
-import { Stack, Theme, Typography, useTheme } from "@mui/material";
+import { FilterIcon, IconButton } from "@rootcodelabs/skapp-ui";
 import { MouseEvent, useState } from "react";
 
-import FilterIcon from "~community/common/assets/Icons/FilterIcon";
-import IconButton from "~community/common/components/atoms/IconButton/IconButton";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import LeaveRequestMenu from "~community/leave/components/molecules/LeaveRequestMenu/LeaveRequestMenu";
 import { useLeaveStore } from "~community/leave/store/store";
-import ShowSelectedFilters from "~community/people/components/molecules/ShowSelectedFilters/ShowSelectedFilters";
 
 interface Props {
   leaveTypeButtons: FilterButtonTypes[];
@@ -21,8 +18,6 @@ const ManagerLeaveRequestFilterByBtn = ({
   onClickReset,
   removeFilters
 }: Props) => {
-  const theme: Theme = useTheme();
-
   const translateAria = useTranslator("commonAria", "components");
 
   const { leaveRequestFilterOrder } = useLeaveStore((state) => ({
@@ -34,6 +29,9 @@ const ManagerLeaveRequestFilterByBtn = ({
 
   const filterBeOpen: boolean = filterOpen && Boolean(filterEl);
   const filterId = filterBeOpen ? "filter-popper" : undefined;
+
+  const filterCount = leaveRequestFilterOrder.length;
+  const hasFilters = filterCount > 0;
 
   const handleFilterClick = (event: MouseEvent<HTMLElement>): void => {
     setFilterEl(event.currentTarget);
@@ -47,38 +45,22 @@ const ManagerLeaveRequestFilterByBtn = ({
 
   return (
     <>
-      {" "}
-      <Stack direction="row" alignItems="center" gap={0.5}>
-        {leaveRequestFilterOrder.length > 0 && (
-          <Typography sx={{ whiteSpace: "nowrap" }}>Filter:</Typography>
-        )}
-        <ShowSelectedFilters
-          filterOptions={leaveRequestFilterOrder}
-          onDeleteIcon={removeFilters}
-        />
+      <div className="flex flex-row items-center gap-1">
         <IconButton
           id="filter-icon-btn"
-          icon={<FilterIcon />}
+          icon={
+            <FilterIcon
+              color={hasFilters ? "var(--color-primary-accent)" : undefined}
+            />
+          }
           onClick={handleFilterClick}
-          ariaLabel={translateAria(["filterBtn"])}
-          title={translateAria(["filterBtn"])}
-          buttonStyles={{
-            border: "0.0625rem solid",
-            borderColor: "grey.500",
-            bgcolor: theme.palette.grey[100],
-            p: "0.625rem 1.25rem",
-            transition: "0.2s ease",
-            "&:hover": {
-              boxShadow: `inset 0 0 0 0.125rem ${theme.palette.grey[500]}`
-            }
-          }}
+          aria-label={translateAria(["filterBtn"])}
           aria-describedby={filterId}
-          dataProps={{
-            "aria-label":
-              "Filter: Pressing enter on this button opens a menu where you can choose to filter by leave status, leave type and date."
-          }}
+          variant={hasFilters ? "outlined" : "default"}
+          isRounded={true}
+          badge={hasFilters ? { count: filterCount, show: true } : undefined}
         />
-      </Stack>
+      </div>
       <LeaveRequestMenu
         anchorEl={filterEl}
         handleClose={handleFilterClose}
