@@ -267,12 +267,13 @@ export interface TeamSupervisorTransfer {
   newTeamSupervisorId: number;
 }
 
-export interface TransferSupervisorsPayload {
+export interface ReassignSupervisorsAndTerminateOrDeleteEmployeePayload {
   primarySupervisors: PrimarySupervisorTransfer[];
   teamSupervisors: TeamSupervisorTransfer[];
+  action: SupervisorReassignmentActionType;
 }
 
 export enum SupervisorReassignmentActionType {
-  TERMINATE = "TERMINATE",
-  DELETE = "DELETE"
+  TERMINATE = "TERMINATED",
+  DELETE = "DELETED"
 }
