@@ -9,12 +9,8 @@ import {
 import { FC, ReactNode, useMemo } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { DEAL_DEFAULT_CURRENCY } from "~community/crm/constants/dealConstants";
+import { formatDealAmount } from "~community/crm/utils/dealUtils";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 interface DealRow extends BaseRowData {
   id: string;
@@ -34,10 +30,6 @@ interface Props {
   onLoadMore: () => Promise<void>;
 }
 
-// ---------------------------------------------------------------------------
-// DealsTable
-// ---------------------------------------------------------------------------
-
 const DealsTable: FC<Props> = ({
   searchKeyword,
   isLoading,
@@ -50,10 +42,6 @@ const DealsTable: FC<Props> = ({
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
   });
-
-  // -------------------------------------------------------------------------
-  // Columns
-  // -------------------------------------------------------------------------
 
   const columnHeaders: Column<DealRow>[] = [
     {
@@ -124,23 +112,12 @@ const DealsTable: FC<Props> = ({
     }
   ];
 
-  // -------------------------------------------------------------------------
-  // Rows
-  // -------------------------------------------------------------------------
-
   const tableRows = useMemo(
     (): DealRow[] =>
       allDeals.map((deal: CrmDealListItemType) => {
         const [ownerFirst = "", ...rest] = deal.ownerName.split(" ");
         const ownerLast = rest.join(" ");
-        const parsedAmount = Number(deal.amount);
-        const formattedAmount =
-          Number.isFinite(parsedAmount) && parsedAmount >= 0
-            ? new Intl.NumberFormat(undefined, {
-                style: "currency",
-                currency: DEAL_DEFAULT_CURRENCY
-              }).format(parsedAmount)
-            : "-";
+        const formattedAmount = formatDealAmount(deal.amount);
 
         return {
           id: String(deal.id),
@@ -160,9 +137,7 @@ const DealsTable: FC<Props> = ({
             </div>
           ),
           companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
-          contactName: (
-            <span className="body2">{deal.contactName ?? "-"}</span>
-          ),
+          contactName: <span className="body2">{deal.contactName ?? "-"}</span>,
           dealOwner: (
             <AvatarChip
               avatarProps={{
@@ -186,10 +161,6 @@ const DealsTable: FC<Props> = ({
     [tableRows]
   );
 
-  // -------------------------------------------------------------------------
-  // Render
-  // -------------------------------------------------------------------------
-
   if (isLoading) {
     return (
       <div className="w-full h-[34.5rem] flex rounded-lg shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] overflow-hidden">
@@ -206,9 +177,7 @@ const DealsTable: FC<Props> = ({
         hasMore={hasNextPage}
         onLoadMore={onLoadMore}
         emptyStateTitle={
-          searchKeyword
-            ? noSearchResultsTitle
-            : translateText(["noDealsTitle"])
+          searchKeyword ? noSearchResultsTitle : translateText(["noDealsTitle"])
         }
         emptyStateDescription={
           searchKeyword
