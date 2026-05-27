@@ -226,6 +226,28 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 	}
 
 	@Override
+	public boolean existsEmployeeInSupervisedTeam(Long employeeId, Long supervisorId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+
+		Root<EmployeeTeam> empTeam = criteriaQuery.from(EmployeeTeam.class);
+
+		Subquery<Long> supervisorTeams = criteriaQuery.subquery(Long.class);
+		Root<EmployeeTeam> supTeam = supervisorTeams.from(EmployeeTeam.class);
+		supervisorTeams.select(supTeam.get(EmployeeTeam_.team).get(Team_.teamId))
+			.where(criteriaBuilder.equal(supTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId), supervisorId),
+					criteriaBuilder.isTrue(supTeam.get(EmployeeTeam_.isSupervisor)),
+					criteriaBuilder.isTrue(supTeam.get(EmployeeTeam_.team).get(Team_.isActive)));
+
+		criteriaQuery.select(criteriaBuilder.literal(1L))
+			.where(criteriaBuilder.equal(empTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId), employeeId),
+					empTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(supervisorTeams));
+
+		List<Long> result = entityManager.createQuery(criteriaQuery).setMaxResults(1).getResultList();
+		return !result.isEmpty();
+	}
+
+	@Override
 	public List<Employee> getEmployeesByTeamIds(List<Long> teams, Long currentUserId, boolean isAdmin) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
@@ -235,7 +257,7 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		predicates.add(criteriaBuilder.isTrue(employeeRoot.get(Employee_.user).get(User_.isActive)));
 		predicates.add(criteriaBuilder.equal(employeeRoot.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
 
-		if (teams != null && !teams.isEmpty() && teams.contains(-1L)) {
+		if (teams == null || teams.isEmpty() || teams.contains(-1L)) {
 			if (isAdmin) {
 				Join<Employee, User> userJoin = employeeRoot.join(Employee_.user);
 				Predicate isActivePredicate = criteriaBuilder.isTrue(userJoin.get(User_.isActive));
@@ -259,7 +281,7 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 						employeeRoot.get(Employee_.employeeId).in(supervisedTeamsSubquery)));
 			}
 		}
-		else if (teams != null && !teams.isEmpty()) {
+		else {
 			Join<Employee, EmployeeTeam> employeeTeamJoin = employeeRoot.join(Employee_.employeeTeams, JoinType.LEFT);
 			Predicate teamPredicate = employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId).in(teams);
 			predicates.add(teamPredicate);

@@ -17,7 +17,9 @@ import com.skapp.community.peopleplanner.service.PeopleNotificationService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,17 +43,24 @@ public class PeopleNotificationServiceImpl implements PeopleNotificationService 
 	@NonNull
 	private final EmployeeRoleDao employeeRoleDao;
 
+	@Async
+	@Transactional(readOnly = true)
 	@Override
 	public void sendNewHolidayDeclarationNotification(Holiday holiday) {
-		PeopleEmailDynamicFields peopleEmailDynamicFields = new PeopleEmailDynamicFields();
-		peopleEmailDynamicFields.setOrganizationName(getOrganizationName());
-		peopleEmailDynamicFields.setHolidayDate(holiday.getDate().toString());
-		peopleEmailDynamicFields.setHolidayName(holiday.getName());
+		try {
+			PeopleEmailDynamicFields peopleEmailDynamicFields = new PeopleEmailDynamicFields();
+			peopleEmailDynamicFields.setOrganizationName(getOrganizationName());
+			peopleEmailDynamicFields.setHolidayDate(holiday.getDate().toString());
+			peopleEmailDynamicFields.setHolidayName(holiday.getName());
 
-		List<User> users = userDao.findAllByIsActiveTrue();
-		users.forEach(user -> notificationService.createNotification(user.getEmployee(), holiday.getId().toString(),
-				NotificationType.HOLIDAY, EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED,
-				peopleEmailDynamicFields, NotificationCategory.PEOPLE));
+			List<User> users = userDao.findAllByIsActiveTrue();
+			users.forEach(user -> notificationService.createNotification(user.getEmployee(), holiday.getId().toString(),
+					NotificationType.HOLIDAY, EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED,
+					peopleEmailDynamicFields, NotificationCategory.PEOPLE));
+		}
+		catch (Exception e) {
+			log.error("Error sending new holiday declaration notification for holiday: {}", holiday.getName(), e);
+		}
 	}
 
 	@Override

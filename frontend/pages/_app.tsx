@@ -21,18 +21,18 @@ import { themeSelector } from "~community/common/theme/themeSelector";
 import { MyAppPropsType } from "~community/common/types/CommonTypes";
 import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
 import "~enterprise/common/components/atoms/driverJsPopover/styles.css";
+import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
 import {
   isNonProdMaintenanceMode,
   isProdMaintenanceMode
 } from "~enterprise/common/constants/dbKeys";
+import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 import { database } from "~enterprise/common/utils/firebase";
 import { initializeHotjar } from "~enterprise/common/utils/monitoring";
 import i18n from "~i18n";
 
 import "../styles/global.css";
 import Error from "./_error";
-import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
-import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 
 // Initialize the font
 const inter = Inter({

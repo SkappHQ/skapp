@@ -9,6 +9,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeIsAvailableDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
+import com.skapp.community.peopleplanner.payload.request.TransferSupervisorsRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
@@ -184,6 +185,25 @@ public class PeopleController {
 	@PatchMapping("/user/delete/{userId}")
 	public ResponseEntity<ResponseEntityDto> deleteUser(@PathVariable Long userId) {
 		ResponseEntityDto response = peopleService.deleteUser(userId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get supervised employees and teams of a user",
+			description = "Returns the employees this user is primary supervisor for and the teams this user supervises")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
+	@GetMapping("/user/{userId}/supervised-employees-teams")
+	public ResponseEntity<ResponseEntityDto> getSupervisedEmployeesAndTeams(@PathVariable Long userId) {
+		ResponseEntityDto response = peopleService.getSupervisedEmployeesAndTeams(userId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Transfer supervisor roles of a user",
+			description = "Reassigns primary supervisor and team supervisor roles from the given user to new supervisors before termination or deletion")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
+	@PatchMapping("/user/{userId}/transfer-supervisors")
+	public ResponseEntity<ResponseEntityDto> transferSupervisors(@PathVariable Long userId,
+			@RequestBody TransferSupervisorsRequestDto requestDto) {
+		ResponseEntityDto response = peopleService.transferSupervisors(userId, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

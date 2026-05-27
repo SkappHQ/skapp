@@ -44,35 +44,37 @@ const GeofenceMapView = ({
   }, []);
 
   if (!apiKey) return null;
+
+  const sharedProps = {
+    className: "w-full h-full block",
+    mapId,
+    onClick: interactive ? onClick : undefined,
+    gestureHandling: interactive ? undefined : ("none" as const),
+    disableDefaultUI: !interactive,
+    mapTypeControl: false
+  };
+
   const mapContent = center ? (
     <Map
-      style={{ width: "100%", height }}
+      {...sharedProps}
       defaultCenter={center}
       defaultZoom={14}
       center={center}
-      mapId={mapId}
-      onClick={interactive ? onClick : undefined}
-      gestureHandling={interactive ? undefined : "none"}
-      disableDefaultUI={!interactive}
     >
       <AdvancedMarker position={center} />
       <RadiusCircle center={center} radius={radius} />
     </Map>
   ) : (
     <Map
-      style={{ width: "100%", height }}
+      {...sharedProps}
       defaultCenter={defaultCenter}
       defaultZoom={2}
-      mapId={mapId}
-      onClick={interactive ? onClick : undefined}
-      gestureHandling={interactive ? undefined : "none"}
-      disableDefaultUI={!interactive}
     />
   );
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className="relative">
+      <div className="relative w-full" style={{ height }}>
         {mapContent}
         {children}
       </div>

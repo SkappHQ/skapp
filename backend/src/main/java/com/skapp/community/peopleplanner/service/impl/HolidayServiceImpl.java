@@ -393,11 +393,6 @@ public class HolidayServiceImpl implements HolidayService {
 			AtomicInteger holidaysOnCurrentDate, AtomicInteger holidaysOnPastDates, int year,
 			List<String> validWorkLocationNames) {
 
-		long overlappingHolidayCount = countOverlappingHolidays(systemHolidays, holidayDto.getWorkLocations());
-		if (overlappingHolidayCount >= PeopleConstants.MAXIMUM_HOLIDAYS_PER_DAY) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_MAXIMUM_PER_DAY);
-		}
-
 		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 		if (holidayDate == null) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_DATE);
@@ -439,11 +434,24 @@ public class HolidayServiceImpl implements HolidayService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_DURATION_INVALID);
 		}
 
-		if (holidayDto.getWorkLocations() == null || holidayDto.getWorkLocations().isEmpty()) {
+		List<String> trimmedWorkLocations = holidayDto.getWorkLocations() == null ? Collections.emptyList()
+				: holidayDto.getWorkLocations()
+					.stream()
+					.filter(locationString -> locationString != null && !locationString.trim().isEmpty())
+					.map(String::trim)
+					.toList();
+
+		if (trimmedWorkLocations.isEmpty()) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION);
 		}
 
 		validateWorkLocations(holidayDto.getWorkLocations(), validWorkLocationNames);
+
+		long overlappingHolidayCount = countOverlappingHolidays(systemHolidays, holidayDto.getWorkLocations());
+		if (overlappingHolidayCount >= PeopleConstants.MAXIMUM_HOLIDAYS_PER_DAY) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_MAXIMUM_PER_DAY);
+		}
+
 	}
 
 	private void validateWorkLocations(List<String> workLocationNames, List<String> validWorkLocationNames) {
@@ -455,7 +463,7 @@ public class HolidayServiceImpl implements HolidayService {
 
 		workLocationNames.forEach(workLocation -> {
 			if (!validNames.contains(workLocation.trim())) {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_INVALID_WORK_LOCATION);
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_WORK_LOCATION_NOT_FOUND);
 			}
 		});
 	}

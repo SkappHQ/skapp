@@ -10,8 +10,20 @@ import { TimePeriodEnums } from "~community/common/enums/CommonEnums";
 import { IconProps } from "~community/common/types/IconTypes";
 import {
   NotificationDataTypes,
-  NotificationItemsTypes
+  NotificationItemsTypes,
+  NotificationSummaryItem,
+  NotificationSummaryType
 } from "~community/common/types/notificationTypes";
+
+export const getNotificationCount = (
+  summaryResults: NotificationSummaryItem[] | undefined,
+  type: NotificationSummaryType
+): number => {
+  return (
+    summaryResults?.find((item) => item.notificationType === type)
+      ?.notificationCount ?? 0
+  );
+};
 
 export const getNotificationIcon = (
   notificationType: NotificationItemsTypes | null

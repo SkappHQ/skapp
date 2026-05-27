@@ -36,4 +36,15 @@ export enum NotificationItemsTypes {
   ESIGN_DOCUMENT_DECLINED_OWNER = "ESIGN_DOCUMENT_DECLINED_OWNER"
 }
 
+export enum NotificationSummaryType {
+  LEAVE_REQUEST = "LEAVE_REQUEST",
+  TIME_ENTRY = "TIME_ENTRY",
+  ESIGN = "ESIGN"
+}
+
+export interface NotificationSummaryItem {
+  notificationType: NotificationSummaryType;
+  notificationCount: number;
+}
+
 export const notificationDefaultImage = "/logo/notification.svg";

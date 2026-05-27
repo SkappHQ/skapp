@@ -57,3 +57,7 @@ export interface WorkLocationsPage {
   totalItems: number;
   totalPages: number;
 }
+
+export interface WorkLocationNameAvailabilityResponse {
+  isExists: boolean;
+}
