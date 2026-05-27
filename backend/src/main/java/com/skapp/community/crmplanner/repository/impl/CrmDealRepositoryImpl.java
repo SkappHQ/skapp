@@ -113,7 +113,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		return predicates;
 	}
-	
+
 	public List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds) {
 		if (contactIds == null || contactIds.isEmpty()) {
 			return Collections.emptyList();
