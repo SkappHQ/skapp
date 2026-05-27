@@ -20,7 +20,6 @@ import { theme } from "~community/common/theme/theme";
 import { themeSelector } from "~community/common/theme/themeSelector";
 import { MyAppPropsType } from "~community/common/types/CommonTypes";
 import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
-import { getCookieValue } from "~community/common/utils/commonUtil";
 import "~enterprise/common/components/atoms/driverJsPopover/styles.css";
 import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
 import {
