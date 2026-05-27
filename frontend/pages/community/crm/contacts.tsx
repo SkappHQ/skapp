@@ -15,9 +15,7 @@ const Contacts: NextPage = () => {
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
     >
-    <>
       <ContactTable />
-    </>
     </ContentLayout>
   );
 };
