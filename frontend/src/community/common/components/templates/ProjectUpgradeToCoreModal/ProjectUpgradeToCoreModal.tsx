@@ -5,6 +5,7 @@ import templateUpgradeImage from "~community/common/assets/images/project-upgrad
 import UpgradeToCoreModal from "~community/common/components/molecules/UpgradeToCoreModal/UpgradeToCoreModal";
 import ROUTES from "~community/common/constants/routes";
 import useSessionData from "~community/common/hooks/useSessionData";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface ProjectUpgradeToCoreModalProps {
   isOpen: boolean;
@@ -17,41 +18,30 @@ const ProjectUpgradeToCoreModal: React.FC<ProjectUpgradeToCoreModalProps> = ({
 }) => {
   const { isSuperAdmin } = useSessionData();
   const router = useRouter();
-
-  const renderCustomMessage = () =>
-    isSuperAdmin
-      ? "Experience the full potential of Skapp by upgrading to Skapp Core."
-      : "Please contact your administrator to unlock this feature for your organization.";
+  const translateText = useTranslator("pmModule", "projectUpgradeModal");
 
   return (
     <UpgradeToCoreModal
       id="project-upgrade-to-core-modal"
       isOpen={isOpen}
-      closeIconButton={{
-        onClick: onClose
-      }}
-      title={{ children: "Upgrade to Skapp Core" }}
-      description={{
-        children: (
-          <>
-            <p
-              style={{ color: "#666", marginBottom: "16px" }}
-              className="body1"
-            >
-              You can only create up to <strong>5 projects</strong> on the Free
-              plan. Upgrade to Skapp Core to create more projects and scale your
-              work without limits.
-            </p>
-            <p style={{ color: "#666" }} className="body1">
-              {renderCustomMessage()}
-            </p>
-          </>
-        )
-      }}
+      onClose={onClose}
+      title={translateText(["title"])}
+      content={
+        <>
+          <p style={{ color: "#666", marginBottom: "16px" }} className="body1">
+            {translateText(["descriptionPart1"])}
+          </p>
+          <p style={{ color: "#666" }} className="body1">
+            {isSuperAdmin
+              ? translateText(["descriptionPartTwoSuperAdmin"])
+              : translateText(["descriptionPartTwoPmAdmin"])}
+          </p>
+        </>
+      }
       button={
         isSuperAdmin
           ? {
-              children: "Upgrade Now",
+              children: translateText(["btnLabel"]),
               onClick: () => {
                 onClose();
                 router.push(`${ROUTES.SETTINGS.BASE}?tab=billing`);
@@ -61,9 +51,8 @@ const ProjectUpgradeToCoreModal: React.FC<ProjectUpgradeToCoreModalProps> = ({
       }
       image={{
         src: templateUpgradeImage.src || "/default-upgrade-image.png",
-        alt: "Upgrade to Core Plan"
+        alt: translateText(["logoAltText"])
       }}
-      onClose={onClose}
     />
   );
 };
