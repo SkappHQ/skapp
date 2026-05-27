@@ -110,38 +110,60 @@ public class AdmsServiceImpl implements AdmsService {
 			return 0;
 		}
 
-		String[] lines = body.split("\\r\\n|\\r|\\n");
 		int count = 0;
-
-		for (String line : lines) {
-			if (!line.isBlank() && AdmsUtils.isValidAttLogLine(line)) {
-				String[] fields = line.split("\\t");
-				AdmsAttendanceLog attendanceLog = new AdmsAttendanceLog();
-				attendanceLog.setDevice(device);
-				attendanceLog.setPin(fields[0].trim());
-				LocalDateTime punchedAt = AdmsUtils.parseDateTime(fields[1].trim(), AdmsUtils.PUNCH_DATE_FORMAT);
-
-				if (punchedAt != null) {
-					attendanceLog.setPunchedAt(punchedAt);
-					attendanceLog.setStatus(AdmsUtils.parseInteger(fields[2].trim()));
-					attendanceLog.setVerifyType(AdmsUtils.parseInteger(fields[3].trim()));
-					attendanceLog.setWorkCode(fields.length > 4 ? AdmsUtils.parseInteger(fields[4].trim()) : null);
-					attendanceLog.setRawData(line);
-
-					admsAttendanceLogDao.save(attendanceLog);
-					count++;
-				}
-			}
+		for (String line : splitAttendanceLines(body)) {
+			count += processAttendanceLine(device, line);
 		}
 
-		if (stamp != null && !stamp.isBlank()) {
-			Long stampValue = AdmsUtils.parseLong(stamp);
-			if (stampValue != null) {
-				device.setAttStamp(Math.max(device.getAttStamp() != null ? device.getAttStamp() : 0, stampValue));
-			}
-		}
+		updateAttStamp(device, stamp);
 
 		return count;
+	}
+
+	private String[] splitAttendanceLines(String body) {
+		return body.split("\\r\\n|\\r|\\n");
+	}
+
+	private int processAttendanceLine(AdmsDevice device, String line) {
+		if (line.isBlank() || !AdmsUtils.isValidAttLogLine(line)) {
+			return 0;
+		}
+
+		String[] fields = line.split("\\t");
+		LocalDateTime punchedAt = AdmsUtils.parseDateTime(fields[1].trim(), AdmsUtils.PUNCH_DATE_FORMAT);
+		if (punchedAt == null) {
+			return 0;
+		}
+
+		AdmsAttendanceLog attendanceLog = buildAttendanceLog(device, line, fields, punchedAt);
+		admsAttendanceLogDao.save(attendanceLog);
+		return 1;
+	}
+
+	private AdmsAttendanceLog buildAttendanceLog(AdmsDevice device, String line, String[] fields,
+			LocalDateTime punchedAt) {
+		AdmsAttendanceLog attendanceLog = new AdmsAttendanceLog();
+		attendanceLog.setDevice(device);
+		attendanceLog.setPin(fields[0].trim());
+		attendanceLog.setPunchedAt(punchedAt);
+		attendanceLog.setStatus(AdmsUtils.parseInteger(fields[2].trim()));
+		attendanceLog.setVerifyType(AdmsUtils.parseInteger(fields[3].trim()));
+		attendanceLog.setWorkCode(fields.length > 4 ? AdmsUtils.parseInteger(fields[4].trim()) : null);
+		attendanceLog.setRawData(line);
+		return attendanceLog;
+	}
+
+	private void updateAttStamp(AdmsDevice device, String stamp) {
+		if (stamp == null || stamp.isBlank()) {
+			return;
+		}
+
+		Long stampValue = AdmsUtils.parseLong(stamp);
+		if (stampValue == null) {
+			return;
+		}
+
+		device.setAttStamp(Math.max(device.getAttStamp() != null ? device.getAttStamp() : 0, stampValue));
 	}
 
 	private AdmsDevice findOrCreateDevice(String serialNumber, HttpServletRequest request) {
@@ -160,8 +182,9 @@ public class AdmsServiceImpl implements AdmsService {
 
 	private String buildOptionsResponse(String serialNumber, long stamp, long opStamp) {
 		return String.join("\n", "GET OPTION FROM: " + serialNumber, "Stamp=" + stamp, "OpStamp=" + opStamp,
-				"ErrorDelay=60", "Delay=30", "TransTimes=00:00;14:05", "TransInterval=1",
-				"TransFlag=TransData AttLog OpLog", "Realtime=1", "Encrypt=0");
+				AdmsUtils.DEFAULT_ERROR_DELAY, AdmsUtils.DEFAULT_DELAY, AdmsUtils.DEFAULT_TRANS_TIMES,
+				AdmsUtils.DEFAULT_TRANS_INTERVAL, AdmsUtils.DEFAULT_TRANS_FLAG, AdmsUtils.DEFAULT_REALTIME,
+				AdmsUtils.DEFAULT_ENCRYPT);
 	}
 
 }
