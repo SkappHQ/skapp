@@ -49,7 +49,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Fetch<CrmContact, Employee> ownerFetch = contact.fetch(CrmContact_.owner, JoinType.INNER);
 		ownerFetch.fetch(Employee_.user, JoinType.LEFT);
 		Join<CrmContact, Employee> owner = (Join<CrmContact, Employee>) ownerFetch;
-		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
+				JoinType.LEFT);
 
 		query.where(buildPredicates(cb, contact, owner, company, filterDto));
 		query.orderBy(buildOrderBy(cb, contact, query));
