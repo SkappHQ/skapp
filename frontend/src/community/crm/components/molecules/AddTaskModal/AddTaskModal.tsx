@@ -1,5 +1,4 @@
 import {
-  AvatarChip,
   AvatarChipsInput,
   AvatarChipsInputResult,
   ButtonV2,
@@ -42,7 +41,7 @@ const AddTaskModal: React.FC = () => {
     setIsAddTaskModalOpen: store.setIsAddTaskModalOpen
   }));
 
-  const { isCrmSalesManager, employeeDetails } = useSessionData();
+  const { employeeDetails } = useSessionData();
 
   const [selectedOwnerChips, setSelectedOwnerChips] = useState<
     AvatarChipsInputResult[]
@@ -241,7 +240,6 @@ const AddTaskModal: React.FC = () => {
             placeholder={translateText(["placeholders", "dueDate"])}
             state={errors.dueDate ? "error" : "default"}
             errorMessage={errors.dueDate || ""}
-            onChange={() => {}}
             aria-label={translateText(["ariaLabels", "dueDate"])}
             rightIcon={<CalendarIcon />}
             fullWidth
@@ -299,34 +297,17 @@ const AddTaskModal: React.FC = () => {
         {translateText(["labels", "taskOwner"])}
       </label>
       {/* TODO: Placeholder for SearchableDropdown. Will be implemented with backend. */}
-      {isCrmSalesManager ? (
-        <AvatarChipsInput
-          filteredResults={filteredOwnerOptions}
-          selectedChips={selectedOwnerChips}
-          searchText={ownerSearchText}
-          onChipSelect={handleOwnerChipSelect}
-          onChipRemove={handleOwnerChipRemove}
-          onSearchTextChange={handleOwnerSearchTextChange}
-          searchPlaceholder={translateText(["placeholders", "taskOwner"])}
-          ariaLabelSearch={translateText(["ariaLabels", "taskOwner"])}
-          ariaLabelClearButton={translateText(["ariaLabels", "removeOwner"])}
-        />
-      ) : (
-        <div
-          id="taskOwner"
-          className="h-12 rounded-lg bg-tertiary-background flex items-center px-3"
-        >
-          <AvatarChip
-            label={`${employeeDetails?.firstName} ${employeeDetails?.lastName}`.trim()}
-            avatarProps={{
-              id: "owner-avatar",
-              firstName: employeeDetails?.firstName ?? "",
-              lastName: employeeDetails?.lastName ?? "",
-              size: "sm"
-            }}
-          />
-        </div>
-      )}
+      <AvatarChipsInput
+        filteredResults={filteredOwnerOptions}
+        selectedChips={selectedOwnerChips}
+        searchText={ownerSearchText}
+        onChipSelect={handleOwnerChipSelect}
+        onChipRemove={handleOwnerChipRemove}
+        onSearchTextChange={handleOwnerSearchTextChange}
+        searchPlaceholder={translateText(["placeholders", "taskOwner"])}
+        ariaLabelSearch={translateText(["ariaLabels", "taskOwner"])}
+        ariaLabelClearButton={translateText(["ariaLabels", "removeOwner"])}
+      />
 
       <TextArea
         name="notes"
