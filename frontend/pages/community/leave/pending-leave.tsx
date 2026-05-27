@@ -24,8 +24,7 @@ const PendingLeave: NextPage = () => {
           label: translateBreadcrumbText(["analytics.stepLeave"])
         },
         {
-          label: translateBreadcrumbText(["leaveRequests.title"]),
-          href: ROUTES.LEAVE.LEAVE_REQUESTS
+          label: translateBreadcrumbText(["leaveRequests.title"])
         }
       ]}
       pageHead={translateText(["pageHead"])}
