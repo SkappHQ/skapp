@@ -7,7 +7,7 @@ const styles = {
   skeletonList: "flex flex-col gap-0.5",
 
   taskSection: "flex flex-col gap-[8px] items-start w-full",
-  taskList: "border border-[#e5e7eb] rounded-[8px] overflow-hidden w-full",
+  taskList: "border border-[#e5e7eb] rounded-[8px] overflow-hidden w-full", //change to overflow-visible
   taskRowBorder: "border-b border-[#e5e7eb]",
 
   taskRow: "flex items-center gap-4 p-3 min-w-0 min-h-[63px]",

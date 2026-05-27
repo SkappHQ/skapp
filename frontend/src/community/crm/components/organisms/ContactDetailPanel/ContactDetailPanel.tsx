@@ -8,13 +8,13 @@ import {
   useGetCrmContactMetrics
 } from "~community/crm/api/CrmContactsApi";
 import ContactActionMenu from "~community/crm/components/molecules/ContactActionMenu/ContactActionMenu";
-import ContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import ContactMetrics, {
   ContactMetricsSkeleton
 } from "~community/crm/components/molecules/ContactMetrics/ContactMetrics";
 import DealsSection from "~community/crm/components/molecules/DealsSection/DealsSection";
 import DeleteContactModal from "~community/crm/components/molecules/DeleteContactModal/DeleteContactModal";
 import EditContactModal from "~community/crm/components/molecules/EditContactModal/EditContactModal";
+import ContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import TasksSection from "~community/crm/components/molecules/TasksSection/TasksSection";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
@@ -83,7 +83,6 @@ const ContactDetailPanel: FC = () => {
               isLoading={isContactLoading}
               onCompanyClick={(companyId: any) => {
                 // TODO: Open company side panel once the slice/controller is implemented
-
               }}
             />
           }

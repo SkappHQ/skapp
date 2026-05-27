@@ -7,9 +7,10 @@ import {
   PriorityIcon,
   TransparentEnterIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { FC, useState } from "react";
 
+// import { useEffect, useRef } from "react"; // manual-portal refs (commented out)
+// import { createPortal } from "react-dom"; // manual portal (commented out)
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -25,18 +26,17 @@ import {
   getTaskTypeConfig
 } from "~community/crm/utils/crmTaskUtils";
 
-
 import styles from "./styles";
 
 interface Props {
   contactId: number;
 }
 
-interface FormPos {
-  top: number;
-  left: number;
-  width: number;
-}
+// interface FormPos {  // manual-portal position type (commented out)
+//   top: number;
+//   left: number;
+//   width: number;
+// }
 
 const TasksSection: FC<Props> = ({ contactId }) => {
   const translateText = useTranslator(
@@ -48,48 +48,35 @@ const TasksSection: FC<Props> = ({ contactId }) => {
 
   const [isAddingTask, setIsAddingTask] = useState(false);
 
-  const formAnchorRef = useRef<HTMLDivElement>(null);
-  const [formPos, setFormPos] = useState<FormPos | null>(null);
-
-  useEffect(() => {
-    if (!isAddingTask) {
-      setFormPos(null);
-      return;
-    }
-
-    const update = () => {
-      if (!formAnchorRef.current) return;
-      const r = formAnchorRef.current.getBoundingClientRect();
-      setFormPos({ top: r.top, left: r.left, width: r.width });
-    };
-
-    update();
-
-    // Re-sync position when the panel is scrolled or the window is resized
-    let scrollEl: HTMLElement | null = null;
-    let node = formAnchorRef.current?.parentElement ?? null;
-    while (node) {
-      const oy = window.getComputedStyle(node).overflowY;
-      if (oy === "auto" || oy === "scroll") {
-        scrollEl = node;
-        break;
-      }
-      node = node.parentElement;
-    }
-
-    scrollEl?.addEventListener("scroll", update);
-    window.addEventListener("resize", update);
-    return () => {
-      scrollEl?.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
-  }, [isAddingTask]);
+  // --- manual-portal mechanism commented out (testing skapp-ui usePortal instead) ---
+  // const formAnchorRef = useRef<HTMLDivElement>(null);
+  // const [formPos, setFormPos] = useState<FormPos | null>(null);
+  // useEffect(() => {
+  //   if (!isAddingTask) { setFormPos(null); return; }
+  //   const update = () => {
+  //     if (!formAnchorRef.current) return;
+  //     const r = formAnchorRef.current.getBoundingClientRect();
+  //     setFormPos({ top: r.top, left: r.left, width: r.width });
+  //   };
+  //   update();
+  //   let scrollEl: HTMLElement | null = null;
+  //   let node = formAnchorRef.current?.parentElement ?? null;
+  //   while (node) {
+  //     const oy = window.getComputedStyle(node).overflowY;
+  //     if (oy === "auto" || oy === "scroll") { scrollEl = node; break; }
+  //     node = node.parentElement;
+  //   }
+  //   scrollEl?.addEventListener("scroll", update);
+  //   window.addEventListener("resize", update);
+  //   return () => { scrollEl?.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+  // }, [isAddingTask]);
+  // --- end manual-portal mechanism ---
 
   const { data, isLoading } = useGetTasksByContactId(contactId);
   const tasks: ContactTask[] = data ?? [];
   const { mutate: updateCompletion } = useUpdateTaskCompletion(
-    () => { },
-    () => { }
+    () => {},
+    () => {}
   );
   const handleToggleComplete = (id: number, isCompleted: boolean) => {
     updateCompletion({ id, isCompleted });
@@ -144,9 +131,7 @@ const TasksSection: FC<Props> = ({ contactId }) => {
                       }
                     />
 
-                    <div>
-                      {getTaskTypeConfig(task.type.name)}
-                    </div>
+                    <div>{getTaskTypeConfig(task.type.name)}</div>
 
                     <div className={styles.taskContent}>
                       <p
@@ -186,11 +171,26 @@ const TasksSection: FC<Props> = ({ contactId }) => {
               );
             })}
 
+            {/* skapp-ui usePortal test: ItemAddForm rendered inline with usePortal={true} */}
             {isAddingTask && (
-              <div
-                ref={formAnchorRef}
-                className={`h-[60px]${hasTasks ? " border-t border-[#e5e7eb]" : ""}`}
-              />
+              <div className={hasTasks ? "border-t border-[#e5e7eb]" : ""}>
+                <ItemAddForm
+                  itemTypeOptions={TASK_TYPE_OPTIONS}
+                  defaultSelectedItemType={TASK_TYPE_OPTIONS[0]?.value}
+                  onSave={(_value: string, _itemType?: string) => {
+                    // TODO: wire up create-task mutation
+                    setIsAddingTask(false);
+                  }}
+                  onCancel={() => setIsAddingTask(false)}
+                  inputFieldPlaceholder={translateText(["addTaskPlaceholder"])}
+                  maxLength={255}
+                  actionButton={{
+                    variant: "outlined",
+                    icon: <TransparentEnterIcon />
+                  }}
+                  className={hasTasks ? "rounded-b-lg" : "rounded-lg"}
+                />
+              </div>
             )}
           </div>
 
@@ -231,37 +231,13 @@ const TasksSection: FC<Props> = ({ contactId }) => {
         </div>
       )}
 
-      {isAddingTask &&
-        formPos &&
-        createPortal(
-          <div
-            style={{
-              position: "fixed",
-              top: formPos.top,
-              left: formPos.left,
-              width: formPos.width,
-              zIndex: 1270
-            }}
-          >
-            <ItemAddForm
-              itemTypeOptions={TASK_TYPE_OPTIONS}
-              defaultSelectedItemType={TASK_TYPE_OPTIONS[0]?.value}
-              onSave={(_value: string, _itemType?: string) => {
-                // TODO: wire up create-task mutation
-                setIsAddingTask(false);
-              }}
-              onCancel={() => setIsAddingTask(false)}
-              inputFieldPlaceholder={translateText(["addTaskPlaceholder"])}
-              maxLength={255}
-              actionButton={{
-                variant: "outlined",
-                icon: <TransparentEnterIcon />
-              }}
-              className={hasTasks ? "rounded-b-lg" : "rounded-lg"}
-            />
-          </div>,
-          document.body
-        )}
+      {/* manual-portal ItemAddForm commented out — using inline usePortal={true} above instead */}
+      {/* {isAddingTask && formPos && createPortal(
+        <div style={{ position: "fixed", top: formPos.top, left: formPos.left, width: formPos.width, zIndex: 1270 }}>
+          <ItemAddForm ... />
+        </div>,
+        document.body
+      )} */}
     </div>
   );
 };
