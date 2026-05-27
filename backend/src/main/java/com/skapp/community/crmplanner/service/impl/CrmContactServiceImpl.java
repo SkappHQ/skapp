@@ -31,8 +31,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -43,11 +49,17 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
+	private final CrmDealDao crmDealDao;
+
+	private final CrmTaskDao crmTaskDao;
+
 	private final EmployeeDao employeeDao;
 
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final UserService userService;
+
+	private final MessageUtil messageUtil;
 
 	private final CrmMapper crmMapper;
 
@@ -165,6 +177,89 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteContact(Long id) {
+		log.info("deleteContact: execution started");
+
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		Set<CrmTask> tasks = new HashSet<>();
+		tasks.addAll(crmTaskDao.findByContact_IdAndIsDeletedFalse(id));
+		tasks.addAll(crmTaskDao.findByDeal_Contact_IdAndIsDeletedFalse(id));
+		tasks.forEach(task -> task.setIsDeleted(true));
+		crmTaskDao.saveAll(tasks);
+
+		List<CrmDeal> deals = crmDealDao.findByContact_IdAndIsDeletedFalse(id);
+		deals.forEach(deal -> deal.setIsDeleted(true));
+		crmDealDao.saveAll(deals);
+
+		contact.setIsDeleted(true);
+		crmContactDao.save(contact);
+
+		log.info("deleteContact: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_CONTACT_DELETED), false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactMetrics(CrmContactMetricRequestDto filterDto) {
+		log.info("getContactMetrics: execution started");
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmContact> contactPage = crmContactDao.findContacts(filterDto, pageable);
+
+		List<Long> contactIds = contactPage.getContent().stream().map(CrmContact::getId).toList();
+
+		if (contactIds.isEmpty()) {
+			PageDto pageDto = new PageDto();
+			pageDto.setItems(List.of());
+			pageDto.setCurrentPage(contactPage.getNumber());
+			pageDto.setTotalItems(contactPage.getTotalElements());
+			pageDto.setTotalPages(contactPage.getTotalPages());
+			log.info("getContactMetrics: execution ended");
+			return new ResponseEntityDto(false, pageDto);
+		}
+
+		Map<Long, CrmDealSummary> dealSummaryMap = crmDealDao.findClosedDealSummaryByContactIds(contactIds)
+			.stream()
+			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
+
+		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao.findOpenTaskSummaryByContactIds(contactIds)
+			.stream()
+			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
+
+		List<CrmContactListItemDto> contactDtos = contactPage.getContent()
+			.stream()
+			.map(c -> enrichWithMetrics(c, dealSummaryMap, taskSummaryMap))
+			.toList();
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(contactDtos);
+		pageDto.setCurrentPage(contactPage.getNumber());
+		pageDto.setTotalItems(contactPage.getTotalElements());
+		pageDto.setTotalPages(contactPage.getTotalPages());
+
+		log.info("getContactMetrics: execution ended");
+		return new ResponseEntityDto(false, pageDto);
+	}
+
+	private CrmContactListItemDto enrichWithMetrics(CrmContact contact, Map<Long, CrmDealSummary> dealSummaryMap,
+			Map<Long, CrmTaskSummary> taskSummaryMap) {
+		CrmContactListItemDto dto = crmMapper.crmContactToCrmContactListItemDto(contact);
+
+		CrmDealSummary deals = dealSummaryMap.get(contact.getId());
+		dto.setClosedDealValue(deals != null ? deals.getTotalClosedValue() : BigDecimal.ZERO);
+		dto.setClosedDealCount(deals != null ? deals.getClosedDealCount() : 0L);
+
+		CrmTaskSummary tasks = taskSummaryMap.get(contact.getId());
+		dto.setOpenTaskCount(tasks != null ? tasks.getOpenTaskCount() : 0L);
+		dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
+
+		return dto;
 	}
 
 	private Employee resolveOwner(Long ownerId, User currentUser) {

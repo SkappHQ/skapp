@@ -122,7 +122,7 @@ const AllTimesheetsPage: NextPage = () => {
               const formattedValue = value.replace(/^\s+/g, "");
               setSearchTerm(formattedValue);
             }}
-            placeholder={translateText(["search"])}
+            placeholder={translateText(["timesheet.search"])}
             isLoading={isSuggestionsPending}
             error={searchErrors}
             isDisabled={false}
