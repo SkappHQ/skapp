@@ -32,5 +32,6 @@ export const EVENTS_TO_IDENTIFY_IDLE_USER = [
 
 export const MODAL_HEADER_ICON_GAP = "3.5rem";
 export const DEFAULT_SCROLL_AMOUNT_PX = 100;
+export const MAX_NOTIFICATION_COUNT = 99;
 
 export const SUPPORTED_LANGUAGES = ["en"];

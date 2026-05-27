@@ -4,6 +4,7 @@ import { MouseEvent, useState } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import CustomAllocationsReportTable from "~community/leave/components/molecules/CustomAllocationsReportTable/CustomAllocationsReportTable";
 import LeaveEntitlementsReportsTable from "~community/leave/components/molecules/LeaveEntitlementsReportsTable/LeaveEntitlementsReportsTable";
@@ -15,6 +16,8 @@ import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverl
 
 const LeaveReportPage: NextPage = () => {
   const translateText = useTranslator("leaveModule", "leaveReports");
+  const translateLeave = useTranslator("leaveModule");
+  const translatePeople = useTranslator("peopleModule", "teams");
 
   const { data: teams } = useGetAllManagerTeams();
 
@@ -54,6 +57,21 @@ const LeaveReportPage: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateLeave(["analytics.stepLeave"])
+        },
+        {
+          label: translateLeave(["leaveRequests.title"]),
+          href: ROUTES.LEAVE.LEAVE_REQUESTS
+        },
+        {
+          label: translatePeople(["title"])
+        },
+        {
+          label: translateText(["title"])
+        }
+      ]}
       pageHead={translateText(["pageHead"])}
       title={translateText(["title"])}
       isBackButtonVisible={true}
