@@ -128,7 +128,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 };
 
 export const setAccessToken = (token: string) => {
-  if (typeof window !== "undefined") {
+  if (globalThis.window !== undefined) {
     const expiryDate = new Date(
       Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
@@ -144,7 +144,7 @@ export const setUserLanguage = async (token: string) => {
   if (typeof languageValue !== "string" || !languageValue) return;
   if (!SUPPORTED_LANGUAGES.includes(languageValue)) return;
 
-  if (typeof window !== "undefined") {
+  if (globalThis.window !== undefined) {
     await i18n.changeLanguage(languageValue).catch((error) => {
       console.error("[i18n] Failed to change language:", error);
       i18n.changeLanguage(i18n.options.fallbackLng as string);
@@ -153,7 +153,7 @@ export const setUserLanguage = async (token: string) => {
 };
 
 export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
-  if (typeof window !== "undefined") {
+  if (globalThis.window !== undefined) {
     const expiryDate = new Date(
       Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
@@ -173,7 +173,7 @@ export const clearCookies = async (): Promise<void> => {
     console.error("Error calling signout API");
   }
 
-  if (typeof window !== "undefined") {
+  if (globalThis.window !== undefined) {
     document.cookie =
       "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
     document.cookie =
@@ -182,7 +182,7 @@ export const clearCookies = async (): Promise<void> => {
 };
 
 export const getAccessToken = async (): Promise<string | null> => {
-  if (typeof window === "undefined") return null;
+  if (globalThis.window === undefined) return null;
 
   const currentAccessToken = getCookieValue("accessToken");
 
@@ -355,12 +355,12 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   if (redirect === false) return;
 
-  if (typeof window !== "undefined") {
-    const currentPath = window.location.pathname;
-    const urlParams = new URLSearchParams(window.location.search);
+  if (globalThis.window !== undefined) {
+    const currentPath = globalThis.window.location.pathname;
+    const urlParams = new URLSearchParams(globalThis.window.location.search);
     const existingCallback = urlParams.get("callback");
 
     const callbackPath = existingCallback || currentPath;
-    window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
+    globalThis.window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
   }
 };
