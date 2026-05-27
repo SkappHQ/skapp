@@ -137,8 +137,11 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		WorkLocation workLocation = workLocationDao.findById(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
+		workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(existingGeofence -> {
+			onGeofenceRemovedOrUpdated(id);
+			workLocationGeofenceDao.delete(existingGeofence);
+		});
 		clearWorkLocationFromEmployees(id);
-		workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
 		workLocationDao.delete(workLocation);
 
 		log.info("deleteWorkLocation: execution ended");
