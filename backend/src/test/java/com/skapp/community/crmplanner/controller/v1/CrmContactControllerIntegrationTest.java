@@ -214,6 +214,22 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Create contact with email already used by another contact - Returns Bad Request")
+	void createContact_DuplicateEmail_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany().getId();
+		savedContact(companyId, "jane.smith@example.com");
+
+		CrmContactCreateRequestDto dto = createValidPayload(companyId);
+		dto.setEmail("jane.smith@example.com");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS)));
+	}
+
+	@Test
 	@DisplayName("Create contact without CRM role - Returns Forbidden")
 	void createContact_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		Long companyId = savedCompany().getId();
