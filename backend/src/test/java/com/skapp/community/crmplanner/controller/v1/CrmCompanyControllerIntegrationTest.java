@@ -1,11 +1,23 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.support.SecurityTestUtils;
+
+import static org.junit.Assert.assertTrue;
+
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +29,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -25,6 +38,7 @@ import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -42,6 +56,8 @@ class CrmCompanyControllerIntegrationTest {
 
 	private static final String EXISTS_PATH = BASE_PATH + "/exists";
 
+	private static final String DELETE_PATH = BASE_PATH + "/{id}";
+
 	private final JsonMapper objectMapper;
 
 	private final JwtService jwtService;
@@ -51,6 +67,16 @@ class CrmCompanyControllerIntegrationTest {
 	private final MockMvc mvc;
 
 	private final MessageUtil messageUtil;
+
+	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmDealDao crmDealDao;
+
+	private final CrmDealStageDao crmDealStageDao;
+
+	private final CrmContactDao crmContactDao;
+
+	private final EmployeeDao employeeDao;
 
 	private String authToken;
 
@@ -71,6 +97,10 @@ class CrmCompanyControllerIntegrationTest {
 
 	private ResultActions performGetExistsRequest(String name) throws Exception {
 		return performRequest(get(EXISTS_PATH).param("name", name).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performDeleteRequest(Long id) throws Exception {
+		return performRequest(delete(DELETE_PATH, id).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmCompanyCreateDto createValidPayload() {
@@ -151,6 +181,91 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	// --- Delete company tests ---
+
+	@Test
+	@DisplayName("Delete already deleted company - Returns Bad Request")
+	void deleteCompany_AlreadyDeleted_ReturnsBadRequest() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		performDeleteRequest(companyId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED)));
+
+		// ensure delete is committed for existence check
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+
+		performGetExistsRequest("Acme Corp").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+
+		performDeleteRequest(companyId).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+
+		// cleanup for future tests
+		crmCompanyDao.deleteById(companyId);
+	}
+
+	@Test
+	@DisplayName("Delete company with associated deals - Soft deletes all linked deals")
+	void deleteCompany_WithAssociatedDeals_SoftDeletesDeals() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmDealStage stage = new CrmDealStage();
+		stage.setName("Test Stage");
+		stage.setColor("#123456");
+		stage.setOrderIndex(1);
+		stage.setStageType(CrmDealStageType.OPEN);
+		crmDealStageDao.save(stage);
+
+		CrmContact contact = new CrmContact();
+		contact.setName("Test Contact");
+		contact.setEmail("deal.test@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(contact);
+
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Test Deal");
+		deal.setStage(stage);
+		deal.setCompany(crmCompanyDao.getReferenceById(companyId));
+		deal.setContact(contact);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		Long dealId = crmDealDao.save(deal).getId();
+
+		performDeleteRequest(companyId).andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED)));
+
+		CrmDeal deletedDeal = crmDealDao.findById(dealId).orElseThrow();
+		assertTrue(deletedDeal.getIsDeleted());
+	}
+
+	@Test
+	@DisplayName("Delete company without CRM manager role - Returns Forbidden")
+	void deleteCompany_WithoutManagerRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performDeleteRequest(1L).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }
