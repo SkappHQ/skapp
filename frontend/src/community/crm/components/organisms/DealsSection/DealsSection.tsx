@@ -1,5 +1,6 @@
-﻿import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 
+import useDebounce from "~community/common/hooks/useDebounce";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { useGetDealsInfinite } from "~community/crm/api/crmDealApi";
 import DealsHeader from "~community/crm/components/molecules/DealsHeader/DealsHeader";
@@ -12,29 +13,14 @@ import { CrmDealSortEnum } from "~community/crm/enums/common";
 
 const DealsSection: FC = () => {
   const [inputValue, setInputValue] = useState("");
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
-
-  const handleSearchChange = (value: string) => {
-    setInputValue(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setSearchKeyword(value);
-    }, DEAL_SEARCH_DEBOUNCE_DELAY);
-  };
+  const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetDealsInfinite({
       size: DEAL_PAGE_SIZE,
       sortKey: CrmDealSortEnum.STAGE_ORDER,
       sortOrder: SortOrderTypes.ASC,
-      searchKeyword: searchKeyword || undefined
+      searchKeyword: debouncedSearch || undefined
     });
 
   const allDeals = useMemo(
@@ -50,15 +36,12 @@ const DealsSection: FC = () => {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      <DealsHeader
-        inputValue={inputValue}
-        onSearchChange={handleSearchChange}
-      />
+      <DealsHeader inputValue={inputValue} onSearchChange={setInputValue} />
       <DealsTable
-        searchKeyword={searchKeyword}
+        searchKeyword={debouncedSearch}
         isLoading={isLoading}
         allDeals={allDeals}
-        hasNextPage={hasNextPage ?? false}
+        hasNextPage={hasNextPage}
         onLoadMore={handleLoadMore}
       />
     </div>

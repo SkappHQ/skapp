@@ -8,25 +8,22 @@ interface Props {
 }
 
 const DealsHeader: FC<Props> = ({ inputValue, onSearchChange }) => {
-  const translateText = useTranslator("crmModule", "deals");
+  const translateText = useTranslator("crmModule", "deals", "dealsTable");
 
   return (
     <div className="flex flex-col gap-4">
       <InputField
-        placeholder={translateText(["dealsTable", "searchPlaceholder"])}
+        placeholder={translateText(["searchPlaceholder"])}
         value={inputValue}
         onChange={(e) => onSearchChange(e.target.value)}
         type="search"
         variant="md"
         rightIcon={<SearchIcon />}
-        ariaLabelClearButton={translateText([
-          "dealsTable",
-          "clearSearchAriaLabel"
-        ])}
+        ariaLabelClearButton={translateText(["clearSearchAriaLabel"])}
         customStyles={{
           borderRadius: "rounded-full",
           padding: "px-6",
-          background: "bg-[#f4f4f5]",
+          background: "bg-secondary-background",
           border: "border-0"
         }}
         className="max-w-[412px] w-full"

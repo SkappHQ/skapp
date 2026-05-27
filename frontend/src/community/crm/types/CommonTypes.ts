@@ -1,5 +1,5 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import { CrmDealSortEnum, CrmDealStageEnum } from "../enums/common";
+import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum } from "../enums/common";
 
 export interface CrmCompanyType {
   id: number;
@@ -71,7 +71,7 @@ export interface CrmDealType {
   id: number;
   name: string;
   stage: CrmDealStageType;
-  priority: string | null;
+  priority: CrmPriorityEnum | null;
   closingAt: string | null;
   amount: string | null;
   currencyCode: string | null;
@@ -93,7 +93,7 @@ export interface CrmTaskType {
   id: number;
   name: string;
   type: CrmTaskCategory;
-  priority: string;
+  priority: CrmPriorityEnum;
   isCompleted: boolean;
   dueAt: string | null;
   notes: string | null;
@@ -113,20 +113,12 @@ export interface CrmTaskCategory {
 export interface CrmDealListItemType {
   id: number;
   name: string;
-  stageId: number;
   stageName: string;
-  stageColor?: string;
-  priority: string | null;
-  closingAt: string | null;
-  amount: string | null;
-  companyId: number | null;
+  stageColor: string;
+  amount: string;
   companyName: string | null;
-  contactId: number;
   contactName: string;
-  ownerId: number;
   ownerName: string;
-  openTaskCount?: number;
-  overdueTaskCount?: number;
 }
 
 export interface CrmDealPaginatedResponseType {
@@ -143,5 +135,5 @@ export interface CrmDealFilterParams {
   sortKey: CrmDealSortEnum;
   searchKeyword?: string;
   stageId?: number;
-  priority?: string;
+  priority?: CrmPriorityEnum;
 }
