@@ -19,7 +19,6 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
-import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -66,10 +65,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
 
 		CrmCompany company = null;
 		if (requestDto.getCompanyId() != null) {
@@ -77,7 +76,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_COMPANY_MISMATCH);
 			}
 			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_COMPANY_NOT_FOUND));
 		}
 
 		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());

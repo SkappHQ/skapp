@@ -52,7 +52,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 			Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
 			countQuery.select(cb.count(countRoot))
-					.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
+				.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
 			Long total = entityManager.createQuery(countQuery).getSingleResult();
 			return new PageImpl<>(new ArrayList<>(), pageable, total);
 		}
@@ -74,7 +74,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
 		countQuery.select(cb.count(countRoot))
-				.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
+			.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(deals, pageable, total);

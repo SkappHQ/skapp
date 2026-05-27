@@ -10,5 +10,4 @@ public interface CrmDealService {
 
 	ResponseEntityDto getDeals(CrmDealFilterDto filterDto);
 
-
 }
