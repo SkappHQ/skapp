@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -65,11 +65,14 @@ export const ContactTable: React.FC = () => {
     [companiesData]
   );
 
-  useEffect(() => {
-    const COMPANY_FILTER_MENU_ID = "contact-company-filter-menu";
-    const SCROLL_THRESHOLD_PX = 50;
+  const COMPANY_FILTER_MENU_ID = "contact-company-filter-menu";
+  const SCROLL_THRESHOLD_PX = 50;
+  const companyDropdownWrapperRef = useRef<HTMLDivElement>(null);
+  const companyMenuScrollCleanupRef = useRef<(() => void) | null>(null);
+  const companyMenuRef = useRef<HTMLElement | null>(null);
 
-    const maybeFetchNext = (menu: HTMLElement) => {
+  const maybeFetchNextCompanies = useCallback(
+    (menu: HTMLElement) => {
       if (!hasNextCompaniesPage || isFetchingNextCompaniesPage) return;
       const { scrollTop, scrollHeight, clientHeight } = menu;
       const reachedBottom =
@@ -78,33 +81,54 @@ export const ContactTable: React.FC = () => {
       if (reachedBottom || notScrollable) {
         fetchNextCompaniesPage();
       }
+    },
+    [hasNextCompaniesPage, isFetchingNextCompaniesPage, fetchNextCompaniesPage]
+  );
+
+  useEffect(() => {
+    const wrapper = companyDropdownWrapperRef.current;
+    if (!wrapper) return;
+
+    const attachListener = (menu: HTMLElement) => {
+      if (companyMenuScrollCleanupRef.current) return;
+      companyMenuRef.current = menu;
+      const onScroll = () => maybeFetchNextCompanies(menu);
+      menu.addEventListener("scroll", onScroll);
+      companyMenuScrollCleanupRef.current = () => {
+        menu.removeEventListener("scroll", onScroll);
+        companyMenuRef.current = null;
+      };
+      maybeFetchNextCompanies(menu);
     };
 
-    const handleMenuScroll = (event: Event) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.id !== COMPANY_FILTER_MENU_ID) return;
-      maybeFetchNext(target);
+    const detachListener = () => {
+      if (companyMenuScrollCleanupRef.current) {
+        companyMenuScrollCleanupRef.current();
+        companyMenuScrollCleanupRef.current = null;
+      }
     };
 
     const observer = new MutationObserver(() => {
       const menu = document.getElementById(COMPANY_FILTER_MENU_ID);
-      if (menu) maybeFetchNext(menu);
+      if (menu) {
+        attachListener(menu);
+      } else {
+        detachListener();
+      }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
 
-    const existingMenu = document.getElementById(COMPANY_FILTER_MENU_ID);
-    if (existingMenu) maybeFetchNext(existingMenu);
-
-    document.addEventListener("scroll", handleMenuScroll, true);
+    observer.observe(wrapper, { childList: true, subtree: true });
     return () => {
       observer.disconnect();
-      document.removeEventListener("scroll", handleMenuScroll, true);
+      detachListener();
     };
-  }, [
-    fetchNextCompaniesPage,
-    hasNextCompaniesPage,
-    isFetchingNextCompaniesPage
-  ]);
+  }, [maybeFetchNextCompanies]);
+
+  useEffect(() => {
+    if (companyMenuRef.current) {
+      maybeFetchNextCompanies(companyMenuRef.current);
+    }
+  }, [companies, maybeFetchNextCompanies]);
 
   const contacts = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
@@ -260,16 +284,18 @@ export const ContactTable: React.FC = () => {
           onChange={handleSearchChange}
           customStyles={{ borderRadius: "rounded-[1.5rem]" }}
         />
-        <Dropdown
-          ariaLabel={translateText(["table", "companyFilter", "ariaLabel"])}
-          className="rounded-full"
-          id="contact-company-filter"
-          menuWidth="content"
-          options={companyOptions}
-          value={selectedCompany}
-          variant="secondary"
-          onChange={(value) => setSelectedCompany(value)}
-        />
+        <div ref={companyDropdownWrapperRef}>
+          <Dropdown
+            ariaLabel={translateText(["table", "companyFilter", "ariaLabel"])}
+            className="rounded-full"
+            id="contact-company-filter"
+            menuWidth="content"
+            options={companyOptions}
+            value={selectedCompany}
+            variant="secondary"
+            onChange={(value) => setSelectedCompany(value)}
+          />
+        </div>
       </div>
 
       <Table
