@@ -69,7 +69,7 @@ const LeaveReportPage: NextPage = () => {
           label: translatePeople(["title"])
         },
         {
-          label: "Reports"
+          label: translateText(["title"])
         }
       ]}
       pageHead={translateText(["pageHead"])}
