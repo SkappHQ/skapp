@@ -35,7 +35,7 @@ public class InternalCustomerController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping
 	@PreAuthorize("hasAnyRole('ROLE_INTERNAL_API')")
 	public ResponseEntity<ResponseEntityDto> createCustomer(
 			@RequestBody CustomerCreateRequestDto customerCreateRequestDto) {
