@@ -12,7 +12,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -27,14 +27,22 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
 
+interface TaskTypeOption {
+  id: string;
+  label: string;
+  value: string;
+}
+
 const AddTaskModal: React.FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsAddTaskModalOpen } = useCrmStore();
+  const { setIsAddTaskModalOpen } = useCrmStore((store) => ({
+    setIsAddTaskModalOpen: store.setIsAddTaskModalOpen
+  }));
 
-  const { isCrmSalesManager } = useSessionData();
+  const { isCrmSalesManager, employeeDetails } = useSessionData();
 
   const [selectedOwnerChips, setSelectedOwnerChips] = useState<
     AvatarChipsInputResult[]
@@ -42,56 +50,91 @@ const AddTaskModal: React.FC = () => {
 
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
-  const priorityOptions = getPriorityOptions(translateText);
+  const priorityOptions = useMemo(
+    () => getPriorityOptions(translateText),
+    [translateText]
+  );
 
   // TODO: Replace with API data when backend integrated
-  interface TaskTypeOption {
-    id: string;
-    label: string;
-    value: string;
-  }
-
-  const taskTypeOptions: TaskTypeOption[] = [
-    "call",
-    "email",
-    "meeting",
-    "other"
-  ].map((type) => ({
-    id: type,
-    label: type,
-    value: type.toUpperCase()
-  }));
+  const taskTypeOptions: TaskTypeOption[] = useMemo(
+    () =>
+      (["call", "email", "meeting", "other"] as const).map((type) => ({
+        id: type,
+        label: translateText(["taskTypes", type]),
+        value: type.toUpperCase()
+      })),
+    [translateText]
+  );
 
   // TODO: Replace with API data when backend integrated
-  const ownerOptions: AvatarChipsInputResult[] = [
-    {
-      optionId: 1,
-      chipContent: {
-        label: "Jane Doe",
-        avatarProps: {
-          id: "owner-avatar",
-          firstName: "Jane",
-          lastName: "Doe",
-          size: "sm"
-        }
-      },
-      type: "user"
-    }
-  ];
+  // filtration should be done in backend
+  const ownerOptions: AvatarChipsInputResult[] = useMemo(
+    () => [
+      {
+        optionId: 1,
+        chipContent: {
+          label: "Jane Doe",
+          avatarProps: {
+            id: "owner-avatar",
+            firstName: "Jane",
+            lastName: "Doe",
+            size: "sm"
+          }
+        },
+        type: "user"
+      }
+    ],
+    []
+  );
 
-  const handleOwnerChipSelect = (chip: AvatarChipsInputResult) => {
-    setSelectedOwnerChips([chip]);
-    setFieldValue("owner", chip.optionId);
-    setOwnerSearchText("");
+  const filteredOwnerOptions = useMemo(
+    () =>
+      ownerSearchText
+        ? ownerOptions.filter((opt) =>
+            opt.chipContent.label
+              .toLowerCase()
+              .includes(ownerSearchText.toLowerCase())
+          )
+        : ownerOptions,
+    [ownerOptions, ownerSearchText]
+  );
+
+  const initialValues: CrmTaskAddFormTypes = {
+    name: "",
+    type: null,
+    dueDate: null,
+    priority: "MEDIUM",
+    contactName: "",
+    deal: "",
+    owner: employeeDetails?.employeeId || null,
+    notes: ""
   };
 
-  const handleOwnerChipRemove = (_chip: AvatarChipsInputResult) => {
+  const formik = useFormik({
+    initialValues,
+    onSubmit: (values) => createTask(values),
+    validationSchema: addTaskValidations(translateText),
+    validateOnChange: false,
+    validateOnBlur: false,
+    enableReinitialize: true
+  });
+
+  const {
+    values,
+    errors,
+    handleChange,
+    isSubmitting,
+    setFieldValue,
+    setSubmitting,
+    submitForm,
+    resetForm
+  } = formik;
+
+  const handleCloseModal = (): void => {
+    setIsAddTaskModalOpen(false);
+    resetForm();
     setSelectedOwnerChips([]);
-    setFieldValue("owner", null);
-  };
-
-  const handleOwnerSearchTextChange = (text: string) => {
-    setOwnerSearchText(text);
+    setOwnerSearchText("");
   };
 
   const handleSuccess = () => {
@@ -114,56 +157,40 @@ const AddTaskModal: React.FC = () => {
     });
   };
 
-  const handleCloseModal = (): void => {
-    setIsAddTaskModalOpen(false);
-  };
+  const { mutate: createNewTask, isPending } = useCreateTask(
+    handleSuccess,
+    handleError
+  );
 
-  const { mutate: createNewTask } = useCreateTask(handleSuccess, handleError);
-
-  const createTask = (values: CrmTaskAddFormTypes) => {
+  const createTask = (formValues: CrmTaskAddFormTypes) => {
     const payload: CrmTaskCreatePayload = {
-      name: values.name.trim(),
-      type: values.type,
-      dueAt: values.dueDate,
-      priority: values.priority,
-      contactName: values.contactName?.trim() || null,
-      deal: values.deal?.trim() || null,
-      owner: values.owner,
-      notes: values.notes?.trim() || null
+      name: formValues.name.trim(),
+      type: formValues.type,
+      dueAt: formValues.dueDate,
+      priority: formValues.priority,
+      contactName: formValues.contactName?.trim() || null,
+      deal: formValues.deal?.trim() || null,
+      owner: formValues.owner,
+      notes: formValues.notes?.trim() || null
     };
 
     createNewTask(payload);
   };
 
-  const initialValues: CrmTaskAddFormTypes = {
-    name: "",
-    type: null,
-    dueDate: null,
-    priority: priorityOptions[1].value,
-    contactName: "",
-    deal: "",
-    owner: null,
-    notes: ""
+  const handleOwnerChipSelect = (chip: AvatarChipsInputResult) => {
+    setSelectedOwnerChips([chip]);
+    setFieldValue("owner", chip.optionId);
+    setOwnerSearchText("");
   };
 
-  const formik = useFormik({
-    initialValues,
-    onSubmit: createTask,
-    validationSchema: addTaskValidations(translateText),
-    validateOnChange: false,
-    validateOnBlur: false,
-    enableReinitialize: true
-  });
+  const handleOwnerChipRemove = (_chip: AvatarChipsInputResult) => {
+    setSelectedOwnerChips([]);
+    setFieldValue("owner", null);
+  };
 
-  const {
-    values,
-    errors,
-    handleChange,
-    isSubmitting,
-    setFieldValue,
-    setSubmitting,
-    submitForm
-  } = formik;
+  const handleOwnerSearchTextChange = (text: string) => {
+    setOwnerSearchText(text);
+  };
 
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
@@ -177,6 +204,7 @@ const AddTaskModal: React.FC = () => {
         variant={errors.type ? "primary-error" : "primary"}
         width="100%"
         className="rounded-[0.5rem] w-full"
+        ariaLabel={translateText(["ariaLabels", "type"])}
         required
       />
 
@@ -197,7 +225,7 @@ const AddTaskModal: React.FC = () => {
         mode="single"
         selected={values.dueDate ? new Date(values.dueDate) : undefined}
         onSelect={(date: Date | undefined) =>
-          setFieldValue("dueDate", date?.toISOString() ?? null)
+          setFieldValue("dueDate", date ?? null)
         }
         popoverPosition="bottom-right"
       >
@@ -232,11 +260,13 @@ const AddTaskModal: React.FC = () => {
         errorMessage={errors.priority || ""}
         width="100%"
         className="rounded-[0.5rem]"
+        ariaLabel={translateText(["ariaLabels", "priority"])}
       />
 
-      <label className="subtitle1">
+      <label htmlFor="contact" className="subtitle1">
         {translateText(["labels", "contactName"])}
       </label>
+      {/* TODO: Replace hardcoded filteredResults with API data when backend integrated */}
       <SearchInputField
         inputId="contact"
         searchText={values.contactName}
@@ -246,9 +276,13 @@ const AddTaskModal: React.FC = () => {
         selectedItemText={values.contactName}
         renderItem={(item: string) => item}
         placeholder={translateText(["placeholders", "contactName"])}
+        ariaLabelSearch={translateText(["ariaLabels", "contactName"])}
       />
 
-      <label className="subtitle1">{translateText(["labels", "deal"])}</label>
+      <label htmlFor="deal" className="subtitle1">
+        {translateText(["labels", "deal"])}
+      </label>
+      {/* TODO: Replace hardcoded filteredResults with API data when backend integrated */}
       <SearchInputField
         inputId="deal"
         searchText={values.deal}
@@ -258,30 +292,36 @@ const AddTaskModal: React.FC = () => {
         selectedItemText={values.deal}
         renderItem={(item: string) => item}
         placeholder={translateText(["placeholders", "deal"])}
+        ariaLabelSearch={translateText(["ariaLabels", "deal"])}
       />
 
-      <label className="subtitle1">
+      <label htmlFor="taskOwner" className="subtitle1">
         {translateText(["labels", "taskOwner"])}
       </label>
       {/* TODO: Placeholder for SearchableDropdown. Will be implemented with backend. */}
       {isCrmSalesManager ? (
         <AvatarChipsInput
-          filteredResults={ownerOptions}
+          filteredResults={filteredOwnerOptions}
           selectedChips={selectedOwnerChips}
           searchText={ownerSearchText}
           onChipSelect={handleOwnerChipSelect}
           onChipRemove={handleOwnerChipRemove}
           onSearchTextChange={handleOwnerSearchTextChange}
           searchPlaceholder={translateText(["placeholders", "taskOwner"])}
+          ariaLabelSearch={translateText(["ariaLabels", "taskOwner"])}
+          ariaLabelClearButton={translateText(["ariaLabels", "removeOwner"])}
         />
       ) : (
-        <div className="h-12 rounded-lg bg-tertiary-background flex items-center px-3">
+        <div
+          id="taskOwner"
+          className="h-12 rounded-lg bg-tertiary-background flex items-center px-3"
+        >
           <AvatarChip
-            label="John Doe"
+            label={`${employeeDetails?.firstName} ${employeeDetails?.lastName}`.trim()}
             avatarProps={{
               id: "owner-avatar",
-              firstName: "John",
-              lastName: "Doe",
+              firstName: employeeDetails?.firstName ?? "",
+              lastName: employeeDetails?.lastName ?? "",
               size: "sm"
             }}
           />
@@ -313,7 +353,7 @@ const AddTaskModal: React.FC = () => {
           variant="primary"
           type="button"
           onClick={() => submitForm()}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isPending}
           aria-label={translateText(["ariaLabels", "save"])}
         >
           {translateText(["buttons", "save"])}

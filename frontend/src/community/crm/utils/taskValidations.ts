@@ -1,5 +1,6 @@
 import * as Yup from "yup";
 
+import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 
 export const addTaskValidations = (translator: TranslatorFunctionType) =>
@@ -9,14 +10,18 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
       .required(translator(["validations", "type"])),
     name: Yup.string()
       .trim()
-      .required(translator(["validations", "name"])),
+      .required(translator(["validations", "name"]))
+      .max(
+        characterLengths.NAME_LENGTH,
+        translator(["validations", "nameLength"])
+      ),
     dueDate: Yup.string()
       .nullable()
       .required(translator(["validations", "dueDate"]))
       .test(
         "not-backdated",
         translator(["validations", "dueDatePast"]),
-        (value) => {
+        function (value) {
           if (!value) {
             return true;
           }
@@ -24,7 +29,9 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
           const selectedDate = new Date(value);
 
           if (Number.isNaN(selectedDate.getTime())) {
-            return false;
+            return this.createError({
+              message: translator(["validations", "dueDate"])
+            });
           }
 
           const today = new Date();

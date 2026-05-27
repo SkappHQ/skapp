@@ -122,7 +122,7 @@ export interface CrmTaskAddFormTypes {
   priority: string | null;
   contactName: string;
   deal: string;
-  owner: string | null;
+  owner: number | null;
   notes: string;
 }
 
@@ -133,6 +133,6 @@ export interface CrmTaskCreatePayload {
   priority: string | null;
   contactName: string | null;
   deal: string | null;
-  owner: string | null;
+  owner: number | null;
   notes: string | null;
 }

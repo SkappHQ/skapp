@@ -1,5 +1,4 @@
 import { Label } from "@rootcodelabs/skapp-ui";
-import React from "react";
 
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 

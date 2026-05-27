@@ -5,6 +5,7 @@ import { taskQueryKeys } from "./utils/QueryKeys";
 
 const createTask = async (taskDetails: CrmTaskCreatePayload): Promise<void> => {
   // TODO: Replace with actual API call when backend is ready
+  throw new Error("createTask is not yet implemented");
 };
 
 export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
