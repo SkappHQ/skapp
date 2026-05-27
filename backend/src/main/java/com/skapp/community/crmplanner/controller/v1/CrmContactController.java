@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,6 +49,15 @@ public class CrmContactController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ResponseEntityDto> deleteContact(@PathVariable Long id) {
 		ResponseEntityDto response = contactService.deleteContact(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get contact metrics",
+			description = "Returns a paginated list of contacts with closed-deal and open-task metrics.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping("/metrics")
+	public ResponseEntity<ResponseEntityDto> getContactMetrics(CrmContactMetricRequestDto filterDto) {
+		ResponseEntityDto response = contactService.getContactMetrics(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
