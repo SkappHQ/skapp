@@ -18,22 +18,26 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/external/adms/{tenantId}/iclock")
+// TEMP: ADMS external integration endpoints are temporary for the current rollout phase.
+@RequestMapping(AdmsController.ADMS_BASE_PATH)
 @Profile("!ep-prd")
 public class AdmsController {
+
+	static final String ADMS_BASE_PATH = "/external/adms/{tenantId}/iclock";
 
 	private final AdmsService admsService;
 
 	@GetMapping(value = "/cdata", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> handshake(@PathVariable String tenantId,
-			@RequestParam(value = "SN", required = false) String serialNumber, HttpServletRequest request) {
+			@RequestParam(value = "SN", required = false, defaultValue = "") String serialNumber,
+			HttpServletRequest request) {
 		String response = admsService.handleHandshake(tenantId, serialNumber, request);
 		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping(value = "/cdata", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> receiveRecords(@PathVariable String tenantId,
-			@RequestParam(value = "SN", required = false) String serialNumber,
+			@RequestParam(value = "SN", required = false, defaultValue = "") String serialNumber,
 			@RequestParam(value = "table", required = false) String table,
 			@RequestParam(value = "Stamp", required = false) String stamp, HttpServletRequest request)
 			throws IOException {
@@ -44,7 +48,7 @@ public class AdmsController {
 
 	@GetMapping(value = "/getrequest", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> getRequest(@PathVariable String tenantId,
-			@RequestParam(value = "SN", required = false) String serialNumber) {
+			@RequestParam(value = "SN", required = false, defaultValue = "") String serialNumber) {
 		String response = admsService.getRequest(tenantId, serialNumber);
 		return ResponseEntity.ok(response);
 	}

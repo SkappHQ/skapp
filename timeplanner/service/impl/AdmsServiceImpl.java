@@ -1,7 +1,6 @@
 package com.skapp.enterprise.timeplanner.service.impl;
 
 import com.skapp.enterprise.common.config.TenantContext;
-import com.skapp.enterprise.common.util.ParseUtils;
 import com.skapp.enterprise.timeplanner.enums.AdmsResponse;
 import com.skapp.enterprise.timeplanner.enums.AdmsTableType;
 import com.skapp.enterprise.timeplanner.model.AdmsAttendanceLog;
@@ -74,7 +73,7 @@ public class AdmsServiceImpl implements AdmsService {
 		if (AdmsTableType.OPERLOG.matches(table)) {
 			log.info("Received OPERLOG from device SN={}: {}", serialNumber, body);
 			if (stamp != null && !stamp.isBlank()) {
-				Long parsedStamp = ParseUtils.parseLong(stamp);
+				Long parsedStamp = AdmsUtils.parseLong(stamp);
 				if (parsedStamp != null) {
 					device.setOpStamp(Math.max(device.getOpStamp() != null ? device.getOpStamp() : 0, parsedStamp));
 				}
@@ -120,13 +119,13 @@ public class AdmsServiceImpl implements AdmsService {
 				AdmsAttendanceLog attendanceLog = new AdmsAttendanceLog();
 				attendanceLog.setDevice(device);
 				attendanceLog.setPin(fields[0].trim());
-				LocalDateTime punchedAt = ParseUtils.parseDateTime(fields[1].trim(), AdmsUtils.PUNCH_DATE_FORMAT);
+				LocalDateTime punchedAt = AdmsUtils.parseDateTime(fields[1].trim(), AdmsUtils.PUNCH_DATE_FORMAT);
 
 				if (punchedAt != null) {
 					attendanceLog.setPunchedAt(punchedAt);
-					attendanceLog.setStatus(ParseUtils.parseInteger(fields[2].trim()));
-					attendanceLog.setVerifyType(ParseUtils.parseInteger(fields[3].trim()));
-					attendanceLog.setWorkCode(fields.length > 4 ? ParseUtils.parseInteger(fields[4].trim()) : null);
+					attendanceLog.setStatus(AdmsUtils.parseInteger(fields[2].trim()));
+					attendanceLog.setVerifyType(AdmsUtils.parseInteger(fields[3].trim()));
+					attendanceLog.setWorkCode(fields.length > 4 ? AdmsUtils.parseInteger(fields[4].trim()) : null);
 					attendanceLog.setRawData(line);
 
 					admsAttendanceLogDao.save(attendanceLog);
@@ -136,7 +135,7 @@ public class AdmsServiceImpl implements AdmsService {
 		}
 
 		if (stamp != null && !stamp.isBlank()) {
-			Long stampValue = ParseUtils.parseLong(stamp);
+			Long stampValue = AdmsUtils.parseLong(stamp);
 			if (stampValue != null) {
 				device.setAttStamp(Math.max(device.getAttStamp() != null ? device.getAttStamp() : 0, stampValue));
 			}
