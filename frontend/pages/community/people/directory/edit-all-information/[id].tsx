@@ -9,6 +9,7 @@ import { useUploadImages } from "~community/common/api/FileHandleApi";
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -75,9 +76,7 @@ const EditAllInformation: NextPage = () => {
   const { data: currentEmployeeDetails } = useGetUserPersonalDetails();
 
   const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
-  const isPeopleManager = user?.roles?.includes(
-    ManagerTypes.PEOPLE_MANAGER
-  );
+  const isPeopleManager = user?.roles?.includes(ManagerTypes.PEOPLE_MANAGER);
 
   const translateToastText = useTranslator(
     "peopleModule",
@@ -98,9 +97,7 @@ const EditAllInformation: NextPage = () => {
 
   const isLeaveAdmin = user?.roles?.includes(AdminTypes.LEAVE_ADMIN);
 
-  const isAttendanceAdmin = user?.roles?.includes(
-    AdminTypes.ATTENDANCE_ADMIN
-  );
+  const isAttendanceAdmin = user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN);
 
   const isLeaveManager = user?.roles?.includes(
     ManagerTypes.LEAVE_MANAGER || AdminTypes.LEAVE_ADMIN
@@ -187,8 +184,7 @@ const EditAllInformation: NextPage = () => {
     translateText(["editAllInfo", "employment"]),
     translateText(["editAllInfo", "systemPermissions"]),
     // translateText(["editAllInfo", "timeline"]),
-    ...(isLeaveTabVisible &&
-    user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+    ...(isLeaveTabVisible && user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
       ? [translateText(["editAllInfo", "leave"])]
       : []),
     ...(isTimeTabVisible &&
