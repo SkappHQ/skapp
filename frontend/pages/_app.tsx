@@ -176,7 +176,7 @@ function MyApp({
 MyApp.getInitialProps = async (appContext: AppContext) => {
   const appProps = await App.getInitialProps(appContext);
 
-  if (typeof window === "undefined") {
+  if (globalThis.window === undefined) {
     return {
       ...appProps,
       initialI18nStore: i18n.store.data,
