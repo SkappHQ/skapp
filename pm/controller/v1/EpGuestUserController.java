@@ -113,9 +113,8 @@ public class EpGuestUserController {
 	@GetMapping("/validate")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PM_ADMIN')")
 	public ResponseEntity<List<GuestInvitationValidationResponseDto>> validateGuestInvitations(
-			@RequestParam List<String> emails, @RequestParam(required = false) Long projectId) {
-		List<GuestInvitationValidationResponseDto> response = epGuestUserService.validateGuestInvitations(emails,
-				projectId);
+			@RequestParam List<String> emails) {
+		List<GuestInvitationValidationResponseDto> response = epGuestUserService.validateGuestInvitations(emails);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
