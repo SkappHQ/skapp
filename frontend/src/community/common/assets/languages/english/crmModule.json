@@ -142,9 +142,10 @@
       "errorTitle": "Failed to add task",
       "errorDescription": "Please try again or contact support",
       "validations": {
-        "type": "Task type is required",
-        "name": "Task name is required",
-        "dueDate": "Due date is required"
+        "type": "Please select a task type.",
+        "name": "Task subject is required",
+        "dueDate": "Please select a valid due date.",
+        "dueDatePast": "Due date cannot be in the past."
       }
     }
   }

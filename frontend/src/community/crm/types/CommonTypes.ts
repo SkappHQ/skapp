@@ -125,3 +125,16 @@ export interface CrmTaskAddFormTypes {
   owner: string | null;
   notes: string;
 }
+
+export interface CrmTaskCreatePayload {
+  name: string;
+  type: string | null;
+  dueAt: string | null;
+  priority: string | null;
+  contactName: string | null;
+  deal: string | null;
+  owner: string | null;
+  notes: string | null;
+}
+
+

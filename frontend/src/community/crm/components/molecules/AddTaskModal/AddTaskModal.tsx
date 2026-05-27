@@ -1,23 +1,30 @@
 import {
   AvatarChip,
+  AvatarChipsInput,
+  AvatarChipsInputResult,
   ButtonV2,
   CalendarIcon,
   CloseIcon,
   DatePicker,
   Dropdown,
   InputField,
-  Label,
   SearchInputField,
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React from "react";
+import React, { useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { useCreateTask } from "~community/crm/api/TaskApi";
+import { getPriorityOptions } from "~community/crm/components/atoms/TaskOptions/TaskOptions";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmTaskAddFormTypes } from "~community/crm/types/CommonTypes";
+import {
+  CrmTaskAddFormTypes,
+  CrmTaskCreatePayload
+} from "~community/crm/types/CommonTypes";
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
 
 const AddTaskModal: React.FC = () => {
@@ -25,61 +32,63 @@ const AddTaskModal: React.FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  // TODO: for reference. should be replaced when backend integrated
-  const PRIORITY_OPTIONS = [
+  const { setIsAddTaskModalOpen } = useCrmStore();
+
+  const { isCrmSalesManager } = useSessionData();
+
+  const [selectedOwnerChips, setSelectedOwnerChips] = useState<
+    AvatarChipsInputResult[]
+  >([]);
+
+  const [ownerSearchText, setOwnerSearchText] = useState("");
+
+  const priorityOptions = getPriorityOptions(translateText);
+
+  // TODO: Replace with API data when backend integrated
+  interface TaskTypeOption {
+    id: string;
+    label: string;
+    value: string;
+  }
+
+  const taskTypeOptions: TaskTypeOption[] = ["none", "call", "email", "meeting"].map(
+    (type) => ({
+      id: type,
+      label: type,
+      value: type.toUpperCase()
+    })
+  );
+
+  // TODO: Replace with API data when backend integrated
+  const ownerOptions: AvatarChipsInputResult[] = [
     {
-      id: "high",
-      label: (
-        <Label
-          backgroundColor="bg-semantic-red-background"
-          textColor="text-semantic-red-text"
-        >
-          {translateText(["priorityOptions", "high"])}
-        </Label>
-      ),
-      value: "HIGH"
-    },
-    {
-      id: "medium",
-      label: (
-        <Label
-          backgroundColor="bg-semantic-amber-background"
-          textColor="text-semantic-amber-text"
-        >
-          {translateText(["priorityOptions", "medium"])}
-        </Label>
-      ),
-      value: "MEDIUM"
-    },
-    {
-      id: "low",
-      label: (
-        <Label
-          backgroundColor="bg-semantic-green-background"
-          textColor="text-semantic-green-text"
-        >
-          {translateText(["priorityOptions", "low"])}
-        </Label>
-      ),
-      value: "LOW"
+      optionId: 1,
+      chipContent: {
+        label: "Jane Doe",
+        avatarProps: {
+          id: "owner-avatar",
+          firstName: "Jane",
+          lastName: "Doe",
+          size: "sm"
+        }
+      },
+      type: "user"
     }
   ];
 
-  const { setIsAddTaskModalOpen } = useCrmStore((store) => ({
-    setIsAddTaskModalOpen: store.setIsAddTaskModalOpen
-  }));
+  const handleOwnerChipSelect = (chip: AvatarChipsInputResult) => {
+    setSelectedOwnerChips([chip]);
+    setFieldValue("owner", chip.optionId);
+    setOwnerSearchText("");
+  };
 
-  const taskTypeOptions: { id: string; label: string; value: string }[] = [];
+  const handleOwnerChipRemove = (_chip: AvatarChipsInputResult) => {
+    setSelectedOwnerChips([]);
+    setFieldValue("owner", null);
+  };
 
-  const initialValues: CrmTaskAddFormTypes = {
-    name: "",
-    type: null,
-    dueDate: null,
-    priority: PRIORITY_OPTIONS[1].value,
-    contactName: "",
-    deal: "",
-    owner: null,
-    notes: ""
+  const handleOwnerSearchTextChange = (text: string) => {
+    setOwnerSearchText(text);
   };
 
   const handleSuccess = () => {
@@ -106,10 +115,32 @@ const AddTaskModal: React.FC = () => {
     setIsAddTaskModalOpen(false);
   };
 
+  const { mutate: createNewTask } = useCreateTask(handleSuccess, handleError);
+
   const createTask = (values: CrmTaskAddFormTypes) => {
-    // TODO: Build payload and call API
-    handleSuccess();
-    handleError();
+    const payload: CrmTaskCreatePayload = {
+      name: values.name.trim(),
+      type: values.type,
+      dueAt: values.dueDate,
+      priority: values.priority,
+      contactName: values.contactName?.trim() || null,
+      deal: values.deal?.trim() || null,
+      owner: values.owner,
+      notes: values.notes?.trim() || null
+    };
+
+    createNewTask(payload);
+  };
+
+  const initialValues: CrmTaskAddFormTypes = {
+    name: "",
+    type: null,
+    dueDate: null,
+    priority: priorityOptions[1].value,
+    contactName: "",
+    deal: "",
+    owner: null,
+    notes: ""
   };
 
   const formik = useFormik({
@@ -139,7 +170,8 @@ const AddTaskModal: React.FC = () => {
         options={taskTypeOptions}
         value={values.type ?? undefined}
         onChange={(value) => setFieldValue("type", value)}
-        errorMessage={errors.type || ""}
+        errorMessage={errors.type}
+        variant={errors.type ? "primary-error" : "primary"}
         width="100%"
         className="rounded-[0.5rem] w-full"
         required
@@ -157,6 +189,7 @@ const AddTaskModal: React.FC = () => {
         fullWidth
         required
       />
+
       <DatePicker
         mode="single"
         selected={values.dueDate ? new Date(values.dueDate) : undefined}
@@ -190,7 +223,7 @@ const AddTaskModal: React.FC = () => {
       <Dropdown
         label={translateText(["labels", "priority"])}
         placeholder={translateText(["placeholders", "priority"])}
-        options={PRIORITY_OPTIONS}
+        options={priorityOptions}
         value={values.priority ?? undefined}
         onChange={(value) => setFieldValue("priority", value)}
         errorMessage={errors.priority || ""}
@@ -198,69 +231,59 @@ const AddTaskModal: React.FC = () => {
         className="rounded-[0.5rem]"
       />
 
-      <div className="flex flex-col w-full gap-1">
-        <label className="subtitle1 leading-normal text-black">
-          {translateText(["labels", "contactName"])}
-        </label>
-        <SearchInputField
-          inputId="contact"
-          searchText={values.contactName}
-          onSearchTextChange={(val) => setFieldValue("contactName", val)}
-          filteredResults={["John Doe", "Jane Smith"]}
-          onItemSelect={(item) => setFieldValue("contactName", item || "")}
-          selectedItemText={values.contactName}
-          renderItem={(item: string) => (
-            <div>
-              <AvatarChip label={item} />
-            </div>
-          )}
-          placeholder={translateText(["placeholders", "contactName"])}
-        />
-        {errors.contactName && (
-          <div className="text-xs text-red-500 mt-1">{errors.contactName}</div>
-        )}
-      </div>
+      <label className="subtitle1">
+        {translateText(["labels", "contactName"])}
+      </label>
+      <SearchInputField
+        inputId="contact"
+        searchText={values.contactName}
+        onSearchTextChange={(val) => setFieldValue("contactName", val)}
+        filteredResults={["John Doe", "Jane Smith"]}
+        onItemSelect={(item) => setFieldValue("contactName", item || "")}
+        selectedItemText={values.contactName}
+        renderItem={(item: string) => item}
+        placeholder={translateText(["placeholders", "contactName"])}
+      />
 
-      <div className="flex flex-col w-full gap-1">
-        <label className="subtitle1 leading-normal text-black">
-          {translateText(["labels", "deal"])}
-        </label>
-        <SearchInputField
-          inputId="deal"
-          searchText={values.deal}
-          onSearchTextChange={(val) => setFieldValue("deal", val)}
-          filteredResults={["John Doe", "Jane Smith"]}
-          onItemSelect={(item) => setFieldValue("deal", item || "")}
-          selectedItemText={values.deal}
-          renderItem={(item: string) => (
-            <div>
-              <AvatarChip label={item} />
-            </div>
-          )}
-          placeholder={translateText(["placeholders", "deal"])}
-        />
-        {errors.deal && (
-          <div className="text-xs text-red-500 mt-1">{errors.deal}</div>
-        )}
-      </div>
+      <label className="subtitle1">{translateText(["labels", "deal"])}</label>
+      <SearchInputField
+        inputId="deal"
+        searchText={values.deal}
+        onSearchTextChange={(val) => setFieldValue("deal", val)}
+        filteredResults={["deal1", "deal2"]}
+        onItemSelect={(item) => setFieldValue("deal", item || "")}
+        selectedItemText={values.deal}
+        renderItem={(item: string) => item}
+        placeholder={translateText(["placeholders", "deal"])}
+      />
 
-      <div className="flex flex-col w-full gap-1">
-        <label className="subtitle1 leading-normal text-black">
-          {translateText(["labels", "taskOwner"])}
-        </label>
-        {/* TODO: Replace with role based selection */}
-        <div className="h-12 rounded-lg bg-gray-100 flex items-center px-3">
+      <label className="subtitle1">
+        {translateText(["labels", "taskOwner"])}
+      </label>
+      {/* TODO: Placeholder for SearchableDropdown. Will be implemented with backend. */}
+      {isCrmSalesManager ? (
+        <AvatarChipsInput
+          filteredResults={ownerOptions}
+          selectedChips={selectedOwnerChips}
+          searchText={ownerSearchText}
+          onChipSelect={handleOwnerChipSelect}
+          onChipRemove={handleOwnerChipRemove}
+          onSearchTextChange={handleOwnerSearchTextChange}
+          searchPlaceholder={translateText(["placeholders", "taskOwner"])}
+        />
+      ) : (
+        <div className="h-12 rounded-lg bg-tertiary-background flex items-center px-3"> 
           <AvatarChip
-            label={"Jane Doe"}
+            label="John Doe"
             avatarProps={{
-              id : "owner-avatar",
-              firstName: "Jane",
+              id: "owner-avatar",
+              firstName: "John",
               lastName: "Doe",
               size: "sm"
             }}
           />
         </div>
-      </div>
+      )}
 
       <TextArea
         name="notes"

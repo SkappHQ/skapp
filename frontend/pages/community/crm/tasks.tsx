@@ -28,9 +28,7 @@ const Tasks: NextPage = () => {
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
-      <>
-        <TaskModalController />
-      </>
+      <TaskModalController />
     </ContentLayout>
   );
 };
