@@ -16,7 +16,7 @@ import { useLeaveStore } from "~community/leave/store/store";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 const LeaveType: NextPage = () => {
-  const translateText = useTranslator("leaveModule", "leaveTypes");
+  const translateText = useTranslator("leaveModule");
   const router = useRouter();
   const { slug } = router.query;
 
@@ -78,12 +78,27 @@ const LeaveType: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateText(["analytics.stepLeave"])
+        },
+        {
+          label: translateText(["leaveTypes.title"]),
+          href: ROUTES.LEAVE.TYPES
+        },
+        {
+          label:
+            slug === LeaveTypeFormTypes.EDIT
+              ? translateText(["leaveTypes.editLeaveType"])
+              : translateText(["leaveTypes.addLeaveType"])
+        }
+      ]}
       title={
         slug === LeaveTypeFormTypes.EDIT
-          ? translateText(["editLeaveType"])
-          : translateText(["addLeaveType"])
+          ? translateText(["leaveTypes.editLeaveType"])
+          : translateText(["leaveTypes.addLeaveType"])
       }
-      pageHead={translateText(["pageHead"])}
+      pageHead={translateText(["leaveTypes.pageHead"])}
       isDividerVisible
       isBackButtonVisible
       onBackClick={handleBackBtnClick}

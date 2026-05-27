@@ -284,7 +284,11 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   // }, [selectedEmployee]);
 
   const openFileBrowser = () => {
-    if (storageAvailableData?.availableSpace <= EIGHTY_PERCENT) {
+    if (
+      environment === appModes.ENTERPRISE ||
+      (environment === appModes.COMMUNITY &&
+        storageAvailableData?.availableSpace <= EIGHTY_PERCENT)
+    ) {
       open();
     } else {
       setToastMessage({
