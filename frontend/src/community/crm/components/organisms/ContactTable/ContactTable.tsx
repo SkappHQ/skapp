@@ -76,7 +76,7 @@ export const ContactTable: React.FC = () => {
         scrollHeight - scrollTop - clientHeight < SCROLL_THRESHOLD_PX;
       const notScrollable = scrollHeight <= clientHeight;
       if (reachedBottom || notScrollable) {
-        void fetchNextCompaniesPage();
+        fetchNextCompaniesPage();
       }
     };
 
