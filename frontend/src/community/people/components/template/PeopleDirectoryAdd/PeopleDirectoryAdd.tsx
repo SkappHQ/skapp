@@ -11,6 +11,7 @@ const PeopleDirectoryAdd = () => {
   const { activeStep, steps } = useStepper();
 
   const router = useRouter();
+  const translatePeople = useTranslator("peopleModule");
 
   const translateText = useTranslator(
     "peopleModule",
@@ -22,6 +23,15 @@ const PeopleDirectoryAdd = () => {
     <ContentLayout
       isBackButtonVisible
       isDividerVisible={true}
+      breadcrumbs={[
+        {
+          label: translatePeople(["dashboard.people"]),
+          href: ROUTES.PEOPLE.DIRECTORY
+        },
+        {
+          label: translatePeople(["addResource.commonText.addFullProfile"])
+        }
+      ]}
       title={translateText(["title"])}
       pageHead={translateText(["head"])}
       subtitleNextToTitle={`${activeStep + 1} ${translateText(["of"])} ${steps.length}`}

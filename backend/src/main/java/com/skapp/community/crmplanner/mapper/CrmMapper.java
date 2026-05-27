@@ -7,6 +7,7 @@ import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
@@ -43,5 +44,11 @@ public interface CrmMapper {
 	CrmContactOwnerResponseDto employeeToCrmContactOwnerResponseDto(Employee employee);
 
 	CrmContactResponseDto crmContactToCrmContactResponseDto(CrmContact contact);
+
+	@Mapping(target = "closedDealValue", ignore = true)
+	@Mapping(target = "closedDealCount", ignore = true)
+	@Mapping(target = "openTaskCount", ignore = true)
+	@Mapping(target = "overdueTaskCount", ignore = true)
+	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
 }

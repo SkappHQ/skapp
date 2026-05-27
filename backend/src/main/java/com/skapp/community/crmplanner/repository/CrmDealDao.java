@@ -8,6 +8,8 @@ import java.util.List;
 @Repository
 public interface CrmDealDao extends JpaRepository<CrmDeal, Long>, CrmDealRepository {
 
+	List<CrmDeal> findByContact_IdAndIsDeletedFalse(Long contactId);
+
 	List<CrmDeal> findAllByCompanyIdAndIsDeletedFalse(Long companyId);
 
 }
