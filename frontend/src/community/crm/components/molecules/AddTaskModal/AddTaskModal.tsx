@@ -51,13 +51,16 @@ const AddTaskModal: React.FC = () => {
     value: string;
   }
 
-  const taskTypeOptions: TaskTypeOption[] = ["call", "email", "meeting", "other"].map(
-    (type) => ({
-      id: type,
-      label: type,
-      value: type.toUpperCase()
-    })
-  );
+  const taskTypeOptions: TaskTypeOption[] = [
+    "call",
+    "email",
+    "meeting",
+    "other"
+  ].map((type) => ({
+    id: type,
+    label: type,
+    value: type.toUpperCase()
+  }));
 
   // TODO: Replace with API data when backend integrated
   const ownerOptions: AvatarChipsInputResult[] = [
@@ -272,7 +275,7 @@ const AddTaskModal: React.FC = () => {
           searchPlaceholder={translateText(["placeholders", "taskOwner"])}
         />
       ) : (
-        <div className="h-12 rounded-lg bg-tertiary-background flex items-center px-3"> 
+        <div className="h-12 rounded-lg bg-tertiary-background flex items-center px-3">
           <AvatarChip
             label="John Doe"
             avatarProps={{
