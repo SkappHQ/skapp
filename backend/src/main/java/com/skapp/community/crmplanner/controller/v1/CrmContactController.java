@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/contact")
+@RequestMapping("/v1/crm/contact")
 @Tag(name = "CRM Contacts Controller", description = "Operations related to CRM Contacts")
 public class CrmContactController {
 
