@@ -15,7 +15,9 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,6 +82,8 @@ class CrmContactControllerIntegrationTest {
 	private final CrmDealStageDao crmDealStageDao;
 
 	private final EmployeeDao employeeDao;
+
+	private final EmployeeRoleDao employeeRoleDao;
 
 	// user1 is CRM_ADMIN + super admin — passes both hasRole(SALES_REPRESENTATIVE) and hasRole(SALES_MANAGER)
 	private String adminToken;
@@ -271,6 +275,103 @@ class CrmContactControllerIntegrationTest {
 		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(editValidPayload(companyId)))
 			.accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Edit soft-deleted contact - Returns Bad Request with not-found error")
+	void editContact_SoftDeletedContact_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany().getId();
+		CrmContact contact = savedContact(companyId, "soft.deleted@example.com");
+		contact.setIsDeleted(true);
+		crmContactDao.save(contact);
+
+		performPutRequest(contact.getId(), editValidPayload(companyId)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Sales rep editing their own contact - Returns OK")
+	void editContact_RepEditingOwnContact_ReturnsOk() throws Exception {
+		// Promote user2 (employeeId=2) to CRM_SALES_REPRESENTATIVE within this transaction
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		Long companyId = savedCompany().getId();
+		// Contact owned by employee 2 (the rep)
+		CrmContact contact = new CrmContact();
+		contact.setName("Rep Owned");
+		contact.setEmail("rep.owned@example.com");
+		contact.setCompany(crmCompanyDao.getReferenceById(companyId));
+		contact.setOwner(employeeDao.getReferenceById(2L));
+		Long contactId = crmContactDao.save(contact).getId();
+
+		// Rep must assign to themselves (ownerId = 2)
+		CrmContactEditRequestDto dto = editValidPayload(companyId);
+		dto.setOwnerId(2L);
+
+		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON), repToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Sales rep editing a contact they do not own - Returns Bad Request with edit-denied error")
+	void editContact_RepEditingOtherOwnersContact_ReturnsBadRequest() throws Exception {
+		// Promote user2 to CRM_SALES_REPRESENTATIVE
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		Long companyId = savedCompany().getId();
+		// Contact owned by employee 1 (admin), not by the rep
+		Long contactId = savedContact(companyId, "admin.owned@example.com").getId();
+
+		CrmContactEditRequestDto dto = editValidPayload(companyId);
+		dto.setOwnerId(2L);
+
+		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON), repToken).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED)));
+	}
+
+	@Test
+	@DisplayName("Sales rep assigning contact to a different owner - Returns Bad Request with assignment-denied error")
+	void editContact_RepAssigningToDifferentOwner_ReturnsBadRequest() throws Exception {
+		// Promote user2 to CRM_SALES_REPRESENTATIVE
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		Long companyId = savedCompany().getId();
+		// Contact owned by employee 2 (the rep) — checkEditPermission passes
+		CrmContact contact = new CrmContact();
+		contact.setName("Rep Owned Two");
+		contact.setEmail("rep.owned2@example.com");
+		contact.setCompany(crmCompanyDao.getReferenceById(companyId));
+		contact.setOwner(employeeDao.getReferenceById(2L));
+		Long contactId = crmContactDao.save(contact).getId();
+
+		// Rep attempts to reassign ownership to employee 1 — resolveOwner should deny
+		CrmContactEditRequestDto dto = editValidPayload(companyId);
+		dto.setOwnerId(1L);
+
+		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON), repToken).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED)));
 	}
 
 	// --- deleteContact ---
