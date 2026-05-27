@@ -132,6 +132,7 @@ export const setAccessToken = (token: string) => {
     const expiryDate = new Date(
       Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
+
     document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
   }
 };
@@ -156,6 +157,7 @@ export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
     const expiryDate = new Date(
       Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
+
     document.cookie = `isPasswordChangedForTheFirstTime=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
   }
 };
