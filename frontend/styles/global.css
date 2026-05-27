@@ -48,6 +48,7 @@
   --color-status-indigo: #eab308;
 
   --color-secondary-text: #52525b;
+  --color-tertiary-text: #68707f;
   --color-secondary-background: #fafafa;
   --color-tertiary-background: #f4f4f5;
   --color-secondary-accent: #e4e4e7;
@@ -132,11 +133,6 @@ textarea,
 select,
 button {
   font-family: inherit;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
 }
 
 * {

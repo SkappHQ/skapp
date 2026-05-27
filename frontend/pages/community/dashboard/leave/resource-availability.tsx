@@ -13,6 +13,18 @@ const ResourceAvailability: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateText(["dashboard"]),
+          href: ROUTES.DASHBOARD.BASE
+        },
+        {
+          label: translateText(["leave"])
+        },
+        {
+          label: translateText(["resourceAvailability"])
+        }
+      ]}
       pageHead={translateText(["resourceAvailability"])}
       title={translateText(["resourceAvailability"])}
       isDividerVisible={false}

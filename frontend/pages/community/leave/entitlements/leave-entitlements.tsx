@@ -19,7 +19,7 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveEntitlements: NextPage = () => {
-  const translateText = useTranslator("leaveModule", "leaveEntitlements");
+  const translateText = useTranslator("leaveModule");
 
   const { data: leaveTypesList } = useGetLeaveTypes(false, true);
 
@@ -57,14 +57,22 @@ const LeaveEntitlements: NextPage = () => {
 
   return (
     <ContentLayout
-      title={translateText(["title"])}
-      pageHead={translateText(["pageHead"])}
+      breadcrumbs={[
+        {
+          label: translateText(["analytics.stepLeave"])
+        },
+        {
+          label: translateText(["leaveEntitlements.title"])
+        }
+      ]}
+      title={translateText(["leaveEntitlements.title"])}
+      pageHead={translateText(["leaveEntitlements.pageHead"])}
       isDividerVisible
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryButtonText={
         leaveEntitlementTableData &&
         leaveEntitlementTableData?.items.length > 0 &&
-        translateText(["bulkUploadBtnTxt"])
+        translateText(["leaveEntitlements.bulkUploadBtnTxt"])
       }
       primaryBtnIconName={IconName.UP_ARROW_ICON}
       onPrimaryButtonClick={() =>
