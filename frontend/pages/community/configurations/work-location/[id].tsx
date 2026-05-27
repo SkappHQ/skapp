@@ -11,6 +11,7 @@ const WorkLocationEditPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const translateText = useTranslator("configurations", "workLocation");
+  const translateConfigurations = useTranslator("configurations");
   const { isFormDirty, setIsUnsavedModalOpen } = useWorkLocationStore();
 
   const locationId = id ? Number(id) : undefined;
@@ -25,15 +26,25 @@ const WorkLocationEditPage: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateConfigurations(["title"])
+        },
+        {
+          label: translateConfigurations(["tabs.organization"]),
+          href: `${ROUTES.CONFIGURATIONS.BASE}?tab=organization`
+        },
+        {
+          label: translateText(["form.editLocationTitle"])
+        }
+      ]}
       pageHead={translateText(["pageHead"])}
       title={translateText(["form.editLocationTitle"])}
       isDividerVisible
       isBackButtonVisible
       onBackClick={handleBackClick}
     >
-      <>
-        {locationId !== undefined && <WorkLocationForm id={locationId} />}
-      </>
+      <>{locationId !== undefined && <WorkLocationForm id={locationId} />}</>
     </ContentLayout>
   );
 };
