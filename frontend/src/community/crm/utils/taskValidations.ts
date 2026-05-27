@@ -2,6 +2,9 @@ import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import {
+  isValidFutureOrTodayDate
+} from "~community/common/utils/dateTimeUtils";
 
 export const addTaskValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
@@ -22,22 +25,8 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
         "not-backdated",
         translator(["validations", "dueDatePast"]),
         function (value) {
-          if (!value) {
-            return true;
-          }
-
-          const selectedDate = new Date(value);
-
-          if (Number.isNaN(selectedDate.getTime())) {
-            return this.createError({
-              message: translator(["validations", "dueDate"])
-            });
-          }
-
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-
-          return selectedDate >= today;
+          if (!value) return true;
+          return isValidFutureOrTodayDate(new Date(value));
         }
       )
   });
