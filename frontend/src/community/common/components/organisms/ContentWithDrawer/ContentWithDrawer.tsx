@@ -36,7 +36,7 @@ const ContentWithDrawer = ({ children }: Props) => {
               display: "flex",
               flexDirection: "column",
               width: "100%",
-              height: "100%",
+              flex: 1,
               overflowX: "hidden"
             }}
           >
@@ -48,7 +48,7 @@ const ContentWithDrawer = ({ children }: Props) => {
               style={{
                 flexDirection: "column",
                 width: "100%",
-                height: "100%",
+                flex: 1,
                 overflowX: "hidden"
               }}
             >
@@ -67,8 +67,8 @@ const ContentWithDrawer = ({ children }: Props) => {
         handleToastClick={toastMessage.handleToastClick}
         isIcon={toastMessage.isIcon}
         onClose={() => {
-            setToastMessage((state) => ({ ...state, open: false }));
-          }}
+          setToastMessage((state) => ({ ...state, open: false }));
+        }}
       />
       <TimeWidgetPopupController />
       <MyRequestModalController />

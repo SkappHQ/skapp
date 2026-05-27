@@ -6,11 +6,14 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
@@ -36,9 +39,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -61,6 +66,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final UserService userService;
+
+	private final MessageUtil messageUtil;
 
 	private final CrmMapper crmMapper;
 
@@ -113,6 +120,31 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactOwners: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteContact(Long id) {
+		log.info("deleteContact: execution started");
+
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		Set<CrmTask> tasks = new HashSet<>();
+		tasks.addAll(crmTaskDao.findByContact_IdAndIsDeletedFalse(id));
+		tasks.addAll(crmTaskDao.findByDeal_Contact_IdAndIsDeletedFalse(id));
+		tasks.forEach(task -> task.setIsDeleted(true));
+		crmTaskDao.saveAll(tasks);
+
+		List<CrmDeal> deals = crmDealDao.findByContact_IdAndIsDeletedFalse(id);
+		deals.forEach(deal -> deal.setIsDeleted(true));
+		crmDealDao.saveAll(deals);
+
+		contact.setIsDeleted(true);
+		crmContactDao.save(contact);
+
+		log.info("deleteContact: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_CONTACT_DELETED), false);
 	}
 
 	@Override

@@ -201,8 +201,10 @@
     "title": "All Timesheets"
   },
   "dashboards": {
+    "dashboard": "Dashboard",
     "attendanceDashboard": {
       "card1Title": "Today's clock-ins",
+      "attendance": "Attendance",
       "card2Title": "Today’s late arrivals",
       "all": "all employees",
       "records": "Records of ",
