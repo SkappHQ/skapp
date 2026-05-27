@@ -76,3 +76,14 @@ export interface CrmPriorityType {
   name: string;
   orderIndex: number;
 }
+
+export interface SidePanelDealItem {
+  id: number;
+  name: string;
+  contactName: string;
+  amount: string | null;
+  currencyCode: string | null;
+  stageName: string;
+  stageColor: string;
+  description: string | null;
+}

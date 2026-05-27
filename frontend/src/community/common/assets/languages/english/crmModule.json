@@ -23,6 +23,13 @@
     "detailsPageHead": "Deal Details | Skapp",
     "detailsTitle": "Deal Details"
   },
+  "sidePanelDeals": {
+    "title": "Deals",
+    "addDealBtn": "Add deal",
+    "emptyTitle": "No deals yet",
+    "emptyDescription": "Create your first deal to start tracking opportunities.",
+    "description": "Description"
+  },
   "tasks": {
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
