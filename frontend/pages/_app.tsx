@@ -53,7 +53,9 @@ function MyApp({
   initialLanguage
 }: MyAppPropsType) {
   const [newTheme, setNewTheme] = useState<Theme>(theme);
-  useSSR(initialI18nStore, initialLanguage);
+  const effectiveLanguage =
+    globalThis.window === undefined ? initialLanguage : i18n.language;
+  useSSR(initialI18nStore, effectiveLanguage);
   useEffect(() => {
     const lang = getCookieValue(I18N_LANGUAGE_COOKIE_NAME);
     if (lang && SUPPORTED_LANGUAGES.includes(lang) && lang !== i18n.language) {

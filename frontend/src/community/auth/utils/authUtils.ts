@@ -147,11 +147,6 @@ export const setUserLanguage = async (token: string) => {
   if (!SUPPORTED_LANGUAGES.includes(languageValue)) return;
 
   if (typeof window !== "undefined") {
-    const expiryDate = new Date(
-      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
-    );
-
-    document.cookie = `${I18N_LANGUAGE_COOKIE_NAME}=${languageValue}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
     await i18n.changeLanguage(languageValue).catch((error) => {
       console.error("[i18n] Failed to change language:", error);
       i18n.changeLanguage(i18n.options.fallbackLng as string);
@@ -185,7 +180,6 @@ export const clearCookies = async (): Promise<void> => {
       "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
     document.cookie =
       "isPasswordChangedForTheFirstTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
-    document.cookie = `${I18N_LANGUAGE_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax`;
   }
 };
 
