@@ -61,7 +61,7 @@ import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
 import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
-import com.skapp.community.peopleplanner.payload.request.TransferSupervisorsRequestDto;
+import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
@@ -1272,8 +1272,14 @@ public class PeopleServiceImpl implements PeopleService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto transferSupervisors(Long userId, TransferSupervisorsRequestDto requestDto) {
-		log.info("transferSupervisors: execution started");
+	public ResponseEntityDto reassignSupervisorsAndTerminateOrDeleteEmployee(Long userId,
+			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto) {
+		log.info("reassignSupervisorsAndTerminateOrDeleteEmployee: execution started");
+
+		if (requestDto.getAction() == null) {
+			throw new ModuleException(
+					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_TERMINATION_OR_DELETION_ACTION_REQUIRED);
+		}
 
 		Employee currentSupervisor = employeeDao.findById(userId)
 			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
@@ -1290,9 +1296,22 @@ public class PeopleServiceImpl implements PeopleService {
 						teamSupervisorTransferRequest));
 		}
 
-		log.info("transferSupervisors: execution ended");
-		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_TRANSFER_SUPERVISORS),
-				false);
+		PeopleMessageConstant successMessage;
+		switch (requestDto.getAction()) {
+			case TERMINATED -> {
+				updateUserStatus(userId, AccountStatus.TERMINATED, false);
+				successMessage = PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED;
+			}
+			case DELETED -> {
+				updateUserStatus(userId, AccountStatus.DELETED, true);
+				successMessage = PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_DELETED;
+			}
+			default -> throw new ModuleException(
+					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_TERMINATION_OR_DELETION_ACTION_REQUIRED);
+		}
+
+		log.info("reassignSupervisorsAndTerminateOrDeleteEmployee: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(successMessage), false);
 	}
 
 	private void processPrimaryManagerTransfer(Employee currentPrimarySupervisor,
