@@ -51,7 +51,7 @@ const AddTaskModal: React.FC = () => {
     value: string;
   }
 
-  const taskTypeOptions: TaskTypeOption[] = ["none", "call", "email", "meeting"].map(
+  const taskTypeOptions: TaskTypeOption[] = ["call", "email", "meeting", "other"].map(
     (type) => ({
       id: type,
       label: type,
