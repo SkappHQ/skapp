@@ -38,7 +38,7 @@ const SidePanelContactInfoItem: FC<Props> = ({
           size="sm"
           onClick={onClick}
           aria-label={value ?? "—"}
-          className="!p-0 !min-w-0 !justify-start !h-auto !rounded-[4px] hover:!bg-transparent ![outline-style:none] ![outline-width:0] !outline-0 focus:![outline-style:none] focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-2 focus-visible:!ring-primary-accent focus-visible:!ring-offset-2"
+          className={cls.linkBtn}
         >
           <span className={cls.link}>
             <span className={cls.linkText}>{value}</span>
