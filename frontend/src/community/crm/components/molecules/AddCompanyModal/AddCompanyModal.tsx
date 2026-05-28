@@ -1,8 +1,12 @@
-import { ButtonV2, InputField } from "@rootcodelabs/skapp-ui";
+import {
+  ButtonV2,
+  CloseIcon,
+  Dropdown,
+  InputField
+} from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { ChangeEvent, useEffect } from "react";
 
-import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -12,9 +16,8 @@ import {
   useCheckCompanyNameExists,
   useCreateNewCompany
 } from "~community/crm/api/CompanyApi";
-import {
-  COMPANY_NAME_DEBOUNCE_DELAY
-} from "~community/crm/constants/companyConstants";
+import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyConstants";
+import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompanyAddFormTypes,
@@ -40,7 +43,6 @@ const AddCompanyModal: React.FC = () => {
   const { setIsAddCompanyModalOpen } = useCrmStore((store) => ({
     setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
   }));
-
 
   const initialValues: CrmCompanyAddFormTypes = {
     name: "",
@@ -181,16 +183,22 @@ const AddCompanyModal: React.FC = () => {
         fullWidth
       />
 
-      <InputField
-        name="industry"
+      <Dropdown
+        options={Object.values(CrmIndustryEnum).map((industry) => ({
+          id: industry,
+          label: translateText(["industryOptions", industry]),
+          value: translateText(["industryOptions", industry])
+        }))}
         value={values.industry || ""}
-        errorMessage={errors.industry || ""}
-        state={errors.industry ? "error" : "default"}
+        onChange={(value) => {
+          void formik.setFieldValue("industry", value);
+        }}
         label={translateText(["labels", "industry"])}
         placeholder={translateText(["placeholders", "industry"])}
-        onChange={handleChange}
-        aria-label={translateText(["ariaLabels", "industry"])}
-        fullWidth
+        errorMessage={errors.industry || ""}
+        variant={errors.industry ? "primary-error" : "primary"}
+        ariaLabel={translateText(["ariaLabels", "industry"])}
+        width="100%"
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
