@@ -84,7 +84,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmValidations.validateOwnerId(requestDto.getOwnerId());
 		CrmValidations.validateCompanyId(requestDto.getCompanyId());
 
-		String normalizedEmail = requestDto.getEmail().trim().toLowerCase(Locale.ROOT);
+		String normalizedEmail = requestDto.getEmail().toLowerCase(Locale.ROOT);
 		if (crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(normalizedEmail)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
@@ -93,7 +93,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
-		contact.setName(requestDto.getName().trim());
+		contact.setName(requestDto.getName());
 		contact.setEmail(normalizedEmail);
 		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
 		contact.setCompany(company);
@@ -123,7 +123,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmValidations.validateOwnerId(requestDto.getOwnerId());
 		CrmValidations.validateCompanyId(requestDto.getCompanyId());
 
-		String normalizedEmail = requestDto.getEmail().trim().toLowerCase(Locale.ROOT);
+		String normalizedEmail = requestDto.getEmail().toLowerCase(Locale.ROOT);
 		if (!normalizedEmail.equals(contact.getEmail())
 				&& crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(normalizedEmail, id)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
