@@ -13,6 +13,7 @@ import {
   useGetSupervisedEmployeesAndTeams,
   useReassignSupervisorsAndTerminateOrDeleteEmployee
 } from "~community/people/api/PeopleApi";
+import { SearchableDropdownItem } from "~community/people/components/molecules/SearchableDropdown/SearchableDropdown";
 import SupervisorReassignmentModalSection from "~community/people/components/molecules/SupervisorReassignmentModalSection/SupervisorReassignmentModalSection";
 import { usePeopleStore } from "~community/people/store/store";
 import {
@@ -189,30 +190,36 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       ? translateText(["proceedAndTerminateButton"])
       : translateText(["proceedAndDeleteButton"]);
 
-  const handlePrimarySupervisorMouseDown = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    employee: any,
-    supervisedEmployeeId: number
+  const handlePrimarySupervisorSelect = (
+    supervisedEmployeeId: number,
+    item: SearchableDropdownItem
   ) => {
-    e.preventDefault();
-    handleSelectPrimarySupervisor(
-      employee.employeeId,
-      concatStrings([employee.firstName, employee.lastName]).trim(),
-      supervisedEmployeeId
+    const selected = filteredEmployeeList.find(
+      (emp) => String(emp.employeeId) === item.id
     );
+    if (selected) {
+      handleSelectPrimarySupervisor(
+        selected.employeeId,
+        concatStrings([selected.firstName, selected.lastName]).trim(),
+        supervisedEmployeeId
+      );
+    }
   };
 
-  const handleTeamSupervisorMouseDown = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    employee: any,
-    teamId: number
+  const handleTeamSupervisorSelect = (
+    teamId: number,
+    item: SearchableDropdownItem
   ) => {
-    e.preventDefault();
-    handleSelectTeamSupervisor(
-      employee.employeeId,
-      concatStrings([employee.firstName, employee.lastName]).trim(),
-      teamId
+    const selected = filteredEmployeeList.find(
+      (emp) => String(emp.employeeId) === item.id
     );
+    if (selected) {
+      handleSelectTeamSupervisor(
+        selected.employeeId,
+        concatStrings([selected.firstName, selected.lastName]).trim(),
+        teamId
+      );
+    }
   };
 
   const handleRemovePrimarySupervisor = (supervisedEmployeeId: number) => {
@@ -254,32 +261,21 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               isTeamSection={false}
               isSearchLoading={isSearchLoading}
               assignments={primarySupervisorAssignments}
-              getResults={(supervisedEmployeeId) =>
+              getItems={(supervisedEmployeeId) =>
                 filteredEmployeeList
                   .filter(
                     (employee) =>
                       Number(employee.employeeId) !== supervisedEmployeeId
                   )
-                  .map((employee) => (
-                    <button
-                      key={employee.employeeId}
-                      type="button"
-                      className="w-full text-left"
-                      onMouseDown={(e) =>
-                        handlePrimarySupervisorMouseDown(
-                          e,
-                          employee,
-                          supervisedEmployeeId
-                        )
-                      }
-                    >
-                      {concatStrings([
-                        employee.firstName,
-                        employee.lastName
-                      ]).trim()}
-                    </button>
-                  ))
+                  .map((employee) => ({
+                    id: String(employee.employeeId),
+                    content: concatStrings([
+                      employee.firstName,
+                      employee.lastName
+                    ]).trim()
+                  }))
               }
+              onSelectItem={handlePrimarySupervisorSelect}
               onBlur={handleDropdownBlur}
               onSearch={setSearchTerm}
               onRemove={handleRemovePrimarySupervisor}
@@ -297,23 +293,16 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               isTeamSection={true}
               isSearchLoading={isSearchLoading}
               assignments={teamSupervisorAssignments}
-              getResults={(teamId) =>
-                filteredEmployeeList.map((employee) => (
-                  <button
-                    key={employee.employeeId}
-                    type="button"
-                    className="w-full text-left"
-                    onMouseDown={(e) =>
-                      handleTeamSupervisorMouseDown(e, employee, teamId)
-                    }
-                  >
-                    {concatStrings([
-                      employee.firstName,
-                      employee.lastName
-                    ]).trim()}
-                  </button>
-                ))
+              getItems={(teamId) =>
+                filteredEmployeeList.map((employee) => ({
+                  id: String(employee.employeeId),
+                  content: concatStrings([
+                    employee.firstName,
+                    employee.lastName
+                  ]).trim()
+                }))
               }
+              onSelectItem={handleTeamSupervisorSelect}
               onBlur={handleDropdownBlur}
               onSearch={setSearchTerm}
               onRemove={handleRemoveTeamSupervisor}
