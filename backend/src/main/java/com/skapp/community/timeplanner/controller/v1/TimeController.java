@@ -45,7 +45,7 @@ import java.util.List;
 @Tag(name = "Time Controller", description = "Operations related to time recordings")
 public class TimeController {
 
-	final TimeService timeService;
+	private final TimeService timeService;
 
 	@Operation(summary = "Update time configuration",
 			description = "Update time config for a particular day if it not exists creates the config")
@@ -56,9 +56,11 @@ public class TimeController {
 	}
 
 	@Operation(summary = "Get default time configuration", description = "Get all the time configurations available")
-	@GetMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/config")
+	@PreAuthorize("hasRole('ROLE_ATTENDANCE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getDefaultTimeConfig() {
-		return new ResponseEntity<>(timeService.getDefaultTimeConfigurations(), HttpStatus.OK);
+		ResponseEntityDto response = timeService.getDefaultTimeConfigurations();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Active slots", description = "Returns all the active time slots slots")

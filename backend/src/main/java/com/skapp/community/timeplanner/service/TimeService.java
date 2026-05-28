@@ -45,6 +45,7 @@ public interface TimeService {
 
 	ResponseEntityDto getIncompleteClockOuts();
 
+	@Transactional
 	ResponseEntityDto getDefaultTimeConfigurations();
 
 	ResponseEntityDto addManualEntryRequest(ManualEntryRequestDto timeRequestDto);

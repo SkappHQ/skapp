@@ -127,16 +127,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.chrono.ChronoLocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.skapp.community.common.util.DateTimeUtils.MILLISECONDS_IN_AN_HOUR;
@@ -494,31 +486,19 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getDefaultTimeConfigurations() {
 		log.info("getDefaultTimeConfigurations: execution started");
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<TimeConfigResponseDto> newTimeConfigs = new ArrayList<>();
-		for (TimeConfig tcm : timeConfigs) {
-			if (tcm.getStartHour() == null) {
-				tcm.setStartHour(0);
-			}
-			if (tcm.getStartMinute() == null) {
-				tcm.setStartMinute(0);
-			}
-			TimeConfigResponseDto obj = timeMapper.timeConfigToTimeConfigResponseDto(tcm);
-			newTimeConfigs.add(obj);
-		}
-		List<DayOfWeek> days = List.of(DayOfWeek.values());
-		List<TimeConfigResponseDto> sortedTimeConfigs = new ArrayList<>();
-		days.forEach(day -> {
-			List<TimeConfigResponseDto> timeConfig = newTimeConfigs.stream()
-				.filter(tc -> tc.getDay().equals(day))
+
+		List<TimeConfigResponseDto> newTimeConfigs = timeConfigs.stream()
+				.map(timeMapper::timeConfigToTimeConfigResponseDto)
 				.toList();
-			if (!timeConfig.isEmpty()) {
-				sortedTimeConfigs.add(timeConfig.getFirst());
-			}
-		});
+
+		List<TimeConfigResponseDto> sortedTimeConfigs = newTimeConfigs.stream()
+				.sorted(Comparator.comparingInt(timeConfig -> timeConfig.getDay().getValue()))
+				.toList();
 
 		log.info("getDefaultTimeConfigurations: execution ended");
 		return new ResponseEntityDto(false, sortedTimeConfigs);
