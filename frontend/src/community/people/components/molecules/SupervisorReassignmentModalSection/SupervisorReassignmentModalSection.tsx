@@ -1,7 +1,8 @@
-import { AutoCompleteDropdown, AvatarChip } from "@rootcodelabs/skapp-ui";
+import { AutoCompleteDropdown } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { OptionType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -9,7 +10,6 @@ import {
   AllEmployeeDataType,
   EmployeeDataTeamType
 } from "~community/people/types/PeopleTypes";
-import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
 type SectionItem = AllEmployeeDataType | EmployeeDataTeamType;
 
@@ -73,16 +73,10 @@ const SupervisorReassignmentModalSection: FC<
             id = employee.employeeId;
             nameRow = (
               <AvatarChip
-                avatarProps={{
-                  id: String(id),
-                  firstName: employee.firstName,
-                  lastName: employee.lastName,
-                  src: employee.authPic
-                }}
-                label={concatStrings([
-                  employee.firstName,
-                  employee.lastName
-                ]).trim()}
+                firstName={employee.firstName}
+                lastName={employee.lastName}
+                avatarUrl={employee.authPic}
+                chipStyles={{ justifyContent: "flex-start" }}
               />
             );
           }
