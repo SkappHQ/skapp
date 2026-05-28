@@ -21,6 +21,6 @@ public class CrmDealResponseDto {
 
 	private String contactName;
 
-	private String ownerName;
+	private CrmOwnerResponseDto owner;
 
 }
