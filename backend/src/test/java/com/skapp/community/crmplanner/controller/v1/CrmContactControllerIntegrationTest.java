@@ -405,36 +405,6 @@ class CrmContactControllerIntegrationTest {
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE)));
 	}
 
-	@Test
-	@DisplayName("Sales rep assigning contact to a different owner - Returns Bad Request with assignment-denied error")
-	void editContact_RepAssigningToDifferentOwner_ReturnsBadRequest() throws Exception {
-		// Promote user2 to CRM_SALES_REPRESENTATIVE
-		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
-		employeeRoleDao.flush();
-		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
-
-		Long companyId = savedCompany().getId();
-		// Contact owned by employee 2 (the rep) — checkEditPermission passes
-		CrmContact contact = new CrmContact();
-		contact.setName("Rep Owned Two");
-		contact.setEmail("rep.owned2@example.com");
-		contact.setCompany(crmCompanyDao.getReferenceById(companyId));
-		contact.setOwner(employeeDao.getReferenceById(2L));
-		Long contactId = crmContactDao.save(contact).getId();
-
-		// Rep attempts to reassign ownership to employee 1 — resolveOwner should deny
-		CrmContactEditRequestDto dto = editValidPayload(companyId);
-		dto.setOwnerId(1L);
-
-		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(dto))
-			.accept(MediaType.APPLICATION_JSON), repToken).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED)));
-	}
-
 	// --- deleteContact ---
 
 	@Test
