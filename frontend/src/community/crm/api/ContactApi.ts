@@ -56,12 +56,11 @@ export const useGetContactMetrics = (
 export const useGetCrmCompanies = (size: number) => {
   return useQuery({
     queryKey: contactQueryKeys.CRM_COMPANIES,
-    queryFn: async (): Promise<CompanyLookup[]> => {
+    queryFn: async (): Promise<CrmCompaniesResponseType> => {
       const response = await authFetch.get(contactEndpoints.GET_COMPANIES, {
         params: { size }
       });
-      const data = response?.data?.results?.[0] as CrmCompaniesResponseType;
-      return data?.items ?? [];
+      return response?.data?.results?.[0];
     }
   });
 };

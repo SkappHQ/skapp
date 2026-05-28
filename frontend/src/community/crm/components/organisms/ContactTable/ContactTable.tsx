@@ -34,21 +34,18 @@ export const ContactTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState<string>(ALL_COMPANIES);
+  const [selectedCompany, setSelectedCompany] = useState<number|undefined>(ALL_COMPANIES);
   const debouncedSearch = useDebounce(searchTerm, CONTACT_SEARCH_DEBOUNCE_DELAY);
 
-  const companyId =
-    selectedCompany === ALL_COMPANIES ? undefined : Number(selectedCompany);
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, companyId);
+    useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, selectedCompany);
 
-  const { data: companies = [] } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
+  const { data: companies } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
 
   const contacts = data?.pages.flatMap((page) => page.items);
 
   const hasActiveFilters =
-    debouncedSearch.trim() !== "" || companyId !== undefined;
+    debouncedSearch.trim() !== "" || selectedCompany !== undefined;
   const emptyStateType = hasActiveFilters
     ? EmptyStateTypeEnum.NO_SEARCH_RESULTS
     : EmptyStateTypeEnum.NO_DATA;
@@ -59,10 +56,10 @@ export const ContactTable: React.FC = () => {
       label: translateText(["table", "companyFilter", "allCompanies"]),
       value: ALL_COMPANIES
     },
-    ...companies.map((company) => ({
+    ...(companies?.items ?? []).map((company) => ({
       id: String(company.id),
       label: company.name,
-      value: String(company.id)
+      value: company.id
     }))
   ];
 
@@ -163,6 +160,7 @@ export const ContactTable: React.FC = () => {
               firstName: owner?.firstName,
               lastName: owner?.lastName ?? ""
             }}
+            label={`${owner.firstName} ${owner.lastName ?? ""}`}
             backgroundColor="bg-tertiary-background"
           />
         );
