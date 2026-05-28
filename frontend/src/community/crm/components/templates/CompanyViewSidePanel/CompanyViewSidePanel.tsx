@@ -9,9 +9,9 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelContactRow } from "~community/crm/types/CrmContactTypes";
 
-import CompanyDeals, {
-  CompanyDealItem
-} from "../../molecules/CompanyDeals/CompanyDeals";
+import SidePanelDeals, {
+  SidePanelDealItem
+} from "../../molecules/SidePanelDeals/SidePanelDeals";
 import CompanyDetailHeader, {
   CompanyDetailHeaderActions
 } from "../../molecules/CompanyDetailHeader/CompanyDetailHeader";
@@ -109,39 +109,39 @@ const getCompanyContacts = (company: CrmCompanyMetricsType): CrmSidePanelContact
 ];
 
 // TODO: Replace with API data
-const getCompanyDeals = (): CompanyDealItem[] => [
-  // {
-  //   id: 1,
-  //   name: "Warehouse machinery supply",
-  //   contactName: "Samuel West",
-  //   amount: "12000",
-  //   currencyCode: "$",
-  //   stageName: "Lead Qualified",
-  //   stageColor: "#3b82f6",
-  //   description:
-  //     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut et massa mi. Aliquam in hendrerit urna. Pellentesque sit amet sapien fringilla, mattis ligula consectetur, ultrices mauris."
-  // },
-  // {
-  //   id: 2,
-  //   name: "Office supplies contract",
-  //   contactName: "Hannah Lee",
-  //   amount: "8500",
-  //   currencyCode: "$",
-  //   stageName: "Proposal Sent",
-  //   stageColor: "#34d399",
-  //   description:
-  //     "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-  // },
-  // {
-  //   id: 3,
-  //   name: "Annual maintenance deal",
-  //   contactName: "Samuel West",
-  //   amount: "15000",
-  //   currencyCode: "$",
-  //   stageName: "Lead Qualified",
-  //   stageColor: "#3b82f6",
-  //   description: null
-  // }
+const getCompanyDeals = (): SidePanelDealItem[] => [
+  {
+    id: 1,
+    name: "Warehouse machinery supply",
+    contactName: "Samuel West",
+    amount: "12000",
+    currencyCode: "$",
+    stageName: "Lead Qualified",
+    stageColor: "#3b82f6",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut et massa mi. Aliquam in hendrerit urna. Pellentesque sit amet sapien fringilla, mattis ligula consectetur, ultrices mauris."
+  },
+  {
+    id: 2,
+    name: "Office supplies contract",
+    contactName: "Hannah Lee",
+    amount: "8500",
+    currencyCode: "$",
+    stageName: "Proposal Sent",
+    stageColor: "#34d399",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    id: 3,
+    name: "Annual maintenance deal",
+    contactName: "Samuel West",
+    amount: "15000",
+    currencyCode: "$",
+    stageName: "Lead Qualified",
+    stageColor: "#3b82f6",
+    description: null
+  }
 ];
 
 interface CompanyViewSidePanelProps {
@@ -198,7 +198,7 @@ const CompanyViewSidePanel: React.FC<CompanyViewSidePanelProps> = ({
                     metrics={getCompanyMetrics(selectedCompany)}
                   />
                 )}
-                {selectedCompany && <CompanyDeals deals={getCompanyDeals()} />}
+                {selectedCompany && <SidePanelDeals deals={getCompanyDeals()} />}
                 {selectedCompany && (
                   <SidePanelCompanyContacts contacts={getCompanyContacts(selectedCompany)} />
                 )}
