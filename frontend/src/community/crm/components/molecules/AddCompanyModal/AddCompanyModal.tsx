@@ -46,7 +46,7 @@ const AddCompanyModal: React.FC = () => {
 
   const initialValues: CrmCompanyAddFormTypes = {
     name: "",
-    industry: null,
+    industry: translateText(["industryOptions", "NONE"]),
     website: null,
     address: null,
     contactNumber: null
@@ -82,9 +82,15 @@ const AddCompanyModal: React.FC = () => {
   );
 
   const createCompany = (values: CrmCompanyAddFormTypes) => {
+    const noneValue = translateText(["industryOptions", "NONE"]);
+    const industry =
+      values.industry?.trim() && values.industry.trim() !== noneValue
+        ? values.industry.trim()
+        : null;
+
     const payload: CrmCompanyCreatePayload = {
       name: values.name.trim(),
-      industry: values.industry?.trim() || null,
+      industry,
       website: values.website?.trim() || null,
       address: values.address?.trim() || null,
       contactNumber: values.contactNumber?.trim() || null
