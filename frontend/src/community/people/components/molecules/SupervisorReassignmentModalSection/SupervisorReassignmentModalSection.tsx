@@ -1,11 +1,14 @@
-import { AutoCompleteDropdown, AvatarChip } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useState } from "react";
+import { AvatarChip } from "@rootcodelabs/skapp-ui";
+import { ChangeEvent, FC, ReactNode, useEffect, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { OptionType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
+import SearchableDropdown, {
+  SearchableDropdownItem
+} from "~community/people/components/molecules/SearchableDropdown/SearchableDropdown";
 import {
   AllEmployeeDataType,
   EmployeeDataTeamType
@@ -23,7 +26,8 @@ const EmployeeAvatarChip: FC<{ employee: AllEmployeeDataType }> = ({
         id: String(employee.employeeId),
         firstName: employee.firstName,
         lastName: employee.lastName,
-        src: imageUrl ?? ""
+        src: imageUrl ?? "",
+        size: "sm"
       }}
       label={concatStrings([employee.firstName, employee.lastName]).trim()}
     />
@@ -39,7 +43,8 @@ interface SupervisorReassignmentModalSectionProps {
   isTeamSection: boolean;
   isSearchLoading: boolean;
   assignments: Record<number, OptionType>;
-  getResults: (entityId: number) => ReactNode[];
+  getItems: (entityId: number) => SearchableDropdownItem[];
+  onSelectItem: (entityId: number, item: SearchableDropdownItem) => void;
   onBlur: () => void;
   onSearch: (term: string) => void;
   onRemove: (entityId: number) => void;
@@ -54,24 +59,40 @@ const SupervisorReassignmentModalSection: FC<
   isTeamSection,
   isSearchLoading,
   assignments,
-  getResults,
+  getItems,
+  onSelectItem,
   onBlur,
   onSearch,
   onRemove
 }) => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchTerms, setSearchTerms] = useState<Record<number, string>>({});
+  const [isTyping, setIsTyping] = useState<Record<number, boolean>>({});
   const translateText = useTranslator("peopleModule", "supervisorReassignment");
-  const translateConfig = useTranslator("configurations", "workLocation");
   const removeButtonAriaLabel = translateText(["removeAssignment"]);
   const placeholderText = translateText(["selectSupervisorPlaceholder"]);
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
+  useEffect(() => {
+    if (!isSearchLoading) {
+      setIsTyping({});
+    }
+  }, [isSearchLoading]);
+
+  const handleInputChange = (
+    entityId: number,
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const term = e.target.value;
+    setSearchTerms((prev) => ({ ...prev, [entityId]: term }));
+    if (term.trim().length > 0) {
+      setIsTyping((prev) => ({ ...prev, [entityId]: true }));
+    } else {
+      setIsTyping((prev) => ({ ...prev, [entityId]: false }));
+    }
     onSearch(term);
   };
 
-  const handleBlur = () => {
-    setSearchTerm("");
+  const handleBlur = (entityId: number) => {
+    setSearchTerms((prev) => ({ ...prev, [entityId]: "" }));
     onBlur();
   };
 
@@ -94,19 +115,18 @@ const SupervisorReassignmentModalSection: FC<
           }
 
           const assigned = assignments[id];
+          const currentItems = getItems(id);
+          const currentSearchTerm = searchTerms[id] ?? "";
 
-          const getNoResultsText = () => {
-            if (isSearchLoading) return translateText(["loadingEmployees"]);
-
-            if (!searchTerm.trim())
-              return translateConfig([
-                "form",
-                "employeeMultiSelect",
-                "ariaLabelSearch"
-              ]);
-
-            return translateText(["noEmployeesFound"]);
-          };
+          const emptyMessage =
+            !isSearchLoading &&
+            !isTyping[id] &&
+            currentSearchTerm.trim() &&
+            currentItems.length === 0 ? (
+              <p className="px-4 py-2 body2 text-secondary-text">
+                {translateText(["noEmployeesFound"])}
+              </p>
+            ) : undefined;
 
           return (
             <div
@@ -124,16 +144,16 @@ const SupervisorReassignmentModalSection: FC<
               </div>
               <div className="w-62.5 shrink-0">
                 {!assigned ? (
-                  <AutoCompleteDropdown
-                    hasCard={false}
-                    className="w-full!"
-                    onBlur={handleBlur}
+                  <SearchableDropdown
+                    id={`supervisor-search-${id}`}
+                    items={currentItems}
+                    onSelect={(item) => onSelectItem(id, item)}
+                    value={currentSearchTerm}
+                    onChange={(e) => handleInputChange(id, e)}
+                    onBlur={() => handleBlur(id)}
                     placeholder={placeholderText}
-                    onSearch={handleSearch}
-                    accessibilityTexts={{
-                      noResultsFoundText: getNoResultsText()
-                    }}
-                    results={getResults(id)}
+                    emptyMessage={emptyMessage}
+                    customStyles={{ border: "border border-transparent" }}
                   />
                 ) : (
                   <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
