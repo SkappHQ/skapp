@@ -46,7 +46,7 @@ const AddCompanyModal: React.FC = () => {
 
   const initialValues: CrmCompanyAddFormTypes = {
     name: "",
-    industry: translateText(["industryOptions", "NONE"]),
+    industry: CrmIndustryEnum.NONE,
     website: null,
     address: null,
     contactNumber: null
@@ -82,10 +82,9 @@ const AddCompanyModal: React.FC = () => {
   );
 
   const createCompany = (values: CrmCompanyAddFormTypes) => {
-    const noneValue = translateText(["industryOptions", "NONE"]);
     const industry =
-      values.industry?.trim() && values.industry.trim() !== noneValue
-        ? values.industry.trim()
+      values.industry && values.industry !== CrmIndustryEnum.NONE
+        ? values.industry
         : null;
 
     const payload: CrmCompanyCreatePayload = {
@@ -193,7 +192,7 @@ const AddCompanyModal: React.FC = () => {
         options={Object.values(CrmIndustryEnum).map((industry) => ({
           id: industry,
           label: translateText(["industryOptions", industry]),
-          value: translateText(["industryOptions", industry])
+          value: industry
         }))}
         value={values.industry || ""}
         onChange={(value) => {
