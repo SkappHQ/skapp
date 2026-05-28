@@ -5,7 +5,7 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { ChangeEvent, useEffect } from "react";
+import React, { ChangeEvent, useEffect, useMemo } from "react";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -38,6 +38,16 @@ const AddCompanyModal: React.FC = () => {
     "crmModule",
     "companies",
     "companyToastMessages"
+  );
+
+  const industryOptions = useMemo(
+    () =>
+      Object.values(CrmIndustryEnum).map((industry) => ({
+        id: industry,
+        label: translateText(["industryOptions", industry]),
+        value: industry
+      })),
+    [translateText]
   );
 
   const { setIsAddCompanyModalOpen } = useCrmStore((store) => ({
@@ -189,11 +199,7 @@ const AddCompanyModal: React.FC = () => {
       />
 
       <Dropdown
-        options={Object.values(CrmIndustryEnum).map((industry) => ({
-          id: industry,
-          label: translateText(["industryOptions", industry]),
-          value: industry
-        }))}
+        options={industryOptions}
         value={values.industry || ""}
         onChange={(value) => {
           formik.setFieldValue("industry", value);
