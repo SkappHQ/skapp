@@ -5,8 +5,7 @@ import { contactEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { contactQueryKeys } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
-  CrmContactMetricsResponseType,
-  CompanyLookup
+  CrmContactMetricsResponseType
 } from "~community/crm/types/CommonTypes";
 
 interface ContactMetricsSearchParams {
