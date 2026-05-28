@@ -111,6 +111,13 @@ export interface CrmTaskCategory {
   orderIndex: number;
 }
 
+export interface CrmOwnerType {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  authPic: string;
+}
+
 export interface CrmDealListItemType {
   id: number;
   name: string;
@@ -119,7 +126,7 @@ export interface CrmDealListItemType {
   amount: string;
   companyName: string | null;
   contactName: string;
-  ownerName: string;
+  owner: CrmOwnerType;
 }
 
 export interface CrmDealPaginatedResponseType {

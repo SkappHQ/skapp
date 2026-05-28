@@ -117,9 +117,8 @@ const DealsTable: FC<Props> = ({
   const tableRows = useMemo(
     (): DealRow[] =>
       allDeals.map((deal: CrmDealListItemType) => {
-        const [ownerFirst = "", ...rest] = deal.ownerName.split(" ");
-        const ownerLast = rest.join(" ");
         const formattedAmount = formatDealAmount(deal.amount);
+        const ownerFullName = `${deal.owner.firstName} ${deal.owner.lastName}`.trim();
 
         return {
           id: String(deal.id),
@@ -143,13 +142,13 @@ const DealsTable: FC<Props> = ({
           dealOwner: (
             <AvatarChip
               avatarProps={{
-                id: deal.ownerName,
-                firstName: ownerFirst,
-                lastName: ownerLast,
-                src: undefined,
+                id: String(deal.owner.employeeId),
+                firstName: deal.owner.firstName,
+                lastName: deal.owner.lastName,
+                src: deal.owner.authPic || undefined,
                 size: "sm"
               }}
-              label={deal.ownerName}
+              label={ownerFullName}
               backgroundColor="bg-secondary-background"
             />
           )
