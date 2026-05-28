@@ -92,7 +92,9 @@ const LeaveEntitlements: NextPage = () => {
               accessibility={{
                 ariaHidden: false
               }}
-              placeHolder={translateText(["searchBoxPlaceholder"])}
+              placeHolder={translateText([
+                "leaveEntitlements.searchBoxPlaceholder"
+              ])}
               value={searchTerm}
               setSearchTerm={setSearchTerm}
             />

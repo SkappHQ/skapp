@@ -4,7 +4,10 @@
     "title": "Contacts",
     "addContactBtn": "Add Contact",
     "detailsPageHead": "Contact Details | Skapp",
-    "detailsTitle": "Contact Details"
+    "detailsTitle": "Contact Details",
+    "contactDetailsPanel": {
+      "lastUpdated": "Last updated"
+    }
   },
   "companies": {
     "pageHead": "Companies | Skapp",
