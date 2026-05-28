@@ -41,6 +41,7 @@ import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,6 +58,8 @@ class CrmCompanyControllerIntegrationTest {
 	private static final String EXISTS_PATH = BASE_PATH + "/exists";
 
 	private static final String DELETE_PATH = BASE_PATH + "/{id}";
+
+	private static final String EDIT_PATH = BASE_PATH + "/{id}";
 
 	private final JsonMapper objectMapper;
 
@@ -101,6 +104,12 @@ class CrmCompanyControllerIntegrationTest {
 
 	private ResultActions performDeleteRequest(Long id) throws Exception {
 		return performRequest(delete(DELETE_PATH, id).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private <T> ResultActions performPutRequest(Long id, T content) throws Exception {
+		return performRequest(put(EDIT_PATH, id).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(content))
+			.accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmCompanyCreateDto createValidPayload() {
@@ -266,6 +275,81 @@ class CrmCompanyControllerIntegrationTest {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performDeleteRequest(1L).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	// --- Edit company tests ---
+
+	@Test
+	@DisplayName("Edit company with valid payload - Returns OK with updated data")
+	void editCompany_HappyPath_ReturnsOk() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmCompanyCreateDto editDto = new CrmCompanyCreateDto();
+		editDto.setName("Acme Corp Updated");
+		editDto.setIndustry("Finance");
+		editDto.setWebsite("https://acme-updated.com");
+		editDto.setAddress("456 New St");
+		editDto.setContactNumber("94779876543");
+
+		performPutRequest(companyId, editDto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp Updated"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']").value("Finance"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://acme-updated.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("456 New St"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94779876543"));
+	}
+
+	@Test
+	@DisplayName("Edit company with non-existent ID - Returns Bad Request")
+	void editCompany_NonExistentId_ReturnsBadRequest() throws Exception {
+		CrmCompanyCreateDto editDto = createValidPayload();
+
+		performPutRequest(Long.MAX_VALUE, editDto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Edit company with duplicate name of another company - Returns Bad Request")
+	void editCompany_DuplicateNameOfAnotherCompany_ReturnsBadRequest() throws Exception {
+		performPostRequest(createValidPayload()).andExpect(status().isCreated());
+
+		CrmCompanyCreateDto secondCompanyDto = new CrmCompanyCreateDto();
+		secondCompanyDto.setName("Beta Corp");
+		secondCompanyDto.setIndustry("Healthcare");
+		ResultActions secondResult = performPostRequest(secondCompanyDto).andExpect(status().isCreated());
+		Long secondCompanyId = objectMapper.readTree(secondResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmCompanyCreateDto editDto = new CrmCompanyCreateDto();
+		editDto.setName("Acme Corp");
+		editDto.setIndustry("Healthcare");
+
+		performPutRequest(secondCompanyId, editDto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS)));
+	}
+
+	@Test
+	@DisplayName("Edit company without CRM manager role - Returns Forbidden")
+	void editCompany_WithoutManagerRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performPutRequest(1L, createValidPayload()).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }
