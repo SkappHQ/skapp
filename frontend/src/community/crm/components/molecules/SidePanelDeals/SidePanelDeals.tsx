@@ -12,7 +12,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { CrmDealType } from "~community/crm/types/CommonTypes";
-import { formatDealAmountWithCurrency } from "~community/crm/utils/formatters";
+import { formatDealAmountWithCurrency } from "~community/crm/utils/dealHelpers";
 
 import styles from "./styles"
 
