@@ -52,14 +52,14 @@ import {
 import { DirectoryModalTypes } from "./ModalTypes";
 import { EditPeopleFormTypes } from "./PeopleEditTypes";
 import {
+  EmployeeRemoveAction,
   EntitlementDetailType,
   L1EmployeeType,
   L2CommonDetailsType,
   L2EmergencyDetailsType,
   L2EmploymentFormDetailsType,
   L2PersonalDetailsType,
-  L2SystemPermissionsType,
-  SupervisorReassignmentActionType
+  L2SystemPermissionsType
 } from "./PeopleTypes";
 import { AddCalenderInputType } from "./SliceTypes";
 import {
@@ -253,9 +253,7 @@ interface actionsTypes {
 
   //supervisorReassignmentSlice
   setIsSupervisorReassignmentModalOpen: (value: boolean) => void;
-  setSupervisorReassignmentActionType: (
-    value: SupervisorReassignmentActionType
-  ) => void;
+  setSupervisorReassignmentActionType: (value: EmployeeRemoveAction) => void;
 
   //people slice
   setEmployee: (employee: L1EmployeeType) => void;
@@ -404,7 +402,7 @@ export interface Store extends actionsTypes {
 
   //supervisorReassignmentSlice
   isSupervisorReassignmentModalOpen: boolean;
-  supervisorReassignmentActionType: SupervisorReassignmentActionType;
+  supervisorReassignmentActionType: EmployeeRemoveAction;
 
   //people slice
   employee: L1EmployeeType;

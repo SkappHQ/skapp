@@ -4,7 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.peopleplanner.util.Validations;
 import lombok.experimental.UtilityClass;
 
@@ -92,6 +92,68 @@ public class CrmValidations {
 		}
 		catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_WEBSITE_INVALID);
+		}
+	}
+
+	public static void validateDealName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_REQUIRED);
+		}
+
+		if (name.length() > CrmConstants.DEAL_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_TOO_LONG);
+		}
+
+		if (!name.matches(CrmConstants.DEAL_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealDescription(String description) {
+		if (description == null || description.isBlank()) {
+			return;
+		}
+
+		if (description.trim().length() > CrmConstants.DEAL_DESCRIPTION_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_DESCRIPTION_TOO_LONG);
+		}
+	}
+
+	public static void validateDealAmount(String amount) {
+		if (amount == null || amount.isBlank()) {
+			return;
+		}
+
+		if (amount.length() > CrmConstants.DEAL_AMOUNT_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_AMOUNT_TOO_LONG);
+		}
+
+		if (!amount.matches(CrmConstants.DEAL_AMOUNT_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_AMOUNT_INVALID);
+		}
+	}
+
+	public static void validateDealPriority(CrmDealPriority priority) {
+		if (priority == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_PRIORITY_NOT_FOUND);
+		}
+	}
+
+	public static void validateDealStageId(Long stageId) {
+		if (stageId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_ID_REQUIRED);
+		}
+	}
+
+	public static void validateDealContactId(Long contactId) {
+		if (contactId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND);
+		}
+	}
+
+	public static void validateDealOwnerId(Long ownerId) {
+		if (ownerId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
 		}
 	}
 

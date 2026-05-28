@@ -57,8 +57,8 @@ import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 import {
   AllEmployeeDataResponse,
   L1EmployeeType,
-  SupervisorRolesData,
-  TransferSupervisorsPayload
+  ReassignSupervisorsAndTerminateOrDeleteEmployeePayload,
+  SupervisorRolesData
 } from "../types/PeopleTypes";
 
 const getBannerData = async (): Promise<number> => {
@@ -595,7 +595,7 @@ export const useTerminateUser = (
       [
         peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
         peopleQueryKeys.HAS_SUPERVISOR_ROLES,
-        [peopleQueryKeys.SUPERVISED_BY_ME]
+        peopleQueryKeys.SUPERVISED_BY_ME
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
@@ -701,7 +701,7 @@ export const useDeleteUser = (
       [
         peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
         peopleQueryKeys.HAS_SUPERVISOR_ROLES,
-        [peopleQueryKeys.SUPERVISED_BY_ME]
+        peopleQueryKeys.SUPERVISED_BY_ME
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
@@ -843,19 +843,28 @@ export const useGetSupervisedEmployeesAndTeams = (
   });
 };
 
-export const useTransferSupervisors = (
+export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
   userId: number,
   onSuccess: () => void,
   onError: () => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: TransferSupervisorsPayload) =>
-      authFetch.patch(peoplesEndpoints.TRANSFER_SUPERVISORS(userId), payload),
+    mutationFn: (
+      payload: ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
+    ) =>
+      authFetch.patch(
+        peoplesEndpoints.REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE(
+          userId
+        ),
+        payload
+      ),
     onSuccess: () => {
       [
         peopleQueryKeys.SUPERVISOR_ROLES(userId),
-        peopleQueryKeys.HAS_SUPERVISOR_ROLES
+        peopleQueryKeys.HAS_SUPERVISOR_ROLES,
+        peopleQueryKeys.EMPLOYEE_BY_ID(userId),
+        peopleQueryKeys.SUPERVISED_BY_ME
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
