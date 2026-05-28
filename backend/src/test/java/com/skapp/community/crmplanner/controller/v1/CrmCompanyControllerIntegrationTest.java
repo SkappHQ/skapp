@@ -15,8 +15,12 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.support.SecurityTestUtils;
 
+import com.skapp.community.crmplanner.model.CrmCompany;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import lombok.RequiredArgsConstructor;
@@ -115,6 +119,16 @@ class CrmCompanyControllerIntegrationTest {
 
 	private CrmCompanyCreateDto createValidPayload() {
 		CrmCompanyCreateDto dto = new CrmCompanyCreateDto();
+		dto.setName("Acme Corp");
+		dto.setIndustry("Technology");
+		dto.setWebsite("https://acme.com");
+		dto.setAddress("123 Main St");
+		dto.setContactNumber("94771234567");
+		return dto;
+	}
+
+	private CrmCompanyEditDto createValidEditPayload() {
+		CrmCompanyEditDto dto = new CrmCompanyEditDto();
 		dto.setName("Acme Corp");
 		dto.setIndustry("Technology");
 		dto.setWebsite("https://acme.com");
@@ -291,7 +305,7 @@ class CrmCompanyControllerIntegrationTest {
 			.path("id")
 			.asLong();
 
-		CrmCompanyCreateDto editDto = new CrmCompanyCreateDto();
+		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("Acme Corp Updated");
 		editDto.setIndustry("Finance");
 		editDto.setWebsite("https://acme-updated.com");
@@ -306,12 +320,19 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://acme-updated.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("456 New St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94779876543"));
+
+		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
+		assertThat(persisted.getName()).isEqualTo("Acme Corp Updated");
+		assertThat(persisted.getIndustry()).isEqualTo("Finance");
+		assertThat(persisted.getWebsite()).isEqualTo("https://acme-updated.com");
+		assertThat(persisted.getAddress()).isEqualTo("456 New St");
+		assertThat(persisted.getContactNumber()).isEqualTo("94779876543");
 	}
 
 	@Test
 	@DisplayName("Edit company with non-existent ID - Returns Bad Request")
 	void editCompany_NonExistentId_ReturnsBadRequest() throws Exception {
-		CrmCompanyCreateDto editDto = createValidPayload();
+		CrmCompanyEditDto editDto = createValidEditPayload();
 
 		performPutRequest(Long.MAX_VALUE, editDto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -335,8 +356,8 @@ class CrmCompanyControllerIntegrationTest {
 			.path("id")
 			.asLong();
 
-		CrmCompanyCreateDto editDto = new CrmCompanyCreateDto();
-		editDto.setName("Acme Corp");
+		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
+		editDto.setName("ACME CORP");
 		editDto.setIndustry("Healthcare");
 
 		performPutRequest(secondCompanyId, editDto).andDo(print())
@@ -351,7 +372,7 @@ class CrmCompanyControllerIntegrationTest {
 	void editCompany_WithoutManagerRole_ReturnsForbidden() throws Exception {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
-		performPutRequest(1L, createValidPayload()).andDo(print()).andExpect(status().isForbidden());
+		performPutRequest(1L, createValidEditPayload()).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }

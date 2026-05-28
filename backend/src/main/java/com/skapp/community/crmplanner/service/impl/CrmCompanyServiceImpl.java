@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
@@ -145,7 +146,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto editCompany(Long id, CrmCompanyCreateDto crmCompany) {
+	public ResponseEntityDto editCompany(Long id, CrmCompanyEditDto crmCompany) {
 		log.info("editCompany: execution started");
 
 		CrmValidations.validateCompanyId(id);

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
@@ -81,7 +82,7 @@ public class CrmCompanyController {
 	@PutMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> editCompany(@PathVariable Long id,
-			@RequestBody CrmCompanyCreateDto crmCompany) {
+			@RequestBody CrmCompanyEditDto crmCompany) {
 		ResponseEntityDto responseDto = companyService.editCompany(id, crmCompany);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
