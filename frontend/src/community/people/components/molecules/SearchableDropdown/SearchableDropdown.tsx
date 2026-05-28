@@ -1,6 +1,7 @@
 import { InputField, Popper, SearchIcon } from "@rootcodelabs/skapp-ui";
 import React, {
   ChangeEvent,
+  ComponentProps,
   KeyboardEvent,
   useCallback,
   useEffect,
@@ -11,8 +12,7 @@ import { createPortal } from "react-dom";
 
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 
-/** Mirrors InputFieldCustomStyles from @rootcodelabs/skapp-ui */
-export interface InputFieldCustomStyles {
+interface InputFieldCustomStyles {
   borderRadius?: string;
   background?: string;
   border?: string;
@@ -23,12 +23,12 @@ export interface InputFieldCustomStyles {
   focusStyles?: { borderColor?: string; shadowColor?: string };
 }
 
-export interface SearchableDropdownItem {
+interface SearchableDropdownItem {
   id: string;
   content: React.ReactNode;
 }
 
-export interface SearchableDropdownProps {
+interface SearchableDropdownProps {
   id: string;
   items: SearchableDropdownItem[];
   onSelect: (item: SearchableDropdownItem) => void;
@@ -113,17 +113,19 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       if (!isDropdownOpen) return;
 
       switch (e.key) {
-        case "ArrowDown":
+        case "ArrowDown": {
           e.preventDefault();
           const nextDown =
             activeIndex < items.length - 1 ? activeIndex + 1 : activeIndex;
           setActiveIndex(nextDown);
           break;
-        case "ArrowUp":
+        }
+        case "ArrowUp": {
           e.preventDefault();
           const nextUp = activeIndex > 0 ? activeIndex - 1 : 0;
           setActiveIndex(nextUp);
           break;
+        }
         case "Tab":
           if (e.shiftKey) {
             handleClose();
