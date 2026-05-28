@@ -9,7 +9,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeIsAvailableDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
-import com.skapp.community.peopleplanner.payload.request.TransferSupervisorsRequestDto;
+import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
@@ -197,13 +197,13 @@ public class PeopleController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Transfer supervisor roles of a user",
-			description = "Reassigns primary supervisor and team supervisor roles from the given user to new supervisors before termination or deletion")
+	@Operation(summary = "Reassign supervisor roles and terminate or delete an employee",
+			description = "Reassigns primary supervisor and team supervisor roles from the given user to new supervisors and then terminates or deletes the employee")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
-	@PatchMapping("/user/{userId}/transfer-supervisors")
-	public ResponseEntity<ResponseEntityDto> transferSupervisors(@PathVariable Long userId,
-			@RequestBody TransferSupervisorsRequestDto requestDto) {
-		ResponseEntityDto response = peopleService.transferSupervisors(userId, requestDto);
+	@PatchMapping("/user/{userId}/reassign-supervisors-and-terminate-or-delete")
+	public ResponseEntity<ResponseEntityDto> reassignSupervisorsAndTerminateOrDeleteEmployee(@PathVariable Long userId,
+			@RequestBody ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto) {
+		ResponseEntityDto response = peopleService.reassignSupervisorsAndTerminateOrDeleteEmployee(userId, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
