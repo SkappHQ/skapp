@@ -76,6 +76,7 @@ export interface CrmContactType {
   email: string;
   contactNumber: string | null;
   lastContactAt: string | null;
+  lastModifiedDate: string;
   company: CrmCompanyType | null;
   owner: CrmOwnerType;
   isDeleted: boolean;
