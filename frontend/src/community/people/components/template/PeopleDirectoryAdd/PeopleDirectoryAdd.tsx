@@ -25,7 +25,10 @@ const PeopleDirectoryAdd = () => {
       isDividerVisible={true}
       breadcrumbs={[
         {
-          label: translatePeople(["dashboard.people"]),
+          label: translatePeople(["dashboard.people"])
+        },
+        {
+          label: translatePeople(["peoples.title"]),
           href: ROUTES.PEOPLE.DIRECTORY
         },
         {
