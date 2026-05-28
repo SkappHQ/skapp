@@ -152,11 +152,27 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Create task with non-existent contact id - Returns Internal Server Error")
-	void createContactTask_NonExistentContact_ReturnsInternalServerError() throws Exception {
+	@DisplayName("Create task with non-existent contact id - Returns Bad Request")
+	void createContactTask_NonExistentContact_ReturnsBadRequest() throws Exception {
 		performCreateRequest(999999L, validPayload()).andDo(print())
-			.andExpect(status().isInternalServerError())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Create task for soft-deleted contact - Returns Bad Request")
+	void createContactTask_SoftDeletedContact_ReturnsBadRequest() throws Exception {
+		CrmContact deleted = crmContactDao.findById(contactId).orElseThrow();
+		deleted.setIsDeleted(true);
+		crmContactDao.save(deleted);
+
+		performCreateRequest(contactId, validPayload()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)));
 	}
 
 	@Test

@@ -219,7 +219,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmValidations.validateTaskName(requestDto.getName());
 		CrmValidations.validateTaskTypeId(requestDto.getTypeId());
 
-		CrmContact contact = crmContactDao.getReferenceById(contactId);
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(contactId)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
 		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
 
 		Employee taskOwner = userService.getCurrentUser().getEmployee();
