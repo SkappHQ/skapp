@@ -1,4 +1,4 @@
-import { CrmDealStageEnum } from "../enums/common";
+import { CrmDealStageEnum, CrmIndustryEnum } from "../enums/common";
 
 export interface CrmCompanyType {
   id: number;
@@ -34,7 +34,7 @@ export interface CrmCompanyMetricsResponseType {
 
 export interface CrmCompanyAddFormTypes {
   name: string;
-  industry: string | null;
+  industry: CrmIndustryEnum | null;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
