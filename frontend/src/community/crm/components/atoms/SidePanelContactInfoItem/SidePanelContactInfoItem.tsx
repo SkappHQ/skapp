@@ -1,4 +1,5 @@
-import { FC, KeyboardEvent, ReactElement } from "react";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { FC, ReactElement } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
@@ -12,6 +13,13 @@ interface Props {
   onClick?: () => void;
 }
 
+const renderIcon = (icon: IconName | ReactElement) =>
+  typeof icon === "string" ? (
+    <Icon name={icon} fill={COLORS.iconFill} width="20" height="20" />
+  ) : (
+    icon
+  );
+
 const SidePanelContactInfoItem: FC<Props> = ({
   icon,
   value,
@@ -20,58 +28,42 @@ const SidePanelContactInfoItem: FC<Props> = ({
 }) => {
   const isInteractive = !!onClick && !!value;
 
-  const inner = (
-    <>
-      <span className={cls.iconWrapper}>
-        {typeof icon === "string" ? (
-          <Icon name={icon} fill={COLORS.iconFill} width="20" height="20" />
-        ) : (
-          icon
-        )}
-      </span>
-      {isInteractive ? (
-        <span className={cls.link}>
-          <span className={cls.linkText}>{value}</span>
-          {endIcon && (
-            <Icon
-              name={endIcon}
-              fill={COLORS.endIconFill}
-              width="16"
-              height="16"
-            />
-          )}
-        </span>
-      ) : (
-        <span className={value ? cls.plainText : cls.emptyText}>
-          {value ?? "—"}
-        </span>
-      )}
-    </>
-  );
-
   if (isInteractive) {
-    const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        onClick?.();
-      }
-    };
-
     return (
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={onClick}
-        onKeyDown={handleKeyDown}
-        className={cls.linkRow}
-        aria-label={value ?? "-"}
-      >
-        {inner}
+      <div className={cls.row}>
+        <span className={cls.iconWrapper}>{renderIcon(icon)}</span>
+        <ButtonV2
+          type="button"
+          variant="line"
+          size="sm"
+          onClick={onClick}
+          aria-label={value ?? "—"}
+          className="!p-0 !min-w-0 !justify-start !h-auto !rounded-[4px] hover:!bg-transparent ![outline-style:none] ![outline-width:0] !outline-0 focus:![outline-style:none] focus:!ring-0 focus:!ring-offset-0 focus-visible:!ring-2 focus-visible:!ring-primary-accent focus-visible:!ring-offset-2"
+        >
+          <span className={cls.link}>
+            <span className={cls.linkText}>{value}</span>
+            {endIcon && (
+              <Icon
+                name={endIcon}
+                fill={COLORS.endIconFill}
+                width="16"
+                height="16"
+              />
+            )}
+          </span>
+        </ButtonV2>
       </div>
     );
   }
 
-  return <div className={cls.row}>{inner}</div>;
+  return (
+    <div className={cls.row}>
+      <span className={cls.iconWrapper}>{renderIcon(icon)}</span>
+      <span className={value ? cls.plainText : cls.emptyText}>
+        {value ?? "—"}
+      </span>
+    </div>
+  );
 };
 
 export default SidePanelContactInfoItem;

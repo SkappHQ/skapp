@@ -16,7 +16,6 @@ import BadgeCheckIcon from "~community/common/assets/Icons/BadgeCheckIcon";
 import BellIcon from "~community/common/assets/Icons/BellIcon";
 import BinIcon from "~community/common/assets/Icons/BinIcon";
 import BlockedIcon from "~community/common/assets/Icons/BlockedIcon";
-import BuildingIcon from "~community/common/assets/Icons/BuildingIcon";
 import CRMModuleIcon from "~community/common/assets/Icons/CRMModuleIcon";
 import CalendarIcon from "~community/common/assets/Icons/CalendarIcon";
 import CameraIcon from "~community/common/assets/Icons/CameraIcon";
@@ -343,7 +342,6 @@ export const IconMapping: Record<IconName, (props: IconProps) => JSX.Element> =
     [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
     [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon,
     [IconName.LOCAL_PHONE_ICON]: LocalPhoneIcon,
-    [IconName.BUILDING_ICON]: BuildingIcon,
     [IconName.ROUND_EMAIL_ICON]: RoundEmailIcon,
     [IconName.ROUND_PHONE_ICON]: RoundPhoneIcon,
     [IconName.ROUND_MEETING_ICON]: RoundMeetingIcon,

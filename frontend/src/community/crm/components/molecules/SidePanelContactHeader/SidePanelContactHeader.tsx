@@ -29,48 +29,54 @@ const SidePanelContactHeader: FC<Props> = ({
 
   const company = contact?.company;
 
-  return (
-    <div className={cls.wrapper}>
-      {isLoading ? (
-        <ContactHeaderSkeleton />
-      ) : contact ? (
-        <>
-          <div className={cls.contactHeader}>
-            <h2 className={cls.contactName}>{contact.name}</h2>
-            <p className={cls.lastUpdated}>
-              {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffixLocal(contact.lastModifiedDate)}`}
-            </p>
-          </div>
-          <div className={cls.infoRow}>
-            <SidePanelContactInfoItem
-              icon={IconName.EMAIL_ICON}
-              value={contact.email}
-            />
+  const renderContent = () => {
+    if (isLoading) {
+      return <ContactHeaderSkeleton />;
+    }
 
-            <SidePanelContactInfoItem
-              icon={IconName.LOCAL_PHONE_ICON}
-              value={contact.contactNumber}
-            />
+    if (!contact) {
+      return null;
+    }
 
-            {company && (
-              <SidePanelContactInfoItem
-                icon={<BuildingIcon stroke={COLORS.iconFill} />}
-                value={company.name}
-                onClick={
-                  onCompanyClick
-                    ? () => {
-                        onCompanyClick(company.id);
-                      }
-                    : undefined
-                }
-                endIcon={IconName.POP_OUT_ICON}
-              />
-            )}
-          </div>
-        </>
-      ) : null}
-    </div>
-  );
+    return (
+      <>
+        <div className={cls.contactHeader}>
+          <h2 className={cls.contactName}>{contact.name}</h2>
+          <p className={cls.lastUpdated}>
+            {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffixLocal(contact.lastModifiedDate)}`}
+          </p>
+        </div>
+        <div className={cls.infoRow}>
+          <SidePanelContactInfoItem
+            icon={IconName.EMAIL_ICON}
+            value={contact.email}
+          />
+
+          <SidePanelContactInfoItem
+            icon={IconName.LOCAL_PHONE_ICON}
+            value={contact.contactNumber}
+          />
+
+          {company && (
+            <SidePanelContactInfoItem
+              icon={<BuildingIcon stroke={COLORS.iconFill} />}
+              value={company.name}
+              onClick={
+                onCompanyClick
+                  ? () => {
+                      onCompanyClick(company.id);
+                    }
+                  : undefined
+              }
+              endIcon={IconName.POP_OUT_ICON}
+            />
+          )}
+        </div>
+      </>
+    );
+  };
+
+  return <div className={cls.wrapper}>{renderContent()}</div>;
 };
 
 export default SidePanelContactHeader;

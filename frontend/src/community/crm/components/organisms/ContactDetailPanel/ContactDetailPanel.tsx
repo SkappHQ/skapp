@@ -14,7 +14,7 @@ import ContactMetrics, {
 import DealsSection from "~community/crm/components/molecules/DealsSection/DealsSection";
 import DeleteContactModal from "~community/crm/components/molecules/DeleteContactModal/DeleteContactModal";
 import EditContactModal from "~community/crm/components/molecules/EditContactModal/EditContactModal";
-import ContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
+import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import TasksSection from "~community/crm/components/molecules/TasksSection/TasksSection";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
@@ -78,7 +78,7 @@ const ContactDetailPanel: FC = () => {
           width="xl"
           ariaLabelledBy="contact-panel-title"
           header={
-            <ContactHeader
+            <SidePanelContactHeader
               contact={contact ?? undefined}
               isLoading={isContactLoading}
               onCompanyClick={(companyId: any) => {
