@@ -23,7 +23,7 @@ interface InputFieldCustomStyles {
   focusStyles?: { borderColor?: string; shadowColor?: string };
 }
 
-interface SearchableDropdownItem {
+export interface SearchableDropdownItem {
   id: string;
   content: React.ReactNode;
 }
