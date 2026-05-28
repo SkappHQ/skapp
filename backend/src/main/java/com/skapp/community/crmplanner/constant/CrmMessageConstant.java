@@ -34,7 +34,6 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_OWNER_ASSIGNMENT_DENIED("api.error.crm.owner-assignment-denied"),
 	CRM_ERROR_CONTACT_NOT_FOUND("api.error.crm.contact-not-found"),
 	CRM_ERROR_CONTACT_EDIT_DENIED("api.error.crm.contact-edit-denied"),
-	CRM_ERROR_TASK_TYPE_NOT_FOUND("api.error.crm.task-type-not-found"),
 	CRM_ERROR_TASK_TYPE_ID_REQUIRED("api.error.crm.task-type-id-required"),
 	CRM_ERROR_TASK_NAME_REQUIRED("api.error.crm.task-name-required"),
 	CRM_ERROR_TASK_NAME_TOO_LONG("api.error.crm.task-name-too-long"),

@@ -21,7 +21,12 @@ import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
-import com.skapp.community.crmplanner.repository.*;
+import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
@@ -217,17 +222,13 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmContact contact = crmContactDao.getReferenceById(contactId);
 		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
 
-		User currentUser = userService.getCurrentUser();
-		Employee currentEmployee = currentUser.getEmployee();
-		if (currentEmployee == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
-		}
+		Employee taskOwner = userService.getCurrentUser().getEmployee();
 
 		CrmTask task = new CrmTask();
 		task.setName(requestDto.getName().trim());
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setOwner(currentEmployee);
+		task.setOwner(taskOwner);
 		task.setContact(contact);
 
 		CrmTask savedTask = crmTaskDao.save(task);
