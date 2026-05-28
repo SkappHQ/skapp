@@ -1,8 +1,8 @@
-import { AutoCompleteDropdown } from "@rootcodelabs/skapp-ui";
+import { AutoCompleteDropdown, AvatarChip } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { OptionType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -10,6 +10,25 @@ import {
   AllEmployeeDataType,
   EmployeeDataTeamType
 } from "~community/people/types/PeopleTypes";
+import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
+
+const EmployeeAvatarChip: FC<{ employee: AllEmployeeDataType }> = ({
+  employee
+}) => {
+  const imageUrl = useGetImageUrl(employee.authPic ?? "");
+
+  return (
+    <AvatarChip
+      avatarProps={{
+        id: String(employee.employeeId),
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        src: imageUrl ?? ""
+      }}
+      label={concatStrings([employee.firstName, employee.lastName]).trim()}
+    />
+  );
+};
 
 type SectionItem = AllEmployeeDataType | EmployeeDataTeamType;
 
@@ -71,14 +90,7 @@ const SupervisorReassignmentModalSection: FC<
           } else {
             const employee = item as AllEmployeeDataType;
             id = employee.employeeId;
-            nameRow = (
-              <AvatarChip
-                firstName={employee.firstName}
-                lastName={employee.lastName}
-                avatarUrl={employee.authPic}
-                chipStyles={{ justifyContent: "flex-start" }}
-              />
-            );
+            nameRow = <EmployeeAvatarChip employee={employee} />;
           }
 
           const assigned = assignments[id];
