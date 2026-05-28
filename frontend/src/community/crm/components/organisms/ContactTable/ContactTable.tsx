@@ -27,7 +27,7 @@ import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import {
   formatPhoneNumber,
   formatTasks,
-  formatValue
+  formatMonetaryValue
 } from "~community/crm/utils/tableHelpers";
 
 export const ContactTable: React.FC = () => {
@@ -110,7 +110,7 @@ export const ContactTable: React.FC = () => {
       render(value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{formatValue(value)}</div>
+            <div>{formatMonetaryValue(value)}</div>
             <div className="subtitle4 text-secondary-text">
               {row.closedDealCount > 0
                 ? `${row.closedDealCount} ${translateText(["table", "closedDealsLabel"])}`
