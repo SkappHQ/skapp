@@ -37,17 +37,18 @@ const mapDealsToAccordionItems = (
           {deal.amount && (
             <>
               <span className="inline-block h-1 w-1 rounded-full bg-gray-400" />
-              <span className="body3">{`${deal.currencyCode ?? "$"}${deal.amount}`}</span>
+              <span className="body3">
+                {deal.currencyCode
+                  ? `${deal.amount} ${deal.currencyCode}`
+                  : deal.amount}
+              </span>
             </>
           )}
         </div>
       </div>
     ),
     badge: (
-      <div
-        className="flex items-center justify-center gap-2 rounded-full bg-tertiary-background"
-        style={{ width: "156px", height: "32px" }}
-      >
+      <div className="flex items-center justify-center gap-2 rounded-full bg-tertiary-background px-3 py-1.5">
         <span
           className="inline-block h-2 w-2 rounded-full"
           style={{ backgroundColor: deal.stageColor }}
