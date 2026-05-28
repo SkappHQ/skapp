@@ -14,6 +14,7 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -85,7 +86,8 @@ class CrmContactControllerIntegrationTest {
 
 	private final EmployeeRoleDao employeeRoleDao;
 
-	// user1 is CRM_ADMIN + super admin — passes both hasRole(SALES_REPRESENTATIVE) and hasRole(SALES_MANAGER)
+	// user1 is CRM_ADMIN + super admin — passes both hasRole(SALES_REPRESENTATIVE) and
+	// hasRole(SALES_MANAGER)
 	private String adminToken;
 
 	// user2 has no CRM role — rejected by all CRM endpoints
@@ -311,7 +313,8 @@ class CrmContactControllerIntegrationTest {
 	@Test
 	@DisplayName("Sales rep editing their own contact - Returns OK")
 	void editContact_RepEditingOwnContact_ReturnsOk() throws Exception {
-		// Promote user2 (employeeId=2) to CRM_SALES_REPRESENTATIVE within this transaction
+		// Promote user2 (employeeId=2) to CRM_SALES_REPRESENTATIVE within this
+		// transaction
 		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
 		employeeRoleDao.flush();
 		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
@@ -358,6 +361,48 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED)));
+	}
+
+	@Test
+	@DisplayName("CRM sales manager editing a contact they do not own - Returns OK")
+	void editContact_SalesManagerEditingAnyContact_ReturnsOk() throws Exception {
+		// Promote user2 to CRM_SALES_MANAGER
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_MANAGER);
+		employeeRoleDao.flush();
+		String managerToken = jwtService.generateAccessToken(
+				userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		Long companyId = savedCompany().getId();
+		// Contact owned by employee 1, not by user2
+		Long contactId = savedContact(companyId, "manager.edit.test@example.com").getId();
+
+		CrmContactEditRequestDto dto = editValidPayload(companyId);
+		dto.setOwnerId(1L);
+
+		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON), managerToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Assigning owner with no CRM role - Returns Bad Request with invalid-role error")
+	void editContact_AssigningOwnerWithNoRole_ReturnsBadRequest() throws Exception {
+		// user2 has no CRM role in test data — use them as the target owner
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "assign.norole@example.com").getId();
+
+		CrmContactEditRequestDto dto = editValidPayload(companyId);
+		dto.setOwnerId(2L);
+
+		// adminToken (user1 = CRM_ADMIN) makes the request — passes checkEditPermission,
+		// then validateAssignableOwner(2) finds user2 has no assignable role
+		performPutRequest(contactId, dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE)));
 	}
 
 	@Test
@@ -440,6 +485,7 @@ class CrmContactControllerIntegrationTest {
 
 		CrmDeal deal = new CrmDeal();
 		deal.setName("Test Deal");
+		deal.setPriority(CrmDealPriority.MEDIUM);
 		deal.setStage(stage);
 		deal.setContact(crmContactDao.getReferenceById(contactId));
 		deal.setCompany(crmCompanyDao.getReferenceById(companyId));
@@ -521,8 +567,9 @@ class CrmContactControllerIntegrationTest {
 		Long otherCompanyId = crmCompanyDao.save(otherCompany).getId();
 		savedContact(otherCompanyId, "other.company.contact@example.com");
 
-		performRequest(get(METRICS_PATH).param("companyId", String.valueOf(companyId))
-			.accept(MediaType.APPLICATION_JSON)).andDo(print())
+		performRequest(
+				get(METRICS_PATH).param("companyId", String.valueOf(companyId)).accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1));
@@ -534,8 +581,7 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		savedContact(companyId, "keyword.contact@example.com");
 
-		performRequest(
-				get(METRICS_PATH).param("searchKeyword", "Test Contact").accept(MediaType.APPLICATION_JSON))
+		performRequest(get(METRICS_PATH).param("searchKeyword", "Test Contact").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
