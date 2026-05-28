@@ -274,9 +274,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 		Role currentCrmRole = crmRoleOf(currentEmployee);
 
 		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
-			if (!ownerId.equals(currentEmployee.getEmployeeId())) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
-			}
 			return currentEmployee;
 		}
 
