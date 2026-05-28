@@ -3,7 +3,7 @@ import { CrmDealStageEnum, CrmIndustryEnum } from "../enums/common";
 export interface CrmCompanyType {
   id: number;
   name: string;
-  industry: string | null;
+  industry: CrmIndustryEnum | null;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
@@ -14,7 +14,7 @@ export interface CrmCompanyMetricsType {
   id: number;
   name: string;
   contactNumber: string;
-  industry: string | null;
+  industry: CrmIndustryEnum | null;
   website: string | null;
   address: string | null;
   tasks: number;

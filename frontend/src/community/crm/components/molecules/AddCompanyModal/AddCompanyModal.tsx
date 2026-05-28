@@ -199,7 +199,6 @@ const AddCompanyModal: React.FC = () => {
           formik.setFieldValue("industry", value);
         }}
         label={translateText(["labels", "industry"])}
-        placeholder={translateText(["placeholders", "industry"])}
         errorMessage={errors.industry || ""}
         variant={errors.industry ? "primary-error" : "primary"}
         ariaLabel={translateText(["ariaLabels", "industry"])}

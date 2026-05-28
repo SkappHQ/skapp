@@ -26,8 +26,7 @@
         "name": "Enter company name",
         "contactNumber": "Enter contact no.",
         "website": "Enter website",
-        "address": "Enter address",
-        "industry": "Select industry"
+        "address": "Enter address"
       },
       "buttons": {
         "save": "Save",
