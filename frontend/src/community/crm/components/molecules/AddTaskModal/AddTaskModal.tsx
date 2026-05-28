@@ -43,9 +43,8 @@ const AddTaskModal: React.FC = () => {
 
   const { employeeDetails } = useSessionData();
 
-  const [selectedOwnerChips, setSelectedOwnerChips] = useState<
-    AvatarChipsInputResult[]
-  >([]);
+  const [selectedOwnerChip, setSelectedOwnerChip] =
+    useState<AvatarChipsInputResult | null>(null);
 
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
@@ -80,11 +79,24 @@ const AddTaskModal: React.FC = () => {
           }
         },
         type: "user"
+      },
+      {
+        optionId: 2,
+        chipContent: {
+          label: "John Smith",
+          avatarProps: {
+            id: "owner-avatar-2",
+            firstName: "John",
+            lastName: "Smith",
+            size: "sm"
+          }
+        },
+        type: "user"
       }
     ],
     []
   );
-  
+
   // filtration should be done in backend
   const filteredOwnerOptions = useMemo(
     () =>
@@ -132,7 +144,7 @@ const AddTaskModal: React.FC = () => {
   const handleCloseModal = (): void => {
     setIsAddTaskModalOpen(false);
     resetForm();
-    setSelectedOwnerChips([]);
+    setSelectedOwnerChip(null);
     setOwnerSearchText("");
   };
 
@@ -177,13 +189,13 @@ const AddTaskModal: React.FC = () => {
   };
 
   const handleOwnerChipSelect = (chip: AvatarChipsInputResult) => {
-    setSelectedOwnerChips([chip]);
+    setSelectedOwnerChip(chip);
     setFieldValue("owner", chip.optionId);
     setOwnerSearchText("");
   };
 
   const handleOwnerChipRemove = (_chip: AvatarChipsInputResult) => {
-    setSelectedOwnerChips([]);
+    setSelectedOwnerChip(null);
     setFieldValue("owner", null);
   };
 
@@ -226,7 +238,7 @@ const AddTaskModal: React.FC = () => {
         onSelect={(date: Date | undefined) =>
           setFieldValue("dueDate", date ?? null)
         }
-        popperProps={{position: "bottom-end"}}
+        popperProps={{ position: "bottom-end" }}
       >
         <div>
           <InputField
@@ -299,7 +311,7 @@ const AddTaskModal: React.FC = () => {
       {/* TODO: Placeholder for SearchableDropdown. Will be implemented with backend. */}
       <AvatarChipsInput
         filteredResults={filteredOwnerOptions}
-        selectedChips={selectedOwnerChips}
+        selectedChips={selectedOwnerChip ? [selectedOwnerChip] : []}
         searchText={ownerSearchText}
         onChipSelect={handleOwnerChipSelect}
         onChipRemove={handleOwnerChipRemove}
