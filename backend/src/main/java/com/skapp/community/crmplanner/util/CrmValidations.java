@@ -167,6 +167,22 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateTaskName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NAME_REQUIRED);
+		}
+
+		if (name.trim().length() > CrmConstants.TASK_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NAME_TOO_LONG);
+		}
+	}
+
+	public static void validateTaskTypeId(Long typeId) {
+		if (typeId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_TYPE_ID_REQUIRED);
+		}
+	}
+
 	public static void validateIndustry(String industry) {
 		if (industry == null || industry.isBlank()) {
 			return;
