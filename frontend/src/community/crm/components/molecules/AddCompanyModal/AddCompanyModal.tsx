@@ -196,7 +196,7 @@ const AddCompanyModal: React.FC = () => {
         }))}
         value={values.industry || ""}
         onChange={(value) => {
-          void formik.setFieldValue("industry", value);
+          formik.setFieldValue("industry", value);
         }}
         label={translateText(["labels", "industry"])}
         placeholder={translateText(["placeholders", "industry"])}
