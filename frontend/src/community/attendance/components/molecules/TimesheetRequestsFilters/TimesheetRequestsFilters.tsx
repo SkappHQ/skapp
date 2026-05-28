@@ -1,11 +1,11 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { FilterIcon, IconButton as FilterIconButton } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { FC, MouseEvent, useEffect, useState } from "react";
 
 import TimesheetFilterModal from "~community/attendance/components/molecules/TimesheetFilterModal/TimesheetFilterModal";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
+import FilterIconButton from "~community/common/components/atoms/FilterIconButton/FilterIconButton";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -153,26 +153,9 @@ const TimesheetRequestsFilters: FC<Props> = ({ isManager = false }: Props) => {
       <Box>
         <Stack direction="row" alignItems="center" gap={0.5}>
           <FilterIconButton
-            icon={
-              <FilterIcon
-                color={
-                  selectedFilterLabels?.length > 0
-                    ? "var(--color-primary-accent)"
-                    : undefined
-                }
-              />
-            }
+            filterCount={selectedFilterLabels?.length ?? 0}
             onClick={handleFilterClick}
             aria-label={translateAria(["filterButton"])}
-            variant={
-              selectedFilterLabels?.length > 0 ? "outlined" : "default"
-            }
-            isRounded={true}
-            badge={
-              selectedFilterLabels?.length > 0
-                ? { count: selectedFilterLabels.length, show: true }
-                : undefined
-            }
           />
         </Stack>
         <TimesheetFilterModal

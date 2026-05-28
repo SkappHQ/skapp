@@ -27,7 +27,6 @@ import {
   leaveRequestRowDataTypes
 } from "~community/leave/types/LeaveRequestTypes";
 import {
-  removeFiltersByLabel,
   requestTypeSelector,
   requestedLeaveTypesPreProcessor
 } from "~community/leave/utils/LeaveRequestFilterActions";
@@ -134,19 +133,6 @@ const ManagerLeaveRequest: FC<Props> = ({
     setIsManagerModal(false);
     setLeaveRequestData({} as leaveRequestRowDataTypes);
     setNewLeaveId(leaveRequest.id);
-  };
-
-  const removeFilters = (label?: string) => {
-    removeFiltersByLabel(
-      leaveRequestsFilter,
-      setLeaveRequestFilterOrder,
-      setLeaveRequestsFilter,
-      setLeaveRequestParams,
-      leaveTypeButtons,
-      filterArray,
-      setFilterArray,
-      label
-    );
   };
 
   const transformToTableRows = () => {
@@ -333,7 +319,6 @@ const ManagerLeaveRequest: FC<Props> = ({
               <ManagerLeaveRequestFilterByBtn
                 leaveTypeButtons={leaveTypeButtons}
                 onClickReset={onClickReset}
-                removeFilters={removeFilters}
               />
             )
           }

@@ -1,9 +1,5 @@
 import { Box, Stack, Theme, Typography, useTheme } from "@mui/material";
 import {
-  FilterIcon,
-  IconButton as FilterIconButton
-} from "@rootcodelabs/skapp-ui";
-import {
   ChangeEvent,
   FC,
   MouseEvent,
@@ -13,6 +9,7 @@ import {
 } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
+import FilterIconButton from "~community/common/components/atoms/FilterIconButton/FilterIconButton";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
@@ -441,24 +438,16 @@ const UserLeaveHistory: FC<Props> = ({
 
   const renderFilterBy = () => {
     const filterCount = leaveRequestFilterOrder.length;
-    const hasFilters = filterCount > 0;
 
     return (
       <Box>
         <Stack direction="row" alignItems="center" gap={0.5}>
           <FilterIconButton
-            icon={
-              <FilterIcon
-                fill={hasFilters ? "var(--color-primary-accent)" : undefined}
-              />
-            }
+            filterCount={filterCount}
             tabIndex={getTabIndex(isFreeTier)}
             onClick={handleFilterClick}
             aria-label={translateAria(["leaveHistoryFilterButton"])}
             aria-describedby={filterId}
-            variant={hasFilters ? "outlined" : "default"}
-            isRounded={true}
-            badge={hasFilters ? { count: filterCount, show: true } : undefined}
           />
         </Stack>
         <LeaveRequestMenu

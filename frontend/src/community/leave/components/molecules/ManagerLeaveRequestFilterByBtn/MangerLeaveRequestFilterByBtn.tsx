@@ -1,6 +1,6 @@
-import { FilterIcon, IconButton } from "@rootcodelabs/skapp-ui";
 import { MouseEvent, useState } from "react";
 
+import FilterIconButton from "~community/common/components/atoms/FilterIconButton/FilterIconButton";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
@@ -10,13 +10,11 @@ import { useLeaveStore } from "~community/leave/store/store";
 interface Props {
   leaveTypeButtons: FilterButtonTypes[];
   onClickReset: () => void;
-  removeFilters: (label?: string) => void;
 }
 
 const ManagerLeaveRequestFilterByBtn = ({
   leaveTypeButtons,
-  onClickReset,
-  removeFilters
+  onClickReset
 }: Props) => {
   const translateAria = useTranslator("commonAria", "components");
 
@@ -31,7 +29,6 @@ const ManagerLeaveRequestFilterByBtn = ({
   const filterId = filterBeOpen ? "filter-popper" : undefined;
 
   const filterCount = leaveRequestFilterOrder.length;
-  const hasFilters = filterCount > 0;
 
   const handleFilterClick = (event: MouseEvent<HTMLElement>): void => {
     setFilterEl(event.currentTarget);
@@ -46,19 +43,12 @@ const ManagerLeaveRequestFilterByBtn = ({
   return (
     <>
       <div className="flex flex-row items-center gap-1">
-        <IconButton
+        <FilterIconButton
           id="filter-icon-btn"
-          icon={
-            <FilterIcon
-              fill={hasFilters ? "var(--color-primary-accent)" : undefined}
-            />
-          }
+          filterCount={filterCount}
           onClick={handleFilterClick}
           aria-label={translateAria(["filterBtn"])}
           aria-describedby={filterId}
-          variant={hasFilters ? "outlined" : "default"}
-          isRounded={true}
-          badge={hasFilters ? { count: filterCount, show: true } : undefined}
         />
       </div>
       <LeaveRequestMenu

@@ -1,7 +1,5 @@
 import {
   AdvancedFilterStructure,
-  FilterIcon,
-  IconButton,
   Popper,
   SelectableItemList,
   SelectableList,
@@ -22,6 +20,7 @@ import {
   ClockInSummaryFilterTypes,
   ClockInSummaryTypes
 } from "~community/attendance/enums/dashboardEnums";
+import FilterIconButton from "~community/common/components/atoms/FilterIconButton/FilterIconButton";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { PopperAndTooltipPositionTypes } from "~community/common/types/MoleculeTypes";
 
@@ -145,25 +144,14 @@ const FilterButton = ({
     [selectedFilters]
   );
 
-  const hasFilters = selectedFilterCount > 0;
-
   return (
     <div className="flex flex-row">
       <div className="flex flex-row gap-1 items-center">
-        <IconButton
-          icon={
-            <FilterIcon
-              fill={hasFilters ? "var(--color-primary-accent)" : undefined}
-            />
-          }
+        <FilterIconButton
+          filterCount={selectedFilterCount}
           aria-label={translateText(["placeholder"])}
           onClick={(event: MouseEvent<HTMLElement>) =>
             handleFilterBtnClick(event)
-          }
-          variant={hasFilters ? "outlined" : "default"}
-          isRounded={true}
-          badge={
-            hasFilters ? { count: selectedFilterCount, show: true } : undefined
           }
         />
       </div>

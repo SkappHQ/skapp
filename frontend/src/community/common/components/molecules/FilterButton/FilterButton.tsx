@@ -1,11 +1,7 @@
-import {
-  BasicFilterStructure,
-  FilterIcon,
-  IconButton,
-  Popper
-} from "@rootcodelabs/skapp-ui";
+import { BasicFilterStructure, Popper } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useState } from "react";
 
+import FilterIconButton from "~community/common/components/atoms/FilterIconButton/FilterIconButton";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/FilterButtonType";
 
@@ -50,23 +46,12 @@ const FilterButton = ({
     setIsPopperOpen(false);
   };
 
-  const hasFilters = appliedFilterCount > 0;
-
   return (
     <div className="flex flex-row items-center">
-      <IconButton
-        icon={
-          <FilterIcon
-            fill={hasFilters ? "var(--color-primary-accent)" : undefined}
-          />
-        }
+      <FilterIconButton
+        filterCount={appliedFilterCount}
         onClick={(event: MouseEvent<HTMLElement>) =>
           handleFilterBtnClick(event)
-        }
-        variant={hasFilters ? "outlined" : "default"}
-        isRounded={true}
-        badge={
-          hasFilters ? { count: appliedFilterCount, show: true } : undefined
         }
         aria-label={translateAria(["label"])}
       />

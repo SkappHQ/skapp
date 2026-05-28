@@ -1,6 +1,6 @@
-import { FilterIcon, IconButton } from "@rootcodelabs/skapp-ui";
 import { FC, MouseEvent } from "react";
 
+import FilterIconButton from "~community/common/components/atoms/FilterIconButton/FilterIconButton";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { flatListValues } from "~community/common/utils/commonUtil";
 import { usePeopleStore } from "~community/people/store/store";
@@ -20,25 +20,17 @@ const TableFilterButton: FC<Props> = ({
   const { employeeDataFilter } = usePeopleStore((state) => state);
 
   const filterCount = flatListValues(employeeDataFilter).length;
-  const hasFilters = filterCount > 0;
 
   if (disabled) return null;
 
   return (
     <div className="flex flex-row">
       <div className="flex flex-row gap-1 items-center">
-        <IconButton
-          icon={
-            <FilterIcon
-              fill={hasFilters ? "var(--color-primary-accent)" : undefined}
-            />
-          }
+        <FilterIconButton
+          filterCount={filterCount}
           aria-label={translateText(["filter"])}
           aria-describedby={filterId}
           onClick={handleFilterClick}
-          variant={hasFilters ? "outlined" : "default"}
-          isRounded={true}
-          badge={hasFilters ? { count: filterCount, show: true } : undefined}
         />
       </div>
     </div>
