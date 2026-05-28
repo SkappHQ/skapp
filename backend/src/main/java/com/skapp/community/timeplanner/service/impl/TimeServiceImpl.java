@@ -287,7 +287,7 @@ public class TimeServiceImpl implements TimeService {
 
 		User currentUser = userService.getCurrentUser();
 
-		if (Validation.isInvalidStartAndEndDate(employeeAttendanceSummaryFilterDto.getStartDate(),
+		if (!Validation.isValidStartAndEndDate(employeeAttendanceSummaryFilterDto.getStartDate(),
 				employeeAttendanceSummaryFilterDto.getEndDate())) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}

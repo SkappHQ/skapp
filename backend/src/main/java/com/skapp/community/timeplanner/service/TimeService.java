@@ -34,7 +34,6 @@ public interface TimeService {
 
 	ResponseEntityDto getActiveTimeSlot();
 
-	@Transactional
 	ResponseEntityDto getEmployeeAttendanceSummary(
 			EmployeeAttendanceSummaryFilterDto employeeAttendanceSummaryFilterDto);
 
