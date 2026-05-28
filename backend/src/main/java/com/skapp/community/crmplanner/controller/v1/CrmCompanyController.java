@@ -79,7 +79,7 @@ public class CrmCompanyController {
 
 	@Operation(summary = "Edit a company by ID", description = "Edit information related to a registered company by ID")
 	@PutMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> editCompany(@PathVariable Long id,
 			@RequestBody CrmCompanyCreateDto crmCompany) {
 		ResponseEntityDto responseDto = companyService.editCompany(id, crmCompany);
