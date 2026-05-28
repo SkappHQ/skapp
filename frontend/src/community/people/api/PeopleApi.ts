@@ -595,7 +595,7 @@ export const useTerminateUser = (
       [
         peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
         peopleQueryKeys.HAS_SUPERVISOR_ROLES,
-        [peopleQueryKeys.SUPERVISED_BY_ME]
+        peopleQueryKeys.SUPERVISED_BY_ME
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
@@ -701,7 +701,7 @@ export const useDeleteUser = (
       [
         peopleQueryKeys.EMPLOYEE_BY_ID(Number(employeeId)),
         peopleQueryKeys.HAS_SUPERVISOR_ROLES,
-        [peopleQueryKeys.SUPERVISED_BY_ME]
+        peopleQueryKeys.SUPERVISED_BY_ME
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
@@ -864,7 +864,7 @@ export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
         peopleQueryKeys.SUPERVISOR_ROLES(userId),
         peopleQueryKeys.HAS_SUPERVISOR_ROLES,
         peopleQueryKeys.EMPLOYEE_BY_ID(userId),
-        [peopleQueryKeys.SUPERVISED_BY_ME]
+        peopleQueryKeys.SUPERVISED_BY_ME
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
     },
