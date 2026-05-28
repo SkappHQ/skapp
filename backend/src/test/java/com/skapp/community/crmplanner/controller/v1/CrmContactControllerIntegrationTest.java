@@ -369,8 +369,8 @@ class CrmContactControllerIntegrationTest {
 		// Promote user2 to CRM_SALES_MANAGER
 		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_MANAGER);
 		employeeRoleDao.flush();
-		String managerToken = jwtService.generateAccessToken(
-				userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+		String managerToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
 
 		Long companyId = savedCompany().getId();
 		// Contact owned by employee 1, not by user2

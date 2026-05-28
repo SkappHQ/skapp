@@ -78,11 +78,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		log.info("createContact: execution started");
 
 		User currentUser = userService.getCurrentUser();
-		CrmValidations.validateContactName(requestDto.getName());
-		CrmValidations.validateContactEmail(requestDto.getEmail());
-		CrmValidations.validateContactNumber(requestDto.getContactNumber());
-		CrmValidations.validateOwnerId(requestDto.getOwnerId());
-		CrmValidations.validateCompanyId(requestDto.getCompanyId());
+		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
+				requestDto.getOwnerId(), requestDto.getCompanyId());
 
 		String normalizedEmail = requestDto.getEmail().toLowerCase(Locale.ROOT);
 		if (crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(normalizedEmail)) {
@@ -117,11 +114,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		checkEditPermission(contact, currentUser);
 
-		CrmValidations.validateContactName(requestDto.getName());
-		CrmValidations.validateContactEmail(requestDto.getEmail());
-		CrmValidations.validateContactNumber(requestDto.getContactNumber());
-		CrmValidations.validateOwnerId(requestDto.getOwnerId());
-		CrmValidations.validateCompanyId(requestDto.getCompanyId());
+		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
+				requestDto.getOwnerId(), requestDto.getCompanyId());
 
 		String normalizedEmail = requestDto.getEmail().toLowerCase(Locale.ROOT);
 		if (!normalizedEmail.equals(contact.getEmail())
@@ -170,10 +164,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private void checkEditPermission(CrmContact contact, User currentUser) {
 		Employee currentEmployee = currentUser.getEmployee();
-		if (currentEmployee == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
-		}
-
 		boolean isSuperAdmin = isSuperAdmin(currentEmployee);
 		Role currentCrmRole = crmRoleOf(currentEmployee);
 
@@ -312,6 +302,14 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		return owner;
+	}
+
+	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId, Long companyId) {
+		CrmValidations.validateContactName(name);
+		CrmValidations.validateContactEmail(email);
+		CrmValidations.validateContactNumber(contactNumber);
+		CrmValidations.validateOwnerId(ownerId);
+		CrmValidations.validateCompanyId(companyId);
 	}
 
 	private boolean isSuperAdmin(Employee employee) {
