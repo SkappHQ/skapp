@@ -7,6 +7,7 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.TestSkappApplication;
@@ -258,6 +259,7 @@ class CrmCompanyControllerIntegrationTest {
 		deal.setCompany(crmCompanyDao.getReferenceById(companyId));
 		deal.setContact(contact);
 		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setPriority(CrmDealPriority.MEDIUM);
 		Long dealId = crmDealDao.save(deal).getId();
 
 		performDeleteRequest(companyId).andExpect(status().isOk())
