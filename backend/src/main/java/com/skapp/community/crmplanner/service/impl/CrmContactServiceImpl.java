@@ -43,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
 import java.util.function.Function;
@@ -81,8 +80,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
 				requestDto.getOwnerId(), requestDto.getCompanyId());
 
-		String normalizedEmail = requestDto.getEmail().toLowerCase(Locale.ROOT);
-		if (crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(normalizedEmail)) {
+		String lowercaseEmail = requestDto.getEmail().toLowerCase();
+		if (crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(lowercaseEmail)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
 
@@ -91,7 +90,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContact contact = new CrmContact();
 		contact.setName(requestDto.getName());
-		contact.setEmail(normalizedEmail);
+		contact.setEmail(lowercaseEmail);
 		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
 		contact.setCompany(company);
 		contact.setOwner(owner);
@@ -117,9 +116,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
 				requestDto.getOwnerId(), requestDto.getCompanyId());
 
-		String normalizedEmail = requestDto.getEmail().toLowerCase(Locale.ROOT);
-		if (!normalizedEmail.equals(contact.getEmail())
-				&& crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(normalizedEmail, id)) {
+		String lowercaseEmail = requestDto.getEmail().toLowerCase();
+		if (!lowercaseEmail.equals(contact.getEmail())
+				&& crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(lowercaseEmail, id)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
 
@@ -129,7 +128,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		contact.setName(requestDto.getName().trim());
-		contact.setEmail(normalizedEmail);
+		contact.setEmail(lowercaseEmail);
 		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
 		contact.setOwner(owner);
 
