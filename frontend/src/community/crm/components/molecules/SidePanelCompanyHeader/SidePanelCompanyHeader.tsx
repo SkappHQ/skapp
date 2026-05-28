@@ -23,7 +23,7 @@ interface Props {
   company: CrmCompanyType;
 }
 
-const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
+const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
   const infoItems: InfoItem[] = [
     {
       icon: BrowserIcon,
@@ -102,4 +102,4 @@ const CompanyDetailHeader: React.FC<Props> = ({ company }) => {
   );
 };
 
-export default CompanyDetailHeader;
+export default SidePanelCompanyHeader;
