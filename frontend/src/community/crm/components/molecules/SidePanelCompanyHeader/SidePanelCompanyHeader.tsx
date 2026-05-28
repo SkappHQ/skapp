@@ -8,8 +8,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { IconName } from "~community/common/types/IconTypes";
-import { IconProps } from "~community/common/types/IconTypes";
+import { IconName, IconProps } from "~community/common/types/IconTypes";
 import { CrmCompanyType } from "~community/crm/types/CommonTypes";
 
 interface InfoItem {

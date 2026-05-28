@@ -1,5 +1,3 @@
-import { JSX } from "react";
-
 import { CrmDealStageEnum, CrmMetricChipThemeEnum } from "../enums/common";
 
 export interface MetricChipProps {
