@@ -26,8 +26,6 @@ const Module: NextPage = () => {
 
   const { setIsUserRoleModalOpen, setModuleType } = useConfigurationStore();
 
-  const userRolesTabHref = `${ROUTES.CONFIGURATIONS.BASE}?tab=user-roles`;
-
   const [isPending, setIsPending] = useState<boolean>(false);
   const [initialData, setInitialData] = useState<
     UserRoleRestrictionsType | undefined
@@ -44,7 +42,7 @@ const Module: NextPage = () => {
     setModuleType(formattedModule);
   };
   const onBackClick = () => {
-    router.push(userRolesTabHref);
+    router.push(ROUTES.CONFIGURATIONS.USER_ROLES_TAB);
   };
 
   return (
@@ -52,7 +50,7 @@ const Module: NextPage = () => {
       breadcrumbs={[
         {
           label: translateText(["title"]),
-          href: userRolesTabHref
+          href: ROUTES.CONFIGURATIONS.USER_ROLES_TAB
         },
         { label: translateText([`userRoles.${module}Title`]) }
       ]}
