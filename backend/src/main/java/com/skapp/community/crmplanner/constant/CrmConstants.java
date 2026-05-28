@@ -33,4 +33,6 @@ public class CrmConstants {
 
 	public static final int PHONE_MAX_LENGTH = 15;
 
+	public static final int TASK_NAME_MAX_LENGTH = 255;
+
 }
