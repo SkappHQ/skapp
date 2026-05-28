@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactTaskCreateRequestDto;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,6 +51,16 @@ public class CrmContactController {
 	public ResponseEntity<ResponseEntityDto> deleteContact(@PathVariable Long id) {
 		ResponseEntityDto response = contactService.deleteContact(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Create a task for a contact",
+			description = "Creates a task linked to the given contact with the current user as owner.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PostMapping("/{id}/task")
+	public ResponseEntity<ResponseEntityDto> createContactTask(@PathVariable Long id,
+			@RequestBody CrmContactTaskCreateRequestDto requestDto) {
+		ResponseEntityDto response = contactService.createContactTask(id, requestDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@Operation(summary = "Get contact metrics",

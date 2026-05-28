@@ -14,18 +14,17 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
-import com.skapp.community.crmplanner.repository.CrmCompanyDao;
-import com.skapp.community.crmplanner.repository.CrmContactDao;
-import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
-import com.skapp.community.crmplanner.repository.CrmDealDao;
-import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.*;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -60,6 +59,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	private final CrmDealDao crmDealDao;
 
 	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final EmployeeDao employeeDao;
 
@@ -203,6 +204,36 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
 
 		return dto;
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto createContactTask(Long contactId, CrmContactTaskCreateRequestDto requestDto) {
+		log.info("createContactTask: execution started for contactId={}", contactId);
+
+		CrmValidations.validateTaskName(requestDto.getName());
+		CrmValidations.validateTaskTypeId(requestDto.getTypeId());
+
+		CrmContact contact = crmContactDao.getReferenceById(contactId);
+		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
+
+		User currentUser = userService.getCurrentUser();
+		Employee currentEmployee = currentUser.getEmployee();
+		if (currentEmployee == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+		}
+
+		CrmTask task = new CrmTask();
+		task.setName(requestDto.getName().trim());
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(currentEmployee);
+		task.setContact(contact);
+
+		CrmTask savedTask = crmTaskDao.save(task);
+
+		log.info("createContactTask: execution ended with taskId={}", savedTask.getId());
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
 	}
 
 	private Employee resolveOwner(Long ownerId, User currentUser) {
