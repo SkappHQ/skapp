@@ -501,11 +501,8 @@ public class TimeServiceImpl implements TimeService {
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 
-		List<TimeConfigResponseDto> newTimeConfigs = timeConfigs.stream()
+		List<TimeConfigResponseDto> sortedTimeConfigs = timeConfigs.stream()
 			.map(timeMapper::timeConfigToTimeConfigResponseDto)
-			.toList();
-
-		List<TimeConfigResponseDto> sortedTimeConfigs = newTimeConfigs.stream()
 			.sorted(Comparator.comparingInt(timeConfig -> timeConfig.getDay().getValue()))
 			.toList();
 

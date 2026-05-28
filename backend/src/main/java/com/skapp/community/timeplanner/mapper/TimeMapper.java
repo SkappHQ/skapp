@@ -57,12 +57,11 @@ public interface TimeMapper {
 			Employee employee, TimeRecord timeRecord, Long clockInTime, Long clockOutTime, Long requestedStartTime,
 			Long requestedEndTime);
 
-	@Mapping(target = "startTime",
-			expression = "java(mapToLocalTime(tcm.getStartHour() != null ? tcm.getStartHour() : 0, tcm.getStartMinute() != null ? tcm.getStartMinute() : 0))")
+	@Mapping(target = "startTime", expression = "java(mapToLocalTime(tcm.getStartHour(), tcm.getStartMinute()))")
 	TimeConfigResponseDto timeConfigToTimeConfigResponseDto(TimeConfig tcm);
 
-	default LocalTime mapToLocalTime(int hour, int minute) {
-		return LocalTime.of(hour, minute);
+	default LocalTime mapToLocalTime(Integer hour, Integer minute) {
+		return LocalTime.of(hour == null ? 0 : hour, minute == null ? 0 : minute);
 	}
 
 	@Mapping(target = "clockInTime", source = "timeRequest.requestedStartTime")
