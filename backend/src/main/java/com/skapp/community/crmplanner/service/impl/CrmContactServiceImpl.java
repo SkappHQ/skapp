@@ -174,10 +174,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
 		}
 
-		EmployeeRole currentEmployeeRole = currentEmployee.getEmployeeRole();
-		boolean isSuperAdmin = currentEmployeeRole != null
-				&& Boolean.TRUE.equals(currentEmployeeRole.getIsSuperAdmin());
-		Role currentCrmRole = currentEmployeeRole != null ? currentEmployeeRole.getCrmRole() : null;
+		boolean isSuperAdmin = isSuperAdmin(currentEmployee);
+		Role currentCrmRole = crmRoleOf(currentEmployee);
 
 		if (isSuperAdmin || currentCrmRole == Role.CRM_ADMIN || currentCrmRole == Role.CRM_SALES_MANAGER) {
 			return;
@@ -282,10 +280,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
 		}
 
-		EmployeeRole currentEmployeeRole = currentEmployee.getEmployeeRole();
-		boolean isSuperAdmin = currentEmployeeRole != null
-				&& Boolean.TRUE.equals(currentEmployeeRole.getIsSuperAdmin());
-		Role currentCrmRole = currentEmployeeRole != null ? currentEmployeeRole.getCrmRole() : null;
+		boolean isSuperAdmin = isSuperAdmin(currentEmployee);
+		Role currentCrmRole = crmRoleOf(currentEmployee);
 
 		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
 			if (!ownerId.equals(currentEmployee.getEmployeeId())) {
@@ -309,14 +305,23 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INACTIVE);
 		}
 
-		EmployeeRole ownerRole = owner.getEmployeeRole();
-		boolean isOwnerSuperAdmin = ownerRole != null && Boolean.TRUE.equals(ownerRole.getIsSuperAdmin());
-		Role ownerCrmRole = ownerRole != null ? ownerRole.getCrmRole() : null;
+		boolean isOwnerSuperAdmin = isSuperAdmin(owner);
+		Role ownerCrmRole = crmRoleOf(owner);
 		if (!isOwnerSuperAdmin && (ownerCrmRole == null || !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(ownerCrmRole))) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE);
 		}
 
 		return owner;
+	}
+
+	private boolean isSuperAdmin(Employee employee) {
+		EmployeeRole role = employee.getEmployeeRole();
+		return role != null && Boolean.TRUE.equals(role.getIsSuperAdmin());
+	}
+
+	private Role crmRoleOf(Employee employee) {
+		EmployeeRole role = employee.getEmployeeRole();
+		return role != null ? role.getCrmRole() : null;
 	}
 
 	private String normalizeNullableText(String value) {
