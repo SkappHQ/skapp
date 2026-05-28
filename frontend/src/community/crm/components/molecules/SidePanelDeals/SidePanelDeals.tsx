@@ -12,8 +12,17 @@ import {
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { useCrmStore } from "~community/crm/store/store";
-import { SidePanelDealItem } from "~community/crm/types/CommonTypes";
+
+export interface SidePanelDealItem {
+  id: number;
+  name: string;
+  contactName: string;
+  amount: string | null;
+  currencyCode: string | null;
+  stageName: string;
+  stageColor: string;
+  description: string | null;
+}
 
 const mapDealsToAccordionItems = (
   deals: SidePanelDealItem[],
@@ -60,11 +69,10 @@ interface Props {
 }
 
 const SidePanelDeals: React.FC<Props> = ({ deals }) => {
-  const { setIsAddDealFormOpen } = useCrmStore();
   const translateText = useTranslator("crmModule", "sidePanelDeals");
 
   const handleAddDeal = () => {
-    setIsAddDealFormOpen(true);
+    // TODO: Open the add deal side panel when clicked
   };
 
   return (
@@ -90,24 +98,19 @@ const SidePanelDeals: React.FC<Props> = ({ deals }) => {
       </div>
       <hr className="border-gray-200" />
       {deals.length === 0 ? (
-        <div className="flex h-[228px] flex-col items-center justify-center gap-3 rounded-lg bg-gray-50">
-          <EmptyDataView
-            icon={<SearchIcon width="24" height="24" fill="#71717A" />}
-            title={translateText(["emptyTitle"])}
-            description={translateText(["emptyDescription"])}
-            className={{
-              wrapper: "!h-auto !p-0 !gap-3"
-            }}
-          />
-          <button
-            type="button"
-            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-5 py-2 body3 font-medium text-black transition-colors hover:bg-gray-200"
-            onClick={handleAddDeal}
-          >
-            {translateText(["addDealBtn"])}
-            <PlusIcon />
-          </button>
-        </div>
+        <EmptyDataView
+          icon={<SearchIcon width="24" height="24" fill="#71717A" />}
+          title={translateText(["emptyTitle"])}
+          description={translateText(["emptyDescription"])}
+          button={{
+            text: translateText(["addDealBtn"]),
+            variant: "tertiary",
+            onClick: handleAddDeal
+          }}
+          className={{
+            wrapper: "h-[228px]"
+          }}
+        />
       ) : (
         <AdvancedAccordion
           items={mapDealsToAccordionItems(
