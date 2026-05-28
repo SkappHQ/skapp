@@ -48,7 +48,10 @@ const Module: NextPage = () => {
   return (
     <ContentLayout
       breadcrumbs={[
-        { label: translateText(["title"]) },
+        {
+          label: translateText(["title"]),
+          href: `${ROUTES.CONFIGURATIONS.BASE}?tab=user-roles`
+        },
         { label: translateText([`userRoles.${module}Title`]) }
       ]}
       pageHead={translateText(["userRoles.pageHead"])}
