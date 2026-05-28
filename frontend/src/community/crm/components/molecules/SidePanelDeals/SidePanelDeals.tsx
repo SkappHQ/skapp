@@ -11,36 +11,27 @@ import {
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { CrmDealType } from "~community/crm/types/CommonTypes";
+import { formatDealAmountWithCurrency } from "~community/crm/utils/formatters";
 
-export interface SidePanelDealItem {
-  id: number;
-  name: string;
-  contactName: string;
-  amount: string | null;
-  currencyCode: string | null;
-  stageName: string;
-  stageColor: string;
-  description: string | null;
-}
+import styles from "./styles"
 
 const mapDealsToAccordionItems = (
-  deals: SidePanelDealItem[],
+  deals: CrmDealType[],
   descriptionLabel: string
 ): AdvancedAccordionItem[] =>
   deals.map((deal) => ({
     id: String(deal.id),
     header: (
-      <div className="flex flex-col gap-[2px]">
-        <p className="body2 text-black">{deal.name}</p>
-        <div className="flex items-center gap-2 text-secondary-text">
-          <span className="body3">{deal.contactName}</span>
+      <div className={styles.dealHeader}>
+        <span className={styles.dealName}>{deal.name}</span>
+        <div className={styles.dealMeta}>
+          <span className="body3">{deal.contact.name}</span>
           {deal.amount && (
             <>
-              <span className="inline-block h-1 w-1 rounded-full bg-gray-400" />
+              <span className={styles.dealSeparator} />
               <span className="body3">
-                {deal.currencyCode
-                  ? `${deal.amount} ${deal.currencyCode}`
-                  : deal.amount}
+                {formatDealAmountWithCurrency(deal.amount, deal.currencyCode)}
               </span>
             </>
           )}
@@ -48,19 +39,19 @@ const mapDealsToAccordionItems = (
       </div>
     ),
     badge: (
-      <div className="flex items-center justify-center gap-2 rounded-full bg-tertiary-background px-3 py-1.5">
+      <div className={styles.badgeWrapper}>
         <span
-          className="inline-block h-2 w-2 rounded-full"
-          style={{ backgroundColor: deal.stageColor }}
+          className={styles.badgeDot}
+          style={{ backgroundColor: deal.stage.color }}
         />
-        <span className="body2 text-secondary-text">{deal.stageName}</span>
+        <span className={styles.badgeText}>{deal.stage.name}</span>
       </div>
     ),
     content: (
-      <div className="flex flex-col gap-1">
-        <p className="subtitle4 text-secondary-text">{descriptionLabel}</p>
+      <div className={styles.contentWrapper}>
+        <p className={styles.contentLabel}>{descriptionLabel}</p>
         {deal.description ? (
-          <p className="body3 text-black">{deal.description}</p>
+          <p className={styles.contentText}>{deal.description}</p>
         ) : (
           <Icon name={IconName.DASH_ICON} width="16" height="16" />
         )}
@@ -69,21 +60,31 @@ const mapDealsToAccordionItems = (
   }));
 
 interface Props {
-  deals: SidePanelDealItem[];
+  deals: CrmDealType[];
+  isLoading?: boolean;
 }
 
-const SidePanelDeals: React.FC<Props> = ({ deals }) => {
-  const translateText = useTranslator("crmModule", "sidePanelDeals");
+const SidePanelDeals: React.FC<Props> = ({ deals, isLoading }) => {
+  const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const handleAddDeal = () => {
     // TODO: Open the add deal side panel when clicked
   };
 
   return (
-    <div className="flex flex-col gap-4 mt-6">
-      <h2 className="h2 text-black">{translateText(["title"])}</h2>
-      <hr className="border-gray-200" />
-      {deals.length === 0 ? (
+    <div className={styles.wrapper}>
+      <h2 className={styles.title}>{translateText(["title"])}</h2>
+      <hr className={styles.divider} />
+      {isLoading ? (
+        <div className={styles.skeletonList}>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={styles.skeletonItem}
+            />
+          ))}
+        </div>
+      ) : deals.length === 0 ? (
         <EmptyDataView
           icon={<SearchIcon width="24" height="24" />}
           title={translateText(["emptyTitle"])}
@@ -91,27 +92,29 @@ const SidePanelDeals: React.FC<Props> = ({ deals }) => {
           button={{
             text: translateText(["addDealBtn"]),
             variant: "tertiary",
-            onClick: handleAddDeal
+            onClick: handleAddDeal,
+            "aria-label": translateText(["ariaLabels", "addDealBtn"])
           }}
           className={{
-            wrapper: "h-[228px]"
+            wrapper: styles.emptyWrapper
           }}
         />
       ) : (
-        <div className="flex flex-col">
+        <div className={styles.dealsList}>
           <AdvancedAccordion
             items={mapDealsToAccordionItems(
               deals,
-              translateText(["description"])
+              translateText(["descriptionLabel"])
             )}
             allowMultiple={true}
-            className="gap-4"
+            className={styles.accordionWrapper}
           />
           <ButtonV2
             variant="line"
             size="sm"
             onClick={handleAddDeal}
-            className="self-start !px-3"
+            className={styles.addDealBtn}
+            aria-label={translateText(["ariaLabels", "addDealBtn"])}
             icon={
               <Icon
                 name={IconName.ADD_ICON}

@@ -69,6 +69,7 @@ export interface CrmContactType {
 export interface CrmDealType {
   id: number;
   name: string;
+  description: string | null;
   stage: CrmDealStageType;
   priority: CrmPriorityType | null;
   closingAt: string | null;
