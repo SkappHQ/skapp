@@ -2,17 +2,37 @@ package com.skapp.community.crmplanner.mapper;
 
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface CrmMapper {
+
+	@Mapping(target = "stageName", source = "stage.name")
+	@Mapping(target = "stageColor", source = "stage.color")
+	@Mapping(target = "companyName", source = "company.name")
+	@Mapping(target = "contactName", source = "contact.name")
+	@Mapping(target = "ownerName", source = "owner.fullName")
+	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
+
+	List<CrmDealResponseDto> crmDealsToCrmDealResponseDtos(List<CrmDeal> crmDeals);
+
+	CrmDealStageResponseDto crmDealStageToCrmDealStageResponseDto(CrmDealStage crmDealStage);
+
+	List<CrmDealStageResponseDto> crmDealStagesToCrmDealStageResponseDtos(List<CrmDealStage> crmDealStages);
 
 	CrmCompanyLookupResponseDto crmCompanyToCrmCompanyLookupResponseDto(CrmCompany company);
 
@@ -24,5 +44,11 @@ public interface CrmMapper {
 	CrmContactOwnerResponseDto employeeToCrmContactOwnerResponseDto(Employee employee);
 
 	CrmContactResponseDto crmContactToCrmContactResponseDto(CrmContact contact);
+
+	@Mapping(target = "closedDealValue", ignore = true)
+	@Mapping(target = "closedDealCount", ignore = true)
+	@Mapping(target = "openTaskCount", ignore = true)
+	@Mapping(target = "overdueTaskCount", ignore = true)
+	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
 }
