@@ -30,7 +30,7 @@ const TableFilterButton: FC<Props> = ({
         <IconButton
           icon={
             <FilterIcon
-              color={hasFilters ? "var(--color-primary-accent)" : undefined}
+              fill={hasFilters ? "var(--color-primary-accent)" : undefined}
             />
           }
           aria-label={translateText(["filter"])}

@@ -449,7 +449,7 @@ const UserLeaveHistory: FC<Props> = ({
           <FilterIconButton
             icon={
               <FilterIcon
-                color={hasFilters ? "var(--color-primary-accent)" : undefined}
+                fill={hasFilters ? "var(--color-primary-accent)" : undefined}
               />
             }
             tabIndex={getTabIndex(isFreeTier)}

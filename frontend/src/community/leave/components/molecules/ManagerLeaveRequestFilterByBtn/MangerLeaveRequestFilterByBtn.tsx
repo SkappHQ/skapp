@@ -50,7 +50,7 @@ const ManagerLeaveRequestFilterByBtn = ({
           id="filter-icon-btn"
           icon={
             <FilterIcon
-              color={hasFilters ? "var(--color-primary-accent)" : undefined}
+              fill={hasFilters ? "var(--color-primary-accent)" : undefined}
             />
           }
           onClick={handleFilterClick}
