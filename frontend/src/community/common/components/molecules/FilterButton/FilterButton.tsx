@@ -21,13 +21,13 @@ const FilterButton = ({
     "filterButton"
   );
 
-  const getFilterCount = () =>
-    selectedFilters.reduce((total, group) => total + group.filter.length, 0);
+  const filterCount = selectedFilters.reduce(
+    (total, group) => total + group.filter.length,
+    0
+  );
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isPopperOpen, setIsPopperOpen] = useState<boolean>(false);
-  const [appliedFilterCount, setAppliedFilterCount] =
-    useState<number>(getFilterCount());
 
   const handleFilterBtnClick = (event: MouseEvent<HTMLElement>): void => {
     setAnchorEl(event.currentTarget);
@@ -35,13 +35,11 @@ const FilterButton = ({
   };
 
   const onApplyBtnClick = () => {
-    setAppliedFilterCount(getFilterCount());
     handleApplyBtnClick();
     setIsPopperOpen(false);
   };
 
   const onResetBtnClick = () => {
-    setAppliedFilterCount(0);
     handleResetBtnClick();
     setIsPopperOpen(false);
   };
@@ -49,7 +47,7 @@ const FilterButton = ({
   return (
     <div className="flex flex-row items-center">
       <FilterIconButton
-        filterCount={appliedFilterCount}
+        filterCount={filterCount}
         onClick={(event: MouseEvent<HTMLElement>) =>
           handleFilterBtnClick(event)
         }
