@@ -2,9 +2,9 @@ package com.skapp.community.crmplanner.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.skapp.community.common.model.Auditable;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,10 +46,12 @@ public class CrmCompany extends Auditable<String> {
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted = false;
 
-	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnore
+	@OneToMany(mappedBy = "company")
 	private List<CrmTask> tasks;
 
-	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnore
+	@OneToMany(mappedBy = "company")
 	private List<CrmDeal> deals;
 
 }

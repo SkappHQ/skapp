@@ -104,7 +104,6 @@ const AddCompanyModal: React.FC = () => {
     values,
     errors,
     handleChange,
-    handleBlur,
     isSubmitting,
     setFieldError,
     setSubmitting,
@@ -213,9 +212,9 @@ const AddCompanyModal: React.FC = () => {
           disabled={
             isSubmitting || isPending || companyNameData?.isExists === true
           }
-          aria-label={translateText(["ariaLabels", "addCompany"])}
+          aria-label={translateText(["ariaLabels", "save"])}
         >
-          {translateText(["buttons", "addCompany"])}
+          {translateText(["buttons", "save"])}
         </ButtonV2>
       </div>
     </div>

@@ -1,14 +1,16 @@
 package com.skapp.community.crmplanner.repository;
 
+import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 
-import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 
-@Repository
 public interface CrmCompanyRepository {
 
-	public Page<CrmCompanyMetricsDto> getCompanyMetrics(Pageable pageable, String searchKeyword);
+	Page<CrmCompany> findCompanies(CrmCompanyFilterDto filterDto, Pageable pageable);
+
+	public Page<CrmCompanyMetricsResponseDto> getCompanyMetrics(Pageable pageable, String searchKeyword);
 
 }

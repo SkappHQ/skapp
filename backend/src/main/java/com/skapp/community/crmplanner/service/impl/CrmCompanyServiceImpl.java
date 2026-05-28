@@ -8,20 +8,27 @@ import org.springframework.transaction.annotation.Transactional;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
-import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -30,9 +37,34 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
-	private final CrmCompanyRepository crmCompanyRepository;
+	private final CrmDealDao crmDealDao;
 
 	private final CrmMapper crmCompanyMapper;
+
+	private final MessageUtil messageUtil;
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompanies(CrmCompanyFilterDto filterDto) {
+		log.info("getCompanies: execution started");
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmCompany> companyPage = crmCompanyDao.findCompanies(filterDto, pageable);
+
+		List<CrmCompanyLookupResponseDto> companyResponseDtos = companyPage.getContent()
+			.stream()
+			.map(crmCompanyMapper::crmCompanyToCrmCompanyLookupResponseDto)
+			.toList();
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(companyResponseDtos);
+		pageDto.setCurrentPage(companyPage.getNumber());
+		pageDto.setTotalItems(companyPage.getTotalElements());
+		pageDto.setTotalPages(companyPage.getTotalPages());
+
+		log.info("getCompanies: execution ended");
+		return new ResponseEntityDto(false, pageDto);
+	}
 
 	@Override
 	@Transactional(readOnly = true)
@@ -76,9 +108,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	}
 
 	@Override
-	public PageDto getCompanyMetrics(String searchKeyword, Pageable pageable) {
+	public ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable) {
 		log.info("getCompanyMetrics: execution started");
-		Page<CrmCompanyMetricsDto> page = crmCompanyRepository.getCompanyMetrics(pageable, searchKeyword);
+		Page<CrmCompanyMetricsResponseDto> page = crmCompanyDao.getCompanyMetrics(pageable, searchKeyword);
 
 		PageDto response = new PageDto();
 		response.setItems(page.getContent());
@@ -87,7 +119,28 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		response.setTotalPages(page.getTotalPages());
 		log.info("getCompanyMetrics: execution ended");
 
-		return response;
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteCompany(Long id) {
+		log.info("deleteCompany: execution started");
+
+		CrmValidations.validateCompanyId(id);
+
+		CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+
+		List<CrmDeal> deals = crmDealDao.findAllByCompanyIdAndIsDeletedFalse(id);
+		deals.forEach(deal -> deal.setIsDeleted(true));
+		crmDealDao.saveAll(deals);
+
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		log.info("deleteCompany: execution ended successfully");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED), false);
 	}
 
 	@Override

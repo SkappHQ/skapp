@@ -2,6 +2,7 @@ import {
   FilterIcon,
   IconButton,
   InputField,
+  Label,
   ProjectTableSkeletonLoader,
   SearchIcon,
   Table,
@@ -12,18 +13,14 @@ import { ChangeEvent, useMemo, useState } from "react";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompanyMetrics } from "~community/crm/api/CompanyApi";
-import { companyTableColumns } from "~community/crm/constants/companyTableConstants";
-import { EmptyStateTypeEnum } from "~community/crm/enums/CrmCompanyEnums";
-import { useCrmStore } from "~community/crm/store/store";
+import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 import {
-  formatAccountValue,
-  formatCurrency,
+  formatValue,
   formatPhoneNumber,
   formatTasks
 } from "~community/crm/utils/companyTableHelpers";
-
-import styles from "./styles";
+import { COMPANY_NAME_DEBOUNCE_DELAY, DEFAULT_PAGE_SIZE } from "~community/crm/constants/companyConstants";
 
 export const CompanyTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -36,17 +33,17 @@ export const CompanyTable: React.FC = () => {
   );
 
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, 300);
+  const debouncedSearch = useDebounce(searchTerm, COMPANY_NAME_DEBOUNCE_DELAY);
   const emptyStateType =
     debouncedSearch.trim() === ""
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetCompanyMetrics(debouncedSearch, 12);
+    useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
   const companies = useMemo(() => {
-    return data?.pages.flatMap((page) => page?.items ?? []) ?? [];
+    return data?.pages.flatMap((page) => page?.items ?? []);
   }, [data]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -82,35 +79,46 @@ export const CompanyTable: React.FC = () => {
     {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
-      key: companyTableColumns.NAME,
-      width: "20%"
+      key: "name",
+      width: "25%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "phoneAriaLabel"]),
       header: translateText(["table", "columns", "phoneHeader"]),
-      key: companyTableColumns.CONTACT_NUMBER,
+      key: "contactNumber",
       render(value) {
-        return formatPhoneNumber(value);
+        return <div className="flex items-baseline">{formatPhoneNumber(value)}</div>;
       },
       width: "20%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
       header: translateText(["table", "columns", "tasksHeader"]),
-      key: companyTableColumns.TASKS,
+      key: "tasks",
       render(value, row) {
-        return formatTasks(value, row);
+        return (
+          <div className="flex flex-row items-center gap-2">
+            {formatTasks(value)}
+            {row.overdue > 0 && (
+              <Label
+                backgroundColor="bg-semantic-red-background"
+                textColor="text-semantic-red-text"
+              >{`${row.overdue} ${translateText(["table", "overdueLabel"])}`}
+              </Label>
+            )}
+          </div>
+        );
       },
-      width: "20%"
+      width: "15%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "pipelineAriaLabel"]),
       header: translateText(["table", "columns", "pipelineHeader"]),
-      key: companyTableColumns.OPEN_VALUE,
+      key: "openValue",
       render(openValue) {
-        return formatCurrency(openValue);
+        return (<div className="flex justify-end" >{formatValue(openValue)}</div>);
       },
-      className: "justify-end text-right",
+      className: "text-right",
       width: "20%"
     },
     {
@@ -120,11 +128,17 @@ export const CompanyTable: React.FC = () => {
         "accountValueAriaLabel"
       ]),
       header: translateText(["table", "columns", "accountValueHeader"]),
-      key: companyTableColumns.ACCOUNT_VALUE,
+      key: "accountValue",
       render(value, row) {
-        return formatAccountValue(value, row);
+        return (
+          <div className="flex flex-col gap-1 text-right">
+            <div>{formatValue(value)}</div>
+            <div className="subtitle4 text-secondary-text" >
+              {row.closedDeals > 0 ? `${row.closedDeals} ${translateText(["table", "closedDealsLabel"])}` : ""}
+            </div>
+          </div>)
       },
-      className: "justify-end text-right",
+      className: "text-right",
       width: "20%"
     }
   ];
@@ -156,7 +170,6 @@ export const CompanyTable: React.FC = () => {
           isRounded={true}
           variant="outlined"
           icon={<FilterIcon />}
-          style={styles.filterButton}
           type="button"
           aria-label={translateText(["table", "filterButtonAriaLabel"])}
           disabled
@@ -165,19 +178,17 @@ export const CompanyTable: React.FC = () => {
 
       <Table
         columns={columns as TableColumn<any>[]}
-        data={companies}
+        data={companies ?? []}
         emptyStateType={emptyStateType}
-        isLoading={isLoading && companies.length === 0}
+        isLoading={isLoading && companies?.length === 0}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-        height="33rem"
+        height="34.5rem"
         hasMore={hasNextPage}
-        onRowClick={handleRowClick}
         onLoadMore={loadMore}
         infiniteScrollLoadingMessage={translateText([
           "table",
           "infiniteScrollLoadingMessage"
         ])}
-        scrollThreshold={0.8}
         noDataState={{
           icon: <SearchIcon />,
           title: translateText(["table", "emptyDataState", "title"]),

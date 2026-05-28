@@ -1,7 +1,5 @@
 package com.skapp.community.crmplanner.payload.response;
 
-import java.math.BigDecimal;
-
 import lombok.Setter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +7,7 @@ import lombok.Getter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CrmCompanyMetricsDto {
+public class CrmCompanyMetricsResponseDto {
 
 	private Long id;
 
@@ -27,9 +25,9 @@ public class CrmCompanyMetricsDto {
 
 	private Long overdue;
 
-	private BigDecimal openValue;
+	private String openValue;
 
-	private BigDecimal accountValue;
+	private String accountValue;
 
 	private Long closedDeals;
 

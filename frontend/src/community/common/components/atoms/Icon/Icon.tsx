@@ -89,6 +89,7 @@ import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LocationIcon from "~community/common/assets/Icons/LocationIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
+import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
 import LockIcon from "~community/common/assets/Icons/LockIcon";
 import MagnifyingGlassIcon from "~community/common/assets/Icons/MagnifyingGlassIcon";
 import MenuIcon from "~community/common/assets/Icons/MenuIcon";
@@ -352,7 +353,8 @@ export const IconMapping: Partial<
   [IconName.ROUND_EMAIL_ICON]: RoundEmailIcon,
   [IconName.ROUND_PHONE_ICON]: RoundPhoneIcon,
   [IconName.ROUND_MEETING_ICON]: RoundMeetingIcon,
-  [IconName.ROUND_MORE_ICON]: RoundMoreIcon
+  [IconName.ROUND_MORE_ICON]: RoundMoreIcon,
+  [IconName.LOCAL_PHONE_ICON]: LocalPhoneIcon
   // Add more icons here as needed
 };
 

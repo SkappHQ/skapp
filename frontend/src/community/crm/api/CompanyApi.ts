@@ -8,36 +8,30 @@ import {
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 import {
-  CrmCompanyCreatePayload,
-  CrmCompanyMetricsResponseType
+  CrmCompanyCreatePayload
 } from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
-interface Params {
-  page?: number;
-  size?: number;
-  searchKeyword?: string;
+interface CompanyMetricSearchParams {
+  page: number;
+  size: number;
+  searchKeyword: string;
 }
-const fetchCompanyMetrics = async ({ page, size, searchKeyword }: Params) => {
-  try {
-    const response = await authFetch.get(companyEndpoints.GET_COMPANY_METRICS, {
-      params: {
-        page,
-        size,
-        ...(searchKeyword ? { searchKeyword } : {})
-      }
-    });
-    return response?.data as CrmCompanyMetricsResponseType;
-  } catch (error) {
-    console.error("Error fetching companies:", error);
-    throw error;
-  }
+const fetchCompanyMetrics = async ({ page, size, searchKeyword }: CompanyMetricSearchParams) => {
+  const response = await authFetch.get(companyEndpoints.GET_COMPANY_METRICS, {
+    params: {
+      page,
+      size,
+      searchKeyword
+    }
+  });
+  return response?.data?.results?.[0];
 };
 
 export const useGetCompanyMetrics = (
   searchKeyword: string,
-  limit: number = 8
+  limit: number
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,

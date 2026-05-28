@@ -1,33 +1,41 @@
-import { Box } from "@mui/material";
 import { FC } from "react";
 
+import SupervisorReassignmentModal from "~community/people/components/organisms/SupervisorReassignmentModal/SupervisorReassignmentModal";
 import { usePeopleStore } from "~community/people/store/store";
+import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
 
 import UserDeletionConfirmationModal from "../UserDeletionConfirmationModal/UserDeletionConfirmationModal";
-import UserDeletionWarningModal from "../UserDeletionWarningModal/UserDeletionWarningModal";
 
 const UserDeletionModalController: FC = () => {
   const {
     isDeletionConfirmationModalOpen,
-    isDeletionAlertOpen,
     setDeletionConfirmationModalOpen,
-    setDeletionAlertOpen,
-    deletionAlertMessage
+    selectedEmployeeId,
+    isSupervisorReassignmentModalOpen,
+    supervisorReassignmentActionType,
+    setIsSupervisorReassignmentModalOpen,
+    employee
   } = usePeopleStore((state) => state);
 
   return (
-    <Box>
+    <>
+      <SupervisorReassignmentModal
+        isOpen={
+          isSupervisorReassignmentModalOpen &&
+          supervisorReassignmentActionType ===
+            SupervisorReassignmentActionType.DELETE
+        }
+        onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
+        employeeId={Number(selectedEmployeeId)}
+        actionType={SupervisorReassignmentActionType.DELETE}
+        onActionSuccess={() => setIsSupervisorReassignmentModalOpen(false)}
+      />
       <UserDeletionConfirmationModal
         isOpen={isDeletionConfirmationModalOpen}
         onClose={() => setDeletionConfirmationModalOpen(false)}
+        employeeId={Number(selectedEmployeeId)}
       />
-      <UserDeletionWarningModal
-        message={deletionAlertMessage}
-        isOpen={isDeletionAlertOpen}
-        onClose={() => setDeletionAlertOpen(false)}
-        onClick={() => setDeletionAlertOpen(false)}
-      />
-    </Box>
+    </>
   );
 };
 

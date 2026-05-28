@@ -14,9 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyMetricRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,11 +26,20 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/company")
+@RequestMapping("/v1/crm/company")
 @Tag(name = "CRM Companies Controller", description = "Operations related to CRM Companies")
 public class CrmCompanyController {
 
 	private final CrmCompanyService companyService;
+
+	@Operation(summary = "Get CRM companies for lookup",
+			description = "Retrieves a paginated list of CRM companies (id + name) for use in dropdowns and contact forms.")
+	@GetMapping("/lookup")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getCompaniesLookup(CrmCompanyFilterDto filterDto) {
+		ResponseEntityDto response = companyService.getCompanies(filterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 	@Operation(summary = "Check if a company name exists",
 			description = "Check if a company with the given name already exists")
@@ -52,10 +62,17 @@ public class CrmCompanyController {
 			description = "Returns all details related to company info, tasks and deals")
 	@GetMapping("/metrics")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<PageDto> getCompanyMetrics(@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "8") int size, @RequestParam(required = false) String searchKeyword) {
-		Pageable pageable = PageRequest.of(page, size);
-		PageDto responseDto = companyService.getCompanyMetrics(searchKeyword, pageable);
+	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {
+		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
+		ResponseEntityDto responseDto = companyService.getCompanyMetrics(requestDto.getSearchKeyword(), pageable);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Delete a company by ID", description = "Soft deletes company by ID if not already deleted")
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> deleteCompany(@PathVariable Long id) {
+		ResponseEntityDto responseDto = companyService.deleteCompany(id);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 

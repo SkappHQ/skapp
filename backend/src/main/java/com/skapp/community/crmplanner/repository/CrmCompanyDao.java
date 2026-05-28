@@ -1,20 +1,15 @@
 package com.skapp.community.crmplanner.repository;
 
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.skapp.community.crmplanner.model.CrmCompany;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.skapp.community.crmplanner.model.CrmCompany;
+import java.util.Optional;
 
 @Repository
-public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long> {
+public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long>, CrmCompanyRepository {
 
-	Page<CrmCompany> findByIsDeletedFalse(Pageable pageable);
-
-	Page<CrmCompany> findByIsDeletedFalseAndNameContainingIgnoreCase(String name, Pageable pageable);
+	Optional<CrmCompany> findByIdAndIsDeletedFalse(Long id);
 
 	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 
