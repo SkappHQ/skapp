@@ -18,7 +18,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateTask } from "~community/crm/api/TaskApi";
-import { getPriorityOptions } from "~community/crm/components/atoms/TaskOptions/TaskOptions";
+import { getPriorityOptions } from "~community/crm/components/atoms/PriorityOptions/PriorityOptions";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmTaskAddFormTypes,
@@ -66,7 +66,6 @@ const AddTaskModal: React.FC = () => {
   );
 
   // TODO: Replace with API data when backend integrated
-  // filtration should be done in backend
   const ownerOptions: AvatarChipsInputResult[] = useMemo(
     () => [
       {
@@ -85,7 +84,8 @@ const AddTaskModal: React.FC = () => {
     ],
     []
   );
-
+  
+  // filtration should be done in backend
   const filteredOwnerOptions = useMemo(
     () =>
       ownerSearchText
@@ -192,7 +192,7 @@ const AddTaskModal: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full justify-between gap-[0.625rem]">
+    <div className="flex flex-col w-full h-full justify-between gap-[0.625rem]">
       <Dropdown
         label={translateText(["labels", "type"])}
         placeholder={translateText(["placeholders", "type"])}
@@ -202,7 +202,7 @@ const AddTaskModal: React.FC = () => {
         errorMessage={errors.type}
         variant={errors.type ? "primary-error" : "primary"}
         width="100%"
-        className="rounded-[0.5rem] w-full"
+        className="rounded-lg"
         ariaLabel={translateText(["ariaLabels", "type"])}
         required
       />
@@ -226,7 +226,7 @@ const AddTaskModal: React.FC = () => {
         onSelect={(date: Date | undefined) =>
           setFieldValue("dueDate", date ?? null)
         }
-        popoverPosition="bottom-right"
+        popperProps={{position: "bottom-end"}}
       >
         <div>
           <InputField
@@ -257,7 +257,7 @@ const AddTaskModal: React.FC = () => {
         onChange={(value) => setFieldValue("priority", value)}
         errorMessage={errors.priority || ""}
         width="100%"
-        className="rounded-[0.5rem]"
+        className="rounded-lg"
         ariaLabel={translateText(["ariaLabels", "priority"])}
       />
 
@@ -333,7 +333,7 @@ const AddTaskModal: React.FC = () => {
         <ButtonV2
           variant="primary"
           type="button"
-          onClick={() => submitForm()}
+          onClick={submitForm}
           disabled={isSubmitting || isPending}
           aria-label={translateText(["ariaLabels", "save"])}
         >
