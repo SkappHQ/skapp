@@ -19,7 +19,7 @@ import {
   formatValue,
   formatPhoneNumber,
   formatTasks
-} from "~community/crm/utils/companyTableHelpers";
+} from "~community/crm/utils/tableHelpers";
 import { COMPANY_NAME_DEBOUNCE_DELAY, DEFAULT_PAGE_SIZE } from "~community/crm/constants/companyConstants";
 
 export const CompanyTable: React.FC = () => {

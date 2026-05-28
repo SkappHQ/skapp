@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -19,19 +19,16 @@ import {
 } from "~community/crm/api/ContactApi";
 import {
   ALL_COMPANIES,
+  CONTACT_SEARCH_DEBOUNCE_DELAY,
   DEFAULT_PAGE_SIZE,
-  CONTACT_SEARCH_DEBOUNCE_DELAY
+  DEFAULT_COMPANY_PAGE_SIZE
 } from "~community/crm/constants/contactConstants";
-import {
-  CompanyLookup,
-  CrmContactMetricsType
-} from "~community/crm/types/CommonTypes";
+import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import {
   formatPhoneNumber,
   formatTasks,
-  formatValue,
-  ownerFullName
-} from "~community/crm/utils/contactTableHelpers";
+  formatValue
+} from "~community/crm/utils/tableHelpers";
 
 export const ContactTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
@@ -43,116 +40,31 @@ export const ContactTable: React.FC = () => {
   const companyId =
     selectedCompany === ALL_COMPANIES ? undefined : Number(selectedCompany);
 
-  const emptyStateType =
-    debouncedSearch.trim() === "" && companyId === undefined
-      ? EmptyStateTypeEnum.NO_DATA
-      : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, companyId);
 
-  const {
-    data: companiesData,
-    fetchNextPage: fetchNextCompaniesPage,
-    hasNextPage: hasNextCompaniesPage,
-    isFetchingNextPage: isFetchingNextCompaniesPage
-  } = useGetCrmCompanies({
-    size: DEFAULT_PAGE_SIZE,
-  });
+  const { data: companies = [] } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
 
-  const companies = useMemo(
-    () => companiesData?.pages.flatMap((page) => page?.items ?? []) ?? [],
-    [companiesData]
-  );
+  const contacts = data?.pages.flatMap((page) => page.items);
 
-  const COMPANY_FILTER_MENU_ID = "contact-company-filter-menu";
-  const SCROLL_THRESHOLD_PX = 50;
-  const companyDropdownWrapperRef = useRef<HTMLDivElement>(null);
-  const companyMenuScrollCleanupRef = useRef<(() => void) | null>(null);
-  const companyMenuRef = useRef<HTMLElement | null>(null);
+  const hasActiveFilters =
+    debouncedSearch.trim() !== "" || companyId !== undefined;
+  const emptyStateType = hasActiveFilters
+    ? EmptyStateTypeEnum.NO_SEARCH_RESULTS
+    : EmptyStateTypeEnum.NO_DATA;
 
-  const maybeFetchNextCompanies = useCallback(
-    (menu: HTMLElement) => {
-      if (!hasNextCompaniesPage || isFetchingNextCompaniesPage) return;
-      const { scrollTop, scrollHeight, clientHeight } = menu;
-      const reachedBottom =
-        scrollHeight - scrollTop - clientHeight < SCROLL_THRESHOLD_PX;
-      const notScrollable = scrollHeight <= clientHeight;
-      if (reachedBottom || notScrollable) {
-        fetchNextCompaniesPage();
-      }
+  const companyOptions = [
+    {
+      id: ALL_COMPANIES,
+      label: translateText(["table", "companyFilter", "allCompanies"]),
+      value: ALL_COMPANIES
     },
-    [hasNextCompaniesPage, isFetchingNextCompaniesPage, fetchNextCompaniesPage]
-  );
-
-  useEffect(() => {
-    const wrapper = companyDropdownWrapperRef.current;
-    if (!wrapper) return;
-
-    const attachListener = (menu: HTMLElement) => {
-      if (companyMenuScrollCleanupRef.current) return;
-      companyMenuRef.current = menu;
-      const onScroll = () => maybeFetchNextCompanies(menu);
-      menu.addEventListener("scroll", onScroll);
-      companyMenuScrollCleanupRef.current = () => {
-        menu.removeEventListener("scroll", onScroll);
-        companyMenuRef.current = null;
-      };
-      maybeFetchNextCompanies(menu);
-    };
-
-    const detachListener = () => {
-      if (companyMenuScrollCleanupRef.current) {
-        companyMenuScrollCleanupRef.current();
-        companyMenuScrollCleanupRef.current = null;
-      }
-    };
-
-    const observer = new MutationObserver(() => {
-      const menu = document.getElementById(COMPANY_FILTER_MENU_ID);
-      if (menu) {
-        attachListener(menu);
-      } else {
-        detachListener();
-      }
-    });
-
-    observer.observe(wrapper, { childList: true, subtree: true });
-    return () => {
-      observer.disconnect();
-      detachListener();
-    };
-  }, [maybeFetchNextCompanies]);
-
-  useEffect(() => {
-    if (companyMenuRef.current) {
-      maybeFetchNextCompanies(companyMenuRef.current);
-    }
-  }, [companies, maybeFetchNextCompanies]);
-
-  const contacts = useMemo(() => {
-    return data?.pages.flatMap((page) => page?.items ?? []);
-  }, [data]);
-
-  const companyOptions = useMemo(
-    () => [
-      {
-        id: ALL_COMPANIES,
-        label: translateText(["table", "companyFilter", "allCompanies"]),
-        value: ALL_COMPANIES
-      },
-      ...companies.map((company: CompanyLookup) => ({
-        id: String(company.id),
-        label: company.name,
-        value: String(company.id)
-      }))
-    ],
-    [companies, translateText]
-  );
-
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
+    ...companies.map((company) => ({
+      id: String(company.id),
+      label: company.name,
+      value: String(company.id)
+    }))
+  ];
 
   const columns: TableColumn<CrmContactMetricsType>[] = [
     {
@@ -219,7 +131,7 @@ export const ContactTable: React.FC = () => {
       key: "openTaskCount",
       render(value, row) {
         return (
-          <div className="flex flex-row items-center gap-2">
+          <div className="flex flex-row items-center gap-2 pl-24">
             {formatTasks(value)}
             {row.overdueTaskCount > 0 && (
               <Label
@@ -231,8 +143,7 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      width: "20%",
-      className: "pl-24",
+      width: "20%"
     },
     {
       columnAriaLabel: translateText([
@@ -247,12 +158,11 @@ export const ContactTable: React.FC = () => {
         return (
           <AvatarChip
             avatarProps={{
-              id: `contact-${row.id}-owner-${owner.employeeId}`,
-              src: owner.authPic ?? undefined,
-              firstName: owner.firstName,
-              lastName: owner.lastName ?? ""
+              id: `contact-${row.id}-owner-${owner?.employeeId}`,
+              src: owner?.authPic,
+              firstName: owner?.firstName,
+              lastName: owner?.lastName ?? ""
             }}
-            label={ownerFullName(owner)}
             backgroundColor="bg-tertiary-background"
           />
         );
@@ -281,28 +191,25 @@ export const ContactTable: React.FC = () => {
           state="default"
           type="search"
           value={searchTerm}
-          onChange={handleSearchChange}
+          onChange={(event) => setSearchTerm(event.target.value)}
           customStyles={{ borderRadius: "rounded-[1.5rem]" }}
         />
-        <div ref={companyDropdownWrapperRef}>
-          <Dropdown
-            ariaLabel={translateText(["table", "companyFilter", "ariaLabel"])}
-            className="rounded-full"
-            id="contact-company-filter"
-            menuWidth="content"
-            options={companyOptions}
-            value={selectedCompany}
-            variant="secondary"
-            onChange={(value) => setSelectedCompany(value)}
-          />
-        </div>
+        <Dropdown
+          ariaLabel={translateText(["table", "companyFilter", "ariaLabel"])}
+          className="rounded-full"
+          menuWidth="content"
+          options={companyOptions}
+          value={selectedCompany}
+          variant="secondary"
+          onChange={(value) => setSelectedCompany(value)}
+        />
       </div>
 
       <Table
         columns={columns as TableColumn<any>[]}
         data={contacts ?? []}
         emptyStateType={emptyStateType}
-        isLoading={isLoading && (!contacts || contacts.length === 0)}
+        isLoading={isLoading}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="37.2rem"
         hasMore={hasNextPage}
