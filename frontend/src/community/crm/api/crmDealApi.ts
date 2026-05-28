@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
@@ -23,6 +23,7 @@ export const useGetDealsInfinite = (
     getNextPageParam: (lastPage) => {
       if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
       return lastPage.currentPage + 1;
-    }
+    },
+    placeholderData: keepPreviousData
   });
 };

@@ -25,6 +25,7 @@ interface DealRow extends BaseRowData {
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
+  isError: boolean;
   allDeals: CrmDealListItemType[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
@@ -33,6 +34,7 @@ interface Props {
 const DealsTable: FC<Props> = ({
   searchKeyword,
   isLoading,
+  isError,
   allDeals,
   hasNextPage,
   onLoadMore
@@ -165,6 +167,15 @@ const DealsTable: FC<Props> = ({
     return (
       <div className="w-full h-[34.5rem] flex rounded-lg shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="w-full h-[34.5rem] flex flex-col items-center justify-center rounded-lg shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] gap-2">
+        <p className="body1Bold">{translateText(["fetchErrorTitle"])}</p>
+        <p className="body2">{translateText(["fetchErrorDescription"])}</p>
       </div>
     );
   }

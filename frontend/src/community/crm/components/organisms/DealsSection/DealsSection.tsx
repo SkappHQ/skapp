@@ -15,7 +15,7 @@ const DealsSection: FC = () => {
   const [inputValue, setInputValue] = useState("");
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
     useGetDealsInfinite({
       size: DEAL_PAGE_SIZE,
       sortKey: CrmDealSortEnum.STAGE_ORDER,
@@ -40,6 +40,7 @@ const DealsSection: FC = () => {
       <DealsTable
         searchKeyword={debouncedSearch}
         isLoading={isLoading}
+        isError={isError}
         allDeals={allDeals}
         hasNextPage={hasNextPage}
         onLoadMore={handleLoadMore}
