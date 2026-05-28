@@ -2,6 +2,8 @@ import { ArrowRightIcon, LargeModal } from "@rootcodelabs/skapp-ui";
 import Image from "next/image";
 import React from "react";
 
+const arrowRightIcon = <ArrowRightIcon />;
+
 interface UpgradeToCoreModalProps {
   id: string;
   isOpen: boolean;
@@ -63,7 +65,7 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
                 children: button.children,
                 onClick: button.onClick,
                 variant: "primary",
-                icon: <ArrowRightIcon />,
+                icon: arrowRightIcon,
                 iconPosition: "end"
               }
             }
