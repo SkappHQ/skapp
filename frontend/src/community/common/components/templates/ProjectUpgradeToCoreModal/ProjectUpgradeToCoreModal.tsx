@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 import React from "react";
+import { Trans } from "react-i18next";
 
 import templateUpgradeImage from "~community/common/assets/images/project-upgrade-to-core.png";
 import UpgradeToCoreModal from "~community/common/components/molecules/UpgradeToCoreModal/UpgradeToCoreModal";
@@ -28,10 +29,13 @@ const ProjectUpgradeToCoreModal: React.FC<ProjectUpgradeToCoreModalProps> = ({
       title={translateText(["title"])}
       content={
         <>
-          <p style={{ color: "#666", marginBottom: "16px" }} className="body1">
-            {translateText(["descriptionPart1"])}
+          <p style={{ marginBottom: "16px" }} className="body1">
+            <Trans
+              i18nKey="pmModule.projectUpgradeModal.descriptionPart1"
+              components={{ bold: <span className="subtitle3" /> }}
+            />
           </p>
-          <p style={{ color: "#666" }} className="body1">
+          <p className="body1">
             {isSuperAdmin
               ? translateText(["descriptionPartTwoSuperAdmin"])
               : translateText(["descriptionPartTwoPmAdmin"])}

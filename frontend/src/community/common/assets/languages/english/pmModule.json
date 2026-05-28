@@ -1,0 +1,10 @@
+{
+  "projectUpgradeModal": {
+    "title": "Upgrade to Skapp Core",
+    "descriptionPart1": "You can only create up to <bold>5 projects</bold> on the Free plan. Upgrade to Skapp Core to create more projects and scale your work without limits.",
+    "descriptionPartTwoSuperAdmin": "Experience the full potential of Skapp by upgrading to Skapp Core.",
+    "descriptionPartTwoPmAdmin": "Please contact your administrator to unlock this feature for your organization.",
+    "btnLabel": "Upgrade Now",
+    "logoAltText": "Upgrade to Core Plan"
+  }
+}

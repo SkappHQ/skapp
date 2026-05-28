@@ -10,6 +10,7 @@ import crmModule from "~community/common/assets/languages/english/crmModule.json
 import leaveModule from "~community/common/assets/languages/english/leaveModule.json";
 import onboarding from "~community/common/assets/languages/english/onboarding.json";
 import peopleModule from "~community/common/assets/languages/english/peopleModule.json";
+import pmModule from "~community/common/assets/languages/english/pmModule.json";
 
 export const english = {
   ...common,
@@ -19,6 +20,7 @@ export const english = {
   leaveModule,
   attendanceModule,
   crmModule,
+  pmModule,
   onboardingAria,
   attendanceAria,
   commonAria,
