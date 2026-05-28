@@ -10,6 +10,7 @@ import java.util.List;
 public interface CrmDealDao extends JpaRepository<CrmDeal, Long> {
 
 	List<CrmDeal> findByContact_IdAndIsDeletedFalse(Long contactId);
+
 	List<CrmDeal> findAllByCompanyIdAndIsDeletedFalse(Long companyId);
 
 }
