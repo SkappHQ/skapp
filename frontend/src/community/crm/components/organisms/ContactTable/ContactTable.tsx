@@ -120,7 +120,7 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
-      className: "text-right pr-[2.625rem]",
+      className: "text-right pr-[3%]",
       width: "10%"
     },
     {
@@ -129,7 +129,7 @@ export const ContactTable: React.FC = () => {
       key: "openTaskCount",
       render(value, row) {
         return (
-          <div className="flex flex-row items-center gap-2 pl-24">
+          <div className="flex flex-row items-center gap-2">
             {formatTasks(value)}
             {row.overdueTaskCount > 0 && (
               <Label
@@ -141,6 +141,7 @@ export const ContactTable: React.FC = () => {
           </div>
         );
       },
+      className: "pl-[6%]",
       width: "20%"
     },
     {
