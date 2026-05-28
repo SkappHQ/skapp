@@ -40,14 +40,20 @@ const AddCompanyModal: React.FC = () => {
     "companyToastMessages"
   );
 
+  const translateIndustryOptions = useTranslator(
+    "crmModule",
+    "companies",
+    "industryOptions"
+  );
+
   const industryOptions = useMemo(
     () =>
       Object.values(CrmIndustryEnum).map((industry) => ({
         id: industry,
-        label: translateText(["industryOptions", industry]),
+        label: translateIndustryOptions([industry]),
         value: industry
       })),
-    [translateText]
+    [translateIndustryOptions]
   );
 
   const { setIsAddCompanyModalOpen } = useCrmStore((store) => ({
@@ -205,6 +211,7 @@ const AddCompanyModal: React.FC = () => {
           await formik.setFieldValue("industry", value);
         }}
         label={translateText(["labels", "industry"])}
+        className="rounded-lg"
         errorMessage={errors.industry || ""}
         variant={errors.industry ? "primary-error" : "primary"}
         ariaLabel={translateText(["ariaLabels", "industry"])}
