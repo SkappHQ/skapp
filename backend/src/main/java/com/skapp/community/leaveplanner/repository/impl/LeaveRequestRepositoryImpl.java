@@ -1306,14 +1306,16 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			predicates.add(cb.equal(leaveType.get(LeaveType_.isActive), true));
 
-			leaveQuery.multiselect(leaveType.get(LeaveType_.typeId), leaveRequest.get(LeaveRequest_.leaveState));
+			leaveQuery.select(cb.array(leaveRequest.get(LeaveRequest_.leaveRequestId), leaveType.get(LeaveType_.typeId),
+					leaveRequest.get(LeaveRequest_.leaveState)));
+			leaveQuery.distinct(true);
 			leaveQuery.where(predicates.toArray(new Predicate[0]));
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
 			for (Object[] result : results) {
-				Long leaveTypeId = (Long) result[0];
-				LeaveState leaveState = (LeaveState) result[1];
+				Long leaveTypeId = (Long) result[1];
+				LeaveState leaveState = (LeaveState) result[2];
 
 				double leaveCount = 1.0;
 				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
