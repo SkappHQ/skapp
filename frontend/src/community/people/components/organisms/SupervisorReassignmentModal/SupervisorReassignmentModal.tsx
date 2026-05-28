@@ -16,8 +16,8 @@ import {
 import SupervisorReassignmentModalSection from "~community/people/components/molecules/SupervisorReassignmentModalSection/SupervisorReassignmentModalSection";
 import { usePeopleStore } from "~community/people/store/store";
 import {
-  ReassignSupervisorsAndTerminateOrDeleteEmployeePayload,
-  SupervisorReassignmentActionType
+  EmployeeRemoveAction,
+  ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
 } from "~community/people/types/PeopleTypes";
 import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
@@ -25,7 +25,7 @@ interface SupervisorReassignmentModalProps {
   isOpen: boolean;
   onCancel: () => void;
   employeeId: number;
-  actionType: SupervisorReassignmentActionType;
+  actionType: EmployeeRemoveAction;
   onActionSuccess: () => void;
 }
 const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
@@ -71,7 +71,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
 
   const onSuccess = useCallback(() => {
     resetState();
-    if (actionType === SupervisorReassignmentActionType.TERMINATE) {
+    if (actionType === EmployeeRemoveAction.TERMINATE) {
       setToastMessage({
         open: true,
         toastType: ToastType.SUCCESS,
@@ -80,7 +80,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
           name: employeeName
         })
       });
-    } else if (actionType === SupervisorReassignmentActionType.DELETE) {
+    } else if (actionType === EmployeeRemoveAction.DELETE) {
       setToastMessage({
         open: true,
         toastType: ToastType.SUCCESS,
@@ -90,6 +90,13 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
         })
       });
       router.push(ROUTES.PEOPLE.DIRECTORY);
+    } else {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["actionErrorTitle"]),
+        description: translateText(["actionErrorDescription"])
+      });
     }
     onActionSuccess();
   }, [
@@ -178,7 +185,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   const handleDropdownBlur = () => setSearchTerm("");
 
   const proceedButtonLabel =
-    actionType === SupervisorReassignmentActionType.TERMINATE
+    actionType === EmployeeRemoveAction.TERMINATE
       ? translateText(["proceedAndTerminateButton"])
       : translateText(["proceedAndDeleteButton"]);
 

@@ -1298,11 +1298,11 @@ public class PeopleServiceImpl implements PeopleService {
 
 		PeopleMessageConstant successMessage;
 		switch (requestDto.getAction()) {
-			case TERMINATED -> {
+			case TERMINATE -> {
 				updateUserStatus(userId, AccountStatus.TERMINATED, false);
 				successMessage = PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED;
 			}
-			case DELETED -> {
+			case DELETE -> {
 				updateUserStatus(userId, AccountStatus.DELETED, true);
 				successMessage = PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_DELETED;
 			}

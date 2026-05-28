@@ -1,6 +1,6 @@
 package com.skapp.community.peopleplanner.payload.request;
 
-import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.EmployeeRemoveAction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +14,6 @@ public class ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto {
 
 	private List<TeamSupervisorTransferDto> teamSupervisors;
 
-	private AccountStatus action;
+	private EmployeeRemoveAction action;
 
 }

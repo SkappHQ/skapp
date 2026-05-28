@@ -270,10 +270,10 @@ export interface TeamSupervisorTransfer {
 export interface ReassignSupervisorsAndTerminateOrDeleteEmployeePayload {
   primarySupervisors: PrimarySupervisorTransfer[];
   teamSupervisors: TeamSupervisorTransfer[];
-  action: SupervisorReassignmentActionType;
+  action: EmployeeRemoveAction;
 }
 
-export enum SupervisorReassignmentActionType {
-  TERMINATE = "TERMINATED",
-  DELETE = "DELETED"
+export enum EmployeeRemoveAction {
+  TERMINATE = "TERMINATE",
+  DELETE = "DELETE"
 }
