@@ -70,10 +70,10 @@ public class TimeController {
 	}
 
 	@Operation(summary = "Work summary", description = "Returns attendance summary of an employee")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ATTENDANCE_EMPLOYEE')")
-	@GetMapping(value = "/work-summary", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_ATTENDANCE_EMPLOYEE')")
+	@GetMapping(value = "/work-summary")
 	public ResponseEntity<ResponseEntityDto> getEmployeeAttendanceSummary(
-			@Valid EmployeeAttendanceSummaryFilterDto employeeAttendanceSummaryFilterDto) {
+			EmployeeAttendanceSummaryFilterDto employeeAttendanceSummaryFilterDto) {
 		ResponseEntityDto response = timeService.getEmployeeAttendanceSummary(employeeAttendanceSummaryFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
