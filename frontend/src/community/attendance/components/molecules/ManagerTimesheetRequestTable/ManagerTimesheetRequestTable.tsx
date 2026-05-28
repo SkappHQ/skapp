@@ -31,7 +31,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
-import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
+import { concatStrings } from "~community/common/utils/commonUtil";
 
 import TimesheetRequestsFilters from "../TimesheetRequestsFilters/TimesheetRequestsFilters";
 import styles from "./styles";

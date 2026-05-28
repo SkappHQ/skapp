@@ -13,6 +13,7 @@ import { useState } from "react";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   useGetContactMetrics,
   useGetCrmCompanies
@@ -156,11 +157,11 @@ export const ContactTable: React.FC = () => {
           <AvatarChip
             avatarProps={{
               id: `contact-${row.id}-owner-${owner?.employeeId}`,
-              src: owner?.authPic,
+              src: owner?.authPic ?? undefined,
               firstName: owner?.firstName,
               lastName: owner?.lastName ?? ""
             }}
-            label={`${owner.firstName} ${owner.lastName ?? ""}`}
+            label={concatStrings([owner?.firstName, owner?.lastName ?? ""])}
             backgroundColor="bg-tertiary-background"
           />
         );

@@ -9,7 +9,7 @@ import {
   AllEmployeeDataType,
   EmployeeDataTeamType
 } from "~community/people/types/PeopleTypes";
-import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
+import { concatStrings } from "~community/common/utils/commonUtil";
 
 type SectionItem = AllEmployeeDataType | EmployeeDataTeamType;
 
