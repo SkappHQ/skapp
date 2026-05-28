@@ -18,4 +18,6 @@ public interface CrmCompanyService {
 
 	ResponseEntityDto deleteCompany(Long id);
 
+	ResponseEntityDto editCompany(Long id, CrmCompanyCreateDto crmCompany);
+
 }

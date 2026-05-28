@@ -143,4 +143,37 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED), false);
 	}
 
+	@Override
+	@Transactional
+	public ResponseEntityDto editCompany(Long id, CrmCompanyCreateDto crmCompany) {
+		log.info("editCompany: execution started");
+
+		CrmValidations.validateCompanyId(id);
+		CrmValidations.validateCompanyName(crmCompany.getName());
+		CrmValidations.validateContactNumber(crmCompany.getContactNumber());
+		CrmValidations.validateWebsite(crmCompany.getWebsite());
+		CrmValidations.validateAddress(crmCompany.getAddress());
+		CrmValidations.validateIndustry(crmCompany.getIndustry());
+
+		CrmCompany existingCompany = crmCompanyDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+
+		if (!existingCompany.getName().equalsIgnoreCase(crmCompany.getName())
+				&& checkCompanyExists(crmCompany.getName())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
+		}
+
+		existingCompany.setName(crmCompany.getName());
+		existingCompany.setContactNumber(crmCompany.getContactNumber());
+		existingCompany.setWebsite(crmCompany.getWebsite());
+		existingCompany.setAddress(crmCompany.getAddress());
+		existingCompany.setIndustry(crmCompany.getIndustry());
+
+		CrmCompany updatedCompany = crmCompanyDao.save(existingCompany);
+		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(updatedCompany);
+
+		log.info("editCompany: execution ended successfully");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
 }
