@@ -285,12 +285,13 @@ public class TimeServiceImpl implements TimeService {
 			EmployeeAttendanceSummaryFilterDto employeeAttendanceSummaryFilterDto) {
 		log.info("getEmployeeAttendanceSummary: execution started");
 
-		User currentUser = userService.getCurrentUser();
 
 		if (!Validation.isValidStartAndEndDate(employeeAttendanceSummaryFilterDto.getStartDate(),
 				employeeAttendanceSummaryFilterDto.getEndDate())) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
+
+		User currentUser = userService.getCurrentUser();
 
 		AttendanceSummaryDto attendanceSummaryDto = timeRecordDao.getEmployeeAttendanceSummary(
 				List.of(currentUser.getUserId()), employeeAttendanceSummaryFilterDto.getStartDate(),
