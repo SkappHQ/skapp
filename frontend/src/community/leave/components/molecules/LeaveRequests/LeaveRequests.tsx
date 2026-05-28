@@ -26,7 +26,7 @@ import {
 } from "~community/leave/api/MyRequestApi";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequestDataType } from "~community/leave/types/EmployeeLeaveRequestTypes";
-import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
+import { LeaveStatusTypes, LeaveStatusTypeFilter } from "~community/leave/types/LeaveTypes";
 import { generateMyLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 
@@ -44,6 +44,7 @@ const LeaveRequests: FC = () => {
     resetLeaveRequestParams,
     leaveRequestsFilter,
     setLeaveRequestParams,
+    setLeaveRequestsFilter,
     setPagination,
     selectedYear,
     handleLeaveRequestsSort,
@@ -53,7 +54,7 @@ const LeaveRequests: FC = () => {
     setNewLeaveId
   } = useLeaveStore((state) => state);
 
-  const [filter, setFilter] = useState<{ status: string[]; type: string[] }>({
+  const [filter, setFilter] = useState<LeaveStatusTypeFilter>({
     status: leaveRequestsFilter.status || [],
     type: leaveRequestsFilter.type || []
   });
@@ -163,6 +164,8 @@ const LeaveRequests: FC = () => {
   const handleApplyFilters = () => {
     setLeaveRequestParams("status", filter.status);
     setLeaveRequestParams("leaveType", filter.type);
+    setLeaveRequestsFilter("status", filter.status);
+    setLeaveRequestsFilter("type", filter.type);
   };
 
   const handleResetFilters = () => {
@@ -187,7 +190,9 @@ const LeaveRequests: FC = () => {
       handleResetBtnClick={handleResetFilters}
       selectedFilters={[
         {
-          filter: filter.type.map((typeId) => getLeaveTypeNameById(typeId)),
+          filter: (leaveRequestsFilter.type || [])
+            .map((typeId) => getLeaveTypeNameById(typeId))
+            .filter(Boolean) as string[],
           handleFilterDelete: (option) => {
             const updatedTypeFilter = filter.type.filter(
               (item) => getLeaveTypeNameById(item) !== option
@@ -200,7 +205,7 @@ const LeaveRequests: FC = () => {
           }
         },
         {
-          filter: filter.status,
+          filter: leaveRequestsFilter.status || [],
           handleFilterDelete: (option) => {
             const updatedStatusFilter = filter.status.filter(
               (item) => item !== option
