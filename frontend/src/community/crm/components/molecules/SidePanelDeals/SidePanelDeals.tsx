@@ -5,7 +5,6 @@ import {
   AdvancedAccordionItem,
   ButtonV2,
   EmptyDataView,
-  PlusIcon,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
 
@@ -31,9 +30,9 @@ const mapDealsToAccordionItems = (
   deals.map((deal) => ({
     id: String(deal.id),
     header: (
-      <div className="flex flex-col gap-1">
-        <p className="subtitle3 text-black">{deal.name}</p>
-        <div className="flex items-center gap-2 text-gray-500">
+      <div className="flex flex-col gap-[2px]">
+        <p className="body2 text-black">{deal.name}</p>
+        <div className="flex items-center gap-2 text-secondary-text">
           <span className="body3">{deal.contactName}</span>
           {deal.amount && (
             <>
@@ -46,22 +45,26 @@ const mapDealsToAccordionItems = (
     ),
     badge: (
       <div
-        className="flex items-center justify-center gap-2 rounded-full bg-gray-100"
+        className="flex items-center justify-center gap-2 rounded-full bg-tertiary-background"
         style={{ width: "156px", height: "32px" }}
       >
         <span
-          className="inline-block h-2.5 w-2.5 rounded-full"
+          className="inline-block h-2 w-2 rounded-full"
           style={{ backgroundColor: deal.stageColor }}
         />
-        <span className="subtitle3 text-gray-700">{deal.stageName}</span>
+        <span className="body2 text-secondary-text">{deal.stageName}</span>
       </div>
     ),
-    content: deal.description ? (
+    content: (
       <div className="flex flex-col gap-1">
-        <p className="subtitle4 text-gray-500">{descriptionLabel}</p>
-        <p className="body3 text-black">{deal.description}</p>
+        <p className="subtitle4 text-secondary-text">{descriptionLabel}</p>
+        {deal.description ? (
+          <p className="body3 text-black">{deal.description}</p>
+        ) : (
+          <Icon name={IconName.DASH_ICON} width="16" height="16" />
+        )}
       </div>
-    ) : undefined
+    )
   }));
 
 interface Props {
@@ -77,29 +80,11 @@ const SidePanelDeals: React.FC<Props> = ({ deals }) => {
 
   return (
     <div className="flex flex-col gap-4 mt-6">
-      <div className="flex justify-between items-center">
-        <h2 className="h2 text-black">{translateText(["title"])}</h2>
-        <ButtonV2
-          variant="tertiary"
-          size="sm"
-          onClick={handleAddDeal}
-          icon={
-            <Icon
-              name={IconName.ADD_ICON}
-              width="1rem"
-              height="1rem"
-              fill="currentColor"
-            />
-          }
-          iconPosition="end"
-        >
-          {translateText(["addDealBtn"])}
-        </ButtonV2>
-      </div>
+      <h2 className="h2 text-black">{translateText(["title"])}</h2>
       <hr className="border-gray-200" />
       {deals.length === 0 ? (
         <EmptyDataView
-          icon={<SearchIcon width="24" height="24" fill="#71717A" />}
+          icon={<SearchIcon width="24" height="24" />}
           title={translateText(["emptyTitle"])}
           description={translateText(["emptyDescription"])}
           button={{
@@ -112,13 +97,33 @@ const SidePanelDeals: React.FC<Props> = ({ deals }) => {
           }}
         />
       ) : (
-        <AdvancedAccordion
-          items={mapDealsToAccordionItems(
-            deals,
-            translateText(["description"])
-          )}
-          allowMultiple={true}
-        />
+        <div className="flex flex-col">
+          <AdvancedAccordion
+            items={mapDealsToAccordionItems(
+              deals,
+              translateText(["description"])
+            )}
+            allowMultiple={true}
+            className="gap-4"
+          />
+          <ButtonV2
+            variant="line"
+            size="sm"
+            onClick={handleAddDeal}
+            className="self-start !px-3"
+            icon={
+              <Icon
+                name={IconName.ADD_ICON}
+                width="1rem"
+                height="1rem"
+                fill="currentColor"
+              />
+            }
+            iconPosition="end"
+          >
+            {translateText(["addDealBtn"])}
+          </ButtonV2>
+        </div>
       )}
     </div>
   );
