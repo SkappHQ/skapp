@@ -7,7 +7,10 @@ import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { OptionType } from "~community/common/types/CommonTypes";
+import {
+  DropdownListType,
+  OptionType
+} from "~community/common/types/CommonTypes";
 import {
   useDeleteUser,
   useGetSearchedEmployees,
@@ -56,7 +59,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
 
   const { data: supervisorRoles, isLoading: isSupervisorRolesLoading } =
     useGetSupervisedEmployeesAndTeams(employeeId, isOpen);
-  const { data: searchedEmployees, isLoading: isSearchLoading } =
+  const { data: searchedEmployees, isPending: isSearchLoading } =
     useGetSearchedEmployees(searchTerm);
 
   const resetState = useCallback(() => {
@@ -178,9 +181,9 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   };
 
   const handleSelectPrimarySupervisor = (
+    supervisedEmployeeId: number,
     newSupervisorId: number,
-    newSupervisorName: string,
-    supervisedEmployeeId: number
+    newSupervisorName: string
   ) => {
     setPrimarySupervisorAssignments((prev) => ({
       ...prev,
@@ -190,9 +193,9 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   };
 
   const handleSelectTeamSupervisor = (
+    teamId: number,
     newSupervisorId: number,
-    newSupervisorName: string,
-    teamId: number
+    newSupervisorName: string
   ) => {
     setTeamSupervisorAssignments((prev) => ({
       ...prev,
@@ -201,54 +204,44 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     setSearchTerm("");
   };
 
-  const handleDropdownBlur = () => setSearchTerm("");
-
   const proceedButtonLabel =
     actionType === SupervisorReassignmentActionType.TERMINATE
       ? translateText(["proceedAndTerminateButton"])
       : translateText(["proceedAndDeleteButton"]);
 
-  const handlePrimarySupervisorMouseDown = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    employee: any,
-    supervisedEmployeeId: number
-  ) => {
-    e.preventDefault();
-    handleSelectPrimarySupervisor(
-      employee.employeeId,
-      concatStrings([employee.firstName, employee.lastName]).trim(),
-      supervisedEmployeeId
-    );
-  };
-
-  const handleTeamSupervisorMouseDown = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    employee: any,
-    teamId: number
-  ) => {
-    e.preventDefault();
-    handleSelectTeamSupervisor(
-      employee.employeeId,
-      concatStrings([employee.firstName, employee.lastName]).trim(),
-      teamId
-    );
-  };
-
   const handleRemovePrimarySupervisor = (supervisedEmployeeId: number) => {
     setPrimarySupervisorAssignments((prev) => {
-      const next = { ...prev };
-      delete next[supervisedEmployeeId];
-      return next;
+      const updatedAssignments = { ...prev };
+      delete updatedAssignments[supervisedEmployeeId];
+      return updatedAssignments;
     });
   };
 
   const handleRemoveTeamSupervisor = (teamId: number) => {
     setTeamSupervisorAssignments((prev) => {
-      const next = { ...prev };
-      delete next[teamId];
-      return next;
+      const updatedAssignments = { ...prev };
+      delete updatedAssignments[teamId];
+      return updatedAssignments;
     });
   };
+
+  const getPrimaryItemOptions = (
+    supervisedEmployeeId: number
+  ): DropdownListType[] =>
+    filteredEmployeeList
+      .filter(
+        (employee) => Number(employee.employeeId) !== supervisedEmployeeId
+      )
+      .map((employee) => ({
+        label: concatStrings([employee.firstName, employee.lastName]).trim(),
+        value: employee.employeeId
+      }));
+
+  const getTeamItemOptions = (): DropdownListType[] =>
+    filteredEmployeeList.map((employee) => ({
+      label: concatStrings([employee.firstName, employee.lastName]).trim(),
+      value: employee.employeeId
+    }));
 
   const modalContent = (
     <div className="flex flex-col gap-6 w-full">
@@ -271,35 +264,10 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               }))}
               showAvatar={true}
               isTeamSection={false}
-              isSearchLoading={isSearchLoading}
               assignments={primarySupervisorAssignments}
-              getResults={(supervisedEmployeeId) =>
-                filteredEmployeeList
-                  .filter(
-                    (employee) =>
-                      Number(employee.employeeId) !== supervisedEmployeeId
-                  )
-                  .map((employee) => (
-                    <button
-                      key={employee.employeeId}
-                      type="button"
-                      className="w-full text-left"
-                      onMouseDown={(e) =>
-                        handlePrimarySupervisorMouseDown(
-                          e,
-                          employee,
-                          supervisedEmployeeId
-                        )
-                      }
-                    >
-                      {concatStrings([
-                        employee.firstName,
-                        employee.lastName
-                      ]).trim()}
-                    </button>
-                  ))
-              }
-              onBlur={handleDropdownBlur}
+              isSearchLoading={isSearchLoading}
+              getItemOptions={getPrimaryItemOptions}
+              onSelect={handleSelectPrimarySupervisor}
               onSearch={setSearchTerm}
               onRemove={handleRemovePrimarySupervisor}
             />
@@ -314,26 +282,10 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               }))}
               showAvatar={false}
               isTeamSection={true}
-              isSearchLoading={isSearchLoading}
               assignments={teamSupervisorAssignments}
-              getResults={(teamId) =>
-                filteredEmployeeList.map((employee) => (
-                  <button
-                    key={employee.employeeId}
-                    type="button"
-                    className="w-full text-left"
-                    onMouseDown={(e) =>
-                      handleTeamSupervisorMouseDown(e, employee, teamId)
-                    }
-                  >
-                    {concatStrings([
-                      employee.firstName,
-                      employee.lastName
-                    ]).trim()}
-                  </button>
-                ))
-              }
-              onBlur={handleDropdownBlur}
+              isSearchLoading={isSearchLoading}
+              getItemOptions={() => getTeamItemOptions()}
+              onSelect={handleSelectTeamSupervisor}
               onSearch={setSearchTerm}
               onRemove={handleRemoveTeamSupervisor}
             />
