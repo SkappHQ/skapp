@@ -50,9 +50,9 @@ const DealsTable: FC<Props> = ({
       id: "dealName",
       title: translateText(["dealColumn"]),
       field: "dealName",
-      width: 300,
-      minWidth: 160,
-      resizable: false,
+      width: 460,
+      minWidth: 400,
+      resizable: true,
       draggable: false,
       visible: true,
       sortable: false
@@ -61,9 +61,9 @@ const DealsTable: FC<Props> = ({
       id: "value",
       title: translateText(["valueColumn"]),
       field: "value",
-      width: 160,
-      minWidth: 90,
-      resizable: false,
+      width: 180,
+      minWidth: 140,
+      resizable: true,
       draggable: false,
       visible: true,
       sortable: false
@@ -72,9 +72,9 @@ const DealsTable: FC<Props> = ({
       id: "stage",
       title: translateText(["stageColumn"]),
       field: "stage",
-      width: 160,
-      minWidth: 100,
-      resizable: false,
+      width: 180,
+      minWidth: 140,
+      resizable: true,
       draggable: false,
       visible: true,
       sortable: false
@@ -83,9 +83,9 @@ const DealsTable: FC<Props> = ({
       id: "companyName",
       title: translateText(["companyNameColumn"]),
       field: "companyName",
-      width: 200,
-      minWidth: 120,
-      resizable: false,
+      width: 240,
+      minWidth: 140,
+      resizable: true,
       draggable: false,
       visible: true,
       sortable: false
@@ -94,9 +94,9 @@ const DealsTable: FC<Props> = ({
       id: "contactName",
       title: translateText(["contactNameColumn"]),
       field: "contactName",
-      width: 200,
-      minWidth: 120,
-      resizable: false,
+      width: 240,
+      minWidth: 140,
+      resizable: true,
       draggable: false,
       visible: true,
       sortable: false
@@ -105,9 +105,9 @@ const DealsTable: FC<Props> = ({
       id: "dealOwner",
       title: translateText(["dealOwnerColumn"]),
       field: "dealOwner",
-      width: 200,
-      minWidth: 120,
-      resizable: false,
+      width: 240,
+      minWidth: 140,
+      resizable: true,
       draggable: false,
       visible: true,
       sortable: false
@@ -165,7 +165,7 @@ const DealsTable: FC<Props> = ({
 
   if (isLoading) {
     return (
-      <div className="w-full h-[34.5rem] flex rounded-lg shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] overflow-hidden">
+      <div className="w-full h-[37.5rem] rounded-lg shadow-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
       </div>
     );
@@ -173,7 +173,7 @@ const DealsTable: FC<Props> = ({
 
   if (isError) {
     return (
-      <div className="w-full h-[34.5rem] flex flex-col items-center justify-center rounded-lg shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] gap-2">
+      <div className="w-full h-[37.5rem] flex flex-col items-center justify-center rounded-lg shadow-lg gap-2">
         <p className="body1Bold">{translateText(["fetchErrorTitle"])}</p>
         <p className="body2">{translateText(["fetchErrorDescription"])}</p>
       </div>
@@ -181,7 +181,7 @@ const DealsTable: FC<Props> = ({
   }
 
   return (
-    <div className="w-full h-[34.5rem] flex rounded-lg shadow-[0px_2px_8px_0px_rgba(0,0,0,0.12)] [&_table]:!w-full [&_table]:!min-w-full">
+    <div className="w-full h-[37.5rem] flex rounded-lg shadow-lg overflow-hidden overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-secondary-background">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}

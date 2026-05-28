@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
@@ -15,35 +15,42 @@ const DealsSection: FC = () => {
   const [inputValue, setInputValue] = useState("");
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
-    useGetDealsInfinite({
-      size: DEAL_PAGE_SIZE,
-      sortKey: CrmDealSortEnum.STAGE_ORDER,
-      sortOrder: SortOrderTypes.ASC,
-      searchKeyword: debouncedSearch || undefined
-    });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isError,
+    isFetchingNextPage,
+    isPlaceholderData
+  } = useGetDealsInfinite({
+    size: DEAL_PAGE_SIZE,
+    sortKey: CrmDealSortEnum.STAGE_ORDER,
+    sortOrder: SortOrderTypes.ASC,
+    searchKeyword: debouncedSearch || undefined
+  });
 
   const allDeals = useMemo(
     () => data?.pages.flatMap((p) => p.items) ?? [],
     [data]
   );
 
-  const handleLoadMore = useCallback(async () => {
+  const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {
       await fetchNextPage();
     }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  };
 
   return (
     <div className="flex flex-col gap-6 w-full">
       <DealsHeader inputValue={inputValue} onSearchChange={setInputValue} />
       <DealsTable
         searchKeyword={debouncedSearch}
-        isLoading={isLoading}
+        isLoading={isLoading || isPlaceholderData}
         isError={isError}
         allDeals={allDeals}
         hasNextPage={hasNextPage}
-        onLoadMore={handleLoadMore}
+        onLoadMore={loadMore}
       />
     </div>
   );
