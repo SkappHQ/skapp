@@ -1,4 +1,4 @@
-import { InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
+import { InputField, Popper, SearchIcon } from "@rootcodelabs/skapp-ui";
 import React, {
   ChangeEvent,
   KeyboardEvent,
@@ -7,6 +7,9 @@ import React, {
   useRef,
   useState
 } from "react";
+import { createPortal } from "react-dom";
+
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 
 /** Mirrors InputFieldCustomStyles from @rootcodelabs/skapp-ui */
 export interface InputFieldCustomStyles {
@@ -76,22 +79,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     setActiveIndex(-1);
     onBlur?.();
   }, [onBlur]);
-
-  useEffect(() => {
-    if (!isDropdownOpen) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        handleClose();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isDropdownOpen, handleClose]);
 
   const handleSelect = useCallback(
     (item: SearchableDropdownItem) => {
@@ -223,31 +210,47 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         }
       />
 
-      {isDropdownOpen && (items.length > 0 || !!emptyMessage) && (
+      {createPortal(
         <div
-          className={`absolute top-full left-0 z-50 mt-1 w-full overflow-hidden rounded-lg border border-secondary-accent bg-white shadow-lg ${wrapperClassName ?? ""}`}
-          role="presentation"
-          aria-label={label || placeholder}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: ZIndexEnums.NEWMODAL
+          }}
         >
-          <div ref={popperContentRef}>
-            {items.length === 0 ? (
-              emptyMessage && <div onClick={handleClose}>{emptyMessage}</div>
-            ) : (
-              <ul
-                className="max-h-60 overflow-y-auto"
-                role="listbox"
-                id={`${id}-list`}
-                aria-label={label || placeholder}
-              >
-                {items.map((item, index) => (
-                  <li
-                    key={item.id}
-                    id={`${id}-option-${item.id}`}
-                    role="option"
-                    aria-selected={activeIndex === index}
-                    onClick={() => handleSelect(item)}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    className={`
+          <Popper
+            anchorEl={containerRef.current}
+            open={isDropdownOpen}
+            position="bottom-start"
+            id={`${id}-list-popper`}
+            handleClose={handleClose}
+            containerClassName={`overflow-hidden rounded-lg border border-secondary-accent bg-white shadow-lg ${wrapperClassName ?? ""}`}
+            ariaRole="presentation"
+            ariaLabel={label || placeholder}
+            anchorElWidth={containerRef.current?.offsetWidth}
+            offset={4}
+            isFlip
+          >
+            <div ref={popperContentRef}>
+              {items.length === 0 ? (
+                emptyMessage && <div onClick={handleClose}>{emptyMessage}</div>
+              ) : (
+                <ul
+                  className="max-h-50 overflow-y-auto"
+                  role="listbox"
+                  id={`${id}-list`}
+                  aria-label={label || placeholder}
+                >
+                  {items.map((item, index) => (
+                    <li
+                      key={item.id}
+                      id={`${id}-option-${item.id}`}
+                      role="option"
+                      aria-selected={activeIndex === index}
+                      onClick={() => handleSelect(item)}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      className={`
                       px-4 py-2 cursor-pointer outline-none transition-all duration-150 relative
                       ${
                         index === activeIndex
@@ -255,14 +258,16 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                           : "hover:bg-secondary-background"
                       }
                     `}
-                  >
-                    {item.content}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
+                    >
+                      {item.content}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </Popper>
+        </div>,
+        document.body
       )}
     </div>
   );
