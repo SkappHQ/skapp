@@ -201,8 +201,8 @@ const AddCompanyModal: React.FC = () => {
       <Dropdown
         options={industryOptions}
         value={values.industry || ""}
-        onChange={(value) => {
-          formik.setFieldValue("industry", value);
+        onChange={async (value) => {
+          await formik.setFieldValue("industry", value);
         }}
         label={translateText(["labels", "industry"])}
         errorMessage={errors.industry || ""}
