@@ -19,3 +19,11 @@ export const formatDealAmountFull = (amount: string | null): string => {
   if (isNaN(num)) return "—";
   return `$${num}`;
 };
+
+export const formatDealAmountWithCurrency = (
+  amount: string | null,
+  currencyCode: string | null
+): string => {
+  if (!amount) return "—";
+  return currencyCode ? `${amount} ${currencyCode}` : amount;
+};

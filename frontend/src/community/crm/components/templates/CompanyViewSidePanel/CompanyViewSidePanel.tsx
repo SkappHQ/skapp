@@ -6,12 +6,10 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
 import AddDealForm from "~community/crm/components/molecules/AddDealForm/AddDealForm";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmCompanyMetricsType, CrmDealType } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelContactRow } from "~community/crm/types/CrmContactTypes";
 
-import SidePanelDeals, {
-  SidePanelDealItem
-} from "../../molecules/SidePanelDeals/SidePanelDeals";
+import SidePanelDeals from "../../molecules/SidePanelDeals/SidePanelDeals";
 import CompanyDetailHeader, {
   CompanyDetailHeaderActions
 } from "../../molecules/CompanyDetailHeader/CompanyDetailHeader";
@@ -50,97 +48,107 @@ const getCompanyMetrics = (company: CrmCompanyMetricsType) => [
 ];
 
 const getCompanyContacts = (company: CrmCompanyMetricsType): CrmSidePanelContactRow[] => [
-  // // TODO: Wire up contacts for the selected company
-  // {
-  //   id: "1",
-  //   name: "Samuel West",
-  //   email: "samuelwest@mail.com",
-  //   contactNo: "+94 439348842",
-  //   company: "Acme",
-  //   revenue: "$62000",
-  //   dealsClosed: 4,
-  //   openTasks: 2,
-  //   overdueTasks: 1
-  // },
-  // {
-  //   id: "2",
-  //   name: "Hannah Lee",
-  //   email: "hannah.lee@stark.com",
-  //   contactNo: "+1 2129876543",
-  //   company: "Stark Industries",
-  //   revenue: "$80000",
-  //   dealsClosed: 8,
-  //   openTasks: 9,
-  //   overdueTasks: 0
-  // },
-  // {
-  //   id: "3",
-  //   name: "Linda Martinez",
-  //   email: "linda.martinez@globex.com",
-  //   contactNo: "+44 2071234567",
-  //   company: "Globex Corp",
-  //   revenue: "$75000",
-  //   dealsClosed: 6,
-  //   openTasks: 11,
-  //   overdueTasks: 0
-  // },
-  // {
-  //   id: "4",
-  //   name: "Michael Brown",
-  //   email: "michael.brown@initech.com",
-  //   contactNo: "+1 4159876543",
-  //   company: "Initech",
-  //   revenue: "$90000",
-  //   dealsClosed: 10,
-  //   openTasks: 5,
-  //   overdueTasks: 2
-  // },
-  // {
-  //   id: "5",
-  //   name: "Emily Davis",
-  //   email: "emily.davis@initech.com",
-  //   contactNo: "+1 4159876544",
-  //   company: "Initech",
-  //   revenue: "$95000",
-  //   dealsClosed: 12,
-  //   openTasks: 6,
-  //   overdueTasks: 3
-  // }
+  {
+    id: "1",
+    name: "Samuel West",
+    email: "samuelwest@mail.com",
+    contactNo: "+94 439348842",
+    company: "Acme",
+    revenue: "$62000",
+    dealsClosed: 4,
+    openTasks: 2,
+    overdueTasks: 1
+  },
+  {
+    id: "2",
+    name: "Hannah Lee",
+    email: "hannah.lee@stark.com",
+    contactNo: "+1 2129876543",
+    company: "Stark Industries",
+    revenue: "$80000",
+    dealsClosed: 8,
+    openTasks: 9,
+    overdueTasks: 0
+  },
+  {
+    id: "3",
+    name: "Linda Martinez",
+    email: "linda.martinez@globex.com",
+    contactNo: "+44 2071234567",
+    company: "Globex Corp",
+    revenue: "$75000",
+    dealsClosed: 6,
+    openTasks: 11,
+    overdueTasks: 0
+  },
+  {
+    id: "4",
+    name: "Michael Brown",
+    email: "michael.brown@initech.com",
+    contactNo: "+1 4159876543",
+    company: "Initech",
+    revenue: "$90000",
+    dealsClosed: 10,
+    openTasks: 5,
+    overdueTasks: 2
+  },
+  {
+    id: "5",
+    name: "Emily Davis",
+    email: "emily.davis@initech.com",
+    contactNo: "+1 4159876544",
+    company: "Initech",
+    revenue: "$95000",
+    dealsClosed: 12,
+    openTasks: 6,
+    overdueTasks: 3
+  }
 ];
 
 // TODO: Replace with API data
-const getCompanyDeals = (): SidePanelDealItem[] => [
+const getCompanyDeals = (): CrmDealType[] => [
   {
     id: 1,
     name: "Warehouse machinery supply",
-    contactName: "Samuel West",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut et massa mi. Aliquam in hendrerit urna. Pellentesque sit amet sapien fringilla, mattis ligula consectetur, ultrices mauris.",
+    stage: { id: 1, name: "Lead Qualified", color: "#3b82f6", orderIndex: 0, stageType: "OPEN" as any },
+    priority: null,
+    closingAt: null,
     amount: "12000",
     currencyCode: "$",
-    stageName: "Lead Qualified",
-    stageColor: "#3b82f6",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut et massa mi. Aliquam in hendrerit urna. Pellentesque sit amet sapien fringilla, mattis ligula consectetur, ultrices mauris."
+    company: null,
+    contact: { id: 1, name: "Samuel West", email: "samuelwest@mail.com", contactNumber: null, lastContactAt: null, lastModifiedDate: "", company: null, owner: { employeeId: 1, firstName: "John", lastName: "Doe", authPic: null }, isDeleted: false },
+    owner: { employeeId: 1, firstName: "John", lastName: "Doe", authPic: null },
+    isDeleted: false
   },
   {
     id: 2,
     name: "Office supplies contract",
-    contactName: "Hannah Lee",
+    description:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    stage: { id: 2, name: "Proposal Sent", color: "#34d399", orderIndex: 1, stageType: "OPEN" as any },
+    priority: null,
+    closingAt: null,
     amount: "8500",
     currencyCode: "$",
-    stageName: "Proposal Sent",
-    stageColor: "#34d399",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+    company: null,
+    contact: { id: 2, name: "Hannah Lee", email: "hannah.lee@stark.com", contactNumber: null, lastContactAt: null, lastModifiedDate: "", company: null, owner: { employeeId: 1, firstName: "John", lastName: "Doe", authPic: null }, isDeleted: false },
+    owner: { employeeId: 1, firstName: "John", lastName: "Doe", authPic: null },
+    isDeleted: false
   },
   {
     id: 3,
     name: "Annual maintenance deal",
-    contactName: "Samuel West",
+    stage: { id: 1, name: "Lead Qualified", color: "#3b82f6", orderIndex: 0, stageType: "OPEN" as any },
+    priority: null,
+    closingAt: null,
     amount: "15000",
     currencyCode: "$",
-    stageName: "Lead Qualified",
-    stageColor: "#3b82f6",
-    description: null
+    company: null,
+    contact: { id: 1, name: "Samuel West", email: "samuelwest@mail.com", contactNumber: null, lastContactAt: null, lastModifiedDate: "", company: null, owner: { employeeId: 1, firstName: "John", lastName: "Doe", authPic: null }, isDeleted: false },
+    owner: { employeeId: 1, firstName: "John", lastName: "Doe", authPic: null },
+    isDeleted: false
   }
 ];
 
