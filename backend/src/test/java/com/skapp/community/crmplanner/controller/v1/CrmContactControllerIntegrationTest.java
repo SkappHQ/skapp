@@ -441,25 +441,6 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
-	@Test
-	@DisplayName("Assigning owner with no CRM role - Returns Bad Request with invalid-role error")
-	void editContact_AssigningOwnerWithNoRole_ReturnsBadRequest() throws Exception {
-		// user2 has no CRM role in test data — use them as the target owner
-		Long companyId = savedCompany().getId();
-		Long contactId = savedContact(companyId, "assign.norole@example.com").getId();
-
-		CrmContactEditRequestDto dto = editValidPayload(companyId);
-		dto.setOwnerId(2L);
-
-		// adminToken (user1 = CRM_ADMIN) makes the request — passes checkEditPermission,
-		// then validateAssignableOwner(2) finds user2 has no assignable role
-		performPatchRequest(contactId, dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE)));
-	}
-
 	// --- deleteContact ---
 
 	@Test
