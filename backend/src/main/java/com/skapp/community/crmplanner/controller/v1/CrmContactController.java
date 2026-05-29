@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.service.CrmContactService;
@@ -35,6 +36,15 @@ public class CrmContactController {
 	public ResponseEntity<ResponseEntityDto> createContact(@RequestBody CrmContactCreateRequestDto requestDto) {
 		ResponseEntityDto response = contactService.createContact(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Get CRM contacts for lookup",
+			description = "Retrieves a paginated list of CRM contacts for use in dropdowns and deal forms.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping("/lookup")
+	public ResponseEntity<ResponseEntityDto> getContactsLookup(CrmContactFilterDto filterDto) {
+		ResponseEntityDto response = contactService.getContactsLookup(filterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Edit CRM contact", description = "Updates an existing CRM contact.")
