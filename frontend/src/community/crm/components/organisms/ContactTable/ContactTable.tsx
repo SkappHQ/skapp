@@ -25,8 +25,8 @@ import {
   DEFAULT_PAGE_SIZE
 } from "~community/crm/constants/contactConstants";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
+import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 import {
-  formatMonetaryValue,
   formatPhoneNumber,
   formatTasks
 } from "~community/crm/utils/tableHelpers";

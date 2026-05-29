@@ -16,11 +16,11 @@ import { useGetCompanyMetrics } from "~community/crm/api/CompanyApi";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 import {
-  formatMonetaryValue,
   formatPhoneNumber,
   formatTasks
 } from "~community/crm/utils/tableHelpers";
 import { COMPANY_NAME_DEBOUNCE_DELAY, DEFAULT_PAGE_SIZE } from "~community/crm/constants/companyConstants";
+import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 
 export const CompanyTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "companies");
