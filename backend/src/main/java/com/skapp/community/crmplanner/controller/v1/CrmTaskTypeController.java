@@ -22,7 +22,7 @@ public class CrmTaskTypeController {
 	private final CrmTaskTypeService crmTaskTypeService;
 
 	@Operation(summary = "Get task types", description = "Returns all task types ordered by index.")
-	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getTaskTypes() {
 		ResponseEntityDto response = crmTaskTypeService.getTaskTypes();
