@@ -66,7 +66,7 @@ public class CrmContactController {
 	@Operation(summary = "Create a task for a contact",
 			description = "Creates a task linked to the given contact with the current user as owner.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	@PostMapping("/{id}/task")
+	@PostMapping("/{id}/tasks")
 	public ResponseEntity<ResponseEntityDto> createContactTask(@PathVariable Long id,
 			@RequestBody CrmContactTaskCreateRequestDto requestDto) {
 		ResponseEntityDto response = contactService.createContactTask(id, requestDto);
