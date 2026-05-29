@@ -208,7 +208,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               emptyMessage && <div>{emptyMessage}</div>
             ) : (
               <ul
-                className="max-h-55 overflow-y-auto"
+                className="max-h-50 overflow-y-auto"
                 role="listbox"
                 id={`${id}-list`}
                 aria-label={label || placeholder}
