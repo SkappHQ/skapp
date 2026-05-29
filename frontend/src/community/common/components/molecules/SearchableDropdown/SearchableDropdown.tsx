@@ -4,7 +4,6 @@ import React, {
   KeyboardEvent,
   useCallback,
   useEffect,
-  useId,
   useRef,
   useState
 } from "react";
@@ -25,10 +24,8 @@ export interface SearchableDropdownProps {
   name?: string;
   required?: boolean;
   emptyMessage?: React.ReactNode;
+  onEmptyActivate?: () => void;
   state?: "default" | "error";
-  variant?: "sm" | "md" | "lg";
-  positionStrategy?: "absolute" | "fixed";
-  onClose?: () => void;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -42,21 +39,16 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   name,
   required = false,
   emptyMessage,
-  state = "default",
-  variant = "sm",
-  positionStrategy = "absolute",
-  onClose
+  onEmptyActivate,
+  state = "default"
 }) => {
-  const uid = useId();
-  const baseId = `${id}-${uid}`;
   const [isOpen, setIsOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
-  const popperContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (activeIndex >= items.length) {
-      setActiveIndex(items.length > 0 ? 0 : -1);
+    if (activeIndex !== null && activeIndex >= items.length) {
+      setActiveIndex(items.length > 0 ? 0 : null);
     }
   }, [items.length, activeIndex]);
 
@@ -64,9 +56,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
-    setActiveIndex(-1);
-    onClose?.();
-  }, [onClose]);
+    setActiveIndex(null);
+  }, []);
 
   const handleSelect = useCallback(
     (item: SearchableDropdownItem) => {
@@ -79,7 +70,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const handleInputChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       onChange(e);
-      setActiveIndex(-1);
+      setActiveIndex(null);
       if (e.target.value.trim().length > 0) {
         setIsOpen(true);
       } else {
@@ -103,14 +94,21 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       switch (e.key) {
         case "ArrowDown": {
           e.preventDefault();
+          if (items.length === 0) break;
           const nextDown =
-            activeIndex < items.length - 1 ? activeIndex + 1 : activeIndex;
+            activeIndex === null
+              ? 0
+              : activeIndex < items.length - 1
+                ? activeIndex + 1
+                : activeIndex;
           setActiveIndex(nextDown);
           break;
         }
         case "ArrowUp": {
           e.preventDefault();
-          const nextUp = activeIndex > 0 ? activeIndex - 1 : 0;
+          if (items.length === 0) break;
+          const nextUp =
+            activeIndex !== null && activeIndex > 0 ? activeIndex - 1 : 0;
           setActiveIndex(nextUp);
           break;
         }
@@ -118,16 +116,13 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           handleClose();
           break;
         case "Enter":
-          if (activeIndex >= 0 && activeIndex < items.length) {
+          if (activeIndex !== null && activeIndex < items.length) {
             e.preventDefault();
             handleSelect(items[activeIndex]);
-          } else if (items.length === 0 && popperContentRef.current) {
-            const btn = popperContentRef.current.querySelector("button");
-            if (btn) {
-              e.preventDefault();
-              btn.click();
-              handleClose();
-            }
+          } else if (items.length === 0 && onEmptyActivate) {
+            e.preventDefault();
+            onEmptyActivate();
+            handleClose();
           }
           break;
         case "Escape":
@@ -136,7 +131,14 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           break;
       }
     },
-    [isDropdownOpen, items, activeIndex, handleSelect, handleClose]
+    [
+      isDropdownOpen,
+      items,
+      activeIndex,
+      handleSelect,
+      handleClose,
+      onEmptyActivate
+    ]
   );
 
   return (
@@ -150,7 +152,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       }}
     >
       <InputField
-        id={`${baseId}-input`}
+        id={`${id}-input`}
         className="w-full"
         fullWidth
         name={name}
@@ -160,27 +162,28 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         value={value}
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
-        variant={variant}
+        variant="md"
         state={state}
         styleOverrides={{
           labelContainer:
             "h-6 inline-flex self-stretch pr-3 justify-start items-center gap-2"
         }}
+        customStyles={{ gap: "gap-2" }}
         rightIcon={<SearchIcon />}
         role="combobox"
         aria-expanded={isDropdownOpen}
-        aria-controls={items.length > 0 ? `${baseId}-list` : undefined}
+        aria-controls={items.length > 0 ? `${id}-list` : undefined}
         aria-autocomplete="list"
         aria-activedescendant={
-          activeIndex >= 0 && isDropdownOpen && items.length > 0
-            ? `${baseId}-option-${items[activeIndex].id}`
+          activeIndex !== null && isDropdownOpen && activeIndex < items.length
+            ? `${id}-option-${items[activeIndex].id}`
             : undefined
         }
       />
 
       {isDropdownOpen && (items.length > 0 || !!emptyMessage) && (
         <Popper
-          id={`${baseId}-popper`}
+          id={`${id}-popper`}
           anchorEl={inputWrapperRef.current}
           anchorElWidth={inputWrapperRef.current?.offsetWidth}
           open={isDropdownOpen}
@@ -190,23 +193,22 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           ariaLabel={label || placeholder}
           isFlip
           disableAutoFocus
-          positionStrategy={positionStrategy}
           containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
         >
-          <div ref={popperContentRef}>
+          <div>
             {items.length === 0 ? (
               emptyMessage && <div>{emptyMessage}</div>
             ) : (
               <ul
-                className="max-h-50 overflow-y-auto"
+                className="max-h-60 overflow-y-auto"
                 role="listbox"
-                id={`${baseId}-list`}
+                id={`${id}-list`}
                 aria-label={label || placeholder}
               >
                 {items.map((item, index) => (
                   <li
                     key={item.id}
-                    id={`${baseId}-option-${item.id}`}
+                    id={`${id}-option-${item.id}`}
                     role="option"
                     aria-selected={activeIndex === index}
                     onClick={() => handleSelect(item)}
