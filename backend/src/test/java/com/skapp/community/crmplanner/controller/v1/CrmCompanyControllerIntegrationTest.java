@@ -45,8 +45,8 @@ import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -111,8 +111,8 @@ class CrmCompanyControllerIntegrationTest {
 		return performRequest(delete(DELETE_PATH, id).accept(MediaType.APPLICATION_JSON));
 	}
 
-	private <T> ResultActions performPutRequest(Long id, T content) throws Exception {
-		return performRequest(put(EDIT_PATH, id).contentType(MediaType.APPLICATION_JSON)
+	private <T> ResultActions performPatchRequest(Long id, T content) throws Exception {
+		return performRequest(patch(EDIT_PATH, id).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(content))
 			.accept(MediaType.APPLICATION_JSON));
 	}
@@ -312,7 +312,7 @@ class CrmCompanyControllerIntegrationTest {
 		editDto.setAddress("456 New St");
 		editDto.setContactNumber("94779876543");
 
-		performPutRequest(companyId, editDto).andDo(print())
+		performPatchRequest(companyId, editDto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp Updated"))
@@ -334,7 +334,7 @@ class CrmCompanyControllerIntegrationTest {
 	void editCompany_NonExistentId_ReturnsBadRequest() throws Exception {
 		CrmCompanyEditDto editDto = createValidEditPayload();
 
-		performPutRequest(Long.MAX_VALUE, editDto).andDo(print())
+		performPatchRequest(Long.MAX_VALUE, editDto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -360,7 +360,7 @@ class CrmCompanyControllerIntegrationTest {
 		editDto.setName("ACME CORP");
 		editDto.setIndustry("Healthcare");
 
-		performPutRequest(secondCompanyId, editDto).andDo(print())
+		performPatchRequest(secondCompanyId, editDto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -372,7 +372,7 @@ class CrmCompanyControllerIntegrationTest {
 	void editCompany_WithoutManagerRole_ReturnsForbidden() throws Exception {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
-		performPutRequest(1L, createValidEditPayload()).andDo(print()).andExpect(status().isForbidden());
+		performPatchRequest(1L, createValidEditPayload()).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }

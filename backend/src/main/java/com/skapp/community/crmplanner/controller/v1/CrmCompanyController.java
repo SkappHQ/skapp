@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -78,8 +78,9 @@ public class CrmCompanyController {
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Edit a company by ID", description = "Edit information related to a registered company by ID")
-	@PutMapping("/{id}")
+	@Operation(summary = "Patch a company by ID",
+			description = "Partially update information related to a registered company by ID. Only provided fields are updated.")
+	@PatchMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> editCompany(@PathVariable Long id,
 			@RequestBody CrmCompanyEditDto crmCompany) {
