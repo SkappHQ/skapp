@@ -10,9 +10,9 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -43,7 +43,6 @@ public interface CrmMapper {
 
 	@Mapping(target = "email", source = "user.email")
 	CrmContactOwnerResponseDto employeeToCrmContactOwnerResponseDto(Employee employee);
-
 
 	CrmOwnerResponseDto employeeToCrmDealOwnerResponseDto(Employee employee);
 
