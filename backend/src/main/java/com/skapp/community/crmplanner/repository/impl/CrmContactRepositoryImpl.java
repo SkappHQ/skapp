@@ -8,6 +8,7 @@ import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
+import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.repository.CrmContactRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
@@ -103,6 +104,46 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 
 		countQuery.select(cb.count(contact)).where(buildPredicates(cb, contact, owner, company, filterDto));
 
+		return entityManager.createQuery(countQuery).getSingleResult();
+	}
+
+	@Override
+	public Page<CrmContact> findContactsForLookup(CrmContactFilterDto filterDto, Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+		contact.fetch(CrmContact_.company, JoinType.LEFT);
+
+		List<Predicate> predicates = buildLookupPredicates(cb, contact, filterDto);
+		query.where(predicates.toArray(new Predicate[0]));
+		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))));
+
+		TypedQuery<CrmContact> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+
+		return new PageImpl<>(typedQuery.getResultList(), pageable, getLookupTotalCount(cb, filterDto));
+	}
+
+	private List<Predicate> buildLookupPredicates(CriteriaBuilder cb, Root<CrmContact> contact,
+			CrmContactFilterDto filterDto) {
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+
+		String searchKeyword = filterDto.getSearchKeyword();
+		if (searchKeyword != null && !searchKeyword.isBlank()) {
+			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			predicates.add(cb.like(cb.lower(contact.get(CrmContact_.name)), "%" + escaped + "%", '\\'));
+		}
+
+		return predicates;
+	}
+
+	private Long getLookupTotalCount(CriteriaBuilder cb, CrmContactFilterDto filterDto) {
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmContact> contact = countQuery.from(CrmContact.class);
+		countQuery.select(cb.count(contact));
+		countQuery.where(buildLookupPredicates(cb, contact, filterDto).toArray(new Predicate[0]));
 		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 
