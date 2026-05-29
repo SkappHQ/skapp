@@ -143,19 +143,14 @@ const SupervisorReassignmentModalSection: FC<
                     }
                   />
                 ) : (
-                  <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
-                    <span className="body2 truncate flex-1">
-                      {assigned.name}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={removeButtonAriaLabel}
-                      className="shrink-0 text-secondary-icon hover:text-secondary-text leading-none"
-                      onClick={() => onRemove(id)}
-                    >
-                      <CloseIcon className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <AvatarChip
+                    label={assigned.name}
+                    showAvatar={false}
+                    showActionButton
+                    onActionClick={() => onRemove(id)}
+                    actionIcon={<CloseIcon className="w-4 h-4" />}
+                    actionButtonAriaLabel={removeButtonAriaLabel}
+                  />
                 )}
               </div>
             </div>
