@@ -1,9 +1,9 @@
-import { CrmDealStageEnum } from "../enums/common";
+import { CrmDealStageEnum, CrmIndustryEnum } from "../enums/common";
 
 export interface CrmCompanyType {
   id: number;
   name: string;
-  industry: string | null;
+  industry: CrmIndustryEnum | null;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
@@ -14,7 +14,7 @@ export interface CrmCompanyMetricsType {
   id: number;
   name: string;
   contactNumber: string;
-  industry: string | null;
+  industry: CrmIndustryEnum | null;
   website: string | null;
   address: string | null;
   tasks: number;
@@ -34,7 +34,7 @@ export interface CrmCompanyMetricsResponseType {
 
 export interface CrmCompanyAddFormTypes {
   name: string;
-  industry: string | null;
+  industry: CrmIndustryEnum | null;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
@@ -46,6 +46,10 @@ export interface CrmCompanyCreatePayload {
   website: string | null;
   address: string | null;
   contactNumber: string | null;
+}
+
+export interface EditCompanyPayload extends CrmCompanyCreatePayload {
+  id: number;
 }
 
 export interface CrmOwnerType {
@@ -114,4 +118,12 @@ export interface CrmPriorityType {
   id: number;
   name: string;
   orderIndex: number;
+}
+
+export interface CrmCompanyEditFormTypes {
+  name: string;
+  industry: CrmIndustryEnum | null;
+  website: string | null;
+  address: string | null;
+  contactNumber: string | null;
 }

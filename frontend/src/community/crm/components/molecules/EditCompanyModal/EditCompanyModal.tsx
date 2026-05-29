@@ -1,6 +1,6 @@
-import { ButtonV2, InputField } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Dropdown, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { ChangeEvent, useEffect } from "react";
+import React, { ChangeEvent, useEffect, useMemo } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import { characterLengths } from "~community/common/constants/stringConstants";
@@ -10,43 +10,58 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useCheckCompanyNameExists,
-  useCreateNewCompany
+  useEditCompany
 } from "~community/crm/api/CompanyApi";
-import {
-  COMPANY_NAME_DEBOUNCE_DELAY
-} from "~community/crm/constants/companyConstants";
+import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyConstants";
+import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  CrmCompanyAddFormTypes,
-  CrmCompanyCreatePayload
-} from "~community/crm/types/CommonTypes";
+import { CrmCompanyEditFormTypes } from "~community/crm/types/CommonTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
 
-const AddCompanyModal: React.FC = () => {
+const EditCompanyModal: React.FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator(
     "crmModule",
     "companies",
-    "addCompanyModal"
+    "editCompanyModal"
   );
 
   const translateToasts = useTranslator(
     "crmModule",
     "companies",
-    "companyToastMessages"
+    "editCompanyToastMessages"
   );
 
-  const { setIsCompanyModalOpen } = useCrmStore((store) => ({
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen
-  }));
+  const translateIndustryOptions = useTranslator(
+    "crmModule",
+    "companies",
+    "industryOptions"
+  );
 
-  const initialValues: CrmCompanyAddFormTypes = {
-    name: "",
-    industry: null,
-    website: null,
-    address: null,
-    contactNumber: null
+  const industryOptions = useMemo(
+    () =>
+      Object.values(CrmIndustryEnum).map((industry) => ({
+        id: industry,
+        label: translateIndustryOptions([industry]),
+        value: industry
+      })),
+    [translateIndustryOptions]
+  );
+
+  const { setIsCompanyModalOpen, selectedCompany, setSelectedCompany } =
+    useCrmStore((store) => ({
+      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+      selectedCompany: store.selectedCompany,
+      setSelectedCompany: store.setSelectedCompany
+    }));
+
+  const initialValues: CrmCompanyEditFormTypes = {
+    name: selectedCompany?.name || "",
+    industry: selectedCompany?.industry || CrmIndustryEnum.NONE,
+    website: selectedCompany?.website || null,
+    address: selectedCompany?.address || null,
+    contactNumber: selectedCompany?.contactNumber || null
   };
 
   const handleSuccess = () => {
@@ -71,28 +86,37 @@ const AddCompanyModal: React.FC = () => {
 
   const handleCloseModal = (): void => {
     setIsCompanyModalOpen(false);
+    setSelectedCompany(null);
   };
 
-  const { mutate: createNewCompany, isPending } = useCreateNewCompany(
+  const { mutate: editCompany, isPending } = useEditCompany(
     handleSuccess,
     handleError
   );
 
-  const createCompany = (values: CrmCompanyAddFormTypes) => {
-    const payload: CrmCompanyCreatePayload = {
+  const submitEditCompany = (values: CrmCompanyEditFormTypes) => {
+    if (!selectedCompany) return;
+
+    const industry =
+      values.industry && values.industry !== CrmIndustryEnum.NONE
+        ? values.industry
+        : null;
+
+    const payload = {
+      id: selectedCompany.id,
       name: values.name.trim(),
-      industry: values.industry?.trim() || null,
+      industry,
       website: values.website?.trim() || null,
       address: values.address?.trim() || null,
       contactNumber: values.contactNumber?.trim() || null
     };
 
-    createNewCompany(payload);
+    editCompany(payload);
   };
 
   const formik = useFormik({
     initialValues,
-    onSubmit: createCompany,
+    onSubmit: submitEditCompany,
     validationSchema: addCompanyValidations(translateText),
     validateOnChange: false,
     validateOnBlur: false,
@@ -109,22 +133,33 @@ const AddCompanyModal: React.FC = () => {
     submitForm
   } = formik;
 
+  const isNameUnchanged = values.name.trim() === selectedCompany?.name?.trim();
+
   const debouncedCompanyName = useDebounce(
     values.name.trim(),
     COMPANY_NAME_DEBOUNCE_DELAY
   );
+
   const { data: companyNameData } = useCheckCompanyNameExists(
     debouncedCompanyName,
-    debouncedCompanyName.length > 0
+    debouncedCompanyName.length > 0 && !isNameUnchanged
   );
 
   useEffect(() => {
-    if (companyNameData?.isExists) {
+    if (isNameUnchanged) {
+      setFieldError("name", undefined);
+    } else if (companyNameData?.isExists) {
       setFieldError("name", translateText(["validations", "companyExists"]));
     } else if (values.name.trim().length > 0) {
       setFieldError("name", undefined);
     }
-  }, [companyNameData?.isExists, setFieldError, translateText, values.name]);
+  }, [
+    companyNameData?.isExists,
+    isNameUnchanged,
+    setFieldError,
+    translateText,
+    values.name
+  ]);
 
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
@@ -132,7 +167,11 @@ const AddCompanyModal: React.FC = () => {
         name="name"
         value={values.name}
         errorMessage={errors.name}
-        state={errors.name || companyNameData?.isExists ? "error" : "default"}
+        state={
+          errors.name || (!isNameUnchanged && companyNameData?.isExists)
+            ? "error"
+            : "default"
+        }
         label={translateText(["labels", "name"])}
         placeholder={translateText(["placeholders", "name"])}
         onChange={handleChange}
@@ -180,16 +219,18 @@ const AddCompanyModal: React.FC = () => {
         fullWidth
       />
 
-      <InputField
-        name="industry"
-        value={values.industry || ""}
-        errorMessage={errors.industry || ""}
-        state={errors.industry ? "error" : "default"}
+      <Dropdown
+        options={industryOptions}
+        value={values.industry || CrmIndustryEnum.NONE}
+        onChange={async (value) => {
+          await formik.setFieldValue("industry", value);
+        }}
         label={translateText(["labels", "industry"])}
-        placeholder={translateText(["placeholders", "industry"])}
-        onChange={handleChange}
-        aria-label={translateText(["ariaLabels", "industry"])}
-        fullWidth
+        className="rounded-lg"
+        errorMessage={errors.industry || ""}
+        variant={errors.industry ? "primary-error" : "primary"}
+        ariaLabel={translateText(["ariaLabels", "industry"])}
+        width="100%"
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
@@ -200,16 +241,18 @@ const AddCompanyModal: React.FC = () => {
           onClick={handleCloseModal}
           icon={<CloseIcon />}
           iconPosition="end"
-          aria-label={translateText(["ariaLabels", "cancelAddCompany"])}
+          aria-label={translateText(["ariaLabels", "cancelEditCompany"])}
         >
-          {translateText(["buttons", "cancelAddCompany"])}
+          {translateText(["buttons", "cancelEditCompany"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
           type="button"
           onClick={() => submitForm()}
           disabled={
-            isSubmitting || isPending || companyNameData?.isExists === true
+            isSubmitting ||
+            isPending ||
+            (!isNameUnchanged && companyNameData?.isExists === true)
           }
           aria-label={translateText(["ariaLabels", "save"])}
         >
@@ -220,4 +263,4 @@ const AddCompanyModal: React.FC = () => {
   );
 };
 
-export default AddCompanyModal;
+export default EditCompanyModal;

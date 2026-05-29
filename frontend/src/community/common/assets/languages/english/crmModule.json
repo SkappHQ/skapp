@@ -52,6 +52,29 @@
         "addressLength": "Address must be less than 100 characters"
       }
     },
+    "industryOptions": {
+      "NONE": "None",
+      "ACCOMMODATION_SERVICES": "Accommodation services",
+      "ADMINISTRATIVE_AND_SUPPORT_SERVICES": "Administrative and support services",
+      "CONSTRUCTION": "Construction",
+      "CONSUMER_SERVICES": "Consumer services",
+      "EDUCATION": "Education",
+      "ENTERTAINMENT_PROVIDERS": "Entertainment providers",
+      "FARMING_RANCHING_FORESTRY": "Farming, ranching, forestry",
+      "FINANCIAL_SERVICES": "Financial services",
+      "GOVERNMENT_ADMINISTRATION": "Government administration",
+      "HOLDING_COMPANIES": "Holding companies",
+      "HOSPITALS_AND_HEALTH_CARE": "Hospitals and health care",
+      "MANUFACTURING": "Manufacturing",
+      "OIL_GAS_AND_MINING": "Oil, gas, and mining",
+      "PROFESSIONAL_SERVICES": "Professional services",
+      "REAL_ESTATE_AND_EQUIPMENT_RENTAL_SERVICES": "Real estate and equipment rental services",
+      "RETAIL": "Retail",
+      "TECHNOLOGY_INFORMATION_AND_MEDIA": "Technology, information and media",
+      "TRANSPORTATION_LOGISTICS_SUPPLY_CHAIN_AND_STORAGE": "Transportation, logistics, supply chain and storage",
+      "UTILITIES": "Utilities",
+      "WHOLESALE": "Wholesale"
+    },
     "table": {
       "clearButtonAriaLabel": "Clear search",
       "filterButtonAriaLabel": "Filter companies",
@@ -83,6 +106,50 @@
     "companyToastMessages": {
       "successTitle": "Company added successfully",
       "errorTitle": "Failed to add company",
+      "errorDescription": "Please try again or contact support"
+    },
+    "editCompanyModal": {
+      "title": "Edit Company",
+      "labels": {
+        "name": "Company name",
+        "contactNumber": "Contact no.",
+        "website": "Website",
+        "address": "Address",
+        "industry": "Industry"
+      },
+      "placeholders": {
+        "name": "Enter company name",
+        "contactNumber": "Enter contact no.",
+        "website": "Enter website",
+        "address": "Enter address",
+        "industry": "Select industry"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancelEditCompany": "Cancel"
+      },
+      "ariaLabels": {
+        "companyName": "Company Name",
+        "contactNumber": "Contact Number",
+        "website": "Website",
+        "address": "Address",
+        "industry": "Industry",
+        "save": "Save",
+        "cancelEditCompany": "Cancel Edit Company"
+      },
+      "validations": {
+        "name": "Company name is required",
+        "companyExists": "A company with this name already exists",
+        "website": "Please enter a valid website URL",
+        "contactNumber": "Contact number is invalid",
+        "companyNameLength": "Company name must be less than 30 characters",
+        "characterLength": "Entry must be less than 50 characters",
+        "addressLength": "Address must be less than 100 characters"
+      }
+    },
+    "editCompanyToastMessages": {
+      "successTitle": "Company updated successfully",
+      "errorTitle": "Failed to update company",
       "errorDescription": "Please try again or contact support"
     }
   },
