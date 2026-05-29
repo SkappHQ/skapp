@@ -56,8 +56,6 @@ public interface CrmMapper {
 	@Mapping(target = "overdueTaskCount", ignore = true)
 	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
-	CrmTaskTypeResponseDto crmTaskTypeToCrmTaskTypeResponseDto(CrmTaskType crmTaskType);
-
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
 
 }
