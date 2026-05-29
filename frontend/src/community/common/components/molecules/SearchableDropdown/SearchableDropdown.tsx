@@ -26,6 +26,9 @@ export interface SearchableDropdownProps {
   emptyMessage?: React.ReactNode;
   onEmptyActivate?: () => void;
   state?: "default" | "error";
+  variant?: "sm" | "md" | "lg";
+  positionStrategy?: "absolute" | "fixed";
+  onClose?: () => void;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -40,7 +43,10 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   required = false,
   emptyMessage,
   onEmptyActivate,
-  state = "default"
+  state = "default",
+  variant = "md",
+  positionStrategy = "absolute",
+  onClose
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -57,7 +63,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const handleClose = useCallback(() => {
     setIsOpen(false);
     setActiveIndex(null);
-  }, []);
+    onClose?.();
+  }, [onClose]);
 
   const handleSelect = useCallback(
     (item: SearchableDropdownItem) => {
@@ -143,7 +150,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   return (
     <div
-      className="w-full relative input-plain-text"
+      className="w-full relative [&_.border-primary-accent]:border-black"
       ref={inputWrapperRef}
       onFocus={() => {
         if (value.trim().length > 0) {
@@ -162,7 +169,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         value={value}
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
-        variant="md"
+        variant={variant}
         state={state}
         styleOverrides={{
           labelContainer:
@@ -193,6 +200,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           ariaLabel={label || placeholder}
           isFlip
           disableAutoFocus
+          positionStrategy={positionStrategy}
           containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
         >
           <div>
@@ -200,7 +208,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               emptyMessage && <div>{emptyMessage}</div>
             ) : (
               <ul
-                className="max-h-60 overflow-y-auto"
+                className="max-h-55 overflow-y-auto"
                 role="listbox"
                 id={`${id}-list`}
                 aria-label={label || placeholder}
@@ -214,11 +222,11 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                     onClick={() => handleSelect(item)}
                     onMouseEnter={() => setActiveIndex(index)}
                     className={`
-                      px-4 py-2 cursor-pointer outline-none transition-all duration-150 border relative
+                      px-4 py-2 cursor-pointer outline-none transition-all duration-150 relative
                       ${
                         index === activeIndex
-                          ? "border-primary-accent shadow-[0px_0px_4px_0px_rgba(0,0,0,0.60)] z-10 bg-primary-background/30 rounded"
-                          : "border-transparent hover:bg-gray-100"
+                          ? "bg-tertiary-background rounded"
+                          : "hover:bg-gray-100"
                       }
                     `}
                   >

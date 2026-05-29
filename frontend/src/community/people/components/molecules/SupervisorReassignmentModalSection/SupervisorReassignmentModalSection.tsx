@@ -1,4 +1,4 @@
-import { AvatarChip, CloseIcon } from "@rootcodelabs/skapp-ui";
+import { AvatarChip, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, ReactNode, useState } from "react";
 
 import SearchableDropdown, {
@@ -132,6 +132,7 @@ const SupervisorReassignmentModalSection: FC<
                     value={searchValues[id] ?? ""}
                     onChange={(e) => handleInputChange(id, e)}
                     placeholder={placeholderText}
+                    variant="sm"
                     positionStrategy="fixed"
                     onClose={() => handleDropdownClose(id)}
                     emptyMessage={
@@ -143,13 +144,22 @@ const SupervisorReassignmentModalSection: FC<
                     }
                   />
                 ) : (
-                  <AvatarChip
-                    label={assigned.name}
-                    showAvatar={false}
-                    showActionButton
-                    onActionClick={() => onRemove(id)}
-                    actionIcon={<CloseIcon className="w-4 h-4" />}
-                    actionButtonAriaLabel={removeButtonAriaLabel}
+                  <InputField
+                    value={assigned.name}
+                    readOnly
+                    variant="sm"
+                    fullWidth
+                    className="[&_.border-primary-accent]:border-secondary-accent"
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => onRemove(id)}
+                        aria-label={removeButtonAriaLabel}
+                        className="flex items-center justify-center cursor-pointer"
+                      >
+                        <CloseIcon className="w-4 h-4" />
+                      </button>
+                    }
                   />
                 )}
               </div>
