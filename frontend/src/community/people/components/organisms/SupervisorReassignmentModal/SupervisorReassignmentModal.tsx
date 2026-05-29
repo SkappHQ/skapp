@@ -141,7 +141,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   );
 
   const employeeList = useMemo(
-    () => (!isSearchLoading ? filteredEmployeeList : []),
+    () => (isSearchLoading ? [] : filteredEmployeeList),
     [isSearchLoading, filteredEmployeeList]
   );
 

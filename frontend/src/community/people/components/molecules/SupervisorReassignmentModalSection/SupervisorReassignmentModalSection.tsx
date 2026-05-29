@@ -136,11 +136,11 @@ const SupervisorReassignmentModalSection: FC<
                     positionStrategy="fixed"
                     onClose={() => handleDropdownClose(id)}
                     emptyMessage={
-                      !isLoading ? (
+                      isLoading ? undefined : (
                         <p className="px-4 py-2 body2">
                           {translateText(["noEmployeesFound"])}
                         </p>
-                      ) : undefined
+                      )
                     }
                   />
                 ) : (
