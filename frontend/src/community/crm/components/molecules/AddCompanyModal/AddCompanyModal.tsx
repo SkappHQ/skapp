@@ -141,6 +141,10 @@ const AddCompanyModal: React.FC = () => {
     debouncedCompanyName,
     debouncedCompanyName.length > 0
   );
+  
+  const handleIndustryChange = (value: string) => {
+    formik.setFieldValue("industry", value);
+  };
 
   useEffect(() => {
     if (companyNameData?.isExists) {
@@ -207,9 +211,7 @@ const AddCompanyModal: React.FC = () => {
       <Dropdown
         options={industryOptions}
         value={values.industry || ""}
-        onChange={async (value) => {
-          await formik.setFieldValue("industry", value);
-        }}
+        onChange={handleIndustryChange}
         label={translateText(["labels", "industry"])}
         className="rounded-lg"
         errorMessage={errors.industry || ""}
