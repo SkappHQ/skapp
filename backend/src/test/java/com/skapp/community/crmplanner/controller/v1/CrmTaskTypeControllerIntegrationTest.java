@@ -71,10 +71,10 @@ class CrmTaskTypeControllerIntegrationTest {
 		performGetRequest().andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "[0]['name']").value("Email"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "[0]['orderIndex']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "[1]['name']").value("Call"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "[1]['orderIndex']").value(2));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Email"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['orderIndex']").value(1))
+			.andExpect(jsonPath("['results'][1]['name']").value("Call"))
+			.andExpect(jsonPath("['results'][1]['orderIndex']").value(2));
 	}
 
 	@Test
