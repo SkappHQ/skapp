@@ -11,6 +11,11 @@ export interface CrmCompanyType {
   isDeleted: boolean;
 }
 
+export interface CrmCompanyLookupType {
+  id: number;
+  name: string;
+}
+
 export interface CrmCompanyMetricsType {
   id: number;
   name: string;
@@ -116,6 +121,18 @@ export interface CrmOwnerType {
   firstName: string;
   lastName: string;
   authPic: string;
+}
+
+export interface CrmDealCreateRequestType {
+  name: string;
+  stageId: number;
+  contactId: number;
+  ownerId: number;
+  priority?: string;
+  closingAt?: string;
+  amount?: string;
+  companyId?: number;
+  description?: string;
 }
 
 export interface CrmDealListItemType {

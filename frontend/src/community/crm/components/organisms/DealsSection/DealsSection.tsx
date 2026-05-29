@@ -4,6 +4,7 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { useGetDealsInfinite } from "~community/crm/api/crmDealApi";
 import DealsHeader from "~community/crm/components/molecules/DealsHeader/DealsHeader";
+import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealsTable from "~community/crm/components/organisms/DealsTable/DealsTable";
 import {
   DEAL_PAGE_SIZE,
@@ -52,6 +53,7 @@ const DealsSection: FC = () => {
         hasNextPage={hasNextPage}
         onLoadMore={loadMore}
       />
+      <AddDealSidePanel />
     </div>
   );
 };
