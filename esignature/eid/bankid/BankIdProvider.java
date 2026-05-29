@@ -195,8 +195,10 @@ public class BankIdProvider implements EidProvider {
 		String orderRef = session.getProviderSessionId();
 		log.debug("BankIdProvider: Checking status for session={}, orderRef={}", session.getSessionUuid(), orderRef);
 
-		// Check if session has expired locally
-		if (session.getExpiresAt() != null && Instant.now().isAfter(session.getExpiresAt())) {
+		// Check if session has expired locally (skip if user is actively authenticating
+		// in BankID app)
+		if (session.getExpiresAt() != null && Instant.now().isAfter(session.getExpiresAt())
+				&& session.getStatus() != EidVerificationStatus.USER_ACTION_REQUIRED) {
 			session.setStatus(EidVerificationStatus.EXPIRED);
 			session.setHintCode(BankIdHintCode.EXPIRED_TRANSACTION.getValue());
 			session.setErrorMessage("The transaction has expired.");
