@@ -59,7 +59,7 @@ const SupervisorReassignmentModalSection: FC<
   getItems,
   onSearch,
   onSelect,
-  onRemove
+  onRemove,
 }) => {
   const [searchValues, setSearchValues] = useState<Record<number, string>>({});
   const translateText = useTranslator("peopleModule", "supervisorReassignment");
@@ -124,6 +124,7 @@ const SupervisorReassignmentModalSection: FC<
                     onChange={(e) => handleInputChange(id, e)}
                     placeholder={placeholderText}
                     state="default"
+                    positionStrategy="fixed"
                     emptyMessage={
                       !isLoading ? (
                         <p className="px-4 py-2 body2">

@@ -39,6 +39,7 @@ export interface SearchableDropdownProps {
   customStyles?: InputFieldCustomStyles;
   state?: "default" | "error";
   variant?: "sm" | "md" | "lg";
+  positionStrategy?: "absolute" | "fixed";
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -54,7 +55,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   emptyMessage,
   customStyles,
   state = "default",
-  variant = "sm"
+  variant = "sm",
+  positionStrategy = "absolute"
 }) => {
   const uid = useId();
   const baseId = `${id}-${uid}`;
@@ -199,6 +201,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           ariaLabel={label || placeholder}
           isFlip
           disableAutoFocus
+          positionStrategy={positionStrategy}
           containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
         >
           <div ref={popperContentRef}>
@@ -206,7 +209,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               emptyMessage && <div>{emptyMessage}</div>
             ) : (
               <ul
-                className="max-h-[12.5rem] overflow-y-auto"
+                className="max-h-50 overflow-y-auto"
                 role="listbox"
                 id={`${baseId}-list`}
                 aria-label={label || placeholder}
