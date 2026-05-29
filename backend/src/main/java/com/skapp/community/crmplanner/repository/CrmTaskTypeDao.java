@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface CrmTaskTypeDao extends JpaRepository<CrmTaskType, Long> {
 
-	List<CrmTaskType> findAllByOrderByOrderIndexAsc();
+	List<CrmTaskType> findAllByOrderByOrderIndexAscIdAsc();
 
 }

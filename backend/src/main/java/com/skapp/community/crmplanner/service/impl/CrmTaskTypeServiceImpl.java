@@ -27,7 +27,7 @@ public class CrmTaskTypeServiceImpl implements CrmTaskTypeService {
 		log.info("getTaskTypes: execution started");
 
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
-			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAsc());
+			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
 
 		log.info("getTaskTypes: execution ended with {} result(s)", taskTypes.size());
 
