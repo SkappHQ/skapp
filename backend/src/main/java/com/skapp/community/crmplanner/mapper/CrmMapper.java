@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDt
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,7 +27,7 @@ public interface CrmMapper {
 	@Mapping(target = "stageColor", source = "stage.color")
 	@Mapping(target = "companyName", source = "company.name")
 	@Mapping(target = "contactName", source = "contact.name")
-	@Mapping(target = "ownerName", source = "owner.fullName")
+	@Mapping(target = "owner", source = "owner")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
 
 	List<CrmDealResponseDto> crmDealsToCrmDealResponseDtos(List<CrmDeal> crmDeals);
@@ -45,6 +46,8 @@ public interface CrmMapper {
 
 	@Mapping(target = "email", source = "user.email")
 	CrmContactOwnerResponseDto employeeToCrmContactOwnerResponseDto(Employee employee);
+
+	CrmOwnerResponseDto employeeToCrmDealOwnerResponseDto(Employee employee);
 
 	CrmContactResponseDto crmContactToCrmContactResponseDto(CrmContact contact);
 
