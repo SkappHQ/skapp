@@ -5,10 +5,13 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmContactTaskCreateRequestDto;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +22,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import com.jayway.jsonpath.JsonPath;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +35,8 @@ import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -42,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("CRM Contact Controller Integration Tests")
 class CrmContactControllerIntegrationTest {
 
-	private static final String BASE_PATH = "/v1/crm/contact/{id}/task";
+	private static final String BASE_PATH = "/v1/crm/contact/{id}/tasks";
 
 	private final JsonMapper objectMapper;
 
@@ -57,6 +64,8 @@ class CrmContactControllerIntegrationTest {
 	private final CrmContactDao crmContactDao;
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
+
+	private final CrmTaskDao crmTaskDao;
 
 	private final EmployeeDao employeeDao;
 
@@ -103,13 +112,24 @@ class CrmContactControllerIntegrationTest {
 	@Test
 	@DisplayName("Create task with valid payload - Returns Created with MEDIUM priority and current user as owner")
 	void createContactTask_HappyPath_ReturnsCreated() throws Exception {
-		performCreateRequest(contactId, validPayload()).andDo(print())
+		MvcResult result = performCreateRequest(contactId, validPayload()).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").isNumber())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Follow up call"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("MEDIUM"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['typeId']").value(taskTypeId))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contactId));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['typeName']").value("Call"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contactId))
+			.andReturn();
+
+		Long savedId = ((Number) JsonPath.read(result.getResponse().getContentAsString(), "$.results[0].id"))
+			.longValue();
+
+		CrmTask saved = crmTaskDao.findById(savedId).orElseThrow();
+		assertEquals(CrmTaskPriority.MEDIUM, saved.getPriority());
+		assertNotNull(saved.getOwner());
+		assertEquals(contactId, saved.getContact().getId());
 	}
 
 	@Test
@@ -149,6 +169,32 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NAME_TOO_LONG)));
+	}
+
+	@Test
+	@DisplayName("Create task with name at max length (255) - Returns Created")
+	void createContactTask_NameAtMaxLength_ReturnsCreated() throws Exception {
+		String maxLengthName = "a".repeat(255);
+		CrmContactTaskCreateRequestDto dto = validPayload();
+		dto.setName(maxLengthName);
+
+		performCreateRequest(contactId, dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value(maxLengthName));
+	}
+
+	@Test
+	@DisplayName("Create task with missing name - Returns Bad Request")
+	void createContactTask_NullName_ReturnsBadRequest() throws Exception {
+		CrmContactTaskCreateRequestDto dto = validPayload();
+		dto.setName(null);
+
+		performCreateRequest(contactId, dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NAME_REQUIRED)));
 	}
 
 	@Test

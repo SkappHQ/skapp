@@ -240,8 +240,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto createContactTask(Long contactId, CrmContactTaskCreateRequestDto requestDto) {
 		log.info("createContactTask: execution started for contactId={}", contactId);
 
-		CrmValidations.validateTaskName(requestDto.getName());
 		CrmValidations.validateTaskTypeId(requestDto.getTypeId());
+		CrmValidations.validateTaskName(requestDto.getName());
 
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(contactId)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));

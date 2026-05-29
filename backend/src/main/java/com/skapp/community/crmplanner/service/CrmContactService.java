@@ -19,7 +19,7 @@ public interface CrmContactService {
 	ResponseEntityDto getContactMetrics(CrmContactMetricRequestDto filterDto);
 
 	ResponseEntityDto createContactTask(Long contactId, CrmContactTaskCreateRequestDto requestDto);
-  
+
 	ResponseEntityDto getContactsLookup(CrmContactFilterDto filterDto);
 
 }
