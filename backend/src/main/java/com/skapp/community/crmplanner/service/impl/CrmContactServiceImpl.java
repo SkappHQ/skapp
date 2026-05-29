@@ -113,24 +113,37 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		checkEditPermission(contact, currentUser);
 
-		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
-				requestDto.getOwnerId(), requestDto.getCompanyId());
-
-		String lowercaseEmail = requestDto.getEmail().toLowerCase();
-		if (!lowercaseEmail.equals(contact.getEmail())
-				&& crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(lowercaseEmail, id)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
+		if (requestDto.getName() != null) {
+			CrmValidations.validateContactName(requestDto.getName());
+			contact.setName(requestDto.getName());
 		}
 
-		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
-		contact.setCompany(company);
+		if (requestDto.getEmail() != null) {
+			CrmValidations.validateContactEmail(requestDto.getEmail());
+			String lowercaseEmail = requestDto.getEmail().toLowerCase();
+			if (!lowercaseEmail.equals(contact.getEmail())
+					&& crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(lowercaseEmail, id)) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
+			}
+			contact.setEmail(lowercaseEmail);
+		}
 
-		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+		if (requestDto.getContactNumber() != null) {
+			CrmValidations.validateContactNumber(requestDto.getContactNumber());
+			contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
+		}
 
-		contact.setName(requestDto.getName());
-		contact.setEmail(lowercaseEmail);
-		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
-		contact.setOwner(owner);
+		if (requestDto.getCompanyId() != null) {
+			CrmValidations.validateCompanyId(requestDto.getCompanyId());
+			CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
+			contact.setCompany(company);
+		}
+
+		if (requestDto.getOwnerId() != null) {
+			CrmValidations.validateOwnerId(requestDto.getOwnerId());
+			Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+			contact.setOwner(owner);
+		}
 
 		CrmContact savedContact = crmContactDao.save(contact);
 

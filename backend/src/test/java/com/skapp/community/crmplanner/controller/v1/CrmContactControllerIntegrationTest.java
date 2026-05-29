@@ -41,10 +41,7 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.Assert.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -322,6 +319,24 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS)));
+	}
+
+	@Test
+	@DisplayName("Edit contact with partial payload - Only provided fields updated")
+	void editContact_PartialPayload_OnlyProvidedFieldsUpdated() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "original@example.com").getId();
+
+		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
+		dto.setName("Updated Name Only");
+		// email, contactNumber, companyId, ownerId are null
+
+		performPatchRequest(contactId, dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name Only"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("original@example.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").doesNotExist());
 	}
 
 	@Test
