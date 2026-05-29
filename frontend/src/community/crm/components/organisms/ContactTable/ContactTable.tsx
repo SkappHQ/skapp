@@ -21,22 +21,27 @@ import {
 import {
   ALL_COMPANIES,
   CONTACT_SEARCH_DEBOUNCE_DELAY,
-  DEFAULT_PAGE_SIZE,
-  DEFAULT_COMPANY_PAGE_SIZE
+  DEFAULT_COMPANY_PAGE_SIZE,
+  DEFAULT_PAGE_SIZE
 } from "~community/crm/constants/contactConstants";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import {
+  formatMonetaryValue,
   formatPhoneNumber,
-  formatTasks,
-  formatMonetaryValue
+  formatTasks
 } from "~community/crm/utils/tableHelpers";
 
 export const ContactTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState<number|undefined>(ALL_COMPANIES);
-  const debouncedSearch = useDebounce(searchTerm, CONTACT_SEARCH_DEBOUNCE_DELAY);
+  const [selectedCompany, setSelectedCompany] = useState<number | undefined>(
+    ALL_COMPANIES
+  );
+  const debouncedSearch = useDebounce(
+    searchTerm,
+    CONTACT_SEARCH_DEBOUNCE_DELAY
+  );
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, selectedCompany);
@@ -114,7 +119,7 @@ export const ContactTable: React.FC = () => {
             <div>{formatMonetaryValue(value)}</div>
             <div className="subtitle4 text-secondary-text">
               {row.closedDealCount > 0
-                ? `${row.closedDealCount} ${translateText(["table", "closedDealsLabel"])}`
+                ? `${row.closedDealCount} ${translateText(["table", "closedDealsLabel"], { count: row.closedDealCount })}`
                 : ""}
             </div>
           </div>
@@ -135,7 +140,8 @@ export const ContactTable: React.FC = () => {
               <Label
                 backgroundColor="bg-semantic-red-background"
                 textColor="text-semantic-red-text"
-              >{`${row.overdueTaskCount} ${translateText(["table", "overdueLabel"])}`}
+              >
+                {`${row.overdueTaskCount} ${translateText(["table", "overdueLabel"])}`}
               </Label>
             )}
           </div>

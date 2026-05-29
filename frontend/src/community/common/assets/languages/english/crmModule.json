@@ -12,7 +12,8 @@
       "clearButtonAriaLabel": "Clear search",
       "search": "Search contact",
       "infiniteScrollLoadingMessage": "Loading contacts...",
-      "closedDealsLabel": "Deals closed",
+      "closedDealsLabel_one": "Deal closed",
+      "closedDealsLabel_other": "Deals closed",
       "overdueLabel": "overdue",
       "emptyDataState": {
         "title": "No contacts available.",
