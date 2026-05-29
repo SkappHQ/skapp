@@ -1,9 +1,4 @@
-import {
-  ArrowRightIcon,
-  ButtonV2,
-  CloseIcon,
-  SmallModal
-} from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, CloseIcon, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { FC, useCallback, useMemo, useState } from "react";
 
@@ -303,27 +298,6 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
           )}
         </div>
       </div>
-
-      <div className="flex flex-row gap-4 justify-end">
-        <ButtonV2
-          variant="tertiary"
-          onClick={handleClose}
-          disabled={isSubmitting}
-          icon={<CloseIcon />}
-          iconPosition="end"
-        >
-          {translateText(["cancelButton"])}
-        </ButtonV2>
-        <ButtonV2
-          variant="primary"
-          onClick={handleProceed}
-          disabled={isSubmitting || !isProceedEnabled}
-          icon={<ArrowRightIcon />}
-          iconPosition="end"
-        >
-          {proceedButtonLabel}
-        </ButtonV2>
-      </div>
     </div>
   );
 
@@ -335,6 +309,24 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       content={modalContent}
       className="w-138.25"
       closeButtonAriaLabel={translateText(["closeModalAriaLabel"])}
+      buttons={{
+        buttonLeft: {
+          variant: "tertiary",
+          onClick: handleClose,
+          disabled: isSubmitting,
+          icon: <CloseIcon />,
+          iconPosition: "end",
+          children: translateText(["cancelButton"])
+        },
+        buttonRight: {
+          variant: "primary",
+          onClick: handleProceed,
+          disabled: isSubmitting || !isProceedEnabled,
+          icon: <ArrowRightIcon />,
+          iconPosition: "end",
+          children: proceedButtonLabel
+        }
+      }}
     />
   );
 };
