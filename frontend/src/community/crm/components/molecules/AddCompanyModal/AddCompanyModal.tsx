@@ -5,7 +5,7 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { ChangeEvent, useEffect, useMemo } from "react";
+import React, { ChangeEvent, useEffect } from "react";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -18,6 +18,7 @@ import {
 } from "~community/crm/api/CompanyApi";
 import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyConstants";
 import { CrmIndustryEnum } from "~community/crm/enums/common";
+import useGetIndustryOptions from "~community/crm/hooks/useGetIndustryOptions";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompanyAddFormTypes,
@@ -40,21 +41,7 @@ const AddCompanyModal: React.FC = () => {
     "companyToastMessages"
   );
 
-  const translateIndustryOptions = useTranslator(
-    "crmModule",
-    "companies",
-    "industryOptions"
-  );
-
-  const industryOptions = useMemo(
-    () =>
-      Object.values(CrmIndustryEnum).map((industry) => ({
-        id: industry,
-        label: translateIndustryOptions([industry]),
-        value: industry
-      })),
-    [translateIndustryOptions]
-  );
+  const industryOptions = useGetIndustryOptions();
 
   const { setIsAddCompanyModalOpen } = useCrmStore((store) => ({
     setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
@@ -98,14 +85,9 @@ const AddCompanyModal: React.FC = () => {
   );
 
   const createCompany = (values: CrmCompanyAddFormTypes) => {
-    const industry =
-      values.industry && values.industry !== CrmIndustryEnum.NONE
-        ? values.industry
-        : null;
-
     const payload: CrmCompanyCreatePayload = {
       name: values.name.trim(),
-      industry,
+      industry: values.industry,
       website: values.website?.trim() || null,
       address: values.address?.trim() || null,
       contactNumber: values.contactNumber?.trim() || null
@@ -141,7 +123,7 @@ const AddCompanyModal: React.FC = () => {
     debouncedCompanyName,
     debouncedCompanyName.length > 0
   );
-  
+
   const handleIndustryChange = (value: string) => {
     formik.setFieldValue("industry", value);
   };
@@ -210,7 +192,7 @@ const AddCompanyModal: React.FC = () => {
 
       <Dropdown
         options={industryOptions}
-        value={values.industry || ""}
+        value={values.industry}
         onChange={handleIndustryChange}
         label={translateText(["labels", "industry"])}
         className="rounded-lg"
