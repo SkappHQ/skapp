@@ -3,13 +3,13 @@ import { FC, useMemo, useState } from "react";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { useGetDealsInfinite } from "~community/crm/api/crmDealApi";
-import DealsHeader from "~community/crm/components/molecules/DealsHeader/DealsHeader";
 import DealsTable from "~community/crm/components/organisms/DealsTable/DealsTable";
 import {
   DEAL_PAGE_SIZE,
   DEAL_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum } from "~community/crm/enums/common";
+import DealsHeader from "./DealsHeader/DealsHeader";
 
 const DealsSection: FC = () => {
   const [inputValue, setInputValue] = useState("");

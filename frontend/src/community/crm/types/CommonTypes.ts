@@ -137,7 +137,6 @@ export interface CrmDealPaginatedResponseType {
 }
 
 export interface CrmDealFilterParams {
-  page: number;
   size: number;
   sortOrder: SortOrderTypes;
   sortKey: CrmDealSortEnum;

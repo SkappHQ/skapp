@@ -1,7 +1,9 @@
-import { InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
+
 interface Props {
   inputValue: string;
   onSearchChange: (value: string) => void;

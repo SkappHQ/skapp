@@ -9,7 +9,7 @@ import { crmDealEndpoints } from "./utils/ApiEndpoints";
 import { crmDealQueryKeys } from "./utils/QueryKeys";
 
 export const useGetDealsInfinite = (
-  params: Omit<CrmDealFilterParams, "page">
+  params: CrmDealFilterParams
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
