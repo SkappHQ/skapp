@@ -19,6 +19,10 @@ public class CrmIndustryDeserializer extends StdDeserializer<CrmIndustry> {
 		JsonNode jsonNode = p.readValueAsTree();
 		String value = jsonNode.asString().trim();
 
+		if (jsonNode.isNull() || jsonNode.isMissingNode() || value.isEmpty()) {
+			return null;
+		}
+
 		try {
 			return CrmIndustry.valueOf(value.toUpperCase());
 		}
