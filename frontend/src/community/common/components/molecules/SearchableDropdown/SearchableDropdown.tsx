@@ -13,6 +13,20 @@ export interface SearchableDropdownItem {
   content: React.ReactNode;
 }
 
+const getNextActiveIndex = (
+  currentIndex: number | null,
+  itemsLength: number,
+  direction: "down" | "up"
+): number => {
+  if (direction === "down") {
+    if (currentIndex === null) return 0;
+    if (currentIndex < itemsLength - 1) return currentIndex + 1;
+    return currentIndex;
+  }
+  if (currentIndex !== null && currentIndex > 0) return currentIndex - 1;
+  return 0;
+};
+
 export interface SearchableDropdownProps {
   id: string;
   items: SearchableDropdownItem[];
@@ -78,11 +92,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     (e: ChangeEvent<HTMLInputElement>) => {
       onChange(e);
       setActiveIndex(null);
-      if (e.target.value.trim().length > 0) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
-      }
+      setIsOpen(e.target.value.trim().length > 0);
     },
     [onChange]
   );
@@ -102,21 +112,13 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         case "ArrowDown": {
           e.preventDefault();
           if (items.length === 0) break;
-          const nextDown =
-            activeIndex === null
-              ? 0
-              : activeIndex < items.length - 1
-                ? activeIndex + 1
-                : activeIndex;
-          setActiveIndex(nextDown);
+          setActiveIndex(getNextActiveIndex(activeIndex, items.length, "down"));
           break;
         }
         case "ArrowUp": {
           e.preventDefault();
           if (items.length === 0) break;
-          const nextUp =
-            activeIndex !== null && activeIndex > 0 ? activeIndex - 1 : 0;
-          setActiveIndex(nextUp);
+          setActiveIndex(getNextActiveIndex(activeIndex, items.length, "up"));
           break;
         }
         case "Tab":
