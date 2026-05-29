@@ -42,7 +42,7 @@ export interface CrmCompanyAddFormTypes {
 
 export interface CrmCompanyCreatePayload {
   name: string;
-  industry: string;
+  industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
