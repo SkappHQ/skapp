@@ -127,7 +127,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
 
-		contact.setName(requestDto.getName().trim());
+		contact.setName(requestDto.getName());
 		contact.setEmail(lowercaseEmail);
 		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
 		contact.setOwner(owner);
