@@ -4,7 +4,6 @@ import org.springframework.data.domain.Pageable;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
-import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 
 public interface CrmCompanyService {
@@ -18,7 +17,5 @@ public interface CrmCompanyService {
 	ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable);
 
 	ResponseEntityDto deleteCompany(Long id);
-
-	ResponseEntityDto editCompany(Long id, CrmCompanyEditDto crmCompany);
 
 }
