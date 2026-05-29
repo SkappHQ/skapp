@@ -16,10 +16,12 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
@@ -192,6 +194,29 @@ public class CrmContactServiceImpl implements CrmContactService {
 		pageDto.setTotalPages(contactPage.getTotalPages());
 
 		log.info("getContactMetrics: execution ended");
+		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactsLookup(CrmContactFilterDto filterDto) {
+		log.info("getContactsLookup: execution started");
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmContact> contactPage = crmContactDao.findContactsForLookup(filterDto, pageable);
+
+		List<CrmContactLookupResponseDto> contactDtos = contactPage.getContent()
+			.stream()
+			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
+			.toList();
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(contactDtos);
+		pageDto.setCurrentPage(contactPage.getNumber());
+		pageDto.setTotalItems(contactPage.getTotalElements());
+		pageDto.setTotalPages(contactPage.getTotalPages());
+
+		log.info("getContactsLookup: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
