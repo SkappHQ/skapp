@@ -38,7 +38,7 @@ public interface CrmMapper {
 	CrmCompanyLookupResponseDto crmCompanyToCrmCompanyLookupResponseDto(CrmCompany company);
 
 	CrmContactLookupResponseDto crmContactToCrmContactLookupResponseDto(CrmContact contact);
-	
+
 	CrmCompany crmCompanyCreateDtoToCrmCompany(CrmCompanyCreateDto crmCompanyCreateDto);
 
 	CrmCompanyResponseDto crmCompanyToCrmCompanyResponseDto(CrmCompany crmCompany);

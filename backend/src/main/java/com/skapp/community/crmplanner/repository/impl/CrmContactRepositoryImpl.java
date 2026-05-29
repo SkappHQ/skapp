@@ -116,7 +116,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 
 		List<Predicate> predicates = buildLookupPredicates(cb, contact, filterDto);
 		query.where(predicates.toArray(new Predicate[0]));
-		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))));
+		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
 
 		TypedQuery<CrmContact> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
@@ -132,7 +132,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase());
 			predicates.add(cb.like(cb.lower(contact.get(CrmContact_.name)), "%" + escaped + "%", '\\'));
 		}
 
