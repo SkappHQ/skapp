@@ -43,7 +43,11 @@ interface SupervisorReassignmentModalSectionProps {
   assignments: Record<number, OptionType>;
   getItems: (entityId: number) => SearchableDropdownItem[];
   onSearch: (term: string) => void;
-  onSelect: (entityId: number, selectedId: string) => void;
+  onSelect: (
+    entityId: number,
+    selectedId: string,
+    selectedName: string
+  ) => void;
   onRemove: (entityId: number) => void;
 }
 
@@ -59,7 +63,7 @@ const SupervisorReassignmentModalSection: FC<
   getItems,
   onSearch,
   onSelect,
-  onRemove,
+  onRemove
 }) => {
   const [searchValues, setSearchValues] = useState<Record<number, string>>({});
   const translateText = useTranslator("peopleModule", "supervisorReassignment");
@@ -71,13 +75,18 @@ const SupervisorReassignmentModalSection: FC<
     e: ChangeEvent<HTMLInputElement>
   ) => {
     const term = e.target.value;
-    setSearchValues((prev) => ({ ...prev, [entityId]: term }));
+    setSearchValues({ [entityId]: term });
     onSearch(term);
   };
 
   const handleItemSelect = (entityId: number, item: SearchableDropdownItem) => {
     setSearchValues((prev) => ({ ...prev, [entityId]: "" }));
-    onSelect(entityId, item.id);
+    onSelect(entityId, item.id, String(item.content));
+  };
+
+  const handleDropdownClose = (entityId: number) => {
+    setSearchValues((prev) => ({ ...prev, [entityId]: "" }));
+    onSearch("");
   };
 
   return (
@@ -123,8 +132,8 @@ const SupervisorReassignmentModalSection: FC<
                     value={searchValues[id] ?? ""}
                     onChange={(e) => handleInputChange(id, e)}
                     placeholder={placeholderText}
-                    state="default"
                     positionStrategy="fixed"
+                    onClose={() => handleDropdownClose(id)}
                     emptyMessage={
                       !isLoading ? (
                         <p className="px-4 py-2 body2">

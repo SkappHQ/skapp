@@ -40,6 +40,7 @@ export interface SearchableDropdownProps {
   state?: "default" | "error";
   variant?: "sm" | "md" | "lg";
   positionStrategy?: "absolute" | "fixed";
+  onClose?: () => void;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -56,7 +57,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   customStyles,
   state = "default",
   variant = "sm",
-  positionStrategy = "absolute"
+  positionStrategy = "absolute",
+  onClose
 }) => {
   const uid = useId();
   const baseId = `${id}-${uid}`;
@@ -76,7 +78,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const handleClose = useCallback(() => {
     setIsOpen(false);
     setActiveIndex(-1);
-  }, []);
+    onClose?.();
+  }, [onClose]);
 
   const handleSelect = useCallback(
     (item: SearchableDropdownItem) => {

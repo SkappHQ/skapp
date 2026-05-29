@@ -5,7 +5,7 @@ import {
   SmallModal
 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import ROUTES from "~community/common/constants/routes";
@@ -59,11 +59,11 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
 
   const { data: supervisorRoles, isLoading: isSupervisorRolesLoading } =
     useGetSupervisedEmployeesAndTeams(employeeId, isOpen);
-  const { data: searchedEmployees, isLoading: isSearchLoading } =
+  const { data: searchedEmployees, isLoading: isEmployeeSearchLoading } =
     useGetSearchedEmployees(searchTerm);
 
-  const isLoadingOrIsDebouncing =
-    isSearchLoading || searchedEmployees === undefined;
+  const isSearchLoading =
+    isEmployeeSearchLoading || searchedEmployees === undefined;
 
   const resetState = useCallback(() => {
     setPrimarySupervisorAssignments({});
@@ -137,11 +137,18 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   const supervisedEmployees = supervisorRoles?.supervisedEmployees;
   const supervisedTeams = supervisorRoles?.supervisedTeams;
 
-  const filteredEmployeeList = (searchedEmployees ?? []).filter(
-    (employee) => Number(employee.employeeId) !== employeeId
+  const filteredEmployeeList = useMemo(
+    () =>
+      (searchedEmployees ?? []).filter(
+        (employee) => Number(employee.employeeId) !== employeeId
+      ),
+    [searchedEmployees, employeeId]
   );
 
-  const employeeList = !isLoadingOrIsDebouncing ? filteredEmployeeList : [];
+  const employeeList = useMemo(
+    () => (!isSearchLoading ? filteredEmployeeList : []),
+    [isSearchLoading, filteredEmployeeList]
+  );
 
   const isProceedEnabled =
     supervisorRoles !== undefined &&
@@ -192,6 +199,28 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     setSearchTerm("");
   };
 
+  const getPrimarySupervisorItems = useCallback(
+    (supervisedEmployeeId: number) =>
+      employeeList
+        .filter(
+          (employee) => Number(employee.employeeId) !== supervisedEmployeeId
+        )
+        .map((employee) => ({
+          id: String(employee.employeeId),
+          content: concatStrings([employee.firstName, employee.lastName]).trim()
+        })),
+    [employeeList]
+  );
+
+  const getTeamSupervisorItems = useCallback(
+    (teamId: number) =>
+      employeeList.map((employee) => ({
+        id: String(employee.employeeId),
+        content: concatStrings([employee.firstName, employee.lastName]).trim()
+      })),
+    [employeeList]
+  );
+
   const proceedButtonLabel =
     actionType === EmployeeRemoveAction.TERMINATE
       ? translateText(["proceedAndTerminateButton"])
@@ -234,37 +263,16 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               }))}
               showAvatar={true}
               isTeamSection={false}
-              isLoading={isLoadingOrIsDebouncing}
+              isLoading={isSearchLoading}
               assignments={primarySupervisorAssignments}
-              getItems={(supervisedEmployeeId) =>
-                employeeList
-                  .filter(
-                    (employee) =>
-                      Number(employee.employeeId) !== supervisedEmployeeId
-                  )
-                  .map((employee) => ({
-                    id: String(employee.employeeId),
-                    content: concatStrings([
-                      employee.firstName,
-                      employee.lastName
-                    ]).trim()
-                  }))
-              }
+              getItems={getPrimarySupervisorItems}
               onSearch={setSearchTerm}
-              onSelect={(supervisedEmployeeId, selectedId) => {
-                const selectedEmployee = filteredEmployeeList.find(
-                  (employee) => String(employee.employeeId) === selectedId
+              onSelect={(supervisedEmployeeId, selectedId, selectedName) => {
+                handleSelectPrimarySupervisor(
+                  Number(selectedId),
+                  selectedName,
+                  supervisedEmployeeId
                 );
-                if (selectedEmployee) {
-                  handleSelectPrimarySupervisor(
-                    selectedEmployee.employeeId,
-                    concatStrings([
-                      selectedEmployee.firstName,
-                      selectedEmployee.lastName
-                    ]).trim(),
-                    supervisedEmployeeId
-                  );
-                }
               }}
               onRemove={handleRemovePrimarySupervisor}
             />
@@ -279,32 +287,16 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               }))}
               showAvatar={false}
               isTeamSection={true}
-              isLoading={isLoadingOrIsDebouncing}
+              isLoading={isSearchLoading}
               assignments={teamSupervisorAssignments}
-              getItems={(teamId) =>
-                employeeList.map((employee) => ({
-                  id: String(employee.employeeId),
-                  content: concatStrings([
-                    employee.firstName,
-                    employee.lastName
-                  ]).trim()
-                }))
-              }
+              getItems={getTeamSupervisorItems}
               onSearch={setSearchTerm}
-              onSelect={(teamId, selectedId) => {
-                const selectedEmployee = filteredEmployeeList.find(
-                  (employee) => String(employee.employeeId) === selectedId
+              onSelect={(teamId, selectedId, selectedName) => {
+                handleSelectTeamSupervisor(
+                  Number(selectedId),
+                  selectedName,
+                  teamId
                 );
-                if (selectedEmployee) {
-                  handleSelectTeamSupervisor(
-                    selectedEmployee.employeeId,
-                    concatStrings([
-                      selectedEmployee.firstName,
-                      selectedEmployee.lastName
-                    ]).trim(),
-                    teamId
-                  );
-                }
               }}
               onRemove={handleRemoveTeamSupervisor}
             />
