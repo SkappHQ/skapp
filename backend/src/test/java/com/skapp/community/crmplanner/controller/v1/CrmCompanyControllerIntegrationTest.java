@@ -14,6 +14,7 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.support.SecurityTestUtils;
 
 import static org.junit.Assert.assertTrue;
@@ -106,7 +107,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompanyCreateDto createValidPayload() {
 		CrmCompanyCreateDto dto = new CrmCompanyCreateDto();
 		dto.setName("Acme Corp");
-		dto.setIndustry("Technology");
+		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		dto.setWebsite("https://acme.com");
 		dto.setAddress("123 Main St");
 		dto.setContactNumber("94771234567");
