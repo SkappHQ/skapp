@@ -1251,7 +1251,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	public List<LeaveTypeBreakDown> findLeaveTypeBreakDown(List<Integer> workingDaysIndex, List<LocalDate> holidayDates,
-			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds) {
+			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds, List<Long> employeeIds) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).toList();
@@ -1293,20 +1293,29 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				predicates.add(leaveType.get(LeaveType_.typeId).in(typeIds));
 			}
 
+			List<Predicate> teamOrEmployeePredicates = new ArrayList<>();
 			if (teamIds != null && !teamIds.isEmpty() && employeeTeam != null) {
-				predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+				teamOrEmployeePredicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+			}
+			if (employeeIds != null && !employeeIds.isEmpty()) {
+				teamOrEmployeePredicates.add(employee.get(Employee_.employeeId).in(employeeIds));
+			}
+			if (!teamOrEmployeePredicates.isEmpty()) {
+				predicates.add(cb.or(teamOrEmployeePredicates.toArray(new Predicate[0])));
 			}
 
 			predicates.add(cb.equal(leaveType.get(LeaveType_.isActive), true));
 
-			leaveQuery.multiselect(leaveType.get(LeaveType_.typeId), leaveRequest.get(LeaveRequest_.leaveState));
+			leaveQuery.select(cb.array(leaveRequest.get(LeaveRequest_.leaveRequestId), leaveType.get(LeaveType_.typeId),
+					leaveRequest.get(LeaveRequest_.leaveState)));
+			leaveQuery.distinct(true);
 			leaveQuery.where(predicates.toArray(new Predicate[0]));
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
 			for (Object[] result : results) {
-				Long leaveTypeId = (Long) result[0];
-				LeaveState leaveState = (LeaveState) result[1];
+				Long leaveTypeId = (Long) result[1];
+				LeaveState leaveState = (LeaveState) result[2];
 
 				double leaveCount = 1.0;
 				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
