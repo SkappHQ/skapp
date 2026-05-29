@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.constant;
 
 import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.experimental.UtilityClass;
 
 import java.util.Set;
@@ -34,5 +35,7 @@ public class CrmConstants {
 	public static final int PHONE_MAX_LENGTH = 15;
 
 	public static final int TASK_NAME_MAX_LENGTH = 255;
+
+	public static final CrmTaskPriority DEFAULT_TASK_PRIORITY = CrmTaskPriority.MEDIUM;
 
 }

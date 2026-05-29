@@ -29,7 +29,6 @@ import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
-import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -227,9 +226,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 		Employee taskOwner = userService.getCurrentUser().getEmployee();
 
 		CrmTask task = new CrmTask();
-		task.setName(requestDto.getName().trim());
+		task.setName(requestDto.getName());
 		task.setType(taskType);
-		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setPriority(CrmConstants.DEFAULT_TASK_PRIORITY);
 		task.setOwner(taskOwner);
 		task.setContact(contact);
 

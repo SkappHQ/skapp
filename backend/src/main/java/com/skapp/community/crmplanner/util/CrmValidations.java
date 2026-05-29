@@ -172,7 +172,7 @@ public class CrmValidations {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NAME_REQUIRED);
 		}
 
-		if (name.trim().length() > CrmConstants.TASK_NAME_MAX_LENGTH) {
+		if (name.length() > CrmConstants.TASK_NAME_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NAME_TOO_LONG);
 		}
 	}
