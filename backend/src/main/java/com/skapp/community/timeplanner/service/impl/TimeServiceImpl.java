@@ -13,6 +13,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.common.util.Validation;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
@@ -279,23 +280,29 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeeAttendanceSummary(
 			EmployeeAttendanceSummaryFilterDto employeeAttendanceSummaryFilterDto) {
-		User currentUser = userService.getCurrentUser();
-		log.info("getEmployeeTotalWorkBreakHours: execution started by user: {}", currentUser.getUserId());
+		log.info("getEmployeeAttendanceSummary: execution started");
 
-		Optional<Employee> employeeOptional = employeeDao.findById(currentUser.getUserId());
-		if (employeeOptional.isEmpty()) {
-			throw new EntityNotFoundException(
-					messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+
+		if (!Validation.isValidStartAndEndDate(employeeAttendanceSummaryFilterDto.getStartDate(),
+				employeeAttendanceSummaryFilterDto.getEndDate())) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
+
+		User currentUser = userService.getCurrentUser();
+
 		AttendanceSummaryDto attendanceSummaryDto = timeRecordDao.getEmployeeAttendanceSummary(
 				List.of(currentUser.getUserId()), employeeAttendanceSummaryFilterDto.getStartDate(),
 				employeeAttendanceSummaryFilterDto.getEndDate());
-		return new ResponseEntityDto(false,
-				new AttendanceSummaryResponseDto(
-						TimeUtil.formatHoursAndMinutes(attendanceSummaryDto.getTotalWorkHours()),
-						TimeUtil.formatHoursAndMinutes(attendanceSummaryDto.getTotalBreakHours())));
+
+		AttendanceSummaryResponseDto response = new AttendanceSummaryResponseDto(
+				TimeUtil.formatHoursAndMinutes(attendanceSummaryDto.getTotalWorkHours()),
+				TimeUtil.formatHoursAndMinutes(attendanceSummaryDto.getTotalBreakHours()));
+
+		log.info("getEmployeeAttendanceSummary: execution ended");
+		return new ResponseEntityDto(false, response);
 	}
 
 	@Override

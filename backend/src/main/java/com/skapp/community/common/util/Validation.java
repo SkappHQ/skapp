@@ -76,6 +76,13 @@ public class Validation {
 		}
 	}
 
+	public static boolean isValidStartAndEndDate(LocalDate startDate, LocalDate endDate) {
+		if (startDate == null || endDate == null) {
+			return false;
+		}
+		return !startDate.isAfter(endDate);
+	}
+
 	public static boolean isInvalidStartAndEndDate(LocalDate startDate, LocalDate endDate) {
 		if (endDate == null) {
 			return false;

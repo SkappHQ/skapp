@@ -67,17 +67,14 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
 
 		List<Predicate> predicates = new ArrayList<>();
-		predicates.add((root.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds)));
+		predicates.add(root.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds));
 		predicates.add(criteriaBuilder.between(root.get(TimeRecord_.date), startDate, endDate));
 
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		criteriaQuery.where(predArray);
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(criteriaBuilder.construct(AttendanceSummaryDto.class,
-				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.workedHours)), 0.0),
-				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.breakHours)), 0.0)));
-		TypedQuery<AttendanceSummaryDto> typedQuery = entityManager.createQuery(criteriaQuery);
-		return typedQuery.getSingleResult();
+				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.workedHours)), 0.0f),
+				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.breakHours)), 0.0f)));
+		return entityManager.createQuery(criteriaQuery).getSingleResult();
 	}
 
 	@Override
