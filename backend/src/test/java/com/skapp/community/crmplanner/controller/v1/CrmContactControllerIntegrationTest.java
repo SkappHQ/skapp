@@ -113,8 +113,8 @@ class CrmContactControllerIntegrationTest {
 			.accept(MediaType.APPLICATION_JSON));
 	}
 
-	private <T> ResultActions performPutRequest(Long id, T content) throws Exception {
-		return performRequest(put(BY_ID_PATH, id).contentType(MediaType.APPLICATION_JSON)
+	private <T> ResultActions performPatchRequest(Long id, T content) throws Exception {
+		return performRequest(patch(BY_ID_PATH, id).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(content))
 			.accept(MediaType.APPLICATION_JSON));
 	}
@@ -177,6 +177,25 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith@example.com"));
+	}
+
+	@Test
+	@DisplayName("Create contact with leading/trailing spaces - Spaces trimmed")
+	void createContact_WithLeadingTrailingSpaces_SpacesTrimmed() throws Exception {
+		Long companyId = savedCompany().getId();
+		CrmContactCreateRequestDto dto = new CrmContactCreateRequestDto();
+		dto.setName("  John Doe  ");
+		dto.setEmail("  john.doe@example.com  ");
+		dto.setCompanyId(companyId);
+		dto.setContactNumber("  9876543210  ");
+		dto.setOwnerId(1L);
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("John Doe"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("john.doe@example.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("9876543210"));
 	}
 
 	@Test
@@ -248,7 +267,7 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "original@example.com").getId();
 
-		performPutRequest(contactId, editValidPayload(companyId)).andDo(print())
+		performPatchRequest(contactId, editValidPayload(companyId)).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith Updated"))
@@ -256,11 +275,32 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Edit contact with leading/trailing spaces - Spaces trimmed")
+	void editContact_WithLeadingTrailingSpaces_SpacesTrimmed() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "original@example.com").getId();
+
+		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
+		dto.setName("  Updated Name  ");
+		dto.setEmail("  updated.email@example.com  ");
+		dto.setCompanyId(companyId);
+		dto.setContactNumber("  5551234567  ");
+		dto.setOwnerId(1L);
+
+		performPatchRequest(contactId, dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("updated.email@example.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("5551234567"));
+	}
+
+	@Test
 	@DisplayName("Edit contact that does not exist - Returns Bad Request")
 	void editContact_NotFound_ReturnsBadRequest() throws Exception {
 		Long companyId = savedCompany().getId();
 
-		performPutRequest(999999L, editValidPayload(companyId)).andDo(print())
+		performPatchRequest(999999L, editValidPayload(companyId)).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -277,7 +317,7 @@ class CrmContactControllerIntegrationTest {
 		CrmContactEditRequestDto dto = editValidPayload(companyId);
 		dto.setEmail("taken@example.com");
 
-		performPutRequest(contactId, dto).andDo(print())
+		performPatchRequest(contactId, dto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -290,7 +330,7 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "edit.norole@example.com").getId();
 
-		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
+		performRequest(patch(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(editValidPayload(companyId)))
 			.accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print()).andExpect(status().isForbidden());
 	}
@@ -303,7 +343,7 @@ class CrmContactControllerIntegrationTest {
 		contact.setIsDeleted(true);
 		crmContactDao.save(contact);
 
-		performPutRequest(contact.getId(), editValidPayload(companyId)).andDo(print())
+		performPatchRequest(contact.getId(), editValidPayload(companyId)).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -332,7 +372,7 @@ class CrmContactControllerIntegrationTest {
 		CrmContactEditRequestDto dto = editValidPayload(companyId);
 		dto.setOwnerId(2L);
 
-		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
+		performRequest(patch(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON), repToken).andDo(print())
 			.andExpect(status().isOk())
@@ -354,7 +394,7 @@ class CrmContactControllerIntegrationTest {
 		CrmContactEditRequestDto dto = editValidPayload(companyId);
 		dto.setOwnerId(2L);
 
-		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
+		performRequest(patch(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON), repToken).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -379,7 +419,7 @@ class CrmContactControllerIntegrationTest {
 		CrmContactEditRequestDto dto = editValidPayload(companyId);
 		dto.setOwnerId(1L);
 
-		performRequest(put(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
+		performRequest(patch(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON), managerToken).andDo(print())
 			.andExpect(status().isOk())
@@ -398,7 +438,7 @@ class CrmContactControllerIntegrationTest {
 
 		// adminToken (user1 = CRM_ADMIN) makes the request — passes checkEditPermission,
 		// then validateAssignableOwner(2) finds user2 has no assignable role
-		performPutRequest(contactId, dto).andDo(print())
+		performPatchRequest(contactId, dto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
