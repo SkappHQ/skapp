@@ -7,7 +7,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CrmTaskDao extends JpaRepository<CrmTask, Long> {
+public interface CrmTaskDao extends JpaRepository<CrmTask, Long>, CrmTaskRepository {
+
+	List<CrmTask> findByContact_IdAndIsDeletedFalse(Long contactId);
+
+	List<CrmTask> findByDeal_Contact_IdAndIsDeletedFalse(Long contactId);
 
 	List<CrmTask> findByContactIdAndIsDeletedFalse(Long contactId);
 

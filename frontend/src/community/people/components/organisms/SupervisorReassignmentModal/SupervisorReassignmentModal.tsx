@@ -9,17 +9,15 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { OptionType } from "~community/common/types/CommonTypes";
 import {
-  useDeleteUser,
   useGetSearchedEmployees,
   useGetSupervisedEmployeesAndTeams,
-  useTerminateUser,
-  useTransferSupervisors
+  useReassignSupervisorsAndTerminateOrDeleteEmployee
 } from "~community/people/api/PeopleApi";
 import SupervisorReassignmentModalSection from "~community/people/components/molecules/SupervisorReassignmentModalSection/SupervisorReassignmentModalSection";
 import { usePeopleStore } from "~community/people/store/store";
 import {
-  SupervisorReassignmentActionType,
-  TransferSupervisorsPayload
+  EmployeeRemoveAction,
+  ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
 } from "~community/people/types/PeopleTypes";
 import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
@@ -27,7 +25,7 @@ interface SupervisorReassignmentModalProps {
   isOpen: boolean;
   onCancel: () => void;
   employeeId: number;
-  actionType: SupervisorReassignmentActionType;
+  actionType: EmployeeRemoveAction;
   onActionSuccess: () => void;
 }
 const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
@@ -71,39 +69,39 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     onCancel();
   }, [resetState, onCancel]);
 
-  const onTerminateSuccess = useCallback(() => {
+  const onSuccess = useCallback(() => {
     resetState();
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText(["terminateSuccessTitle"]),
-      description: translateText(["terminateSuccessDescription"], {
-        name: employeeName
-      })
-    });
+    if (actionType === EmployeeRemoveAction.TERMINATE) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText(["terminateSuccessTitle"]),
+        description: translateText(["terminateSuccessDescription"], {
+          name: employeeName
+        })
+      });
+    } else if (actionType === EmployeeRemoveAction.DELETE) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText(["deleteSuccessTitle"]),
+        description: translateText(["deleteSuccessDescription"], {
+          name: employeeName
+        })
+      });
+      router.push(ROUTES.PEOPLE.DIRECTORY);
+    } else {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["actionErrorTitle"]),
+        description: translateText(["actionErrorDescription"])
+      });
+    }
     onActionSuccess();
   }, [
     resetState,
-    setToastMessage,
-    translateText,
-    employeeName,
-    onActionSuccess
-  ]);
-
-  const onDeleteSuccess = useCallback(() => {
-    resetState();
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText(["deleteSuccessTitle"]),
-      description: translateText(["deleteSuccessDescription"], {
-        name: employeeName
-      })
-    });
-    router.push(ROUTES.PEOPLE.DIRECTORY);
-    onActionSuccess();
-  }, [
-    resetState,
+    actionType,
     setToastMessage,
     translateText,
     employeeName,
@@ -121,30 +119,12 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     });
   }, [setToastMessage, translateText]);
 
-  const { mutate: terminateEmployee } = useTerminateUser(
-    onTerminateSuccess,
-    onActionError,
-    employeeId
-  );
-  const { mutate: deleteEmployee } = useDeleteUser(
-    onDeleteSuccess,
-    onActionError,
-    employeeId
-  );
-
-  const onTransferSuccess = useCallback(() => {
-    if (actionType === SupervisorReassignmentActionType.TERMINATE) {
-      terminateEmployee();
-    } else if (actionType === SupervisorReassignmentActionType.DELETE) {
-      deleteEmployee();
-    }
-  }, [actionType, terminateEmployee, deleteEmployee]);
-
-  const { mutate: transferSupervisors } = useTransferSupervisors(
-    employeeId,
-    onTransferSuccess,
-    onActionError
-  );
+  const { mutate: reassignSupervisorsAndTerminateOrDeleteEmployee } =
+    useReassignSupervisorsAndTerminateOrDeleteEmployee(
+      employeeId,
+      onSuccess,
+      onActionError
+    );
 
   const supervisedEmployees = supervisorRoles?.supervisedEmployees;
   const supervisedTeams = supervisorRoles?.supervisedTeams;
@@ -161,7 +141,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
 
   const handleProceed = () => {
     setIsSubmitting(true);
-    const payload: TransferSupervisorsPayload = {
+    const payload: ReassignSupervisorsAndTerminateOrDeleteEmployeePayload = {
       primarySupervisors: (supervisedEmployees ?? []).map(
         (supervisedEmployee) => ({
           employeeId: supervisedEmployee.employeeId,
@@ -172,9 +152,10 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       teamSupervisors: (supervisedTeams ?? []).map((team) => ({
         teamId: team.teamId,
         newTeamSupervisorId: teamSupervisorAssignments[team.teamId].id
-      }))
+      })),
+      action: actionType
     };
-    transferSupervisors(payload);
+    reassignSupervisorsAndTerminateOrDeleteEmployee(payload);
   };
 
   const handleSelectPrimarySupervisor = (
@@ -204,7 +185,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   const handleDropdownBlur = () => setSearchTerm("");
 
   const proceedButtonLabel =
-    actionType === SupervisorReassignmentActionType.TERMINATE
+    actionType === EmployeeRemoveAction.TERMINATE
       ? translateText(["proceedAndTerminateButton"])
       : translateText(["proceedAndDeleteButton"]);
 

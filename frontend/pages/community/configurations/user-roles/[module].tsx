@@ -42,13 +42,16 @@ const Module: NextPage = () => {
     setModuleType(formattedModule);
   };
   const onBackClick = () => {
-    router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=user-roles`);
+    router.push(ROUTES.CONFIGURATIONS.USER_ROLES_TAB);
   };
 
   return (
     <ContentLayout
       breadcrumbs={[
-        { label: translateText(["title"]) },
+        {
+          label: translateText(["title"]),
+          href: ROUTES.CONFIGURATIONS.USER_ROLES_TAB
+        },
         { label: translateText([`userRoles.${module}Title`]) }
       ]}
       pageHead={translateText(["userRoles.pageHead"])}

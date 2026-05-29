@@ -1,9 +1,12 @@
 package com.skapp.community.crmplanner.model;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.peopleplanner.model.Employee;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -39,9 +42,9 @@ public class CrmDeal extends Auditable<String> {
 	@JoinColumn(name = "stage_id", nullable = false)
 	private CrmDealStage stage;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "priority_id")
-	private CrmPriority priority;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "priority", nullable = false)
+	private CrmDealPriority priority;
 
 	@Column(name = "closing_at")
 	private LocalDateTime closingAt;

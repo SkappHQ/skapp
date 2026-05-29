@@ -33,8 +33,8 @@ export const peoplesEndpoints = {
   EXPORT_PEOPLE_DIRECTORY: `/people/employees/export`,
   GET_SUPERVISOR_ROLES: (userId: number) =>
     `${moduleAPIPath.PEOPLE}/user/${userId}/supervised-employees-teams`,
-  TRANSFER_SUPERVISORS: (userId: number) =>
-    `${moduleAPIPath.PEOPLE}/user/${userId}/transfer-supervisors`
+  REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE: (userId: number) =>
+    `${moduleAPIPath.PEOPLE}/user/${userId}/reassign-supervisors-and-terminate-or-delete`
 };
 
 export const authEndpoints = {
