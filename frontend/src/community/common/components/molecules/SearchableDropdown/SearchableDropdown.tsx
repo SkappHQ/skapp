@@ -14,17 +14,6 @@ export interface SearchableDropdownItem {
   content: React.ReactNode;
 }
 
-interface InputFieldCustomStyles {
-  borderRadius?: string;
-  background?: string;
-  border?: string;
-  width?: string;
-  gap?: string;
-  padding?: string;
-  hoverStyles?: { backgroundColor?: string; borderColor?: string };
-  focusStyles?: { borderColor?: string; shadowColor?: string };
-}
-
 export interface SearchableDropdownProps {
   id: string;
   items: SearchableDropdownItem[];
@@ -36,7 +25,6 @@ export interface SearchableDropdownProps {
   name?: string;
   required?: boolean;
   emptyMessage?: React.ReactNode;
-  customStyles?: InputFieldCustomStyles;
   state?: "default" | "error";
   variant?: "sm" | "md" | "lg";
   positionStrategy?: "absolute" | "fixed";
@@ -54,7 +42,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   name,
   required = false,
   emptyMessage,
-  customStyles,
   state = "default",
   variant = "sm",
   positionStrategy = "absolute",
@@ -179,7 +166,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           labelContainer:
             "h-6 inline-flex self-stretch pr-3 justify-start items-center gap-2"
         }}
-        customStyles={customStyles}
         rightIcon={<SearchIcon />}
         role="combobox"
         aria-expanded={isDropdownOpen}
