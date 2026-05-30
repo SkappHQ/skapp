@@ -84,6 +84,15 @@
       "successTitle": "Company added successfully",
       "errorTitle": "Failed to add company",
       "errorDescription": "Please try again or contact support"
+    },
+    "sidePanel": {
+      "kebabMenu": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "ariaLabels": {
+        "closePanel": "Close company details panel"
+      }
     }
   },
   "deals": {
