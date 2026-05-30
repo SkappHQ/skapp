@@ -39,7 +39,7 @@ const EditCompanyModal: React.FC = () => {
     "industryOptions"
   );
 
-  const industryOptions = useMemo(
+  const industryOptions = useMemo(      // TODO: add the useGetIndustries hook when merged
     () =>
       Object.values(CrmIndustryEnum).map((industry) => ({
         id: industry,
@@ -97,15 +97,10 @@ const EditCompanyModal: React.FC = () => {
   const submitEditCompany = (values: CrmCompanyEditFormTypes) => {
     if (!selectedCompany) return;
 
-    const industry =
-      values.industry && values.industry !== CrmIndustryEnum.NONE
-        ? values.industry
-        : null;
-
     const payload = {
       id: selectedCompany.id,
       name: values.name.trim(),
-      industry,
+      industry: values.industry,
       website: values.website?.trim() || null,
       address: values.address?.trim() || null,
       contactNumber: values.contactNumber?.trim() || null
@@ -142,8 +137,13 @@ const EditCompanyModal: React.FC = () => {
 
   const { data: companyNameData } = useCheckCompanyNameExists(
     debouncedCompanyName,
-    debouncedCompanyName.length > 0 && !isNameUnchanged
+    debouncedCompanyName.length > 0 &&
+      debouncedCompanyName !== selectedCompany?.name?.trim()
   );
+
+  const handleIndustryChange = (value: string) => {
+    formik.setFieldValue("industry", value);
+  };
 
   useEffect(() => {
     if (isNameUnchanged) {
@@ -222,9 +222,7 @@ const EditCompanyModal: React.FC = () => {
       <Dropdown
         options={industryOptions}
         value={values.industry || CrmIndustryEnum.NONE}
-        onChange={async (value) => {
-          await formik.setFieldValue("industry", value);
-        }}
+        onChange={handleIndustryChange}
         label={translateText(["labels", "industry"])}
         className="rounded-lg"
         errorMessage={errors.industry || ""}
