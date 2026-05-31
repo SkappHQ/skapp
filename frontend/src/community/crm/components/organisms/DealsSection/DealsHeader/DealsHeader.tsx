@@ -1,6 +1,5 @@
-import { FC } from "react";
-
 import { InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
@@ -22,13 +21,8 @@ const DealsHeader: FC<Props> = ({ inputValue, onSearchChange }) => {
         variant="md"
         rightIcon={<SearchIcon />}
         ariaLabelClearButton={translateText(["clearSearchAriaLabel"])}
-        customStyles={{
-          borderRadius: "rounded-full",
-          padding: "px-6",
-          background: "bg-secondary-background",
-          border: "border-0"
-        }}
-        className="max-w-[412px] w-full"
+        customStyles={{ borderRadius: "rounded-[1.5rem]" }}
+        className="w-103 h-12"
       />
     </div>
   );

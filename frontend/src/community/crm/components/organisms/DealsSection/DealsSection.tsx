@@ -9,6 +9,7 @@ import {
   DEAL_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum } from "~community/crm/enums/common";
+
 import DealsHeader from "./DealsHeader/DealsHeader";
 
 const DealsSection: FC = () => {
@@ -20,20 +21,15 @@ const DealsSection: FC = () => {
     fetchNextPage,
     hasNextPage,
     isLoading,
-    isError,
-    isFetchingNextPage,
-    isPlaceholderData
+    isFetchingNextPage
   } = useGetDealsInfinite({
     size: DEAL_PAGE_SIZE,
     sortKey: CrmDealSortEnum.STAGE_ORDER,
     sortOrder: SortOrderTypes.ASC,
-    searchKeyword: debouncedSearch || undefined
+    searchKeyword: debouncedSearch
   });
 
-  const allDeals = useMemo(
-    () => data?.pages.flatMap((p) => p.items) ?? [],
-    [data]
-  );
+  const allDeals = useMemo(() => data?.pages.flatMap((p) => p.items), [data]);
 
   const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -46,9 +42,8 @@ const DealsSection: FC = () => {
       <DealsHeader inputValue={inputValue} onSearchChange={setInputValue} />
       <DealsTable
         searchKeyword={debouncedSearch}
-        isLoading={isLoading || isPlaceholderData}
-        isError={isError}
-        allDeals={allDeals}
+        isLoading={isLoading}
+        allDeals={allDeals ?? []}
         hasNextPage={hasNextPage}
         onLoadMore={loadMore}
       />

@@ -6,11 +6,11 @@ import {
   ListTable,
   ProjectTableSkeletonLoader
 } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useMemo } from "react";
+import { FC, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { formatDealAmount } from "~community/crm/utils/dealUtils";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
+import { formatValue, getFullName } from "~community/crm/utils/crmUtil";
 
 interface DealRow extends BaseRowData {
   id: string;
@@ -25,7 +25,6 @@ interface DealRow extends BaseRowData {
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
-  isError: boolean;
   allDeals: CrmDealListItemType[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
@@ -34,7 +33,6 @@ interface Props {
 const DealsTable: FC<Props> = ({
   searchKeyword,
   isLoading,
-  isError,
   allDeals,
   hasNextPage,
   onLoadMore
@@ -45,80 +43,100 @@ const DealsTable: FC<Props> = ({
     searchKeyword: `'${searchKeyword}'`
   });
 
-  const columnHeaders: Column<DealRow>[] = [
-    {
-      id: "dealName",
-      title: translateText(["dealColumn"]),
-      field: "dealName",
-      width: 460,
-      minWidth: 400,
-      resizable: true,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "value",
-      title: translateText(["valueColumn"]),
-      field: "value",
-      width: 180,
-      minWidth: 140,
-      resizable: true,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "stage",
-      title: translateText(["stageColumn"]),
-      field: "stage",
-      width: 180,
-      minWidth: 140,
-      resizable: true,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "companyName",
-      title: translateText(["companyNameColumn"]),
-      field: "companyName",
-      width: 240,
-      minWidth: 140,
-      resizable: true,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "contactName",
-      title: translateText(["contactNameColumn"]),
-      field: "contactName",
-      width: 240,
-      minWidth: 140,
-      resizable: true,
-      draggable: false,
-      visible: true,
-      sortable: false
-    },
-    {
-      id: "dealOwner",
-      title: translateText(["dealOwnerColumn"]),
-      field: "dealOwner",
-      width: 240,
-      minWidth: 140,
-      resizable: true,
-      draggable: false,
-      visible: true,
-      sortable: false
-    }
-  ];
+  const [tableWidth, setTableWidth] = useState(0);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    setTableWidth(container.getBoundingClientRect().width);
+
+    const observer = new ResizeObserver(() => {
+      setTableWidth(container.getBoundingClientRect().width);
+    });
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [isLoading, containerRef]);
+
+  const columnHeaders = useMemo(
+    (): Column<DealRow>[] => [
+      {
+        id: "dealName",
+        title: translateText(["dealColumn"]),
+        field: "dealName",
+        width: tableWidth * 0.2337,
+        minWidth: 400,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "value",
+        title: translateText(["valueColumn"]),
+        field: "value",
+        width: tableWidth * 0.1532,
+        minWidth: 140,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "stage",
+        title: translateText(["stageColumn"]),
+        field: "stage",
+        width: tableWidth * 0.1532,
+        minWidth: 140,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "companyName",
+        title: translateText(["companyNameColumn"]),
+        field: "companyName",
+        width: tableWidth * 0.1532,
+        minWidth: 140,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "contactName",
+        title: translateText(["contactNameColumn"]),
+        field: "contactName",
+        width: tableWidth * 0.1532,
+        minWidth: 140,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      },
+      {
+        id: "dealOwner",
+        title: translateText(["dealOwnerColumn"]),
+        field: "dealOwner",
+        width: tableWidth * 0.1532,
+        minWidth: 140,
+        resizable: false,
+        draggable: false,
+        visible: true,
+        sortable: false
+      }
+    ],
+    [tableWidth, translateText]
+  );
 
   const tableRows = useMemo(
     (): DealRow[] =>
       allDeals.map((deal: CrmDealListItemType) => {
-        const formattedAmount = formatDealAmount(deal.amount);
-        const ownerFullName = `${deal.owner.firstName} ${deal.owner.lastName}`.trim();
+        const formattedAmount = formatValue(deal.amount);
+        const ownerFullName = getFullName(deal.owner.firstName, deal.owner.lastName);
 
         return {
           id: String(deal.id),
@@ -144,8 +162,8 @@ const DealsTable: FC<Props> = ({
               avatarProps={{
                 id: String(deal.owner.employeeId),
                 firstName: deal.owner.firstName,
-                lastName: deal.owner.lastName,
-                src: deal.owner.authPic || undefined,
+                lastName: deal.owner.lastName ?? "",
+                src: deal?.owner?.authPic ?? "",
                 size: "sm"
               }}
               label={ownerFullName}
@@ -164,23 +182,17 @@ const DealsTable: FC<Props> = ({
 
   if (isLoading) {
     return (
-      <div className="w-full h-[37.5rem] rounded-lg shadow-lg overflow-hidden">
+      <div className="w-fit h-150 rounded-lg shadow-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
       </div>
     );
   }
 
-  if (isError) {
-    return (
-      <div className="w-full h-[37.5rem] flex flex-col items-center justify-center rounded-lg shadow-lg gap-2">
-        <p className="body1Bold">{translateText(["fetchErrorTitle"])}</p>
-        <p className="body2">{translateText(["fetchErrorDescription"])}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full h-[37.5rem] flex rounded-lg shadow-lg overflow-hidden overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-secondary-background">
+    <div
+      ref={containerRef}
+      className="h-150 rounded-lg shadow-lg [&>div]:overflow-x-hidden! [&>div]:overflow-y-auto!"
+    >
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}

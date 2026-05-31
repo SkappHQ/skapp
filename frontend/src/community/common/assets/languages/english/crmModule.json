@@ -105,8 +105,6 @@
       "noDealsDescription": "Add a new deal to get started",
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
-      "fetchErrorTitle": "Failed to load deals",
-      "fetchErrorDescription": "Something went wrong. Please try again.",
       "infiniteScrollLoadingMessage": "Loading more deals..."
     }
   },
