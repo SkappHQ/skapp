@@ -248,6 +248,7 @@ const EditCompanyModal: React.FC = () => {
           type="button"
           onClick={() => submitForm()}
           disabled={
+            !selectedCompany ||
             isSubmitting ||
             isPending ||
             (!isNameUnchanged && companyNameData?.isExists === true)

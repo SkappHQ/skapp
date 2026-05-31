@@ -94,7 +94,7 @@ export const useCheckCompanyNameExists = (
 };
 
 const editCompany = async ({ id, ...companyDetails }: EditCompanyPayload) => {
-  const response = await authFetch.put(
+  const response = await authFetch.patch(
     companyEndpoints.EDIT_COMPANY(id),
     companyDetails
   );
