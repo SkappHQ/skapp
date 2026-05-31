@@ -29,7 +29,6 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	public ResponseEntityDto updateTaskStatus(Long id, CrmTaskStatusUpdateDto taskStatusUpdateDto) {
 		log.info("updateTaskStatus: execution started");
 
-		CrmValidations.validateTaskId(id);
 		CrmValidations.validateTaskStatus(taskStatusUpdateDto.getIsCompleted());
 
 		CrmTask task = crmTaskDao.findByIdAndIsDeletedFalse(id)

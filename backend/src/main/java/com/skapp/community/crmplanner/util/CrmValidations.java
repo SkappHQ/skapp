@@ -177,12 +177,6 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateTaskId(Long id) {
-		if (id == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
-		}
-	}
-
 	public static void validateTaskStatus(Boolean isCompleted) {
 		if (isCompleted == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_STATUS_REQUIRED);
