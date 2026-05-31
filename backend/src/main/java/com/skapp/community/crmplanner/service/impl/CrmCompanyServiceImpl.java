@@ -14,6 +14,7 @@ import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyDomainSearchResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
@@ -120,6 +121,20 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		log.info("getCompanyMetrics: execution ended");
 
 		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto searchCompaniesByDomain(String domain) {
+		log.info("searchCompaniesByDomain: execution started");
+
+		List<CrmCompany> companies = crmCompanyDao.findCompaniesByWebsiteDomain(domain);
+
+		CrmCompanyDomainSearchResponseDto responseDto = new CrmCompanyDomainSearchResponseDto();
+		responseDto.setCompanies(companies);
+
+		log.info("searchCompaniesByDomain: execution ended");
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override

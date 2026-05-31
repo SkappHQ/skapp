@@ -68,6 +68,15 @@ public class CrmCompanyController {
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Search companies by domain",
+			description = "Returns companies whose website field contains the given domain")
+	@GetMapping("/search-by-domain")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> searchCompaniesByDomain(@RequestParam String domain) {
+		ResponseEntityDto responseDto = companyService.searchCompaniesByDomain(domain);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Delete a company by ID", description = "Soft deletes company by ID if not already deleted")
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
