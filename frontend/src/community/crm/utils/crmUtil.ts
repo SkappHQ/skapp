@@ -7,7 +7,7 @@ export const formatValue = (value: NumericValue): string => {
 
 export const getFullName = (
   firstName: string,
-  lastName: string | null | undefined
+  lastName: string | null
 ): string => `${firstName} ${lastName ?? ""}`.trim();
 
 

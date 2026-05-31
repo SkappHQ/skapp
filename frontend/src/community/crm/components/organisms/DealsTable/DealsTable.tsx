@@ -8,6 +8,8 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
+import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
 import { formatValue, getFullName } from "~community/crm/utils/crmUtil";
@@ -140,7 +142,17 @@ const DealsTable: FC<Props> = ({
 
         return {
           id: String(deal.id),
-          dealName: <span className="body2">{deal.name}</span>,
+          dealName: (
+            <div className="flex items-center gap-2">
+              <div
+                className="flex items-center justify-center size-6 rounded-full shrink-0 bg-teal-500"
+              >
+                <HandshakeIcon width="14" height="14" fill="var(--color-white)" />
+              </div>
+              <span className="body2">#{deal.id}</span>
+              <span className="body2">{deal.name}</span>
+            </div>
+          ),
           value: (
             <span className="body2 w-full block text-right">
               {formattedAmount}
