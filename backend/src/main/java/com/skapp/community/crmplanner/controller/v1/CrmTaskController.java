@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/crm/tasks")
+@RequestMapping("/v1/crm/task")
 @Tag(name = "CRM Tasks Controller", description = "Operations related to CRM Tasks")
 public class CrmTaskController {
 

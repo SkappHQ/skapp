@@ -6,7 +6,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.helper.CrmOwnerResolver;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -20,6 +19,7 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmTaskService;
+import com.skapp.community.crmplanner.util.CrmOwnerResolver;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +60,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		User currentUser = userService.getCurrentUser();
 		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
+
 		Employee owner = resolveTaskOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmTask task = new CrmTask();
@@ -97,11 +98,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	private Employee resolveTaskOwner(Long ownerId, User currentUser) {
 		if (ownerId == null) {
-			Employee currentEmployee = currentUser.getEmployee();
-			if (currentEmployee == null) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
-			}
-			return currentEmployee;
+			return currentUser.getEmployee();
 		}
 
 		return crmOwnerResolver.resolveOwner(ownerId, currentUser);

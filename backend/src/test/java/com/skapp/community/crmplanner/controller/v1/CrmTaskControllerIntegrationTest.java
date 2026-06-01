@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("CRM Task Controller Integration Tests")
 class CrmTaskControllerIntegrationTest {
 
-	private static final String BASE_PATH = "/v1/crm/tasks";
+	private static final String BASE_PATH = "/v1/crm/task";
 
 	private final JsonMapper objectMapper;
 
