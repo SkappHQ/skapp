@@ -163,7 +163,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   return (
     <div
-      className="w-full relative [&_.border-primary-accent]:border-black"
+      className="w-full relative input-plain-text"
       ref={inputWrapperRef}
       onFocus={() => {
         if (value.trim().length > 0) {
