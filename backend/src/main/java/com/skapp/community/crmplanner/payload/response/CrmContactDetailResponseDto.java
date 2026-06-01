@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.payload.response;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,9 +24,9 @@ public class CrmContactDetailResponseDto {
 
 	private CrmContactOwnerResponseDto owner;
 
-	private BigDecimal totalRevenue;
+	private String totalRevenue;
 
-	private BigDecimal pipelineRevenue;
+	private String pipelineRevenue;
 
 	private long activeDealsCount;
 

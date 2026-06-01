@@ -262,8 +262,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 				activeDealsCount++;
 			}
 		}
-		dto.setTotalRevenue(totalRevenue);
-		dto.setPipelineRevenue(pipelineRevenue);
+		dto.setTotalRevenue(totalRevenue.toPlainString());
+		dto.setPipelineRevenue(pipelineRevenue.toPlainString());
 		dto.setActiveDealsCount(activeDealsCount);
 
 		LocalDateTime now = LocalDateTime.now();
