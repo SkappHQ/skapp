@@ -8,12 +8,9 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
@@ -60,8 +57,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 		task.fetch(CrmTask_.type, JoinType.INNER);
-		Fetch<CrmTask, Employee> ownerFetch = task.fetch(CrmTask_.owner, JoinType.INNER);
-		ownerFetch.fetch(Employee_.user, JoinType.LEFT);
+		task.fetch(CrmTask_.owner, JoinType.INNER);
 
 		Join<CrmTask, CrmContact> directContact = task.join(CrmTask_.contact, JoinType.LEFT);
 		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);

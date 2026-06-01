@@ -22,7 +22,7 @@ public class CrmContactDetailResponseDto {
 
 	private CrmCompanyLookupResponseDto company;
 
-	private CrmContactOwnerResponseDto owner;
+	private CrmOwnerResponseDto owner;
 
 	private String totalRevenue;
 

@@ -17,6 +17,6 @@ public class CrmDealDetailResponseDto {
 
 	private String description;
 
-	private CrmContactOwnerResponseDto owner;
+	private CrmOwnerResponseDto owner;
 
 }

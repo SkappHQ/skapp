@@ -24,6 +24,6 @@ public class CrmTaskDetailResponseDto {
 
 	private Boolean isCompleted;
 
-	private CrmContactOwnerResponseDto owner;
+	private CrmOwnerResponseDto owner;
 
 }

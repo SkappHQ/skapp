@@ -16,7 +16,6 @@ import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -121,8 +120,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		CriteriaQuery<CrmDeal> query = cb.createQuery(CrmDeal.class);
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
 		deal.fetch(CrmDeal_.stage, JoinType.INNER);
-		Fetch<CrmDeal, Employee> ownerFetch = deal.fetch(CrmDeal_.owner, JoinType.INNER);
-		ownerFetch.fetch(Employee_.user, JoinType.LEFT);
+		deal.fetch(CrmDeal_.owner, JoinType.INNER);
 
 		query.where(cb.equal(deal.get(CrmDeal_.contact).get(CrmContact_.id), contactId),
 				cb.isFalse(deal.get(CrmDeal_.isDeleted)));
