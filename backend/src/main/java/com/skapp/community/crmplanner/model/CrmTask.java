@@ -1,9 +1,12 @@
 package com.skapp.community.crmplanner.model;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.model.Employee;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,9 +39,9 @@ public class CrmTask extends Auditable<String> {
 	@JoinColumn(name = "type_id", nullable = false)
 	private CrmTaskType type;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "priority_id", nullable = false)
-	private CrmPriority priority;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "priority", nullable = false)
+	private CrmTaskPriority priority;
 
 	@Column(name = "is_completed", nullable = false)
 	private Boolean isCompleted = false;

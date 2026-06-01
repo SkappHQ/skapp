@@ -33,7 +33,7 @@ import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { ModifiedFileType } from "~community/people/types/AddNewResourceTypes";
 import { EmployeeManagerType } from "~community/people/types/EmployeeTypes";
-import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
+import { EmployeeRemoveAction } from "~community/people/types/PeopleTypes";
 import { TeamType } from "~community/people/types/TeamTypes";
 import generateThumbnail from "~community/people/utils/image/thumbnailGenerator";
 import { toPascalCase } from "~community/people/utils/jobFamilyUtils/commonUtils";
@@ -123,9 +123,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   const handleTermination = async () => {
     if (await checkHasSupervisorRoles()) {
       setSelectedEmployeeId(Number(employeeId));
-      setSupervisorReassignmentActionType(
-        SupervisorReassignmentActionType.TERMINATE
-      );
+      setSupervisorReassignmentActionType(EmployeeRemoveAction.TERMINATE);
       setIsSupervisorReassignmentModalOpen(true);
       return;
     }
@@ -136,9 +134,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   const handleDeletion = async () => {
     if (await checkHasSupervisorRoles()) {
       setSelectedEmployeeId(Number(employeeId));
-      setSupervisorReassignmentActionType(
-        SupervisorReassignmentActionType.DELETE
-      );
+      setSupervisorReassignmentActionType(EmployeeRemoveAction.DELETE);
       setIsSupervisorReassignmentModalOpen(true);
       return;
     }
@@ -284,7 +280,11 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   // }, [selectedEmployee]);
 
   const openFileBrowser = () => {
-    if (storageAvailableData?.availableSpace <= EIGHTY_PERCENT) {
+    if (
+      environment === appModes.ENTERPRISE ||
+      (environment === appModes.COMMUNITY &&
+        storageAvailableData?.availableSpace <= EIGHTY_PERCENT)
+    ) {
       open();
     } else {
       setToastMessage({
