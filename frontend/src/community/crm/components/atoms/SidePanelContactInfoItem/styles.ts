@@ -5,8 +5,6 @@ export const COLORS = {
 
 const styles = {
   row: "flex items-center gap-[12px]",
-  linkRow:
-    "flex items-center gap-[12px] cursor-pointer rounded-[4px] transition-opacity hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2",
   iconWrapper: "shrink-0 flex items-center",
   plainText:
     "font-normal text-[14px] leading-[24px] tracking-[0.5px] text-black",
