@@ -32,19 +32,19 @@ public class EpTimeRecordRepositoryImpl extends TimeRecordRepositoryImpl {
 	@Override
 	protected void addEnterpriseSelections(CriteriaBuilder cb, CriteriaQuery<Tuple> query, Root<TimeRecord> timeRecord,
 			List<Selection<?>> selections) {
-		Subquery<RecordLocationStatus> clockInSubquery = query.subquery(RecordLocationStatus.class);
-		Root<TimeRecordLocation> locationRoot = clockInSubquery.from(TimeRecordLocation.class);
-		clockInSubquery.select(locationRoot.get(TimeRecordLocation_.clockInLocationStatus));
-		clockInSubquery.where(cb.equal(locationRoot.get(TimeRecordLocation_.timeRecord).get(TimeRecord_.timeRecordId),
-				timeRecord.get(TimeRecord_.timeRecordId)));
-		selections.add(clockInSubquery);
+		selections.add(buildLocationStatusSubquery(cb, query, timeRecord, TimeRecordLocation_.clockInLocationStatus));
+		selections.add(buildLocationStatusSubquery(cb, query, timeRecord, TimeRecordLocation_.clockOutLocationStatus));
+	}
 
-		Subquery<RecordLocationStatus> clockOutSubquery = query.subquery(RecordLocationStatus.class);
-		Root<TimeRecordLocation> locationRoot2 = clockOutSubquery.from(TimeRecordLocation.class);
-		clockOutSubquery.select(locationRoot2.get(TimeRecordLocation_.clockOutLocationStatus));
-		clockOutSubquery.where(cb.equal(locationRoot2.get(TimeRecordLocation_.timeRecord).get(TimeRecord_.timeRecordId),
+	private Subquery<RecordLocationStatus> buildLocationStatusSubquery(CriteriaBuilder cb, CriteriaQuery<Tuple> query,
+			Root<TimeRecord> timeRecord,
+			jakarta.persistence.metamodel.SingularAttribute<TimeRecordLocation, RecordLocationStatus> attribute) {
+		Subquery<RecordLocationStatus> subquery = query.subquery(RecordLocationStatus.class);
+		Root<TimeRecordLocation> locationRoot = subquery.from(TimeRecordLocation.class);
+		subquery.select(locationRoot.get(attribute));
+		subquery.where(cb.equal(locationRoot.get(TimeRecordLocation_.timeRecord).get(TimeRecord_.timeRecordId),
 				timeRecord.get(TimeRecord_.timeRecordId)));
-		selections.add(clockOutSubquery);
+		return subquery;
 	}
 
 	@Override

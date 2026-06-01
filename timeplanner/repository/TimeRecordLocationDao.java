@@ -13,8 +13,6 @@ public interface TimeRecordLocationDao extends JpaRepository<TimeRecordLocation,
 
 	Optional<TimeRecordLocation> findByTimeRecord(TimeRecord timeRecord);
 
-	List<TimeRecordLocation> findByTimeRecordTimeRecordIdIn(List<Long> timeRecordIds);
-
 	void deleteAllByTimeRecordTimeRecordIdIn(List<Long> timeRecordIds);
 
 }

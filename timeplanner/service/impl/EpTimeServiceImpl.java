@@ -106,10 +106,13 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 	}
 
 	@Override
-	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord) {
-		boolean isGeoFencingEnabled = attendanceConfigService
-			.getAttendanceConfigByType(AttendanceConfigType.GEO_FENCING_ENABLED);
+	protected boolean isGeoFencingEnabled() {
+		return attendanceConfigService.getAttendanceConfigByType(AttendanceConfigType.GEO_FENCING_ENABLED);
+	}
 
+	@Override
+	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,
+			boolean isGeoFencingEnabled) {
 		if (!isGeoFencingEnabled) {
 			return;
 		}

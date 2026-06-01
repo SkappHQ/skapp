@@ -3,12 +3,10 @@ package com.skapp.enterprise.timeplanner.repository.projection;
 import com.skapp.enterprise.timeplanner.type.RecordLocationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
 
 @Getter
-@Setter
 @AllArgsConstructor
 public class EpEmployeeTimeRecordImpl implements EpEmployeeTimeRecord {
 
