@@ -1,5 +1,5 @@
 import { type Theme, useTheme } from "@mui/material/styles";
-import { LocationPinIcon } from "@rootcodelabs/skapp-ui";
+import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, JSX, useMemo } from "react";
 
 import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
@@ -64,8 +64,7 @@ const EmployeeTimeRecordsTable = ({
   }, [recordData, getHolidaysArrayByDate, translateText]);
 
   const getLocationMessage = (
-    status: RecordLocationStatus | undefined,
-    translateText: ReturnType<typeof useTranslator>
+    status: RecordLocationStatus | undefined
   ): string => {
     if (status === RecordLocationStatus.INSIDE)
       return translateText(["locationInsideWorkLocation"]);
@@ -190,25 +189,29 @@ const EmployeeTimeRecordsTable = ({
               );
             }
 
-            const locationTooltipTitle = translateText(["locationPinTooltip"], {
-              clockIn: getLocationMessage(
-                timeSheetRecord.clockInLocationStatus,
-                translateText
-              ),
-              clockOut: getLocationMessage(
-                timeSheetRecord.clockOutLocationStatus,
-                translateText
-              )
-            });
-
             let finalCellData = data;
             if (showLocationPin) {
+              const locationTooltipTitle = translateText(
+                ["locationPinTooltip"],
+                {
+                  clockIn: getLocationMessage(
+                    timeSheetRecord.clockInLocationStatus
+                  ),
+                  clockOut: getLocationMessage(
+                    timeSheetRecord.clockOutLocationStatus
+                  )
+                }
+              );
+
               finalCellData = (
                 <div className="flex flex-row items-center gap-1">
                   {data}
-                  <div title={locationTooltipTitle}>
-                    <LocationPinIcon />
-                  </div>
+                  <Tooltip content={locationTooltipTitle}>
+                    <LocationPinIcon
+                      role="img"
+                      aria-label={locationTooltipTitle}
+                    />
+                  </Tooltip>
                 </div>
               );
             }

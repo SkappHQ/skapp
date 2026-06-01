@@ -2171,23 +2171,12 @@ public class TimeServiceImpl implements TimeService {
 		// This feature is available only for Pro tenants.
 	}
 
-	/**
-	 * Factory method to create a TimeRecordChipResponseDto. Enterprise implementation
-	 * overrides this to return EpTimeRecordChipResponseDto.
-	 * @return a new TimeRecordChipResponseDto instance.
-	 */
 	protected TimeRecordChipResponseDto createTimeRecordChipDto() {
 		return new TimeRecordChipResponseDto();
 	}
 
-	/**
-	 * Extension point for populating enterprise-specific fields on a time record chip DTO
-	 * from the projection data. Enterprise implementation is in EpTimeServiceImpl.
-	 * @param chip the chip response DTO to populate.
-	 * @param record the employee time record projection containing the source data.
-	 */
 	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord) {
-		// Enterprise implementation is in EpTimeServiceImpl
+		// No-op in community; enterprise overrides this method
 	}
 
 	protected List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,

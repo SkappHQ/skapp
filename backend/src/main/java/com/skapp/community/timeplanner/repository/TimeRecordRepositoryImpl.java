@@ -462,29 +462,17 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		return allResults.stream().skip(offset).limit(limit).collect(Collectors.toList());
 	}
 
-	/**
-	 * Extension point for adding enterprise-specific selections to the time record query.
-	 * Enterprise implementation is in EpTimeRecordRepositoryImpl.
-	 */
 	protected void addEnterpriseSelections(CriteriaBuilder cb, CriteriaQuery<Tuple> query, Root<TimeRecord> timeRecord,
 			List<Selection<?>> selections) {
-		// Enterprise selection implementation is in EpTimeRecordRepositoryImpl
+		// No-op in community; enterprise overrides this method
 	}
 
-	/**
-	 * Builds an EmployeeTimeRecord from a query result tuple. Enterprise implementation
-	 * overrides to include additional fields.
-	 */
 	protected EmployeeTimeRecord buildTimeRecord(Tuple tuple) {
 		return new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
 				tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
 				tuple.get(5, String.class));
 	}
 
-	/**
-	 * Builds an empty EmployeeTimeRecord when no time record exists for the given date.
-	 * Enterprise implementation overrides to include additional fields.
-	 */
 	protected EmployeeTimeRecord buildEmptyTimeRecord(Long employeeId, LocalDate date) {
 		return new EmployeeTimeRecordImpl(null, employeeId, date, 0.0f, 0.0f, null);
 	}

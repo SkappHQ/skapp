@@ -44,7 +44,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 	private final WorkLocationGeofenceDao workLocationGeofenceDao;
 
-	private final EmployeeDao employeeDao;
+	protected final EmployeeDao employeeDao;
 
 	private final MessageUtil messageUtil;
 
@@ -316,7 +316,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	}
 
 	protected void onGeofenceRemovedOrUpdated(Long workLocationId) {
-		// No-op in community; enterprise overrides to clear time record locations
+		// No-op in community; enterprise overrides this method
 	}
 
 }
