@@ -10,7 +10,7 @@ import {
 import { DateTime } from "luxon";
 import { ReactElement, ReactNode } from "react";
 
-import { CrmPriorityType } from "~community/crm/types/CommonTypes";
+import { Priority } from "~community/crm/types/CommonTypes";
 
 export interface PriorityConfig {
   icon: ReactElement;
@@ -23,9 +23,7 @@ export interface DueDateDisplay {
   colorClass: string;
 }
 
-export const getPriorityConfig = (
-  priority: CrmPriorityType
-): PriorityConfig => {
+export const getPriorityConfig = (priority: Priority): PriorityConfig => {
   switch (priority.name.toLowerCase()) {
     case "high":
       return {

@@ -11,20 +11,18 @@ import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  useGetTasksByContactId,
-  useUpdateTaskCompletion
-} from "~community/crm/api/CrmContactsApi";
+import { useUpdateTaskCompletion } from "~community/crm/api/TasksApi";
 import SidePanelTaskRow from "~community/crm/components/atoms/SidePanelTaskRow/SidePanelTaskRow";
 import { SidePanelTaskListSkeleton } from "~community/crm/components/atoms/SidePanelTaskRow/SidePanelTaskRowSkeleton";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import { ContactTask } from "~community/crm/types/CommonTypes";
 import { TASK_TYPE_OPTIONS } from "~community/crm/utils/crmTaskUtils";
 
 interface Props {
-  contactId: number;
+  tasks: ContactTask[];
+  isLoading: boolean;
 }
 
-const SidePanelTasksSection: FC<Props> = ({ contactId }) => {
+const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -36,8 +34,6 @@ const SidePanelTasksSection: FC<Props> = ({ contactId }) => {
 
   const [isAddingTask, setIsAddingTask] = useState(false);
 
-  const { data: tasksData, isLoading } = useGetTasksByContactId(contactId);
-  const tasks: CrmTaskType[] = tasksData ?? [];
   const { mutateAsync: updateCompletion } = useUpdateTaskCompletion(
     () => {},
     () => {
@@ -69,16 +65,15 @@ const SidePanelTasksSection: FC<Props> = ({ contactId }) => {
             <div
               className={
                 isAddingTask
-                  ? "border border-gray-200 rounded-[8px] rounded-b-none divide-y divide-gray-200 w-full"
+                  ? "border border-gray-200 rounded-[8px] rounded-b-none divide-y divide-gray-200 w-full [&>*:last-child]:rounded-b-none"
                   : "border border-gray-200 rounded-[8px] divide-y divide-gray-200 w-full"
               }
             >
-              {tasks.map((task, idx) => (
+              {tasks.map((task) => (
                 <SidePanelTaskRow
                   key={task.id}
                   task={task}
                   onToggleComplete={handleToggleComplete}
-                  hasFormBelow={isAddingTask && idx === tasks.length - 1}
                   onRowClick={() => {
                     // TODO: open task detail side panel
                     // (wire up to CRM store once TaskDetailPanel is implemented)

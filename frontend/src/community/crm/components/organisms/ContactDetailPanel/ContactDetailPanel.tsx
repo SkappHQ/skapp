@@ -5,7 +5,8 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useGetCrmContactById,
-  useGetCrmContactMetrics
+  useGetCrmContactMetrics,
+  useGetCrmContactTasks
 } from "~community/crm/api/CrmContactsApi";
 import ContactActionMenu from "~community/crm/components/molecules/ContactActionMenu/ContactActionMenu";
 import ContactMetrics, {
@@ -49,6 +50,12 @@ const ContactDetailPanel: FC = () => {
   );
   const { data: metrics, isLoading: isMetricsLoading } =
     useGetCrmContactMetrics(selectedContactId ?? 0);
+
+  const { data: contactTasks = [], isLoading: isTasksLoading } =
+    useGetCrmContactTasks(
+      selectedContactId ?? 0,
+      isContactDetailPanelOpen && !!selectedContactId
+    );
 
   useEffect(() => {
     if (
@@ -105,7 +112,10 @@ const ContactDetailPanel: FC = () => {
 
             {/* Tasks */}
             {selectedContactId && (
-              <SidePanelTasksSection contactId={selectedContactId} />
+              <SidePanelTasksSection
+                tasks={contactTasks}
+                isLoading={isTasksLoading}
+              />
             )}
 
             {/* Deals */}
