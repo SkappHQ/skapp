@@ -155,7 +155,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
 		contact.fetch(CrmContact_.company, JoinType.LEFT);
-		contact.fetch(CrmContact_.owner, JoinType.INNER);
+		Fetch<CrmContact, Employee> ownerFetch = contact.fetch(CrmContact_.owner, JoinType.INNER);
+		ownerFetch.fetch(Employee_.user, JoinType.LEFT);
 
 		query.where(cb.equal(contact.get(CrmContact_.id), id), cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
