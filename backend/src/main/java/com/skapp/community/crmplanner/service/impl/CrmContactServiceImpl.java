@@ -47,7 +47,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.math.BigDecimal;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
@@ -241,11 +240,11 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto getContactById(Long id) {
 		log.info("getContactById: execution started");
 
-		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+		CrmContact contact = crmContactDao.findByIdWithAssociations(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
-		List<CrmDeal> deals = crmDealDao.findByContactIdAndIsDeletedFalse(id);
-		List<CrmTask> tasks = crmTaskDao.findByContactIdAndIsDeletedFalse(id);
+		List<CrmDeal> deals = crmDealDao.findByContactIdWithAssociations(id);
+		List<CrmTask> tasks = crmTaskDao.findByContactIdWithAssociations(id);
 
 		CrmContactDetailResponseDto dto = crmMapper.crmContactToCrmContactDetailResponseDto(contact);
 

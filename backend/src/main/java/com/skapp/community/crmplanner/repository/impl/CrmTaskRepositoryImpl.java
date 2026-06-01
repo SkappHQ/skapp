@@ -8,6 +8,7 @@ import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -42,6 +43,20 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isFalse(task.get(CrmTask_.isDeleted)));
 
 		query.groupBy(task.get(CrmTask_.contact).get(CrmContact_.id));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public List<CrmTask> findByContactIdWithAssociations(Long contactId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+		task.fetch(CrmTask_.type, JoinType.INNER);
+		task.fetch(CrmTask_.owner, JoinType.INNER);
+
+		query.where(cb.equal(task.get(CrmTask_.contact).get(CrmContact_.id), contactId),
+				cb.isFalse(task.get(CrmTask_.isDeleted)));
 
 		return entityManager.createQuery(query).getResultList();
 	}

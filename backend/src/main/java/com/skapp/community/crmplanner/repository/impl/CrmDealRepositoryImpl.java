@@ -114,6 +114,21 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		return predicates;
 	}
 
+	@Override
+	public List<CrmDeal> findByContactIdWithAssociations(Long contactId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmDeal> query = cb.createQuery(CrmDeal.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+		deal.fetch(CrmDeal_.stage, JoinType.INNER);
+		deal.fetch(CrmDeal_.owner, JoinType.INNER);
+
+		query.where(cb.equal(deal.get(CrmDeal_.contact).get(CrmContact_.id), contactId),
+				cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
 	public List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds) {
 		if (contactIds == null || contactIds.isEmpty()) {
 			return Collections.emptyList();
