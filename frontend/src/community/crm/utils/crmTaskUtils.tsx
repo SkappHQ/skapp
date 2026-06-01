@@ -7,7 +7,10 @@ import {
   MeetingFilledIcon,
   PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
+import { DateTime } from "luxon";
 import { ReactElement, ReactNode } from "react";
+
+import { CrmPriorityType } from "~community/crm/types/CommonTypes";
 
 export interface PriorityConfig {
   icon: ReactElement;
@@ -15,13 +18,14 @@ export interface PriorityConfig {
 }
 
 export interface DueDateDisplay {
-  text: string;
+  textKey: string;
+  dateValue?: string;
   colorClass: string;
 }
 
-export const getPriorityConfig = (priority: {
-  name: string;
-}): PriorityConfig => {
+export const getPriorityConfig = (
+  priority: CrmPriorityType
+): PriorityConfig => {
   switch (priority.name.toLowerCase()) {
     case "high":
       return {
@@ -75,46 +79,34 @@ export interface TaskTypeOption {
   icon: ReactElement;
 }
 
-export const TASK_TYPE_OPTIONS: TaskTypeOption[] = [
-  { id: "email", label: "Email", value: "email" },
-  { id: "call", label: "Call", value: "call" },
-  { id: "meeting", label: "Meeting", value: "meeting" },
-  { id: "other", label: "Other", value: "other" }
-].map((t) => {
-  const iconEl = <div>{getTaskTypeConfig(t.value)}</div>;
-  return {
-    id: t.id,
-    value: t.value,
-    icon: iconEl,
-    label: (
-      <div className="flex items-center gap-2">
-        {iconEl}
-        <span className="font-medium">{t.label}</span>
-      </div>
-    )
-  };
-});
+export const TASK_TYPE_OPTIONS: TaskTypeOption[] = TASK_TYPES.map((t) => ({
+  id: t.value,
+  value: t.value,
+  icon: <div>{getTaskTypeConfig(t.value)}</div>,
+  label: (
+    <div className="flex items-center gap-2">
+      <div>{getTaskTypeConfig(t.value)}</div>
+      <span className="font-medium">{t.label}</span>
+    </div>
+  )
+}));
 
 export const getDueDateDisplay = (
   dueAt: string | null,
   isCompleted: boolean
 ): DueDateDisplay => {
-  if (!dueAt) return { text: "No due date", colorClass: "text-gray-400" };
+  if (!dueAt) return { textKey: "dueDateNoDate", colorClass: "text-gray-400" };
 
-  const due = new Date(dueAt);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const dueDay = new Date(due);
-  dueDay.setHours(0, 0, 0, 0);
+  const due = DateTime.fromISO(dueAt).startOf("day");
+  const today = DateTime.now().startOf("day");
 
-  if (!isCompleted && dueDay < today) {
-    return { text: "Overdue", colorClass: "text-semantic-red-text" };
+  if (!isCompleted && due < today) {
+    return { textKey: "dueDateOverdue", colorClass: "text-semantic-red-text" };
   }
 
   return {
-    text:
-      "Due on " +
-      due.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    textKey: "dueDateDueOn",
+    dateValue: due.toLocaleString({ month: "short", day: "numeric" }),
     colorClass: "text-gray-600"
   };
 };

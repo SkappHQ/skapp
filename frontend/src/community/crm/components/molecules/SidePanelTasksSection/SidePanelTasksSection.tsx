@@ -11,18 +11,22 @@ import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelTaskRow from "~community/crm/components/atoms/SidePanelTaskRow/SidePanelTaskRow";
 import { SidePanelTaskListSkeleton } from "~community/crm/components/atoms/SidePanelTaskRow/SidePanelTaskRowSkeleton";
-import { ContactTask } from "~community/crm/types/CommonTypes";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
 import { TASK_TYPE_OPTIONS } from "~community/crm/utils/crmTaskUtils";
 
 import styles from "./styles";
 
 interface Props {
-  tasks: ContactTask[];
+  tasks: CrmTaskType[];
   isLoading: boolean;
-  onToggleComplete: (id: number, isCompleted: boolean) => void;
+  onToggleComplete: (id: number, isCompleted: boolean) => Promise<void>;
 }
 
-const TasksSection: FC<Props> = ({ tasks, isLoading, onToggleComplete }) => {
+const SidePanelTasksSection: FC<Props> = ({
+  tasks,
+  isLoading,
+  onToggleComplete
+}) => {
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -44,16 +48,20 @@ const TasksSection: FC<Props> = ({ tasks, isLoading, onToggleComplete }) => {
         <div className={styles.taskSection}>
           {hasTasks && (
             <div
-              className={`${styles.taskList}${
-                isAddingTask ? " rounded-b-none" : ""
-              }`}
+              className={
+                isAddingTask ? styles.taskListWithForm : styles.taskList
+              }
             >
               {tasks.map((task, idx) => (
                 <SidePanelTaskRow
                   key={task.id}
                   task={task}
                   onToggleComplete={onToggleComplete}
-                  isLastBeforeForm={isAddingTask && idx === tasks.length - 1}
+                  hasFormBelow={isAddingTask && idx === tasks.length - 1}
+                  onRowClick={() => {
+                    // TODO: open task detail side panel
+                    // (wire up to CRM store once TaskDetailPanel is implemented)
+                  }}
                 />
               ))}
             </div>
@@ -74,9 +82,7 @@ const TasksSection: FC<Props> = ({ tasks, isLoading, onToggleComplete }) => {
                 icon: <TransparentEnterIcon />
               }}
               className={
-                hasTasks
-                  ? "border-gray-200! border-t-0 rounded-b-lg w-full"
-                  : "border-gray-200! rounded-lg w-full"
+                hasTasks ? styles.itemAddFormWithTasks : styles.itemAddFormEmpty
               }
             />
           )}
@@ -90,7 +96,7 @@ const TasksSection: FC<Props> = ({ tasks, isLoading, onToggleComplete }) => {
           size="sm"
           icon={<PlusIcon />}
           iconPosition="end"
-          className="px-1.5! py-1! min-w-0! rounded-lg! text-black! mt-2"
+          className={styles.addTaskBtn}
           onClick={() => setIsAddingTask(true)}
         >
           {translateText(["addTaskButtonEmptyView"])}
@@ -115,7 +121,7 @@ const TasksSection: FC<Props> = ({ tasks, isLoading, onToggleComplete }) => {
             size="sm"
             icon={<PlusIcon />}
             iconPosition="end"
-            className="!text-black !min-w-0 !outline-gray-200"
+            className={styles.emptyAddTaskBtn}
             onClick={() => setIsAddingTask(true)}
           >
             {translateText(["addTaskButtonEmptyView"])}
@@ -126,4 +132,4 @@ const TasksSection: FC<Props> = ({ tasks, isLoading, onToggleComplete }) => {
   );
 };
 
-export default TasksSection;
+export default SidePanelTasksSection;
