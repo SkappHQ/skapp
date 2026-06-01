@@ -1,133 +1,115 @@
-import React from "react";
-
 import {
   AdvancedAccordion,
   AdvancedAccordionItem,
   ButtonV2,
   EmptyDataView,
+  PlusIcon,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
+import React from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { CrmDealType } from "~community/crm/types/CommonTypes";
-import { formatDealAmountWithCurrency } from "~community/crm/utils/dealHelpers";
-
-import styles from "./styles"
-
-const mapDealsToAccordionItems = (
-  deals: CrmDealType[],
-  descriptionLabel: string
-): AdvancedAccordionItem[] =>
-  deals.map((deal) => ({
-    id: String(deal.id),
-    header: (
-      <div className={styles.dealHeader}>
-        <span className={styles.dealName}>{deal.name}</span>
-        <div className={styles.dealMeta}>
-          <span className="body3">{deal.contact.name}</span>
-          {deal.amount && (
-            <>
-              <span className={styles.dealSeparator} />
-              <span className="body3">
-                {formatDealAmountWithCurrency(deal.amount, deal.currencyCode)}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
-    ),
-    badge: (
-      <div className={styles.badgeWrapper}>
-        <span
-          className={styles.badgeDot}
-          style={{ backgroundColor: deal.stage.color }}
-        />
-        <span className={styles.badgeText}>{deal.stage.name}</span>
-      </div>
-    ),
-    content: (
-      <div className={styles.contentWrapper}>
-        <p className={styles.contentLabel}>{descriptionLabel}</p>
-        {deal.description ? (
-          <p className={styles.contentText}>{deal.description}</p>
-        ) : (
-          <Icon name={IconName.DASH_ICON} width="16" height="16" />
-        )}
-      </div>
-    )
-  }));
+import { formatValue } from "~community/crm/utils/crmUtil";
 
 interface Props {
   deals: CrmDealType[];
-  isLoading?: boolean;
 }
 
-const SidePanelDeals: React.FC<Props> = ({ deals, isLoading }) => {
+const SidePanelDeals: React.FC<Props> = ({ deals }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const hasDeals = deals.length > 0;
 
   const handleAddDeal = () => {
     // TODO: Open the add deal side panel when clicked
   };
 
-  return (
-    <div className={styles.wrapper}>
-      <h2 className={styles.title}>{translateText(["title"])}</h2>
-      <hr className={styles.divider} />
-      {isLoading ? (
-        <div className={styles.skeletonList}>
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className={styles.skeletonItem}
-            />
-          ))}
-        </div>
-      ) : deals.length === 0 ? (
-        <EmptyDataView
-          icon={<SearchIcon width="24" height="24" />}
-          title={translateText(["emptyTitle"])}
-          description={translateText(["emptyDescription"])}
-          button={{
-            text: translateText(["addDealBtn"]),
-            variant: "tertiary",
-            onClick: handleAddDeal,
-            "aria-label": translateText(["ariaLabels", "addDealBtn"])
-          }}
-          className={{
-            wrapper: styles.emptyWrapper
-          }}
-        />
-      ) : (
-        <div className={styles.dealsList}>
-          <AdvancedAccordion
-            items={mapDealsToAccordionItems(
-              deals,
-              translateText(["descriptionLabel"])
+  const mapDealsToAccordionItems = (
+    deals: CrmDealType[]
+  ): AdvancedAccordionItem[] =>
+    deals.map((deal) => ({
+      id: String(deal.id),
+      header: (
+        <div className="flex flex-col gap-[2px]">
+          <span className="body2">{deal.name}</span>
+          <div className="flex items-center gap-2 text-secondary-text">
+            <span className="body3">{deal.contact.name}</span>
+            {deal.amount && (
+              <>
+                <span className="inline-block h-1 w-1 rounded-full bg-secondary-icon" />
+                <span className="body3">
+                  {formatValue(deal.amount)}
+                </span>
+              </>
             )}
+          </div>
+        </div>
+      ),
+      badge: (
+        <div className="flex items-center justify-center gap-2 rounded-full bg-tertiary-background px-3 py-1.5">
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: deal.stage.color }}
+          />
+          <span className="body2 text-secondary-text">{deal.stage.name}</span>
+        </div>
+      ),
+      content: (
+        <div className="flex flex-col gap-1">
+          <p className="subtitle4 text-secondary-text">
+            {translateText(["descriptionLabel"])}
+          </p>
+          {deal.description ? (
+            <p className="body3">{deal.description}</p>
+          ) : (
+            <Icon name={IconName.DASH_ICON} />
+          )}
+        </div>
+      )
+    }));
+
+  return (
+    <div className="flex flex-col gap-4 mt-6">
+      <h2 className="h2">{translateText(["title"])}</h2>
+      <hr className="border-secondary-accent" />
+      {hasDeals ? (
+        <div className="flex flex-col">
+          <AdvancedAccordion
+            items={mapDealsToAccordionItems(deals)}
             allowMultiple={true}
-            className={styles.accordionWrapper}
+            className="gap-4"
           />
           <ButtonV2
             variant="line"
             size="sm"
             onClick={handleAddDeal}
-            className={styles.addDealBtn}
+            className="self-start !px-3"
             aria-label={translateText(["ariaLabels", "addDealBtn"])}
-            icon={
-              <Icon
-                name={IconName.ADD_ICON}
-                width="1rem"
-                height="1rem"
-                fill="currentColor"
-              />
-            }
+            icon={<PlusIcon />}
             iconPosition="end"
           >
             {translateText(["addDealBtn"])}
           </ButtonV2>
         </div>
+      ) : (
+        <EmptyDataView
+          icon={<SearchIcon />}
+          title={translateText(["emptyTitle"])}
+          description={translateText(["emptyDescription"])}
+          button={{
+            children: translateText(["addDealBtn"]),
+            variant: "tertiary",
+            onClick: handleAddDeal,
+             icon: <PlusIcon />,
+            "aria-label": translateText(["ariaLabels", "addDealBtn"])
+           
+          }}
+          className={{
+            wrapper: "h-[228px] bg-secondary-background rounded-lg"
+          }}
+        />
       )}
     </div>
   );
