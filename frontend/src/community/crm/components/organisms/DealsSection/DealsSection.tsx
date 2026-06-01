@@ -29,7 +29,7 @@ const DealsSection: FC = () => {
     searchKeyword: debouncedSearch
   });
 
-  const allDeals = useMemo(() => data?.pages.flatMap((p) => p.items), [data]);
+  const allDeals = useMemo(() => data?.pages.flatMap((p) => p?.items ?? []), [data]);
 
   const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {

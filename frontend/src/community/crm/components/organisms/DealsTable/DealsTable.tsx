@@ -53,10 +53,10 @@ const DealsTable: FC<Props> = ({
     const container = containerRef.current;
     if (!container) return;
 
-    setTableWidth(container.getBoundingClientRect().width);
+    setTableWidth(container.getBoundingClientRect().width - 8);
 
     const observer = new ResizeObserver(() => {
-      setTableWidth(container.getBoundingClientRect().width);
+      setTableWidth(container.getBoundingClientRect().width - 8);
     });
     observer.observe(container);
 
@@ -204,7 +204,7 @@ const DealsTable: FC<Props> = ({
   return (
     <div
       ref={containerRef}
-      className="h-150 rounded-lg shadow-lg [&>div]:overflow-x-hidden! [&>div]:overflow-y-auto!"
+      className="h-150 rounded-lg shadow-lg"
     >
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
@@ -212,10 +212,10 @@ const DealsTable: FC<Props> = ({
         hasMore={hasNextPage}
         onLoadMore={onLoadMore}
         emptyStateTitle={
-          searchKeyword ? noSearchResultsTitle : translateText(["noDealsTitle"])
+          searchKeyword.trim() ? noSearchResultsTitle : translateText(["noDealsTitle"])
         }
         emptyStateDescription={
-          searchKeyword
+          searchKeyword.trim()
             ? translateText(["noSearchResultsDescription"])
             : translateText(["noDealsDescription"])
         }

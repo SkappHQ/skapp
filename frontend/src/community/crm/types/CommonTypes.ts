@@ -114,8 +114,8 @@ export interface CrmTaskCategory {
 export interface CrmOwnerType {
   employeeId: number;
   firstName: string;
-  lastName: string;
-  authPic: string;
+  lastName: string | null;
+  authPic: string | null;
 }
 
 export interface CrmDealListItemType {
