@@ -12,7 +12,8 @@ import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
-import { formatValue, getFullName } from "~community/crm/utils/crmUtil";
+import { getFullName } from "~community/common/utils/commonUtil";
+import { formatValue } from "~community/crm/utils/crmUtil";
 
 interface DealRow extends BaseRowData {
   id: string;
@@ -60,7 +61,7 @@ const DealsTable: FC<Props> = ({
     observer.observe(container);
 
     return () => observer.disconnect();
-  }, [isLoading, containerRef]);
+  }, [isLoading]);
 
   const columnHeaders = useMemo(
     (): Column<DealRow>[] => [

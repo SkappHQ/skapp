@@ -579,3 +579,8 @@ export const replaceTabQueryParam = (path: string, tabId: string): void => {
 export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
   return characterLengths.PHONE_NUMBER_LENGTH_MAX - countryCodeValue.length;
 }
+
+export const getFullName = (
+  firstName: string,
+  lastName: string | null
+): string => `${firstName} ${lastName ?? ""}`.trim();
