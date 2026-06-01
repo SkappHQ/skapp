@@ -95,12 +95,18 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			String keyword = "%" + filterDto.getSearchKeyword().toLowerCase() + "%";
 			Join<CrmDeal, CrmContact> contactJoin = deal.join(CrmDeal_.contact, JoinType.LEFT);
 			Join<CrmDeal, Employee> ownerJoin = deal.join(CrmDeal_.owner, JoinType.LEFT);
-			predicates.add(cb.or(cb.like(cb.lower(deal.get(CrmDeal_.name)), keyword),
-					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), keyword),
-					cb.like(cb.lower(ownerJoin.get(Employee_.firstName)), keyword),
-					cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword),
-					cb.like(cb.lower(cb.concat(cb.concat(ownerJoin.get(Employee_.firstName), " "),
-							ownerJoin.get(Employee_.lastName))), keyword)));
+			List<Predicate> keywordPredicates = new ArrayList<>();
+			keywordPredicates.add(cb.like(cb.lower(deal.get(CrmDeal_.name)), keyword));
+			keywordPredicates.add(cb.like(cb.lower(contactJoin.get(CrmContact_.name)), keyword));
+			keywordPredicates.add(cb.like(cb.lower(ownerJoin.get(Employee_.firstName)), keyword));
+			keywordPredicates.add(cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword));
+			keywordPredicates.add(cb.like(cb.lower(cb.concat(cb.concat(ownerJoin.get(Employee_.firstName), " "),
+					ownerJoin.get(Employee_.lastName))), keyword));
+			String trimmedKeyword = filterDto.getSearchKeyword().trim();
+			if (trimmedKeyword.matches("\\d+")) {
+				keywordPredicates.add(cb.equal(deal.get(CrmDeal_.id), Long.parseLong(trimmedKeyword)));
+			}
+			predicates.add(cb.or(keywordPredicates.toArray(new Predicate[0])));
 		}
 
 		if (filterDto.getStageId() != null) {
