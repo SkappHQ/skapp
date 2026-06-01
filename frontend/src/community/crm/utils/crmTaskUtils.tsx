@@ -104,6 +104,10 @@ export const getDueDateDisplay = (
     return { textKey: "dueDateOverdue", colorClass: "text-semantic-red-text" };
   }
 
+  if (!isCompleted && due.equals(today)) {
+    return { textKey: "dueDateToday", colorClass: "text-semantic-amber-text" };
+  }
+
   return {
     textKey: "dueDateDueOn",
     dateValue: due.toLocaleString({ month: "short", day: "numeric" }),

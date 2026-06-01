@@ -18,6 +18,7 @@
         "checkTaskMarkComplete": "{{name}} as complete",
         "checkTaskMarkIncomplete": "{{name}} as incomplete",
         "dueDateNoDate": "No due date",
+        "dueDateToday": "Today",
         "dueDateOverdue": "Overdue",
         "dueDateDueOn": "Due on {{date}}"
       }
