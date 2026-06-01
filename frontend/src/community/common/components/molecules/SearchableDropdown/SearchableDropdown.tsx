@@ -19,11 +19,22 @@ const getNextActiveIndex = (
   direction: "down" | "up"
 ): number => {
   if (direction === "down") {
-    if (currentIndex === null) return 0;
-    if (currentIndex < itemsLength - 1) return currentIndex + 1;
-    return currentIndex;
+    if (currentIndex === null) {
+      return 0;
+    }
+    if (currentIndex >= itemsLength - 1) {
+      return currentIndex;
+    }
+    return currentIndex + 1;
   }
-  if (currentIndex !== null && currentIndex > 0) return currentIndex - 1;
+
+  if (direction === "up") {
+    if (currentIndex === null || currentIndex === 0) {
+      return 0;
+    }
+    return currentIndex - 1;
+  }
+
   return 0;
 };
 
@@ -152,8 +163,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   return (
     <div
-      role="group"
-      aria-label={label || placeholder}
       className="w-full relative [&_.border-primary-accent]:border-black"
       ref={inputWrapperRef}
       onFocus={() => {
