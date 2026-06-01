@@ -51,6 +51,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_SUCCESS_TASK_CREATED("api.success.crm.task-created"), CRM_SUCCESS_DEAL_CREATED("api.success.crm.deal-created"),
 	CRM_ERROR_TASK_NOT_FOUND("api.error.crm.task-not-found"),
 	CRM_ERROR_TASK_STATUS_REQUIRED("api.error.crm.task-status-required"),
+	CRM_ERROR_TASK_EDIT_DENIED("api.error.crm.task-edit-denied"),
 	CRM_SUCCESS_COMPANY_DELETED("api.success.crm.company-deleted"),
 	CRM_ERROR_COMPANY_ALREADY_DELETED("api.error.crm.company-already-deleted");
 
