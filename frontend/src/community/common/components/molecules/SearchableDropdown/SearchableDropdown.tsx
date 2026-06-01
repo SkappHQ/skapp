@@ -152,6 +152,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   return (
     <div
+      role="group"
+      aria-label={label || placeholder}
       className="w-full relative [&_.border-primary-accent]:border-black"
       ref={inputWrapperRef}
       onFocus={() => {
