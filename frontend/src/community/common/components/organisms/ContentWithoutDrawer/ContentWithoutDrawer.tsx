@@ -22,7 +22,7 @@ const ContentWithoutDrawer = ({ children }: Props) => {
   return (
     <>
       <Stack sx={classes.unProtectedWrapper}>
-        <ContentAreaLoader />
+        <ContentAreaLoader fullPage />
         {children}
         <ToastMessage
           key={toastMessage.key}

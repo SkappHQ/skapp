@@ -1,10 +1,15 @@
-import { Spinner } from "@rootcodelabs/skapp-ui";
+import { CircularProgress } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import { theme } from "~community/common/theme/theme";
 
-const ContentAreaLoader = () => {
+interface Props {
+  fullPage?: boolean;
+}
+
+const ContentAreaLoader = ({ fullPage = false }: Props) => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
@@ -33,10 +38,12 @@ const ContentAreaLoader = () => {
 
   return (
     <div
-      className="absolute inset-0 flex items-center justify-center bg-white"
-      style={{ zIndex: ZIndexEnums.POPOVER }}
+      className={`${
+        fullPage ? "fixed" : "absolute"
+      } inset-0 flex items-center justify-center bg-white`}
+      style={{ zIndex: ZIndexEnums.MAX }}
     >
-      <Spinner size={40} />
+      <CircularProgress sx={{ color: theme.palette.primary.light }} />{" "}
     </div>
   );
 };
