@@ -8,7 +8,10 @@ export const crmQueryKeys = {
   CRM_CONTACT_METRICS: (id: number) => ["crm-contact-metrics", id],
   CRM_CONTACT_DEALS: (contactId: number) => ["crm-contact-deals", contactId],
   CRM_CONTACT_TASKS: (contactId: number) => ["crm-contact-tasks", contactId],
-  CRM_TASKS_BY_CONTACT: (contactId: number) => ["crm-tasks-by-contact", contactId],
+  CRM_TASKS_BY_CONTACT: (contactId: number) => [
+    "crm-tasks-by-contact",
+    contactId
+  ],
 
   // Owners & Companies
   CRM_OWNERS: (params?: object) =>
@@ -21,7 +24,8 @@ export const CRM_DEALS_KEY = "crm-deals";
 
 export const crmDealQueryKeys = {
   GET_DEALS: (params: Omit<CrmDealFilterParams, "page">) => {
-    const { size, sortOrder, sortKey, searchKeyword, stageId, priority } = params;
+    const { size, sortOrder, sortKey, searchKeyword, stageId, priority } =
+      params;
     return [
       CRM_DEALS_KEY,
       size,
@@ -45,4 +49,9 @@ export const crmCompanyQueryKeys = {
   ALL: ["crm-companies"],
   LIST: (searchKeyword?: string) =>
     ["crm-companies", "list", searchKeyword].filter((v) => v !== undefined)
+};
+
+export const taskQueryKeys = {
+  ALL: ["crm-tasks"],
+  GET_BY_CONTACT: (contactId: number) => ["crm-tasks", "contact", contactId]
 };

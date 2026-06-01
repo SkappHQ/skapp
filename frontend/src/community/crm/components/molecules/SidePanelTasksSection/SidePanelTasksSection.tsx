@@ -8,7 +8,9 @@ import {
 import { FC, useState } from "react";
 
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useGetTasksByContactId,
   useUpdateTaskCompletion
@@ -30,13 +32,22 @@ const SidePanelTasksSection: FC<Props> = ({ contactId }) => {
     "tasks"
   );
 
+  const { setToastMessage } = useToast();
+
   const [isAddingTask, setIsAddingTask] = useState(false);
 
   const { data: tasksData, isLoading } = useGetTasksByContactId(contactId);
   const tasks: CrmTaskType[] = tasksData ?? [];
   const { mutateAsync: updateCompletion } = useUpdateTaskCompletion(
     () => {},
-    () => {}
+    () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["toggleErrorTitle"]),
+        description: translateText(["toggleErrorDescription"])
+      });
+    }
   );
 
   const handleToggleComplete = async (

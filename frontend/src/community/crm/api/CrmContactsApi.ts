@@ -1,8 +1,7 @@
 import {
-  // type UseQueryResult,
-  useInfiniteQuery,
   UseMutationResult,
-  UseQueryResult,
+  UseQueryResult, // type UseQueryResult,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient
@@ -10,14 +9,20 @@ import {
 import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { crmEndpoints } from "~community/crm/api/utils/ApiEndpoints";
-import { crmQueryKeys } from "~community/crm/api/utils/QueryKeys";
+import {
+  crmEndpoints,
+  taskEndpoints
+} from "~community/crm/api/utils/ApiEndpoints";
+import {
+  crmQueryKeys,
+  taskQueryKeys
+} from "~community/crm/api/utils/QueryKeys";
 import {
   ContactDeal,
   ContactDetail,
   ContactMetrics,
-  ContactsListParams,
   ContactTask,
+  ContactsListParams,
   CreateContactPayload,
   CrmCompaniesResponseType,
   CrmContactMetricsType,
@@ -213,7 +218,12 @@ export const useCreateContact = ({
       queryClient.invalidateQueries({ queryKey: ["crm-contacts"] });
       onSuccess();
     },
-    onError: (error: AxiosError<{ message?: string; results?: Array<{ message: string }> }>) => {
+    onError: (
+      error: AxiosError<{
+        message?: string;
+        results?: Array<{ message: string }>;
+      }>
+    ) => {
       const message =
         error?.response?.data?.message ??
         error?.response?.data?.results?.[0]?.message ??
@@ -234,13 +244,23 @@ export const useUpdateContact = ({
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: UpdateContactPayload }) =>
-      authFetch.put(crmEndpoints.UPDATE_CONTACT(id), payload),
+    mutationFn: ({
+      id,
+      payload
+    }: {
+      id: number;
+      payload: UpdateContactPayload;
+    }) => authFetch.put(crmEndpoints.UPDATE_CONTACT(id), payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-contacts"] });
       onSuccess();
     },
-    onError: (error: AxiosError<{ message?: string; results?: Array<{ message: string }> }>) => {
+    onError: (
+      error: AxiosError<{
+        message?: string;
+        results?: Array<{ message: string }>;
+      }>
+    ) => {
       const message =
         error?.response?.data?.message ??
         error?.response?.data?.results?.[0]?.message ??
@@ -261,12 +281,18 @@ export const useDeleteContact = ({
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => authFetch.patch(crmEndpoints.DELETE_CONTACT(id)),
+    mutationFn: (id: number) =>
+      authFetch.patch(crmEndpoints.DELETE_CONTACT(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-contacts"] });
       onSuccess();
     },
-    onError: (error: AxiosError<{ message?: string; results?: Array<{ message: string }> }>) => {
+    onError: (
+      error: AxiosError<{
+        message?: string;
+        results?: Array<{ message: string }>;
+      }>
+    ) => {
       const message =
         error?.response?.data?.message ??
         error?.response?.data?.results?.[0]?.message ??
@@ -289,27 +315,31 @@ export const useGetTasksByContactId = (
   });
 };
 
-// Update Task Completion
+const updateTaskStatusFn = async ({
+  id,
+  isCompleted
+}: {
+  id: number;
+  isCompleted: boolean;
+}) => {
+  const response = await authFetch.patch(taskEndpoints.UPDATE_TASK_STATUS(id), {
+    isCompleted
+  });
+  return response.data;
+};
+
 export const useUpdateTaskCompletion = (
   onSuccess: () => void,
-  onError: (message: string) => void
+  onError: (error: Error) => void
 ) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, isCompleted }: { id: number; isCompleted: boolean }) =>
-      authFetch.patch(crmEndpoints.UPDATE_TASK_COMPLETION(id), { isCompleted }),
+    mutationFn: updateTaskStatusFn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["crm-tasks-by-contact"] });
-      queryClient.invalidateQueries({ queryKey: ["crm-contact-tasks"] });
+      queryClient.invalidateQueries({ queryKey: taskQueryKeys.ALL });
       onSuccess();
     },
-    onError: (error: AxiosError<{ message?: string; results?: Array<{ message: string }> }>) => {
-      const message =
-        error?.response?.data?.message ??
-        error?.response?.data?.results?.[0]?.message ??
-        "Failed to update task. Please try again.";
-      onError(message);
-    }
+    onError
   });
 };
