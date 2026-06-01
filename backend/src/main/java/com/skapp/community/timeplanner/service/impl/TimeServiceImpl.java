@@ -978,6 +978,7 @@ public class TimeServiceImpl implements TimeService {
 				timeRecordsPageable.getPageSize(), timeRecordsPageable.getOffset());
 
 		List<LeaveRequest> leaveRequests = getLeaveRequests(startDate, endDate, employeeIds);
+		boolean geoFencingEnabled = isGeoFencingEnabled();
 
 		List<TimeRecordsResponseDto> response = new ArrayList<>();
 		for (Employee employee : employees.getContent()) {
@@ -995,7 +996,7 @@ public class TimeServiceImpl implements TimeService {
 				timeRecordChip.setDate(timeRecord.getDate());
 				timeRecordChip.setWorkedHours(timeRecord.getWorkedHours());
 				timeRecordChip.setLeaveRequest(getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
-				populateEnterpriseChipFields(timeRecordChip, timeRecord);
+				populateEnterpriseChipFields(timeRecordChip, timeRecord, geoFencingEnabled);
 				timeRecordRow.add(timeRecordChip);
 			}
 
@@ -2175,8 +2176,13 @@ public class TimeServiceImpl implements TimeService {
 		return new TimeRecordChipResponseDto();
 	}
 
-	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord) {
-		// No-op in community; enterprise overrides this method
+	protected boolean isGeoFencingEnabled() {
+		return false;
+	}
+
+	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,
+			boolean isGeoFencingEnabled) {
+		// No-op in community edition; enterprise edition overrides this method
 	}
 
 	protected List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,
