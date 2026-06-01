@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.util;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
@@ -11,6 +12,7 @@ import lombok.experimental.UtilityClass;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 
 @UtilityClass
 public class CrmValidations {
@@ -186,6 +188,16 @@ public class CrmValidations {
 	public static void validateTaskTargets(Long contactId, Long companyId, Long dealId) {
 		if (contactId == null && companyId == null && dealId == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_TARGET_REQUIRED);
+		}
+	}
+
+	public static void validateTaskDueAt(LocalDateTime dueAt) {
+		if (dueAt == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_REQUIRED);
+		}
+
+		if (dueAt.isBefore(DateTimeUtils.getCurrentUtcDateTime())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_IN_PAST);
 		}
 	}
 

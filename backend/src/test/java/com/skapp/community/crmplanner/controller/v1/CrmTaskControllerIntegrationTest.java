@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -104,6 +105,7 @@ class CrmTaskControllerIntegrationTest {
 		dto.setName("Follow up call");
 		dto.setTypeId(taskTypeId);
 		dto.setContactId(contactId);
+		dto.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
 		return dto;
 	}
 
@@ -151,6 +153,32 @@ class CrmTaskControllerIntegrationTest {
 		assertEquals(CrmTaskPriority.HIGH, saved.getPriority());
 		assertEquals("Discuss renewal terms", saved.getNotes());
 		assertNotNull(saved.getDueAt());
+	}
+
+	@Test
+	@DisplayName("Create task with missing due date - Returns Bad Request")
+	void createTask_MissingDueDate_ReturnsBadRequest() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setDueAt(null);
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Create task with a due date in the past - Returns Bad Request")
+	void createTask_PastDueDate_ReturnsBadRequest() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setDueAt(DateTimeUtils.getCurrentUtcDateTime().minusDays(1));
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_IN_PAST)));
 	}
 
 	@Test
