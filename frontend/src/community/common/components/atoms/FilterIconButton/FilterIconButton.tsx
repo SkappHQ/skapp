@@ -23,7 +23,7 @@ const FilterIconButton: FC<FilterIconButtonProps> = ({
           fill={hasFilters ? "var(--color-primary-accent)" : undefined}
         />
       }
-      variant={hasFilters ? "outlined" : "default"}
+      variant={hasFilters ? "outlined" : "tertiary"}
       isRounded={true}
       badge={hasFilters ? { count: filterCount, show: true } : undefined}
       {...rest}
