@@ -7,7 +7,7 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
-import com.skapp.community.crmplanner.payload.request.CrmContactTaskCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
@@ -26,9 +26,10 @@ import com.jayway.jsonpath.JsonPath;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
+
+import java.time.LocalDateTime;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
@@ -46,10 +47,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @RequiredArgsConstructor
-@DisplayName("CRM Contact Controller Integration Tests")
-class CrmContactControllerIntegrationTest {
+@DisplayName("CRM Task Controller Integration Tests")
+class CrmTaskControllerIntegrationTest {
 
-	private static final String BASE_PATH = "/v1/crm/contact/{id}/tasks";
+	private static final String BASE_PATH = "/v1/crm/tasks";
 
 	private final JsonMapper objectMapper;
 
@@ -91,28 +92,25 @@ class CrmContactControllerIntegrationTest {
 		taskTypeId = crmTaskTypeDao.save(type).getId();
 	}
 
-	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
-		return mvc.perform(request.with(SecurityTestUtils.bearerToken(authToken)));
-	}
-
-	private ResultActions performCreateRequest(Long pathContactId, CrmContactTaskCreateRequestDto dto)
-			throws Exception {
-		return performRequest(post(BASE_PATH, pathContactId).contentType(MediaType.APPLICATION_JSON)
+	private ResultActions performCreateRequest(CrmTaskCreateRequestDto dto) throws Exception {
+		return mvc.perform(post(BASE_PATH).with(SecurityTestUtils.bearerToken(authToken))
+			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON));
 	}
 
-	private CrmContactTaskCreateRequestDto validPayload() {
-		CrmContactTaskCreateRequestDto dto = new CrmContactTaskCreateRequestDto();
+	private CrmTaskCreateRequestDto validPayload() {
+		CrmTaskCreateRequestDto dto = new CrmTaskCreateRequestDto();
 		dto.setName("Follow up call");
 		dto.setTypeId(taskTypeId);
+		dto.setContactId(contactId);
 		return dto;
 	}
 
 	@Test
 	@DisplayName("Create task with valid payload - Returns Created with MEDIUM priority and current user as owner")
-	void createContactTask_HappyPath_ReturnsCreated() throws Exception {
-		MvcResult result = performCreateRequest(contactId, validPayload()).andDo(print())
+	void createTask_HappyPath_ReturnsCreated() throws Exception {
+		MvcResult result = performCreateRequest(validPayload()).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").isNumber())
@@ -133,12 +131,35 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Create task with explicit priority, due date and notes - Returns Created and persists them")
+	void createTask_WithOptionalFields_ReturnsCreated() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setPriority(CrmTaskPriority.HIGH);
+		dto.setDueAt(LocalDateTime.of(2030, 1, 1, 9, 0));
+		dto.setNotes("Discuss renewal terms");
+
+		MvcResult result = performCreateRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("HIGH"))
+			.andReturn();
+
+		Long savedId = ((Number) JsonPath.read(result.getResponse().getContentAsString(), "$.results[0].id"))
+			.longValue();
+
+		CrmTask saved = crmTaskDao.findById(savedId).orElseThrow();
+		assertEquals(CrmTaskPriority.HIGH, saved.getPriority());
+		assertEquals("Discuss renewal terms", saved.getNotes());
+		assertNotNull(saved.getDueAt());
+	}
+
+	@Test
 	@DisplayName("Create task with blank name - Returns Bad Request")
-	void createContactTask_BlankName_ReturnsBadRequest() throws Exception {
-		CrmContactTaskCreateRequestDto dto = validPayload();
+	void createTask_BlankName_ReturnsBadRequest() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setName("   ");
 
-		performCreateRequest(contactId, dto).andDo(print())
+		performCreateRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -147,11 +168,11 @@ class CrmContactControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Create task with missing type id - Returns Bad Request")
-	void createContactTask_MissingTypeId_ReturnsBadRequest() throws Exception {
-		CrmContactTaskCreateRequestDto dto = validPayload();
+	void createTask_MissingTypeId_ReturnsBadRequest() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setTypeId(null);
 
-		performCreateRequest(contactId, dto).andDo(print())
+		performCreateRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -160,11 +181,11 @@ class CrmContactControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Create task with name exceeding max length - Returns Bad Request")
-	void createContactTask_NameTooLong_ReturnsBadRequest() throws Exception {
-		CrmContactTaskCreateRequestDto dto = validPayload();
+	void createTask_NameTooLong_ReturnsBadRequest() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setName("a".repeat(256));
 
-		performCreateRequest(contactId, dto).andDo(print())
+		performCreateRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -173,12 +194,12 @@ class CrmContactControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Create task with name at max length (255) - Returns Created")
-	void createContactTask_NameAtMaxLength_ReturnsCreated() throws Exception {
+	void createTask_NameAtMaxLength_ReturnsCreated() throws Exception {
 		String maxLengthName = "a".repeat(255);
-		CrmContactTaskCreateRequestDto dto = validPayload();
+		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setName(maxLengthName);
 
-		performCreateRequest(contactId, dto).andDo(print())
+		performCreateRequest(dto).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value(maxLengthName));
@@ -186,11 +207,11 @@ class CrmContactControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Create task with missing name - Returns Bad Request")
-	void createContactTask_NullName_ReturnsBadRequest() throws Exception {
-		CrmContactTaskCreateRequestDto dto = validPayload();
+	void createTask_NullName_ReturnsBadRequest() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setName(null);
 
-		performCreateRequest(contactId, dto).andDo(print())
+		performCreateRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -198,9 +219,25 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Create task with no contact, company or deal - Returns Bad Request")
+	void createTask_NoTarget_ReturnsBadRequest() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setContactId(null);
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_TARGET_REQUIRED)));
+	}
+
+	@Test
 	@DisplayName("Create task with non-existent contact id - Returns Bad Request")
-	void createContactTask_NonExistentContact_ReturnsBadRequest() throws Exception {
-		performCreateRequest(999999L, validPayload()).andDo(print())
+	void createTask_NonExistentContact_ReturnsBadRequest() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setContactId(999999L);
+
+		performCreateRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -209,12 +246,12 @@ class CrmContactControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Create task for soft-deleted contact - Returns Bad Request")
-	void createContactTask_SoftDeletedContact_ReturnsBadRequest() throws Exception {
+	void createTask_SoftDeletedContact_ReturnsBadRequest() throws Exception {
 		CrmContact deleted = crmContactDao.findById(contactId).orElseThrow();
 		deleted.setIsDeleted(true);
 		crmContactDao.save(deleted);
 
-		performCreateRequest(contactId, validPayload()).andDo(print())
+		performCreateRequest(validPayload()).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -223,21 +260,21 @@ class CrmContactControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Create task with non-existent type id - Returns Internal Server Error")
-	void createContactTask_NonExistentTaskType_ReturnsInternalServerError() throws Exception {
-		CrmContactTaskCreateRequestDto dto = validPayload();
+	void createTask_NonExistentTaskType_ReturnsInternalServerError() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setTypeId(999999L);
 
-		performCreateRequest(contactId, dto).andDo(print())
+		performCreateRequest(dto).andDo(print())
 			.andExpect(status().isInternalServerError())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
 	}
 
 	@Test
 	@DisplayName("Create task without CRM sales role - Returns Forbidden")
-	void createContactTask_WithoutCrmRole_ReturnsForbidden() throws Exception {
+	void createTask_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
-		performCreateRequest(contactId, validPayload()).andDo(print()).andExpect(status().isForbidden());
+		performCreateRequest(validPayload()).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }

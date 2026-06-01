@@ -183,6 +183,12 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateTaskTargets(Long contactId, Long companyId, Long dealId) {
+		if (contactId == null && companyId == null && dealId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_TARGET_REQUIRED);
+		}
+	}
+
 	public static void validateIndustry(String industry) {
 		if (industry == null || industry.isBlank()) {
 			return;

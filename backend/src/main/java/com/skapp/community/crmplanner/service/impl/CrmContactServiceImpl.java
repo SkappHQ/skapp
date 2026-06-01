@@ -5,21 +5,18 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.helper.CrmOwnerResolver;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
-import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
@@ -28,14 +25,11 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
-import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -66,10 +60,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmTaskDao crmTaskDao;
 
-	private final CrmTaskTypeDao crmTaskTypeDao;
-
-	private final EmployeeDao employeeDao;
-
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final UserService userService;
@@ -77,6 +67,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	private final MessageUtil messageUtil;
 
 	private final CrmMapper crmMapper;
+
+	private final CrmOwnerResolver crmOwnerResolver;
 
 	@Override
 	@Transactional
@@ -91,7 +83,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmValidations.validateCompanyId(requestDto.getCompanyId());
 
 		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
-		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
 		contact.setName(requestDto.getName().trim());
@@ -233,77 +225,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
 
 		return dto;
-	}
-
-	@Override
-	@Transactional
-	public ResponseEntityDto createContactTask(Long contactId, CrmContactTaskCreateRequestDto requestDto) {
-		log.info("createContactTask: execution started for contactId={}", contactId);
-
-		CrmValidations.validateTaskTypeId(requestDto.getTypeId());
-		CrmValidations.validateTaskName(requestDto.getName());
-
-		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(contactId)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
-
-		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
-
-		Employee taskOwner = userService.getCurrentUser().getEmployee();
-
-		CrmTask task = new CrmTask();
-		task.setName(requestDto.getName());
-		task.setType(taskType);
-		task.setPriority(CrmConstants.DEFAULT_TASK_PRIORITY);
-		task.setOwner(taskOwner);
-		task.setContact(contact);
-
-		CrmTask savedTask = crmTaskDao.save(task);
-
-		log.info("createContactTask: execution ended with taskId={}", savedTask.getId());
-		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
-	}
-
-	private Employee resolveOwner(Long ownerId, User currentUser) {
-		Employee currentEmployee = currentUser.getEmployee();
-		if (currentEmployee == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
-		}
-
-		EmployeeRole currentEmployeeRole = currentEmployee.getEmployeeRole();
-		boolean isSuperAdmin = currentEmployeeRole != null
-				&& Boolean.TRUE.equals(currentEmployeeRole.getIsSuperAdmin());
-		Role currentCrmRole = currentEmployeeRole != null ? currentEmployeeRole.getCrmRole() : null;
-
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
-			if (!ownerId.equals(currentEmployee.getEmployeeId())) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
-			}
-			return currentEmployee;
-		}
-
-		if (!isSuperAdmin && currentCrmRole != Role.CRM_ADMIN && currentCrmRole != Role.CRM_SALES_MANAGER) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
-		}
-
-		return validateAssignableOwner(ownerId);
-	}
-
-	private Employee validateAssignableOwner(Long ownerId) {
-		Employee owner = employeeDao.findById(ownerId)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND));
-
-		if (owner.getUser() == null || !Boolean.TRUE.equals(owner.getUser().getIsActive())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INACTIVE);
-		}
-
-		EmployeeRole ownerRole = owner.getEmployeeRole();
-		boolean isOwnerSuperAdmin = ownerRole != null && Boolean.TRUE.equals(ownerRole.getIsSuperAdmin());
-		Role ownerCrmRole = ownerRole != null ? ownerRole.getCrmRole() : null;
-		if (!isOwnerSuperAdmin && !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(ownerCrmRole)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE);
-		}
-
-		return owner;
 	}
 
 	private String normalizeNullableText(String value) {
