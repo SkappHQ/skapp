@@ -1017,15 +1017,20 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 					.where(criteriaBuilder.equal(managerRoot.get(EmployeeManager_.manager).get(Employee_.employeeId),
 							currentUserId));
 
-				Subquery<Long> supervisedTeamsSubquery = criteriaQuery.subquery(Long.class);
-				Root<EmployeeTeam> teamRoot = supervisedTeamsSubquery.from(EmployeeTeam.class);
-				supervisedTeamsSubquery.select(teamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+				Subquery<Long> supervisedTeamIdsSubquery = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> supervisorTeamRoot = supervisedTeamIdsSubquery.from(EmployeeTeam.class);
+				supervisedTeamIdsSubquery.select(supervisorTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId))
 					.where(criteriaBuilder.and(criteriaBuilder
-						.equal(teamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), currentUserId),
-							criteriaBuilder.isTrue(teamRoot.get(EmployeeTeam_.isSupervisor))));
+						.equal(supervisorTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), currentUserId),
+							criteriaBuilder.isTrue(supervisorTeamRoot.get(EmployeeTeam_.isSupervisor))));
+
+				Subquery<Long> teamMembersSubquery = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> teamMemberRoot = teamMembersSubquery.from(EmployeeTeam.class);
+				teamMembersSubquery.select(teamMemberRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+					.where(teamMemberRoot.get(EmployeeTeam_.team).get(Team_.teamId).in(supervisedTeamIdsSubquery));
 
 				predicates.add(criteriaBuilder.or(employeeJoin.get(Employee_.employeeId).in(managedEmployeesSubquery),
-						employeeJoin.get(Employee_.employeeId).in(supervisedTeamsSubquery)));
+						employeeJoin.get(Employee_.employeeId).in(teamMembersSubquery)));
 			}
 
 		}
