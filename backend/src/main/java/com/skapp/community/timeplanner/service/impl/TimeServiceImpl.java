@@ -69,6 +69,7 @@ import com.skapp.community.timeplanner.payload.request.TimeRequestDto;
 import com.skapp.community.timeplanner.payload.request.TimeRequestManagerPatchDto;
 import com.skapp.community.timeplanner.payload.request.TimeSlotFilterDto;
 import com.skapp.community.timeplanner.payload.request.UpdateIncompleteTimeRecordsRequestDto;
+import com.skapp.community.timeplanner.payload.request.GetTimeConfigDeleteAvailabilityRequestDto;
 import com.skapp.community.timeplanner.payload.request.UpdateTimeRequestsFilterDto;
 import com.skapp.community.timeplanner.payload.response.ActiveTimeSlotResponseDto;
 import com.skapp.community.timeplanner.payload.response.AttendanceSummaryResponseDto;
@@ -574,10 +575,10 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
-	public ResponseEntityDto getIfTimeConfigRemovable(List<DayOfWeek> days) {
+	public ResponseEntityDto getIfTimeConfigRemovable(GetTimeConfigDeleteAvailabilityRequestDto requestDto) {
 
 		ArrayNode arrayNode = mapper.createArrayNode();
-		days.forEach(day -> {
+		requestDto.getDays().forEach(day -> {
 			ObjectNode objectNode = mapper.createObjectNode();
 
 			objectNode.put(day.name(), leaveRequestDao.findAllFutureLeaveRequestsForTheDay(day).isEmpty());
