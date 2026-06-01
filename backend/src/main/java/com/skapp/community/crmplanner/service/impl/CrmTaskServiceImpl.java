@@ -43,6 +43,9 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		User currentUser = userService.getCurrentUser();
 		Employee currentEmployee = currentUser.getEmployee();
+		if (currentEmployee == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+		}
 		EmployeeRole employeeRole = currentEmployee.getEmployeeRole();
 		Role currentCrmRole = employeeRole != null ? employeeRole.getCrmRole() : null;
 

@@ -26,7 +26,7 @@ public class CrmTaskController {
 	@Operation(summary = "Update task status",
 			description = "Updates the completion status of a task and returns the updated task")
 	@PatchMapping("/{id}/status")
-	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN', 'ROLE_CRM_SALES_MANAGER', 'ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> updateTaskStatus(@PathVariable Long id,
 			@RequestBody CrmTaskStatusUpdateDto taskStatusUpdateDto) {
 		ResponseEntityDto response = crmTaskService.updateTaskStatus(id, taskStatusUpdateDto);
