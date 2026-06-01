@@ -9,8 +9,6 @@ import {
   getTaskTypeConfig
 } from "~community/crm/utils/crmTaskUtils";
 
-import styles from "./styles";
-
 interface Props {
   task: CrmTaskType;
   onToggleComplete: (id: number, isCompleted: boolean) => Promise<void>;
@@ -63,9 +61,9 @@ const SidePanelTaskRow: FC<Props> = ({
   return (
     <div
       className={[
-        styles.row,
-        hasFormBelow && styles.rowLastBeforeForm,
-        onRowClick && styles.rowClickable
+        "flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white [&:first-child]:rounded-t-[8px] [&:last-child]:rounded-b-[8px]",
+        hasFormBelow && "rounded-b-none!",
+        onRowClick && "cursor-pointer hover:bg-gray-50"
       ]
         .filter(Boolean)
         .join(" ")}
@@ -92,14 +90,26 @@ const SidePanelTaskRow: FC<Props> = ({
         />
       </div>
 
-      <div className={styles.typeIcon}>{getTaskTypeConfig(task.type.name)}</div>
+      <div className="shrink-0 flex items-center justify-center">
+        {getTaskTypeConfig(task.type.name)}
+      </div>
 
-      <div className={styles.content}>
-        <p className={optimisticCompleted ? styles.nameCompleted : styles.name}>
+      <div className="flex-1 min-w-0">
+        <p
+          className={
+            optimisticCompleted
+              ? "text-sm text-black line-through leading-snug truncate"
+              : "text-sm text-black leading-snug truncate"
+          }
+        >
           {task.name}
         </p>
         <p
-          className={`${optimisticCompleted ? styles.dueDateCompleted : `${styles.dueDateBase} ${dueDateDisplay.colorClass}`}`}
+          className={
+            optimisticCompleted
+              ? "text-xs leading-none mt-0.5 line-through text-gray-600"
+              : `text-xs leading-none mt-0.5 ${dueDateDisplay.colorClass}`
+          }
         >
           {translateText(
             [dueDateDisplay.textKey],
@@ -110,11 +120,14 @@ const SidePanelTaskRow: FC<Props> = ({
         </p>
       </div>
 
-      <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
+      <div
+        className="flex items-center gap-6 shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
         <PriorityIcon
           icon={priorityConfig.icon}
           bgColor={priorityConfig.bgColor}
-          className={styles.priorityIcon}
+          className="w-8! h-8!"
         />
         {task.owner && (
           <Avatar
