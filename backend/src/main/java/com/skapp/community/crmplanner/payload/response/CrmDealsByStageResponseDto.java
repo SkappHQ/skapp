@@ -17,6 +17,14 @@ public class CrmDealsByStageResponseDto {
 
 	private long totalCount;
 
+	private int currentPage;
+
+	private int totalPages;
+
+	private int pageSize;
+
+	private boolean hasNextPage;
+
 	private List<CrmDealResponseDto> deals;
 
 }

@@ -138,12 +138,16 @@ public class CrmDealServiceImpl implements CrmDealService {
 			return new ResponseEntityDto(false, new ArrayList<>());
 		}
 
-		PageRequest pageRequest = PageRequest.of(0, requestDto.getLimit() > 0 ? requestDto.getLimit() : 20);
+		int limit = requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT;
 		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
 
 		for (Long stageId : requestDto.getStageIds()) {
 			CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(stageId)
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+
+			int page = (requestDto.getStagePages() != null && requestDto.getStagePages().containsKey(stageId))
+					? requestDto.getStagePages().get(stageId) : 0;
+			PageRequest pageRequest = PageRequest.of(page, limit);
 
 			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest);
 			List<CrmDealResponseDto> deals = crmMapper.crmDealsToCrmDealResponseDtos(dealsPage.getContent());
@@ -153,6 +157,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 			stageResult.setStageName(stage.getName());
 			stageResult.setStageColor(stage.getColor());
 			stageResult.setTotalCount(dealsPage.getTotalElements());
+			stageResult.setCurrentPage(dealsPage.getNumber());
+			stageResult.setTotalPages(dealsPage.getTotalPages());
+			stageResult.setPageSize(dealsPage.getSize());
+			stageResult.setHasNextPage(dealsPage.hasNext());
 			stageResult.setDeals(deals);
 
 			result.add(stageResult);
