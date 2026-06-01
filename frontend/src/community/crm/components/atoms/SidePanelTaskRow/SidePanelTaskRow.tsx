@@ -1,42 +1,146 @@
-import { FC } from "react";
+import { Avatar, CheckTask, PriorityIcon } from "@rootcodelabs/skapp-ui";
+import { FC, KeyboardEvent, useEffect, useState } from "react";
 
-const TITLE_WIDTHS = ["w-24", "w-32", "w-20", "w-28"];
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import {
+  getDueDateDisplay,
+  getPriorityConfig,
+  getTaskTypeConfig
+} from "~community/crm/utils/crmTaskUtils";
 
-const SidePanelTaskRowSkeleton: FC<{ titleWidth?: string }> = ({
-  titleWidth = "w-28"
-}) => (
-  <div className="flex items-center gap-4 p-3 min-w-0 min-h-15.75 bg-white first:rounded-t-lg last:rounded-b-lg">
-    <div className="h-6 w-6 rounded-full bg-gray-100 shrink-0" />
-    <div className="h-5 w-5 rounded-full bg-gray-100 shrink-0" />
-    <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-      <div className={`h-3 ${titleWidth} rounded bg-gray-100`} />
-      <div className="h-2 w-16 rounded bg-gray-100" />
-    </div>
-    <div className="flex items-center gap-6 shrink-0">
-      <div className="h-8 w-8 rounded-full bg-gray-100" />
-      <div className="h-6 w-6 rounded-full bg-gray-100" />
-    </div>
-  </div>
-);
+interface Props {
+  task: CrmTaskType;
+  onToggleComplete: (id: number, isCompleted: boolean) => Promise<void>;
+  hasFormBelow?: boolean;
+  // TODO: wire up to CRM store once TaskDetailPanel is implemented
+  onRowClick?: () => void;
+}
 
-export const SidePanelTaskListSkeleton: FC<{ count?: number }> = ({
-  count = 3
-}) => (
-  <div className="animate-pulse">
-    <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 w-full">
-      {Array.from({ length: count }).map((_, i) => (
-        <SidePanelTaskRowSkeleton
-          key={i}
-          titleWidth={TITLE_WIDTHS[i % TITLE_WIDTHS.length]}
+const SidePanelTaskRow: FC<Props> = ({
+  task,
+  onToggleComplete,
+  hasFormBelow = false,
+  onRowClick
+}) => {
+  const translateText = useTranslator(
+    "crmModule",
+    "contacts",
+    "contactDetailsPanel",
+    "tasks"
+  );
+
+  const priorityConfig = getPriorityConfig(task.priority);
+  const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
+
+  // Optimistic UI: immediately reflect the toggle, revert if the API call fails
+  const [optimisticCompleted, setOptimisticCompleted] = useState(
+    task.isCompleted
+  );
+  useEffect(() => {
+    setOptimisticCompleted(task.isCompleted);
+  }, [task.isCompleted]);
+
+  const handleToggleChange = async (checked: boolean) => {
+    setOptimisticCompleted(checked);
+    try {
+      await onToggleComplete(task.id, checked);
+    } catch {
+      // Revert to server state on failure
+      setOptimisticCompleted(task.isCompleted);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onRowClick?.();
+    }
+  };
+
+  return (
+    <div
+      className={[
+        "flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white [&:first-child]:rounded-t-[8px] [&:last-child]:rounded-b-[8px]",
+        hasFormBelow && "rounded-b-none!",
+        onRowClick && "cursor-pointer hover:bg-gray-50"
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      {...(onRowClick && {
+        role: "button",
+        tabIndex: 0,
+        onClick: onRowClick,
+        onKeyDown: handleKeyDown,
+        "aria-label": `Open details for task: ${task.name}`
+      })}
+    >
+      <div onClick={(e) => e.stopPropagation()}>
+        <CheckTask
+          checked={optimisticCompleted}
+          onChange={handleToggleChange}
+          aria-label={translateText(
+            [
+              optimisticCompleted
+                ? "checkTaskMarkIncomplete"
+                : "checkTaskMarkComplete"
+            ],
+            { name: task.name }
+          )}
         />
-      ))}
-    </div>
+      </div>
 
-    <div className="flex items-center gap-1.5 mt-2 px-1.5">
-      <div className="h-2.5 w-12 rounded bg-gray-100" />
-      <div className="h-4 w-4 rounded bg-gray-100" />
-    </div>
-  </div>
-);
+      <div className="shrink-0 flex items-center justify-center">
+        {getTaskTypeConfig(task.type.name)}
+      </div>
 
-export default SidePanelTaskRowSkeleton;
+      <div className="flex-1 min-w-0">
+        <p
+          className={
+            optimisticCompleted
+              ? "text-sm text-black line-through leading-snug truncate"
+              : "text-sm text-black leading-snug truncate"
+          }
+        >
+          {task.name}
+        </p>
+        <p
+          className={
+            optimisticCompleted
+              ? "text-xs leading-none mt-0.5 line-through text-gray-600"
+              : `text-xs leading-none mt-0.5 ${dueDateDisplay.colorClass}`
+          }
+        >
+          {translateText(
+            [dueDateDisplay.textKey],
+            dueDateDisplay.dateValue
+              ? { date: dueDateDisplay.dateValue }
+              : undefined
+          )}
+        </p>
+      </div>
+
+      <div
+        className="flex items-center gap-6 shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <PriorityIcon
+          icon={priorityConfig.icon}
+          bgColor={priorityConfig.bgColor}
+          className="w-8! h-8!"
+        />
+        {task.owner && (
+          <Avatar
+            id={`task-owner-${task.id}`}
+            size="xs"
+            src={task.owner.authPic ?? undefined}
+            firstName={task.owner.firstName}
+            lastName={task.owner.lastName ?? undefined}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SidePanelTaskRow;
