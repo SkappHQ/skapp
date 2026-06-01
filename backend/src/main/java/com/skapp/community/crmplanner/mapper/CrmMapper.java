@@ -77,7 +77,6 @@ public interface CrmMapper {
 	CrmDealDetailResponseDto crmDealToCrmDealDetailResponseDto(CrmDeal deal);
 
 	@Mapping(target = "type", source = "type.name")
-	@Mapping(target = "priority", source = "priority.name")
 	@Mapping(target = "isOverdue", ignore = true)
 	CrmTaskDetailResponseDto crmTaskToCrmTaskDetailResponseDto(CrmTask task);
 
