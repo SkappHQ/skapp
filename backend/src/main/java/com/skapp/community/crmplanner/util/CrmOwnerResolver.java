@@ -1,0 +1,43 @@
+package com.skapp.community.crmplanner.util;
+
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.constant.CrmConstants;
+import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class CrmOwnerResolver {
+
+	private final EmployeeDao employeeDao;
+
+	public Employee resolveOwner(Long ownerId, User currentUser) {
+		Employee currentEmployee = currentUser.getEmployee();
+
+		boolean isSuperAdmin = currentEmployee.getEmployeeRole().getIsSuperAdmin();
+		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
+
+		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
+			return currentEmployee;
+		}
+
+		return validateAssignableOwner(ownerId);
+	}
+
+	private Employee validateAssignableOwner(Long ownerId) {
+		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(ownerId);
+
+		if (owner == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+		}
+
+		return owner;
+	}
+
+}
