@@ -1,11 +1,12 @@
-import { AutoCompleteDropdown, AvatarChip } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useState } from "react";
+import { AvatarChip, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
+import { ChangeEvent, FC, ReactNode, useState } from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
+import SearchableDropdown, {
+  SearchableDropdownItem
+} from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { OptionType } from "~community/common/types/CommonTypes";
-import { IconName } from "~community/common/types/IconTypes";
 import {
   AllEmployeeDataType,
   EmployeeDataTeamType
@@ -23,7 +24,8 @@ const EmployeeAvatarChip: FC<{ employee: AllEmployeeDataType }> = ({
         id: String(employee.employeeId),
         firstName: employee.firstName,
         lastName: employee.lastName,
-        src: imageUrl ?? ""
+        src: imageUrl ?? "",
+        size: "sm"
       }}
       label={concatStrings([employee.firstName, employee.lastName]).trim()}
     />
@@ -37,11 +39,15 @@ interface SupervisorReassignmentModalSectionProps {
   items: SectionItem[];
   showAvatar: boolean;
   isTeamSection: boolean;
-  isSearchLoading: boolean;
+  isLoading: boolean;
   assignments: Record<number, OptionType>;
-  getResults: (entityId: number) => ReactNode[];
-  onBlur: () => void;
+  getItems: (entityId: number) => SearchableDropdownItem[];
   onSearch: (term: string) => void;
+  onSelect: (
+    entityId: number,
+    selectedId: string,
+    selectedName: string
+  ) => void;
   onRemove: (entityId: number) => void;
 }
 
@@ -52,27 +58,35 @@ const SupervisorReassignmentModalSection: FC<
   items,
   showAvatar,
   isTeamSection,
-  isSearchLoading,
+  isLoading,
   assignments,
-  getResults,
-  onBlur,
+  getItems,
   onSearch,
+  onSelect,
   onRemove
 }) => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchValues, setSearchValues] = useState<Record<number, string>>({});
   const translateText = useTranslator("peopleModule", "supervisorReassignment");
-  const translateConfig = useTranslator("configurations", "workLocation");
   const removeButtonAriaLabel = translateText(["removeAssignment"]);
   const placeholderText = translateText(["selectSupervisorPlaceholder"]);
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
+  const handleInputChange = (
+    entityId: number,
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const term = e.target.value;
+    setSearchValues({ [entityId]: term });
     onSearch(term);
   };
 
-  const handleBlur = () => {
-    setSearchTerm("");
-    onBlur();
+  const handleItemSelect = (entityId: number, item: SearchableDropdownItem) => {
+    setSearchValues((prev) => ({ ...prev, [entityId]: "" }));
+    onSelect(entityId, item.id, String(item.content));
+  };
+
+  const handleDropdownClose = (entityId: number) => {
+    setSearchValues((prev) => ({ ...prev, [entityId]: "" }));
+    onSearch("");
   };
 
   return (
@@ -95,19 +109,6 @@ const SupervisorReassignmentModalSection: FC<
 
           const assigned = assignments[id];
 
-          const getNoResultsText = () => {
-            if (isSearchLoading) return translateText(["loadingEmployees"]);
-
-            if (!searchTerm.trim())
-              return translateConfig([
-                "form",
-                "employeeMultiSelect",
-                "ariaLabelSearch"
-              ]);
-
-            return translateText(["noEmployeesFound"]);
-          };
-
           return (
             <div
               key={id}
@@ -124,31 +125,42 @@ const SupervisorReassignmentModalSection: FC<
               </div>
               <div className="w-62.5 shrink-0">
                 {!assigned ? (
-                  <AutoCompleteDropdown
-                    hasCard={false}
-                    className="w-full!"
-                    onBlur={handleBlur}
+                  <SearchableDropdown
+                    id={`supervisor-reassignment-${id}`}
+                    items={getItems(id)}
+                    onSelect={(item) => handleItemSelect(id, item)}
+                    value={searchValues[id] ?? ""}
+                    onChange={(e) => handleInputChange(id, e)}
                     placeholder={placeholderText}
-                    onSearch={handleSearch}
-                    accessibilityTexts={{
-                      noResultsFoundText: getNoResultsText()
-                    }}
-                    results={getResults(id)}
+                    variant="sm"
+                    positionStrategy="fixed"
+                    onClose={() => handleDropdownClose(id)}
+                    emptyMessage={
+                      isLoading ? undefined : (
+                        <p className="px-4 py-2 body2">
+                          {translateText(["noEmployeesFound"])}
+                        </p>
+                      )
+                    }
                   />
                 ) : (
-                  <div className="flex items-center justify-between gap-2 rounded-lg bg-tertiary-background border border-transparent px-3 py-2.5">
-                    <span className="body2 truncate flex-1">
-                      {assigned.name}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={removeButtonAriaLabel}
-                      className="shrink-0 text-secondary-icon hover:text-secondary-text leading-none"
-                      onClick={() => onRemove(id)}
-                    >
-                      <Icon name={IconName.CLOSE_ICON} width="16" height="16" />
-                    </button>
-                  </div>
+                  <InputField
+                    value={assigned.name}
+                    readOnly
+                    variant="sm"
+                    fullWidth
+                    className="[&_.border-primary-accent]:border-secondary-accent"
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => onRemove(id)}
+                        aria-label={removeButtonAriaLabel}
+                        className="flex items-center justify-center cursor-pointer"
+                      >
+                        <CloseIcon className="w-4 h-4" />
+                      </button>
+                    }
+                  />
                 )}
               </div>
             </div>
