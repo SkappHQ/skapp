@@ -1,5 +1,6 @@
 export const taskQueryKeys = {
-  ALL: ["crm-tasks"]
+  ALL: ["crm-tasks"],
+  GET_BY_CONTACT: (contactId: number) => ["crm-tasks", "contact", contactId]
 };
 
 export const companyQueryKeys = {

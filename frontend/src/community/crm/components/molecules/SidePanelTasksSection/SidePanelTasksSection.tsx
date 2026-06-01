@@ -14,7 +14,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useGetTasksByContactId,
   useUpdateTaskCompletion
-} from "~community/crm/api/CrmContactsApi";
+} from "~community/crm/api/TasksApi";
 import SidePanelTaskRow from "~community/crm/components/atoms/SidePanelTaskRow/SidePanelTaskRow";
 import { SidePanelTaskListSkeleton } from "~community/crm/components/atoms/SidePanelTaskRow/SidePanelTaskRowSkeleton";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
@@ -69,16 +69,15 @@ const SidePanelTasksSection: FC<Props> = ({ contactId }) => {
             <div
               className={
                 isAddingTask
-                  ? "border border-gray-200 rounded-[8px] rounded-b-none divide-y divide-gray-200 w-full"
+                  ? "border border-gray-200 rounded-[8px] rounded-b-none divide-y divide-gray-200 w-full [&>*:last-child]:rounded-b-none"
                   : "border border-gray-200 rounded-[8px] divide-y divide-gray-200 w-full"
               }
             >
-              {tasks.map((task, idx) => (
+              {tasks.map((task) => (
                 <SidePanelTaskRow
                   key={task.id}
                   task={task}
                   onToggleComplete={handleToggleComplete}
-                  hasFormBelow={isAddingTask && idx === tasks.length - 1}
                   onRowClick={() => {
                     // TODO: open task detail side panel
                     // (wire up to CRM store once TaskDetailPanel is implemented)

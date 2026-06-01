@@ -12,7 +12,6 @@ import {
 interface Props {
   task: CrmTaskType;
   onToggleComplete: (id: number, isCompleted: boolean) => Promise<void>;
-  hasFormBelow?: boolean;
   // TODO: wire up to CRM store once TaskDetailPanel is implemented
   onRowClick?: () => void;
 }
@@ -20,7 +19,6 @@ interface Props {
 const SidePanelTaskRow: FC<Props> = ({
   task,
   onToggleComplete,
-  hasFormBelow = false,
   onRowClick
 }) => {
   const translateText = useTranslator(
@@ -62,7 +60,6 @@ const SidePanelTaskRow: FC<Props> = ({
     <div
       className={[
         "flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white [&:first-child]:rounded-t-[8px] [&:last-child]:rounded-b-[8px]",
-        hasFormBelow && "rounded-b-none!",
         onRowClick && "cursor-pointer hover:bg-gray-50"
       ]
         .filter(Boolean)
