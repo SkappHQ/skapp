@@ -1,5 +1,17 @@
 import { CrmDealStageEnum } from "../enums/common";
 
+export interface PaginatedResponseType<T> {
+  items: T[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CompanyLookup {
+  id: number;
+  name: string;
+}
+
 export interface CrmCompanyType {
   id: number;
   name: string;
@@ -9,6 +21,16 @@ export interface CrmCompanyType {
   contactNumber: string | null;
   isDeleted: boolean;
 }
+
+export interface ContactOwner {
+  employeeId: number;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  authPic: string | null;
+}
+
+export type ContactOwnerLookup = Omit<ContactOwner, "email">;
 
 export interface CrmCompanyMetricsType {
   id: number;
@@ -67,6 +89,14 @@ export interface CrmContactType {
   isDeleted: boolean;
 }
 
+export interface CrmDealStageType {
+  id: number;
+  name: string;
+  color: string;
+  orderIndex: number;
+  stageType: CrmDealStageEnum;
+}
+
 export interface CrmDealType {
   id: number;
   name: string;
@@ -81,12 +111,10 @@ export interface CrmDealType {
   isDeleted: boolean;
 }
 
-export interface CrmDealStageType {
+export interface CrmTaskCategory {
   id: number;
   name: string;
-  color: string;
   orderIndex: number;
-  stageType: CrmDealStageEnum;
 }
 
 export interface CrmTaskType {
@@ -104,14 +132,19 @@ export interface CrmTaskType {
   isDeleted: boolean;
 }
 
-export interface CrmTaskCategory {
+export interface CrmPriorityType {
   id: number;
   name: string;
   orderIndex: number;
 }
 
-export interface CrmPriorityType {
-  id: number;
+export type CrmOwnersResponseType = PaginatedResponseType<ContactOwner>;
+export type CrmCompaniesResponseType = PaginatedResponseType<CompanyLookup>;
+
+export interface CreateContactPayload {
   name: string;
-  orderIndex: number;
+  email: string;
+  contactNumber?: string;
+  companyId?: number;
+  ownerId?: number;
 }

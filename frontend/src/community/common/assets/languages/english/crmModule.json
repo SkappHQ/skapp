@@ -2,11 +2,59 @@
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",
-    "addContactBtn": "Add Contact",
+    "addContactBtn": "Create contact",
     "detailsPageHead": "Contact Details | Skapp",
     "detailsTitle": "Contact Details",
     "contactDetailsPanel": {
       "lastUpdated": "Last updated"
+    },
+    "createContactModal": {
+      "title": "Create contact",
+      "labels": {
+        "contactName": "Contact name",
+        "email": "Email",
+        "company": "Company",
+        "contactNo": "Contact no.",
+        "contactOwner": "Contact owner"
+      },
+      "placeholders": {
+        "contactName": "Enter contact name",
+        "email": "Enter email",
+        "company": "Select company",
+        "contactNo": "Enter contact no.",
+        "contactOwner": "Select contact owner"
+      },
+      "buttons": {
+        "addCompany": "Add company",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "ariaLabels": {
+        "contactName": "Contact Name",
+        "email": "Email",
+        "company": "Company",
+        "contactNo": "Contact Number",
+        "contactOwner": "Contact Owner",
+        "save": "Save Contact",
+        "cancel": "Cancel Create Contact"
+      },
+      "validations": {
+        "contactNameRequired": "Contact name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Enter a valid email address",
+        "contactNumber": "Enter a valid contact number",
+        "contactNumberLength": "Contact number must be less than 15 digits"
+      },
+      "noResults": {
+        "company": "No company found",
+        "owner": "No owner found"
+      },
+      "toasts": {
+        "successTitle": "Contact created",
+        "successDescription": "Contact has been created successfully.",
+        "errorTitle": "Failed to create contact",
+        "errorDescription": "Please try again or contact support"
+      }
     }
   },
   "companies": {
@@ -97,5 +145,9 @@
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task"
+  },
+  "popupTitles": {
+    "addCompanyPopup": "Add Company",
+    "addContactPopup": "Create contact"
   }
 }

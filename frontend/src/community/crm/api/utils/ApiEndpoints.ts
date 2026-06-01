@@ -6,3 +6,9 @@ export const companyEndpoints = {
   CHECK_COMPANY_NAME_EXISTS: (name: string) =>
     `${moduleAPIPath.CRM}/company/exists?name=${encodeURIComponent(name)}`
 };
+
+export const crmEndpoints = {
+  CREATE_CONTACT: `${moduleAPIPath.CRM}/contact`,
+  GET_OWNERS: `${moduleAPIPath.CRM}/contact/owners`,
+  GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`
+};

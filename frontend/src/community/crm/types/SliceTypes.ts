@@ -7,3 +7,11 @@ export interface CrmCompanyModalSliceTypes extends Pick<
   | "companyModalType"
   | "setCompanyModalType"
 > {}
+
+export interface CrmContactsModalSliceTypes extends Pick<
+  CrmStore,
+  | "isAddContactModalOpen"
+  | "setIsAddContactModalOpen"
+  | "crmModalType"
+  | "setCrmModalType"
+> {}
