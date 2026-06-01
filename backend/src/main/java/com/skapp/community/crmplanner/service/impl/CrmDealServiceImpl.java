@@ -13,7 +13,9 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealsByStageResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -30,6 +32,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -123,6 +126,40 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("getDeals: execution ended with {} result(s)", deals.size());
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getDealsByStages(CrmDealsByStagesRequestDto requestDto) {
+		log.info("getDealsByStages: execution started for {} stage(s)",
+				requestDto.getStageIds() != null ? requestDto.getStageIds().size() : 0);
+
+		if (requestDto.getStageIds() == null || requestDto.getStageIds().isEmpty()) {
+			return new ResponseEntityDto(false, new ArrayList<>());
+		}
+
+		PageRequest pageRequest = PageRequest.of(0, requestDto.getLimit() > 0 ? requestDto.getLimit() : 20);
+		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
+
+		for (Long stageId : requestDto.getStageIds()) {
+			CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(stageId)
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+
+			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest);
+			List<CrmDealResponseDto> deals = crmMapper.crmDealsToCrmDealResponseDtos(dealsPage.getContent());
+
+			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
+			stageResult.setStageId(stage.getId());
+			stageResult.setStageName(stage.getName());
+			stageResult.setStageColor(stage.getColor());
+			stageResult.setTotalCount(dealsPage.getTotalElements());
+			stageResult.setDeals(deals);
+
+			result.add(stageResult);
+		}
+
+		log.info("getDealsByStages: execution ended");
+		return new ResponseEntityDto(false, result);
 	}
 
 }

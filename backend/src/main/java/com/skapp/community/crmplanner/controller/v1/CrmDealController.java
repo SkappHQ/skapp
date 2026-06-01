@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,6 +40,16 @@ public class CrmDealController {
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getDeals(CrmDealFilterDto crmDealFilterDto) {
 		ResponseEntityDto response = crmDealService.getDeals(crmDealFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get deals grouped by stages",
+			description = "Returns the first 20 deals per requested stage with total count for each stage.")
+	@PostMapping(value = "/grouped-by-stages", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getDealsByStages(
+			@RequestBody CrmDealsByStagesRequestDto crmDealsByStagesRequestDto) {
+		ResponseEntityDto response = crmDealService.getDealsByStages(crmDealsByStagesRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

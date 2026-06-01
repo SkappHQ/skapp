@@ -1,11 +1,13 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
@@ -109,6 +111,57 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		if (filterDto.getPriority() != null) {
 			predicates.add(cb.equal(deal.get(CrmDeal_.priority), filterDto.getPriority()));
+		}
+
+		return predicates;
+	}
+
+	@Override
+	public Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
+		countQuery.select(cb.count(countRoot))
+			.where(buildStagePredicates(cb, countRoot, stageId, requestDto).toArray(new Predicate[0]));
+		Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+		CriteriaQuery<CrmDeal> fetchQuery = cb.createQuery(CrmDeal.class);
+		Root<CrmDeal> deal = fetchQuery.from(CrmDeal.class);
+
+		deal.fetch(CrmDeal_.stage, JoinType.LEFT);
+		deal.fetch(CrmDeal_.company, JoinType.LEFT);
+		deal.fetch(CrmDeal_.contact, JoinType.LEFT);
+		deal.fetch(CrmDeal_.owner, JoinType.LEFT);
+
+		fetchQuery.select(deal).where(buildStagePredicates(cb, deal, stageId, requestDto).toArray(new Predicate[0]));
+		fetchQuery.orderBy(cb.desc(deal.get(Auditable_.createdDate)));
+
+		TypedQuery<CrmDeal> typedQuery = entityManager.createQuery(fetchQuery);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+
+		List<CrmDeal> deals = typedQuery.getResultList();
+		return new PageImpl<>(deals, pageable, total);
+	}
+
+	private List<Predicate> buildStagePredicates(CriteriaBuilder cb, Root<CrmDeal> deal, Long stageId,
+			CrmDealsByStagesRequestDto requestDto) {
+		List<Predicate> predicates = new ArrayList<>();
+
+		predicates.add(cb.equal(deal.get(CrmDeal_.stage).get(CrmDealStage_.id), stageId));
+		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		if (requestDto.getSearchKeyword() != null && !requestDto.getSearchKeyword().isBlank()) {
+			String keyword = "%" + requestDto.getSearchKeyword().toLowerCase() + "%";
+			Join<CrmDeal, CrmContact> contactJoin = deal.join(CrmDeal_.contact, JoinType.LEFT);
+			Join<CrmDeal, Employee> ownerJoin = deal.join(CrmDeal_.owner, JoinType.LEFT);
+			predicates.add(cb.or(cb.like(cb.lower(deal.get(CrmDeal_.name)), keyword),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), keyword),
+					cb.like(cb.lower(ownerJoin.get(Employee_.firstName)), keyword),
+					cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword),
+					cb.like(cb.lower(cb.concat(cb.concat(ownerJoin.get(Employee_.firstName), " "),
+							ownerJoin.get(Employee_.lastName))), keyword)));
 		}
 
 		return predicates;
