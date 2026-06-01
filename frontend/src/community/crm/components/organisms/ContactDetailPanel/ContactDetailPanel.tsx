@@ -15,7 +15,7 @@ import DealsSection from "~community/crm/components/molecules/DealsSection/Deals
 import DeleteContactModal from "~community/crm/components/molecules/DeleteContactModal/DeleteContactModal";
 import EditContactModal from "~community/crm/components/molecules/EditContactModal/EditContactModal";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
-import TasksSection from "~community/crm/components/molecules/TasksSection/TasksSection";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 
@@ -105,7 +105,7 @@ const ContactDetailPanel: FC = () => {
 
             {/* Tasks */}
             {selectedContactId && (
-              <TasksSection contactId={selectedContactId} />
+              <SidePanelTasksSection contactId={selectedContactId} />
             )}
 
             {/* Deals */}

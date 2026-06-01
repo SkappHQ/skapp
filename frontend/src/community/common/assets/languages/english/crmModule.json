@@ -87,14 +87,18 @@
         "noDescription": "No description available."
       },
       "tasks": {
-        "sectionHeader": "Tasks",
         "addTaskButton": "Add task +",
         "addTaskButtonEmptyView": "Add task",
         "addTaskPlaceholder": "Type a task name…",
         "emptyTitle": "No tasks",
         "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
         "toggleErrorTitle": "Failed to update task",
-        "toggleErrorDescription": "Could not update the task status. Please try again."
+        "toggleErrorDescription": "Could not update the task status. Please try again.",
+        "checkTaskMarkComplete": "{{name}} as complete",
+        "checkTaskMarkIncomplete": "{{name}} as incomplete",
+        "dueDateNoDate": "No due date",
+        "dueDateOverdue": "Overdue",
+        "dueDateDueOn": "Due on {{date}}"
       },
       "menu": {
         "editContact": "Edit contact",
