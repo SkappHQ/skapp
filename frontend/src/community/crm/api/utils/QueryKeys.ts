@@ -5,6 +5,5 @@ export const companyQueryKeys = {
     searchKeyword,
     limit
   ],
-  CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"],
-  EDIT_COMPANY: ["edit-company"]
+  CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"]
 };
