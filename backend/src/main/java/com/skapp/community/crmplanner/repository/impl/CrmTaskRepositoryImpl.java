@@ -1,6 +1,9 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
@@ -8,6 +11,7 @@ import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -55,8 +59,16 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		task.fetch(CrmTask_.type, JoinType.INNER);
 		task.fetch(CrmTask_.owner, JoinType.INNER);
 
-		query.where(cb.equal(task.get(CrmTask_.contact).get(CrmContact_.id), contactId),
-				cb.isFalse(task.get(CrmTask_.isDeleted)));
+		Join<CrmTask, CrmContact> directContact = task.join(CrmTask_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
+		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
+
+		query.distinct(true);
+		query.where(
+				cb.and(
+						cb.or(cb.equal(directContact.get(CrmContact_.id), contactId),
+								cb.equal(dealContact.get(CrmContact_.id), contactId)),
+						cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		return entityManager.createQuery(query).getResultList();
 	}
