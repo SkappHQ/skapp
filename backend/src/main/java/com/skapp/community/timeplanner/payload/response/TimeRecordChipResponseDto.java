@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Setter
 @Getter
-public class TimeRecordChipResponseDto implements TimeRecordChipResponse {
+public class TimeRecordChipResponseDto {
 
 	private Long timeRecordId;
 
