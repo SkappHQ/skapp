@@ -20,8 +20,6 @@ import java.util.List;
 @Slf4j
 public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 
-	private final EmployeeDao employeeDao;
-
 	private final TimeRecordDao timeRecordDao;
 
 	private final TimeRecordLocationDao timeRecordLocationDao;
@@ -30,7 +28,6 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 			EmployeeDao employeeDao, MessageUtil messageUtil, TimeRecordDao timeRecordDao,
 			TimeRecordLocationDao timeRecordLocationDao) {
 		super(workLocationDao, workLocationGeofenceDao, employeeDao, messageUtil);
-		this.employeeDao = employeeDao;
 		this.timeRecordDao = timeRecordDao;
 		this.timeRecordLocationDao = timeRecordLocationDao;
 	}
@@ -53,9 +50,7 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 
 		if (!timeRecordIds.isEmpty()) {
 			timeRecordLocationDao.deleteAllByTimeRecordTimeRecordIdIn(timeRecordIds);
-			log.info(
-					"onGeofenceRemovedOrUpdated: deleted time record location indicators for work location {}",
-					workLocationId);
+			log.info("onGeofenceRemovedOrUpdated: deleted time record location indicators for work location");
 		}
 	}
 
