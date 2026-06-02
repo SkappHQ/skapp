@@ -49,7 +49,7 @@ const toAvatarProps = (owner: ContactOwnerLookup) => ({
   src: owner.authPic ?? undefined,
   firstName: owner.firstName,
   lastName: owner.lastName ?? "",
-  size: "sm"
+  size: "sm" as const
 });
 
 const toOwnerLookup = (source: {

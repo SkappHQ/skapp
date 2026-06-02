@@ -70,4 +70,7 @@ public interface LeaveEntitlementRepository {
 	Page<Employee> findEmployeesWithEntitlements(LocalDate validFrom, LocalDate validTo, String keyword,
 			Pageable pageable);
 
+	List<LeaveEntitlement> findFilteredEntitlementsByEmployeeIds(List<Long> employeeIds, LocalDate validFrom,
+			LocalDate validTo);
+
 }

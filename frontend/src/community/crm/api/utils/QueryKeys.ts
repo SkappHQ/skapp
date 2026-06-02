@@ -1,10 +1,15 @@
 export const contactQueryKeys = {
   GET_CONTACTS: ["crm-contacts"],
+  GET_CONTACT_DATA_BY_SEARCH: (searchKeyword: string, companyId?: number) => [
+    "crm-contacts",
+    searchKeyword,
+    companyId
+  ],
   CRM_OWNERS: (params?: object) =>
     ["crm-owners", params].filter((val) => val !== undefined),
   CRM_COMPANIES: (params?: object) =>
     ["crm-companies", params].filter((val) => val !== undefined)
-}
+};
 
 export const companyQueryKeys = {
   GET_COMPANY_DATA: ["get-company-data"],

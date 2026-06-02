@@ -1,24 +1,42 @@
-'use client';
-
-import React, { useState, useCallback, useEffect, useRef, ChangeEvent, KeyboardEvent } from 'react';
-import { InputField, Popper, SearchIcon } from '@rootcodelabs/skapp-ui';
-
-/** Mirrors InputFieldCustomStyles from @rootcodelabs/skapp-ui */
-export interface InputFieldCustomStyles {
-  borderRadius?: string;
-  background?: string;
-  border?: string;
-  width?: string;
-  gap?: string;
-  padding?: string;
-  hoverStyles?: { backgroundColor?: string; borderColor?: string };
-  focusStyles?: { borderColor?: string; shadowColor?: string };
-}
+import { InputField, Popper, SearchIcon } from "@rootcodelabs/skapp-ui";
+import React, {
+  ChangeEvent,
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 
 export interface SearchableDropdownItem {
   id: string;
   content: React.ReactNode;
 }
+
+const getNextActiveIndex = (
+  currentIndex: number | null,
+  itemsLength: number,
+  direction: "down" | "up"
+): number => {
+  if (direction === "down") {
+    if (currentIndex === null) {
+      return 0;
+    }
+    if (currentIndex >= itemsLength - 1) {
+      return currentIndex;
+    }
+    return currentIndex + 1;
+  }
+
+  if (direction === "up") {
+    if (currentIndex === null || currentIndex === 0) {
+      return 0;
+    }
+    return currentIndex - 1;
+  }
+
+  return 0;
+};
 
 export interface SearchableDropdownProps {
   id: string;
@@ -31,8 +49,11 @@ export interface SearchableDropdownProps {
   name?: string;
   required?: boolean;
   emptyMessage?: React.ReactNode;
-  customStyles?: InputFieldCustomStyles;
-  state?: 'default' | 'error';
+  onEmptyActivate?: () => void;
+  state?: "default" | "error";
+  variant?: "sm" | "md" | "lg";
+  positionStrategy?: "absolute" | "fixed";
+  onClose?: () => void;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -41,31 +62,34 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   onSelect,
   value,
   onChange,
-  placeholder = 'Search...',
+  placeholder,
   label,
   name,
   required = false,
   emptyMessage,
-  customStyles,
-  state = 'default',
+  onEmptyActivate,
+  state = "default",
+  variant = "md",
+  positionStrategy = "absolute",
+  onClose
 }) => {
-  const [open, setOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
-  const popperContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (activeIndex >= items.length) {
-      setActiveIndex(items.length > 0 ? 0 : -1);
+    if (activeIndex !== null && activeIndex >= items.length) {
+      setActiveIndex(items.length > 0 ? 0 : null);
     }
   }, [items.length, activeIndex]);
 
-  const isDropdownOpen = open && (items.length > 0 || !!emptyMessage);
+  const isDropdownOpen = isOpen && (items.length > 0 || !!emptyMessage);
 
   const handleClose = useCallback(() => {
-    setOpen(false);
-    setActiveIndex(-1);
-  }, []);
+    setIsOpen(false);
+    setActiveIndex(null);
+    onClose?.();
+  }, [onClose]);
 
   const handleSelect = useCallback(
     (item: SearchableDropdownItem) => {
@@ -78,20 +102,16 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const handleInputChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       onChange(e);
-      setActiveIndex(-1);
-      if (e.target.value.trim().length > 0) {
-        setOpen(true);
-      } else {
-        setOpen(false);
-      }
+      setActiveIndex(null);
+      setIsOpen(e.target.value.trim().length > 0);
     },
     [onChange]
   );
 
   const handleInputKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
-      if (!isDropdownOpen && e.key === 'ArrowDown' && items.length > 0) {
-        setOpen(true);
+      if (!isDropdownOpen && e.key === "ArrowDown" && items.length > 0) {
+        setIsOpen(true);
         setActiveIndex(0);
         e.preventDefault();
         return;
@@ -100,67 +120,57 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       if (!isDropdownOpen) return;
 
       switch (e.key) {
-        case 'ArrowDown':
+        case "ArrowDown": {
           e.preventDefault();
-          const nextDown = activeIndex < items.length - 1 ? activeIndex + 1 : activeIndex;
-          setActiveIndex(nextDown);
+          if (items.length === 0) break;
+          setActiveIndex(getNextActiveIndex(activeIndex, items.length, "down"));
           break;
-        case 'ArrowUp':
+        }
+        case "ArrowUp": {
           e.preventDefault();
-          const nextUp = activeIndex > 0 ? activeIndex - 1 : 0;
-          setActiveIndex(nextUp);
+          if (items.length === 0) break;
+          setActiveIndex(getNextActiveIndex(activeIndex, items.length, "up"));
           break;
-        case 'Tab':
-          if (e.shiftKey) {
-            handleClose();
-            break;
-          }
-
-          if (items.length === 0 && popperContentRef.current) {
-            const btn = popperContentRef.current.querySelector('button');
-            if (btn) {
-              e.preventDefault();
-              btn.focus();
-            } else {
-              handleClose();
-            }
-          } else if (items.length > 0) {
-            if (activeIndex === -1) {
-              e.preventDefault();
-              setActiveIndex(0);
-            } else {
-              if (activeIndex >= 0 && activeIndex < items.length) {
-                handleSelect(items[activeIndex]);
-              } else {
-                handleClose();
-              }
-            }
-          }
+        }
+        case "Tab":
+          handleClose();
           break;
-        case 'Enter':
-          if (activeIndex >= 0 && activeIndex < items.length) {
+        case "Enter":
+          if (activeIndex !== null && activeIndex < items.length) {
             e.preventDefault();
             handleSelect(items[activeIndex]);
-          } else if (items.length === 0 && popperContentRef.current) {
-            const btn = popperContentRef.current.querySelector('button');
-            if (btn) {
-              e.preventDefault();
-              btn.click();
-              setTimeout(handleClose, 100);
-            }
+          } else if (items.length === 0 && onEmptyActivate) {
+            e.preventDefault();
+            onEmptyActivate();
+            handleClose();
           }
           break;
-        case 'Escape':
+        case "Escape":
           e.preventDefault();
           handleClose();
           break;
       }
     },
-    [isDropdownOpen, items, activeIndex, handleSelect, handleClose]
+    [
+      isDropdownOpen,
+      items,
+      activeIndex,
+      handleSelect,
+      handleClose,
+      onEmptyActivate
+    ]
   );
 
   return (
-    <div className="w-full relative" ref={inputWrapperRef}>
+    <div
+      className="w-full relative input-plain-text"
+      ref={inputWrapperRef}
+      onFocus={() => {
+        if (value.trim().length > 0) {
+          setIsOpen(true);
+        }
+      }}
+    >
       <InputField
         id={`${id}-input`}
         className="w-full"
@@ -172,24 +182,20 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         value={value}
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
-        onFocus={() => {
-          if (value.trim().length > 0) {
-            setOpen(true);
-          }
-        }}
-        variant="md"
+        variant={variant}
         state={state}
         styleOverrides={{
-          labelContainer: "h-6 inline-flex self-stretch pr-3 justify-start items-center gap-2"
+          labelContainer:
+            "h-6 inline-flex self-stretch pr-3 justify-start items-center gap-2"
         }}
-        customStyles={customStyles}
+        customStyles={{ gap: "gap-2" }}
         rightIcon={<SearchIcon />}
         role="combobox"
         aria-expanded={isDropdownOpen}
-        aria-controls={`${id}-list`}
+        aria-controls={items.length > 0 ? `${id}-list` : undefined}
         aria-autocomplete="list"
         aria-activedescendant={
-          activeIndex >= 0 && isDropdownOpen && items.length > 0
+          activeIndex !== null && isDropdownOpen && activeIndex < items.length
             ? `${id}-option-${items[activeIndex].id}`
             : undefined
         }
@@ -199,6 +205,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         <Popper
           id={`${id}-popper`}
           anchorEl={inputWrapperRef.current}
+          anchorElWidth={inputWrapperRef.current?.offsetWidth}
           open={isDropdownOpen}
           position="bottom"
           handleClose={handleClose}
@@ -206,14 +213,15 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           ariaLabel={label || placeholder}
           isFlip
           disableAutoFocus
+          positionStrategy={positionStrategy}
           containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
         >
-          <div ref={popperContentRef}>
+          <div>
             {items.length === 0 ? (
-              emptyMessage && <div onClick={handleClose}>{emptyMessage}</div>
+              emptyMessage && <div>{emptyMessage}</div>
             ) : (
               <ul
-                className="max-h-60 overflow-y-auto"
+                className="max-h-50 overflow-y-auto"
                 role="listbox"
                 id={`${id}-list`}
                 aria-label={label || placeholder}
@@ -227,10 +235,11 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                     onClick={() => handleSelect(item)}
                     onMouseEnter={() => setActiveIndex(index)}
                     className={`
-                      px-4 py-2 cursor-pointer outline-none transition-all duration-150 border relative
-                      ${index === activeIndex
-                        ? 'border-primary-accent shadow-[0px_0px_4px_0px_rgba(0,0,0,0.60)] z-10 bg-primary-background/30 rounded'
-                        : 'border-transparent hover:bg-gray-100'
+                      px-4 py-2 cursor-pointer outline-none transition-all duration-150 relative
+                      ${
+                        index === activeIndex
+                          ? "bg-tertiary-background rounded"
+                          : "hover:bg-gray-100"
                       }
                     `}
                   >
