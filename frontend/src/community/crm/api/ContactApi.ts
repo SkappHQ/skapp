@@ -8,7 +8,6 @@ import {
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { contactEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { contactQueryKeys } from "~community/crm/api/utils/QueryKeys";
-import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/constants/contactConstants";
 import {
   CrmCompaniesResponseType,
   CrmContactCreatePayload,
@@ -97,10 +96,7 @@ export const useCreateNewContact = (
   });
 };
 
-export const useGetCompanyLookup = (
-  searchKeyword: string,
-  size: number,
-) => {
+export const useGetCompanyLookup = (searchKeyword: string, size: number) => {
   return useQuery({
     queryKey: contactQueryKeys.COMPANY_LOOKUP(searchKeyword),
     queryFn: async (): Promise<CrmCompaniesResponseType> => {
@@ -115,10 +111,7 @@ export const useGetCompanyLookup = (
   });
 };
 
-export const useGetOwnerLookup = (
-  searchKeyword: string,
-  size: number
-) => {
+export const useGetOwnerLookup = (searchKeyword: string, size: number) => {
   return useQuery({
     queryKey: contactQueryKeys.OWNER_LOOKUP(searchKeyword),
     queryFn: async (): Promise<CrmOwnersResponseType> => {
@@ -126,6 +119,6 @@ export const useGetOwnerLookup = (
         params: { searchKeyword, size }
       });
       return response?.data?.results?.[0];
-    },
+    }
   });
 };
