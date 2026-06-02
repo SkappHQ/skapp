@@ -31,11 +31,6 @@ public class CrmConfigServiceImpl implements CrmConfigService {
 	private void setDefaultCrmDealStages() {
 		log.info("setDefaultCrmDealStages: execution started");
 
-		if (crmDealStageDao.count() > 0) {
-			log.info("setDefaultCrmDealStages: deal stages already exist, skipping");
-			return;
-		}
-
 		crmDealStageDao.saveAll(DefaultCrmDealTemplate.getDefaultStages());
 
 		log.info("setDefaultCrmDealStages: execution ended");
@@ -43,12 +38,7 @@ public class CrmConfigServiceImpl implements CrmConfigService {
 
 	private void setDefaultCrmTaskTypes() {
 		log.info("setDefaultCrmTaskTypes: execution started");
-
-		if (crmTaskTypeDao.count() > 0) {
-			log.info("setDefaultCrmTaskTypes: task types already exist, skipping");
-			return;
-		}
-
+		
 		crmTaskTypeDao.saveAll(DefaultCrmTaskTypeTemplate.getDefaultTaskTypes());
 
 		log.info("setDefaultCrmTaskTypes: execution ended");
