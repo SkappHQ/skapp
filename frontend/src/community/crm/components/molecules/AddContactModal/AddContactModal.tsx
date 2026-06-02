@@ -21,7 +21,10 @@ import {
   useGetCompanyLookup,
   useGetOwnerLookup
 } from "~community/crm/api/ContactApi";
-import { CONTACT_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/contactConstants";
+import {
+  CONTACT_SEARCH_DEBOUNCE_DELAY,
+  DEFAULT_LOOKUP_PAGE_SIZE
+} from "~community/crm/constants/contactConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactAddFormTypes,
@@ -110,35 +113,60 @@ const AddContactModal: React.FC = () => {
     values,
     errors,
     handleChange,
-    isSubmitting,
     setFieldValue,
     setSubmitting,
     submitForm
   } = formik;
 
-  // --- Company searchable dropdown ---
   const [companySearch, setCompanySearch] = useState("");
   const [selectedCompanyLabel, setSelectedCompanyLabel] = useState("");
   const debouncedCompanySearch = useDebounce(
     companySearch.trim(),
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
-  const { data: companyLookup, isLoading: isCompanyLoading } =
-    useGetCompanyLookup(
-      debouncedCompanySearch,
-      debouncedCompanySearch.length > 0
-    );
 
-  const companyItems: SearchableDropdownItem[] = (
-    companyLookup?.items ?? []
-  ).map((company) => ({
-    id: String(company.id),
-    content: company.name
-  }));
+  const [ownerSearch, setOwnerSearch] = useState("");
+  const [selectedOwnerLabel, setSelectedOwnerLabel] = useState("");
+  const debouncedOwnerSearch = useDebounce(
+    ownerSearch.trim(),
+    CONTACT_SEARCH_DEBOUNCE_DELAY
+  );
 
-  const handleCompanySelect = (item: SearchableDropdownItem) => {
+  const { data: companyLookup, isFetching: isCompanyFetching } =
+    useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
+
+  const { data: ownerLookup, isFetching: isOwnerFetching } = useGetOwnerLookup(
+    debouncedOwnerSearch,
+    DEFAULT_LOOKUP_PAGE_SIZE
+  );
+
+  const companyItems: SearchableDropdownItem[] = companyLookup?.items?.map(
+    (company) => ({
+      id: String(company.id),
+      content: company.name
+    })
+  ) ?? [];
+
+  const ownerItems: SearchableDropdownItem[] = ownerLookup?.items?.map((owner) => ({
+    id: String(owner.employeeId),
+    content: (
+      <AvatarChip
+        avatarProps={{
+          id: String(owner.employeeId),
+          firstName: owner.firstName,
+          lastName: owner.lastName ?? "",
+          src: owner.authPic ?? undefined,
+          size: "sm"
+        }}
+        label={concatStrings([owner.firstName, owner.lastName ?? ""])}
+      />
+    )
+  })) ?? [];
+
+    const handleCompanySelect = (item: SearchableDropdownItem) => {
+    const company = companyLookup?.items?.find((c) => String(c.id) === item.id);
     setFieldValue("companyId", Number(item.id));
-    setSelectedCompanyLabel(String(item.content));
+    setSelectedCompanyLabel(company?.name ?? String(item.content));
     setCompanySearch("");
   };
 
@@ -148,44 +176,11 @@ const AddContactModal: React.FC = () => {
     setCompanySearch("");
   };
 
-  const [ownerSearch, setOwnerSearch] = useState("");
-  const [selectedOwnerLabel, setSelectedOwnerLabel] = useState("");
-  const debouncedOwnerSearch = useDebounce(
-    ownerSearch.trim(),
-    CONTACT_SEARCH_DEBOUNCE_DELAY
-  );
-  const { data: ownerLookup, isLoading: isOwnerLoading } = useGetOwnerLookup(
-    debouncedOwnerSearch,
-    debouncedOwnerSearch.length > 0
-  );
-
-  const ownerItems: SearchableDropdownItem[] = (ownerLookup?.items ?? []).map(
-    (owner) => ({
-      id: String(owner.employeeId),
-      content: (
-        <AvatarChip
-          avatarProps={{
-            id: String(owner.employeeId),
-            firstName: owner.firstName,
-            lastName: owner.lastName ?? "",
-            src: owner.authPic ?? undefined,
-            size: "sm"
-          }}
-          label={concatStrings([owner.firstName, owner.lastName ?? ""]).trim()}
-        />
-      )
-    })
-  );
-
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
-    const owner = ownerLookup?.items.find(
-      (o) => String(o.employeeId) === item.id
-    );
+    const owner = ownerLookup?.items?.find((o) => String(o.employeeId) === item.id);
     setFieldValue("ownerId", Number(item.id));
     setSelectedOwnerLabel(
-      owner
-        ? concatStrings([owner.firstName, owner.lastName ?? ""]).trim()
-        : item.id
+      owner ? concatStrings([owner.firstName, owner.lastName ?? ""]) : item.id
     );
     setOwnerSearch("");
   };
@@ -197,14 +192,9 @@ const AddContactModal: React.FC = () => {
   };
 
   const renderClearButton = (onClear: () => void, ariaLabel: string) => (
-    <button
-      type="button"
-      onClick={onClear}
-      aria-label={ariaLabel}
-      className="flex items-center justify-center cursor-pointer"
-    >
-      <CloseIcon className="w-4 h-4" />
-    </button>
+    <ButtonV2 variant="tertiary" onClick={onClear} aria-label={ariaLabel}>
+      <CloseIcon />
+    </ButtonV2>
   );
 
   return (
@@ -248,7 +238,7 @@ const AddContactModal: React.FC = () => {
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearch("")}
           emptyMessage={
-            isCompanyLoading ? undefined : (
+            isCompanyFetching ? undefined : (
               <p className="px-4 py-2 body2">
                 {translateText(["emptyStates", "noCompanies"])}
               </p>
@@ -293,7 +283,7 @@ const AddContactModal: React.FC = () => {
           onSelect={handleOwnerSelect}
           onClose={() => setOwnerSearch("")}
           emptyMessage={
-            isOwnerLoading ? undefined : (
+            isOwnerFetching ? undefined : (
               <p className="px-4 py-2 body2">
                 {translateText(["emptyStates", "noOwners"])}
               </p>

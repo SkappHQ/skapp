@@ -99,7 +99,7 @@ export const useCreateNewContact = (
 
 export const useGetCompanyLookup = (
   searchKeyword: string,
-  enabled: boolean = true
+  size: number,
 ) => {
   return useQuery({
     queryKey: contactQueryKeys.COMPANY_LOOKUP(searchKeyword),
@@ -107,27 +107,25 @@ export const useGetCompanyLookup = (
       const response = await authFetch.get(
         contactEndpoints.GET_COMPANY_LOOKUP,
         {
-          params: { searchKeyword, size: DEFAULT_LOOKUP_PAGE_SIZE }
+          params: { searchKeyword, size }
         }
       );
       return response?.data?.results?.[0];
-    },
-    enabled
+    }
   });
 };
 
 export const useGetOwnerLookup = (
   searchKeyword: string,
-  enabled: boolean = true
+  size: number
 ) => {
   return useQuery({
     queryKey: contactQueryKeys.OWNER_LOOKUP(searchKeyword),
     queryFn: async (): Promise<CrmOwnersResponseType> => {
       const response = await authFetch.get(contactEndpoints.GET_OWNER_LOOKUP, {
-        params: { searchKeyword, size: DEFAULT_LOOKUP_PAGE_SIZE }
+        params: { searchKeyword, size }
       });
       return response?.data?.results?.[0];
     },
-    enabled
   });
 };
