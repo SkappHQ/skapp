@@ -92,7 +92,11 @@ const AppBar = () => {
       <PageHeader
         left={
           !isBelow600 ? (
-            <Breadcrumb items={breadcrumbs} ariaLabel="Breadcrumb" />
+            <Breadcrumb
+              items={breadcrumbs}
+              ariaLabel="Breadcrumb"
+              onNavigate={(href) => router.push(href)}
+            />
           ) : null
         }
         right={
