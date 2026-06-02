@@ -11,10 +11,6 @@ public class CrmDealsByStageResponseDto {
 
 	private Long stageId;
 
-	private String stageName;
-
-	private String stageColor;
-
 	private long totalCount;
 
 	private int currentPage;
@@ -25,6 +21,6 @@ public class CrmDealsByStageResponseDto {
 
 	private boolean hasNextPage;
 
-	private List<CrmDealResponseDto> deals;
+	private List<CrmDealByStageItemResponseDto> deals;
 
 }

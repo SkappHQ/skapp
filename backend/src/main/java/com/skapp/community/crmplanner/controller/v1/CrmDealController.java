@@ -44,7 +44,7 @@ public class CrmDealController {
 	}
 
 	@Operation(summary = "Get deals grouped by stages",
-			description = "Returns deals grouped by the requested stages with a configurable limit per stage and total count for each stage.")
+			description = "Returns deals grouped by the requested stages. Multi-stage requests return first-page data for each stage; single-stage requests support page-based swim-lane loading.")
 	@PostMapping(value = "/grouped-by-stages", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getDealsByStages(

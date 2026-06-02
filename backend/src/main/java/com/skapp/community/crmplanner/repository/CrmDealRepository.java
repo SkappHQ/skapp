@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import java.util.List;
+import java.util.Map;
 
 public interface CrmDealRepository {
 
@@ -15,5 +16,10 @@ public interface CrmDealRepository {
 	List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds);
 
 	Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable);
+
+	Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable,
+			long preComputedTotal);
+
+	Map<Long, Long> countDealsByStageIds(List<Long> stageIds, CrmDealsByStagesRequestDto requestDto);
 
 }

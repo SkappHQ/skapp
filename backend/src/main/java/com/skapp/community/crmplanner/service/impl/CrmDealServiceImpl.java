@@ -14,6 +14,7 @@ import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealsByStagesRequestDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealByStageItemResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealsByStageResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
@@ -33,8 +34,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-
+import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -138,24 +140,33 @@ public class CrmDealServiceImpl implements CrmDealService {
 			return new ResponseEntityDto(false, new ArrayList<>());
 		}
 
-		int limit = requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT;
+		List<Long> uniqueStageIds = new ArrayList<>(new LinkedHashSet<>(requestDto.getStageIds()));
+
+		List<CrmDealStage> stages = crmDealStageDao.findAllByIdInAndIsDeletedFalse(uniqueStageIds);
+		if (stages.size() != uniqueStageIds.size()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
+		}
+
+		int limit = Math.min(requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT, CrmConstants.DEALS_PER_STAGE_LIMIT_MAX);
+		Integer requestedPage = requestDto.getPage();
+		int page = (requestedPage != null && requestedPage >= 0 && uniqueStageIds.size() == 1)
+				? requestedPage : 0;
+
+		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto);
+
 		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
 
-		for (Long stageId : requestDto.getStageIds()) {
-			CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(stageId)
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
-
-			int page = (requestDto.getStagePages() != null && requestDto.getStagePages().containsKey(stageId))
-					? requestDto.getStagePages().get(stageId) : 0;
+		for (Long stageId : uniqueStageIds) {
+			long totalCount = stageCounts.getOrDefault(stageId, 0L);
 			PageRequest pageRequest = PageRequest.of(page, limit);
 
-			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest);
-			List<CrmDealResponseDto> deals = crmMapper.crmDealsToCrmDealResponseDtos(dealsPage.getContent());
+			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount);
+			List<CrmDealByStageItemResponseDto> deals = crmMapper
+					.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
 
 			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
-			stageResult.setStageId(stage.getId());
-			stageResult.setStageName(stage.getName());
-			stageResult.setStageColor(stage.getColor());
+			stageResult.setStageId(stageId);
+
 			stageResult.setTotalCount(dealsPage.getTotalElements());
 			stageResult.setCurrentPage(dealsPage.getNumber());
 			stageResult.setTotalPages(dealsPage.getTotalPages());
