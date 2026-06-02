@@ -81,6 +81,23 @@
       "successTitle": "Company added successfully",
       "errorTitle": "Failed to add company",
       "errorDescription": "Please try again or contact support"
+    },
+    "companyDetailsSidePanel": {
+      "sidePanelCompanyContacts": {
+        "title": "Contacts",
+        "columns": {
+          "contact": "CONTACT",
+          "email": "EMAIL",
+          "contactNo": "CONTACT NO.",
+          "revenue": "REVENUE",
+          "openTasks": "OPEN TASKS"
+        },
+        "noContacts": "No contacts available.",
+        "noContactsDescription": "Add a contact to get started.",
+        "addContact": "Add Contact",
+        "dealsClosed": "Deals closed",
+        "overdue": "overdue"
+      }
     }
   },
   "deals": {
