@@ -140,30 +140,30 @@ const AddContactModal: React.FC = () => {
     DEFAULT_LOOKUP_PAGE_SIZE
   );
 
-  const companyItems: SearchableDropdownItem[] = companyLookup?.items?.map(
-    (company) => ({
+  const companyItems: SearchableDropdownItem[] =
+    companyLookup?.items?.map((company) => ({
       id: String(company.id),
       content: company.name
-    })
-  ) ?? [];
+    })) ?? [];
 
-  const ownerItems: SearchableDropdownItem[] = ownerLookup?.items?.map((owner) => ({
-    id: String(owner.employeeId),
-    content: (
-      <AvatarChip
-        avatarProps={{
-          id: String(owner.employeeId),
-          firstName: owner.firstName,
-          lastName: owner.lastName ?? "",
-          src: owner.authPic ?? undefined,
-          size: "sm"
-        }}
-        label={concatStrings([owner.firstName, owner.lastName ?? ""])}
-      />
-    )
-  })) ?? [];
+  const ownerItems: SearchableDropdownItem[] =
+    ownerLookup?.items?.map((owner) => ({
+      id: String(owner.employeeId),
+      content: (
+        <AvatarChip
+          avatarProps={{
+            id: String(owner.employeeId),
+            firstName: owner.firstName,
+            lastName: owner.lastName ?? "",
+            src: owner.authPic ?? undefined,
+            size: "sm"
+          }}
+          label={concatStrings([owner.firstName, owner.lastName ?? ""])}
+        />
+      )
+    })) ?? [];
 
-    const handleCompanySelect = (item: SearchableDropdownItem) => {
+  const handleCompanySelect = (item: SearchableDropdownItem) => {
     const company = companyLookup?.items?.find((c) => String(c.id) === item.id);
     setFieldValue("companyId", Number(item.id));
     setSelectedCompanyLabel(company?.name ?? String(item.content));
@@ -177,7 +177,9 @@ const AddContactModal: React.FC = () => {
   };
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
-    const owner = ownerLookup?.items?.find((o) => String(o.employeeId) === item.id);
+    const owner = ownerLookup?.items?.find(
+      (o) => String(o.employeeId) === item.id
+    );
     setFieldValue("ownerId", Number(item.id));
     setSelectedOwnerLabel(
       owner ? concatStrings([owner.firstName, owner.lastName ?? ""]) : item.id
