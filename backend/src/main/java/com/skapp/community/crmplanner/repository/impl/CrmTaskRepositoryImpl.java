@@ -45,18 +45,15 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		Expression<Long> effectiveContactId = cb.coalesce(directContact.get(CrmContact_.id),
 				dealContact.get(CrmContact_.id));
 
-		query.select(cb.construct(CrmTaskSummary.class, effectiveContactId,
-				cb.countDistinct(task.get(CrmTask_.id)),
+		query.select(cb.construct(CrmTaskSummary.class, effectiveContactId, cb.countDistinct(task.get(CrmTask_.id)),
 				cb.sum(cb.<Long>selectCase()
 					.when(cb.and(cb.isNotNull(task.get(CrmTask_.dueAt)),
 							cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(now))), 1L)
 					.otherwise(0L))));
 
 		query.where(cb.and(
-				cb.or(directContact.get(CrmContact_.id).in(contactIds),
-						dealContact.get(CrmContact_.id).in(contactIds)),
-				cb.isFalse(task.get(CrmTask_.isCompleted)),
-				cb.isFalse(task.get(CrmTask_.isDeleted))));
+				cb.or(directContact.get(CrmContact_.id).in(contactIds), dealContact.get(CrmContact_.id).in(contactIds)),
+				cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		query.groupBy(effectiveContactId);
 
