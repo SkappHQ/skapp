@@ -31,16 +31,15 @@ const SidePanelContactInfoItem: FC<Props> = ({
 }) => {
   const isInteractive = !!onClick && !!value;
 
-  if (isInteractive) {
-    return (
-      <div className="flex items-center gap-[12px]">
-        <span className="shrink-0 flex items-center">{renderIcon(icon)}</span>
+  return (
+    <div className="flex items-center gap-[12px]">
+      <span className="shrink-0 flex items-center">{renderIcon(icon)}</span>
+      {isInteractive ? (
         <ButtonV2
           type="button"
           variant="line"
           size="sm"
           onClick={onClick}
-          aria-label={value ?? "—"}
           className="group !cursor-pointer !p-0 !min-w-0 !justify-start !h-auto !rounded-[4px] hover:!bg-transparent focus:!outline-none focus-visible:!ring-2 focus-visible:!ring-[var(--color-primary-accent)] focus-visible:!ring-offset-2"
         >
           <span className="flex items-center gap-[4px] transition-colors text-primary-text cursor-pointer group-hover:text-[var(--color-primary-accent)]">
@@ -52,22 +51,17 @@ const SidePanelContactInfoItem: FC<Props> = ({
             )}
           </span>
         </ButtonV2>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-[12px]">
-      <span className="shrink-0 flex items-center">{renderIcon(icon)}</span>
-      <span
-        className={
-          value
-            ? "body2 leading-6 tracking-[0.5px] text-black"
-            : "body2 leading-6 tracking-[0.5px] text-primary-text"
-        }
-      >
-        {value ?? "—"}
-      </span>
+      ) : (
+        <span
+          className={
+            value
+              ? "body2 leading-6 tracking-[0.5px] text-black"
+              : "body2 leading-6 tracking-[0.5px] text-primary-text"
+          }
+        >
+          {value ?? "—"}
+        </span>
+      )}
     </div>
   );
 };

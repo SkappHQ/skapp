@@ -24,10 +24,10 @@ export const ContactHeaderSkeleton: FC = () => {
   return (
     <div className="w-full flex flex-col gap-3 animate-pulse">
       <div className="flex flex-col gap-2">
-        <div className="h-4.25 w-23.25 rounded-sm bg-gray-100" />
-        <div className="h-2.5 w-33.75 rounded-sm bg-gray-100" />
+        <div className="h-[17px] w-[93px] rounded-sm bg-gray-100" />
+        <div className="h-2.5 w-[135px] rounded-sm bg-gray-100" />
       </div>
-      <div className="flex items-center justify-between max-w-157.25 w-full">
+      <div className="flex items-center justify-between max-w-[629px] w-full">
         <ContactInfoItemSkeleton widthClass="w-[86px]" />
         <ContactInfoItemSkeleton widthClass="w-[68px]" />
         <ContactInfoItemSkeleton widthClass="w-[34px]" hasEndIcon />
