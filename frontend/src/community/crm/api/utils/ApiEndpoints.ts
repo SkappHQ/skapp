@@ -2,7 +2,10 @@ import { moduleAPIPath } from "~community/common/constants/configs";
 
 export const contactEndpoints = {
   GET_CONTACT_METRICS: `${moduleAPIPath.CRM}/contact/metrics`,
-  GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`
+  GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`,
+  CREATE_CONTACT: `${moduleAPIPath.CRM}/contact`,
+  GET_COMPANY_LOOKUP: `${moduleAPIPath.CRM}/company/lookup`,
+  GET_OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
 export const companyEndpoints = {

@@ -79,6 +79,36 @@ export interface CrmCompaniesResponseType {
   totalPages: number;
 }
 
+export interface OwnerLookup {
+  employeeId: number;
+  firstName: string;
+  lastName: string | null;
+  authPic: string | null;
+}
+
+export interface CrmOwnersResponseType {
+  items: OwnerLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface CrmContactAddFormTypes {
+  name: string;
+  email: string;
+  contactNumber: string | null;
+  companyId: number | null;
+  ownerId: number | null;
+}
+
+export interface CrmContactCreatePayload {
+  name: string;
+  email: string;
+  contactNumber?: string;
+  companyId?: number;
+  ownerId?: number;
+}
+
 export interface CrmContactMetricsType {
   id: number;
   name: string;
