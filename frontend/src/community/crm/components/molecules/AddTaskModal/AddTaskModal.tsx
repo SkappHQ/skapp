@@ -1,30 +1,34 @@
 import {
-  AvatarChipsInput,
-  AvatarChipsInputResult,
+  AvatarChip,
   ButtonV2,
   CalendarIcon,
   CloseIcon,
   DatePicker,
   Dropdown,
   InputField,
+  Label,
   SearchInputField,
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useMemo, useState } from "react";
 
+import SearchableDropdown, {
+  SearchableDropdownItem
+} from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateTask } from "~community/crm/api/TaskApi";
-import { getPriorityOptions } from "~community/crm/components/atoms/PriorityOptions/PriorityOptions";
+import { priorityOptions } from "~community/crm/constants/companyConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmTaskAddFormTypes,
   CrmTaskCreatePayload
 } from "~community/crm/types/CommonTypes";
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
+import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface TaskTypeOption {
   id: string;
@@ -41,15 +45,41 @@ const AddTaskModal: React.FC = () => {
     setIsAddTaskModalOpen: store.setIsAddTaskModalOpen
   }));
 
-  const { employeeDetails } = useSessionData();
+  const { data: me } = useGetUserPersonalDetails();
 
-  const [selectedOwnerChip, setSelectedOwnerChip] =
-    useState<AvatarChipsInputResult | null>(null);
+  const { employeeDetails, isCrmSalesManager } = useSessionData();
 
+  const defaultOwner = useMemo(() => {
+    if (!me?.employeeId) return null;
+    return {
+      employeeId: me.employeeId,
+      firstName: me.firstName,
+      lastName: me.lastName,
+      authPic: me.authPic as string | null
+    };
+  }, [me]);
+
+  const [selectedOwner, setSelectedOwner] =
+    useState<SearchableDropdownItem | null>(null);
+  const [previousOwner, setPreviousOwner] =
+    useState<SearchableDropdownItem | null>(null);
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
-  const priorityOptions = useMemo(
-    () => getPriorityOptions(translateText),
+  const getPriorityOptions = useMemo(
+    () =>
+      priorityOptions.map((option) => ({
+        id: option.key,
+        label: (
+          <Label
+            key={option.key}
+            backgroundColor={option.backgroundColor}
+            textColor={option.textColor}
+          >
+            {translateText(["priorityOptions", option.key])}
+          </Label>
+        ),
+        value: option.value
+      })),
     [translateText]
   );
 
@@ -65,30 +95,28 @@ const AddTaskModal: React.FC = () => {
   );
 
   // TODO: Replace with API data when backend integrated
-  const ownerOptions: AvatarChipsInputResult[] = useMemo(
+  const ownerOptions = useMemo(
     () => [
       {
-        optionId: 1,
+        optionId: "owner-1",
         chipContent: {
           label: "Jane Doe",
           avatarProps: {
             id: "owner-avatar",
             firstName: "Jane",
-            lastName: "Doe",
-            size: "sm"
+            lastName: "Doe"
           }
         },
         type: "user"
       },
       {
-        optionId: 2,
+        optionId: "owner-2",
         chipContent: {
           label: "John Smith",
           avatarProps: {
             id: "owner-avatar-2",
             firstName: "John",
-            lastName: "Smith",
-            size: "sm"
+            lastName: "Smith"
           }
         },
         type: "user"
@@ -117,7 +145,7 @@ const AddTaskModal: React.FC = () => {
     priority: "MEDIUM",
     contactName: "",
     deal: "",
-    owner: employeeDetails?.employeeId || null,
+    owner: defaultOwner?.employeeId ? Number(defaultOwner.employeeId) : null,
     notes: ""
   };
 
@@ -144,7 +172,6 @@ const AddTaskModal: React.FC = () => {
   const handleCloseModal = (): void => {
     setIsAddTaskModalOpen(false);
     resetForm();
-    setSelectedOwnerChip(null);
     setOwnerSearchText("");
   };
 
@@ -168,6 +195,12 @@ const AddTaskModal: React.FC = () => {
     });
   };
 
+  const handleOwnerSelect = (owner: SearchableDropdownItem) => {
+    setSelectedOwner(owner);
+    setFieldValue("owner", owner.id);
+    setOwnerSearchText("");
+  };
+
   const { mutate: createNewTask, isPending } = useCreateTask(
     handleSuccess,
     handleError
@@ -187,22 +220,6 @@ const AddTaskModal: React.FC = () => {
 
     createNewTask(payload);
   };
-
-  const handleOwnerChipSelect = (chip: AvatarChipsInputResult) => {
-    setSelectedOwnerChip(chip);
-    setFieldValue("owner", chip.optionId);
-    setOwnerSearchText("");
-  };
-
-  const handleOwnerChipRemove = (_chip: AvatarChipsInputResult) => {
-    setSelectedOwnerChip(null);
-    setFieldValue("owner", null);
-  };
-
-  const handleOwnerSearchTextChange = (text: string) => {
-    setOwnerSearchText(text);
-  };
-
   return (
     <div className="flex flex-col w-full h-full justify-between gap-[0.625rem]">
       <Dropdown
@@ -264,7 +281,7 @@ const AddTaskModal: React.FC = () => {
       <Dropdown
         label={translateText(["labels", "priority"])}
         placeholder={translateText(["placeholders", "priority"])}
-        options={priorityOptions}
+        options={getPriorityOptions}
         value={values.priority ?? undefined}
         onChange={(value) => setFieldValue("priority", value)}
         errorMessage={errors.priority || ""}
@@ -305,20 +322,22 @@ const AddTaskModal: React.FC = () => {
         ariaLabelSearch={translateText(["ariaLabels", "deal"])}
       />
 
-      <label htmlFor="taskOwner" className="subtitle1">
-        {translateText(["labels", "taskOwner"])}
-      </label>
-      {/* TODO: Placeholder for SearchableDropdown. Will be implemented with backend. */}
-      <AvatarChipsInput
-        filteredResults={filteredOwnerOptions}
-        selectedChips={selectedOwnerChip ? [selectedOwnerChip] : []}
-        searchText={ownerSearchText}
-        onChipSelect={handleOwnerChipSelect}
-        onChipRemove={handleOwnerChipRemove}
-        onSearchTextChange={handleOwnerSearchTextChange}
-        searchPlaceholder={translateText(["placeholders", "taskOwner"])}
-        ariaLabelSearch={translateText(["ariaLabels", "taskOwner"])}
-        ariaLabelClearButton={translateText(["ariaLabels", "removeOwner"])}
+      <SearchableDropdown
+        id="owner-search"
+        items={filteredOwnerOptions.map((opt) => ({
+          id: opt.optionId,
+          content: (
+            <AvatarChip
+              label={opt.chipContent.label}
+              avatarProps={opt.chipContent.avatarProps}
+            />
+          ) as React.ReactNode
+        }))}
+        onSelect={handleOwnerSelect}
+        label={translateText(["labels", "taskOwner"])}
+        placeholder={translateText(["placeholders", "taskOwner"])}
+        value={ownerSearchText}
+        onChange={(e) => setOwnerSearchText(e.target.value)}
       />
 
       <TextArea
