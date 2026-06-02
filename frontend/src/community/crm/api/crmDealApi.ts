@@ -1,4 +1,7 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+  UseInfiniteQueryResult,
+  useInfiniteQuery
+} from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
@@ -10,13 +13,16 @@ import { crmDealQueryKeys } from "./utils/QueryKeys";
 
 export const useGetDealsInfinite = (
   params: CrmDealFilterParams
-) => {
+): UseInfiniteQueryResult<CrmDealPaginatedResponseType> => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: crmDealQueryKeys.GET_DEALS(params),
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam = 0 }) => {
       const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
-        params: { ...params, page: pageParam }
+        params: {
+          page: pageParam,
+          ...params
+        }
       });
       return response?.data?.results?.[0] as CrmDealPaginatedResponseType;
     },

@@ -6,10 +6,11 @@ import {
   ListTable,
   ProjectTableSkeletonLoader
 } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { FC, ReactNode, useMemo } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 
+import { useContainerWidth } from "~community/common/hooks/useContainerWidth";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
 import { getFullName } from "~community/common/utils/commonUtil";
@@ -46,22 +47,7 @@ const DealsTable: FC<Props> = ({
     searchKeyword: `'${searchKeyword}'`
   });
 
-  const [tableWidth, setTableWidth] = useState(0);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    setTableWidth(container.getBoundingClientRect().width - 8);
-
-    const observer = new ResizeObserver(() => {
-      setTableWidth(container.getBoundingClientRect().width - 8);
-    });
-    observer.observe(container);
-
-    return () => observer.disconnect();
-  }, [isLoading]);
+  const [containerRef, tableWidth] = useContainerWidth();
 
   const columnHeaders = useMemo(
     (): Column<DealRow>[] => [
