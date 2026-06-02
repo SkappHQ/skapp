@@ -1,6 +1,6 @@
 import { ButtonV2, Dropdown, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { ChangeEvent, useEffect, useMemo } from "react";
+import React, { ChangeEvent, useEffect } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import { characterLengths } from "~community/common/constants/stringConstants";
@@ -14,6 +14,7 @@ import {
 } from "~community/crm/api/CompanyApi";
 import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyConstants";
 import { CrmIndustryEnum } from "~community/crm/enums/common";
+import useGetIndustryOptions from "~community/crm/hooks/useGetIndustryOptions";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyEditFormTypes } from "~community/crm/types/CommonTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
@@ -33,21 +34,7 @@ const EditCompanyModal: React.FC = () => {
     "editCompanyToastMessages"
   );
 
-  const translateIndustryOptions = useTranslator(
-    "crmModule",
-    "companies",
-    "industryOptions"
-  );
-
-  const industryOptions = useMemo(      // TODO: add the useGetIndustries hook when merged
-    () =>
-      Object.values(CrmIndustryEnum).map((industry) => ({
-        id: industry,
-        label: translateIndustryOptions([industry]),
-        value: industry
-      })),
-    [translateIndustryOptions]
-  );
+  const industryOptions = useGetIndustryOptions();
 
   const { setIsCompanyModalOpen, selectedCompany, setSelectedCompany } =
     useCrmStore((store) => ({

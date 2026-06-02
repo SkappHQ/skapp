@@ -49,7 +49,8 @@
         "contactNumber": "Contact number is invalid",
         "companyNameLength": "Company name must be less than 30 characters",
         "characterLength": "Entry must be less than 50 characters",
-        "addressLength": "Address must be less than 100 characters"
+        "addressLength": "Address must be less than 100 characters",
+        "industry": "Please select a valid industry"
       }
     },
     "industryOptions": {
@@ -144,7 +145,8 @@
         "contactNumber": "Contact number is invalid",
         "companyNameLength": "Company name must be less than 30 characters",
         "characterLength": "Entry must be less than 50 characters",
-        "addressLength": "Address must be less than 100 characters"
+        "addressLength": "Address must be less than 100 characters",
+        "industry": "Please select a valid industry"
       }
     },
     "editCompanyToastMessages": {

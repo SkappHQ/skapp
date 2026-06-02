@@ -2,6 +2,7 @@ import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { isValidPhoneNumber } from "~community/common/regex/regexPatterns";
+import { CrmIndustryEnum } from "~community/crm/enums/common";
 
 type TranslatorFunctionType = (suffixes: string[]) => string;
 
@@ -38,8 +39,10 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
       .nullable()
       .optional()
       .max(characterLengths.ADDRESS_LENGTH, translator(["validations", "addressLength"])),
-    industry: Yup.string()
-      .nullable()
+    industry: Yup.mixed<CrmIndustryEnum>()
       .optional()
-      .max(characterLengths.CHARACTER_LENGTH, translator(["validations", "characterLength"]))
+      .oneOf(
+        Object.values(CrmIndustryEnum),
+        translator(["validations", "industry"])
+      )
   });
