@@ -12,6 +12,7 @@ interface Props {
   defaultTabId?: string;
 }
 
+// TODO: Wire up SidePanelTabView inside ContactDetailPanel (and CompanyDetailPanel)
 const SidePanelTabView: FC<Props> = ({ tabs, defaultTabId }) => {
   const [activeTabId, setActiveTabId] = useState<string>(
     defaultTabId ?? tabs[0]?.id ?? ""
