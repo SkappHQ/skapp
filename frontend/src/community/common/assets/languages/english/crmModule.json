@@ -70,6 +70,11 @@
     },
     "contactDetailsPanel": {
       "lastUpdated": "Last updated",
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals",
+        "contacts": "Contacts"
+      },
       "metrics": {
         "totalRevenue": "Total revenue",
         "revenueOnPipeline": "Revenue on pipeline",

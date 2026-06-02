@@ -16,9 +16,13 @@ import DealsSection from "~community/crm/components/molecules/DealsSection/Deals
 import DeleteContactModal from "~community/crm/components/molecules/DeleteContactModal/DeleteContactModal";
 import EditContactModal from "~community/crm/components/molecules/EditContactModal/EditContactModal";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
+import SidePanelTabView from "~community/crm/components/molecules/SidePanelTabView/SidePanelTabView";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactMetricsType,
+  CrmTaskType
+} from "~community/crm/types/CommonTypes";
 
 const DEFAULT_METRICS: CrmContactMetricsType = {
   totalRevenue: 0,
@@ -110,17 +114,27 @@ const ContactDetailPanel: FC = () => {
               <ContactMetrics metrics={metrics ?? DEFAULT_METRICS} />
             )}
 
-            {/* Tasks */}
+            {/* Tabs: Tasks + Deals */}
             {selectedContactId && (
-              <SidePanelTasksSection
-                tasks={contactTasks}
-                isLoading={isTasksLoading}
+              <SidePanelTabView
+                tabs={[
+                  {
+                    id: "tasks",
+                    label: translateText(["tabs", "tasks"]),
+                    content: (
+                      <SidePanelTasksSection
+                        tasks={contactTasks as CrmTaskType[]}
+                        isLoading={isTasksLoading}
+                      />
+                    )
+                  },
+                  {
+                    id: "deals",
+                    label: translateText(["tabs", "deals"]),
+                    content: <DealsSection contactId={selectedContactId} />
+                  }
+                ]}
               />
-            )}
-
-            {/* Deals */}
-            {selectedContactId && (
-              <DealsSection contactId={selectedContactId} />
             )}
           </div>
         </SidePanel>
