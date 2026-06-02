@@ -303,6 +303,12 @@ const AddContactModal: React.FC = () => {
           value={selectedCompanyLabel}
           readOnly
           fullWidth
+          variant="md"
+          styleOverrides={{
+            labelContainer:
+              "h-6 inline-flex self-stretch pr-3 justify-start items-center gap-2"
+          }}
+          customStyles={{ gap: "gap-2" }}
           aria-label={translateText(["ariaLabels", "company"])}
           rightIcon={renderClearButton(
             handleClearCompany,
@@ -324,11 +330,11 @@ const AddContactModal: React.FC = () => {
       />
 
       {selectedOwner ? (
-        <div className="w-full">
-          <label className="subtitle1 block mb-2">
+        <div className="flex w-full flex-col gap-2">
+          <span className="subtitle1 leading-normal inline-flex h-6 items-center">
             {translateText(["labels", "owner"])}
-          </label>
-          <div className="flex h-12 items-center rounded-lg bg-gray-100 px-3">
+          </span>
+          <div className="flex h-[3.125rem] items-center rounded-lg bg-gray-100 px-3">
             <AvatarChip
               label={getOwnerFullName(selectedOwner)}
               avatarProps={toOwnerAvatarProps(selectedOwner)}
