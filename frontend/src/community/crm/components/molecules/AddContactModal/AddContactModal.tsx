@@ -6,7 +6,7 @@ import {
   PlusIcon
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -14,6 +14,7 @@ import SearchableDropdown, {
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { concatStrings } from "~community/common/utils/commonUtil";
@@ -33,6 +34,7 @@ import {
   OwnerLookup
 } from "~community/crm/types/CommonTypes";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
+import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 const getOwnerFullName = (owner: OwnerLookup): string =>
   concatStrings([owner.firstName, owner.lastName ?? ""]);
@@ -138,12 +140,37 @@ const AddContactModal: React.FC = () => {
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
 
+  const { isCrmSalesManager } = useSessionData();
+  const { data: me } = useGetUserPersonalDetails();
+
+  const isOwnerReadonly = !isCrmSalesManager;
+
   const [ownerSearch, setOwnerSearch] = useState("");
   const [selectedOwner, setSelectedOwner] = useState<OwnerLookup | null>(null);
   const debouncedOwnerSearch = useDebounce(
     ownerSearch.trim(),
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
+
+  const defaultOwner = useMemo<OwnerLookup | null>(() => {
+    if (!me?.employeeId) return null;
+    return {
+      employeeId: Number(me.employeeId),
+      firstName: me.firstName ?? "",
+      lastName: me.lastName ?? null,
+      authPic: me?.authPic as string | null
+    };
+  }, [me]);
+
+  // Assign the current user as the owner once when the modal opens.
+  const hasSetDefaultOwner = useRef(false);
+  useEffect(() => {
+    if (defaultOwner && !hasSetDefaultOwner.current) {
+      hasSetDefaultOwner.current = true;
+      setSelectedOwner(defaultOwner);
+      setFieldValue("ownerId", defaultOwner.employeeId);
+    }
+  }, [defaultOwner, setFieldValue]);
 
   const { data: companyLookup, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
@@ -296,7 +323,26 @@ const AddContactModal: React.FC = () => {
         fullWidth
       />
 
-      {selectedOwner === null ? (
+      {selectedOwner ? (
+        <div className="w-full">
+          <label className="subtitle1 block mb-2">
+            {translateText(["labels", "owner"])}
+          </label>
+          <div className="flex h-12 items-center rounded-lg bg-gray-100 px-3">
+            <AvatarChip
+              label={getOwnerFullName(selectedOwner)}
+              avatarProps={toOwnerAvatarProps(selectedOwner)}
+              showActionButton={!isOwnerReadonly}
+              onActionClick={isOwnerReadonly ? undefined : handleClearOwner}
+              actionIcon={isOwnerReadonly ? undefined : <CloseIcon />}
+              actionButtonAriaLabel={translateText([
+                "ariaLabels",
+                "clearOwner"
+              ])}
+            />
+          </div>
+        </div>
+      ) : isOwnerReadonly ? null : (
         <SearchableDropdown
           id="add-contact-owner"
           name="owner"
@@ -315,25 +361,6 @@ const AddContactModal: React.FC = () => {
             )
           }
         />
-      ) : (
-        <div className="w-full">
-          <label className="subtitle1 block mb-2">
-            {translateText(["labels", "owner"])}
-          </label>
-          <div className="flex h-12 items-center rounded-lg bg-gray-100 px-3">
-            <AvatarChip
-              label={getOwnerFullName(selectedOwner)}
-              avatarProps={toOwnerAvatarProps(selectedOwner)}
-              showActionButton
-              onActionClick={handleClearOwner}
-              actionIcon={<CloseIcon />}
-              actionButtonAriaLabel={translateText([
-                "ariaLabels",
-                "clearOwner"
-              ])}
-            />
-          </div>
-        </div>
       )}
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
