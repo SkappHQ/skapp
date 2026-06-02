@@ -61,7 +61,7 @@ class LeaveTypeControllerIntegrationTest {
 	class LeaveAdminGetAllTests {
 
 		@Test
-		@DisplayName("Returns all leave types when no filters applied (findAll branch)")
+		@DisplayName("Returns all active leave types when no filters applied")
 		void getLeaveTypes_NoFilters_ReturnsAllLeaveTypes() throws Exception {
 			SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createLeaveAdmin());
 			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"),
@@ -80,7 +80,7 @@ class LeaveTypeControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Returns all leave types when filterByInUse=false and isCarryForward=false (findAll branch)")
+		@DisplayName("Returns all active leave types when filterByInUse=false and isCarryForward=false")
 		void getLeaveTypes_DefaultFilters_ReturnsAllLeaveTypes() throws Exception {
 			SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createLeaveAdmin());
 			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"),
