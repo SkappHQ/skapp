@@ -868,6 +868,8 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 			orderList.add(cb.asc(employeeRoot.get(Employee_.lastName)));
 		}
 
+		orderList.add(cb.asc(employeeRoot.get(Employee_.employeeId)));
+
 		return orderList;
 	}
 

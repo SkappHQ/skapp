@@ -842,6 +842,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public ResponseEntityDto getLeaveEntitlementByDate(
 			CustomLeaveEntitlementsFilterDto customLeaveEntitlementsFilterDto) {
