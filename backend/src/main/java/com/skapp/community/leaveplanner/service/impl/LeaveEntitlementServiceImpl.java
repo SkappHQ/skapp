@@ -13,6 +13,7 @@ import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.BulkItemStatus;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -1005,6 +1006,13 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		Optional<User> userByEmailOpt = userDao.findByEmail(entitlementDetailsDto.getEmail());
 		if (userByEmailOpt.isEmpty()) {
 			errors.add(messageUtil.getMessage(LeaveMessageConstant.USER_IN_BULK_NOT_FOUND,
+					new String[] { entitlementDetailsDto.getEmail() }));
+		}
+
+		if (userByEmailOpt.isPresent() && userByEmailOpt.get().getEmployee() != null
+				&& userByEmailOpt.get().getEmployee().getEmployeeRole() != null
+				&& Role.PM_GUEST_EMPLOYEE == userByEmailOpt.get().getEmployee().getEmployeeRole().getPmRole()) {
+			errors.add(messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED_IN_BULK,
 					new String[] { entitlementDetailsDto.getEmail() }));
 		}
 
