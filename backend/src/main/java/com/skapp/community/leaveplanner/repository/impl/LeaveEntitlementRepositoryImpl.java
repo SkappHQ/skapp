@@ -769,6 +769,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 
 		CriteriaQuery<Employee> employeeQuery = cb.createQuery(Employee.class);
 		Root<Employee> employeeRoot = employeeQuery.from(Employee.class);
+		employeeRoot.fetch(Employee_.user);
 		Subquery<Long> dataSubquery = employeeQuery.subquery(Long.class);
 		Root<LeaveEntitlement> dataSubRoot = dataSubquery.from(LeaveEntitlement.class);
 		Join<LeaveEntitlement, Employee> dataSubEmployee = dataSubRoot.join(LeaveEntitlement_.employee);
