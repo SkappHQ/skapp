@@ -1,10 +1,8 @@
 import * as Yup from "yup";
+import { isAfter, isToday, startOfDay } from "date-fns";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import {
-  isValidFutureOrTodayDate
-} from "~community/common/utils/dateTimeUtils";
 
 export const addTaskValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
@@ -18,7 +16,7 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
         characterLengths.NAME_LENGTH,
         translator(["validations", "nameLength"])
       ),
-    dueDate: Yup.string()
+    dueDate: Yup.date()
       .nullable()
       .required(translator(["validations", "dueDate"]))
       .test(
@@ -26,7 +24,10 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
         translator(["validations", "dueDatePast"]),
         function (value) {
           if (!value) return true;
-          return isValidFutureOrTodayDate(new Date(value));
+          return (
+            isToday(value) ||
+            isAfter(startOfDay(value), startOfDay(new Date()))
+          );
         }
       )
   });

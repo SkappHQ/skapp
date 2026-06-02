@@ -239,16 +239,6 @@ export const isDateGraterThanToday = (date: string) => {
   return dateToCompare > today;
 };
 
-export const isValidFutureOrTodayDate = (date: Date | string): boolean => {
-  const dateToValidate =
-    date instanceof Date
-      ? DateTime.fromJSDate(date)
-      : DateTime.fromISO(date);
-  if (!dateToValidate.isValid) return false;
-  const today = DateTime.local().startOf("day");
-  return dateToValidate >= today;
-};
-
 export const getMinDateOfYear = (year?: number) => {
   return DateTime.fromObject({
     year: year ?? DateTime.local().year,
