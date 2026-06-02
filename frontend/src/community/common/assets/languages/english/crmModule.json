@@ -85,6 +85,7 @@
       "errorTitle": "Failed to add company",
       "errorDescription": "Please try again or contact support"
     },
+    "companyDetailsSidePanel": {
       "sidePanelCompanyContacts": {
         "title": "Contacts",
         "columns": {
@@ -100,7 +101,8 @@
         "dealsClosed": "Deals closed",
         "overdue": "overdue"
       }
-    },
+    }
+  },
   "deals": {
     "pageHead": "Deals | Skapp",
     "title": "Deals",

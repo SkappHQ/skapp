@@ -9,7 +9,7 @@ import React from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
-export interface CrmSidePanelContactRow {
+interface CrmSidePanelContactRow {
   id: number;
   name: string;
   email: string;
@@ -110,11 +110,11 @@ const SidePanelCompanyContacts: React.FC<SidePanelCompanyContactsProps> = ({
       <h3 className="h3">{translateText(["title"])}</h3>
       <div className="w-full h-px bg-secondary-accent my-3"></div>
       <Table
-        className="w-full"
+        className="w-full max-h-[17.25rem]"
         columns={columns as TableColumn<any>[]}
         data={contacts}
         emptyStateType="no-data"
-        height="17.25rem"
+        height="auto"
         noDataState={{
           icon: <SearchIcon />,
           title: translateText(["noContacts"]),
