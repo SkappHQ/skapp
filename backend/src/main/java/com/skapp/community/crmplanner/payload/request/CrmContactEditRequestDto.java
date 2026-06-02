@@ -7,7 +7,7 @@ import tools.jackson.databind.annotation.JsonDeserialize;
 
 @Getter
 @Setter
-public class CrmContactCreateRequestDto {
+public class CrmContactEditRequestDto {
 
 	@JsonDeserialize(using = TrimmingStringDeserializer.class)
 	private String name;
