@@ -20,6 +20,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.event.UserCreatedEvent;
+import com.skapp.community.crmplanner.service.CrmConfigService;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
 import com.skapp.community.okrplanner.service.OkrConfigService;
@@ -120,6 +121,8 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 
 	private final LeaveCycleService leaveCycleService;
 
+	private final CrmConfigService crmConfigService;
+
 	@Value("${aws.route53.parent-domain}")
 	private String parentDomain;
 
@@ -135,10 +138,10 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 			EsignConfigService esignConfigService, InvoiceConfigService invoiceConfigService,
 			OrganizationConfigDao organizationConfigDao, JsonMapper objectMapper,
 			AttendanceConfigService attendanceConfigService, LeaveTypeService leaveTypeService,
-			LeaveCycleService leaveCycleService) {
+			LeaveCycleService leaveCycleService, CrmConfigService crmConfigService) {
 		super(organizationDao, commonMapper, messageUtil, attendanceConfigService, leaveTypeService, leaveCycleService,
 				userService, organizationConfigDao, objectMapper, encryptionDecryptionService, timeConfigDao,
-				okrConfigService);
+				okrConfigService, crmConfigService);
 		this.epOrganizationDao = epOrganizationDao;
 		this.emailService = emailService;
 		this.tenantService = tenantService;
@@ -161,6 +164,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		this.attendanceConfigService = attendanceConfigService;
 		this.leaveTypeService = leaveTypeService;
 		this.leaveCycleService = leaveCycleService;
+		this.crmConfigService = crmConfigService;
 	}
 
 	@Override
@@ -409,6 +413,7 @@ public class EpOrganizationServiceImpl extends OrganizationServiceImpl implement
 		epGoogleCalenderService.setupOrganizationCalendar();
 		epMicrosoftCalendarService.setupOrganizationCalendar();
 		esignConfigService.setDefaultEsignConfigs();
+		crmConfigService.setDefaultCrmConfig();
 
 		EpOrganization organization = epOrganizationDao.findTopByOrderByOrganizationIdDesc();
 		invoiceConfigService.setDefaultInvoiceConfigs(organization.getOrganizationLogo(), organization.getCountry());
