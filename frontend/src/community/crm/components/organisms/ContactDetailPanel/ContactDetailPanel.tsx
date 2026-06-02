@@ -17,6 +17,7 @@ import DeleteContactModal from "~community/crm/components/molecules/DeleteContac
 import EditContactModal from "~community/crm/components/molecules/EditContactModal/EditContactModal";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelTabView from "~community/crm/components/molecules/SidePanelTabView/SidePanelTabView";
+import SidePanelTabViewSkeleton from "~community/crm/components/molecules/SidePanelTabView/SidePanelTabViewSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -115,27 +116,30 @@ const ContactDetailPanel: FC = () => {
             )}
 
             {/* Tabs: Tasks + Deals */}
-            {selectedContactId && (
-              <SidePanelTabView
-                tabs={[
-                  {
-                    id: "tasks",
-                    label: translateText(["tabs", "tasks"]),
-                    content: (
-                      <SidePanelTasksSection
-                        tasks={contactTasks as CrmTaskType[]}
-                        isLoading={isTasksLoading}
-                      />
-                    )
-                  },
-                  {
-                    id: "deals",
-                    label: translateText(["tabs", "deals"]),
-                    content: <DealsSection contactId={selectedContactId} />
-                  }
-                ]}
-              />
-            )}
+            {selectedContactId &&
+              (isContactLoading ? (
+                <SidePanelTabViewSkeleton tabCount={2} />
+              ) : (
+                <SidePanelTabView
+                  tabs={[
+                    {
+                      id: "tasks",
+                      label: translateText(["tabs", "tasks"]),
+                      content: (
+                        <SidePanelTasksSection
+                          tasks={contactTasks as CrmTaskType[]}
+                          isLoading={isTasksLoading}
+                        />
+                      )
+                    },
+                    {
+                      id: "deals",
+                      label: translateText(["tabs", "deals"]),
+                      content: <DealsSection contactId={selectedContactId} />
+                    }
+                  ]}
+                />
+              ))}
           </div>
         </SidePanel>
       </div>

@@ -224,7 +224,13 @@
   "tasks": {
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
-    "addTaskBtn": "Add Task"
+    "addTaskBtn": "Add Task",
+    "tabs": {
+      "myTasks": "My tasks",
+      "teamTasks": "Team tasks",
+      "completed": "Completed",
+      "ariaLabel": "Task list navigation tabs"
+    }
   },
   "popupTitles": {
     "addCompanyPopup": "Add Company",

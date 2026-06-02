@@ -48,6 +48,12 @@ const TASK_TYPE_ICON_MAP: Record<string, FC> = {
 export const getTaskTypeIcon = (typeName: string): FC =>
   TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ?? ChecklistVerificationFilledIcon;
 
+export const getTasksPageTabs = (translateText: (keys: string[]) => string) => [
+  { id: "my-tasks", label: translateText(["tabs", "myTasks"]) },
+  { id: "team-tasks", label: translateText(["tabs", "teamTasks"]) },
+  { id: "completed", label: translateText(["tabs", "completed"]) }
+];
+
 // TODO: Replace with data from the task types API endpoint
 export const TASK_TYPES = [
   { value: "email" as const, label: "Email" },
