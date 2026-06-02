@@ -2,7 +2,7 @@ import { Stack } from "@mui/material";
 import { ReactNode } from "react";
 
 import TimeWidgetPopupController from "~community/attendance/components/organisms/TimeWidgetPopupController/TimeWidgetPopupController";
-import ContentAreaLoader from "~community/common/components/molecules/ContentAreaLoader/ContentAreaLoader";
+import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import AppBar from "~community/common/components/organisms/AppBar/AppBar";
 import Drawer from "~community/common/components/organisms/Drawer/Drawer";
@@ -45,7 +45,7 @@ const ContentWithDrawer = ({ children }: Props) => {
               position: "relative"
             }}
           >
-            <ContentAreaLoader />
+            {loading && <FullScreenLoader fullPage={false} />}
             <Stack
               id="content-with-drawer-main-content"
               tabIndex={loading ? -1 : 0}
