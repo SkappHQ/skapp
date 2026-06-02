@@ -1,4 +1,4 @@
-import { Dispatch, JSX, SetStateAction } from "react";
+import { JSX } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
@@ -18,49 +18,6 @@ export const setLeaveRequestsParams = (
 
   leaveRequestFilterValue.type &&
     setLeaveRequestParams("leaveType", leaveRequestFilterValue.type);
-};
-
-export const removeFiltersByLabel = (
-  leaveRequestsFilter: LeaveRequestsFilterType,
-  setLeaveRequestFilterOrder: (value: string[]) => void,
-  setLeaveRequestsFilter: (key: string, value: string[] | string) => void,
-  setLeaveRequestParams: (key: string, value: string | string[]) => void,
-  leaveTypeButtons: FilterButtonTypes[],
-  filterArray: string[],
-  setFilterArray: Dispatch<SetStateAction<string[]>>,
-  label?: string
-): void => {
-  const filterRemovedArray: string[] = filterArray?.filter(
-    (item: string) => item?.toLowerCase() !== label?.toLowerCase()
-  );
-
-  for (const key in leaveRequestsFilter) {
-    const newLabel: FilterButtonTypes = leaveTypeButtons.find(
-      (item: { text: string }) =>
-        item.text.toLowerCase() === label?.toLowerCase()
-    ) as FilterButtonTypes;
-    if (newLabel) {
-      label = newLabel?.id?.toString();
-    }
-
-    if (Array.isArray(leaveRequestsFilter[key as "status" | "type"])) {
-      leaveRequestsFilter[key as "status" | "type"] = leaveRequestsFilter[
-        key as "status" | "type"
-      ].filter((val: string) => val.toLowerCase() !== label?.toLowerCase());
-    } else if (
-      leaveRequestsFilter[key as "date"].toLowerCase() === label?.toLowerCase()
-    ) {
-      leaveRequestsFilter[key as "date"] = "";
-    }
-    setLeaveRequestsParams(leaveRequestsFilter, setLeaveRequestParams);
-    setLeaveRequestsFilter(
-      key,
-      leaveRequestsFilter[key as "status" | "type" | "date"]
-    );
-  }
-
-  setFilterArray(filterRemovedArray);
-  setLeaveRequestFilterOrder(filterRemovedArray);
 };
 
 export const requestedLeaveTypesPreProcessor = (

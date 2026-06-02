@@ -373,15 +373,15 @@ public class LeaveServiceImpl implements LeaveService {
 		User currentUser = userService.getCurrentUser();
 		Long empId = currentUser.getUserId();
 
-		int pageSize = leaveRequestFilterDto.getSize();
+		Sort sort = Sort.by(leaveRequestFilterDto.getSortOrder(), leaveRequestFilterDto.getSortKey().toString());
 
-		boolean isExport = leaveRequestFilterDto.getIsExport();
-		if (isExport) {
-			pageSize = (int) leaveRequestDao.count();
+		Pageable pageable;
+		if (Boolean.TRUE.equals(leaveRequestFilterDto.getIsExport())) {
+			pageable = Pageable.unpaged(sort);
 		}
-
-		Pageable pageable = PageRequest.of(leaveRequestFilterDto.getPage(), pageSize,
-				Sort.by(leaveRequestFilterDto.getSortOrder(), leaveRequestFilterDto.getSortKey().toString()));
+		else {
+			pageable = PageRequest.of(leaveRequestFilterDto.getPage(), leaveRequestFilterDto.getSize(), sort);
+		}
 
 		Page<LeaveRequest> leaveRequests = leaveRequestDao.findAllRequestsByEmployee(empId, leaveRequestFilterDto,
 				pageable);

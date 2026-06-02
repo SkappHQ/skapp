@@ -1,6 +1,7 @@
 package com.skapp.community.common.component;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.constant.MessageConstant;
 import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.payload.response.ErrorResponse;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -44,7 +45,7 @@ public class ExceptionLoggingFilter implements Filter {
 
 	private void handleException(Exception e, HttpServletResponse response) throws IOException {
 		HttpStatus status;
-		CommonMessageConstant messageKey;
+		MessageConstant messageKey;
 		String message;
 
 		switch (e) {
@@ -60,7 +61,7 @@ public class ExceptionLoggingFilter implements Filter {
 			}
 			case AuthenticationException authenticationException -> {
 				status = HttpStatus.UNAUTHORIZED;
-				messageKey = (CommonMessageConstant) authenticationException.getMessageKey();
+				messageKey = authenticationException.getMessageKey();
 				message = authenticationException.getMessage();
 			}
 			case null, default -> {

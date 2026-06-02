@@ -747,40 +747,74 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<Employee> criteriaQuery = cb.createQuery(Employee.class);
-		Root<LeaveEntitlement> root = criteriaQuery.from(LeaveEntitlement.class);
-		Join<LeaveEntitlement, Employee> employeeJoin = root.join(LeaveEntitlement_.employee);
-		Join<Employee, User> userJoin = employeeJoin.join(Employee_.user);
-
-		List<Predicate> predicates = buildEntitlementPredicates(cb, root, employeeJoin, userJoin, validFrom, validTo,
-				keyword);
-
-		criteriaQuery.where(predicates.toArray(new Predicate[0]));
-		criteriaQuery.select(employeeJoin).distinct(true);
-
-		List<Order> orderList = buildOrderList(cb, employeeJoin, keyword, pageable.getSort());
-		criteriaQuery.orderBy(orderList);
-
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<LeaveEntitlement> countRoot = countQuery.from(LeaveEntitlement.class);
-		Join<LeaveEntitlement, Employee> countEmployeeJoin = countRoot.join(LeaveEntitlement_.employee);
-		Join<Employee, User> countUserJoin = countEmployeeJoin.join(Employee_.user);
+		Root<Employee> countRoot = countQuery.from(Employee.class);
+		Subquery<Long> countSubquery = countQuery.subquery(Long.class);
+		Root<LeaveEntitlement> countSubRoot = countSubquery.from(LeaveEntitlement.class);
+		Join<LeaveEntitlement, Employee> countSubEmployee = countSubRoot.join(LeaveEntitlement_.employee);
+		Join<Employee, User> countSubUser = countSubEmployee.join(Employee_.user);
+		List<Predicate> countSubPredicates = buildEntitlementPredicates(cb, countSubRoot, countSubEmployee,
+				countSubUser, validFrom, validTo, keyword);
+		countSubPredicates
+			.add(cb.equal(countSubEmployee.get(Employee_.employeeId), countRoot.get(Employee_.employeeId)));
+		countSubquery.select(countSubRoot.get(LeaveEntitlement_.entitlementId));
+		countSubquery.where(countSubPredicates.toArray(new Predicate[0]));
+		countQuery.select(cb.count(countRoot));
+		countQuery.where(cb.exists(countSubquery));
+		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
 
-		List<Predicate> countPredicates = buildEntitlementPredicates(cb, countRoot, countEmployeeJoin, countUserJoin,
-				validFrom, validTo, keyword);
-		countQuery.where(countPredicates.toArray(new Predicate[0]));
-		countQuery.select(cb.countDistinct(countEmployeeJoin));
-
-		Long totalRows = entityManager.createQuery(countQuery).getSingleResult();
-
-		TypedQuery<Employee> query = entityManager.createQuery(criteriaQuery);
-
-		if (pageable.isPaged()) {
-			query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-			query.setMaxResults(pageable.getPageSize());
+		if (totalRows == 0) {
+			return new PageImpl<>(List.of(), pageable, 0);
 		}
 
-		return new PageImpl<>(query.getResultList(), pageable, totalRows);
+		CriteriaQuery<Employee> employeeQuery = cb.createQuery(Employee.class);
+		Root<Employee> employeeRoot = employeeQuery.from(Employee.class);
+		employeeRoot.fetch(Employee_.user);
+		Subquery<Long> dataSubquery = employeeQuery.subquery(Long.class);
+		Root<LeaveEntitlement> dataSubRoot = dataSubquery.from(LeaveEntitlement.class);
+		Join<LeaveEntitlement, Employee> dataSubEmployee = dataSubRoot.join(LeaveEntitlement_.employee);
+		Join<Employee, User> dataSubUser = dataSubEmployee.join(Employee_.user);
+		List<Predicate> dataSubPredicates = buildEntitlementPredicates(cb, dataSubRoot, dataSubEmployee, dataSubUser,
+				validFrom, validTo, keyword);
+		dataSubPredicates
+			.add(cb.equal(dataSubEmployee.get(Employee_.employeeId), employeeRoot.get(Employee_.employeeId)));
+		dataSubquery.select(dataSubRoot.get(LeaveEntitlement_.entitlementId));
+		dataSubquery.where(dataSubPredicates.toArray(new Predicate[0]));
+		employeeQuery.where(cb.exists(dataSubquery));
+
+		List<Order> empOrderList = buildEmployeeOrderList(cb, employeeRoot, keyword, pageable.getSort());
+		employeeQuery.orderBy(empOrderList);
+
+		TypedQuery<Employee> employeeTypedQuery = entityManager.createQuery(employeeQuery);
+		if (pageable.isPaged()) {
+			employeeTypedQuery.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+			employeeTypedQuery.setMaxResults(pageable.getPageSize());
+		}
+
+		List<Employee> employees = employeeTypedQuery.getResultList();
+
+		return new PageImpl<>(employees, pageable, totalRows);
+	}
+
+	@Override
+	public List<LeaveEntitlement> findFilteredEntitlementsByEmployeeIds(List<Long> employeeIds, LocalDate validFrom,
+			LocalDate validTo) {
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveEntitlement> query = cb.createQuery(LeaveEntitlement.class);
+		Root<LeaveEntitlement> root = query.from(LeaveEntitlement.class);
+		root.fetch(LeaveEntitlement_.leaveType);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(root.get(LeaveEntitlement_.employee).get(Employee_.employeeId).in(employeeIds));
+		predicates.add(cb.equal(root.get(LeaveEntitlement_.isActive), true));
+		predicates.add(cb.equal(root.get(LeaveEntitlement_.isManual), false));
+		predicates.add(cb.between(root.get(LeaveEntitlement_.validFrom), validFrom, validTo));
+		predicates.add(cb.between(root.get(LeaveEntitlement_.validTo), validFrom, validTo));
+
+		query.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(query).getResultList();
 	}
 
 	private List<Predicate> buildEntitlementPredicates(CriteriaBuilder cb, Root<LeaveEntitlement> root,
@@ -806,14 +840,14 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		return predicates;
 	}
 
-	private List<Order> buildOrderList(CriteriaBuilder cb, Join<LeaveEntitlement, Employee> employeeJoin,
-			String keyword, Sort sort) {
+	private List<Order> buildEmployeeOrderList(CriteriaBuilder cb, Root<Employee> employeeRoot, String keyword,
+			Sort sort) {
 		List<Order> orderList = new ArrayList<>();
 
 		if (keyword != null && !keyword.trim().isEmpty()) {
 			Order searchOrder = cb.asc(cb.selectCase()
-				.when(cb.like(cb.lower(employeeJoin.get(Employee_.firstName)), keyword.toLowerCase() + "%"), 1)
-				.when(cb.like(cb.lower(employeeJoin.get(Employee_.lastName)), keyword.toLowerCase() + "%"), 2)
+				.when(cb.like(cb.lower(employeeRoot.get(Employee_.firstName)), keyword.toLowerCase() + "%"), 1)
+				.when(cb.like(cb.lower(employeeRoot.get(Employee_.lastName)), keyword.toLowerCase() + "%"), 2)
 				.otherwise(3));
 			orderList.add(searchOrder);
 		}
@@ -821,19 +855,21 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		for (Sort.Order order : sort) {
 			String property = order.getProperty();
 			if ("firstName".equals(property)) {
-				orderList.add(order.isAscending() ? cb.asc(employeeJoin.get(Employee_.firstName))
-						: cb.desc(employeeJoin.get(Employee_.firstName)));
+				orderList.add(order.isAscending() ? cb.asc(employeeRoot.get(Employee_.firstName))
+						: cb.desc(employeeRoot.get(Employee_.firstName)));
 			}
 			else if ("lastName".equals(property)) {
-				orderList.add(order.isAscending() ? cb.asc(employeeJoin.get(Employee_.lastName))
-						: cb.desc(employeeJoin.get(Employee_.lastName)));
+				orderList.add(order.isAscending() ? cb.asc(employeeRoot.get(Employee_.lastName))
+						: cb.desc(employeeRoot.get(Employee_.lastName)));
 			}
 		}
 
 		if (orderList.isEmpty() || (keyword != null && orderList.size() == 1)) {
-			orderList.add(cb.asc(employeeJoin.get(Employee_.firstName)));
-			orderList.add(cb.asc(employeeJoin.get(Employee_.lastName)));
+			orderList.add(cb.asc(employeeRoot.get(Employee_.firstName)));
+			orderList.add(cb.asc(employeeRoot.get(Employee_.lastName)));
 		}
+
+		orderList.add(cb.asc(employeeRoot.get(Employee_.employeeId)));
 
 		return orderList;
 	}
