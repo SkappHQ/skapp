@@ -760,14 +760,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 
-		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
-		Root<LeaveRequest> countRoot = countQuery.from(LeaveRequest.class);
-		buildEmployeeLeavePredicates(criteriaBuilder, countRoot, predicates, employeeId, leaveRequestFilterDto);
-		countQuery.select(criteriaBuilder.count(countRoot));
-		countQuery.where(predicates.toArray(new Predicate[0]));
-		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
-
-		predicates.clear();
 		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
 		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
 		buildEmployeeLeavePredicates(criteriaBuilder, root, predicates, employeeId, leaveRequestFilterDto);
@@ -778,9 +770,20 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		if (page.isPaged()) {
 			query.setFirstResult(page.getPageNumber() * page.getPageSize());
 			query.setMaxResults(page.getPageSize());
+
+			predicates.clear();
+			CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+			Root<LeaveRequest> countRoot = countQuery.from(LeaveRequest.class);
+			buildEmployeeLeavePredicates(criteriaBuilder, countRoot, predicates, employeeId, leaveRequestFilterDto);
+			countQuery.select(criteriaBuilder.count(countRoot));
+			countQuery.where(predicates.toArray(new Predicate[0]));
+			long totalRows = entityManager.createQuery(countQuery).getSingleResult();
+
+			return new PageImpl<>(query.getResultList(), page, totalRows);
 		}
 
-		return new PageImpl<>(query.getResultList(), page, totalRows);
+		List<LeaveRequest> results = query.getResultList();
+		return new PageImpl<>(results, page, results.size());
 	}
 
 	private void buildEmployeeLeavePredicates(CriteriaBuilder criteriaBuilder, Root<LeaveRequest> root,
