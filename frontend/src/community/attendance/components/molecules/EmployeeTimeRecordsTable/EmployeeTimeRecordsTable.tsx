@@ -204,7 +204,7 @@ const EmployeeTimeRecordsTable = ({
               );
 
               finalCellData = (
-                <div className="flex flex-row items-center gap-1">
+                <div className="flex flex-row items-center justify-center gap-1">
                   {data}
                   <Tooltip content={locationTooltipTitle}>
                     <LocationPinIcon
