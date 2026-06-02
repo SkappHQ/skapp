@@ -8,8 +8,6 @@ import { ContactHeaderSkeleton } from "~community/crm/components/atoms/SidePanel
 import SidePanelContactInfoItem from "~community/crm/components/atoms/SidePanelContactInfoItem/SidePanelContactInfoItem";
 import { CrmContactType } from "~community/crm/types/CommonTypes";
 
-import cls, { COLORS } from "./styles";
-
 interface Props {
   contact?: CrmContactType;
   isLoading?: boolean;
@@ -40,13 +38,15 @@ const SidePanelContactHeader: FC<Props> = ({
 
     return (
       <>
-        <div className={cls.contactHeader}>
-          <h2 className={cls.contactName}>{contact.name}</h2>
-          <p className={cls.lastUpdated}>
+        <div className="flex flex-col gap-[8px]">
+          <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
+            {contact.name}
+          </h2>
+          <p className="body2 leading-[24px] text-secondary-text">
             {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffixLocal(contact.lastModifiedDate)}`}
           </p>
         </div>
-        <div className={cls.infoRow}>
+        <div className="flex items-center justify-between max-w-[629px] w-full">
           <SidePanelContactInfoItem
             icon={IconName.EMAIL_ICON}
             value={contact.email}
@@ -59,7 +59,7 @@ const SidePanelContactHeader: FC<Props> = ({
 
           {company && (
             <SidePanelContactInfoItem
-              icon={<BuildingIcon stroke={COLORS.iconFill} />}
+              icon={<BuildingIcon stroke="var(--color-secondary-icon)" />}
               value={company.name}
               onClick={
                 onCompanyClick
@@ -76,7 +76,11 @@ const SidePanelContactHeader: FC<Props> = ({
     );
   };
 
-  return <div className={cls.wrapper}>{renderContent()}</div>;
+  return (
+    <div className="w-full flex flex-col gap-[8px] items-start">
+      {renderContent()}
+    </div>
+  );
 };
 
 export default SidePanelContactHeader;
