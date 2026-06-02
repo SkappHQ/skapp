@@ -12,7 +12,7 @@ import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
-import { getFullName } from "~community/common/utils/commonUtil";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import { formatValue } from "~community/crm/utils/crmUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { useContainerWidth } from "./utils/dealsTableUtils";
@@ -126,7 +126,7 @@ const DealsTable: FC<Props> = ({
     (): DealRow[] =>
       allDeals.map((deal: CrmDealListItem) => {
         const formattedAmount = formatValue(deal.amount);
-        const ownerFullName = getFullName(deal.owner.firstName, deal.owner.lastName);
+        const ownerFullName = concatStrings([deal.owner?.firstName, deal.owner?.lastName ?? ""]);
 
         return {
           id: String(deal.id),
