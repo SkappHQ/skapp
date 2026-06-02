@@ -57,9 +57,9 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	private static final float DEFAULT_FONT_SIZE = 12.0f;
 
-	private static final float UUID_FONT_SIZE = 8.0f;
+	private static final float UUID_FONT_SIZE = 6.0f;
 
-	private static final float UUID_X_POSITION = 40.0f;
+	private static final float UUID_X_POSITION = 10.0f;
 
 	private static final float UUID_Y_POSITION = 10.0f;
 
