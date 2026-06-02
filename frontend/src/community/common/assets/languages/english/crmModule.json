@@ -27,7 +27,8 @@
       },
       "buttons": {
         "save": "Save",
-        "cancelAddContact": "Cancel"
+        "cancelAddContact": "Cancel",
+        "addCompany": "Add company"
       },
       "ariaLabels": {
         "name": "Name",
@@ -37,6 +38,7 @@
         "owner": "Contact Owner",
         "clearCompany": "Clear selected company",
         "clearOwner": "Clear selected contact owner",
+        "addCompany": "Add company",
         "save": "Save",
         "cancelAddContact": "Cancel Add Contact"
       },
@@ -46,11 +48,13 @@
         "email": "Email is required",
         "invalidEmail": "Please enter a valid email address",
         "contactNumber": "Contact number is invalid",
+        "contactNumberLength": "Contact number is too long",
         "characterLength": "Entry must be less than 50 characters"
       }
     },
     "contactToastMessages": {
       "successTitle": "Contact added successfully",
+      "successDescription": "The contact has been created",
       "errorTitle": "Failed to add contact",
       "errorDescription": "Please try again or contact support"
     },

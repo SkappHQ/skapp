@@ -2,7 +2,8 @@ import {
   AvatarChip,
   ButtonV2,
   CloseIcon,
-  InputField
+  InputField,
+  PlusIcon
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { useState } from "react";
@@ -176,6 +177,28 @@ const AddContactModal: React.FC = () => {
     setCompanySearch("");
   };
 
+  const handleAddCompany = () => {
+    // TODO: open the add-company flow.
+  };
+
+  const companyEmptyMessage = (
+    <div>
+      <p className="px-4 py-3 body2 text-secondary-text">
+        {translateText(["emptyStates", "noCompanies"])}
+      </p>
+      <ButtonV2
+        type="button"
+        onClick={handleAddCompany}
+        aria-label={translateText(["ariaLabels", "addCompany"])}
+        icon={<PlusIcon />}
+        iconPosition="start"
+        className="justify-start w-full px-4 py-2 bg-primary-background text-primary-text"
+      >
+          {translateText(["buttons", "addCompany"])}   
+      </ButtonV2>
+    </div>
+  );
+
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
     const owner = ownerLookup?.items?.find(
       (o) => String(o.employeeId) === item.id
@@ -239,13 +262,8 @@ const AddContactModal: React.FC = () => {
           onChange={(e) => setCompanySearch(e.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearch("")}
-          emptyMessage={
-            isCompanyFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateText(["emptyStates", "noCompanies"])}
-              </p>
-            )
-          }
+          onEmptyActivate={handleAddCompany}
+          emptyMessage={isCompanyFetching ? undefined : companyEmptyMessage}
         />
       ) : (
         <InputField
