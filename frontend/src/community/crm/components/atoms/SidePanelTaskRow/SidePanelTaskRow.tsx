@@ -51,6 +51,7 @@ const SidePanelTaskRow: FC<Props> = ({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.currentTarget !== e.target) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onRowClick?.();
@@ -70,7 +71,7 @@ const SidePanelTaskRow: FC<Props> = ({
         tabIndex: 0,
         onClick: onRowClick,
         onKeyDown: handleKeyDown,
-        "aria-label": `Open details for task: ${task.name}`
+        "aria-label": translateText(["openTaskDetails"], { name: task.name })
       })}
     >
       <div onClick={(e) => e.stopPropagation()}>

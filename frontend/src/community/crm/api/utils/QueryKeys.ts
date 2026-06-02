@@ -1,5 +1,3 @@
-import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
-
 export const companyQueryKeys = {
   GET_COMPANY_DATA: ["get-company-data"],
   GET_COMPANY_DATA_BY_SEARCH: (searchKeyword: string, limit: number) => [
