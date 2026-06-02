@@ -314,7 +314,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		long activeDealsCount = 0;
 		for (CrmDeal deal : deals) {
 			CrmDealStageType stageType = deal.getStage().getStageType();
-			BigDecimal amount = parseAmount(deal.getAmount());
+			BigDecimal amount = (deal.getAmount() == null || deal.getAmount().isBlank()) ? BigDecimal.ZERO
+					: new BigDecimal(deal.getAmount());
 			if (stageType == CrmDealStageType.WON) {
 				totalRevenue = totalRevenue.add(amount);
 			}
@@ -356,18 +357,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactById: execution ended");
 		return new ResponseEntityDto(false, dto);
-	}
-
-	private BigDecimal parseAmount(String amount) {
-		if (amount == null || amount.isBlank()) {
-			return BigDecimal.ZERO;
-		}
-		try {
-			return new BigDecimal(amount);
-		}
-		catch (NumberFormatException e) {
-			return BigDecimal.ZERO;
-		}
 	}
 
 	private Employee resolveOwner(Long ownerId, User currentUser) {
