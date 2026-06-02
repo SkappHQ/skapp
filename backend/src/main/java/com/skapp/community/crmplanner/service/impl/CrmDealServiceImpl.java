@@ -94,6 +94,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setDescription(requestDto.getDescription());
 		deal.setStage(stage);
 		deal.setPriority(requestDto.getPriority());
+		deal.setOrderIndex(crmDealDao.findMaxOrderIndexByStageId(stage.getId()) + 1);
 		deal.setClosingAt(requestDto.getClosingAt());
 		deal.setAmount(requestDto.getAmount());
 		deal.setCompany(company);

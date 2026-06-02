@@ -13,4 +13,6 @@ public interface CrmDealRepository {
 
 	List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds);
 
+	Integer findMaxOrderIndexByStageId(Long stageId);
+
 }
