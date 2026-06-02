@@ -200,7 +200,7 @@ const AddContactModal: React.FC = () => {
         iconPosition="start"
         className="justify-start w-full px-4 py-2 bg-primary-background text-primary-text"
       >
-          {translateText(["buttons", "addCompany"])}   
+        {translateText(["buttons", "addCompany"])}
       </ButtonV2>
     </div>
   );
@@ -327,7 +327,10 @@ const AddContactModal: React.FC = () => {
               showActionButton
               onActionClick={handleClearOwner}
               actionIcon={<CloseIcon />}
-              actionButtonAriaLabel={translateText(["ariaLabels", "clearOwner"])}
+              actionButtonAriaLabel={translateText([
+                "ariaLabels",
+                "clearOwner"
+              ])}
             />
           </div>
         </div>
