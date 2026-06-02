@@ -7,6 +7,40 @@
     "detailsTitle": "Contact Details",
     "contactDetailsPanel": {
       "lastUpdated": "Last updated"
+    },
+    "table": {
+      "clearButtonAriaLabel": "Clear search",
+      "search": "Search contact",
+      "infiniteScrollLoadingMessage": "Loading contacts...",
+      "closedDealsLabel_one": "Deal closed",
+      "closedDealsLabel_other": "Deals closed",
+      "overdueLabel": "overdue",
+      "emptyDataState": {
+        "title": "No contacts available.",
+        "description": "Create a contact to get started."
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
+      },
+      "companyFilter": {
+        "ariaLabel": "Filter by company",
+        "allCompanies": "All companies"
+      },
+      "columns": {
+        "nameHeader": "CONTACT",
+        "nameAriaLabel": "Contact Name",
+        "emailHeader": "EMAIL",
+        "emailAriaLabel": "Email",
+        "phoneHeader": "CONTACT NO.",
+        "phoneAriaLabel": "Contact Number",
+        "closedValueHeader": "DEAL VALUE",
+        "closedValueAriaLabel": "Deal Value",
+        "tasksHeader": "OPEN TASKS",
+        "tasksAriaLabel": "Open Tasks",
+        "contactOwnerHeader": "CONTACT OWNER",
+        "contactOwnerAriaLabel": "Contact Owner"
+      }
     }
   },
   "companies": {

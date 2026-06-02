@@ -67,6 +67,39 @@ export interface CrmContactType {
   isDeleted: boolean;
 }
 
+export interface CompanyLookup {
+  id: number;
+  name: string;
+}
+
+export interface CrmCompaniesResponseType {
+  items: CompanyLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface CrmContactMetricsType {
+  id: number;
+  name: string;
+  email: string;
+  contactNumber: string | null;
+  lastContactAt: string | null;
+  company: CompanyLookup | null;
+  owner: CrmOwnerType;
+  closedDealValue: number;
+  closedDealCount: number;
+  openTaskCount: number;
+  overdueTaskCount: number;
+}
+
+export interface CrmContactMetricsResponseType {
+  items: CrmContactMetricsType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
 export interface CrmDealType {
   id: number;
   name: string;
