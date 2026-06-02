@@ -26,7 +26,10 @@ import {
 } from "~community/leave/api/MyRequestApi";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequestDataType } from "~community/leave/types/EmployeeLeaveRequestTypes";
-import { LeaveStatusTypes, LeaveStatusTypeFilter } from "~community/leave/types/LeaveTypes";
+import {
+  LeaveStatusTypeFilter,
+  LeaveStatusTypes
+} from "~community/leave/types/LeaveTypes";
 import { generateMyLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 
@@ -192,30 +195,10 @@ const LeaveRequests: FC = () => {
         {
           filter: (leaveRequestsFilter.type || [])
             .map((typeId) => getLeaveTypeNameById(typeId))
-            .filter(Boolean) as string[],
-          handleFilterDelete: (option) => {
-            const updatedTypeFilter = filter.type.filter(
-              (item) => getLeaveTypeNameById(item) !== option
-            );
-            setFilter((prev) => ({
-              ...prev,
-              type: updatedTypeFilter
-            }));
-            setLeaveRequestParams("leaveType", updatedTypeFilter);
-          }
+            .filter(Boolean) as string[]
         },
         {
-          filter: leaveRequestsFilter.status || [],
-          handleFilterDelete: (option) => {
-            const updatedStatusFilter = filter.status.filter(
-              (item) => item !== option
-            );
-            setFilter((prev) => ({
-              ...prev,
-              status: updatedStatusFilter
-            }));
-            setLeaveRequestParams("status", updatedStatusFilter);
-          }
+          filter: leaveRequestsFilter.status || []
         }
       ]}
       position={"bottom-end"}

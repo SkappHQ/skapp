@@ -14,7 +14,6 @@ import DateRangePicker from "~community/common/components/molecules/DateRangePic
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { FilterButtonTypes } from "~community/common/types/CommonTypes";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import {
   convertDateToFormat,
@@ -86,9 +85,6 @@ const UserLeaveHistory: FC<Props> = ({
   const [filterEl, setFilterEl] = useState<null | HTMLElement>(null);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [filterArray, setFilterArray] = useState<string[]>([]);
-  const [leaveTypeButtons, setLeaveTypeButtons] = useState<FilterButtonTypes[]>(
-    []
-  );
   const [employeeLeaveHistoryData, setEmployeeLeaveHistoryData] =
     useState<LeaveHistoryDataTypes>({
       currentPage: 0,
@@ -469,12 +465,6 @@ const UserLeaveHistory: FC<Props> = ({
       setEmployeeLeaveHistoryData(leaveHistory);
     }
   }, [leaveHistory, isLoading]);
-
-  useEffect(() => {
-    if (leaveTypesList) {
-      setLeaveTypeButtons(requestedLeaveTypesPreProcessor(leaveTypesList));
-    }
-  }, [leaveTypesList]);
 
   useEffect(() => {
     setFilterArray(leaveRequestFilterOrder);

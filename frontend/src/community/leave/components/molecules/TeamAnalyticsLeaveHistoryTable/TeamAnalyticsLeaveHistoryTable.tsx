@@ -236,40 +236,12 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
       handleResetBtnClick={handleResetFilters}
       selectedFilters={[
         {
-          filter: appliedFilter.type.map((typeId) =>
-            getLeaveTypeNameById(typeId)
-          ),
-          handleFilterDelete: (option) => {
-            const updatedTypeFilter = filter.type.filter(
-              (item) => getLeaveTypeNameById(item) !== option
-            );
-            setFilter((prev) => ({
-              ...prev,
-              type: updatedTypeFilter
-            }));
-            setAppliedFilter((prev) => ({
-              ...prev,
-              type: updatedTypeFilter
-            }));
-            setTeamLeaveAnalyticsParams("leaveType", updatedTypeFilter);
-          }
+          filter: appliedFilter.type
+            .map((typeId) => getLeaveTypeNameById(typeId))
+            .filter(Boolean) as string[]
         },
         {
-          filter: appliedFilter.status,
-          handleFilterDelete: (option) => {
-            const updatedStatusFilter = filter.status.filter(
-              (item) => item !== option
-            );
-            setFilter((prev) => ({
-              ...prev,
-              status: updatedStatusFilter
-            }));
-            setAppliedFilter((prev) => ({
-              ...prev,
-              status: updatedStatusFilter
-            }));
-            setTeamLeaveAnalyticsParams("status", updatedStatusFilter);
-          }
+          filter: appliedFilter.status
         }
       ]}
       position={"bottom-end"}

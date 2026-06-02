@@ -60,10 +60,7 @@ const ManagerLeaveRequest: FC<Props> = ({
 
   const {
     resetLeaveRequestParams,
-    leaveRequestsFilter,
     leaveRequestFilterOrder,
-    setLeaveRequestFilterOrder,
-    setLeaveRequestsFilter,
     setLeaveRequestParams,
     setPagination,
     setIsManagerModal,
@@ -72,10 +69,7 @@ const ManagerLeaveRequest: FC<Props> = ({
     newLeaveId
   } = useLeaveStore((state) => ({
     resetLeaveRequestParams: state.resetLeaveRequestParams,
-    leaveRequestsFilter: state.leaveRequestsFilter,
     leaveRequestFilterOrder: state.leaveRequestFilterOrder,
-    setLeaveRequestFilterOrder: state.setLeaveRequestFilterOrder,
-    setLeaveRequestsFilter: state.setLeaveRequestsFilter,
     setLeaveRequestParams: state.setLeaveRequestParams,
     setPagination: state.setPagination,
     setIsManagerModal: state.setIsManagerModal,
@@ -89,7 +83,6 @@ const ManagerLeaveRequest: FC<Props> = ({
   ) as number;
 
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [filterArray, setFilterArray] = useState<string[]>([]);
   const [leaveTypeButtons, setLeaveTypeButtons] = useState<FilterButtonTypes[]>(
     []
   );
@@ -125,7 +118,6 @@ const ManagerLeaveRequest: FC<Props> = ({
 
   const onClickReset = () => {
     resetLeaveRequestParams();
-    setFilterArray([]);
     setSelectedDates([]);
   };
 
@@ -213,7 +205,6 @@ const ManagerLeaveRequest: FC<Props> = ({
   }, [leaveTypes, leaveTypesLoading]);
 
   useEffect(() => {
-    setFilterArray(leaveRequestFilterOrder);
     setLeaveRequestParams("size", "6");
     const startDate = getDateForPeriod("year", "start");
     const endDate = getDateForPeriod("year", "end");

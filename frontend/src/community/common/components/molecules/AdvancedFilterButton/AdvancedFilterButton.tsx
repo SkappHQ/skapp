@@ -6,10 +6,8 @@ import {
   SelectedFiltersDisplay
 } from "@rootcodelabs/skapp-ui";
 import {
-  Dispatch,
   JSX,
   MouseEvent,
-  SetStateAction,
   useEffect,
   useMemo,
   useRef,
@@ -40,9 +38,6 @@ interface FilterPanelProps {
   id?: string;
   position?: PopperAndTooltipPositionTypes;
   selectedFilters: { [key: string]: (string | number)[] };
-  setSelectedFilters: Dispatch<
-    SetStateAction<{ [key: string]: (string | number)[] }>
-  >;
 }
 
 const FilterButton = ({
