@@ -1,5 +1,5 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum } from "../enums/common";
+import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum, CrmIndustryEnum} from "../enums/common";
 
 export interface CrmOwner {
   employeeId: number;
@@ -11,7 +11,7 @@ export interface CrmOwner {
 export interface CrmCompanyType {
   id: number;
   name: string;
-  industry: string | null;
+  industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
@@ -22,7 +22,7 @@ export interface CrmCompanyMetricsType {
   id: number;
   name: string;
   contactNumber: string;
-  industry: string | null;
+  industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
   tasks: number;
@@ -42,7 +42,7 @@ export interface CrmCompanyMetricsResponseType {
 
 export interface CrmCompanyAddFormTypes {
   name: string;
-  industry: string | null;
+  industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
@@ -50,7 +50,7 @@ export interface CrmCompanyAddFormTypes {
 
 export interface CrmCompanyCreatePayload {
   name: string;
-  industry: string | null;
+  industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
@@ -66,6 +66,39 @@ export interface CrmContactType {
   company: CrmCompanyType | null;
   owner: CrmOwner;
   isDeleted: boolean;
+}
+
+export interface CompanyLookup {
+  id: number;
+  name: string;
+}
+
+export interface CrmCompaniesResponseType {
+  items: CompanyLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface CrmContactMetricsType {
+  id: number;
+  name: string;
+  email: string;
+  contactNumber: string | null;
+  lastContactAt: string | null;
+  company: CompanyLookup | null;
+  owner: CrmOwner;
+  closedDealValue: number;
+  closedDealCount: number;
+  openTaskCount: number;
+  overdueTaskCount: number;
+}
+
+export interface CrmContactMetricsResponseType {
+  items: CrmContactMetricsType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
 }
 
 export interface CrmDealType {

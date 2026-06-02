@@ -584,3 +584,6 @@ export const getFullName = (
   firstName: string,
   lastName: string | null
 ): string => `${firstName} ${lastName ?? ""}`.trim();
+
+export const concatStrings = (args: string[], separator: string = " ") =>
+  args.join(separator);
