@@ -6,7 +6,12 @@
     "detailsPageHead": "Contact Details | Skapp",
     "detailsTitle": "Contact Details",
     "contactDetailsPanel": {
-      "lastUpdated": "Last updated"
+      "lastUpdated": "Last updated",
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals",
+        "contacts": "Contacts"
+      }
     }
   },
   "companies": {
