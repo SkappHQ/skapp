@@ -210,6 +210,10 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 			throw new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
+		if (CommonModuleUtils.isGuestEmployee(optionalEmployee.get())) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED);
+		}
+
 		List<Long> leaveTypeIds = leaveEntitlementsDto.getEntitlementList()
 			.stream()
 			.map(EntitlementDto::getLeaveTypeId)
@@ -515,6 +519,10 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		Optional<Employee> employeeOpt = employeeDao.findById(customLeaveEntitlementDto.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			throw new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		if (CommonModuleUtils.isGuestEmployee(employeeOpt.get())) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED);
 		}
 
 		Optional<LeaveType> leaveTypeOpt = leaveTypeDao.findById(customLeaveEntitlementDto.getTypeId());
@@ -1009,11 +1017,8 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 					new String[] { entitlementDetailsDto.getEmail() }));
 		}
 
-		if (userByEmailOpt.isPresent() && userByEmailOpt.get().getEmployee() != null
-				&& userByEmailOpt.get().getEmployee().getEmployeeRole() != null
-				&& Role.PM_GUEST_EMPLOYEE == userByEmailOpt.get().getEmployee().getEmployeeRole().getPmRole()) {
-			errors.add(messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED_IN_BULK,
-					new String[] { entitlementDetailsDto.getEmail() }));
+		else if (CommonModuleUtils.isGuestEmployee(userByEmailOpt.get().getEmployee())) {
+			errors.add(messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED));
 		}
 
 		if (!errors.isEmpty()) {
