@@ -10,11 +10,12 @@ import { FC, ReactNode, useMemo } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 
-import { useContainerWidth } from "~community/common/hooks/useContainerWidth";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmDealListItemType } from "~community/crm/types/CommonTypes";
+import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { getFullName } from "~community/common/utils/commonUtil";
 import { formatValue } from "~community/crm/utils/crmUtil";
+import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
+import { useContainerWidth } from "./utils/dealsTableUtils";
 
 interface DealRow extends BaseRowData {
   id: string;
@@ -29,7 +30,7 @@ interface DealRow extends BaseRowData {
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
-  allDeals: CrmDealListItemType[];
+  allDeals: CrmDealListItem[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
 }
@@ -55,7 +56,7 @@ const DealsTable: FC<Props> = ({
         id: "dealName",
         title: translateText(["dealColumn"]),
         field: "dealName",
-        width: tableWidth * 0.2337,
+        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.DEAL_NAME,
         minWidth: 400,
         resizable: false,
         draggable: false,
@@ -66,7 +67,7 @@ const DealsTable: FC<Props> = ({
         id: "value",
         title: translateText(["valueColumn"]),
         field: "value",
-        width: tableWidth * 0.1532,
+        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.VALUE,
         minWidth: 140,
         resizable: false,
         draggable: false,
@@ -77,7 +78,7 @@ const DealsTable: FC<Props> = ({
         id: "stage",
         title: translateText(["stageColumn"]),
         field: "stage",
-        width: tableWidth * 0.1532,
+        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.STAGE,
         minWidth: 140,
         resizable: false,
         draggable: false,
@@ -88,7 +89,7 @@ const DealsTable: FC<Props> = ({
         id: "companyName",
         title: translateText(["companyNameColumn"]),
         field: "companyName",
-        width: tableWidth * 0.1532,
+        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.COMPANY_NAME,
         minWidth: 140,
         resizable: false,
         draggable: false,
@@ -99,7 +100,7 @@ const DealsTable: FC<Props> = ({
         id: "contactName",
         title: translateText(["contactNameColumn"]),
         field: "contactName",
-        width: tableWidth * 0.1532,
+        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.CONTACT_NAME,
         minWidth: 140,
         resizable: false,
         draggable: false,
@@ -110,7 +111,7 @@ const DealsTable: FC<Props> = ({
         id: "dealOwner",
         title: translateText(["dealOwnerColumn"]),
         field: "dealOwner",
-        width: tableWidth * 0.1532,
+        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.DEAL_OWNER,
         minWidth: 140,
         resizable: false,
         draggable: false,
@@ -123,7 +124,7 @@ const DealsTable: FC<Props> = ({
 
   const tableRows = useMemo(
     (): DealRow[] =>
-      allDeals.map((deal: CrmDealListItemType) => {
+      allDeals.map((deal: CrmDealListItem) => {
         const formattedAmount = formatValue(deal.amount);
         const ownerFullName = getFullName(deal.owner.firstName, deal.owner.lastName);
 

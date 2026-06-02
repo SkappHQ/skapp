@@ -1,6 +1,13 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum } from "../enums/common";
 
+export interface CrmOwner {
+  employeeId: number;
+  firstName: string;
+  lastName: string | null;
+  authPic: string | null;
+}
+
 export interface CrmCompanyType {
   id: number;
   name: string;
@@ -49,13 +56,6 @@ export interface CrmCompanyCreatePayload {
   contactNumber: string | null;
 }
 
-export interface CrmOwnerType {
-  employeeId: number;
-  firstName: string;
-  lastName: string | null;
-  authPic: string | null;
-}
-
 export interface CrmContactType {
   id: number;
   name: string;
@@ -64,7 +64,7 @@ export interface CrmContactType {
   lastContactAt: string | null;
   lastModifiedDate: string;
   company: CrmCompanyType | null;
-  owner: CrmOwnerType;
+  owner: CrmOwner;
   isDeleted: boolean;
 }
 
@@ -78,7 +78,7 @@ export interface CrmDealType {
   currencyCode: string | null;
   company: CrmCompanyType | null;
   contact: CrmContactType;
-  owner: CrmOwnerType;
+  owner: CrmOwner;
   isDeleted: boolean;
 }
 
@@ -98,7 +98,7 @@ export interface CrmTaskType {
   isCompleted: boolean;
   dueAt: string | null;
   notes: string | null;
-  owner: CrmOwnerType;
+  owner: CrmOwner;
   contact: CrmContactType | null;
   company: CrmCompanyType | null;
   deal: CrmDealType | null;
@@ -111,14 +111,7 @@ export interface CrmTaskCategory {
   orderIndex: number;
 }
 
-export interface CrmOwnerType {
-  employeeId: number;
-  firstName: string;
-  lastName: string | null;
-  authPic: string | null;
-}
-
-export interface CrmDealListItemType {
+export interface CrmDealListItem {
   id: number;
   name: string;
   stageName: string;
@@ -126,11 +119,11 @@ export interface CrmDealListItemType {
   amount: string;
   companyName: string | null;
   contactName: string;
-  owner: CrmOwnerType;
+  owner: CrmOwner;
 }
 
-export interface CrmDealPaginatedResponseType {
-  items: CrmDealListItemType[];
+export interface CrmDealPaginatedResponse {
+  items: CrmDealListItem[];
   currentPage: number;
   totalItems: number;
   totalPages: number;

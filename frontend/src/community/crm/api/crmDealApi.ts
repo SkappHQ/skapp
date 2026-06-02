@@ -6,14 +6,15 @@ import {
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmDealFilterParams,
-  CrmDealPaginatedResponseType
+  CrmDealPaginatedResponse
 } from "~community/crm/types/CommonTypes";
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
 import { crmDealQueryKeys } from "./utils/QueryKeys";
 
+// Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
   params: CrmDealFilterParams
-): UseInfiniteQueryResult<CrmDealPaginatedResponseType> => {
+): UseInfiniteQueryResult<CrmDealPaginatedResponse> => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: crmDealQueryKeys.GET_DEALS(params),
@@ -24,7 +25,7 @@ export const useGetDealsInfinite = (
           ...params
         }
       });
-      return response?.data?.results?.[0] as CrmDealPaginatedResponseType;
+      return response?.data?.results?.[0] as CrmDealPaginatedResponse;
     },
     getNextPageParam: (lastPage) => {
       if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
