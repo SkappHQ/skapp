@@ -64,11 +64,10 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
 
 		query.distinct(true);
-		query.where(
-				cb.and(
-						cb.or(cb.equal(directContact.get(CrmContact_.id), contactId),
-								cb.equal(dealContact.get(CrmContact_.id), contactId)),
-						cb.isFalse(task.get(CrmTask_.isDeleted))));
+		query.where(cb.and(
+				cb.or(cb.equal(directContact.get(CrmContact_.id), contactId),
+						cb.equal(dealContact.get(CrmContact_.id), contactId)),
+				cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		return entityManager.createQuery(query).getResultList();
 	}
