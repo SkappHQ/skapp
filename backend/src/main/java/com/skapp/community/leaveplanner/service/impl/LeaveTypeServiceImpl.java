@@ -70,9 +70,8 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 		log.info("getLeaveTypes: execution started");
 		List<LeaveType> leaveTypes;
 
-		Long userId = userService.getCurrentUser().getUserId();
-
 		if (Boolean.TRUE.equals(leaveTypeFilterDto.getFilterByInUse())) {
+			Long userId = userService.getCurrentUser().getUserId();
 			leaveTypes = leaveTypeDao.getUsedUserLeaveTypes(userId,
 					Boolean.TRUE.equals(leaveTypeFilterDto.getIsCarryForward()));
 		}
@@ -80,7 +79,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 			leaveTypes = leaveTypeDao.findByIsCarryForwardEnabledAndIsActive(true, true);
 		}
 		else {
-			leaveTypes = leaveTypeDao.findAll();
+			leaveTypes = leaveTypeDao.findAllByIsActive(true);
 		}
 		List<LeaveTypeResponseDto> responseDtoList = leaveMapper.leaveTypeListToLeaveTypeResponseDtoList(leaveTypes);
 
