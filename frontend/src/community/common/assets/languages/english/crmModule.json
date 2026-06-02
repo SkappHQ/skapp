@@ -7,11 +7,7 @@
     "detailsTitle": "Contact Details",
     "contactDetailsPanel": {
       "lastUpdated": "Last updated",
-      "tabs": {
-        "tasks": "Tasks",
-        "deals": "Deals",
-        "contacts": "Contacts"
-      }
+      "tabsAriaLabel": "Contact details navigation tabs"
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
@@ -158,5 +154,12 @@
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task"
+  },
+  "sidePanel": {
+    "tabs": {
+      "tasks": "Tasks",
+      "deals": "Deals",
+      "contacts": "Contacts"
+    }
   }
 }
