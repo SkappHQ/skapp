@@ -94,7 +94,7 @@ const AppBar = () => {
           !isBelow600 ? (
             <Breadcrumb
               items={breadcrumbs}
-              ariaLabel="Breadcrumb"
+              ariaLabel={translateAria(["breadcrumb"])}
               onNavigate={(href) => router.push(href)}
             />
           ) : null
