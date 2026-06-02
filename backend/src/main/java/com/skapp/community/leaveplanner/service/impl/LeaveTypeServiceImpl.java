@@ -79,7 +79,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 			leaveTypes = leaveTypeDao.findByIsCarryForwardEnabledAndIsActive(true, true);
 		}
 		else {
-			leaveTypes = leaveTypeDao.findAllByIsActive(true);
+			leaveTypes = leaveTypeDao.findAll();
 		}
 		List<LeaveTypeResponseDto> responseDtoList = leaveMapper.leaveTypeListToLeaveTypeResponseDtoList(leaveTypes);
 
