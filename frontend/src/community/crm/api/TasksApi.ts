@@ -28,6 +28,7 @@ export const useUpdateTaskCompletion = (
     mutationFn: updateTaskStatusFn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.ALL });
+      // TODO: also invalidate contact/company detailed view queries once those API layers are implemented
       onSuccess();
     },
     onError

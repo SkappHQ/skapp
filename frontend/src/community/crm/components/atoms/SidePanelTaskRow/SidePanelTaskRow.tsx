@@ -2,12 +2,12 @@ import { Avatar, CheckTask, PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC, KeyboardEvent, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
 import {
-  getDueDateDisplay,
   getPriorityConfig,
-  getTaskTypeConfig
-} from "~community/crm/utils/crmTaskUtils";
+  getTaskTypeIcon
+} from "~community/crm/constants/crmTaskConstants";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import { getDueDateDisplay } from "~community/crm/utils/crmTaskUtils";
 
 interface Props {
   task: CrmTaskType;
@@ -29,9 +29,10 @@ const SidePanelTaskRow: FC<Props> = ({
   );
 
   const priorityConfig = getPriorityConfig(task.priority);
+  const TaskTypeIcon = getTaskTypeIcon(task.type.name);
+  const PriorityIconComp = priorityConfig.IconComponent;
   const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
 
-  // Optimistic UI: immediately reflect the toggle, revert if the API call fails
   const [optimisticCompleted, setOptimisticCompleted] = useState(
     task.isCompleted
   );
@@ -88,7 +89,7 @@ const SidePanelTaskRow: FC<Props> = ({
       </div>
 
       <div className="shrink-0 flex items-center justify-center">
-        {getTaskTypeConfig(task.type.name)}
+        <TaskTypeIcon />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -122,7 +123,7 @@ const SidePanelTaskRow: FC<Props> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <PriorityIcon
-          icon={priorityConfig.icon}
+          icon={<PriorityIconComp />}
           bgColor={priorityConfig.bgColor}
           className="w-8! h-8!"
         />
