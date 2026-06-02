@@ -77,7 +77,7 @@ const SidePanelContactHeader: FC<Props> = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-[8px] items-start">
+    <div className="w-full flex flex-col gap-[8px] items-start p-[8px]">
       {renderContent()}
     </div>
   );
