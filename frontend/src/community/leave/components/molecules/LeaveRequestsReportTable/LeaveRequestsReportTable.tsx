@@ -223,24 +223,6 @@ const LeaveRequestsReportTable: FC = () => {
     setReportsFilterOrderIds(updatedTypeIds);
   };
 
-  const handleRemoveLeaveTypes = (leaveType: { id: string; text: string }) => {
-    const updatedTypes = selectedLeaveTypes.includes(leaveType.text)
-      ? selectedLeaveTypes.filter((type) => type !== leaveType.text)
-      : [...selectedLeaveTypes, leaveType.text];
-
-    setSelectedLeaveTypes(updatedTypes);
-
-    const updatedTypeIds = leaveTypeButtons
-      .filter((button) => updatedTypes.includes(button.text))
-      .map((button) => button.id);
-
-    setReportsFilter("leaveType", updatedTypeIds);
-    setReportsFilterOrder(updatedTypes);
-    setReportsFilterOrderIds(updatedTypeIds);
-
-    setReportsParams("leaveTypeId", updatedTypeIds);
-  };
-
   const handleStatusFilter = (status: { id: string; text: string }) => {
     const updatedStatuses = selectedStatuses.includes(status.text)
       ? selectedStatuses.filter((type) => type !== status.text)
@@ -253,22 +235,6 @@ const LeaveRequestsReportTable: FC = () => {
       .map((button) => button.id);
 
     setReportsFilter("status", updatedStatusIds);
-  };
-
-  const handleRemoveLeaveStatues = (status: { id: string; text: string }) => {
-    const updatedStatuses = selectedStatuses.includes(status.text)
-      ? selectedStatuses.filter((type) => type !== status.text)
-      : [...selectedStatuses, status.text];
-
-    setSelectedStatuses(updatedStatuses);
-
-    const updatedStatusIds = leaveStatusButtons
-      .filter((button) => updatedStatuses.includes(button.text))
-      .map((button) => button.id);
-
-    setReportsFilter("status", updatedStatusIds);
-
-    setReportsParams("leaveStatus", updatedStatuses);
   };
 
   const handleApplyFilters = () => {
@@ -316,22 +282,10 @@ const LeaveRequestsReportTable: FC = () => {
   const getAllSelectedFilters = () => {
     return [
       ...selectedLeaveTypes.map((type) => ({
-        filter: [type],
-        handleFilterDelete: () => {
-          handleRemoveLeaveTypes({
-            id: leaveTypeButtons.find((btn) => btn.text === type)?.id || "",
-            text: type
-          });
-        }
+        filter: [type]
       })),
       ...selectedStatuses.map((status) => ({
-        filter: [status],
-        handleFilterDelete: () => {
-          handleRemoveLeaveStatues({
-            id: leaveStatusButtons.find((btn) => btn.text === status)?.id || "",
-            text: status
-          });
-        }
+        filter: [status]
       }))
     ];
   };

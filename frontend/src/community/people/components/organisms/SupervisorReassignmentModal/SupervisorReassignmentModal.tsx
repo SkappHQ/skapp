@@ -1,6 +1,6 @@
-import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, CloseIcon, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import ROUTES from "~community/common/constants/routes";
@@ -19,7 +19,7 @@ import {
   EmployeeRemoveAction,
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
 } from "~community/people/types/PeopleTypes";
-import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
+import { concatStrings } from "~community/common/utils/commonUtil";
 
 interface SupervisorReassignmentModalProps {
   isOpen: boolean;
@@ -54,8 +54,11 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
 
   const { data: supervisorRoles, isLoading: isSupervisorRolesLoading } =
     useGetSupervisedEmployeesAndTeams(employeeId, isOpen);
-  const { data: searchedEmployees, isLoading: isSearchLoading } =
+  const { data: searchedEmployees, isLoading: isEmployeeSearchLoading } =
     useGetSearchedEmployees(searchTerm);
+
+  const isSearchLoading =
+    isEmployeeSearchLoading || searchedEmployees === undefined;
 
   const resetState = useCallback(() => {
     setPrimarySupervisorAssignments({});
@@ -129,8 +132,17 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   const supervisedEmployees = supervisorRoles?.supervisedEmployees;
   const supervisedTeams = supervisorRoles?.supervisedTeams;
 
-  const filteredEmployeeList = (searchedEmployees ?? []).filter(
-    (employee) => Number(employee.employeeId) !== employeeId
+  const filteredEmployeeList = useMemo(
+    () =>
+      (searchedEmployees ?? []).filter(
+        (employee) => Number(employee.employeeId) !== employeeId
+      ),
+    [searchedEmployees, employeeId]
+  );
+
+  const employeeList = useMemo(
+    () => (isSearchLoading ? [] : filteredEmployeeList),
+    [isSearchLoading, filteredEmployeeList]
   );
 
   const isProceedEnabled =
@@ -182,38 +194,32 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     setSearchTerm("");
   };
 
-  const handleDropdownBlur = () => setSearchTerm("");
+  const getPrimarySupervisorItems = useCallback(
+    (supervisedEmployeeId: number) =>
+      employeeList
+        .filter(
+          (employee) => Number(employee.employeeId) !== supervisedEmployeeId
+        )
+        .map((employee) => ({
+          id: String(employee.employeeId),
+          content: concatStrings([employee.firstName, employee.lastName]).trim()
+        })),
+    [employeeList]
+  );
+
+  const getTeamSupervisorItems = useCallback(
+    (teamId: number) =>
+      employeeList.map((employee) => ({
+        id: String(employee.employeeId),
+        content: concatStrings([employee.firstName, employee.lastName]).trim()
+      })),
+    [employeeList]
+  );
 
   const proceedButtonLabel =
     actionType === EmployeeRemoveAction.TERMINATE
       ? translateText(["proceedAndTerminateButton"])
       : translateText(["proceedAndDeleteButton"]);
-
-  const handlePrimarySupervisorMouseDown = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    employee: any,
-    supervisedEmployeeId: number
-  ) => {
-    e.preventDefault();
-    handleSelectPrimarySupervisor(
-      employee.employeeId,
-      concatStrings([employee.firstName, employee.lastName]).trim(),
-      supervisedEmployeeId
-    );
-  };
-
-  const handleTeamSupervisorMouseDown = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    employee: any,
-    teamId: number
-  ) => {
-    e.preventDefault();
-    handleSelectTeamSupervisor(
-      employee.employeeId,
-      concatStrings([employee.firstName, employee.lastName]).trim(),
-      teamId
-    );
-  };
 
   const handleRemovePrimarySupervisor = (supervisedEmployeeId: number) => {
     setPrimarySupervisorAssignments((prev) => {
@@ -236,7 +242,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       <div className="flex flex-col gap-4">
         <p className="body1">{translateText(["subtitle"])}</p>
 
-        <div className="flex flex-col max-h-88 gap-4 [scrollbar-gutter:stable] overflow-y-auto pr-2">
+        <div className="flex flex-col gap-4 pr-2 overflow-y-auto max-h-[60vh]">
           {isSupervisorRolesLoading && (
             <MultipleSkeletons numOfSkeletons={3} height={41} />
           )}
@@ -252,36 +258,17 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               }))}
               showAvatar={true}
               isTeamSection={false}
-              isSearchLoading={isSearchLoading}
+              isLoading={isSearchLoading}
               assignments={primarySupervisorAssignments}
-              getResults={(supervisedEmployeeId) =>
-                filteredEmployeeList
-                  .filter(
-                    (employee) =>
-                      Number(employee.employeeId) !== supervisedEmployeeId
-                  )
-                  .map((employee) => (
-                    <button
-                      key={employee.employeeId}
-                      type="button"
-                      className="w-full text-left"
-                      onMouseDown={(e) =>
-                        handlePrimarySupervisorMouseDown(
-                          e,
-                          employee,
-                          supervisedEmployeeId
-                        )
-                      }
-                    >
-                      {concatStrings([
-                        employee.firstName,
-                        employee.lastName
-                      ]).trim()}
-                    </button>
-                  ))
-              }
-              onBlur={handleDropdownBlur}
+              getItems={getPrimarySupervisorItems}
               onSearch={setSearchTerm}
+              onSelect={(supervisedEmployeeId, selectedId, selectedName) => {
+                handleSelectPrimarySupervisor(
+                  Number(selectedId),
+                  selectedName,
+                  supervisedEmployeeId
+                );
+              }}
               onRemove={handleRemovePrimarySupervisor}
             />
           )}
@@ -295,48 +282,21 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               }))}
               showAvatar={false}
               isTeamSection={true}
-              isSearchLoading={isSearchLoading}
+              isLoading={isSearchLoading}
               assignments={teamSupervisorAssignments}
-              getResults={(teamId) =>
-                filteredEmployeeList.map((employee) => (
-                  <button
-                    key={employee.employeeId}
-                    type="button"
-                    className="w-full text-left"
-                    onMouseDown={(e) =>
-                      handleTeamSupervisorMouseDown(e, employee, teamId)
-                    }
-                  >
-                    {concatStrings([
-                      employee.firstName,
-                      employee.lastName
-                    ]).trim()}
-                  </button>
-                ))
-              }
-              onBlur={handleDropdownBlur}
+              getItems={getTeamSupervisorItems}
               onSearch={setSearchTerm}
+              onSelect={(teamId, selectedId, selectedName) => {
+                handleSelectTeamSupervisor(
+                  Number(selectedId),
+                  selectedName,
+                  teamId
+                );
+              }}
               onRemove={handleRemoveTeamSupervisor}
             />
           )}
         </div>
-      </div>
-
-      <div className="flex flex-row gap-4 justify-end">
-        <ButtonV2
-          variant="tertiary"
-          onClick={handleClose}
-          disabled={isSubmitting}
-        >
-          {translateText(["cancelButton"])}
-        </ButtonV2>
-        <ButtonV2
-          variant="primary"
-          onClick={handleProceed}
-          disabled={isSubmitting || !isProceedEnabled}
-        >
-          {proceedButtonLabel}
-        </ButtonV2>
       </div>
     </div>
   );
@@ -349,6 +309,24 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       content={modalContent}
       className="w-138.25"
       closeButtonAriaLabel={translateText(["closeModalAriaLabel"])}
+      buttons={{
+        buttonLeft: {
+          variant: "tertiary",
+          onClick: handleClose,
+          disabled: isSubmitting,
+          icon: <CloseIcon />,
+          iconPosition: "end",
+          children: translateText(["cancelButton"])
+        },
+        buttonRight: {
+          variant: "primary",
+          onClick: handleProceed,
+          disabled: isSubmitting || !isProceedEnabled,
+          icon: <ArrowRightIcon />,
+          iconPosition: "end",
+          children: proceedButtonLabel
+        }
+      }}
     />
   );
 };
