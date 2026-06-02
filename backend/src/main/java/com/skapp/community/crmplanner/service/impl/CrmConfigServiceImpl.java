@@ -38,7 +38,7 @@ public class CrmConfigServiceImpl implements CrmConfigService {
 
 	private void setDefaultCrmTaskTypes() {
 		log.info("setDefaultCrmTaskTypes: execution started");
-		
+
 		crmTaskTypeDao.saveAll(DefaultCrmTaskTypeTemplate.getDefaultTaskTypes());
 
 		log.info("setDefaultCrmTaskTypes: execution ended");
