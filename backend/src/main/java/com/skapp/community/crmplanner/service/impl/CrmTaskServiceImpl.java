@@ -60,9 +60,9 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
 
 		User currentUser = userService.getCurrentUser();
-		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
-
 		Employee owner = resolveTaskOwner(requestDto.getOwnerId(), currentUser);
+
+		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
 
 		CrmTask task = new CrmTask();
 		task.setName(requestDto.getName());
