@@ -758,13 +758,37 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
-		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
-
 		List<Predicate> predicates = new ArrayList<>();
 
-		Join<LeaveRequest, Employee> employee = root.join(LeaveRequest_.EMPLOYEE);
-		predicates.add(criteriaBuilder.equal(employee.get(Employee_.EMPLOYEE_ID), employeeId));
+		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
+		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
+		buildEmployeeLeavePredicates(criteriaBuilder, root, predicates, employeeId, leaveRequestFilterDto);
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+
+		TypedQuery<LeaveRequest> query = entityManager.createQuery(criteriaQuery);
+		if (page.isPaged()) {
+			query.setFirstResult(page.getPageNumber() * page.getPageSize());
+			query.setMaxResults(page.getPageSize());
+
+			predicates.clear();
+			CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+			Root<LeaveRequest> countRoot = countQuery.from(LeaveRequest.class);
+			buildEmployeeLeavePredicates(criteriaBuilder, countRoot, predicates, employeeId, leaveRequestFilterDto);
+			countQuery.select(criteriaBuilder.count(countRoot));
+			countQuery.where(predicates.toArray(new Predicate[0]));
+			long totalRows = entityManager.createQuery(countQuery).getSingleResult();
+
+			return new PageImpl<>(query.getResultList(), page, totalRows);
+		}
+
+		List<LeaveRequest> results = query.getResultList();
+		return new PageImpl<>(results, page, results.size());
+	}
+
+	private void buildEmployeeLeavePredicates(CriteriaBuilder criteriaBuilder, Root<LeaveRequest> root,
+			List<Predicate> predicates, Long employeeId, LeaveRequestFilterDto leaveRequestFilterDto) {
+		predicates.add(criteriaBuilder.equal(root.get(LeaveRequest_.EMPLOYEE).get(Employee_.EMPLOYEE_ID), employeeId));
 
 		if (!CollectionUtils.isEmpty(leaveRequestFilterDto.getLeaveType())) {
 			predicates.add(root.get(LeaveRequest_.LEAVE_TYPE)
@@ -784,19 +808,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 							leaveRequestFilterDto.getEndDate()));
 			predicates.add(dateBetween);
 		}
-
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		criteriaQuery.where(predArray);
-		criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
-
-		TypedQuery<LeaveRequest> query = entityManager.createQuery(criteriaQuery);
-
-		int totalRows = query.getResultList().size();
-		query.setFirstResult(page.getPageNumber() * page.getPageSize());
-		query.setMaxResults(page.getPageSize());
-
-		return new PageImpl<>(query.getResultList(), page, totalRows);
 	}
 
 	@Override
