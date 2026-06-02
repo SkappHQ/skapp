@@ -4,7 +4,6 @@ import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
@@ -20,7 +19,10 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
 import { useLeaveStore } from "~community/leave/store/store";
-import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
+import {
+  LeaveStatusTypeFilter,
+  LeaveStatusTypes
+} from "~community/leave/types/LeaveTypes";
 import {
   Employee,
   LeaveHistoryDataTypes,
@@ -50,7 +52,11 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
   const [isAll, setIsAll] = useState<boolean>(true);
-  const [filter, setFilter] = useState<{ status: string[]; type: string[] }>({
+  const [filter, setFilter] = useState<LeaveStatusTypeFilter>({
+    status: [],
+    type: []
+  });
+  const [appliedFilter, setAppliedFilter] = useState<LeaveStatusTypeFilter>({
     status: [],
     type: []
   });
@@ -204,6 +210,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
   const handleApplyFilters = () => {
     setTeamLeaveAnalyticsParams("status", filter.status);
     setTeamLeaveAnalyticsParams("leaveType", filter.type);
+    setAppliedFilter({ status: filter.status, type: filter.type });
   };
 
   const handleResetFilters = () => {
@@ -211,6 +218,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
       status: [],
       type: []
     });
+    setAppliedFilter({ status: [], type: [] });
     resetTeamLeaveAnalyticsParams();
   };
 
@@ -228,30 +236,12 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
       handleResetBtnClick={handleResetFilters}
       selectedFilters={[
         {
-          filter: filter.type.map((typeId) => getLeaveTypeNameById(typeId)),
-          handleFilterDelete: (option) => {
-            const updatedTypeFilter = filter.type.filter(
-              (item) => getLeaveTypeNameById(item) !== option
-            );
-            setFilter((prev) => ({
-              ...prev,
-              type: updatedTypeFilter
-            }));
-            setTeamLeaveAnalyticsParams("leaveType", updatedTypeFilter);
-          }
+          filter: appliedFilter.type
+            .map((typeId) => getLeaveTypeNameById(typeId))
+            .filter(Boolean) as string[]
         },
         {
-          filter: filter.status,
-          handleFilterDelete: (option) => {
-            const updatedStatusFilter = filter.status.filter(
-              (item) => item !== option
-            );
-            setFilter((prev) => ({
-              ...prev,
-              status: updatedStatusFilter
-            }));
-            setTeamLeaveAnalyticsParams("status", updatedStatusFilter);
-          }
+          filter: appliedFilter.status
         }
       ]}
       position={"bottom-end"}
