@@ -63,3 +63,7 @@ app:
 
 domain:
   base: localhost
+
+internal:
+  api:
+    key: test-internal-api-key
