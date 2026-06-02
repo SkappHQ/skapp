@@ -63,7 +63,6 @@ public interface CrmMapper {
 	@Mapping(target = "contactName", source = "contact.name")
 	@Mapping(target = "companyName", source = "company.name")
 	@Mapping(target = "dealName", source = "deal.name")
-	@Mapping(target = "owner", source = "owner")
 	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask crmTask);
 
 }

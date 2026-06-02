@@ -12,7 +12,6 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskStatusUpdateDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmTaskService;
-import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import lombok.RequiredArgsConstructor;
@@ -36,16 +35,15 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	public ResponseEntityDto updateTaskStatus(Long id, CrmTaskStatusUpdateDto taskStatusUpdateDto) {
 		log.info("updateTaskStatus: execution started");
 
-		CrmValidations.validateTaskStatus(taskStatusUpdateDto.getIsCompleted());
+		if (taskStatusUpdateDto.getIsCompleted() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_STATUS_REQUIRED);
+		}
 
 		CrmTask task = crmTaskDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
 		Employee currentEmployee = currentUser.getEmployee();
-		if (currentEmployee == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
-		}
 		EmployeeRole employeeRole = currentEmployee.getEmployeeRole();
 		Role currentCrmRole = employeeRole != null ? employeeRole.getCrmRole() : null;
 

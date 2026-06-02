@@ -177,10 +177,4 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateTaskStatus(Boolean isCompleted) {
-		if (isCompleted == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_STATUS_REQUIRED);
-		}
-	}
-
 }
