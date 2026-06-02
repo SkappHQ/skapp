@@ -1,8 +1,12 @@
-import { ButtonV2, Dropdown, InputField } from "@rootcodelabs/skapp-ui";
+import {
+  ButtonV2,
+  CloseIcon,
+  Dropdown,
+  InputField
+} from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { ChangeEvent, useEffect } from "react";
 
-import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
