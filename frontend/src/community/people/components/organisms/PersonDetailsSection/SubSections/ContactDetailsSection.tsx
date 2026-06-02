@@ -220,11 +220,10 @@ const ContactDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
               itemList={countryList}
               inputName="country"
               label={translateText(["country"])}
-              value={
-                values?.country
-                  ? { label: values.country, value: values.country }
-                  : undefined
-              }
+              value={{
+                label: values?.country ?? "", 
+                value: values?.country ?? ""
+              }}
               placeholder={translateText(["selectCountry"])}
               onChange={handleCountrySelect}
               error={errors.country ?? ""}
