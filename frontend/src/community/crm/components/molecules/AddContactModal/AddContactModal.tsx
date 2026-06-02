@@ -29,9 +29,21 @@ import {
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactAddFormTypes,
-  CrmContactCreatePayload
+  CrmContactCreatePayload,
+  OwnerLookup
 } from "~community/crm/types/CommonTypes";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
+
+const getOwnerFullName = (owner: OwnerLookup): string =>
+  concatStrings([owner.firstName, owner.lastName ?? ""]);
+
+const toOwnerAvatarProps = (owner: OwnerLookup) => ({
+  id: String(owner.employeeId),
+  firstName: owner.firstName,
+  lastName: owner.lastName ?? "",
+  src: owner.authPic ?? undefined,
+  size: "sm" as const
+});
 
 const AddContactModal: React.FC = () => {
   const { setToastMessage } = useToast();
@@ -127,7 +139,7 @@ const AddContactModal: React.FC = () => {
   );
 
   const [ownerSearch, setOwnerSearch] = useState("");
-  const [selectedOwnerLabel, setSelectedOwnerLabel] = useState("");
+  const [selectedOwner, setSelectedOwner] = useState<OwnerLookup | null>(null);
   const debouncedOwnerSearch = useDebounce(
     ownerSearch.trim(),
     CONTACT_SEARCH_DEBOUNCE_DELAY
@@ -152,14 +164,8 @@ const AddContactModal: React.FC = () => {
       id: String(owner.employeeId),
       content: (
         <AvatarChip
-          avatarProps={{
-            id: String(owner.employeeId),
-            firstName: owner.firstName,
-            lastName: owner.lastName ?? "",
-            src: owner.authPic ?? undefined,
-            size: "sm"
-          }}
-          label={concatStrings([owner.firstName, owner.lastName ?? ""])}
+          avatarProps={toOwnerAvatarProps(owner)}
+          label={getOwnerFullName(owner)}
         />
       )
     })) ?? [];
@@ -203,16 +209,15 @@ const AddContactModal: React.FC = () => {
     const owner = ownerLookup?.items?.find(
       (o) => String(o.employeeId) === item.id
     );
-    setFieldValue("ownerId", Number(item.id));
-    setSelectedOwnerLabel(
-      owner ? concatStrings([owner.firstName, owner.lastName ?? ""]) : item.id
-    );
+    if (!owner) return;
+    setFieldValue("ownerId", owner.employeeId);
+    setSelectedOwner(owner);
     setOwnerSearch("");
   };
 
   const handleClearOwner = () => {
     setFieldValue("ownerId", null);
-    setSelectedOwnerLabel("");
+    setSelectedOwner(null);
     setOwnerSearch("");
   };
 
@@ -291,7 +296,7 @@ const AddContactModal: React.FC = () => {
         fullWidth
       />
 
-      {values.ownerId === null ? (
+      {selectedOwner === null ? (
         <SearchableDropdown
           id="add-contact-owner"
           name="owner"
@@ -311,17 +316,21 @@ const AddContactModal: React.FC = () => {
           }
         />
       ) : (
-        <InputField
-          label={translateText(["labels", "owner"])}
-          value={selectedOwnerLabel}
-          readOnly
-          fullWidth
-          aria-label={translateText(["ariaLabels", "owner"])}
-          rightIcon={renderClearButton(
-            handleClearOwner,
-            translateText(["ariaLabels", "clearOwner"])
-          )}
-        />
+        <div className="w-full">
+          <label className="subtitle1 block mb-2">
+            {translateText(["labels", "owner"])}
+          </label>
+          <div className="flex h-12 items-center rounded-lg bg-gray-100 px-3">
+            <AvatarChip
+              label={getOwnerFullName(selectedOwner)}
+              avatarProps={toOwnerAvatarProps(selectedOwner)}
+              showActionButton
+              onActionClick={handleClearOwner}
+              actionIcon={<CloseIcon />}
+              actionButtonAriaLabel={translateText(["ariaLabels", "clearOwner"])}
+            />
+          </div>
+        </div>
       )}
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
