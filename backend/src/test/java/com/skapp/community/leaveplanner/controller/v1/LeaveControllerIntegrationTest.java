@@ -26,12 +26,17 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.time.LocalDate;
+import java.time.Month;
+
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -130,6 +135,7 @@ class LeaveControllerIntegrationTest {
 	}
 
 	@Nested
+	@Nested
 	@DisplayName("Get Manager Assigned Leave Requests Tests")
 	class GetManagerAssignedLeavesTests {
 
@@ -219,6 +225,119 @@ class LeaveControllerIntegrationTest {
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0))
 				.andExpect(jsonPath(RESULTS_0_PATH + "['items']", hasSize(0)));
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Get Current User Leave Requests Tests")
+	class GetCurrentUserLeaveRequestsTests {
+
+		@Test
+		@DisplayName("Returns leave requests with default parameters")
+		void getLeaveRequests_NoFilters_ReturnsOk() throws Exception {
+			performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+				.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").isNumber())
+				.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").isNumber());
+		}
+
+		@Test
+		@DisplayName("Returns leave requests filtered by PENDING status")
+		void getLeaveRequests_PendingStatus_ReturnsPendingOnly() throws Exception {
+			performRequest(get(BASE_PATH).param("status", "PENDING").accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['status']").value("PENDING"));
+		}
+
+		@Test
+		@DisplayName("Returns leave requests filtered by date range")
+		void getLeaveRequests_DateRange_ReturnsFilteredResults() throws Exception {
+			String startDate = LocalDate.of(LocalDate.now().getYear(), Month.JANUARY, 1).toString();
+			String endDate = LocalDate.of(LocalDate.now().getYear(), Month.DECEMBER, 31).toString();
+			performRequest(get(BASE_PATH).param("startDate", startDate)
+				.param("endDate", endDate)
+				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']", hasSize(greaterThanOrEqualTo(1))));
+		}
+
+		@Test
+		@DisplayName("Returns leave requests filtered by leave type")
+		void getLeaveRequests_LeaveTypeFilter_ReturnsFilteredResults() throws Exception {
+			performRequest(get(BASE_PATH).param("leaveType", "1").accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray());
+		}
+
+		@Test
+		@DisplayName("Returns leave requests with pagination parameters")
+		void getLeaveRequests_WithPagination_ReturnsPagedResults() throws Exception {
+			performRequest(get(BASE_PATH).param("page", "0").param("size", "6").accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']", hasSize(lessThanOrEqualTo(6))));
+		}
+
+		@Test
+		@DisplayName("Returns leave requests sorted by CREATED_DATE")
+		void getLeaveRequests_SortByCreatedDate_ReturnsSortedResults() throws Exception {
+			performRequest(get(BASE_PATH).param("sortKey", "CREATED_DATE")
+				.param("sortOrder", "DESC")
+				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray());
+		}
+
+		@Test
+		@DisplayName("Returns leave requests with all filters combined")
+		void getLeaveRequests_AllFiltersCombined_ReturnsFilteredResults() throws Exception {
+			String startDate = LocalDate.of(LocalDate.now().getYear(), Month.JANUARY, 1).toString();
+			String endDate = LocalDate.of(LocalDate.now().getYear(), Month.DECEMBER, 31).toString();
+			performRequest(get(BASE_PATH).param("status", "PENDING")
+				.param("startDate", startDate)
+				.param("endDate", endDate)
+				.param("page", "0")
+				.param("sortKey", "CREATED_DATE")
+				.param("size", "6")
+				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+				.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0));
+		}
+
+		@Test
+		@DisplayName("Returns empty results for future date range with no leaves")
+		void getLeaveRequests_FutureDateRange_ReturnsEmptyResults() throws Exception {
+			int nextYear = LocalDate.now().getYear() + 1;
+			String startDate = LocalDate.of(nextYear, Month.JANUARY, 1).toString();
+			String endDate = LocalDate.of(nextYear, Month.DECEMBER, 31).toString();
+			performRequest(get(BASE_PATH).param("startDate", startDate)
+				.param("endDate", endDate)
+				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']", hasSize(0)));
+		}
+
+		@Test
+		@DisplayName("Returns 401 when no authentication token is provided")
+		void getLeaveRequests_NoAuth_ReturnsUnauthorized() throws Exception {
+			mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isUnauthorized());
 		}
 
 	}
