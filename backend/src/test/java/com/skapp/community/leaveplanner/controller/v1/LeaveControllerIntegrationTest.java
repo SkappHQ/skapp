@@ -31,6 +31,8 @@ import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -123,6 +125,100 @@ class LeaveControllerIntegrationTest {
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 					.value(messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_MUST_INCLUDE_COMMENT)));
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Get Manager Assigned Leave Requests Tests")
+	class GetManagerAssignedLeavesTests {
+
+		private String managerAuthToken;
+
+		@BeforeEach
+		void setupManager() {
+			SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createSuperAdminWithAllRoles());
+			managerAuthToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"),
+					1L);
+		}
+
+		private String dateRangeParams() {
+			int year = DateTimeUtils.getCurrentYear();
+			return "?startDate=" + year + "-01-01&endDate=" + year + "-12-31";
+		}
+
+		private ResultActions performGetRequests(String queryParams) throws Exception {
+			return mvc.perform(
+					get(BASE_PATH + "/requests" + queryParams).with(SecurityTestUtils.bearerToken(managerAuthToken))
+						.accept(MediaType.APPLICATION_JSON));
+		}
+
+		@Test
+		@DisplayName("Get assigned leaves - Returns all 3 leave requests for manager user1")
+		void getAssignedLeaves_ReturnsAllThreeRequests() throws Exception {
+			// user1 is PRIMARY manager of employees 2,3,4 who each have 1 leave request
+			performGetRequests(dateRangeParams()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(3))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']", hasSize(3)));
+		}
+
+		@Test
+		@DisplayName("Get assigned leaves with page size 2 - Returns 2 items but totalItems is 3")
+		void getAssignedLeaves_WithPagination_ReturnsPagedResults() throws Exception {
+			performGetRequests(dateRangeParams() + "&page=0&size=2").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(3))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(2))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']", hasSize(2)));
+		}
+
+		@Test
+		@DisplayName("Get assigned leaves filtered by PENDING - Returns 2 pending requests")
+		void getAssignedLeaves_FilterByPendingStatus_ReturnsTwoResults() throws Exception {
+			// employee2 PENDING Study, employee3 PENDING Casual
+			performGetRequests(dateRangeParams() + "&status=PENDING").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']", hasSize(2)))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['status']").value("PENDING"))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items'][1]['status']").value("PENDING"));
+		}
+
+		@Test
+		@DisplayName("Get assigned leaves filtered by APPROVED - Returns 1 approved request")
+		void getAssignedLeaves_FilterByApprovedStatus_ReturnsOneResult() throws Exception {
+			// employee4 APPROVED Casual
+			performGetRequests(dateRangeParams() + "&status=APPROVED").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']", hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['status']").value("APPROVED"))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['leaveType']['name']").value("Casual"));
+		}
+
+		@Test
+		@DisplayName("Get assigned leaves for user5 (no managees) - Returns 0 items")
+		void getAssignedLeaves_NoManagees_ReturnsZeroItems() throws Exception {
+			// user5 has no employees under management
+			SecurityTestUtils.setupSecurityContext(authorityService,
+					MockUserFactory.createLeaveManager("user5@gmail.com", 5L, 5L));
+			String user5Token = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user5@gmail.com"),
+					5L);
+
+			mvc.perform(get(BASE_PATH + "/requests" + dateRangeParams()).with(SecurityTestUtils.bearerToken(user5Token))
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['items']", hasSize(0)));
 		}
 
 	}
