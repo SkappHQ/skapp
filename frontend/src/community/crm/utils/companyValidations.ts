@@ -34,11 +34,17 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
       .optional()
       .transform((v) => (v === "" ? null : v))
       .url(translator(["validations", "website"]))
-      .max(characterLengths.CHARACTER_LENGTH, translator(["validations", "characterLength"])),
+      .max(
+        characterLengths.CHARACTER_LENGTH,
+        translator(["validations", "characterLength"])
+      ),
     address: Yup.string()
       .nullable()
       .optional()
-      .max(characterLengths.ADDRESS_LENGTH, translator(["validations", "addressLength"])),
+      .max(
+        characterLengths.ADDRESS_LENGTH,
+        translator(["validations", "addressLength"])
+      ),
     industry: Yup.mixed<CrmIndustryEnum>()
       .optional()
       .oneOf(

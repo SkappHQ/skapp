@@ -155,7 +155,7 @@ export interface CrmPriorityType {
 
 export interface CrmCompanyEditFormTypes {
   name: string;
-  industry: CrmIndustryEnum | null;
+  industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
