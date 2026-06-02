@@ -135,7 +135,6 @@ class LeaveControllerIntegrationTest {
 	}
 
 	@Nested
-	@Nested
 	@DisplayName("Get Manager Assigned Leave Requests Tests")
 	class GetManagerAssignedLeavesTests {
 
