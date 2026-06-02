@@ -42,4 +42,13 @@ public class CrmDealController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get board init data",
+			description = "Returns all data required for the kanban board initial load: stages, contacts, CRM roles, and owners.")
+	@GetMapping(value = "/board/init-data", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getBoardInitData() {
+		ResponseEntityDto response = crmDealService.getBoardInitData();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

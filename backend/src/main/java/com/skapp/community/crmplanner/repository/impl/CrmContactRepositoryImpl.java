@@ -108,6 +108,19 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	}
 
 	@Override
+	public List<CrmContact> findAllContactsForBoardInit() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+		contact.fetch(CrmContact_.company, JoinType.LEFT);
+
+		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
 	public Page<CrmContact> findContactsForLookup(CrmContactFilterDto filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);

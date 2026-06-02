@@ -13,7 +13,12 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealBoardInitDataResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
+import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -46,6 +51,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final CrmContactDao crmContactDao;
 
 	private final EmployeeDao employeeDao;
+
+	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final CrmMapper crmMapper;
 
@@ -123,6 +130,31 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("getDeals: execution ended with {} result(s)", deals.size());
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getBoardInitData() {
+		log.info("getBoardInitData: execution started");
+
+		List<CrmDealStageResponseDto> stages = crmMapper
+			.crmDealStagesToCrmDealStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+
+		List<CrmContactLookupResponseDto> contacts = crmContactDao.findAllContactsForBoardInit()
+			.stream()
+			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
+			.toList();
+
+		List<CrmOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners();
+
+		CrmDealBoardInitDataResponseDto responseDto = new CrmDealBoardInitDataResponseDto();
+		responseDto.setStages(stages);
+		responseDto.setContacts(contacts);
+		responseDto.setCrmRoles(CrmConstants.ASSIGNABLE_CRM_ROLE_NAMES);
+		responseDto.setOwners(owners);
+
+		log.info("getBoardInitData: execution ended");
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 }
