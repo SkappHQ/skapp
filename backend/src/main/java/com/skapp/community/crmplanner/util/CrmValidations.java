@@ -201,6 +201,16 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateTaskNotes(String notes) {
+		if (notes == null || notes.isBlank()) {
+			return;
+		}
+
+		if (notes.trim().length() > CrmConstants.TASK_NOTES_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOTES_TOO_LONG);
+		}
+	}
+
 	public static void validateIndustry(String industry) {
 		if (industry == null || industry.isBlank()) {
 			return;

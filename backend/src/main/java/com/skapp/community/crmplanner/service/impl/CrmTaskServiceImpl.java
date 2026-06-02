@@ -58,6 +58,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		CrmValidations.validateTaskTargets(requestDto.getContactId(), requestDto.getCompanyId(),
 				requestDto.getDealId());
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
+		CrmValidations.validateTaskNotes(requestDto.getNotes());
 
 		User currentUser = userService.getCurrentUser();
 		Employee owner = resolveTaskOwner(requestDto.getOwnerId(), currentUser);

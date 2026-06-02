@@ -182,6 +182,19 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Create task with notes exceeding max length - Returns Bad Request")
+	void createTask_NotesTooLong_ReturnsBadRequest() throws Exception {
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setNotes("a".repeat(1001));
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOTES_TOO_LONG)));
+	}
+
+	@Test
 	@DisplayName("Create task with blank name - Returns Bad Request")
 	void createTask_BlankName_ReturnsBadRequest() throws Exception {
 		CrmTaskCreateRequestDto dto = validPayload();

@@ -40,6 +40,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_TASK_TARGET_REQUIRED("api.error.crm.task-target-required"),
 	CRM_ERROR_TASK_DUE_DATE_REQUIRED("api.error.crm.task-due-date-required"),
 	CRM_ERROR_TASK_DUE_DATE_IN_PAST("api.error.crm.task-due-date-in-past"),
+	CRM_ERROR_TASK_NOTES_TOO_LONG("api.error.crm.task-notes-too-long"),
 	CRM_ERROR_PRIORITY_NOT_FOUND("api.error.crm.priority-not-found"),
 	CRM_ERROR_DEAL_STAGE_NOT_FOUND("api.error.crm.deal-stage-not-found"),
 	CRM_ERROR_DEAL_NOT_FOUND("api.error.crm.deal-not-found"),

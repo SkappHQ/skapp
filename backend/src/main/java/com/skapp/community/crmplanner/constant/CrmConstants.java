@@ -36,6 +36,8 @@ public class CrmConstants {
 
 	public static final int TASK_NAME_MAX_LENGTH = 255;
 
+	public static final int TASK_NOTES_MAX_LENGTH = 1000;
+
 	public static final CrmTaskPriority DEFAULT_TASK_PRIORITY = CrmTaskPriority.MEDIUM;
 
 }
