@@ -93,7 +93,7 @@ public interface LeaveRequestRepository {
 			List<Integer> workingDaysIndex, List<LocalDate> holidayDates);
 
 	List<LeaveTypeBreakDown> findLeaveTypeBreakDown(List<Integer> workingDaysIndex, List<LocalDate> holidayDates,
-			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds);
+			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds, List<Long> employeeIds);
 
 	List<LeaveUtilizationByEmployeeMonthly> findLeaveUtilizationByEmployeeMonthly(LocalDate startDate,
 			LocalDate endDate, List<Integer> workingDaysIndex, List<LocalDate> holidayDates, Long employeeId,

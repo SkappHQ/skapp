@@ -278,8 +278,7 @@
     "deleteSuccessTitle": "User Deleted",
     "deleteSuccessDescription": "{{name}} has been successfully deleted and all supervisor assignments have been reassigned.",
     "actionErrorTitle": "Oops! Something went wrong",
-    "actionErrorDescription": "Failed to complete the action. Please try again.",
-    "loadingEmployees": "Loading employees..."
+    "actionErrorDescription": "Failed to complete the action. Please try again."
   },
 
   "discardChangesModal": {
@@ -557,7 +556,7 @@
       "areYouSureModalTitle": "Are you sure?",
       "reInvitationForOneEmployeeSuccessfulToastTitle": "Reinvitated Successfully",
       "reInvitationForOneEmployeeSuccessfulToastDescription": "Reinvitation sent for the employee successfully",
-      "addFullProfile": "Add full profile",
+      "addFullProfile": "Add Full Profile",
       "save": "Save"
     },
     "commonValidations": {

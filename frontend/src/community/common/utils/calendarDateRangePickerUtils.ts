@@ -11,7 +11,10 @@ import {
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { MyRequestsToastMsgKeyEnums } from "~community/leave/enums/ToastMsgKeyEnums";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
-import { Holiday, HolidayDurationType } from "~community/people/types/HolidayTypes";
+import {
+  Holiday,
+  HolidayDurationType
+} from "~community/people/types/HolidayTypes";
 
 interface IsNotAWorkingDateProps {
   date: DateTime;
@@ -136,7 +139,6 @@ export const hasAtLeastOneNonHolidayDate = ({
     );
 
     return !hasOnlyFullDayHolidays; // Return true if there are half-day holidays
-
   });
 };
 
@@ -194,33 +196,40 @@ export const handleDateValidation = ({
 
       isApplyLeaveModalBtnDisabled = !hasNonHolidayDate;
 
-      const hasMultipleHolidays = holidays.length > 1;
+      const isEffectivelySingleDay =
+        selectedDates.length === 1 ||
+        (selectedDates.length === 2 &&
+          selectedDates[0].hasSame(selectedDates[1], "day"));
 
-      const toastType = ToastType.WARN;
+      if (isEffectivelySingleDay || !hasNonHolidayDate) {
+        const hasMultipleHolidays = holidays.length > 1;
 
-      const titleKey = hasMultipleHolidays
-        ? "multipleHolidaysExistsError"
-        : "holidayExistsError";
+        const toastType = ToastType.WARN;
 
-      const title =
-        translateText([titleKey, "title"], {
-          holidayName: holidays[0]?.name,
-          holidayCount: holidays.length - 1
-        }) ?? "";
+        const titleKey = hasMultipleHolidays
+          ? "multipleHolidaysExistsError"
+          : "holidayExistsError";
 
-      const description = translateText([titleKey, "description"]) ?? "";
+        const title =
+          translateText([titleKey, "title"], {
+            holidayName: holidays[0]?.name,
+            holidayCount: holidays.length - 1
+          }) ?? "";
 
-      const key = hasMultipleHolidays
-        ? MyRequestsToastMsgKeyEnums.MULTIPLE_HOLIDAYS_EXIST
-        : MyRequestsToastMsgKeyEnums.HOLIDAY_EXISTS;
+        const description = translateText([titleKey, "description"]) ?? "";
 
-      setToastMessage({
-        key,
-        open: true,
-        toastType,
-        title,
-        description
-      });
+        const key = hasMultipleHolidays
+          ? MyRequestsToastMsgKeyEnums.MULTIPLE_HOLIDAYS_EXIST
+          : MyRequestsToastMsgKeyEnums.HOLIDAY_EXISTS;
+
+        setToastMessage({
+          key,
+          open: true,
+          toastType,
+          title,
+          description
+        });
+      }
     }
   }
 
