@@ -256,11 +256,7 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
       selectedFilters={selectedLeaveTypes.map((type) => ({
         filter: [
           leaveTypeOptions.find((btn) => btn.id === Number(type))?.name ?? ""
-        ],
-        handleFilterDelete: () => {
-          setTempSelectedLeaveTypes((prev) => prev.filter((i) => i !== type));
-          setSelectedLeaveTypes((prev) => prev.filter((i) => i !== type));
-        }
+        ]
       }))}
       position={"bottom-end"}
       id={"filter-types"}
