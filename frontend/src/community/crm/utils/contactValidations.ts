@@ -28,11 +28,16 @@ export const addContactValidations = (translator: TranslatorFunctionType) =>
     contactNumber: Yup.string()
       .nullable()
       .optional()
+      .trim()
+      .max(
+        characterLengths.PHONE_NUMBER_LENGTH_MAX,
+        translator(["validations", "contactNumberLength"])
+      )
       .test(
         "valid-contact-number",
         translator(["validations", "contactNumber"]),
         function (inputContactNumber) {
-          if (!inputContactNumber || inputContactNumber === "") {
+          if (!inputContactNumber) {
             return true;
           }
 

@@ -80,7 +80,8 @@ const AddContactModal: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateToasts(["successTitle"])
+      title: translateToasts(["successTitle"]),
+      description: translateToasts(["successDescription"])
     });
   };
 
@@ -326,6 +327,7 @@ const AddContactModal: React.FC = () => {
         placeholder={translateText(["placeholders", "contactNumber"])}
         onChange={handleChange}
         aria-label={translateText(["ariaLabels", "contactNumber"])}
+        maxLength={characterLengths.PHONE_NUMBER_LENGTH_MAX}
         fullWidth
       />
 
