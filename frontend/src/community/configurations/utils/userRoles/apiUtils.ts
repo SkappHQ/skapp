@@ -1,3 +1,4 @@
+import { Modules } from "~community/common/enums/CommonEnums";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import {
   AllowedGrantableRolesResponseType,
@@ -13,7 +14,8 @@ export const transformRolesToDropdownFormat = (
     attendance: [],
     esign: [],
     pm: [],
-    invoice: []
+    invoice: [],
+    crm: []
   };
 
   rolesData.forEach((moduleData) => {
@@ -33,4 +35,20 @@ export const transformRolesToDropdownFormat = (
   });
 
   return result;
+};
+
+const apiModuleToEnumMap: Record<string, Modules> = {
+  attendance: Modules.ATTENDANCE,
+  people: Modules.PEOPLE,
+  leave: Modules.LEAVE,
+  esignature: Modules.ESIGN,
+  okr: Modules.OKR,
+  invoice: Modules.INVOICE,
+  projectmanagement: Modules.PM,
+  crm: Modules.CRM
+};
+
+export const mapApiModuleToEnum = (apiModule?: string): Modules => {
+  if (!apiModule) return Modules.NONE;
+  return apiModuleToEnumMap[apiModule.toLowerCase()] ?? Modules.NONE;
 };

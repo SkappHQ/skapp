@@ -25,6 +25,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { AnalyticsTypes } from "~community/common/types/CommonTypes";
@@ -44,6 +45,8 @@ const TeamTimeSheetAnalytics: NextPage = () => {
   const theme: Theme = useTheme();
   const router = useRouter();
   const translateText = useTranslator("attendanceModule", "dashboards");
+  const translateLeave = useTranslator("leaveModule");
+  const translatePeople = useTranslator("peopleModule", "teams");
 
   const [activeStep, setActiveStep] = useState("leaveAnalytics");
 
@@ -198,13 +201,25 @@ const TeamTimeSheetAnalytics: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateText(["stepLeave"])
+        },
+        {
+          label: translateLeave(["leaveRequests.title"]),
+          href: ROUTES.LEAVE.LEAVE_REQUESTS
+        },
+        {
+          label: translatePeople(["title"])
+        }
+      ]}
       title={""}
       onBackClick={() => router.back()}
       pageHead={""}
       isBackButtonVisible
       isDividerVisible={false}
       customRightContent={
-        data?.user.roles?.includes(AdminTypes.LEAVE_ADMIN) &&
+        user?.roles?.includes(AdminTypes.LEAVE_ADMIN) &&
         activeStep === AnalyticsTypes.LEAVE ? (
           <ButtonV2
             variant="tertiary"

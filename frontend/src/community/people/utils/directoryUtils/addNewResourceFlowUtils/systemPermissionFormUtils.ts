@@ -159,6 +159,70 @@ export const handleCustomChangeEnterprise = ({
     return;
   }
 
+  if (
+    name === "pmRole" &&
+    value === Role.PM_ADMIN &&
+    roleLimits.pmAdminLimitExceeded
+  ) {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: roleLimitationText(["pmAdminLimitationTitle"]),
+      description: roleLimitationText(["pmAdminLimitationDescription"]),
+      isIcon: true
+    });
+    return;
+  }
+
+  if (
+    name === "crmRole" &&
+    value === Role.CRM_ADMIN &&
+    roleLimits.crmAdminLimitExceeded
+  ) {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: roleLimitationText(["crmAdminLimitationTitle"]),
+      description: roleLimitationText(["crmAdminLimitationDescription"]),
+      isIcon: true
+    });
+    return;
+  }
+
+  if (
+    name === "crmRole" &&
+    value === Role.CRM_SALES_MANAGER &&
+    roleLimits.crmSalesManagerLimitExceeded
+  ) {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: roleLimitationText(["crmSalesManagerLimitationTitle"]),
+      description: roleLimitationText([
+        "crmSalesManagerLimitationDescription"
+      ]),
+      isIcon: true
+    });
+    return;
+  }
+
+  if (
+    name === "crmRole" &&
+    value === Role.CRM_SALES_REPRESENTATIVE &&
+    roleLimits.crmSalesRepresentativeLimitExceeded
+  ) {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: roleLimitationText(["crmSalesRepresentativeLimitationTitle"]),
+      description: roleLimitationText([
+        "crmSalesRepresentativeLimitationDescription"
+      ]),
+      isIcon: true
+    });
+    return;
+  }
+
   setFieldValue(name, value);
   setUserRoles(name, value);
 };
@@ -192,6 +256,10 @@ export const handleCustomChangeDefault = ({
     setUserRoles("attendanceRole", value);
   } else if (name === "esignRole") {
     setUserRoles("esignRole", value);
+  } else if (name === "pmRole") {
+    setUserRoles("pmRole", value);
+  } else if (name === "crmRole") {
+    setUserRoles("crmRole", value);
   }
 };
 
@@ -247,16 +315,22 @@ export const handleSuperAdminChangeEnterprise = async ({
   const leaveRole = Role.LEAVE_ADMIN;
   const attendanceRole = Role.ATTENDANCE_ADMIN;
   const esignRole = Role.ESIGN_ADMIN;
+  const pmRole = Role.PM_ADMIN;
+  const crmRole = Role.CRM_ADMIN;
 
   void setFieldValue("peopleRole", peopleRole);
   void setFieldValue("leaveRole", leaveRole);
   void setFieldValue("attendanceRole", attendanceRole);
   void setFieldValue("esignRole", esignRole);
+  void setFieldValue("pmRole", pmRole);
+  void setFieldValue("crmRole", crmRole);
 
   setUserRoles("attendanceRole", attendanceRole);
   setUserRoles("peopleRole", peopleRole);
   setUserRoles("leaveRole", leaveRole);
   setUserRoles("esignRole", esignRole);
+  setUserRoles("pmRole", pmRole);
+  setUserRoles("crmRole", crmRole);
 };
 
 interface HandleSuperAdminChangeDefaultProps {
@@ -414,6 +488,8 @@ export const handleSystemPermissionFormSubmit = ({
   setUserRoles("peopleRole", values.peopleRole);
   setUserRoles("leaveRole", values.leaveRole);
   setUserRoles("esignRole", values.esignRole);
+  setUserRoles("pmRole", values.pmRole);
+  setUserRoles("crmRole", values.crmRole);
 };
 
 interface HandleModalClose {
@@ -440,7 +516,10 @@ export const handleModalClose = ({
       "isSuperAdmin",
       "peopleRole",
       "leaveRole",
-      "attendanceRole"
+      "attendanceRole",
+      "esignRole",
+      "pmRole",
+      "crmRole"
     ] as const;
 
     roles.forEach((role) => {

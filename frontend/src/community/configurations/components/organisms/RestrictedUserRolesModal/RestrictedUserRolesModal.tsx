@@ -64,22 +64,50 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
   };
 
   const handleSubmit = () => {
-    const payload = {
+    // TODO: For ESIGN, the backend uses isManager to represent Sender role.
+    // This mapping will be removed after the backend's migration is completed.
+    const payload: UserRoleRestrictionsType = {
       module: moduleType,
       isAdmin: values.isAdmin,
-      isManager: values.isManager
+      isManager:
+        moduleType === Modules.ESIGN ? values.isSender : values.isManager
     };
 
     updateUserRoleRestrictions(payload);
   };
 
+  // TODO: For ESIGN, the backend uses isManager to represent Sender role.
+  // This mapping will be removed after the backend's migration is completed.
   const { values, dirty, setFieldValue, resetForm } = useFormik({
     initialValues: {
       isAdmin: initialData !== undefined ? initialData?.isAdmin : false,
-      isManager: initialData !== undefined ? initialData?.isManager : false
+      isManager: initialData !== undefined ? initialData?.isManager : false,
+      isSender:
+        initialData !== undefined && moduleType === Modules.ESIGN
+          ? initialData?.isManager
+          : false
     },
+    enableReinitialize: true,
     onSubmit: handleSubmit
   });
+
+  const getRestrictableRoles = (module: Modules): string[] => {
+    switch (module) {
+      case Modules.ATTENDANCE:
+      case Modules.PEOPLE:
+      case Modules.LEAVE:
+        return ["isAdmin", "isManager"];
+      case Modules.ESIGN:
+        return ["isAdmin", "isSender"];
+      case Modules.INVOICE:
+      case Modules.PM:
+        return ["isAdmin"];
+      default:
+        return [];
+    }
+  };
+
+  const restrictableRoles = getRestrictableRoles(moduleType);
 
   return (
     <SmallModal
@@ -99,18 +127,30 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
             </Box>
           </Stack>
           <Stack sx={classes.fieldWrapper}>
-            <Checkbox
-              label="Admin"
-              name="isAdmin"
-              checked={values.isAdmin}
-              onChange={() => setFieldValue("isAdmin", !values.isAdmin)}
-            />
-            <Checkbox
-              label="Manager"
-              name="isManager"
-              checked={values.isManager}
-              onChange={() => setFieldValue("isManager", !values.isManager)}
-            />
+            {restrictableRoles.includes("isAdmin") && (
+              <Checkbox
+                label="Admin"
+                name="isAdmin"
+                checked={values.isAdmin}
+                onChange={() => setFieldValue("isAdmin", !values.isAdmin)}
+              />
+            )}
+            {restrictableRoles.includes("isManager") && (
+              <Checkbox
+                label="Manager"
+                name="isManager"
+                checked={values.isManager}
+                onChange={() => setFieldValue("isManager", !values.isManager)}
+              />
+            )}
+            {restrictableRoles.includes("isSender") && (
+              <Checkbox
+                label="Sender"
+                name="isSender"
+                checked={values.isSender}
+                onChange={() => setFieldValue("isSender", !values.isSender)}
+              />
+            )}
           </Stack>
           <div className="flex flex-row justify-end gap-3 mt-4">
             <ButtonV2

@@ -64,10 +64,10 @@ const VisaDetailsSection = (props: Props): JSX.Element => {
   } = useVisaDetailsFormHandlers();
 
   const tableHeaders = [
-    translateText(["visaType"]),
-    translateText(["issuingCountry"]),
-    translateText(["issuedDate"]),
-    translateText(["expirationDate"])
+    { label: translateText(["visaType"]) },
+    { label: translateText(["issuingCountry"]) },
+    { label: translateText(["issuedDate"]) },
+    { label: translateText(["expirationDate"]) }
   ];
 
   return (
@@ -188,9 +188,15 @@ const VisaDetailsSection = (props: Props): JSX.Element => {
               disabled={isInputsDisabled || isReadOnly}
               icon={
                 rowEdited > -1 ? (
-                  <Icon name={IconName.TICK_ICON} />
+                  <Icon
+                    name={IconName.TICK_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 ) : (
-                  <Icon name={IconName.ADD_ICON} />
+                  <Icon
+                    name={IconName.ADD_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 )
               }
               iconPosition="end"

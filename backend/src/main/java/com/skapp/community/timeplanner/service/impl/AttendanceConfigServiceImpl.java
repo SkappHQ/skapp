@@ -1,7 +1,12 @@
 package com.skapp.community.timeplanner.service.impl;
 
+import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.WorkLocationDao;
+import com.skapp.community.common.repository.WorkLocationGeofenceDao;
+import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
 import com.skapp.community.timeplanner.model.AttendanceConfig;
@@ -29,8 +34,15 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	@NonNull
 	private final AttendanceConfigDao attendanceConfigDao;
 
+	private final WorkLocationGeofenceDao workLocationGeofenceDao;
+
+	private final WorkLocationDao workLocationDao;
+
 	@NonNull
 	private final MessageUtil messageUtil;
+
+	@NonNull
+	private final UserService userService;
 
 	@Override
 	public void setDefaultAttendanceConfig() {
@@ -41,6 +53,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		configMap.put(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS, DEFAULT_CONFIG_VALUE);
 		configMap.put(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS, DEFAULT_CONFIG_VALUE);
 		configMap.put(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES, DEFAULT_CONFIG_VALUE);
+		configMap.put(AttendanceConfigType.GEO_FENCING_ENABLED, DEFAULT_CONFIG_VALUE);
 
 		configMap.forEach(this::updateOrCreateConfig);
 
@@ -62,7 +75,25 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		configMap.put(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES,
 				String.valueOf(attendanceConfigRequestDto.getIsAutoApprovalForChanges()));
 
+		if (attendanceConfigRequestDto.getIsGeoFencingEnabled() != null) {
+			configMap.put(AttendanceConfigType.GEO_FENCING_ENABLED,
+					String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
+		}
+
+		boolean wasGeoFencingEnabled = false;
+		if (Boolean.FALSE.equals(attendanceConfigRequestDto.getIsGeoFencingEnabled())) {
+			AttendanceConfig geoConfig = attendanceConfigDao
+				.findByAttendanceConfigType(AttendanceConfigType.GEO_FENCING_ENABLED);
+			wasGeoFencingEnabled = geoConfig != null && Boolean.parseBoolean(geoConfig.getAttendanceConfigValue());
+		}
+
 		configMap.forEach(this::updateOrCreateConfig);
+
+		if (wasGeoFencingEnabled) {
+			workLocationDao.clearAddressesForGeofencedLocations();
+			workLocationGeofenceDao.deleteAllInBatch();
+			log.info("updateAttendanceConfig: geo-fencing disabled, cleared addresses and removed all geofence sites");
+		}
 
 		log.info("updateAttendanceConfig: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(TimeMessageConstant.TIME_SUCCESS_ATTENDANCE_CONFIG_UPDATED),
@@ -85,19 +116,33 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	public ResponseEntityDto getAllAttendanceConfigs() {
 		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
-		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false);
+		if (userService.getCurrentUserRoles().contains(Role.ATTENDANCE_ADMIN.name())) {
+			AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
 
+			for (AttendanceConfig config : attendanceConfigs) {
+				boolean value = Boolean.parseBoolean(config.getAttendanceConfigValue());
+				switch (config.getAttendanceConfigType()) {
+					case CLOCK_IN_ON_NON_WORKING_DAYS -> dto.setIsClockInOnNonWorkingDays(value);
+					case CLOCK_IN_ON_COMPANY_HOLIDAYS -> dto.setIsClockInOnCompanyHolidays(value);
+					case CLOCK_IN_ON_LEAVE_DAYS -> dto.setIsClockInOnLeaveDays(value);
+					case AUTO_APPROVAL_FOR_CHANGES -> dto.setIsAutoApprovalForChanges(value);
+					case GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
+				}
+			}
+
+			return new ResponseEntityDto(false, dto);
+		}
+
+		boolean isGeoFencingEnabled = false;
 		for (AttendanceConfig config : attendanceConfigs) {
-			boolean value = Boolean.parseBoolean(config.getAttendanceConfigValue());
-			switch (config.getAttendanceConfigType()) {
-				case CLOCK_IN_ON_NON_WORKING_DAYS -> dto.setIsClockInOnNonWorkingDays(value);
-				case CLOCK_IN_ON_COMPANY_HOLIDAYS -> dto.setIsClockInOnCompanyHolidays(value);
-				case CLOCK_IN_ON_LEAVE_DAYS -> dto.setIsClockInOnLeaveDays(value);
-				case AUTO_APPROVAL_FOR_CHANGES -> dto.setIsAutoApprovalForChanges(value);
+			if (config.getAttendanceConfigType() == AttendanceConfigType.GEO_FENCING_ENABLED) {
+				isGeoFencingEnabled = Boolean.parseBoolean(config.getAttendanceConfigValue());
+				break;
 			}
 		}
 
-		return new ResponseEntityDto(false, dto);
+		return new ResponseEntityDto(false,
+				new AttendanceConfigRequestDto(null, null, null, null, isGeoFencingEnabled));
 	}
 
 	@Override

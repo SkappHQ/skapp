@@ -13,3 +13,17 @@ export const userRolesEndPoints = {
   SUPER_ADMIN_COUNT: `${moduleAPIPath.ROLES}/super-admin-count`,
   GET_ALLOWED_GRANTABLE_PERMISSIONS: `${moduleAPIPath.ROLES}`
 };
+
+export const workLocationEndpoints = {
+  GET_WORK_LOCATIONS: (search: string, page: number, size: number) =>
+    `${moduleAPIPath.COMMON}/work-location?searchKeyword=${encodeURIComponent(search)}&page=${page}&size=${size}`,
+  GET_WORK_LOCATION_BY_ID: (id: number) =>
+    `${moduleAPIPath.COMMON}/work-location/${id}`,
+  CHECK_WORK_LOCATION_NAME_EXISTS: (name: string) =>
+    `${moduleAPIPath.COMMON}/work-location/name-exists?name=${encodeURIComponent(name)}`,
+  CREATE_WORK_LOCATION: `${moduleAPIPath.COMMON}/work-location`,
+  UPDATE_WORK_LOCATION: (id: number) =>
+    `${moduleAPIPath.COMMON}/work-location/${id}`,
+  DELETE_WORK_LOCATION: (id: number) =>
+    `${moduleAPIPath.COMMON}/work-location/${id}`
+};

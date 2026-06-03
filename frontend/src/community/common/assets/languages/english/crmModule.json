@@ -1,0 +1,101 @@
+{
+  "contacts": {
+    "pageHead": "Contacts | Skapp",
+    "title": "Contacts",
+    "addContactBtn": "Add Contact",
+    "detailsPageHead": "Contact Details | Skapp",
+    "detailsTitle": "Contact Details",
+    "contactDetailsPanel": {
+      "lastUpdated": "Last updated"
+    }
+  },
+  "companies": {
+    "pageHead": "Companies | Skapp",
+    "title": "Companies",
+    "addCompanyBtn": "Add company",
+    "addCompanyModal": {
+      "title": "Add Company",
+      "labels": {
+        "name": "Company name",
+        "contactNumber": "Contact no.",
+        "website": "Website",
+        "address": "Address",
+        "industry": "Industry"
+      },
+      "placeholders": {
+        "name": "Enter company name",
+        "contactNumber": "Enter contact no.",
+        "website": "Enter website",
+        "address": "Enter address",
+        "industry": "Select industry"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancelAddCompany": "Cancel"
+      },
+      "ariaLabels": {
+        "companyName": "Company Name",
+        "contactNumber": "Contact Number",
+        "website": "Website",
+        "address": "Address",
+        "industry": "Industry",
+        "save": "Save",
+        "cancelAddCompany": "Cancel Add Company"
+      },
+      "validations": {
+        "name": "Company name is required",
+        "companyExists": "A company with this name already exists",
+        "website": "Please enter a valid website URL",
+        "contactNumber": "Contact number is invalid",
+        "companyNameLength": "Company name must be less than 30 characters",
+        "characterLength": "Entry must be less than 50 characters",
+        "addressLength": "Address must be less than 100 characters"
+      }
+    },
+    "table": {
+      "clearButtonAriaLabel": "Clear search",
+      "filterButtonAriaLabel": "Filter companies",
+      "search": "Search company",
+      "infiniteScrollLoadingMessage": "Loading companies...",
+      "closedDealsLabel": "Deals closed",
+      "overdueLabel": "overdue",
+      "emptyDataState": {
+        "title": "No companies available.",
+        "description": "Create a company to get started."
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
+      },
+      "columns": {
+        "nameHeader": "NAME",
+        "nameAriaLabel": "Company Name",
+        "phoneHeader": "CONTACT NO.",
+        "phoneAriaLabel": "Contact Number",
+        "tasksHeader": "OPEN TASKS",
+        "tasksAriaLabel": "Open Tasks",
+        "pipelineHeader": "OPEN IN PIPELINE",
+        "pipelineAriaLabel": "Open in Pipeline",
+        "accountValueHeader": "ACCOUNT VALUE",
+        "accountValueAriaLabel": "Account Value"
+      }
+    },
+    "companyToastMessages": {
+      "successTitle": "Company added successfully",
+      "errorTitle": "Failed to add company",
+      "errorDescription": "Please try again or contact support"
+    }
+  },
+  "deals": {
+    "pageHead": "Deals | Skapp",
+    "title": "Deals",
+    "addDealBtn": "Add Deal",
+    "detailsPageHead": "Deal Details | Skapp",
+    "detailsTitle": "Deal Details"
+  },
+  "tasks": {
+    "pageHead": "Tasks | Skapp",
+    "title": "Tasks",
+    "addTaskBtn": "Add Task"
+  }
+}

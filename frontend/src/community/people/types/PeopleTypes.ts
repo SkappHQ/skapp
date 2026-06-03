@@ -11,7 +11,8 @@ import {
   MaritalStatusTypes,
   NationalityEnum,
   RelationshipTypes,
-  Role
+  Role,
+  TitleEnum
 } from "../enums/PeopleEnums";
 import { EmploymentStatusTypes } from "./EmployeeTypes";
 
@@ -55,6 +56,7 @@ export interface L2SystemPermissionsType {
   esignRole?: Role;
   pmRole?: Role;
   invoiceRole?: Role;
+  crmRole?: Role;
 }
 
 export interface L2CommonDetailsType {
@@ -66,6 +68,7 @@ export interface L2CommonDetailsType {
 
 //L3 Types
 export interface L3GeneralDetailsType {
+  title?: TitleEnum;
   firstName?: string;
   middleName?: string;
   lastName?: string;
@@ -140,6 +143,7 @@ export interface L3EmploymentDetailsType {
   probationStartDate?: string;
   probationEndDate?: string;
   workTimeZone?: string;
+  workLocationId?: number;
 }
 
 export interface L3CareerProgressionDetailsType {
@@ -239,4 +243,37 @@ export interface AllEmployeeDataResponse {
   currentPage?: number;
   totalItems?: number;
   pages?: any;
+}
+
+export interface SupervisedEmployee {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  authPic?: string;
+}
+
+export interface SupervisorRolesData {
+  supervisedEmployees: SupervisedEmployee[];
+  supervisedTeams: EmployeeDataTeamType[];
+}
+
+export interface PrimarySupervisorTransfer {
+  employeeId: number;
+  newPrimarySupervisorId: number;
+}
+
+export interface TeamSupervisorTransfer {
+  teamId: number;
+  newTeamSupervisorId: number;
+}
+
+export interface ReassignSupervisorsAndTerminateOrDeleteEmployeePayload {
+  primarySupervisors: PrimarySupervisorTransfer[];
+  teamSupervisors: TeamSupervisorTransfer[];
+  action: EmployeeRemoveAction;
+}
+
+export enum EmployeeRemoveAction {
+  TERMINATE = "TERMINATE",
+  DELETE = "DELETE"
 }

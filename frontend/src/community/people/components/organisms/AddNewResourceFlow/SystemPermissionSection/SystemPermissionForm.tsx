@@ -88,7 +88,9 @@ const SystemPermissionForm = ({
   const {
     isAttendanceModuleEnabled,
     isLeaveModuleEnabled,
-    isEsignatureModuleEnabled
+    isEsignatureModuleEnabled,
+    isPmModuleEnabled,
+    // isCrmModuleEnabled
   } = useSessionData();
 
   const { setToastMessage } = useToast();
@@ -120,7 +122,11 @@ const SystemPermissionForm = ({
     peopleManagerLimitExceeded: false,
     superAdminLimitExceeded: false,
     esignAdminLimitExceeded: false,
-    esignSenderLimitExceeded: false
+    esignSenderLimitExceeded: false,
+    pmAdminLimitExceeded: false,
+    // crmAdminLimitExceeded: false,
+    // crmSalesManagerLimitExceeded: false,
+    // crmSalesRepresentativeLimitExceeded: false
   });
 
   const initialValues: SystemPermissionInitialStateType = {
@@ -128,7 +134,9 @@ const SystemPermissionForm = ({
     peopleRole: userRoles.peopleRole || Role.PEOPLE_EMPLOYEE,
     leaveRole: userRoles.leaveRole || Role.LEAVE_EMPLOYEE,
     attendanceRole: userRoles.attendanceRole || Role.ATTENDANCE_EMPLOYEE,
-    esignRole: userRoles.esignRole || Role.ESIGN_EMPLOYEE
+    esignRole: userRoles.esignRole || Role.ESIGN_EMPLOYEE,
+    pmRole: userRoles.pmRole || Role.PM_EMPLOYEE,
+    // crmRole: userRoles.crmRole || Role.CRM_NONE
   };
 
   const { values, setFieldValue } = useFormik({
@@ -344,6 +352,46 @@ const SystemPermissionForm = ({
               }
             />
           )}
+
+          {isPmModuleEnabled && (
+            <DropdownList
+              inputName={"pmRole"}
+              label={systemPermissionsText(["projectManagement"])}
+              itemList={grantablePermission?.pm || []}
+              value={values.pmRole}
+              componentStyle={classes.dropdownListComponentStyles}
+              checkSelected
+              onChange={(event) =>
+                handleCustomChange({
+                  name: "pmRole",
+                  value: event.target.value
+                })
+              }
+              isDisabled={
+                isProfileView || values.isSuperAdmin || isInputsDisabled
+              }
+            />
+          )}
+
+          {/* {isCrmModuleEnabled && (
+            <DropdownList
+              inputName={"crmRole"}
+              label={systemPermissionsText(["crm"])}
+              itemList={grantablePermission?.crm || []}
+              value={values.crmRole}
+              componentStyle={classes.dropdownListComponentStyles}
+              checkSelected
+              onChange={(event) =>
+                handleCustomChange({
+                  name: "crmRole",
+                  value: event.target.value
+                })
+              }
+              isDisabled={
+                isProfileView || values.isSuperAdmin || isInputsDisabled
+              }
+            />
+          )} */}
         </Stack>
 
         {isUpdate &&

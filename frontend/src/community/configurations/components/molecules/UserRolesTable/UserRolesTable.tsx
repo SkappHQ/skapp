@@ -2,6 +2,7 @@ import { Box, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import { JSX, useMemo } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import Table from "~community/common/components/molecules/Table/Table";
 import ROUTES from "~community/common/constants/routes";
@@ -15,9 +16,9 @@ import {
   AllUserRolesType,
   UserRoleTableType
 } from "~community/configurations/types/UserRolesTypes";
+import { mapApiModuleToEnum } from "~community/configurations/utils/userRoles/apiUtils";
 
 import styles from "./styles";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 const UserRolesTable = (): JSX.Element => {
   const theme = useTheme();
@@ -36,23 +37,36 @@ const UserRolesTable = (): JSX.Element => {
     if (allUserRoles !== undefined && allUserRoles?.length > 0) {
       const formattedUserRoles = allUserRoles
         ?.filter((role: AllUserRolesResponseType) => {
-          if (role.module.toUpperCase() === Modules.LEAVE) {
+          if (role?.module?.toUpperCase() === Modules.OKR) {
+            return false;
+          }
+          if (role?.module?.toUpperCase() === Modules.LEAVE) {
             return user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE);
           }
-          if (role.module.toUpperCase() === Modules.ATTENDANCE) {
-            return user?.roles?.includes(
-              EmployeeTypes.ATTENDANCE_EMPLOYEE
-            );
+          if (role?.module?.toUpperCase() === Modules.ATTENDANCE) {
+            return user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE);
+          }
+          if (role?.module?.toUpperCase() === Modules.CRM) {
+            return false;
           }
 
           return true;
         })
         .map((role: AllUserRolesResponseType) => {
-          if (role.module.toUpperCase() === Modules.ATTENDANCE) {
-            return { ...role, name: translateText(["timeAndAttendance"]) };
-          } else {
-            return { ...role, name: role.module };
-          }
+          const moduleEnum = mapApiModuleToEnum(role.module);
+          const moduleDisplayNames: Record<string, string> = {
+            [Modules.ATTENDANCE]: translateText(["timeAndAttendance"]),
+            [Modules.PEOPLE]: translateText(["people"]),
+            [Modules.LEAVE]: translateText(["leave"]),
+            [Modules.ESIGN]: translateText(["eSignature"]),
+            [Modules.INVOICE]: translateText(["invoice"]),
+            [Modules.PM]: translateText(["projectManagement"])
+          };
+
+          return {
+            ...role,
+            name: moduleDisplayNames[moduleEnum]
+          };
         });
       return formattedUserRoles;
     } else {

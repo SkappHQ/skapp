@@ -18,8 +18,19 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-edit-employeerole.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-company-objective.sql
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-add-pm-invoice-roles.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-add-user-lang.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-add-pm-invoice-roles.sql
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-company-objective.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-add-employee-title.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-module-config-add-column-crm-module.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-employee-role-add-column-crm-role.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-dml-script-v1-update-employee-role-set-crm-role.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create_shr_com_work_location_ppl_holiday_table.sql
+

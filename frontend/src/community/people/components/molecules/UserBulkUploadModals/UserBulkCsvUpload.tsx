@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { parse } from "papaparse";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 
@@ -172,27 +172,27 @@ const UserBulkCsvUpload: FC<Props> = ({
           <p className="text-sm text-red-500 mt-1">{fileError}</p>
         </div>
       )}
-    <div className="flex flex-row justify-end gap-3 mt-4">
-      <ButtonV2
-        variant={"tertiary"}
-        onClick={() => handleCancelBtn()}
-        icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
-        iconPosition="start"
-      >
-        {translateText(["backButton"])}
-      </ButtonV2>
+      <div className="flex flex-row justify-end gap-3 mt-4">
         <ButtonV2
-        variant={"primary"}
-        onClick={() => handleUploadBtn()}
-        isLoading={isPending}
-        disabled={bulkUserAttachment?.length === 0}
-        aria-label={translateAria(["uploadPeople"])}
-        className={getBlinkClass(bulkUserAttachment?.length > 0)}
-        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["uploadButton"])}
-      </ButtonV2>
+          variant={"tertiary"}
+          onClick={() => handleCancelBtn()}
+          icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+          iconPosition="start"
+        >
+          {translateText(["backButton"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
+          onClick={() => handleUploadBtn()}
+          isLoading={isPending}
+          disabled={bulkUserAttachment?.length === 0}
+          aria-label={translateAria(["uploadPeople"])}
+          className={getBlinkClass(bulkUserAttachment?.length > 0)}
+          icon={<ArrowRightIcon />}
+          iconPosition="end"
+        >
+          {translateText(["uploadButton"])}
+        </ButtonV2>
       </div>
       <ToastMessage
         open={toastMessage.open}

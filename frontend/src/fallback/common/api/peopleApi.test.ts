@@ -19,7 +19,10 @@ describe("useGetEmployeeRoleLimit", () => {
       leaveManagerLimitExceeded: false,
       peopleAdminLimitExceeded: false,
       peopleManagerLimitExceeded: false,
-      superAdminLimitExceeded: false
+      superAdminLimitExceeded: false,
+      esignAdminLimitExceeded: false,
+      esignSenderLimitExceeded: false,
+      pmAdminLimitExceeded: false
     };
     const onSuccess = jest.fn();
     const onError = jest.fn();

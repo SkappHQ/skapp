@@ -5,7 +5,7 @@ export enum ZIndexEnums {
 
   APP_BAR = 1100,
   POPOVER = 100,
-  TOAST = 1400,
+  TOAST = 1450,
   SKIP_TO_CONTENT = 1500,
   MAX = 2000,
   DEFAULT = 1,
@@ -31,7 +31,11 @@ export enum Modules {
   LEAVE = "LEAVE",
   ATTENDANCE = "ATTENDANCE",
   PEOPLE = "PEOPLE",
-  ESIGNATURE = "ESIGNATURE",
+  ESIGN = "ESIGN",
+  OKR = "OKR",
+  INVOICE = "INVOICE",
+  PM = "PM",
+  CRM = "CRM",
   NONE = ""
 }
 
@@ -59,4 +63,12 @@ export enum AppVersionNotificationType {
 export enum HalfDayType {
   MORNING = "morning",
   EVENING = "evening"
+}
+
+export enum TimePeriodEnums {
+  TODAY = "todayGroup",
+  YESTERDAY = "yesterdayGroup",
+  LAST_7_DAYS = "last7DaysGroup",
+  LAST_30_DAYS = "last30DaysGroup",
+  OLDER = "olderGroup"
 }

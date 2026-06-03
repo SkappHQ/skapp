@@ -1,5 +1,5 @@
 import { Stack, Theme, useTheme } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { ChangeEvent, useEffect } from "react";
@@ -297,7 +297,7 @@ const AddNewResourceModal = () => {
               values.firstName !== "" &&
               values.lastName !== ""
           )}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          icon={<ArrowRightIcon />}
           iconPosition="end"
         >
           {generalTexts(["save"])}

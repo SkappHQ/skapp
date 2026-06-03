@@ -62,10 +62,10 @@ const PreviousEmploymentDetailsSection = ({
   } = usePreviousEmploymentDetailsFormHandlers();
 
   const tableHeaders = [
-    translateText(["companyName"]),
-    translateText(["jobTitle"]),
-    translateText(["startDate"]),
-    translateText(["endDate"])
+    { label: translateText(["companyName"]) },
+    { label: translateText(["jobTitle"]) },
+    { label: translateText(["startDate"]) },
+    { label: translateText(["endDate"]) }
   ];
 
   return (
@@ -194,9 +194,15 @@ const PreviousEmploymentDetailsSection = ({
               disabled={isInputsDisabled || isReadOnly}
               icon={
                 rowEdited > -1 ? (
-                  <Icon name={IconName.TICK_ICON} />
+                  <Icon
+                    name={IconName.TICK_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 ) : (
-                  <Icon name={IconName.ADD_ICON} />
+                  <Icon
+                    name={IconName.ADD_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 )
               }
               iconPosition="end"

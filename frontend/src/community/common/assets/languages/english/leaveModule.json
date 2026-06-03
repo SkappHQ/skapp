@@ -39,7 +39,7 @@
         "duration": "Duration:",
         "recipient": "Recipients:"
       },
-      "submitBtn": "Confirm and apply",
+      "submitBtn": "Apply leave",
       "cancelBtn": "Cancel",
       "errorTexts": {
         "selectDatesRequired": "Please select a date(s)",
@@ -508,6 +508,8 @@
     "selectAllText": "Select All"
   },
   "dashboard": {
+    "dashboard": "Dashboard",
+    "leave": "Leave",
     "all": "all employees",
     "records": "Records of",
     "todayAvailability": "Today’s availability",
@@ -517,7 +519,7 @@
     "away": "Away",
     "allAvailable": "All available",
     "allAway": "Full team away",
-    "resourceAvailability": "Resource availability",
+    "resourceAvailability": "Resource Availability",
     "fullCalendar": "View full calendar",
     "newRequest": "New request",
     "newRequests": "New requests",

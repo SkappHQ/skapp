@@ -1,6 +1,8 @@
 import { type FormikProps } from "formik";
 import { ChangeEvent } from "react";
 
+import { TitleEnum } from "~community/people/enums/PeopleEnums";
+
 import {
   EmployeeDataType,
   EmployeeRoleType,
@@ -20,6 +22,7 @@ export interface ManagerStoreType {
 export interface EmployeeGeneralDetailsTypes {
   authPic: [] | ModifiedFileType[] | string | null | undefined;
   thumbnail: [] | ModifiedFileType[] | string | null | undefined;
+  title: TitleEnum | null | undefined;
   firstName: string | null | undefined;
   middleName: string | null | undefined;
   lastName: string | null | undefined;
@@ -110,6 +113,7 @@ export interface EmployeeEmploymentDetailsTypes {
   probationStartDate: string | undefined;
   probationEndDate: string | undefined;
   workTimeZone: string | null | undefined;
+  workLocationId: number | null | undefined;
 }
 
 export interface PositionDetailsType {
@@ -198,6 +202,7 @@ export interface EmployeeEmploymentDetailsFormTypes {
   probationStartDate: string;
   probationEndDate: string;
   workTimeZone: string;
+  workLocationId: number | null;
 }
 
 export interface SelectedFileTypes {
@@ -348,4 +353,6 @@ export type SystemPermissionInitialStateType = {
   leaveRole: Role;
   attendanceRole: Role;
   esignRole: Role;
+  pmRole: Role;
+  crmRole: Role;
 };

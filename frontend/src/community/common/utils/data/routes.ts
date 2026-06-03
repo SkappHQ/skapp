@@ -2,7 +2,7 @@ import ROUTES from "~community/common/constants/routes";
 import {
   AdminTypes,
   EmployeeTypes,
-  ManagerTypes,
+  ManagerTypes, // RepresentativeTypes,
   SenderTypes
 } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -197,6 +197,69 @@ const routes = [
       }
     ]
   },
+  // {
+  //   id: "4",
+  //   name: "CRM",
+  //   url: ROUTES.CRM.BASE,
+  //   icon: IconName.HAND_SHAKE_ICON,
+  //   hasSubTree: true,
+  //   requiredAuthLevel: [
+  //     AdminTypes.SUPER_ADMIN,
+  //     AdminTypes.CRM_ADMIN,
+  //     ManagerTypes.CRM_SALES_MANAGER,
+  //     RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+  //   ],
+  //   subTree: [
+  //     {
+  //       id: "4A",
+  //       name: "Contacts",
+  //       url: ROUTES.CRM.CONTACTS,
+  //       hasSubTree: false,
+  //       requiredAuthLevel: [
+  //         AdminTypes.SUPER_ADMIN,
+  //         AdminTypes.CRM_ADMIN,
+  //         ManagerTypes.CRM_SALES_MANAGER,
+  //         RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+  //       ]
+  //     },
+  //     {
+  //       id: "4B",
+  //       name: "Companies",
+  //       url: ROUTES.CRM.COMPANIES,
+  //       hasSubTree: false,
+  //       requiredAuthLevel: [
+  //         AdminTypes.SUPER_ADMIN,
+  //         AdminTypes.CRM_ADMIN,
+  //         ManagerTypes.CRM_SALES_MANAGER,
+  //         RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+  //       ]
+  //     },
+  //     {
+  //       id: "4C",
+  //       name: "Deals",
+  //       url: ROUTES.CRM.DEALS,
+  //       hasSubTree: false,
+  //       requiredAuthLevel: [
+  //         AdminTypes.SUPER_ADMIN,
+  //         AdminTypes.CRM_ADMIN,
+  //         ManagerTypes.CRM_SALES_MANAGER,
+  //         RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+  //       ]
+  //     },
+  //     {
+  //       id: "4D",
+  //       name: "Tasks",
+  //       url: ROUTES.CRM.TASKS,
+  //       hasSubTree: false,
+  //       requiredAuthLevel: [
+  //         AdminTypes.SUPER_ADMIN,
+  //         AdminTypes.CRM_ADMIN,
+  //         ManagerTypes.CRM_SALES_MANAGER,
+  //         RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+  //       ]
+  //     }
+  //   ]
+  // },
   {
     id: "4",
     name: "Sign",

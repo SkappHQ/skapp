@@ -68,6 +68,9 @@ public interface LeaveRequestRepository {
 
 	Long countSupervisedPendingLeaveRequests(Long employeeId);
 
+	List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate fromDate,
+			LocalDate toDate);
+
 	List<LeaveRequest> getEmployeesOnLeaveByTeamAndDate(List<Long> teams, LocalDate current, Long currentUserId,
 			boolean isLeaveAdmin);
 
@@ -90,7 +93,7 @@ public interface LeaveRequestRepository {
 			List<Integer> workingDaysIndex, List<LocalDate> holidayDates);
 
 	List<LeaveTypeBreakDown> findLeaveTypeBreakDown(List<Integer> workingDaysIndex, List<LocalDate> holidayDates,
-			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds);
+			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds, List<Long> employeeIds);
 
 	List<LeaveUtilizationByEmployeeMonthly> findLeaveUtilizationByEmployeeMonthly(LocalDate startDate,
 			LocalDate endDate, List<Integer> workingDaysIndex, List<LocalDate> holidayDates, Long employeeId,

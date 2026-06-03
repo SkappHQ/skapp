@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 
 import { useGetEmployee } from "~community/people/api/PeopleApi";
+import { useGetAllTeams } from "~community/people/api/TeamApi";
+import { TeamNamesType } from "~community/people/types/TeamTypes";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
 
@@ -15,6 +17,7 @@ interface Props {
 }
 const AccountSectionWrapper = ({ employeeId }: Props) => {
   const { data: employeeData } = useGetEmployee(employeeId);
+  const { data: teamData} = useGetAllTeams();
 
   const accountSectionsRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +30,8 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
     setCurrentStep,
     setIsUnsavedModalSaveButtonClicked,
     setIsUnsavedModalDiscardButtonClicked,
-    setEmployee
+    setEmployee,
+    setProjectTeamNames
   } = usePeopleStore((state) => state);
 
   useEffect(() => {
@@ -35,6 +39,12 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
       setEmployee(employeeData?.data?.results[0]);
     }
   }, [employeeData, setEmployee]);
+
+  useEffect(() => {
+    if (teamData) {
+      setProjectTeamNames(teamData as TeamNamesType[]);
+    }
+  }, [teamData, setProjectTeamNames]);
 
   const { hasChanged } = useFormChangeDetector();
 

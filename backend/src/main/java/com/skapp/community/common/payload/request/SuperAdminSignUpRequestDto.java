@@ -27,4 +27,7 @@ public class SuperAdminSignUpRequestDto {
 	@NotNull
 	private String password;
 
+	@Schema(description = "The reCAPTCHA token for verification")
+	private String recaptchaToken;
+
 }

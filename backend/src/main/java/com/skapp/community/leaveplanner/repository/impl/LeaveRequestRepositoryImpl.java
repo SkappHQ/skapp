@@ -72,6 +72,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -998,7 +999,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		Join<LeaveRequest, Employee> employeeJoin = leaveRequestRoot.join(LeaveRequest_.employee);
 		List<Predicate> predicates = new ArrayList<>();
 
-		if (teams != null && !teams.isEmpty() && teams.contains(-1L)) {
+		if (teams == null || teams.isEmpty() || teams.contains(-1L)) {
 			if (isLeaveAdmin) {
 				Predicate leaveDatePredicate = criteriaBuilder.and(
 						criteriaBuilder.lessThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.startDate), current),
@@ -1028,7 +1029,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			}
 
 		}
-		else if (teams != null && !teams.isEmpty()) {
+		else {
 			Join<Employee, EmployeeTeam> employeeTeamJoin = employeeJoin.join(Employee_.employeeTeams);
 			Predicate teamPredicate = employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId).in(teams);
 			predicates.add(teamPredicate);
@@ -1044,6 +1045,31 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		predicates.add(leaveStatusPredicate);
 
 		criteriaQuery.select(leaveRequestRoot).where(predicates.toArray(new Predicate[0]));
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<LeaveRequest> findApprovedLeaveRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate fromDate,
+			LocalDate toDate) {
+		if (employeeIds == null || employeeIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
+		Root<LeaveRequest> leaveRequestRoot = criteriaQuery.from(LeaveRequest.class);
+
+		Join<LeaveRequest, Employee> employeeJoin = leaveRequestRoot.join(LeaveRequest_.employee);
+		List<Predicate> predicates = new ArrayList<>();
+
+		predicates.add(employeeJoin.get(Employee_.employeeId).in(employeeIds));
+		predicates.add(criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
+		predicates.add(criteriaBuilder.lessThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.startDate), toDate));
+		predicates.add(criteriaBuilder.greaterThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.endDate), fromDate));
+
+		criteriaQuery.select(leaveRequestRoot)
+			.where(predicates.toArray(new Predicate[0]))
+			.orderBy(criteriaBuilder.asc(leaveRequestRoot.get(LeaveRequest_.startDate)));
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
@@ -1225,7 +1251,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	public List<LeaveTypeBreakDown> findLeaveTypeBreakDown(List<Integer> workingDaysIndex, List<LocalDate> holidayDates,
-			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds) {
+			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds, List<Long> employeeIds) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).toList();
@@ -1267,20 +1293,29 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				predicates.add(leaveType.get(LeaveType_.typeId).in(typeIds));
 			}
 
+			List<Predicate> teamOrEmployeePredicates = new ArrayList<>();
 			if (teamIds != null && !teamIds.isEmpty() && employeeTeam != null) {
-				predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+				teamOrEmployeePredicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+			}
+			if (employeeIds != null && !employeeIds.isEmpty()) {
+				teamOrEmployeePredicates.add(employee.get(Employee_.employeeId).in(employeeIds));
+			}
+			if (!teamOrEmployeePredicates.isEmpty()) {
+				predicates.add(cb.or(teamOrEmployeePredicates.toArray(new Predicate[0])));
 			}
 
 			predicates.add(cb.equal(leaveType.get(LeaveType_.isActive), true));
 
-			leaveQuery.multiselect(leaveType.get(LeaveType_.typeId), leaveRequest.get(LeaveRequest_.leaveState));
+			leaveQuery.select(cb.array(leaveRequest.get(LeaveRequest_.leaveRequestId), leaveType.get(LeaveType_.typeId),
+					leaveRequest.get(LeaveRequest_.leaveState)));
+			leaveQuery.distinct(true);
 			leaveQuery.where(predicates.toArray(new Predicate[0]));
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
 			for (Object[] result : results) {
-				Long leaveTypeId = (Long) result[0];
-				LeaveState leaveState = (LeaveState) result[1];
+				Long leaveTypeId = (Long) result[1];
+				LeaveState leaveState = (LeaveState) result[2];
 
 				double leaveCount = 1.0;
 				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {
