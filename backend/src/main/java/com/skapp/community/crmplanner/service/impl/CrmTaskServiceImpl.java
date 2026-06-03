@@ -59,12 +59,10 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		Employee currentEmployee = currentUser.getEmployee();
-		EmployeeRole employeeRole = currentEmployee.getEmployeeRole();
-		Role currentCrmRole = employeeRole != null ? employeeRole.getCrmRole() : null;
+		Role currentCrmRole = currentUser.getEmployee().getEmployeeRole().getCrmRole();
 
 		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
-				&& !task.getOwner().getEmployeeId().equals(currentEmployee.getEmployeeId())) {
+				&& !task.getOwner().getEmployeeId().equals(currentUser.getEmployee().getEmployeeId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
 		}
 
