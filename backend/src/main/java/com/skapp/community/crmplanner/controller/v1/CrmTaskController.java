@@ -1,7 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.crmplanner.payload.request.CrmTaskStatusUpdateDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.service.CrmTaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,13 +24,13 @@ public class CrmTaskController {
 
 	private final CrmTaskService crmTaskService;
 
-	@Operation(summary = "Update task status",
-			description = "Updates the completion status of a task and returns the updated task")
-	@PatchMapping(value = "/{id}/status", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Edit task",
+			description = "Updates the provided fields of a task and returns the updated task")
+	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> updateTaskStatus(@PathVariable Long id,
-			@RequestBody CrmTaskStatusUpdateDto taskStatusUpdateDto) {
-		ResponseEntityDto response = crmTaskService.updateTaskStatus(id, taskStatusUpdateDto);
+	public ResponseEntity<ResponseEntityDto> editTask(@PathVariable Long id,
+			@RequestBody CrmTaskEditRequestDto requestDto) {
+		ResponseEntityDto response = crmTaskService.editTask(id, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

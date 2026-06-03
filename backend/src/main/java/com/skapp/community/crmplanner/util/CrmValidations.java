@@ -177,4 +177,46 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateTaskName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NAME_REQUIRED);
+		}
+
+		if (name.trim().length() > CrmConstants.TASK_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NAME_TOO_LONG);
+		}
+
+		if (!name.trim().matches(CrmConstants.TASK_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NAME_INVALID);
+		}
+	}
+
+	public static void validateTaskNotes(String notes) {
+		if (notes == null || notes.isBlank()) {
+			return;
+		}
+
+		if (notes.trim().length() > CrmConstants.TASK_NOTES_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOTES_TOO_LONG);
+		}
+	}
+
+	public static void validateTaskTypeId(Long typeId) {
+		if (typeId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_TYPE_NOT_FOUND);
+		}
+	}
+
+	public static void validateContactId(Long contactId) {
+		if (contactId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
+		}
+	}
+
+	public static void validateDealId(Long dealId) {
+		if (dealId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
+	}
+
 }

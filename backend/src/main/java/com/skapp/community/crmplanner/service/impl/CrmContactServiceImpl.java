@@ -29,9 +29,9 @@ import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
+import com.skapp.community.crmplanner.util.CrmOwnerUtils;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -61,7 +61,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmTaskDao crmTaskDao;
 
-	private final EmployeeDao employeeDao;
+	private final CrmOwnerUtils crmOwnerUtils;
 
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
@@ -86,7 +86,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
-		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+		Employee owner = crmOwnerUtils.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
 		contact.setName(requestDto.getName());
@@ -141,7 +141,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		if (requestDto.getOwnerId() != null) {
 			CrmValidations.validateOwnerId(requestDto.getOwnerId());
-			Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+			Employee owner = crmOwnerUtils.resolveOwner(requestDto.getOwnerId(), currentUser);
 			contact.setOwner(owner);
 		}
 
@@ -288,29 +288,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
 
 		return dto;
-	}
-
-	private Employee resolveOwner(Long ownerId, User currentUser) {
-		Employee currentEmployee = currentUser.getEmployee();
-
-		boolean isSuperAdmin = currentEmployee.getEmployeeRole().getIsSuperAdmin();
-		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
-
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
-			return currentEmployee;
-		}
-
-		return validateAssignableOwner(ownerId);
-	}
-
-	private Employee validateAssignableOwner(Long ownerId) {
-		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(ownerId);
-
-		if (owner == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
-		}
-
-		return owner;
 	}
 
 	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId, Long companyId) {
