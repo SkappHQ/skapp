@@ -46,9 +46,6 @@ const UserRolesTable = (): JSX.Element => {
           if (role?.module?.toUpperCase() === Modules.ATTENDANCE) {
             return user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE);
           }
-          if (role?.module?.toUpperCase() === Modules.CRM) {
-            return false;
-          }
 
           return true;
         })
