@@ -7,13 +7,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum DefaultCrmDealStageValues {
 
-	NEW("New", "#60a5fa", 1, CrmDealStageType.INITIAL), QUALIFIED("Qualified", "#fde047", 2, CrmDealStageType.OPEN),
-	IN_PROGRESS("In Progress", "#ff9f40", 3, CrmDealStageType.OPEN), WON("Won", "#83a0a0", 4, CrmDealStageType.WON),
-	LOST("Lost", "#ff3e3e", 5, CrmDealStageType.LOST);
+	LEAD("Lead", CrmDealStageColours.SKY, 1, CrmDealStageType.INITIAL),
+	QUALIFIED("Qualified", CrmDealStageColours.APRICOT, 2, CrmDealStageType.OPEN),
+	DEMO_SCHEDULED("Demo Scheduled", CrmDealStageColours.TEAL, 3, CrmDealStageType.OPEN),
+	PROPOSAL_SENT("Proposal Sent", CrmDealStageColours.LAVENDER, 4, CrmDealStageType.OPEN),
+	NEGOTIATION("Negotiation", CrmDealStageColours.SUNSHINE, 3, CrmDealStageType.OPEN),
+	WON("Deal Won", CrmDealStageColours.LIME, 4, CrmDealStageType.WON),
+	LOST("Deal Lost", CrmDealStageColours.ROSEWOOD, 5, CrmDealStageType.LOST);
 
 	private final String name;
 
-	private final String color;
+	private final CrmDealStageColours color;
 
 	private final int orderIndex;
 
