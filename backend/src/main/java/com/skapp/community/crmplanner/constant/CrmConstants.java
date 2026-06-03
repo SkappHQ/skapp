@@ -35,8 +35,6 @@ public class CrmConstants {
 
 	public static final int TASK_NAME_MAX_LENGTH = 255;
 
-	public static final String TASK_NAME_REGEX = "^[\\p{L}\\p{N} \\-.,&'()/:@#|]+$";
-
-	public static final int TASK_NOTES_MAX_LENGTH = 2000;
+	public static final int TASK_NOTES_MAX_LENGTH = 1000;
 
 }

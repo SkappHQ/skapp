@@ -185,10 +185,6 @@ public class CrmValidations {
 		if (name.trim().length() > CrmConstants.TASK_NAME_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NAME_TOO_LONG);
 		}
-
-		if (!name.trim().matches(CrmConstants.TASK_NAME_REGEX)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NAME_INVALID);
-		}
 	}
 
 	public static void validateTaskNotes(String notes) {
