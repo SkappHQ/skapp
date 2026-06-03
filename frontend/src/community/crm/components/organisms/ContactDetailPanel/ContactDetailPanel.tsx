@@ -91,7 +91,7 @@ const ContactDetailPanel: FC = () => {
           width="xl"
           ariaLabelledBy="contact-panel-title"
           header={
-            <div className=" flex flex-col p-2">
+            <div className=" flex flex-col gap-2 pl-2">
               <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
                 {contact?.name}
               </h2>
