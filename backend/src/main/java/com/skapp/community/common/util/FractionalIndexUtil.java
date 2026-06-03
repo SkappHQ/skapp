@@ -28,7 +28,8 @@ public class FractionalIndexUtil {
 			while (n < Math.max(a.length(), b.length())) {
 				char charA = n < a.length() ? a.charAt(n) : zero;
 				char charB = n < b.length() ? b.charAt(n) : zero;
-				if (charA != charB) break;
+				if (charA != charB)
+					break;
 				n++;
 			}
 			if (n > 0) {
