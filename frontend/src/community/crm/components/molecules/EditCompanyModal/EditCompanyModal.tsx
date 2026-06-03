@@ -5,7 +5,7 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { ChangeEvent, useEffect } from "react";
+import React from "react";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -114,7 +114,6 @@ const EditCompanyModal: React.FC = () => {
     errors,
     handleChange,
     isSubmitting,
-    setFieldError,
     setSubmitting,
     submitForm
   } = formik;
@@ -136,32 +135,19 @@ const EditCompanyModal: React.FC = () => {
     formik.setFieldValue("industry", value);
   };
 
-  useEffect(() => {
-    if (isNameUnchanged) {
-      setFieldError("name", undefined);
-    } else if (companyNameData?.isExists) {
-      setFieldError("name", translateText(["validations", "companyExists"]));
-    } else if (values.name.trim().length > 0) {
-      setFieldError("name", undefined);
-    }
-  }, [
-    companyNameData?.isExists,
-    isNameUnchanged,
-    setFieldError,
-    translateText,
-    values.name
-  ]);
+  const nameError =
+    !isNameUnchanged && companyNameData?.isExists
+      ? translateText(["validations", "companyExists"])
+      : errors.name;
 
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
         name="name"
         value={values.name}
-        errorMessage={errors.name}
+        errorMessage={nameError}
         state={
-          errors.name || (!isNameUnchanged && companyNameData?.isExists)
-            ? "error"
-            : "default"
+          nameError ? "error" : "default"
         }
         label={translateText(["labels", "name"])}
         placeholder={translateText(["placeholders", "name"])}
@@ -177,9 +163,7 @@ const EditCompanyModal: React.FC = () => {
         label={translateText(["labels", "contactNumber"])}
         value={values.contactNumber || ""}
         placeholder={translateText(["placeholders", "contactNumber"])}
-        onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-          handleChange(e);
-        }}
+        onChange={handleChange}
         errorMessage={errors.contactNumber || ""}
         state={errors.contactNumber ? "error" : "default"}
         aria-label={translateText(["ariaLabels", "contactNumber"])}
