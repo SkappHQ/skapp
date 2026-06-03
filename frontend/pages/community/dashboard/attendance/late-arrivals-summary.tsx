@@ -15,7 +15,7 @@ const LateArrivalsSummary: NextPage = () => {
       breadcrumbs={[
         {
           label: translateText(["dashboard"]),
-          href: ROUTES.DASHBOARD.BASE
+          onClick: () => router.push(ROUTES.DASHBOARD.BASE)
         },
         {
           label: translateText(["attendanceDashboard.attendance"])

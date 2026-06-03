@@ -101,7 +101,16 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
           <Typography variant="body2" sx={classes.messageText}>
             {translateText(["clockOutConfirmationMessage"])}
           </Typography>
-          <Stack spacing={2}>
+          <div className="flex justify-end gap-2 mt-4">
+            <ButtonV2
+              variant={"tertiary"}
+              onClick={handleUndoClockOut}
+              aria-label={translateText(["cancel"])}
+              icon={<Icon name={IconName.CLOSE_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["cancel"])}
+            </ButtonV2>
             <ButtonV2
               onClick={handleProceedHome}
               aria-label={translateText(["confirm"])}
@@ -112,16 +121,7 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
             >
               {translateText(["confirm"])}
             </ButtonV2>
-            <ButtonV2
-              variant={"tertiary"}
-              onClick={handleUndoClockOut}
-              aria-label={translateText(["cancel"])}
-              icon={<Icon name={IconName.CLOSE_ICON} />}
-              iconPosition="end"
-            >
-              {translateText(["cancel"])}
-            </ButtonV2>
-          </Stack>
+          </div>
         </Box>
       </Box>
     </>

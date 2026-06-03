@@ -7,6 +7,40 @@
     "detailsTitle": "Contact Details",
     "contactDetailsPanel": {
       "lastUpdated": "Last updated"
+    },
+    "table": {
+      "clearButtonAriaLabel": "Clear search",
+      "search": "Search contact",
+      "infiniteScrollLoadingMessage": "Loading contacts...",
+      "closedDealsLabel_one": "Deal closed",
+      "closedDealsLabel_other": "Deals closed",
+      "overdueLabel": "overdue",
+      "emptyDataState": {
+        "title": "No contacts available.",
+        "description": "Create a contact to get started."
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
+      },
+      "companyFilter": {
+        "ariaLabel": "Filter by company",
+        "allCompanies": "All companies"
+      },
+      "columns": {
+        "nameHeader": "CONTACT",
+        "nameAriaLabel": "Contact Name",
+        "emailHeader": "EMAIL",
+        "emailAriaLabel": "Email",
+        "phoneHeader": "CONTACT NO.",
+        "phoneAriaLabel": "Contact Number",
+        "closedValueHeader": "DEAL VALUE",
+        "closedValueAriaLabel": "Deal Value",
+        "tasksHeader": "OPEN TASKS",
+        "tasksAriaLabel": "Open Tasks",
+        "contactOwnerHeader": "CONTACT OWNER",
+        "contactOwnerAriaLabel": "Contact Owner"
+      }
     }
   },
   "companies": {
@@ -26,8 +60,7 @@
         "name": "Enter company name",
         "contactNumber": "Enter contact no.",
         "website": "Enter website",
-        "address": "Enter address",
-        "industry": "Select industry"
+        "address": "Enter address"
       },
       "buttons": {
         "save": "Save",
@@ -51,6 +84,29 @@
         "characterLength": "Entry must be less than 50 characters",
         "addressLength": "Address must be less than 100 characters"
       }
+    },
+    "industryOptions": {
+      "NONE": "None",
+      "ACCOMMODATION_SERVICES": "Accommodation services",
+      "ADMINISTRATIVE_AND_SUPPORT_SERVICES": "Administrative and support services",
+      "CONSTRUCTION": "Construction",
+      "CONSUMER_SERVICES": "Consumer services",
+      "EDUCATION": "Education",
+      "ENTERTAINMENT_PROVIDERS": "Entertainment providers",
+      "FARMING_RANCHING_FORESTRY": "Farming, ranching, forestry",
+      "FINANCIAL_SERVICES": "Financial services",
+      "GOVERNMENT_ADMINISTRATION": "Government administration",
+      "HOLDING_COMPANIES": "Holding companies",
+      "HOSPITALS_AND_HEALTH_CARE": "Hospitals and health care",
+      "MANUFACTURING": "Manufacturing",
+      "OIL_GAS_AND_MINING": "Oil, gas, and mining",
+      "PROFESSIONAL_SERVICES": "Professional services",
+      "REAL_ESTATE_AND_EQUIPMENT_RENTAL_SERVICES": "Real estate and equipment rental services",
+      "RETAIL": "Retail",
+      "TECHNOLOGY_INFORMATION_AND_MEDIA": "Technology, information and media",
+      "TRANSPORTATION_LOGISTICS_SUPPLY_CHAIN_AND_STORAGE": "Transportation, logistics, supply chain and storage",
+      "UTILITIES": "Utilities",
+      "WHOLESALE": "Wholesale"
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
@@ -91,7 +147,22 @@
     "title": "Deals",
     "addDealBtn": "Add Deal",
     "detailsPageHead": "Deal Details | Skapp",
-    "detailsTitle": "Deal Details"
+    "detailsTitle": "Deal Details",
+    "dealsTable": {
+      "dealColumn": "Deal",
+      "valueColumn": "Value",
+      "stageColumn": "Stage",
+      "contactNameColumn": "Contact Name",
+      "companyNameColumn": "Company Name",
+      "dealOwnerColumn": "Deal Owner",
+      "searchPlaceholder": "Search deals",
+      "clearSearchAriaLabel": "Clear search",
+      "noDealsTitle": "No deals available.",
+      "noDealsDescription": "Add a new deal to get started",
+      "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
+      "noSearchResultsDescription": "Try adjusting your search or filters",
+      "infiniteScrollLoadingMessage": "Loading more deals..."
+    }
   },
   "tasks": {
     "pageHead": "Tasks | Skapp",
