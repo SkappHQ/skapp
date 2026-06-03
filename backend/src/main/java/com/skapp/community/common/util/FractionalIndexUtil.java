@@ -2,10 +2,29 @@ package com.skapp.community.common.util;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 @UtilityClass
 public class FractionalIndexUtil {
 
 	public static final String BASE_62_DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+	private static void validateDigits(String digits) {
+		if (digits == null) {
+			throw new IllegalArgumentException("digits must not be null");
+		}
+		if (digits.length() < 2) {
+			throw new IllegalArgumentException("digits alphabet must contain at least 2 characters");
+		}
+		for (int i = 1; i < digits.length(); i++) {
+			if (digits.charAt(i) <= digits.charAt(i - 1)) {
+				throw new IllegalArgumentException(
+						"digits alphabet must be strictly sorted with no duplicates");
+			}
+		}
+	}
 
 	private static String midpoint(String a, String b, String digits) {
 		char zero = digits.charAt(0);
@@ -14,24 +33,26 @@ public class FractionalIndexUtil {
 			throw new IllegalArgumentException(a + " >= " + b);
 		}
 
-		if ((a.isEmpty() ? "" : a.substring(a.length() - 1)).equals(String.valueOf(zero))
-				|| (b != null && (b.isEmpty() ? "" : b.substring(b.length() - 1)).equals(String.valueOf(zero)))) {
+		if (!a.isEmpty() && a.charAt(a.length() - 1) == zero
+				|| (b != null && !b.isEmpty() && b.charAt(b.length() - 1) == zero)) {
 			throw new IllegalArgumentException("trailing zero");
 		}
 
 		if (b != null) {
 			int n = 0;
-			while (n < a.length() && n < b.length()
-					&& (n >= a.length() ? zero : a.charAt(n)) == (n >= b.length() ? zero : b.charAt(n))) {
+			while (n < Math.max(a.length(), b.length())) {
+				char charA = n < a.length() ? a.charAt(n) : zero;
+				char charB = n < b.length() ? b.charAt(n) : zero;
+				if (charA != charB) break;
 				n++;
 			}
 			if (n > 0) {
-				return b.substring(0, n) + midpoint(a.substring(n), b.substring(n), digits);
+				return b.substring(0, n) + midpoint(a.substring(Math.min(n, a.length())), b.substring(Math.min(n, b.length())), digits);
 			}
 		}
 
-		int digitA = a.isEmpty() ? 0 : digits.indexOf(a.charAt(0));
-		int digitB = b == null ? digits.length() : digits.indexOf(b.charAt(0));
+		int digitA = !a.isEmpty() ? digits.indexOf(a.charAt(0)) : 0;
+		int digitB = b != null ? digits.indexOf(b.charAt(0)) : digits.length();
 
 		if (digitB - digitA > 1) {
 			int midDigit = Math.round(0.5f * (digitA + digitB));
@@ -42,15 +63,15 @@ public class FractionalIndexUtil {
 				return b.substring(0, 1);
 			}
 			else {
-				return String.valueOf(a.isEmpty() ? zero : a.charAt(0))
+				return String.valueOf(digits.charAt(digitA))
 						+ midpoint(a.substring(Math.min(1, a.length())), null, digits);
 			}
 		}
 	}
 
-	private static void validateInteger(String integerPart) {
-		if (integerPart.length() != getIntegerLength(integerPart.charAt(0))) {
-			throw new IllegalArgumentException("invalid integer part of order key: " + integerPart);
+	private static void validateInteger(String intPart) {
+		if (intPart.length() != getIntegerLength(intPart.charAt(0))) {
+			throw new IllegalArgumentException("invalid integer part of order key: " + intPart);
 		}
 	}
 
@@ -75,15 +96,15 @@ public class FractionalIndexUtil {
 	}
 
 	private static void validateOrderKey(String key, String digits) {
-		String expectedMin = "A" + String.valueOf(digits.charAt(0)).repeat(26);
-		if (key.equals(expectedMin)) {
+		String repeated = String.valueOf(digits.charAt(0)).repeat(26);
+		if (key.equals("A" + repeated)) {
 			throw new IllegalArgumentException("invalid order key: " + key);
 		}
 
-		String intPart = getIntegerPart(key);
-		String fracPart = key.substring(intPart.length());
+		String i = getIntegerPart(key);
+		String f = key.substring(i.length());
 
-		if (!fracPart.isEmpty() && fracPart.substring(fracPart.length() - 1).equals(String.valueOf(digits.charAt(0)))) {
+		if (!f.isEmpty() && f.charAt(f.length() - 1) == digits.charAt(0)) {
 			throw new IllegalArgumentException("invalid order key: " + key);
 		}
 	}
@@ -91,12 +112,10 @@ public class FractionalIndexUtil {
 	private static String incrementInteger(String x, String digits) {
 		validateInteger(x);
 
-		char[] chars = x.toCharArray();
-		char head = chars[0];
-		char[] digs = new char[chars.length - 1];
-		System.arraycopy(chars, 1, digs, 0, digs.length);
-
+		char head = x.charAt(0);
+		char[] digs = x.substring(1).toCharArray();
 		boolean carry = true;
+
 		for (int i = digs.length - 1; carry && i >= 0; i--) {
 			int d = digits.indexOf(digs[i]) + 1;
 			if (d == digits.length()) {
@@ -117,16 +136,16 @@ public class FractionalIndexUtil {
 			}
 
 			char h = (char) (head + 1);
-			String digStr = new String(digs);
-
+			StringBuilder result = new StringBuilder().append(h);
 			if (h > 'a') {
-				digStr = digStr + digits.charAt(0);
+				result.append(new String(digs)).append(digits.charAt(0));
 			}
 			else {
-				digStr = digStr.substring(0, Math.max(0, digStr.length() - 1));
+				if (digs.length > 0) {
+					result.append(new String(digs, 0, digs.length - 1));
+				}
 			}
-
-			return h + digStr;
+			return result.toString();
 		}
 		else {
 			return head + new String(digs);
@@ -136,12 +155,10 @@ public class FractionalIndexUtil {
 	private static String decrementInteger(String x, String digits) {
 		validateInteger(x);
 
-		char[] chars = x.toCharArray();
-		char head = chars[0];
-		char[] digs = new char[chars.length - 1];
-		System.arraycopy(chars, 1, digs, 0, digs.length);
-
+		char head = x.charAt(0);
+		char[] digs = x.substring(1).toCharArray();
 		boolean borrow = true;
+
 		for (int i = digs.length - 1; borrow && i >= 0; i--) {
 			int d = digits.indexOf(digs[i]) - 1;
 			if (d == -1) {
@@ -162,16 +179,16 @@ public class FractionalIndexUtil {
 			}
 
 			char h = (char) (head - 1);
-			String digStr = new String(digs);
-
+			StringBuilder result = new StringBuilder().append(h);
 			if (h < 'Z') {
-				digStr = digStr + digits.charAt(digits.length() - 1);
+				result.append(new String(digs)).append(digits.charAt(digits.length() - 1));
 			}
 			else {
-				digStr = digStr.substring(0, Math.max(0, digStr.length() - 1));
+				if (digs.length > 0) {
+					result.append(new String(digs, 0, digs.length - 1));
+				}
 			}
-
-			return h + digStr;
+			return result.toString();
 		}
 		else {
 			return head + new String(digs);
@@ -183,6 +200,7 @@ public class FractionalIndexUtil {
 	}
 
 	public static String generateKeyBetween(String a, String b, String digits) {
+		validateDigits(digits);
 		if (a != null) {
 			validateOrderKey(a, digits);
 		}
@@ -200,9 +218,9 @@ public class FractionalIndexUtil {
 
 			String ib = getIntegerPart(b);
 			String fb = b.substring(ib.length());
+			String repeated = String.valueOf(digits.charAt(0)).repeat(26);
 
-			String expectedMin = "A" + String.valueOf(digits.charAt(0)).repeat(26);
-			if (ib.equals(expectedMin)) {
+			if (ib.equals("A" + repeated)) {
 				return ib + midpoint("", fb, digits);
 			}
 
@@ -243,6 +261,52 @@ public class FractionalIndexUtil {
 		}
 
 		return ia + midpoint(fa, null, digits);
+	}
+
+	public static List<String> generateNKeysBetween(String a, String b, int n) {
+		return generateNKeysBetween(a, b, n, BASE_62_DIGITS);
+	}
+
+	public static List<String> generateNKeysBetween(String a, String b, int n, String digits) {
+		validateDigits(digits);
+		if (n == 0) {
+			return new ArrayList<>();
+		}
+		if (n == 1) {
+			List<String> result = new ArrayList<>();
+			result.add(generateKeyBetween(a, b, digits));
+			return result;
+		}
+
+		if (b == null) {
+			String c = generateKeyBetween(a, null, digits);
+			List<String> result = new ArrayList<>();
+			result.add(c);
+			for (int i = 0; i < n - 1; i++) {
+				c = generateKeyBetween(c, null, digits);
+				result.add(c);
+			}
+			return result;
+		}
+
+		if (a == null) {
+			String c = generateKeyBetween(null, b, digits);
+			List<String> result = new ArrayList<>();
+			result.add(c);
+			for (int i = 0; i < n - 1; i++) {
+				c = generateKeyBetween(null, c, digits);
+				result.add(c);
+			}
+			Collections.reverse(result);
+			return result;
+		}
+
+		int mid = (int) Math.floor(n / 2.0);
+		String c = generateKeyBetween(a, b, digits);
+		List<String> result = new ArrayList<>(generateNKeysBetween(a, c, mid, digits));
+		result.add(c);
+		result.addAll(generateNKeysBetween(c, b, n - mid - 1, digits));
+		return result;
 	}
 
 }

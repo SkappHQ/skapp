@@ -4,6 +4,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -172,6 +174,47 @@ class FractionalIndexUtilTest {
 	}
 
 	@Nested
+	@DisplayName("generateKeyBetween - Invalid digits alphabet")
+	class GenerateKeyBetweenInvalidDigits {
+
+		@Test
+		@DisplayName("null digits - throws IllegalArgumentException")
+		void generateKeyBetween_NullDigits_ThrowsException() {
+			assertThrows(IllegalArgumentException.class,
+					() -> FractionalIndexUtil.generateKeyBetween(null, null, null));
+		}
+
+		@Test
+		@DisplayName("Single-character digits - throws IllegalArgumentException")
+		void generateKeyBetween_SingleCharDigits_ThrowsException() {
+			assertThrows(IllegalArgumentException.class,
+					() -> FractionalIndexUtil.generateKeyBetween(null, null, "0"));
+		}
+
+		@Test
+		@DisplayName("Empty digits - throws IllegalArgumentException")
+		void generateKeyBetween_EmptyDigits_ThrowsException() {
+			assertThrows(IllegalArgumentException.class,
+					() -> FractionalIndexUtil.generateKeyBetween(null, null, ""));
+		}
+
+		@Test
+		@DisplayName("Duplicate characters in digits - throws IllegalArgumentException")
+		void generateKeyBetween_DuplicateDigits_ThrowsException() {
+			assertThrows(IllegalArgumentException.class,
+					() -> FractionalIndexUtil.generateKeyBetween(null, null, "001"));
+		}
+
+		@Test
+		@DisplayName("Unsorted digits - throws IllegalArgumentException")
+		void generateKeyBetween_UnsortedDigits_ThrowsException() {
+			assertThrows(IllegalArgumentException.class,
+					() -> FractionalIndexUtil.generateKeyBetween(null, null, "10"));
+		}
+
+	}
+
+	@Nested
 	@DisplayName("generateKeyBetween - Error cases")
 	class GenerateKeyBetweenErrorCases {
 
@@ -253,6 +296,68 @@ class FractionalIndexUtilTest {
 			assertEquals(62, FractionalIndexUtil.BASE_62_DIGITS.length());
 			assertEquals("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
 					FractionalIndexUtil.BASE_62_DIGITS);
+		}
+
+	}
+
+	@Nested
+	@DisplayName("generateNKeysBetween")
+	class GenerateNKeysBetween {
+
+		@Test
+		@DisplayName("n=0 returns empty list")
+		void generateNKeysBetween_Zero_ReturnsEmpty() {
+			List<String> result = FractionalIndexUtil.generateNKeysBetween(null, null, 0);
+			assertNotNull(result);
+			assertEquals(0, result.size());
+		}
+
+		@Test
+		@DisplayName("n=1 returns single key equal to generateKeyBetween")
+		void generateNKeysBetween_One_ReturnsSingleKey() {
+			List<String> result = FractionalIndexUtil.generateNKeysBetween(null, null, 1);
+			assertEquals(1, result.size());
+			assertEquals(FractionalIndexUtil.generateKeyBetween(null, null), result.get(0));
+		}
+
+		@Test
+		@DisplayName("n keys are strictly sorted")
+		void generateNKeysBetween_MultipleKeys_AreSorted() {
+			List<String> result = FractionalIndexUtil.generateNKeysBetween(null, null, 5);
+			assertEquals(5, result.size());
+			for (int i = 1; i < result.size(); i++) {
+				assertTrue(result.get(i - 1).compareTo(result.get(i)) < 0);
+			}
+		}
+
+		@Test
+		@DisplayName("all keys fall between a and b")
+		void generateNKeysBetween_BetweenBounds_AllInRange() {
+			String a = FractionalIndexUtil.generateKeyBetween(null, null);
+			String b = FractionalIndexUtil.generateKeyBetween(a, null);
+			List<String> result = FractionalIndexUtil.generateNKeysBetween(a, b, 4);
+			assertEquals(4, result.size());
+			for (String key : result) {
+				assertTrue(key.compareTo(a) > 0);
+				assertTrue(key.compareTo(b) < 0);
+			}
+		}
+
+		@Test
+		@DisplayName("zero-padded common prefix is handled correctly")
+		void generateNKeysBetween_ZeroPaddedPrefix_CorrectOrder() {
+			// a has shorter length than the shared zero-padded prefix with b
+			String a = "a0";
+			String b = "a0z";
+			List<String> keys = FractionalIndexUtil.generateNKeysBetween(a, b, 3);
+			assertEquals(3, keys.size());
+			for (String key : keys) {
+				assertTrue(key.compareTo(a) > 0, key + " should be > " + a);
+				assertTrue(key.compareTo(b) < 0, key + " should be < " + b);
+			}
+			for (int i = 1; i < keys.size(); i++) {
+				assertTrue(keys.get(i - 1).compareTo(keys.get(i)) < 0);
+			}
 		}
 
 	}
