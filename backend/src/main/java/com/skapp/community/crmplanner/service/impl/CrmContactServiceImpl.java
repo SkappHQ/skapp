@@ -30,7 +30,8 @@ import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
-import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
+import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.crmplanner.util.CrmValidations;
@@ -309,38 +310,15 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContactDetailResponseDto dto = crmMapper.crmContactToCrmContactDetailResponseDto(contact);
 
-		BigDecimal totalRevenue = BigDecimal.ZERO;
-		BigDecimal pipelineRevenue = BigDecimal.ZERO;
-		long activeDealsCount = 0;
-		for (CrmDeal deal : deals) {
-			CrmDealStageType stageType = deal.getStage().getStageType();
-			BigDecimal amount = (deal.getAmount() == null || deal.getAmount().isBlank()) ? BigDecimal.ZERO
-					: new BigDecimal(deal.getAmount());
-			if (stageType == CrmDealStageType.WON) {
-				totalRevenue = totalRevenue.add(amount);
-			}
-			else if (stageType == CrmDealStageType.INITIAL || stageType == CrmDealStageType.OPEN) {
-				pipelineRevenue = pipelineRevenue.add(amount);
-				activeDealsCount++;
-			}
-		}
-		dto.setTotalRevenue(totalRevenue.toPlainString());
-		dto.setPipelineRevenue(pipelineRevenue.toPlainString());
-		dto.setActiveDealsCount(activeDealsCount);
+		CrmContactDealMetrics dealMetrics = crmDealDao.findDealMetricsByContactId(id);
+		dto.setTotalRevenue(dealMetrics.getTotalRevenue().toPlainString());
+		dto.setPipelineRevenue(dealMetrics.getPipelineRevenue().toPlainString());
+		dto.setActiveDealsCount(dealMetrics.getActiveDealsCount());
 
 		LocalDateTime now = LocalDateTime.now();
-		long openTasksCount = 0;
-		long overdueTasksCount = 0;
-		for (CrmTask task : tasks) {
-			if (!Boolean.TRUE.equals(task.getIsCompleted())) {
-				openTasksCount++;
-				if (task.getDueAt() != null && task.getDueAt().isBefore(now)) {
-					overdueTasksCount++;
-				}
-			}
-		}
-		dto.setOpenTasksCount(openTasksCount);
-		dto.setOverdueTasksCount(overdueTasksCount);
+		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id, now);
+		dto.setOpenTasksCount(taskMetrics.getOpenTasksCount());
+		dto.setOverdueTasksCount(taskMetrics.getOverdueTasksCount());
 
 		List<CrmDealDetailResponseDto> dealDtos = deals.stream()
 			.map(crmMapper::crmDealToCrmDealDetailResponseDto)

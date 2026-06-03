@@ -7,6 +7,7 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
+import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -79,6 +80,34 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId, LocalDateTime now) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmContactTaskMetrics> query = cb.createQuery(CrmContactTaskMetrics.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		Join<CrmTask, CrmContact> directContact = task.join(CrmTask_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
+		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
+
+		Expression<Long> openCount = cb.coalesce(
+				cb.sum(cb.<Long>selectCase().when(cb.isFalse(task.get(CrmTask_.isCompleted)), 1L).otherwise(0L)), 0L);
+
+		Expression<Long> overdueCount = cb.coalesce(cb.sum(cb.<Long>selectCase()
+			.when(cb.and(cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isNotNull(task.get(CrmTask_.dueAt)),
+					cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(now))), 1L)
+			.otherwise(0L)), 0L);
+
+		query.select(cb.construct(CrmContactTaskMetrics.class, openCount, overdueCount));
+
+		query.where(cb.and(
+				cb.or(cb.equal(directContact.get(CrmContact_.id), contactId),
+						cb.equal(dealContact.get(CrmContact_.id), contactId)),
+				cb.isFalse(task.get(CrmTask_.isDeleted))));
+
+		return entityManager.createQuery(query).getSingleResult();
 	}
 
 }
