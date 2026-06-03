@@ -111,23 +111,6 @@ const CustomAllocationsReportTable: FC = () => {
     setReportsFilterOrderIds(updatedTypeIds);
   };
 
-  const handleRemoveFilter = (leaveType: { id: string; text: string }) => {
-    const updatedTypes = selectedLeaveTypes.includes(leaveType.text)
-      ? selectedLeaveTypes.filter((type) => type !== leaveType.text)
-      : [...selectedLeaveTypes, leaveType.text];
-
-    setSelectedLeaveTypes(updatedTypes);
-
-    const updatedTypeIds = leaveTypeButtons
-      .filter((button) => updatedTypes.includes(button.text))
-      .map((button) => button.id);
-
-    setReportsFilter("leaveType", updatedTypeIds);
-    setReportsFilterOrder(updatedTypes);
-    setReportsFilterOrderIds(updatedTypeIds);
-    setReportsParams("leaveTypeId", updatedTypeIds);
-  };
-
   const handleApplyFilters = () => {
     if (selectedLeaveTypes.length === 1) {
       const selectedTypeId = leaveTypeButtons.find(
@@ -249,13 +232,7 @@ const CustomAllocationsReportTable: FC = () => {
       handleApplyBtnClick={handleApplyFilters}
       handleResetBtnClick={handleResetFilters}
       selectedFilters={selectedLeaveTypes.map((type) => ({
-        filter: [type],
-        handleFilterDelete: () => {
-          handleRemoveFilter({
-            id: leaveTypeButtons.find((btn) => btn.text === type)?.id || "",
-            text: type
-          });
-        }
+        filter: [type]
       }))}
       position={"bottom-end"}
       id={"filter-types"}

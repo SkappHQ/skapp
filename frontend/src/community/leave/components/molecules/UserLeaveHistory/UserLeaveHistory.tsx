@@ -8,14 +8,12 @@ import {
   useState
 } from "react";
 
-import FilterIcon from "~community/common/assets/Icons/FilterIcon";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import IconButton from "~community/common/components/atoms/IconButton/IconButton";
+import FilterIconButton from "~community/common/components/atoms/FilterIconButton/FilterIconButton";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { FilterButtonTypes } from "~community/common/types/CommonTypes";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import {
   convertDateToFormat,
@@ -39,11 +37,9 @@ import {
 } from "~community/leave/utils/LeaveAnalyticsUtils";
 import { getLeaveRequestStatus } from "~community/leave/utils/LeavePreprocessors";
 import {
-  removeFiltersByLabel,
   requestTypeSelector,
   requestedLeaveTypesPreProcessor
 } from "~community/leave/utils/LeaveRequestFilterActions";
-import ShowSelectedFilters from "~community/people/components/molecules/ShowSelectedFilters/ShowSelectedFilters";
 import useTier from "~enterprise/common/hooks/useTier";
 import leaveHistoryMockData from "~enterprise/leave/data/leaveHistoryMockData.json";
 
@@ -76,15 +72,11 @@ const UserLeaveHistory: FC<Props> = ({
     resetLeaveRequestParams,
     leaveRequestsFilter,
     leaveRequestFilterOrder,
-    setLeaveRequestFilterOrder,
-    setLeaveRequestsFilter,
     setLeaveRequestParams
   } = useLeaveStore((state) => ({
     resetLeaveRequestParams: state.resetLeaveRequestParams,
     leaveRequestsFilter: state.leaveRequestsFilter,
     leaveRequestFilterOrder: state.leaveRequestFilterOrder,
-    setLeaveRequestFilterOrder: state.setLeaveRequestFilterOrder,
-    setLeaveRequestsFilter: state.setLeaveRequestsFilter,
     setLeaveRequestParams: state.setLeaveRequestParams
   }));
 
@@ -93,9 +85,6 @@ const UserLeaveHistory: FC<Props> = ({
   const [filterEl, setFilterEl] = useState<null | HTMLElement>(null);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [filterArray, setFilterArray] = useState<string[]>([]);
-  const [leaveTypeButtons, setLeaveTypeButtons] = useState<FilterButtonTypes[]>(
-    []
-  );
   const [employeeLeaveHistoryData, setEmployeeLeaveHistoryData] =
     useState<LeaveHistoryDataTypes>({
       currentPage: 0,
@@ -400,19 +389,6 @@ const UserLeaveHistory: FC<Props> = ({
     );
   };
 
-  const removeFilters = (label?: string) => {
-    removeFiltersByLabel(
-      leaveRequestsFilter,
-      setLeaveRequestFilterOrder,
-      setLeaveRequestsFilter,
-      setLeaveRequestParams,
-      leaveTypeButtons,
-      filterArray,
-      setFilterArray,
-      label
-    );
-  };
-
   const handleFilterClick = (event: MouseEvent<HTMLElement>): void => {
     setFilterEl(event.currentTarget);
     setFilterOpen((previousOpen) => !previousOpen);
@@ -457,30 +433,17 @@ const UserLeaveHistory: FC<Props> = ({
   };
 
   const renderFilterBy = () => {
+    const filterCount = leaveRequestFilterOrder.length;
+
     return (
       <Box>
         <Stack direction="row" alignItems="center" gap={0.5}>
-          {filterArray.length > 0 && <Typography>Filter :</Typography>}
-          <ShowSelectedFilters
-            filterOptions={leaveRequestFilterOrder}
-            onDeleteIcon={removeFilters}
-          />
-          <IconButton
-            icon={<FilterIcon />}
+          <FilterIconButton
+            filterCount={filterCount}
             tabIndex={getTabIndex(isFreeTier)}
             onClick={handleFilterClick}
-            buttonStyles={{
-              border: "0.0625rem solid",
-              borderColor: "grey.500",
-              bgcolor: theme.palette.grey[100],
-              p: "0.625rem 1.25rem",
-              transition: "0.2s ease",
-              "&:hover": {
-                boxShadow: `inset 0 0 0 0.125rem ${theme.palette.grey[500]}`
-              }
-            }}
+            aria-label={translateAria(["leaveHistoryFilterButton"])}
             aria-describedby={filterId}
-            ariaLabel={translateAria(["leaveHistoryFilterButton"])}
           />
         </Stack>
         <LeaveRequestMenu
@@ -502,12 +465,6 @@ const UserLeaveHistory: FC<Props> = ({
       setEmployeeLeaveHistoryData(leaveHistory);
     }
   }, [leaveHistory, isLoading]);
-
-  useEffect(() => {
-    if (leaveTypesList) {
-      setLeaveTypeButtons(requestedLeaveTypesPreProcessor(leaveTypesList));
-    }
-  }, [leaveTypesList]);
 
   useEffect(() => {
     setFilterArray(leaveRequestFilterOrder);
