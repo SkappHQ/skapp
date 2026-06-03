@@ -140,13 +140,13 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	}
 
 	@Override
-	public Integer findMaxOrderIndexByStageId(Long stageId) {
+	public String findMaxOrderIndexByStageId(Long stageId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Integer> query = cb.createQuery(Integer.class);
+		CriteriaQuery<String> query = cb.createQuery(String.class);
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
 		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.INNER);
 
-		query.select(cb.coalesce(cb.max(deal.get(CrmDeal_.orderIndex)), -1));
+		query.select(cb.max(deal.get(CrmDeal_.orderIndex)));
 		query.where(cb.equal(stage.get(CrmDealStage_.id), stageId),
 				cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 

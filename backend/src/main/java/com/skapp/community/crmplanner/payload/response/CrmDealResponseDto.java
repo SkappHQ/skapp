@@ -15,7 +15,7 @@ public class CrmDealResponseDto {
 
 	private String stageColor;
 
-	private Integer orderIndex;
+	private String orderIndex;
 
 	private String amount;
 

@@ -660,7 +660,7 @@ CREATE TABLE IF NOT EXISTS `crm_deal`
     `description`        text             DEFAULT NULL,
     `stage_id`           bigint  NOT NULL,
     `priority`           text    NOT NULL,
-    `order_index`        int     NOT NULL,
+    `order_index`        text    NOT NULL,
     `closing_at`         datetime(6)      DEFAULT NULL,
     `amount`             text             DEFAULT NULL,
     `company_id`         bigint           DEFAULT NULL,
