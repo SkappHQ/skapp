@@ -7,7 +7,6 @@ import {
   Dropdown,
   InputField,
   Label,
-  SearchInputField,
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
@@ -47,8 +46,6 @@ const AddTaskModal: React.FC = () => {
 
   const { data: me } = useGetUserPersonalDetails();
 
-  const { employeeDetails, isCrmSalesManager } = useSessionData();
-
   const defaultOwner = useMemo(() => {
     if (!me?.employeeId) return null;
     return {
@@ -60,8 +57,6 @@ const AddTaskModal: React.FC = () => {
   }, [me]);
 
   const [selectedOwner, setSelectedOwner] =
-    useState<SearchableDropdownItem | null>(null);
-  const [previousOwner, setPreviousOwner] =
     useState<SearchableDropdownItem | null>(null);
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
@@ -125,6 +120,10 @@ const AddTaskModal: React.FC = () => {
     []
   );
 
+  // TODO: Replace with API data when backend integrated
+  const contactOptions = useMemo(() => ["John Doe", "Jane Smith"], []);
+  const dealOptions = useMemo(() => ["deal1", "deal2"], []);
+
   // filtration should be done in backend
   const filteredOwnerOptions = useMemo(
     () =>
@@ -174,6 +173,26 @@ const AddTaskModal: React.FC = () => {
     resetForm();
     setOwnerSearchText("");
   };
+
+  const filteredContactOptions = useMemo(
+    () =>
+      values.contactName
+        ? contactOptions.filter((c) =>
+            c.toLowerCase().includes(values.contactName!.toLowerCase())
+          )
+        : contactOptions,
+    [contactOptions, values.contactName]
+  );
+
+  const filteredDealOptions = useMemo(
+    () =>
+      values.deal
+        ? dealOptions.filter((d) =>
+            d.toLowerCase().includes(values.deal!.toLowerCase())
+          )
+        : dealOptions,
+    [dealOptions, values.deal]
+  );
 
   const handleSuccess = () => {
     setSubmitting(false);
@@ -290,36 +309,26 @@ const AddTaskModal: React.FC = () => {
         ariaLabel={translateText(["ariaLabels", "priority"])}
       />
 
-      <label htmlFor="contact" className="subtitle1">
-        {translateText(["labels", "contactName"])}
-      </label>
-      {/* TODO: Replace hardcoded filteredResults with API data when backend integrated */}
-      <SearchInputField
-        inputId="contact"
-        searchText={values.contactName}
-        onSearchTextChange={(val) => setFieldValue("contactName", val)}
-        filteredResults={["John Doe", "Jane Smith"]}
-        onItemSelect={(item) => setFieldValue("contactName", item || "")}
-        selectedItemText={values.contactName}
-        renderItem={(item: string) => item}
+      {/* TODO: Replace hardcoded options with API data when backend integrated */}
+      <SearchableDropdown
+        id="contact-search"
+        label={translateText(["labels", "contactName"])}
         placeholder={translateText(["placeholders", "contactName"])}
-        ariaLabelSearch={translateText(["ariaLabels", "contactName"])}
+        value={values.contactName ?? ""}
+        onChange={(e) => setFieldValue("contactName", e.target.value)}
+        items={filteredContactOptions.map((c) => ({ id: c, content: c }))}
+        onSelect={(item) => setFieldValue("contactName", item.id)}
       />
 
-      <label htmlFor="deal" className="subtitle1">
-        {translateText(["labels", "deal"])}
-      </label>
-      {/* TODO: Replace hardcoded filteredResults with API data when backend integrated */}
-      <SearchInputField
-        inputId="deal"
-        searchText={values.deal}
-        onSearchTextChange={(val) => setFieldValue("deal", val)}
-        filteredResults={["deal1", "deal2"]}
-        onItemSelect={(item) => setFieldValue("deal", item || "")}
-        selectedItemText={values.deal}
-        renderItem={(item: string) => item}
+      {/* TODO: Replace hardcoded options with API data when backend integrated */}
+      <SearchableDropdown
+        id="deal-search"
+        label={translateText(["labels", "deal"])}
         placeholder={translateText(["placeholders", "deal"])}
-        ariaLabelSearch={translateText(["ariaLabels", "deal"])}
+        value={values.deal ?? ""}
+        onChange={(e) => setFieldValue("deal", e.target.value)}
+        items={filteredDealOptions.map((d) => ({ id: d, content: d }))}
+        onSelect={(item) => setFieldValue("deal", item.id)}
       />
 
       <SearchableDropdown
