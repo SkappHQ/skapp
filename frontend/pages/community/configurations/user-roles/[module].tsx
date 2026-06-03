@@ -50,7 +50,7 @@ const Module: NextPage = () => {
       breadcrumbs={[
         {
           label: translateText(["title"]),
-          href: ROUTES.CONFIGURATIONS.USER_ROLES_TAB
+          onClick: () => router.push(ROUTES.CONFIGURATIONS.USER_ROLES_TAB)
         },
         { label: translateText([`userRoles.${module}Title`]) }
       ]}

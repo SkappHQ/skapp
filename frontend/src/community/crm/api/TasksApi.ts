@@ -26,7 +26,7 @@ const updateTaskStatusFn = async ({
   id: number;
   isCompleted: boolean;
 }) => {
-  const response = await authFetch.patch(taskEndpoints.UPDATE_TASK_STATUS(id), {
+  const response = await authFetch.patch(taskEndpoints.UPDATE_TASK(id), {
     isCompleted
   });
   return response.data;
