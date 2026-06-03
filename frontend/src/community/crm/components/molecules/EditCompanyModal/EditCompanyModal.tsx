@@ -146,9 +146,7 @@ const EditCompanyModal: React.FC = () => {
         name="name"
         value={values.name}
         errorMessage={nameError}
-        state={
-          nameError ? "error" : "default"
-        }
+        state={nameError ? "error" : "default"}
         label={translateText(["labels", "name"])}
         placeholder={translateText(["placeholders", "name"])}
         onChange={handleChange}
