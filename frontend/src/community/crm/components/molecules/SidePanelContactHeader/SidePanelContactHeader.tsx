@@ -4,20 +4,19 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { formatISODateWithSuffixLocal } from "~community/common/utils/dateTimeUtils";
-import { ContactHeaderSkeleton } from "~community/crm/components/atoms/SidePanelContactInfoItem/ContactInfoItemSkeleton";
-import SidePanelContactInfoItem from "~community/crm/components/atoms/SidePanelContactInfoItem/SidePanelContactInfoItem";
+import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmContactType } from "~community/crm/types/CommonTypes";
 
 interface Props {
   contact?: CrmContactType;
   isLoading?: boolean;
-  onCompanyClick?: (companyId: number) => void;
+  companyHref?: string;
 }
 
 const SidePanelContactHeader: FC<Props> = ({
   contact,
   isLoading,
-  onCompanyClick
+  companyHref
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -38,37 +37,23 @@ const SidePanelContactHeader: FC<Props> = ({
 
     return (
       <>
-        <div className="flex flex-col gap-[8px]">
-          <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
-            {contact.name}
-          </h2>
-          <p className="body2 leading-[24px] text-secondary-text">
-            {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffixLocal(contact.lastModifiedDate)}`}
-          </p>
-        </div>
         <div className="flex items-center justify-between max-w-[629px] w-full">
-          <SidePanelContactInfoItem
+          <SidePanelHeaderInfoItem
             icon={IconName.EMAIL_ICON}
             value={contact.email}
           />
 
-          <SidePanelContactInfoItem
+          <SidePanelHeaderInfoItem
             icon={IconName.LOCAL_PHONE_ICON}
             value={contact.contactNumber}
           />
 
           {company && (
-            <SidePanelContactInfoItem
+            <SidePanelHeaderInfoItem
               icon={<BuildingIcon stroke="var(--color-secondary-icon)" />}
               value={company.name}
-              onClick={
-                onCompanyClick
-                  ? () => {
-                      onCompanyClick(company.id);
-                    }
-                  : undefined
-              }
-              endIcon={IconName.POP_OUT_ICON}
+              href={companyHref}
+              endIcon={companyHref ? IconName.POP_OUT_ICON : undefined}
             />
           )}
         </div>
