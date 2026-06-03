@@ -142,7 +142,7 @@ const AddContactModal: React.FC = () => {
   );
 
   const { isCrmSalesManager } = useSessionData();
-  const { data: me } = useGetUserPersonalDetails();
+  const { data: currentUser } = useGetUserPersonalDetails();
 
   const isOwnerReadonly = !isCrmSalesManager;
 
@@ -153,24 +153,24 @@ const AddContactModal: React.FC = () => {
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
 
-  const defaultOwner = useMemo<CrmOwnerType | null>(() => {
-    if (!me?.employeeId) return null;
+  const currentUserAsOwner = useMemo<CrmOwnerType>(() => {
     return {
-      employeeId: Number(me.employeeId),
-      firstName: me.firstName ?? "",
-      lastName: me.lastName ?? null,
-      authPic: me?.authPic as string | null
+      employeeId: Number(currentUser?.employeeId),
+      firstName: currentUser?.firstName ?? "",
+      lastName: currentUser?.lastName ?? null,
+      authPic: currentUser?.authPic as string | null
     };
-  }, [me]);
+  }, [currentUser]);
 
-  const hasSetDefaultOwner = useRef(false);
+  const hasSetDefaultOwnerAsCurrentUser = useRef(false);
+
   useEffect(() => {
-    if (defaultOwner && !hasSetDefaultOwner.current) {
-      hasSetDefaultOwner.current = true;
-      setSelectedOwner(defaultOwner);
-      setFieldValue("ownerId", defaultOwner.employeeId);
+    if (currentUserAsOwner && !hasSetDefaultOwnerAsCurrentUser.current) {
+      hasSetDefaultOwnerAsCurrentUser.current = true;
+      setSelectedOwner(currentUserAsOwner);
+      setFieldValue("ownerId", currentUserAsOwner.employeeId);
     }
-  }, [defaultOwner, setFieldValue]);
+  }, [currentUserAsOwner, setFieldValue]);
 
   const { data: companyLookup, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
