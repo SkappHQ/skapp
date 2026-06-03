@@ -60,21 +60,26 @@ const SidePanelTaskRow: FC<Props> = ({
 
   return (
     <div
+      role={onRowClick ? "button" : undefined}
+      tabIndex={onRowClick ? 0 : undefined}
       className={[
         "flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white [&:first-child]:rounded-t-[8px] [&:last-child]:rounded-b-[8px]",
         onRowClick && "cursor-pointer hover:bg-gray-50"
       ]
         .filter(Boolean)
         .join(" ")}
-      {...(onRowClick && {
-        role: "button",
-        tabIndex: 0,
-        onClick: onRowClick,
-        onKeyDown: handleKeyDown,
-        "aria-label": translateText(["openTaskDetails"], { name: task.name })
-      })}
+      aria-label={
+        onRowClick
+          ? translateText(["openTaskDetails"], { name: task.name })
+          : undefined
+      }
+      onClick={onRowClick}
+      onKeyDown={onRowClick ? handleKeyDown : undefined}
     >
-      <div onClick={(e) => e.stopPropagation()}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         <CheckTask
           checked={optimisticCompleted}
           onChange={handleToggleChange}
@@ -122,6 +127,7 @@ const SidePanelTaskRow: FC<Props> = ({
       <div
         className="flex items-center gap-6 shrink-0"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       >
         <PriorityIcon
           icon={<PriorityIconComp />}
