@@ -162,7 +162,6 @@ const AddContactModal: React.FC = () => {
     };
   }, [me]);
 
-  // Assign the current user as the owner once when the modal opens.
   const hasSetDefaultOwner = useRef(false);
   useEffect(() => {
     if (defaultOwner && !hasSetDefaultOwner.current) {
