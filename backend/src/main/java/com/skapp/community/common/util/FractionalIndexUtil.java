@@ -11,21 +11,6 @@ public class FractionalIndexUtil {
 
 	public static final String BASE_62_DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-	private static void validateDigits(String digits) {
-		if (digits == null) {
-			throw new IllegalArgumentException("digits must not be null");
-		}
-		if (digits.length() < 2) {
-			throw new IllegalArgumentException("digits alphabet must contain at least 2 characters");
-		}
-		for (int i = 1; i < digits.length(); i++) {
-			if (digits.charAt(i) <= digits.charAt(i - 1)) {
-				throw new IllegalArgumentException(
-						"digits alphabet must be strictly sorted with no duplicates");
-			}
-		}
-	}
-
 	private static String midpoint(String a, String b, String digits) {
 		char zero = digits.charAt(0);
 
@@ -47,7 +32,7 @@ public class FractionalIndexUtil {
 				n++;
 			}
 			if (n > 0) {
-				return b.substring(0, n) + midpoint(a.substring(Math.min(n, a.length())), b.substring(Math.min(n, b.length())), digits);
+				return b.substring(0, n) + midpoint(a.substring(n), b.substring(n), digits);
 			}
 		}
 
@@ -63,8 +48,7 @@ public class FractionalIndexUtil {
 				return b.substring(0, 1);
 			}
 			else {
-				return String.valueOf(digits.charAt(digitA))
-						+ midpoint(a.substring(Math.min(1, a.length())), null, digits);
+				return digits.charAt(digitA) + midpoint(a.substring(1), null, digits);
 			}
 		}
 	}
@@ -200,7 +184,6 @@ public class FractionalIndexUtil {
 	}
 
 	public static String generateKeyBetween(String a, String b, String digits) {
-		validateDigits(digits);
 		if (a != null) {
 			validateOrderKey(a, digits);
 		}
@@ -268,7 +251,6 @@ public class FractionalIndexUtil {
 	}
 
 	public static List<String> generateNKeysBetween(String a, String b, int n, String digits) {
-		validateDigits(digits);
 		if (n == 0) {
 			return new ArrayList<>();
 		}

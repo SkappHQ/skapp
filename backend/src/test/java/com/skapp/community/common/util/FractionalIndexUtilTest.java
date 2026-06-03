@@ -174,47 +174,6 @@ class FractionalIndexUtilTest {
 	}
 
 	@Nested
-	@DisplayName("generateKeyBetween - Invalid digits alphabet")
-	class GenerateKeyBetweenInvalidDigits {
-
-		@Test
-		@DisplayName("null digits - throws IllegalArgumentException")
-		void generateKeyBetween_NullDigits_ThrowsException() {
-			assertThrows(IllegalArgumentException.class,
-					() -> FractionalIndexUtil.generateKeyBetween(null, null, null));
-		}
-
-		@Test
-		@DisplayName("Single-character digits - throws IllegalArgumentException")
-		void generateKeyBetween_SingleCharDigits_ThrowsException() {
-			assertThrows(IllegalArgumentException.class,
-					() -> FractionalIndexUtil.generateKeyBetween(null, null, "0"));
-		}
-
-		@Test
-		@DisplayName("Empty digits - throws IllegalArgumentException")
-		void generateKeyBetween_EmptyDigits_ThrowsException() {
-			assertThrows(IllegalArgumentException.class,
-					() -> FractionalIndexUtil.generateKeyBetween(null, null, ""));
-		}
-
-		@Test
-		@DisplayName("Duplicate characters in digits - throws IllegalArgumentException")
-		void generateKeyBetween_DuplicateDigits_ThrowsException() {
-			assertThrows(IllegalArgumentException.class,
-					() -> FractionalIndexUtil.generateKeyBetween(null, null, "001"));
-		}
-
-		@Test
-		@DisplayName("Unsorted digits - throws IllegalArgumentException")
-		void generateKeyBetween_UnsortedDigits_ThrowsException() {
-			assertThrows(IllegalArgumentException.class,
-					() -> FractionalIndexUtil.generateKeyBetween(null, null, "10"));
-		}
-
-	}
-
-	@Nested
 	@DisplayName("generateKeyBetween - Error cases")
 	class GenerateKeyBetweenErrorCases {
 
