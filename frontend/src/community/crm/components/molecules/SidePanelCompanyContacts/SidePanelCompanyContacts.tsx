@@ -7,6 +7,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
+import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface CrmSidePanelContactRow {
@@ -21,11 +22,7 @@ interface CrmSidePanelContactRow {
   overdueTasks?: number;
 }
 
-interface SidePanelCompanyContactsProps {
-  contacts: CrmSidePanelContactRow[];
-}
-
-const SidePanelCompanyContacts: React.FC<SidePanelCompanyContactsProps> = ({
+const SidePanelCompanyContacts: React.FC<{ contacts: CrmSidePanelContactRow[] }> = ({
   contacts
 }) => {
   const translateText = useTranslator(
@@ -78,7 +75,7 @@ const SidePanelCompanyContacts: React.FC<SidePanelCompanyContactsProps> = ({
           </div>
         );
       },
-      className: "justify-end text-right",
+      className: "text-right",
       width: "15%"
     },
     {
@@ -112,8 +109,8 @@ const SidePanelCompanyContacts: React.FC<SidePanelCompanyContactsProps> = ({
       <Table
         className="w-full max-h-[17.25rem]"
         columns={columns as TableColumn<any>[]}
-        data={contacts}
-        emptyStateType="no-data"
+        data={contacts ?? []}
+        emptyStateType={EmptyStateTypeEnum.NO_DATA}
         height="auto"
         noDataState={{
           icon: <SearchIcon />,
