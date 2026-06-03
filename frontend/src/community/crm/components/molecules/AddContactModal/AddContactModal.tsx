@@ -176,7 +176,8 @@ const AddContactModal: React.FC = () => {
 
   const { data: ownerLookup, isFetching: isOwnerFetching } = useGetOwnerLookup(
     debouncedOwnerSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    !isOwnerReadonly
   );
 
   const companyItems: SearchableDropdownItem[] =

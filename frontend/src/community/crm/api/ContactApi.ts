@@ -111,7 +111,7 @@ export const useGetCompanyLookup = (searchKeyword: string, size: number) => {
   });
 };
 
-export const useGetOwnerLookup = (searchKeyword: string, size: number) => {
+export const useGetOwnerLookup = (searchKeyword: string, size: number, enabled: boolean) => {
   return useQuery({
     queryKey: contactQueryKeys.OWNER_LOOKUP(searchKeyword),
     queryFn: async (): Promise<CrmOwnersResponseType> => {
@@ -119,6 +119,7 @@ export const useGetOwnerLookup = (searchKeyword: string, size: number) => {
         params: { searchKeyword, size }
       });
       return response?.data?.results?.[0];
-    }
+    },
+    enabled
   });
 };
