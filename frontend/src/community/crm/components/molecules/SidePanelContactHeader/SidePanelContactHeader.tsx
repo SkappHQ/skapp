@@ -38,14 +38,6 @@ const SidePanelContactHeader: FC<Props> = ({
 
     return (
       <>
-        <div className="flex flex-col gap-[8px]">
-          <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
-            {contact.name}
-          </h2>
-          <p className="body2 leading-[24px] text-secondary-text">
-            {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffixLocal(contact.lastModifiedDate)}`}
-          </p>
-        </div>
         <div className="flex items-center justify-between max-w-[629px] w-full">
           <SidePanelContactInfoItem
             icon={IconName.EMAIL_ICON}
@@ -77,7 +69,7 @@ const SidePanelContactHeader: FC<Props> = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-[8px] items-start p-[8px]">
+    <div className="w-full flex flex-col gap-[8px] items-start">
       {renderContent()}
     </div>
   );

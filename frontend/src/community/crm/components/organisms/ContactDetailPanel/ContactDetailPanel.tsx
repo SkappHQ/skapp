@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { formatISODateWithSuffixLocal } from "~community/common/utils/dateTimeUtils";
 import {
   useGetCrmContactById,
   useGetCrmContactMetrics,
@@ -90,13 +91,14 @@ const ContactDetailPanel: FC = () => {
           width="xl"
           ariaLabelledBy="contact-panel-title"
           header={
-            <SidePanelContactHeader
-              contact={contact ?? undefined}
-              isLoading={isContactLoading}
-              onCompanyClick={(companyId: any) => {
-                // TODO: Open company side panel once the slice/controller is implemented
-              }}
-            />
+            <div className=" flex flex-col p-2">
+              <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
+                {contact?.name}
+              </h2>
+              <p className="body2 leading-[24px] text-secondary-text">
+                {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffixLocal(contact?.lastModifiedDate ?? "")}`}
+              </p>
+            </div>
           }
           headerActions={
             <ContactActionMenu
@@ -107,7 +109,14 @@ const ContactDetailPanel: FC = () => {
             />
           }
         >
-          <div className="flex flex-col gap-6 pb-4">
+          <div className="flex flex-col  pb-4 gap-[16px]">
+            <SidePanelContactHeader
+              contact={contact ?? undefined}
+              isLoading={isContactLoading}
+              onCompanyClick={(companyId: any) => {
+                // TODO: Open company side panel once the slice/controller is implemented
+              }}
+            />
             {/* Metrics */}
             {isMetricsLoading ? (
               <ContactMetricsSkeleton />

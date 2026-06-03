@@ -40,7 +40,7 @@ const SidePanelContactInfoItem: FC<Props> = ({
           variant="line"
           size="sm"
           onClick={onClick}
-          className="group !cursor-pointer !p-0 !min-w-0 !justify-start !h-auto !rounded-[4px] hover:!bg-transparent focus:!outline-none focus-visible:!ring-2 focus-visible:!ring-[var(--color-primary-accent)] focus-visible:!ring-offset-2"
+          className="group"
         >
           <span className="flex items-center gap-[4px] transition-colors text-primary-text cursor-pointer group-hover:text-[var(--color-primary-accent)]">
             <span className="body2 leading-6 tracking-[0.5px] underline">
