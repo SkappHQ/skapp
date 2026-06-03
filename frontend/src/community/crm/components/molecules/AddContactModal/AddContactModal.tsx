@@ -249,7 +249,7 @@ const AddContactModal: React.FC = () => {
   };
 
   const renderClearButton = (onClear: () => void, ariaLabel: string) => (
-    <ButtonV2 variant="tertiary" onClick={onClear} aria-label={ariaLabel}>
+    <ButtonV2 variant="tertiary" type="button" onClick={onClear} aria-label={ariaLabel}>
       <CloseIcon />
     </ButtonV2>
   );
