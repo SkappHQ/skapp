@@ -9,7 +9,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { CrmPriorityType } from "~community/crm/types/CommonTypes";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export interface PriorityConfig {
   IconComponent: FC;
@@ -33,8 +33,8 @@ const PRIORITY_CONFIG_MAP: Record<string, PriorityConfig> = {
   }
 };
 
-export const getPriorityConfig = (priority: CrmPriorityType): PriorityConfig =>
-  PRIORITY_CONFIG_MAP[priority.name.toLowerCase()] ?? PRIORITY_CONFIG_MAP.low;
+export const getPriorityConfig = (priority: CrmPriorityEnum): PriorityConfig =>
+  PRIORITY_CONFIG_MAP[priority.toLowerCase()] ?? PRIORITY_CONFIG_MAP.low;
 
 // TODO: Task types are dynamic (fetched from the backend API).
 

@@ -1,7 +1,7 @@
 import { moduleAPIPath } from "~community/common/constants/configs";
 
 export const taskEndpoints = {
-  UPDATE_TASK_STATUS: (id: number) => `${moduleAPIPath.CRM}/task/${id}/status`
+  UPDATE_TASK_STATUS: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
 export const contactEndpoints = {

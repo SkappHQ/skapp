@@ -73,7 +73,7 @@ const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
           size="sm"
           icon={<PlusIcon />}
           iconPosition="end"
-          className="px-1.5! py-1! min-w-0! rounded-lg! text-black! mt-2"
+          className="mt-2"
           onClick={() => {
             // TODO: open add task modal (wire up to CRM store)
           }}
@@ -90,9 +90,8 @@ const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
             description={translateText(["emptyDescription"])}
             className={{
               wrapper: "!h-auto !p-0",
-              title:
-                "!font-bold !text-[18px] !leading-[24px] !tracking-[-0.4395px] !text-black",
-              description: "!font-normal !text-[14px] !text-black"
+              title: "!leading-[24px] !tracking-[-0.4395px] !text-black",
+              description: "!text-black"
             }}
           />
           <ButtonV2
@@ -101,7 +100,6 @@ const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
             size="sm"
             icon={<PlusIcon />}
             iconPosition="end"
-            className="!text-black !min-w-0 !outline-gray-200"
             onClick={() => {
               // TODO: open add task modal (wire up to CRM store)
             }}
