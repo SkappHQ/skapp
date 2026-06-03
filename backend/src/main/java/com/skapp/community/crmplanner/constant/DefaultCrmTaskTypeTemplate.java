@@ -5,6 +5,9 @@ import java.util.List;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.type.DefaultCrmTaskTypeValues;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class DefaultCrmTaskTypeTemplate {
 
 	public static List<CrmTaskType> getDefaultTaskTypes() {
@@ -17,9 +20,6 @@ public class DefaultCrmTaskTypeTemplate {
 		taskType.setName(value.getName());
 		taskType.setOrderIndex(value.getOrderIndex());
 		return taskType;
-	}
-
-	private DefaultCrmTaskTypeTemplate() {
 	}
 
 }

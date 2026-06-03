@@ -5,6 +5,9 @@ import java.util.List;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.type.DefaultCrmDealStageValues;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class DefaultCrmDealTemplate {
 
 	public static List<CrmDealStage> getDefaultStages() {
@@ -20,9 +23,6 @@ public class DefaultCrmDealTemplate {
 		stage.setOrderIndex(value.getOrderIndex());
 		stage.setStageType(value.getStageType());
 		return stage;
-	}
-
-	private DefaultCrmDealTemplate() {
 	}
 
 }
