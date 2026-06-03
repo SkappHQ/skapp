@@ -1,9 +1,23 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { CrmTaskCategory } from "~community/crm/types/CommonTypes";
 
 import { taskEndpoints } from "./utils/ApiEndpoints";
 import { taskQueryKeys } from "./utils/QueryKeys";
+
+const fetchCrmTaskTypes = async (): Promise<CrmTaskCategory[]> => {
+  const response = await authFetch.get(taskEndpoints.GET_TASK_TYPES);
+  return response?.data?.results ?? [];
+};
+
+export const useGetCrmTaskTypes = () => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_TASK_TYPES,
+    queryFn: fetchCrmTaskTypes,
+    staleTime: Infinity
+  });
+};
 
 const updateTaskStatusFn = async ({
   id,

@@ -36,8 +36,6 @@ const PRIORITY_CONFIG_MAP: Record<string, PriorityConfig> = {
 export const getPriorityConfig = (priority: CrmPriorityEnum): PriorityConfig =>
   PRIORITY_CONFIG_MAP[priority.toLowerCase()] ?? PRIORITY_CONFIG_MAP.low;
 
-// TODO: Task types are dynamic (fetched from the backend API).
-
 const TASK_TYPE_ICON_MAP: Record<string, FC> = {
   email: EmailFilledIcon,
   call: PhoneFilledIcon,
@@ -47,3 +45,9 @@ const TASK_TYPE_ICON_MAP: Record<string, FC> = {
 
 export const getTaskTypeIcon = (typeName: string): FC =>
   TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ?? ChecklistVerificationFilledIcon;
+
+export const getTasksPageTabs = (translateText: (keys: string[]) => string) => [
+  { id: "my-tasks", label: translateText(["tabs", "myTasks"]) },
+  { id: "team-tasks", label: translateText(["tabs", "teamTasks"]) },
+  { id: "completed", label: translateText(["tabs", "completed"]) }
+];

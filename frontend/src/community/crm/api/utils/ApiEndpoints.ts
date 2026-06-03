@@ -1,6 +1,7 @@
 import { moduleAPIPath } from "~community/common/constants/configs";
 
 export const taskEndpoints = {
+  GET_TASK_TYPES: `${moduleAPIPath.CRM}/task/type`,
   UPDATE_TASK_STATUS: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
