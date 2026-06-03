@@ -79,15 +79,8 @@ export interface CrmCompaniesResponseType {
   totalPages: number;
 }
 
-export interface OwnerLookup {
-  employeeId: number;
-  firstName: string;
-  lastName: string | null;
-  authPic: string | null;
-}
-
 export interface CrmOwnersResponseType {
-  items: OwnerLookup[];
+  items: CrmOwnerType[];
   totalItems: number;
   currentPage: number;
   totalPages: number;

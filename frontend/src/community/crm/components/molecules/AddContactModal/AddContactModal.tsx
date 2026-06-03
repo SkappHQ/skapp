@@ -31,15 +31,15 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactAddFormTypes,
   CrmContactCreatePayload,
-  OwnerLookup
+  CrmOwnerType
 } from "~community/crm/types/CommonTypes";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
-const getOwnerFullName = (owner: OwnerLookup): string =>
+const getOwnerFullName = (owner: CrmOwnerType): string =>
   concatStrings([owner.firstName, owner.lastName ?? ""]);
 
-const toOwnerAvatarProps = (owner: OwnerLookup) => ({
+const toOwnerAvatarProps = (owner: CrmOwnerType) => ({
   id: String(owner.employeeId),
   firstName: owner.firstName,
   lastName: owner.lastName ?? "",
@@ -146,13 +146,13 @@ const AddContactModal: React.FC = () => {
   const isOwnerReadonly = !isCrmSalesManager;
 
   const [ownerSearch, setOwnerSearch] = useState("");
-  const [selectedOwner, setSelectedOwner] = useState<OwnerLookup | null>(null);
+  const [selectedOwner, setSelectedOwner] = useState<CrmOwnerType | null>(null);
   const debouncedOwnerSearch = useDebounce(
     ownerSearch.trim(),
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
 
-  const defaultOwner = useMemo<OwnerLookup | null>(() => {
+  const defaultOwner = useMemo<CrmOwnerType | null>(() => {
     if (!me?.employeeId) return null;
     return {
       employeeId: Number(me.employeeId),
