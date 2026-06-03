@@ -1,4 +1,3 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, ReactElement } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -8,7 +7,7 @@ interface Props {
   icon: IconName | ReactElement;
   value: string | null;
   endIcon?: IconName;
-  onClick?: () => void;
+  href?: string;
 }
 
 const renderIcon = (icon: IconName | ReactElement) =>
@@ -27,30 +26,32 @@ const SidePanelContactInfoItem: FC<Props> = ({
   icon,
   value,
   endIcon,
-  onClick
+  href
 }) => {
-  const isInteractive = !!onClick && !!value;
+  const isInteractive = !!href && !!value;
 
   return (
     <div className="flex items-center gap-[12px]">
       <span className="shrink-0 flex items-center">{renderIcon(icon)}</span>
       {isInteractive ? (
-        <ButtonV2
-          type="button"
-          variant="line"
-          size="sm"
-          onClick={onClick}
-          className="group"
+        <a
+          href={href}
+          className="inline-flex items-center gap-[4px] transition-colors hover:opacity-80"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          <span className="flex items-center gap-[4px] transition-colors text-primary-text cursor-pointer group-hover:text-[var(--color-primary-accent)]">
-            <span className="body2 leading-6 tracking-[0.5px] underline">
-              {value}
-            </span>
-            {endIcon && (
-              <Icon name={endIcon} fill="currentColor" width="16" height="16" />
-            )}
+          <span className="body2 leading-6 tracking-[0.5px] underline text-primary-text">
+            {value}
           </span>
-        </ButtonV2>
+          {endIcon && (
+            <Icon
+              name={endIcon}
+              fill="var(--color-primary-text)"
+              width="16"
+              height="16"
+            />
+          )}
+        </a>
       ) : (
         <span
           className={

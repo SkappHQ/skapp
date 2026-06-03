@@ -11,13 +11,13 @@ import { CrmContactType } from "~community/crm/types/CommonTypes";
 interface Props {
   contact?: CrmContactType;
   isLoading?: boolean;
-  onCompanyClick?: (companyId: number) => void;
+  companyHref?: string;
 }
 
 const SidePanelContactHeader: FC<Props> = ({
   contact,
   isLoading,
-  onCompanyClick
+  companyHref
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -53,14 +53,8 @@ const SidePanelContactHeader: FC<Props> = ({
             <SidePanelContactInfoItem
               icon={<BuildingIcon stroke="var(--color-secondary-icon)" />}
               value={company.name}
-              onClick={
-                onCompanyClick
-                  ? () => {
-                      onCompanyClick(company.id);
-                    }
-                  : undefined
-              }
-              endIcon={IconName.POP_OUT_ICON}
+              href={companyHref}
+              endIcon={companyHref ? IconName.POP_OUT_ICON : undefined}
             />
           )}
         </div>

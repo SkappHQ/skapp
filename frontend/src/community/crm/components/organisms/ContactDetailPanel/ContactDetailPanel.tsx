@@ -113,9 +113,11 @@ const ContactDetailPanel: FC = () => {
             <SidePanelContactHeader
               contact={contact ?? undefined}
               isLoading={isContactLoading}
-              onCompanyClick={(companyId: any) => {
-                // TODO: Open company side panel once the slice/controller is implemented
-              }}
+              companyHref={
+                contact?.company
+                  ? `/crm/companies/${contact.company.id}`
+                  : undefined
+              }
             />
             {/* Metrics */}
             {isMetricsLoading ? (
