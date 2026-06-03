@@ -3,6 +3,7 @@ import { NextPage } from "next";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
 
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
@@ -14,7 +15,7 @@ const Deals: NextPage = () => {
       primaryButtonText={translateText(["addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
     >
-      <></>
+      <DealsSection />
     </ContentLayout>
   );
 };
