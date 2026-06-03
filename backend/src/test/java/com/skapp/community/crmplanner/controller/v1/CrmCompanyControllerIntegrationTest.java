@@ -15,6 +15,7 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.support.SecurityTestUtils;
 
@@ -120,7 +121,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompanyCreateDto createValidPayload() {
 		CrmCompanyCreateDto dto = new CrmCompanyCreateDto();
 		dto.setName("Acme Corp");
-		dto.setIndustry("Technology");
+		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		dto.setWebsite("https://acme.com");
 		dto.setAddress("123 Main St");
 		dto.setContactNumber("94771234567");
@@ -130,7 +131,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompanyEditDto createValidEditPayload() {
 		CrmCompanyEditDto dto = new CrmCompanyEditDto();
 		dto.setName("Acme Corp");
-		dto.setIndustry("Technology");
+		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		dto.setWebsite("https://acme.com");
 		dto.setAddress("123 Main St");
 		dto.setContactNumber("94771234567");
@@ -307,7 +308,7 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("Acme Corp Updated");
-		editDto.setIndustry("Finance");
+		editDto.setIndustry(CrmIndustry.FINANCIAL_SERVICES);
 		editDto.setWebsite("https://acme-updated.com");
 		editDto.setAddress("456 New St");
 		editDto.setContactNumber("94779876543");
@@ -316,14 +317,14 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp Updated"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']").value("Finance"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']").value(CrmIndustry.FINANCIAL_SERVICES.name()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://acme-updated.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("456 New St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94779876543"));
 
 		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
 		assertThat(persisted.getName()).isEqualTo("Acme Corp Updated");
-		assertThat(persisted.getIndustry()).isEqualTo("Finance");
+		assertThat(persisted.getIndustry()).isEqualTo(CrmIndustry.FINANCIAL_SERVICES);
 		assertThat(persisted.getWebsite()).isEqualTo("https://acme-updated.com");
 		assertThat(persisted.getAddress()).isEqualTo("456 New St");
 		assertThat(persisted.getContactNumber()).isEqualTo("94779876543");
@@ -348,7 +349,7 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyCreateDto secondCompanyDto = new CrmCompanyCreateDto();
 		secondCompanyDto.setName("Beta Corp");
-		secondCompanyDto.setIndustry("Healthcare");
+		secondCompanyDto.setIndustry(CrmIndustry.HOSPITALS_AND_HEALTH_CARE);
 		ResultActions secondResult = performPostRequest(secondCompanyDto).andExpect(status().isCreated());
 		Long secondCompanyId = objectMapper.readTree(secondResult.andReturn().getResponse().getContentAsString())
 			.path("results")
@@ -358,7 +359,7 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("ACME CORP");
-		editDto.setIndustry("Healthcare");
+		editDto.setIndustry(CrmIndustry.HOSPITALS_AND_HEALTH_CARE);
 
 		performPatchRequest(secondCompanyId, editDto).andDo(print())
 			.andExpect(status().isBadRequest())
