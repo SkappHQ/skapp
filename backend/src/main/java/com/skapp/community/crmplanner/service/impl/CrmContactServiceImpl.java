@@ -240,7 +240,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
 
 		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao
-			.findOpenTaskSummaryByContactIds(contactIds, LocalDateTime.now())
+			.findOpenTaskSummaryByContactIds(contactIds, LocalDateTime.now().toLocalDate().atStartOfDay())
 			.stream()
 			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
 
@@ -315,7 +315,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setPipelineRevenue(dealMetrics.getPipelineRevenue().toPlainString());
 		dto.setActiveDealsCount(dealMetrics.getActiveDealsCount());
 
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = LocalDateTime.now().toLocalDate().atStartOfDay();
 		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id, now);
 		dto.setOpenTasksCount(taskMetrics.getOpenTasksCount());
 		dto.setOverdueTasksCount(taskMetrics.getOverdueTasksCount());
