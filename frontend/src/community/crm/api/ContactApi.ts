@@ -101,7 +101,7 @@ export const useGetCompanyLookup = (searchKeyword: string, size: number) => {
     queryKey: contactQueryKeys.COMPANY_LOOKUP(searchKeyword),
     queryFn: async (): Promise<CrmCompaniesResponseType> => {
       const response = await authFetch.get(
-        contactEndpoints.GET_COMPANY_LOOKUP,
+        contactEndpoints.GET_COMPANIES,
         {
           params: { searchKeyword, size }
         }
