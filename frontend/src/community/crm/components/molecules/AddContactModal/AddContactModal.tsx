@@ -234,6 +234,51 @@ const AddContactModal: React.FC = () => {
     setOwnerSearch("");
   };
 
+  const renderSelectedOwnerDisplay = () => (
+    <div className="flex w-full flex-col gap-2">
+      <span className="subtitle1 leading-normal inline-flex h-6 items-center">
+        {translateText(["labels", "owner"])}
+      </span>
+      <div className="flex h-[3.125rem] items-center rounded-lg bg-gray-100 px-3">
+        <AvatarChip
+          label={concatStrings([
+            selectedOwner!.firstName,
+            selectedOwner!.lastName ?? ""
+          ])}
+          avatarProps={{ ...toOwnerAvatarProps(selectedOwner!), size: "sm" }}
+          showActionButton={!isOwnerReadonly}
+          onActionClick={isOwnerReadonly ? undefined : handleClearOwner}
+          actionIcon={isOwnerReadonly ? undefined : <CloseIcon />}
+          actionButtonAriaLabel={translateText(["ariaLabels", "clearOwner"])}
+        />
+      </div>
+    </div>
+  );
+
+  const renderOwnerDropdown = () => (
+    <SearchableDropdown
+      id="add-contact-owner"
+      name="owner"
+      label={translateText(["labels", "owner"])}
+      placeholder={translateText(["placeholders", "owner"])}
+      items={ownerDropdownItems}
+      value={ownerSearch}
+      onChange={(e) => setOwnerSearch(e.target.value)}
+      onSelect={handleOwnerSelect}
+      onClose={() => {
+        setOwnerSearch("");
+        restoreLastOwnerIfEmpty();
+      }}
+      emptyMessage={
+        isOwnerFetching
+          ? undefined
+          : SearchableDropdownEmptyMessage(
+              translateText(["emptyStates", "noOwners"])
+            )
+      }
+    />
+  );
+
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
@@ -320,49 +365,9 @@ const AddContactModal: React.FC = () => {
       />
 
       {selectedOwner ? (
-        <div className="flex w-full flex-col gap-2">
-          <span className="subtitle1 leading-normal inline-flex h-6 items-center">
-            {translateText(["labels", "owner"])}
-          </span>
-          <div className="flex h-[3.125rem] items-center rounded-lg bg-gray-100 px-3">
-            <AvatarChip
-              label={concatStrings([
-                selectedOwner.firstName,
-                selectedOwner.lastName ?? ""
-              ])}
-              avatarProps={{ ...toOwnerAvatarProps(selectedOwner), size: "sm" }}
-              showActionButton={!isOwnerReadonly}
-              onActionClick={isOwnerReadonly ? undefined : handleClearOwner}
-              actionIcon={isOwnerReadonly ? undefined : <CloseIcon />}
-              actionButtonAriaLabel={translateText([
-                "ariaLabels",
-                "clearOwner"
-              ])}
-            />
-          </div>
-        </div>
-      ) : isOwnerReadonly ? null : (
-        <SearchableDropdown
-          id="add-contact-owner"
-          name="owner"
-          label={translateText(["labels", "owner"])}
-          placeholder={translateText(["placeholders", "owner"])}
-          items={ownerDropdownItems}
-          value={ownerSearch}
-          onChange={(e) => setOwnerSearch(e.target.value)}
-          onSelect={handleOwnerSelect}
-          onClose={() => {
-            setOwnerSearch("");
-            restoreLastOwnerIfEmpty();
-          }}
-          emptyMessage={
-            isOwnerFetching
-              ? undefined
-              : SearchableDropdownEmptyMessage(
-                  translateText(["emptyStates", "noOwners"])
-                )
-          }
-        />
+        renderSelectedOwnerDisplay()
+      ) : (
+        !isOwnerReadonly && renderOwnerDropdown()
       )}
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
