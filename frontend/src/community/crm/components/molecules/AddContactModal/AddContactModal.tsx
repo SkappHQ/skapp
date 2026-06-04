@@ -54,11 +54,29 @@ const AddContactModal: React.FC = () => {
     "contacts",
     "addContactModal"
   );
-
   const translateToasts = useTranslator(
     "crmModule",
     "contacts",
     "contactToastMessages"
+  );
+
+  const [companySearch, setCompanySearch] = useState("");
+  const [selectedCompanyLabel, setSelectedCompanyLabel] = useState("");
+  const debouncedCompanySearch = useDebounce(
+    companySearch.trim(),
+    CONTACT_SEARCH_DEBOUNCE_DELAY
+  );
+
+  const { isCrmSalesManager } = useSessionData();
+  const { data: currentUser } = useGetUserPersonalDetails();
+
+  const isOwnerReadonly = !isCrmSalesManager;
+
+  const [ownerSearch, setOwnerSearch] = useState("");
+  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
+  const debouncedOwnerSearch = useDebounce(
+    ownerSearch.trim(),
+    CONTACT_SEARCH_DEBOUNCE_DELAY
   );
 
   const { setIsAddContactModalOpen } = useCrmStore((store) => ({
@@ -133,25 +151,6 @@ const AddContactModal: React.FC = () => {
     submitForm
   } = formik;
 
-  const [companySearch, setCompanySearch] = useState("");
-  const [selectedCompanyLabel, setSelectedCompanyLabel] = useState("");
-  const debouncedCompanySearch = useDebounce(
-    companySearch.trim(),
-    CONTACT_SEARCH_DEBOUNCE_DELAY
-  );
-
-  const { isCrmSalesManager } = useSessionData();
-  const { data: currentUser } = useGetUserPersonalDetails();
-
-  const isOwnerReadonly = !isCrmSalesManager;
-
-  const [ownerSearch, setOwnerSearch] = useState("");
-  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
-  const debouncedOwnerSearch = useDebounce(
-    ownerSearch.trim(),
-    CONTACT_SEARCH_DEBOUNCE_DELAY
-  );
-
   const currentUserAsOwner = useMemo<CrmOwner>(() => {
     return {
       employeeId: Number(currentUser?.employeeId),
@@ -171,23 +170,24 @@ const AddContactModal: React.FC = () => {
     }
   }, [currentUserAsOwner, setFieldValue]);
 
-  const { data: companyLookup, isFetching: isCompanyFetching } =
+  const { data: companyLookupData, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
 
-  const { data: ownerLookup, isFetching: isOwnerFetching } = useGetOwnerLookup(
-    debouncedOwnerSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
-    !isOwnerReadonly
-  );
+  const { data: ownerLookupData, isFetching: isOwnerFetching } =
+    useGetOwnerLookup(
+      debouncedOwnerSearch,
+      DEFAULT_LOOKUP_PAGE_SIZE,
+      !isOwnerReadonly
+    );
 
   const companyItems: SearchableDropdownItem[] =
-    companyLookup?.items?.map((company) => ({
+    companyLookupData?.items?.map((company) => ({
       id: String(company.id),
       content: company.name
     })) ?? [];
 
   const ownerItems: SearchableDropdownItem[] =
-    ownerLookup?.items?.map((owner) => ({
+    ownerLookupData?.items?.map((owner) => ({
       id: String(owner.employeeId),
       content: (
         <AvatarChip
@@ -198,7 +198,9 @@ const AddContactModal: React.FC = () => {
     })) ?? [];
 
   const handleCompanySelect = (item: SearchableDropdownItem) => {
-    const company = companyLookup?.items?.find((c) => String(c.id) === item.id);
+    const company = companyLookupData?.items?.find(
+      (c) => String(c.id) === item.id
+    );
     setFieldValue("companyId", Number(item.id));
     setSelectedCompanyLabel(company?.name ?? String(item.content));
     setCompanySearch("");
@@ -210,14 +212,12 @@ const AddContactModal: React.FC = () => {
     setCompanySearch("");
   };
 
-  const companyEmptyMessage = (
-    <p className="px-4 py-2 body2">
-      {translateText(["emptyStates", "noCompanies"])}
-    </p>
+  const SearchableDropdownEmptyMessage = (message: string) => (
+    <p className="px-4 py-2 body2">{message}</p>
   );
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
-    const owner = ownerLookup?.items?.find(
+    const owner = ownerLookupData?.items?.find(
       (o) => String(o.employeeId) === item.id
     );
     if (!owner) return;
@@ -231,12 +231,6 @@ const AddContactModal: React.FC = () => {
     setSelectedOwner(null);
     setOwnerSearch("");
   };
-
-  const renderClearButton = (onClear: () => void, ariaLabel: string) => (
-    <ButtonV2 variant="tertiary" type="button" onClick={onClear} aria-label={ariaLabel}>
-      <CloseIcon />
-    </ButtonV2>
-  );
 
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
@@ -278,7 +272,13 @@ const AddContactModal: React.FC = () => {
           onChange={(e) => setCompanySearch(e.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearch("")}
-          emptyMessage={isCompanyFetching ? undefined : companyEmptyMessage}
+          emptyMessage={
+            isCompanyFetching
+              ? undefined
+              : SearchableDropdownEmptyMessage(
+                  translateText(["emptyStates", "noCompanies"])
+                )
+          }
         />
       ) : (
         <InputField
@@ -293,10 +293,15 @@ const AddContactModal: React.FC = () => {
           }}
           customStyles={{ gap: "gap-2" }}
           aria-label={translateText(["ariaLabels", "company"])}
-          rightIcon={renderClearButton(
-            handleClearCompany,
-            translateText(["ariaLabels", "clearCompany"])
-          )}
+          rightIcon={
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              onClick={handleClearCompany}
+              aria-label={translateText(["ariaLabels", "clearCompany"])}
+              icon={<CloseIcon />}
+            />
+          }
         />
       )}
 
@@ -344,11 +349,11 @@ const AddContactModal: React.FC = () => {
           onSelect={handleOwnerSelect}
           onClose={() => setOwnerSearch("")}
           emptyMessage={
-            isOwnerFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateText(["emptyStates", "noOwners"])}
-              </p>
-            )
+            isOwnerFetching
+              ? undefined
+              : SearchableDropdownEmptyMessage(
+                  translateText(["emptyStates", "noOwners"])
+                )
           }
         />
       )}
