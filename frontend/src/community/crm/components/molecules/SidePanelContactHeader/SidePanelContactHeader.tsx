@@ -1,69 +1,40 @@
 import { BuildingIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { formatISODateWithSuffixLocal } from "~community/common/utils/dateTimeUtils";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmContactType } from "~community/crm/types/CommonTypes";
 
 interface Props {
   contact?: CrmContactType;
-  isLoading?: boolean;
   companyHref?: string;
 }
 
-const SidePanelContactHeader: FC<Props> = ({
-  contact,
-  isLoading,
-  companyHref
-}) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactDetailsPanel"
-  );
+const SidePanelContactHeader: FC<Props> = ({ contact, companyHref }) => {
+  if (!contact) return null;
 
-  const company = contact?.company;
-
-  const renderContent = () => {
-    if (isLoading) {
-      return <ContactHeaderSkeleton />;
-    }
-
-    if (!contact) {
-      return null;
-    }
-
-    return (
-      <>
-        <div className="flex items-center justify-between max-w-[629px] w-full">
-          <SidePanelHeaderInfoItem
-            icon={IconName.EMAIL_ICON}
-            value={contact.email}
-          />
-
-          <SidePanelHeaderInfoItem
-            icon={IconName.LOCAL_PHONE_ICON}
-            value={contact.contactNumber}
-          />
-
-          {company && (
-            <SidePanelHeaderInfoItem
-              icon={<BuildingIcon stroke="var(--color-secondary-icon)" />}
-              value={company.name}
-              href={companyHref}
-              endIcon={companyHref ? IconName.POP_OUT_ICON : undefined}
-            />
-          )}
-        </div>
-      </>
-    );
-  };
+  const company = contact.company;
 
   return (
-    <div className="w-full flex flex-col gap-[8px] items-start p-[8px]">
-      {renderContent()}
+    <div className="flex items-center justify-between max-w-[629px] w-full p-[8px]">
+      <SidePanelHeaderInfoItem
+        icon={IconName.EMAIL_ICON}
+        value={contact.email}
+      />
+
+      <SidePanelHeaderInfoItem
+        icon={IconName.LOCAL_PHONE_ICON}
+        value={contact.contactNumber}
+      />
+
+      {company && (
+        <SidePanelHeaderInfoItem
+          icon={<BuildingIcon stroke="var(--color-secondary-icon)" />}
+          value={company.name}
+          href={companyHref}
+          endIcon={IconName.POP_OUT_ICON}
+        />
+      )}
     </div>
   );
 };
