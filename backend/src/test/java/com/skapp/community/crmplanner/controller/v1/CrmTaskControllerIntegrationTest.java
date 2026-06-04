@@ -38,8 +38,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.LocalDateTime;
-
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -151,7 +149,7 @@ class CrmTaskControllerIntegrationTest {
 	void createTask_WithOptionalFields_ReturnsCreated() throws Exception {
 		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setPriority(CrmTaskPriority.HIGH);
-		dto.setDueAt(LocalDateTime.of(2030, 1, 1, 9, 0));
+		dto.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusYears(1));
 		dto.setNotes("Discuss renewal terms");
 
 		MvcResult result = performCreateRequest(dto).andDo(print())
