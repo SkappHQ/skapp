@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, {
   Dispatch,
@@ -121,6 +121,7 @@ const AddLeaveAllocationModal: React.FC<Props> = ({
   }, [values, setCurrentLeaveAllocationFormData]);
 
   const isSaveDisabled =
+    !values.assignedTo ||
     !values.employeeId ||
     !values.typeId ||
     !values.numberOfDaysOff ||
@@ -149,7 +150,7 @@ const AddLeaveAllocationModal: React.FC<Props> = ({
           variant={"primary"}
           onClick={() => onSubmit(values, onAddSuccess, onAddError)}
           disabled={isSaveDisabled}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          icon={<ArrowRightIcon />}
           iconPosition="end"
         >
           {translateText(["saveBtn"])}

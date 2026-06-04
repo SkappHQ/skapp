@@ -21,10 +21,12 @@ import { themeSelector } from "~community/common/theme/themeSelector";
 import { MyAppPropsType } from "~community/common/types/CommonTypes";
 import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
 import "~enterprise/common/components/atoms/driverJsPopover/styles.css";
+import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
 import {
   isNonProdMaintenanceMode,
   isProdMaintenanceMode
 } from "~enterprise/common/constants/dbKeys";
+import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 import { database } from "~enterprise/common/utils/firebase";
 import { initializeHotjar } from "~enterprise/common/utils/monitoring";
 import i18n from "~i18n";
@@ -120,7 +122,7 @@ function MyApp({
     process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE;
 
   return (
-    <div className={inter.variable}>
+    <div className={inter.className}>
       <AuthProvider>
         {shouldUseWebSocketProvider ? (
           <WebSocketProvider>
@@ -148,12 +150,15 @@ function MyApp({
             <TanStackProvider>
               <ThemeProvider theme={newTheme}>
                 <I18nextProvider i18n={i18n}>
-                  <ErrorBoundary FallbackComponent={Error}>
-                    <RouteChangeLoader />
-                    <BaseLayout>
-                      <Component {...pageProps} />
-                    </BaseLayout>
-                  </ErrorBoundary>
+                  <AnnouncementProvider>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <RouteChangeLoader />
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
+                    <AnnouncementWrapper />
+                  </AnnouncementProvider>
                   <ReactQueryDevtools initialIsOpen={false} position="bottom" />
                 </I18nextProvider>
               </ThemeProvider>

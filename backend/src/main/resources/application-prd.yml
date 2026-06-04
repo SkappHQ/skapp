@@ -29,7 +29,7 @@ spring:
     multipart:
       max-file-size: 5MB
   messages:
-    basename: community/messages/common-messages, community/messages/leave-messages, community/messages/people-messages, community/messages/time-messages, community/messages/okr-messages
+    basename: community/messages/common-messages, community/messages/leave-messages, community/messages/people-messages, community/messages/time-messages, community/messages/okr-messages, community/messages/crm-messages
 
 file:
   storage:

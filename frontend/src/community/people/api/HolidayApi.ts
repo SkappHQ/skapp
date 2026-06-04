@@ -9,6 +9,7 @@ import {
 import { rejects } from "assert";
 import { AxiosResponse } from "axios";
 
+import { ALL_LOCATIONS_ID } from "~community/common/constants/workLocationConstants";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { holidayEndpoints } from "~community/people/api/utils/ApiEndpoints";
@@ -24,30 +25,42 @@ import {
 export const useGetAllHolidays = (
   year?: string,
   isExport?: boolean,
-  sortOrder?: string
+  sortOrder?: string,
+  workLocationId?: number,
+  enabled: boolean = true
 ): UseQueryResult<Holiday[]> => {
   return useQuery({
-    queryKey: [holidayQueryKeys.ALL_HOLIDAYS, year, sortOrder, isExport],
+    queryKey: [
+      holidayQueryKeys.ALL_HOLIDAYS,
+      year,
+      sortOrder,
+      isExport,
+      workLocationId
+    ],
     queryFn: () =>
       authFetch.get(holidayEndpoints.HOLIDAY, {
         params: {
           year: year,
           sortOrder: sortOrder,
-          isExport: isExport
+          isExport: isExport,
+          workLocationId: workLocationId
         }
       }),
-    select: (data) => data?.data?.results[0].items
+    select: (data) => data?.data?.results[0].items,
+    enabled
   });
 };
 
 export const useGetAllHolidaysInfinite = (
   year?: string | undefined,
-  sortOrder?: string | undefined
+  sortOrder?: string | undefined,
+  workLocationId: number = ALL_LOCATIONS_ID
 ): UseInfiniteQueryResult<HolidayDataResponse> => {
   const params = {
     year: year,
     sortOrder: sortOrder,
-    isExport: false
+    isExport: false,
+    workLocationId
   };
 
   return useInfiniteQuery({
@@ -90,7 +103,8 @@ const holidayBulkUpload = async ({
     holidayDtoList: holidayData?.map((holiday) => ({
       date: holiday.date,
       name: holiday.name,
-      holidayDuration: holiday.holidayDuration
+      holidayDuration: holiday.holidayDuration,
+      workLocations: holiday.workLocations
     }))
   };
 
@@ -132,7 +146,8 @@ export const useAddIndividualHoliday = (
             date: holidayData.date,
             name: holidayData.name,
             holidayDuration: holidayData.holidayDuration,
-            holidayColor: holidayData.holidayColor
+            holidayColor: holidayData.holidayColor,
+            workLocations: holidayData.workLocations
           }
         ]
       };

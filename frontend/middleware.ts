@@ -12,11 +12,12 @@ import {
   EmployeeTypes,
   ManagerTypes,
   ROLE_SUPER_ADMIN,
+  RepresentativeTypes,
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
-import { TierEnum } from "~enterprise/common/enums/Common";
+import { TenantStatusEnums } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
@@ -54,9 +55,11 @@ const superAdminRoutes = {
     ROUTES.REMOVE_PEOPLE,
     ROUTES.PROJECTS.BASE,
     ROUTES.PROJECTS.GUESTS,
+    ROUTES.PROJECTS.GUEST_REQUESTS,
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
-    ROUTES.INVOICE.CUSTOMERS.BASE
+    ROUTES.INVOICE.CUSTOMERS.BASE,
+    ROUTES.CRM.BASE
   ]
 };
 
@@ -87,7 +90,12 @@ const adminRoutes = {
     ROUTES.CONFIGURATIONS.BASE,
     ROUTES.INVOICE.CREATE.BASE
   ],
-  [AdminTypes.PM_ADMIN]: [ROUTES.PROJECTS.BASE, ROUTES.PROJECTS.GUESTS]
+  [AdminTypes.PM_ADMIN]: [
+    ROUTES.PROJECTS.BASE,
+    ROUTES.PROJECTS.GUESTS,
+    ROUTES.PROJECTS.GUEST_REQUESTS
+  ],
+  [AdminTypes.CRM_ADMIN]: [ROUTES.CRM.BASE]
 };
 
 const managerRoutes = {
@@ -120,7 +128,8 @@ const managerRoutes = {
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE,
     ROUTES.INVOICE.CREATE.BASE
-  ]
+  ],
+  [ManagerTypes.CRM_SALES_MANAGER]: [ROUTES.CRM.BASE]
 };
 
 const employeeRoutes = {
@@ -140,6 +149,12 @@ const employeeRoutes = {
     ROUTES.SIGN.SIGN,
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
+    ...commonRoutes
+  ],
+  [EmployeeTypes.PM_EMPLOYEE]: [...commonRoutes],
+  [EmployeeTypes.PM_GUEST_EMPLOYEE]: [...commonRoutes],
+  [RepresentativeTypes.CRM_SALES_REPRESENTATIVE]: [
+    ROUTES.CRM.BASE,
     ...commonRoutes
   ]
 };
@@ -161,7 +176,12 @@ const senderRoutes = {
 
 // Merging all routes into one allowedRoutes object
 const allowedRoutes: Record<
-  AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType | SenderTypes,
+  | AdminTypes
+  | ManagerTypes
+  | EmployeeTypes
+  | SuperAdminType
+  | SenderTypes
+  | RepresentativeTypes,
   string[]
 > = {
   ...superAdminRoutes,
@@ -199,6 +219,26 @@ export function middleware(request: NextRequest) {
   const isPasswordChangedForTheFirstTime = request.cookies.get(
     "isPasswordChangedForTheFirstTime"
   )?.value;
+
+  if (currentPath === ROUTES.REMOVE_PEOPLE) {
+    const tenantStatus = claims?.tenantStatus;
+    const roles = claims?.roles || [];
+    const isSuperAdmin = roles.includes(ROLE_SUPER_ADMIN);
+
+    if (isSuperAdmin) {
+      if (
+        tenantStatus ===
+          TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED ||
+        tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
+      ) {
+        return NextResponse.next();
+      } else {
+        return NextResponse.redirect(
+          new URL(ROUTES.DASHBOARD.BASE, request.url)
+        );
+      }
+    }
+  }
 
   if (
     isPasswordChangedForTheFirstTime === "false" &&
@@ -340,6 +380,9 @@ export const config = {
     // Invoice routes
     "/invoice",
     "/invoice/:path*",
-    "/invoice/create/:path*"
+    "/invoice/create/:path*",
+    // CRM module routes
+    "/crm",
+    "/crm/:path*"
   ]
 };

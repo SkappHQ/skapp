@@ -1,3 +1,4 @@
+import { HandshakeIcon } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 import AddIcon from "~community/common/assets/Icons/AddIcon";
@@ -22,6 +23,7 @@ import CancelledStatusIcon from "~community/common/assets/Icons/CancelledStatusI
 import ChangeIcon from "~community/common/assets/Icons/ChangeIcon";
 import CheckCircleIcon from "~community/common/assets/Icons/CheckCircleIcon";
 import CheckCircleOutlineIcon from "~community/common/assets/Icons/CheckCircleOutlineIcon";
+import CheckCircleOutlinedIcon from "~community/common/assets/Icons/CheckCircleOutlinedIcon";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CheckWrapperIcon from "~community/common/assets/Icons/CheckWrapperIcon";
 import CheckboxIcon from "~community/common/assets/Icons/CheckboxIcon";
@@ -69,6 +71,7 @@ import ForwardArrow from "~community/common/assets/Icons/ForwardArrow";
 import GemIcon from "~community/common/assets/Icons/GemIcon";
 import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIcon";
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
+import DefaultHandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
 import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
 import IdentityVerifiedIcon from "~community/common/assets/Icons/IdentityVerifiedIcon";
@@ -83,6 +86,7 @@ import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon"
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
+import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
 import LockIcon from "~community/common/assets/Icons/LockIcon";
 import MagnifyingGlassIcon from "~community/common/assets/Icons/MagnifyingGlassIcon";
 import MenuIcon from "~community/common/assets/Icons/MenuIcon";
@@ -304,6 +308,7 @@ export const IconMapping: Partial<
   [IconName.CROSSED_CIRCLE_ICON]: CrossedCircleIcon,
   [IconName.SIGNATURE_PEN_ICON]: SignaturePenIcon,
   [IconName.CHECK_CIRCLE_OUTLINE_ICON]: CheckCircleOutlineIcon,
+  [IconName.CHECK_CIRCLE_OUTLINED_ICON]: CheckCircleOutlinedIcon,
   [IconName.FINANCE_MODULE_ICON]: FinanceModuleIcon,
   [IconName.ASSET_MODULE_ICON]: AssetModuleIcon,
   [IconName.CRM_MODULE_ICON]: CRMModuleIcon,
@@ -319,6 +324,7 @@ export const IconMapping: Partial<
   [IconName.INSTAGRAM_ICON]: InstagramIcon,
   [IconName.INVOICE_ICON]: InvoiceIcon,
   [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
+  [IconName.HAND_SHAKE_ICON]: HandshakeIcon ?? DefaultHandshakeIcon,
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,
@@ -329,7 +335,8 @@ export const IconMapping: Partial<
   [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon,
   [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon,
   [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
-  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon
+  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon,
+  [IconName.LOCAL_PHONE_ICON]: LocalPhoneIcon
   // Add more icons here as needed
 };
 

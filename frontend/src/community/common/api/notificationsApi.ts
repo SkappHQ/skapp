@@ -5,8 +5,12 @@ import useFcmToken from "~enterprise/common/hooks/useFCMToken";
 import { appModes } from "../constants/configs";
 import { useCommonStore } from "../stores/commonStore";
 import { SortKeyTypes, SortOrderTypes } from "../types/CommonTypes";
-import { NotifyFilterButtonTypes } from "../types/notificationTypes";
+import {
+  NotificationSummaryType,
+  NotifyFilterButtonTypes
+} from "../types/notificationTypes";
 import authFetch from "../utils/axiosInterceptor";
+import { getNotificationCount } from "../utils/notificationUtils";
 import { notificationsEndpoints } from "./utils/ApiEndpoints";
 import { notificationsQueryKeys } from "./utils/QueryKeys";
 
@@ -117,6 +121,46 @@ export const useGetUnreadNotificationsCount = () => {
         notificationsEndpoints.GET_NOTIFICATIONS_COUNT
       );
       return data.results[0];
+    }
+  });
+};
+
+export const useGetNotificationSummary = () => {
+  return useQuery({
+    queryKey: notificationsQueryKeys.GET_NOTIFICATION_SUMMARY,
+    queryFn: async () => {
+      const { data } = await authFetch.get(
+        notificationsEndpoints.GET_NOTIFICATION_SUMMARY
+      );
+      return data;
+    }
+  });
+};
+
+export const useGetNotificationSummaryCount = (
+  type: NotificationSummaryType
+) => {
+  const { data } = useGetNotificationSummary();
+  return getNotificationCount(data?.results, type);
+};
+
+export const useMarkNotificationSummaryAsRead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (notificationType: NotificationSummaryType) => {
+      await authFetch.patch(
+        notificationsEndpoints.MARK_NOTIFICATION_SUMMARY_AS_READ,
+        { notificationType }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: notificationsQueryKeys.GET_NOTIFICATION_SUMMARY
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to mark notification summary as read:", error);
     }
   });
 };

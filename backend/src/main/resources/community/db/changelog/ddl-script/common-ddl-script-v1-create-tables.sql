@@ -588,3 +588,135 @@ CREATE TABLE IF NOT EXISTS `carry_forward_info`
 -- rollback drop table job_family;
 -- rollback drop table organization;
 -- rollback drop table user;
+
+-- changeset AkilaSachintha:common-ddl-script-v1-create-crm-tables
+CREATE TABLE IF NOT EXISTS `crm_task_type`
+(
+    `id`          bigint NOT NULL AUTO_INCREMENT,
+    `name`        text   NOT NULL,
+    `order_index` int DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_company`
+(
+    `id`                 bigint  NOT NULL AUTO_INCREMENT,
+    `created_by`         text             DEFAULT NULL,
+    `created_date`       datetime(6)      DEFAULT NULL,
+    `last_modified_by`   text             DEFAULT NULL,
+    `last_modified_date` datetime(6)      DEFAULT NULL,
+    `name`               text    NOT NULL,
+    `industry`           text             DEFAULT NULL,
+    `website`            text             DEFAULT NULL,
+    `address`            text             DEFAULT NULL,
+    `contact_number`     text             DEFAULT NULL,
+    `is_deleted`         boolean NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_contact`
+(
+    `id`                 bigint  NOT NULL AUTO_INCREMENT,
+    `created_by`         text             DEFAULT NULL,
+    `created_date`       datetime(6)      DEFAULT NULL,
+    `last_modified_by`   text             DEFAULT NULL,
+    `last_modified_date` datetime(6)      DEFAULT NULL,
+    `name`               text    NOT NULL,
+    `email`              text    NOT NULL,
+    `contact_number`     text             DEFAULT NULL,
+    `last_contact_at`    datetime(6)      DEFAULT NULL,
+    `company_id`         bigint           DEFAULT NULL,
+    `owner_id`           bigint  NOT NULL,
+    `is_deleted`         boolean NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_crm_contact_crm_company_company_id` FOREIGN KEY (`company_id`) REFERENCES `crm_company` (`id`),
+    CONSTRAINT `FK_crm_contact_employee_owner_id` FOREIGN KEY (`owner_id`) REFERENCES `employee` (`employee_id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_deal_stage`
+(
+    `id`                 bigint  NOT NULL AUTO_INCREMENT,
+    `created_by`         text             DEFAULT NULL,
+    `created_date`       datetime(6)      DEFAULT NULL,
+    `last_modified_by`   text             DEFAULT NULL,
+    `last_modified_date` datetime(6)      DEFAULT NULL,
+    `name`               text    NOT NULL,
+    `description`        text             DEFAULT NULL,
+    `color`              text    NOT NULL,
+    `order_index`        int     NOT NULL,
+    `stage_type`         text    NOT NULL,
+    `is_deleted`         boolean NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_deal`
+(
+    `id`                 bigint  NOT NULL AUTO_INCREMENT,
+    `created_by`         text             DEFAULT NULL,
+    `created_date`       datetime(6)      DEFAULT NULL,
+    `last_modified_by`   text             DEFAULT NULL,
+    `last_modified_date` datetime(6)      DEFAULT NULL,
+    `name`               text    NOT NULL,
+    `description`        text             DEFAULT NULL,
+    `stage_id`           bigint  NOT NULL,
+    `priority`           text    NOT NULL,
+    `closing_at`         datetime(6)      DEFAULT NULL,
+    `amount`             text             DEFAULT NULL,
+    `company_id`         bigint           DEFAULT NULL,
+    `contact_id`         bigint  NOT NULL,
+    `owner_id`           bigint  NOT NULL,
+    `is_deleted`         boolean NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_crm_deal_crm_deal_stage_stage_id` FOREIGN KEY (`stage_id`) REFERENCES `crm_deal_stage` (`id`),
+    CONSTRAINT `FK_crm_deal_crm_company_company_id` FOREIGN KEY (`company_id`) REFERENCES `crm_company` (`id`),
+    CONSTRAINT `FK_crm_deal_crm_contact_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `crm_contact` (`id`),
+    CONSTRAINT `FK_crm_deal_employee_owner_id` FOREIGN KEY (`owner_id`) REFERENCES `employee` (`employee_id`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `crm_task`
+(
+    `id`                 bigint  NOT NULL AUTO_INCREMENT,
+    `created_by`         text             DEFAULT NULL,
+    `created_date`       datetime(6)      DEFAULT NULL,
+    `last_modified_by`   text             DEFAULT NULL,
+    `last_modified_date` datetime(6)      DEFAULT NULL,
+    `name`               text    NOT NULL,
+    `type_id`            bigint  NOT NULL,
+    `priority`           text        NOT NULL,
+    `is_completed`       boolean NOT NULL DEFAULT FALSE,
+    `due_at`             datetime(6)      DEFAULT NULL,
+    `notes`              text             DEFAULT NULL,
+    `owner_id`           bigint  NOT NULL,
+    `contact_id`         bigint           DEFAULT NULL,
+    `company_id`         bigint           DEFAULT NULL,
+    `deal_id`            bigint           DEFAULT NULL,
+    `is_deleted`         boolean NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_crm_task_crm_task_type_type_id` FOREIGN KEY (`type_id`) REFERENCES `crm_task_type` (`id`),
+    CONSTRAINT `FK_crm_task_employee_owner_id` FOREIGN KEY (`owner_id`) REFERENCES `employee` (`employee_id`),
+    CONSTRAINT `FK_crm_task_crm_contact_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `crm_contact` (`id`),
+    CONSTRAINT `FK_crm_task_crm_company_company_id` FOREIGN KEY (`company_id`) REFERENCES `crm_company` (`id`),
+    CONSTRAINT `FK_crm_task_crm_deal_deal_id` FOREIGN KEY (`deal_id`) REFERENCES `crm_deal` (`id`)
+) ENGINE = InnoDB;
+
+-- rollback drop table crm_task;
+-- rollback drop table crm_deal;
+-- rollback drop table crm_deal_stage;
+-- rollback drop table crm_contact;
+-- rollback drop table crm_company;
+-- rollback drop table crm_task_type;
+
+-- changeset anusham:crm-ddl-script-v1-create-table-crm-config
+CREATE TABLE IF NOT EXISTS `crm_config`
+(
+    `id`                 bigint NOT NULL AUTO_INCREMENT,
+    `currency`           text   NOT NULL,
+    `created_by`         text        DEFAULT NULL,
+    `created_date`       datetime(6) DEFAULT NULL,
+    `last_modified_by`   text        DEFAULT NULL,
+    `last_modified_date` datetime(6) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+-- rollback DROP TABLE IF EXISTS `crm_config`;
+

@@ -8,6 +8,7 @@ export enum UserBulkUploadModelTypes {
 }
 
 export interface BulkUploadUser {
+  title: string | null;
   firstName: string | null;
   lastName: string | null;
   middleName: string | null;
@@ -46,6 +47,7 @@ export interface BulkUploadUser {
   startDate: string | null;
   endDate: string | null;
   timeZone: string | null;
+  workLocation: string | null;
   employeeType: string | null;
   jobFamilyId: number | string | null;
   jobTitleId: number | string | null;

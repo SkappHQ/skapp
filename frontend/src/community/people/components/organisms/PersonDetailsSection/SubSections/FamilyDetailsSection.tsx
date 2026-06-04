@@ -65,13 +65,13 @@ const FamilyDetailsSection = ({
   } = useFamilyDetailsFormHandlers();
 
   const tableHeaders = [
-    translateText(["firstName"]),
-    translateText(["lastName"]),
-    translateText(["gender"]),
-    translateText(["relationship"]),
-    translateText(["parentName"]),
-    translateText(["birthDate"]),
-    translateText(["age"])
+    { label: translateText(["firstName"]) },
+    { label: translateText(["lastName"]) },
+    { label: translateText(["gender"]) },
+    { label: translateText(["relationship"]) },
+    { label: translateText(["parentName"]) },
+    { label: translateText(["birthDate"]) },
+    { label: translateText(["age"]) }
   ];
 
   const { employee, setPersonalDetails } = usePeopleStore((state) => state);
@@ -281,9 +281,15 @@ const FamilyDetailsSection = ({
               type={"submit"}
               icon={
                 rowEdited > -1 ? (
-                  <Icon name={IconName.RIGHT_MARK} />
+                  <Icon
+                    name={IconName.RIGHT_MARK}
+                    fill="var(--color-primary-text)"
+                  />
                 ) : (
-                  <Icon name={IconName.ADD_ICON} />
+                  <Icon
+                    name={IconName.ADD_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 )
               }
               iconPosition="end"

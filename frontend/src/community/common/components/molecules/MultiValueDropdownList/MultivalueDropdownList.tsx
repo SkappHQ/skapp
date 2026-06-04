@@ -135,7 +135,7 @@ const MultivalueDropdownList: FC<Props> = ({
               // TODO: move styles to styles.ts
               <Typography
                 component="span"
-                style={{ color: theme.palette.error.light }}
+                style={{ color: theme.palette.error.contrastText }}
               >
                 *
               </Typography>
@@ -172,7 +172,7 @@ const MultivalueDropdownList: FC<Props> = ({
             name={inputName}
             disabled={isDisabled}
             MenuProps={{
-              style: { maxHeight: 300, zIndex: ZIndexEnums.DEFAULT }
+              style: { maxHeight: 300, zIndex: ZIndexEnums.MAX }
             }}
             sx={{
               ...classes.selectStyle(theme, isDisabled, readOnly),

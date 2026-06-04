@@ -9,8 +9,8 @@
   --color-primary-background: #dbeafe;
 
   --font-family-sans:
-    "Poppins", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    var(--font-inter), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   --color-label-bg-seafoam: #a4d1c9;
   --color-label-bg-sand: #ffe3a6;
@@ -48,6 +48,7 @@
   --color-status-indigo: #eab308;
 
   --color-secondary-text: #52525b;
+  --color-tertiary-text: #68707f;
   --color-secondary-background: #fafafa;
   --color-tertiary-background: #f4f4f5;
   --color-secondary-accent: #e4e4e7;
@@ -72,67 +73,50 @@
 .h1 {
   font-size: 24px;
   font-weight: 700;
-  font-family: var(--font-family-sans);
 }
 .h1b {
   font-size: 32px;
   font-weight: 600;
-  font-family: var(--font-family-sans);
 }
 .h1c {
   font-size: 42px;
   font-weight: 600;
-  font-family: var(--font-family-sans);
 }
 .h2 {
   font-size: 20px;
   font-weight: 700;
-  font-family: var(--font-family-sans);
 }
 .h3 {
   font-size: 18px;
   font-weight: 700;
-  font-family: var(--font-family-sans);
 }
 .subtitle1 {
   font-size: 16px;
   font-weight: 500;
-  font-family: var(--font-family-sans);
 }
 .subtitle2 {
   font-size: 16px;
   font-weight: 600;
-  font-family: var(--font-family-sans);
 }
 .subtitle3 {
   font-size: 14px;
   font-weight: 500;
-  font-family: var(--font-family-sans), serif;
 }
 .subtitle4 {
   font-size: 12px;
   font-weight: 500;
-  font-family: var(--font-family-sans), serif;
 }
 .body1 {
   font-size: 16px;
   font-weight: 400;
-  font-family: var(--font-family-sans);
 }
 .body2 {
   font-size: 14px;
   font-weight: 400;
-  font-family: var(--font-family-sans);
 }
 .body3 {
   font-size: 12px;
   font-weight: 400;
-  font-family: var(--font-family-sans);
-}
-
-:root {
-  --app-font: Inter;
-  --app-font-family: "Inter", sans-serif;
 }
 
 html,
@@ -142,19 +126,6 @@ body {
   padding: 0;
   margin: 0;
   line-height: 1.5;
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    Segoe UI,
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    Fira Sans,
-    Droid Sans,
-    Helvetica Neue,
-    sans-serif;
 }
 
 input,
@@ -162,11 +133,6 @@ textarea,
 select,
 button {
   font-family: inherit;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
 }
 
 * {
@@ -261,14 +227,12 @@ input[type="number"] {
   font-size: 16px;
   font-weight: 700;
   line-height: 140%;
-  font-family: var(--app-font-family);
 }
 
 .driver-popover .driver-popover-description {
   font-size: 14px;
   font-weight: 400;
   line-height: 140%;
-  font-family: var(--app-font-family);
 }
 
 .full-day-border {

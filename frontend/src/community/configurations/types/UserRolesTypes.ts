@@ -46,4 +46,5 @@ export interface AllowedGrantableRolesType {
   esign: SelectOption[];
   pm: SelectOption[];
   invoice: SelectOption[];
+  crm: SelectOption[];
 }

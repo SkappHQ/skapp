@@ -21,6 +21,10 @@ export const employeeCreatePreProcessor = (
     firstName: employee?.generalDetails?.firstName,
     lastName: employee?.generalDetails?.lastName,
     middleName: formatEmptyString(employee?.generalDetails?.middleName ?? ""),
+    title:
+      employee?.generalDetails?.title === ""
+        ? null
+        : employee?.generalDetails?.title,
     address: employee?.contactDetails?.addressLine1,
     addressLine2: employee?.contactDetails?.addressLine2,
     authPic: employee?.generalDetails?.authPic,
@@ -219,6 +223,7 @@ export const employeeUpdatePreProcessor = (
     middleName:
       employee?.generalDetails?.middleName &&
       formatEmptyString(employee?.generalDetails?.middleName),
+    title: employee?.generalDetails?.title,
     address: employee?.contactDetails?.addressLine1,
     addressLine2: employee?.contactDetails?.addressLine2,
     authPic: employee?.generalDetails?.authPic,

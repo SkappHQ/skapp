@@ -29,6 +29,7 @@ import { AddNewResourceSliceTypes } from "~community/people/types/SliceTypes";
 const employeeGeneralDetails: EmployeeGeneralDetailsTypes = {
   authPic: [],
   thumbnail: [],
+  title: "",
   firstName: "",
   middleName: "",
   lastName: "",
@@ -103,7 +104,8 @@ const employeeEmploymentDetails: EmployeeEmploymentDetailsTypes = {
   joinedDate: "",
   probationStartDate: "",
   probationEndDate: "",
-  workTimeZone: ""
+  workTimeZone: "",
+  workLocationId: undefined
 };
 const employeeCareerDetails: EmployeeCareerDetailsTypes = {
   positionDetails: []
@@ -135,7 +137,9 @@ const userRoles: EmployeeRoleType = {
   attendanceRole: Role.ATTENDANCE_EMPLOYEE,
   peopleRole: Role.PEOPLE_EMPLOYEE,
   leaveRole: Role.LEAVE_EMPLOYEE,
-  esignRole: Role.ESIGN_EMPLOYEE
+  esignRole: Role.ESIGN_EMPLOYEE,
+  pmRole: Role.PM_EMPLOYEE,
+  crmRole: Role.CRM_NONE
 };
 
 export const employeeDetailsSlice = (

@@ -13,11 +13,13 @@ import { useTerminateUser } from "~community/people/api/PeopleApi";
 interface TerminateConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  employeeId: number;
 }
 
 const TerminateConfirmationModal: React.FC<TerminateConfirmationModalProps> = ({
   isOpen,
-  onClose
+  onClose,
+  employeeId
 }) => {
   const translateText = useTranslator("peopleModule", "termination");
   const { setToastMessage } = useToast();
@@ -44,7 +46,11 @@ const TerminateConfirmationModal: React.FC<TerminateConfirmationModalProps> = ({
     onClose();
   };
 
-  const { mutate: terminateEmployee } = useTerminateUser(onSuccess, onError);
+  const { mutate: terminateEmployee } = useTerminateUser(
+    onSuccess,
+    onError,
+    employeeId
+  );
 
   const onClick = () => {
     terminateEmployee();

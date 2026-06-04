@@ -74,10 +74,13 @@ const ROUTES = {
     ATTENDANCE: "/configurations/attendance",
     TIME: "/configurations/time",
     USER_ROLES: "/configurations/user-roles",
+    USER_ROLES_TAB: "/configurations?tab=user-roles",
     SIGN: "/configurations/esign",
     USER_ROLES_MODULE: (module: string) =>
       `/configurations/user-roles/${module}`,
-    INVOICE: "/configurations/invoice"
+    INVOICE: "/configurations/invoice",
+    WORK_LOCATION_CREATE: "/configurations/work-location/create",
+    WORK_LOCATION_EDIT: (id: number) => `/configurations/work-location/${id}`
   },
   DASHBOARD: {
     BASE: "/dashboard",
@@ -121,9 +124,17 @@ const ROUTES = {
   },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
+  CRM: {
+    BASE: "/crm",
+    CONTACTS: "/crm/contacts",
+    COMPANIES: "/crm/companies",
+    DEALS: "/crm/deals",
+    TASKS: "/crm/tasks"
+  },
   PROJECTS: {
     BASE: "/projects/list",
-    GUESTS: "/projects/guests"
+    GUESTS: "/projects/guests",
+    GUEST_REQUESTS: "/projects/guest-requests"
   },
   INVOICE: {
     BASE: "/invoice",
