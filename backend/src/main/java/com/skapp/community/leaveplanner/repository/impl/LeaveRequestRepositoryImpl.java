@@ -999,6 +999,9 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		Join<LeaveRequest, Employee> employeeJoin = leaveRequestRoot.join(LeaveRequest_.employee);
 		List<Predicate> predicates = new ArrayList<>();
 
+		predicates.add(criteriaBuilder.isTrue(employeeJoin.get(Employee_.user).get(User_.isActive)));
+		predicates.add(criteriaBuilder.equal(employeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
+
 		if (teams == null || teams.isEmpty() || teams.contains(-1L)) {
 			if (isLeaveAdmin) {
 				Predicate leaveDatePredicate = criteriaBuilder.and(
