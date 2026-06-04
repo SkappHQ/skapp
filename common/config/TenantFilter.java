@@ -11,6 +11,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -23,6 +24,8 @@ import java.util.Set;
 public class TenantFilter extends OncePerRequestFilter {
 
 	private static final String TENANT_HEADER = "X-Tenant-ID";
+
+	private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
 	private static final Set<String> EXCLUDED_PATHS = Set.of("/v3/api-docs", "/v3/api-docs.yaml", "/swagger-ui.html",
 			"/swagger-ui", "/swagger-resources", "/swagger-ui/index.html", "/swagger-ui/index.css",
@@ -41,12 +44,12 @@ public class TenantFilter extends OncePerRequestFilter {
 			"/v1/ep/s3/files/organization-setup/signed-url", "/v1/microsoft-calendar/redirect",
 			"/v1/ep/esign/document-link/send-otp", "/v1/ep/esign/document-link/resend-otp",
 			"/v1/ep/esign/document-link/verify-otp", "/v1/announcement", "/v1/announcement/list",
-			"/v1/announcement/image/signed-url");
+			"/v1/announcement/image/signed-url", "/external/adms/*/iclock/cdata", "/external/adms/*/iclock/getrequest");
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
-		return EXCLUDED_PATHS.stream().anyMatch(requestURI::equals);
+		return EXCLUDED_PATHS.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, requestURI));
 	}
 
 	@Override

@@ -84,7 +84,7 @@ public class EpUserServiceImpl implements EpUserService {
 	@Transactional(readOnly = true)
 	public List<EpUserResponseDto> getAllUsersOrByIds(List<Long> userIds) {
 		Set<AccountStatus> activeStatuses = Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING,
-				AccountStatus.TERMINATED);
+				AccountStatus.TERMINATED, AccountStatus.DEACTIVATED);
 
 		List<Employee> employees = employeeDao.findEmployeesIncludingGuests(userIds, null, activeStatuses);
 

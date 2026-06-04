@@ -55,13 +55,13 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class DocumentProcessingServiceImpl implements DocumentProcessingService {
 
-	private static final float DEFAULT_FONT_SIZE = 12f;
+	private static final float DEFAULT_FONT_SIZE = 12.0f;
 
-	private static final float UUID_FONT_SIZE = 10f;
+	private static final float UUID_FONT_SIZE = 6.0f;
 
-	private static final float UUID_X_POSITION = 40;
+	private static final float UUID_X_POSITION = 10.0f;
 
-	private static final float UUID_Y_POSITION = 20;
+	private static final float UUID_Y_POSITION = 10.0f;
 
 	// sign by template params
 
@@ -91,7 +91,7 @@ public class DocumentProcessingServiceImpl implements DocumentProcessingService 
 
 	public static final String PNG = "png";
 
-	private static final float POINTS_PER_INCH = 72f;
+	private static final float POINTS_PER_INCH = 72.0f;
 
 	private final MessageUtil messageUtil;
 
