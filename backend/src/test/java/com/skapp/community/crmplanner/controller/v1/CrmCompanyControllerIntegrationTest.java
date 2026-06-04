@@ -63,6 +63,8 @@ class CrmCompanyControllerIntegrationTest {
 
 	private static final String EXISTS_PATH = BASE_PATH + "/exists";
 
+	private static final String SEARCH_BY_DOMAIN_PATH = BASE_PATH + "/search-by-domain";
+
 	private static final String DELETE_PATH = BASE_PATH + "/{id}";
 
 	private static final String EDIT_PATH = BASE_PATH + "/{id}";
@@ -106,6 +108,10 @@ class CrmCompanyControllerIntegrationTest {
 
 	private ResultActions performGetExistsRequest(String name) throws Exception {
 		return performRequest(get(EXISTS_PATH).param("name", name).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performSearchByDomainRequest(String domain) throws Exception {
+		return performRequest(get(SEARCH_BY_DOMAIN_PATH).param("domain", domain).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performDeleteRequest(Long id) throws Exception {
@@ -374,6 +380,37 @@ class CrmCompanyControllerIntegrationTest {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performPatchRequest(1L, createValidEditPayload()).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	// --- Search companies by domain tests ---
+
+	@Test
+	@DisplayName("Search companies by domain with matching website - Returns OK with company")
+	void searchCompaniesByDomain_HappyPath_ReturnsMatchingCompany() throws Exception {
+		performPostRequest(createValidPayload()).andExpect(status().isCreated());
+
+		performSearchByDomainRequest("acme.com").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companies'][0]['name']").value("Acme Corp"));
+	}
+
+	@Test
+	@DisplayName("Search companies by domain with blank domain - Returns Bad Request")
+	void searchCompaniesByDomain_BlankDomain_ReturnsBadRequest() throws Exception {
+		performSearchByDomainRequest("   ").andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DOMAIN_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Search companies by domain without CRM role - Returns Forbidden")
+	void searchCompaniesByDomain_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performSearchByDomainRequest("acme.com").andDo(print()).andExpect(status().isForbidden());
 	}
 
 }

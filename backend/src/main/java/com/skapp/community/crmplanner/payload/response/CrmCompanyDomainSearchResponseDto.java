@@ -2,8 +2,6 @@ package com.skapp.community.crmplanner.payload.response;
 
 import java.util.List;
 
-import com.skapp.community.crmplanner.model.CrmCompany;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +9,6 @@ import lombok.Setter;
 @Setter
 public class CrmCompanyDomainSearchResponseDto {
 
-    private List<CrmCompany> companies;
+	private List<CrmCompanyResponseDto> companies;
 
 }

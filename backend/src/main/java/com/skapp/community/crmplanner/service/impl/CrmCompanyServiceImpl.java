@@ -129,10 +129,16 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	public ResponseEntityDto searchCompaniesByDomain(String domain) {
 		log.info("searchCompaniesByDomain: execution started");
 
+		CrmValidations.validateDomain(domain);
+
 		List<CrmCompany> companies = crmCompanyDao.findCompaniesByWebsiteDomain(domain);
 
+		List<CrmCompanyResponseDto> companyDtos = companies.stream()
+			.map(crmCompanyMapper::crmCompanyToCrmCompanyResponseDto)
+			.toList();
+
 		CrmCompanyDomainSearchResponseDto responseDto = new CrmCompanyDomainSearchResponseDto();
-		responseDto.setCompanies(companies);
+		responseDto.setCompanies(companyDtos);
 
 		log.info("searchCompaniesByDomain: execution ended");
 		return new ResponseEntityDto(false, responseDto);

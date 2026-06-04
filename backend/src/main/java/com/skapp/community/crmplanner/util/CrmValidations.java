@@ -174,4 +174,10 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateDomain(String domain) {
+		if (domain == null || domain.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_REQUIRED);
+		}
+	}
+
 }
