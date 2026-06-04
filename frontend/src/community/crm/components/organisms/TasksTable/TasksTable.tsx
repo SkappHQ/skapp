@@ -36,11 +36,7 @@ const TasksTable = () => {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <Tabs
-        tabs={tabs}
-        activeTabId={activeTab}
-        onTabChange={handleTabChange}
-      />
+      <Tabs tabs={tabs} activeTabId={activeTab} onTabChange={handleTabChange} />
       <div className="flex flex-col gap-4 w-full">
         <div className="flex flex-row gap-4 w-full h-[3rem] items-center pb-2">
           <InputField
