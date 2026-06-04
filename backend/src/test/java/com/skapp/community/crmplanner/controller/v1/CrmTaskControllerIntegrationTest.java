@@ -5,13 +5,21 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
+import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
@@ -64,6 +72,12 @@ class CrmTaskControllerIntegrationTest {
 	private final MessageUtil messageUtil;
 
 	private final CrmContactDao crmContactDao;
+
+	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmDealDao crmDealDao;
+
+	private final CrmDealStageDao crmDealStageDao;
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
@@ -316,6 +330,161 @@ class CrmTaskControllerIntegrationTest {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performCreateRequest(validPayload()).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	// --- Cross-entity association validation tests ---
+
+	@Test
+	@DisplayName("Create task with contact belonging to different company - Returns Bad Request")
+	void createTask_ContactCompanyMismatch_ReturnsBadRequest() throws Exception {
+		CrmCompany companyA = savedCompany("Company A");
+		CrmCompany companyB = savedCompany("Company B");
+
+		CrmContact contactInA = new CrmContact();
+		contactInA.setName("Contact In A");
+		contactInA.setEmail("contact.in.a@example.com");
+		contactInA.setOwner(employeeDao.getReferenceById(1L));
+		contactInA.setCompany(companyA);
+		contactInA = crmContactDao.save(contactInA);
+
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setContactId(contactInA.getId());
+		dto.setCompanyId(companyB.getId());
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH)));
+	}
+
+	@Test
+	@DisplayName("Create task with contact having no company but company specified - Returns Bad Request")
+	void createTask_ContactNoCompanyButCompanySpecified_ReturnsBadRequest() throws Exception {
+		CrmCompany company = savedCompany("Orphan Company");
+
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setContactId(contactId);
+		dto.setCompanyId(company.getId());
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH)));
+	}
+
+	@Test
+	@DisplayName("Create task with deal belonging to different contact - Returns Bad Request")
+	void createTask_DealContactMismatch_ReturnsBadRequest() throws Exception {
+		CrmContact contactA = new CrmContact();
+		contactA.setName("Contact A");
+		contactA.setEmail("contact.a@example.com");
+		contactA.setOwner(employeeDao.getReferenceById(1L));
+		contactA = crmContactDao.save(contactA);
+
+		CrmDeal deal = savedDeal("Deal for A", contactA, null);
+
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setContactId(contactId);
+		dto.setDealId(deal.getId());
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH)));
+	}
+
+	@Test
+	@DisplayName("Create task with deal belonging to different company - Returns Bad Request")
+	void createTask_DealCompanyMismatch_ReturnsBadRequest() throws Exception {
+		CrmCompany companyA = savedCompany("Deal Company A");
+		CrmCompany companyB = savedCompany("Deal Company B");
+
+		CrmContact contact = new CrmContact();
+		contact.setName("Contact For Deal");
+		contact.setEmail("contact.deal@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		contact.setCompany(companyA);
+		contact = crmContactDao.save(contact);
+
+		CrmDeal deal = savedDeal("Deal in A", contact, companyA);
+
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setContactId(contact.getId());
+		dto.setCompanyId(companyB.getId());
+		dto.setDealId(deal.getId());
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Create task with deal having no company but company specified - Returns Bad Request")
+	void createTask_DealNoCompanyButCompanySpecified_ReturnsBadRequest() throws Exception {
+		CrmCompany company = savedCompany("Task Company");
+
+		CrmDeal deal = savedDeal("Deal No Company", crmContactDao.getReferenceById(contactId), null);
+
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setContactId(contactId);
+		dto.setCompanyId(company.getId());
+		dto.setDealId(deal.getId());
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Create task with consistent contact, company and deal - Returns Created")
+	void createTask_ConsistentAssociations_ReturnsCreated() throws Exception {
+		CrmCompany company = savedCompany("Consistent Company");
+
+		CrmContact contact = new CrmContact();
+		contact.setName("Consistent Contact");
+		contact.setEmail("consistent@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		contact.setCompany(company);
+		contact = crmContactDao.save(contact);
+
+		CrmDeal deal = savedDeal("Consistent Deal", contact, company);
+
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setContactId(contact.getId());
+		dto.setCompanyId(company.getId());
+		dto.setDealId(deal.getId());
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contact.getId()));
+	}
+
+	private CrmCompany savedCompany(String name) {
+		CrmCompany company = new CrmCompany();
+		company.setName(name);
+		return crmCompanyDao.save(company);
+	}
+
+	private CrmDeal savedDeal(String name, CrmContact contact, CrmCompany company) {
+		CrmDealStage stage = new CrmDealStage();
+		stage.setName("Open");
+		stage.setColor("#000000");
+		stage.setOrderIndex(1);
+		stage.setStageType(CrmDealStageType.OPEN);
+		stage = crmDealStageDao.save(stage);
+
+		CrmDeal deal = new CrmDeal();
+		deal.setName(name);
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setStage(stage);
+		deal.setContact(contact);
+		deal.setCompany(company);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		return crmDealDao.save(deal);
 	}
 
 }
