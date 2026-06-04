@@ -1,9 +1,22 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { CrmTaskCategory } from "~community/crm/types/CommonTypes";
 
 import { taskEndpoints } from "./utils/ApiEndpoints";
 import { taskQueryKeys } from "./utils/QueryKeys";
+
+const fetchCrmTaskTypes = async (): Promise<CrmTaskCategory[]> => {
+  const response = await authFetch.get(taskEndpoints.GET_TASK_TYPES);
+  return response?.data?.results ?? [];
+};
+
+export const useGetCrmTaskTypes = () => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_TASK_TYPES,
+    queryFn: fetchCrmTaskTypes
+  });
+};
 
 const updateTaskStatusFn = async ({
   id,
@@ -12,7 +25,7 @@ const updateTaskStatusFn = async ({
   id: number;
   isCompleted: boolean;
 }) => {
-  const response = await authFetch.patch(taskEndpoints.UPDATE_TASK_STATUS(id), {
+  const response = await authFetch.patch(taskEndpoints.UPDATE_TASK(id), {
     isCompleted
   });
   return response.data;
@@ -27,7 +40,7 @@ export const useUpdateTaskCompletion = (
   return useMutation({
     mutationFn: updateTaskStatusFn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.ALL });
+      // TODO: invalidate contact/company/deals detailed view queries and tasks and task by id once those API layers are implemented
       onSuccess();
     },
     onError

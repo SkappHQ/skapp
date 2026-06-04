@@ -26,6 +26,6 @@ export const getDueDateDisplay = (
   return {
     textKey: "dueDateDueOn",
     dateValue: due.toLocaleString({ month: "short", day: "numeric" }),
-    colorClass: "text-gray-600"
+    colorClass: "text-secondary-text"
   };
 };

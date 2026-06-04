@@ -6,8 +6,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTaskCompletion } from "~community/crm/api/TasksApi";
-import SidePanelTaskRow from "~community/crm/components/atoms/SidePanelTaskRow/SidePanelTaskRow";
-import { SidePanelTaskListSkeleton } from "~community/crm/components/atoms/SidePanelTaskRow/SidePanelTaskRowSkeleton";
+import TaskRow from "~community/crm/components/atoms/TaskRow/TaskRow";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
 
 interface Props {
@@ -47,51 +46,48 @@ const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
   const hasTasks = tasks.length > 0;
 
   return (
-    <div>
-      {isLoading && <SidePanelTaskListSkeleton />}
-
+    <>
       {!isLoading && hasTasks && (
-        <div className="border border-gray-200 rounded-[8px] divide-y divide-gray-200 w-full">
-          {tasks.map((task) => (
-            <SidePanelTaskRow
-              key={task.id}
-              task={task}
-              onToggleComplete={handleToggleComplete}
-              onRowClick={() => {
-                // TODO: open task detail side panel
-                // (wire up to CRM store once TaskDetailPanel is implemented)
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      {!isLoading && hasTasks && (
-        <ButtonV2
-          type="button"
-          variant="line"
-          size="sm"
-          icon={<PlusIcon />}
-          iconPosition="end"
-          className="mt-2"
-          onClick={() => {
-            // TODO: open add task modal (wire up to CRM store)
-          }}
-        >
-          {translateText(["addTaskButtonEmptyView"])}
-        </ButtonV2>
+        <>
+          <div className="border border-secondary-accent rounded-[8px] divide-y divide-secondary-accent w-full">
+            {tasks.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                onToggleComplete={handleToggleComplete}
+                onRowClick={() => {
+                  // TODO: open task detail side panel
+                  // (wire up to CRM store once TaskDetailPanel is implemented)
+                }}
+              />
+            ))}
+          </div>
+          <ButtonV2
+            type="button"
+            variant="line"
+            size="sm"
+            icon={<PlusIcon />}
+            iconPosition="end"
+            className="mt-2"
+            onClick={() => {
+              // TODO: open add task modal (wire up to CRM store)
+            }}
+          >
+            {translateText(["addTaskButtonEmptyView"])}
+          </ButtonV2>
+        </>
       )}
 
       {!isLoading && !hasTasks && (
-        <div className="bg-[#f9fafb] flex flex-col gap-[12px] h-[228px] items-center justify-center rounded-[8px] w-full">
+        <div className="bg-secondary-background flex flex-col  h-[228px] items-center justify-center rounded-[8px] w-full">
           <EmptyDataView
-            icon={<SearchIcon width="24" height="24" fill="#71717A" />}
+            icon={<SearchIcon width="24" height="24" />}
             title={translateText(["emptyTitle"])}
             description={translateText(["emptyDescription"])}
             className={{
-              wrapper: "!h-auto !p-0",
-              title: "!leading-[24px] !tracking-[-0.4395px] !text-black",
-              description: "!text-black"
+              wrapper: "h-auto",
+              title: "leading-[24px] tracking-[-0.4395px] text-black",
+              description: "text-black"
             }}
           />
           <ButtonV2
@@ -108,7 +104,7 @@ const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
           </ButtonV2>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

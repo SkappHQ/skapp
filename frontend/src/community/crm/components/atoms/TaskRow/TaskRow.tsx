@@ -16,11 +16,7 @@ interface Props {
   onRowClick?: () => void;
 }
 
-const SidePanelTaskRow: FC<Props> = ({
-  task,
-  onToggleComplete,
-  onRowClick
-}) => {
+const TaskRow: FC<Props> = ({ task, onToggleComplete, onRowClick }) => {
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -129,4 +125,4 @@ const SidePanelTaskRow: FC<Props> = ({
   );
 };
 
-export default SidePanelTaskRow;
+export default TaskRow;

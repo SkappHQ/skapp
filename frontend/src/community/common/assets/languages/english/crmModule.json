@@ -99,8 +99,9 @@
         "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
         "toggleErrorTitle": "Failed to update task",
         "toggleErrorDescription": "Could not update the task status. Please try again.",
-        "checkTaskMarkComplete": "{{name}} as complete",
-        "checkTaskMarkIncomplete": "{{name}} as incomplete",
+        "checkTaskMarkComplete": "Mark {{name}} as complete",
+        "checkTaskMarkIncomplete": "Mark {{name}} as incomplete",
+        "openTaskDetails": "Open Task details Panel for {{name}}",
         "dueDateNoDate": "No due date",
         "dueDateOverdue": "Overdue",
         "dueDateDueOn": "Due on {{date}}"

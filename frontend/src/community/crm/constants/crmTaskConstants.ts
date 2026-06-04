@@ -9,7 +9,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { CrmPriorityType } from "~community/crm/types/CommonTypes";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export interface PriorityConfig {
   IconComponent: FC;
@@ -19,24 +19,27 @@ export interface PriorityConfig {
 const PRIORITY_CONFIG_MAP: Record<string, PriorityConfig> = {
   high: {
     IconComponent: HighPriorityIcon,
-    bgColor:
-      "bg-semantic-red-background [&_path]:fill-[var(--color-semantic-amber-text)]"
+    bgColor: "bg-semantic-red-background"
   },
   medium: {
     IconComponent: MediumPriorityIcon,
-    bgColor: "bg-amber-100 [&_path]:fill-[var(--color-semantic-amber-accent)]"
+    bgColor: "bg-amber-100"
   },
   low: {
     IconComponent: LowPriorityIcon,
-    bgColor:
-      "bg-semantic-green-background [&_path]:fill-[var(--color-semantic-green-text)]"
+    bgColor: "bg-semantic-green-background"
   }
 };
 
-export const getPriorityConfig = (priority: CrmPriorityType): PriorityConfig =>
-  PRIORITY_CONFIG_MAP[priority.name.toLowerCase()] ?? PRIORITY_CONFIG_MAP.low;
-
-// TODO: Task types are dynamic (fetched from the backend API).
+export const getPriorityConfig = (
+  priority: CrmPriorityEnum
+): PriorityConfig => {
+  const name =
+    typeof priority === "object"
+      ? (priority as unknown as { name: string }).name
+      : priority;
+  return PRIORITY_CONFIG_MAP[name.toLowerCase()] ?? PRIORITY_CONFIG_MAP.low;
+};
 
 const TASK_TYPE_ICON_MAP: Record<string, FC> = {
   email: EmailFilledIcon,
@@ -47,19 +50,3 @@ const TASK_TYPE_ICON_MAP: Record<string, FC> = {
 
 export const getTaskTypeIcon = (typeName: string): FC =>
   TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ?? ChecklistVerificationFilledIcon;
-
-export const getTasksPageTabs = (translateText: (keys: string[]) => string) => [
-  { id: "my-tasks", label: translateText(["tabs", "myTasks"]) },
-  { id: "team-tasks", label: translateText(["tabs", "teamTasks"]) },
-  { id: "completed", label: translateText(["tabs", "completed"]) }
-];
-
-// TODO: Replace with data from the task types API endpoint
-export const TASK_TYPES = [
-  { value: "email" as const, label: "Email" },
-  { value: "call" as const, label: "Call" },
-  { value: "meeting" as const, label: "Meeting" },
-  { value: "other" as const, label: "Other" }
-] as const;
-
-export type TaskTypeValue = (typeof TASK_TYPES)[number]["value"];

@@ -62,5 +62,6 @@ export const crmCompanyEndpoints = {
 };
 
 export const taskEndpoints = {
-  UPDATE_TASK_STATUS: (id: number) => `${moduleAPIPath.CRM}/task/${id}/status`
+  GET_TASK_TYPES: `${moduleAPIPath.CRM}/task/type`,
+  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };

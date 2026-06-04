@@ -52,5 +52,5 @@ export const crmCompanyQueryKeys = {
 };
 
 export const taskQueryKeys = {
-  ALL: ["crm-contact-tasks"]
+  GET_TASK_TYPES: ["crm-task-types"]
 };
