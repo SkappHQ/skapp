@@ -46,6 +46,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -240,8 +241,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
 
 		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao.findOpenTaskSummaryByContactIds(contactIds)
-				.stream()
-				.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
+			.stream()
+			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
 
 		List<CrmContactListItemDto> contactDtos = contactPage.getContent()
 			.stream()
@@ -314,8 +315,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setPipelineRevenue(dealMetrics.getPipelineRevenue().toPlainString());
 		dto.setActiveDealsCount(dealMetrics.getActiveDealsCount());
 
-		LocalDateTime now = LocalDateTime.now().toLocalDate().atStartOfDay();
-		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id, now);
+		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id);
 		dto.setOpenTasksCount(taskMetrics.getOpenTasksCount());
 		dto.setOverdueTasksCount(taskMetrics.getOverdueTasksCount());
 
@@ -327,7 +327,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream().map(task -> {
 			CrmTaskDetailResponseDto taskDto = crmMapper.crmTaskToCrmTaskDetailResponseDto(task);
 			taskDto.setIsOverdue(!Boolean.TRUE.equals(task.getIsCompleted()) && task.getDueAt() != null
-					&& task.getDueAt().isBefore(now));
+					&& task.getDueAt().isBefore(LocalDate.now().atStartOfDay()));
 			return taskDto;
 		}).toList();
 		dto.setTasks(taskDtos);

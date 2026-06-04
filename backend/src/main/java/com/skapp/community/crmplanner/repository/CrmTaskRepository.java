@@ -13,6 +13,6 @@ public interface CrmTaskRepository {
 
 	List<CrmTask> findByContactIdWithAssociations(Long contactId);
 
-	CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId, LocalDateTime now);
+	CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId);
 
 }
