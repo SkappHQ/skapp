@@ -60,13 +60,6 @@ export interface EditCompanyPayload extends CrmCompanyCreatePayload {
   id: number;
 }
 
-export interface CrmOwnerType {
-  employeeId: number;
-  firstName: string;
-  lastName: string | null;
-  authPic: string | null;
-}
-
 export interface CrmContactType {
   id: number;
   name: string;

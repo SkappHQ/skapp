@@ -20,10 +20,10 @@ import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyCon
 import { CrmIndustryEnum } from "~community/crm/enums/common";
 import useGetIndustryOptions from "~community/crm/hooks/useGetIndustryOptions";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmCompanyEditFormTypes } from "~community/crm/types/CommonTypes";
+import { CrmCompanyEditFormTypes, EditCompanyPayload } from "~community/crm/types/CommonTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
 
-const EditCompanyModal: React.FC = () => {
+const EditCompanyModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator(
@@ -88,7 +88,7 @@ const EditCompanyModal: React.FC = () => {
   const submitEditCompany = (values: CrmCompanyEditFormTypes) => {
     if (!selectedCompany) return;
 
-    const payload = {
+    const payload : EditCompanyPayload = {
       id: selectedCompany.id,
       name: values.name.trim(),
       industry: values.industry,
@@ -235,4 +235,4 @@ const EditCompanyModal: React.FC = () => {
   );
 };
 
-export default EditCompanyModal;
+export default EditCompanyModalContent;

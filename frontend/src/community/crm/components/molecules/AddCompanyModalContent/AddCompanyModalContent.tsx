@@ -26,7 +26,7 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
 
-const AddCompanyModal: React.FC = () => {
+const AddCompanyModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator(
@@ -230,4 +230,4 @@ const AddCompanyModal: React.FC = () => {
   );
 };
 
-export default AddCompanyModal;
+export default AddCompanyModalContent;

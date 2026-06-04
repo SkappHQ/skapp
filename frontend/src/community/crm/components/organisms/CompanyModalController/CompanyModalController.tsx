@@ -5,8 +5,8 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-import AddCompanyModal from "../../molecules/AddCompanyModal/AddCompanyModal";
-import EditCompanyModal from "../../molecules/EditCompanyModal/EditCompanyModal";
+import AddCompanyModalContent from "../../molecules/AddCompanyModalContent/AddCompanyModalContent";
+import EditCompanyModalContent from "../../molecules/EditCompanyModalContent/EditCompanyModalContent";
 
 const CompanyModalController = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -42,9 +42,9 @@ const CompanyModalController = () => {
   const getModalContent = (): ReactNode => {
     switch (crmModalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
-        return <AddCompanyModal />;
+        return <AddCompanyModalContent />;
       case CrmModalTypes.EDIT_COMPANY_MODAL:
-        return <EditCompanyModal />;
+        return <EditCompanyModalContent />;
       default:
         return null;
     }
