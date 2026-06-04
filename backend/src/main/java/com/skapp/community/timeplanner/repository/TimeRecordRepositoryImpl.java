@@ -443,7 +443,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				selections.add(cb.coalesce(timeRecord.get(TimeRecord_.breakHours), 0.0));
 				selections.add(cb.nullLiteral(String.class));
 
-				addEnterpriseSelections(cb, query, timeRecord, selections);
+				addLocationStatusSelections(cb, query, timeRecord, selections);
 
 				query.multiselect(selections);
 				query.where(predicates.toArray(new Predicate[0]));
@@ -462,8 +462,8 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		return allResults.stream().skip(offset).limit(limit).collect(Collectors.toList());
 	}
 
-	protected void addEnterpriseSelections(CriteriaBuilder cb, CriteriaQuery<Tuple> query, Root<TimeRecord> timeRecord,
-			List<Selection<?>> selections) {
+	protected void addLocationStatusSelections(CriteriaBuilder cb, CriteriaQuery<Tuple> query,
+			Root<TimeRecord> timeRecord, List<Selection<?>> selections) {
 		// No-op in community; enterprise overrides this method
 	}
 
