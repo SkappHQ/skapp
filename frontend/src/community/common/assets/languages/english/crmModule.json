@@ -52,7 +52,6 @@
     },
     "contactToastMessages": {
       "successTitle": "Contact added successfully",
-      "successDescription": "The contact has been created",
       "errorTitle": "Failed to add contact",
       "errorDescription": "Please try again or contact support"
     },

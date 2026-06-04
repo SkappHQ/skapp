@@ -170,13 +170,13 @@ const AddContactModal: React.FC = () => {
       !isOwnerReadonly
     );
 
-  const companyItems: SearchableDropdownItem[] =
+  const companyDropdownItems: SearchableDropdownItem[] =
     companyLookupData?.items?.map((company) => ({
       id: String(company.id),
       content: company.name
     })) ?? [];
 
-  const ownerItems: SearchableDropdownItem[] =
+  const ownerDropdownItems: SearchableDropdownItem[] =
     ownerLookupData?.items?.map((owner) => ({
       id: String(owner.employeeId),
       content: (
@@ -187,12 +187,12 @@ const AddContactModal: React.FC = () => {
       )
     })) ?? [];
 
-  const handleCompanySelect = (item: SearchableDropdownItem) => {
+  const handleCompanySelect = (companyDropDownItem: SearchableDropdownItem) => {
     const company = companyLookupData?.items?.find(
-      (c) => String(c.id) === item.id
+      (company) => String(company.id) === companyDropDownItem.id
     );
-    setFieldValue("companyId", Number(item.id));
-    setSelectedCompanyLabel(company?.name ?? String(item.content));
+    setFieldValue("companyId", Number(companyDropDownItem.id));
+    setSelectedCompanyLabel(company?.name ?? String(companyDropDownItem.content));
     setCompanySearch("");
   };
 
@@ -206,9 +206,9 @@ const AddContactModal: React.FC = () => {
     <p className="px-4 py-2 body2">{message}</p>
   );
 
-  const handleOwnerSelect = (item: SearchableDropdownItem) => {
+  const handleOwnerSelect = (ownerDropDownItem: SearchableDropdownItem) => {
     const owner = ownerLookupData?.items?.find(
-      (owner) => String(owner.employeeId) === item.id
+      (owner) => String(owner.employeeId) === ownerDropDownItem.id
     );
     if (!owner) return;
     setFieldValue("ownerId", owner.employeeId);
@@ -256,7 +256,7 @@ const AddContactModal: React.FC = () => {
           name="company"
           label={translateText(["labels", "company"])}
           placeholder={translateText(["placeholders", "company"])}
-          items={companyItems}
+          items={companyDropdownItems}
           value={companySearch}
           onChange={(e) => setCompanySearch(e.target.value)}
           onSelect={handleCompanySelect}
@@ -335,7 +335,7 @@ const AddContactModal: React.FC = () => {
           name="owner"
           label={translateText(["labels", "owner"])}
           placeholder={translateText(["placeholders", "owner"])}
-          items={ownerItems}
+          items={ownerDropdownItems}
           value={ownerSearch}
           onChange={(e) => setOwnerSearch(e.target.value)}
           onSelect={handleOwnerSelect}
