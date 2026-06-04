@@ -212,13 +212,6 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateIndustry(String industry) {
-		if (industry == null || industry.isBlank()) {
-			return;
-		}
-
-		if (industry.length() > CrmConstants.CHARACTER_MAX_LENGTH) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_TOO_LONG);
 	public static void validateIndustry(CrmIndustry industry) {
 		if (industry == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_INVALID);
