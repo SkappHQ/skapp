@@ -8,6 +8,7 @@ import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -53,7 +54,11 @@ public class PeopleNotificationServiceImpl implements PeopleNotificationService 
 			peopleEmailDynamicFields.setHolidayDate(holiday.getDate().toString());
 			peopleEmailDynamicFields.setHolidayName(holiday.getName());
 
-			List<User> users = userDao.findAllByIsActiveTrue();
+			List<User> users = (holiday.getWorkLocations() == null || holiday.getWorkLocations().isEmpty())
+					? userDao.findAllByIsActiveTrueAndEmployeeRolePmRoleNot(Role.PM_GUEST_EMPLOYEE)
+					: userDao.findAllByIsActiveTrueAndEmployeeWorkLocationInAndEmployeeRolePmRoleNot(
+							holiday.getWorkLocations(), Role.PM_GUEST_EMPLOYEE);
+
 			users.forEach(user -> notificationService.createNotification(user.getEmployee(), holiday.getId().toString(),
 					NotificationType.HOLIDAY, EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED,
 					peopleEmailDynamicFields, NotificationCategory.PEOPLE));
