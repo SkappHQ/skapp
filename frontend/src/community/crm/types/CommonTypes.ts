@@ -81,7 +81,7 @@ export interface CrmCompaniesResponseType {
 }
 
 export interface CrmOwnersResponseType {
-  items: CrmOwnerType[];
+  items: CrmOwner[];
   totalItems: number;
   currentPage: number;
   totalPages: number;
