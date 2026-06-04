@@ -7,6 +7,7 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.TestSkappApplication;
@@ -18,6 +19,9 @@ import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.support.SecurityTestUtils;
 
+import com.skapp.community.crmplanner.model.CrmCompany;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import lombok.RequiredArgsConstructor;
@@ -42,6 +46,7 @@ import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -59,6 +64,8 @@ class CrmCompanyControllerIntegrationTest {
 	private static final String EXISTS_PATH = BASE_PATH + "/exists";
 
 	private static final String DELETE_PATH = BASE_PATH + "/{id}";
+
+	private static final String EDIT_PATH = BASE_PATH + "/{id}";
 
 	private final JsonMapper objectMapper;
 
@@ -103,6 +110,12 @@ class CrmCompanyControllerIntegrationTest {
 
 	private ResultActions performDeleteRequest(Long id) throws Exception {
 		return performRequest(delete(DELETE_PATH, id).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private <T> ResultActions performPatchRequest(Long id, T content) throws Exception {
+		return performRequest(patch(EDIT_PATH, id).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(content))
+			.accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmCompanyCreateDto createValidPayload() {
@@ -261,6 +274,7 @@ class CrmCompanyControllerIntegrationTest {
 		deal.setCompany(crmCompanyDao.getReferenceById(companyId));
 		deal.setContact(contact);
 		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setPriority(CrmDealPriority.MEDIUM);
 		Long dealId = crmDealDao.save(deal).getId();
 
 		performDeleteRequest(companyId).andExpect(status().isOk())
