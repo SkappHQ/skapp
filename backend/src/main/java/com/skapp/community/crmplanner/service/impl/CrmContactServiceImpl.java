@@ -14,6 +14,7 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
@@ -30,6 +31,7 @@ import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.crmplanner.util.CrmOwnerResolver;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
 import java.util.function.Function;
@@ -76,18 +77,20 @@ public class CrmContactServiceImpl implements CrmContactService {
 		log.info("createContact: execution started");
 
 		User currentUser = userService.getCurrentUser();
-		CrmValidations.validateContactName(requestDto.getName());
-		CrmValidations.validateContactEmail(requestDto.getEmail());
-		CrmValidations.validateContactNumber(requestDto.getContactNumber());
-		CrmValidations.validateOwnerId(requestDto.getOwnerId());
-		CrmValidations.validateCompanyId(requestDto.getCompanyId());
+		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
+				requestDto.getOwnerId(), requestDto.getCompanyId());
+
+		String lowercaseEmail = requestDto.getEmail().toLowerCase();
+		if (crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(lowercaseEmail)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
+		}
 
 		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
 		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
-		contact.setName(requestDto.getName().trim());
-		contact.setEmail(requestDto.getEmail().trim().toLowerCase(Locale.ROOT));
+		contact.setName(requestDto.getName());
+		contact.setEmail(lowercaseEmail);
 		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
 		contact.setCompany(company);
 		contact.setOwner(owner);
@@ -95,6 +98,56 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmContact savedContact = crmContactDao.save(contact);
 
 		log.info("createContact: execution ended");
+		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto editContact(Long id, CrmContactEditRequestDto requestDto) {
+		log.info("editContact: execution started");
+
+		User currentUser = userService.getCurrentUser();
+
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		checkEditPermission(contact, currentUser);
+
+		if (requestDto.getName() != null) {
+			CrmValidations.validateContactName(requestDto.getName());
+			contact.setName(requestDto.getName());
+		}
+
+		if (requestDto.getEmail() != null) {
+			CrmValidations.validateContactEmail(requestDto.getEmail());
+			String lowercaseEmail = requestDto.getEmail().toLowerCase();
+			if (!lowercaseEmail.equals(contact.getEmail())
+					&& crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(lowercaseEmail, id)) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
+			}
+			contact.setEmail(lowercaseEmail);
+		}
+
+		if (requestDto.getContactNumber() != null) {
+			CrmValidations.validateContactNumber(requestDto.getContactNumber());
+			contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
+		}
+
+		if (requestDto.getCompanyId() != null) {
+			CrmValidations.validateCompanyId(requestDto.getCompanyId());
+			CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
+			contact.setCompany(company);
+		}
+
+		if (requestDto.getOwnerId() != null) {
+			CrmValidations.validateOwnerId(requestDto.getOwnerId());
+			Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+			contact.setOwner(owner);
+		}
+
+		CrmContact savedContact = crmContactDao.save(contact);
+
+		log.info("editContact: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
 	}
 
@@ -119,6 +172,16 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactOwners: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	private void checkEditPermission(CrmContact contact, User currentUser) {
+		Employee currentEmployee = currentUser.getEmployee();
+		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
+
+		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
+				&& !currentEmployee.getEmployeeId().equals(contact.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
+		}
 	}
 
 	@Override
@@ -225,6 +288,37 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
 
 		return dto;
+	}
+
+	private Employee resolveOwner(Long ownerId, User currentUser) {
+		Employee currentEmployee = currentUser.getEmployee();
+
+		boolean isSuperAdmin = currentEmployee.getEmployeeRole().getIsSuperAdmin();
+		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
+
+		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
+			return currentEmployee;
+		}
+
+		return validateAssignableOwner(ownerId);
+	}
+
+	private Employee validateAssignableOwner(Long ownerId) {
+		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(ownerId);
+
+		if (owner == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+		}
+
+		return owner;
+	}
+
+	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId, Long companyId) {
+		CrmValidations.validateContactName(name);
+		CrmValidations.validateContactEmail(email);
+		CrmValidations.validateContactNumber(contactNumber);
+		CrmValidations.validateOwnerId(ownerId);
+		CrmValidations.validateCompanyId(companyId);
 	}
 
 	private String normalizeNullableText(String value) {

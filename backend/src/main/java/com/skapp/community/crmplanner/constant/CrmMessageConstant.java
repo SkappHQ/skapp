@@ -49,7 +49,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_CONTACT_NUMBER_INVALID("api.error.crm.validation.contact-number"),
 	CRM_ERROR_WEBSITE_INVALID("api.error.crm.validation.website"),
 	CRM_ERROR_ADDRESS_TOO_LONG("api.error.crm.validation.address-length"),
-	CRM_ERROR_INDUSTRY_TOO_LONG("api.error.crm.validation.industry-length"),
+	CRM_ERROR_INDUSTRY_INVALID("api.error.crm.validation.industry-invalid"),
 	CRM_ERROR_COMPANY_EXISTS("api.error.crm.company-name-exists"),
 	CRM_SUCCESS_CONTACT_CREATED("api.success.crm.contact-created"),
 	CRM_SUCCESS_CONTACT_DELETED("api.success.crm.contact-deleted"),

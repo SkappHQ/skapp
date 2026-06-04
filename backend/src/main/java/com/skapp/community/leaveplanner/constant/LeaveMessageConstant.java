@@ -23,6 +23,7 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_CARRY_FORWARD_YEAR_NOT_VALID("api.error.leave.error-carry-forward-year-not-valid"),
 	LEAVE_ERROR_LEAVE_TYPE_IN_BULK_NOT_FOUND("api.error.leave.type-in-bulk-not-found"),
 	USER_IN_BULK_NOT_FOUND("api.error.user-in-bulk-not-found"),
+	LEAVE_ERROR_GUEST_USER_NOT_ALLOWED("api.error.leave.guest-user-not-allowed"),
 	LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID("api.error.leave.start-date-end-date-not-valid"),
 	LEAVE_ERROR_REPORT_YEAR_NOT_VALID("api.error.leave.report-year-not-valid"),
 	LEAVE_ERROR_MUST_INCLUDE_ATTACHMENT("api.error.leave.must-include-attachment"),
