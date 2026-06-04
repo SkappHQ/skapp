@@ -4,6 +4,7 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -163,29 +164,16 @@ class CrmValidationsTest {
 	class ValidateIndustry {
 
 		@Test
-		@DisplayName("Null industry - does not throw")
-		void validateIndustry_Null_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateIndustry(null));
-		}
-
-		@Test
-		@DisplayName("Blank industry - does not throw")
-		void validateIndustry_Blank_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateIndustry(""));
-		}
-
-		@Test
-		@DisplayName("Industry exceeding max length - throws CRM_ERROR_INDUSTRY_TOO_LONG")
-		void validateIndustry_TooLong_ThrowsTooLong() {
-			String tooLong = "A".repeat(CrmConstants.CHARACTER_MAX_LENGTH + 1);
-			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateIndustry(tooLong));
-			assertEquals(CrmMessageConstant.CRM_ERROR_INDUSTRY_TOO_LONG, ex.getMessageKey());
+		@DisplayName("Null industry - throws CRM_ERROR_INDUSTRY_INVALID")
+		void validateIndustry_Null_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateIndustry(null));
+			assertEquals(CrmMessageConstant.CRM_ERROR_INDUSTRY_INVALID, ex.getMessageKey());
 		}
 
 		@Test
 		@DisplayName("Valid industry - does not throw")
 		void validateIndustry_Valid_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateIndustry("Technology"));
+			assertDoesNotThrow(() -> CrmValidations.validateIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA));
 		}
 
 	}

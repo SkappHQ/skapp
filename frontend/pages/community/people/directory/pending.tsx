@@ -54,7 +54,7 @@ const Pending = () => {
           },
           {
             label: translateText(["peoples.title"]),
-            href: ROUTES.PEOPLE.DIRECTORY
+            onClick: () => router.push(ROUTES.PEOPLE.DIRECTORY)
           },
           {
             label: translateText(["breadcrumbs.pendingInvitations"])

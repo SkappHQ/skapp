@@ -198,7 +198,22 @@
     "title": "Deals",
     "addDealBtn": "Add Deal",
     "detailsPageHead": "Deal Details | Skapp",
-    "detailsTitle": "Deal Details"
+    "detailsTitle": "Deal Details",
+    "dealsTable": {
+      "dealColumn": "Deal",
+      "valueColumn": "Value",
+      "stageColumn": "Stage",
+      "contactNameColumn": "Contact Name",
+      "companyNameColumn": "Company Name",
+      "dealOwnerColumn": "Deal Owner",
+      "searchPlaceholder": "Search deals",
+      "clearSearchAriaLabel": "Clear search",
+      "noDealsTitle": "No deals available.",
+      "noDealsDescription": "Add a new deal to get started",
+      "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
+      "noSearchResultsDescription": "Try adjusting your search or filters",
+      "infiniteScrollLoadingMessage": "Loading more deals..."
+    }
   },
   "tasks": {
     "pageHead": "Tasks | Skapp",
