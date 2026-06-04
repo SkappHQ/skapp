@@ -1,5 +1,5 @@
 import { Avatar, CheckTask, PriorityIcon } from "@rootcodelabs/skapp-ui";
-import { FC, KeyboardEvent, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -14,9 +14,15 @@ interface Props {
   onToggleComplete: (id: number, isCompleted: boolean) => Promise<void>;
   // TODO: wire up to CRM store once TaskDetailPanel is implemented
   onRowClick?: () => void;
+  className?: string;
 }
 
-const TaskRow: FC<Props> = ({ task, onToggleComplete, onRowClick }) => {
+const TaskRow: FC<Props> = ({
+  task,
+  onToggleComplete,
+  onRowClick,
+  className = "w-full"
+}) => {
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -26,7 +32,7 @@ const TaskRow: FC<Props> = ({ task, onToggleComplete, onRowClick }) => {
 
   const priorityConfig = getPriorityConfig(task.priority);
   const TaskTypeIcon = getTaskTypeIcon(task.type.name);
-  const PriorityIconComp = priorityConfig.IconComponent;
+  const PriorityIconComp = priorityConfig?.IconComponent;
   const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
 
   const [optimisticCompleted, setOptimisticCompleted] = useState(
@@ -46,28 +52,18 @@ const TaskRow: FC<Props> = ({ task, onToggleComplete, onRowClick }) => {
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.currentTarget !== e.target) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onRowClick?.();
-    }
-  };
-
   return (
     <div
-      role="button"
-      tabIndex={0}
-      className="flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white cursor-pointer hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-inset [&:first-child]:rounded-t-[8px] [&:last-child]:rounded-b-[8px]"
-      aria-label={translateText(["openTaskDetails"], { name: task.name })}
-      onClick={onRowClick}
-      onKeyDown={handleKeyDown}
+      className={`relative flex items-center gap-4 p-3 min-w-0 ${className} min-h-[63px] bg-white hover:bg-gray-50 overflow-hidden`}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-        className="shrink-0  flex items-center justify-center pr-1"
-      >
+      <button
+        type="button"
+        className="absolute inset-0 appearance-none border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-inset"
+        aria-label={translateText(["openTaskDetails"], { name: task.name })}
+        onClick={onRowClick}
+      />
+
+      <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
         <CheckTask
           checked={optimisticCompleted}
           onChange={handleToggleChange}
@@ -82,19 +78,18 @@ const TaskRow: FC<Props> = ({ task, onToggleComplete, onRowClick }) => {
         />
       </div>
 
-      <div className="shrink-0 flex items-center justify-center">
-        <TaskTypeIcon />
+      <div className="relative z-10 shrink-0 flex items-center justify-center">
+        {TaskTypeIcon && <TaskTypeIcon />}
       </div>
 
-      <div className="flex-1 min-w-0">
+      <div className="relative z-10 flex-1 min-w-0">
         <p
-          className={`text-sm text-black  leading-snug truncate ${optimisticCompleted ? "line-through" : ""}`}
+          className={`text-sm text-black leading-snug truncate ${optimisticCompleted ? "line-through" : ""}`}
         >
           {task.name}
         </p>
         <p
-          className={`  
-   text-xs leading-none mt-0.5  ${optimisticCompleted ? "line-through text-secondary-text" : `${dueDateDisplay.colorClass}`} `}
+          className={`text-xs leading-none mt-0.5 ${optimisticCompleted ? "line-through text-secondary-text" : dueDateDisplay.colorClass}`}
         >
           {translateText([dueDateDisplay.textKey], {
             date: dueDateDisplay.dateValue ?? ""
@@ -102,15 +97,13 @@ const TaskRow: FC<Props> = ({ task, onToggleComplete, onRowClick }) => {
         </p>
       </div>
 
-      <div
-        className="flex items-center gap-6 shrink-0"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <PriorityIcon
-          icon={<PriorityIconComp />}
-          bgColor={priorityConfig.bgColor}
-        />
+      <div className="relative z-10 flex items-center gap-6 shrink-0">
+        {priorityConfig && PriorityIconComp && (
+          <PriorityIcon
+            icon={<PriorityIconComp />}
+            bgColor={priorityConfig.bgColor}
+          />
+        )}
         {task.owner && (
           <Avatar
             id={`task-owner-${task.id}`}

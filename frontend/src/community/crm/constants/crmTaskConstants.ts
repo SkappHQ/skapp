@@ -33,12 +33,12 @@ const PRIORITY_CONFIG_MAP: Record<string, PriorityConfig> = {
 
 export const getPriorityConfig = (
   priority: CrmPriorityEnum
-): PriorityConfig => {
+): PriorityConfig | undefined => {
   const name =
     typeof priority === "object"
       ? (priority as unknown as { name: string }).name
       : priority;
-  return PRIORITY_CONFIG_MAP[name.toLowerCase()] ?? PRIORITY_CONFIG_MAP.low;
+  return PRIORITY_CONFIG_MAP[name.toLowerCase()];
 };
 
 const TASK_TYPE_ICON_MAP: Record<string, FC> = {
@@ -48,5 +48,5 @@ const TASK_TYPE_ICON_MAP: Record<string, FC> = {
   other: ChecklistVerificationFilledIcon
 };
 
-export const getTaskTypeIcon = (typeName: string): FC =>
-  TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ?? ChecklistVerificationFilledIcon;
+export const getTaskTypeIcon = (typeName: string): FC | undefined =>
+  TASK_TYPE_ICON_MAP[typeName.toLowerCase()];

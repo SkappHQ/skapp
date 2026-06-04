@@ -24,17 +24,14 @@ const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
 
   const { setToastMessage } = useToast();
 
-  const { mutateAsync: updateCompletion } = useUpdateTaskCompletion(
-    () => {},
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["toggleErrorTitle"]),
-        description: translateText(["toggleErrorDescription"])
-      });
-    }
-  );
+  const { mutateAsync: updateCompletion } = useUpdateTaskCompletion(() => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
+    });
+  });
 
   const handleToggleComplete = async (
     id: number,
@@ -49,7 +46,7 @@ const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
     <>
       {!isLoading && hasTasks && (
         <>
-          <div className="border border-secondary-accent rounded-[8px] divide-y divide-secondary-accent w-full">
+          <div className="border border-secondary-accent rounded-[8px] divide-y divide-secondary-accent w-full overflow-hidden">
             {tasks.map((task) => (
               <TaskRow
                 key={task.id}

@@ -6,9 +6,14 @@ import { CrmTaskCategory } from "~community/crm/types/CommonTypes";
 import { taskEndpoints } from "./utils/ApiEndpoints";
 import { taskQueryKeys } from "./utils/QueryKeys";
 
+interface UpdateTaskStatusPayload {
+  id: number;
+  isCompleted: boolean;
+}
+
 const fetchCrmTaskTypes = async (): Promise<CrmTaskCategory[]> => {
   const response = await authFetch.get(taskEndpoints.GET_TASK_TYPES);
-  return response?.data?.results ?? [];
+  return response?.data?.results?.[0];
 };
 
 export const useGetCrmTaskTypes = () => {
@@ -21,22 +26,16 @@ export const useGetCrmTaskTypes = () => {
 const updateTaskStatusFn = async ({
   id,
   isCompleted
-}: {
-  id: number;
-  isCompleted: boolean;
-}) => {
-  const response = await authFetch.patch(taskEndpoints.UPDATE_TASK(id), {
+}: UpdateTaskStatusPayload): Promise<void> => {
+  await authFetch.patch(taskEndpoints.UPDATE_TASK(id), {
     isCompleted
   });
-  return response.data;
 };
 
 export const useUpdateTaskCompletion = (
-  onSuccess: () => void,
-  onError: (error: Error) => void
+  onError: (error: Error) => void,
+  onSuccess: () => void = () => {}
 ) => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: updateTaskStatusFn,
     onSuccess: () => {
