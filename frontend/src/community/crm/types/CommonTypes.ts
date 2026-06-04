@@ -1,5 +1,6 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum, CrmIndustryEnum} from "../enums/common";
+import { ReactNode } from "react";
 
 export interface CrmOwner {
   employeeId: number;
@@ -169,4 +170,11 @@ export interface CrmDealFilterParams {
   searchKeyword?: string;
   stageId?: number;
   priority?: CrmPriorityEnum;
+}
+
+export interface CrmTaskTab {
+  id: string;
+  label: string;
+  component: ReactNode;
+  position?: number;
 }

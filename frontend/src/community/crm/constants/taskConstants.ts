@@ -1,0 +1,1 @@
+export const TASK_NAME_DEBOUNCE_DELAY = 500;
