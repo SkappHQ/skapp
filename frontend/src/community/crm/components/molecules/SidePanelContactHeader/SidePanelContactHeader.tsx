@@ -16,7 +16,7 @@ const SidePanelContactHeader: FC<Props> = ({ contact, companyHref }) => {
   const company = contact.company;
 
   return (
-    <div className="flex items-center justify-between max-w-[629px] w-full p-[8px]">
+    <div className="flex items-center justify-between max-w-[629px] w-full">
       <SidePanelHeaderInfoItem
         icon={IconName.EMAIL_ICON}
         value={contact.email}
