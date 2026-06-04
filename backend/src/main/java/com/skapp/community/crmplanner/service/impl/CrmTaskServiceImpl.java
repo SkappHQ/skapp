@@ -71,7 +71,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		task.setPriority(
 				requestDto.getPriority() != null ? requestDto.getPriority() : CrmConstants.DEFAULT_TASK_PRIORITY);
 		task.setDueAt(requestDto.getDueAt());
-		task.setNotes(normalizeNullableText(requestDto.getNotes()));
+		task.setNotes(requestDto.getNotes());
 		task.setOwner(owner);
 
 		CrmContact contact = null;
@@ -112,10 +112,6 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		}
 
 		return crmOwnerResolver.resolveOwner(ownerId, currentUser);
-	}
-
-	private String normalizeNullableText(String value) {
-		return value == null || value.isEmpty() ? null : value;
 	}
 
 }

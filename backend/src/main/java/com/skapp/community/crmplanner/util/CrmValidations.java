@@ -211,7 +211,7 @@ public class CrmValidations {
 			return;
 		}
 
-		if (notes.trim().length() > CrmConstants.TASK_NOTES_MAX_LENGTH) {
+		if (notes.length() > CrmConstants.TASK_NOTES_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOTES_TOO_LONG);
 		}
 	}
