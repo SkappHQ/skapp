@@ -219,6 +219,7 @@ public class PeopleServiceImpl implements PeopleService {
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
 			employee = user.getEmployee();
+			employee.setAccountStatus(AccountStatus.PENDING);
 			isGuestConversion = true;
 		}
 
@@ -260,6 +261,7 @@ public class PeopleServiceImpl implements PeopleService {
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
 			employee = user.getEmployee();
+			employee.setAccountStatus(AccountStatus.PENDING);
 			isGuestConversion = true;
 		}
 
@@ -1235,9 +1237,11 @@ public class PeopleServiceImpl implements PeopleService {
 		List<Employee> newEmployees = employeeDao.findByIdentificationNo(identificationNoCheck);
 		EmployeeDataValidationResponseDto employeeDataValidationResponseDto = new EmployeeDataValidationResponseDto();
 		employeeDataValidationResponseDto.setIsWorkEmailExists(newUser.isPresent());
-		employeeDataValidationResponseDto.setIsGuestUser(newUser.map(u -> u.getEmployee() != null
-				&& u.getEmployee().getEmployeeRole() != null
-				&& u.getEmployee().getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE).orElse(false));
+		employeeDataValidationResponseDto.setIsGuestUser(
+				newUser
+					.map(u -> u.getEmployee() != null && u.getEmployee().getEmployeeRole() != null
+							&& u.getEmployee().getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE)
+					.orElse(false));
 		String userDomain = workEmailCheck.substring(workEmailCheck.indexOf("@") + 1);
 		employeeDataValidationResponseDto.setIsGoogleDomain(Validation.ssoTypeMatches(userDomain));
 
