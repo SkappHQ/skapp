@@ -1,5 +1,5 @@
-import * as Yup from "yup";
 import { isAfter, isToday, startOfDay } from "date-fns";
+import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
@@ -25,8 +25,7 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
         function (value) {
           if (!value) return true;
           return (
-            isToday(value) ||
-            isAfter(startOfDay(value), startOfDay(new Date()))
+            isToday(value) || isAfter(startOfDay(value), startOfDay(new Date()))
           );
         }
       )

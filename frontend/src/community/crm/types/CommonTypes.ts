@@ -1,5 +1,11 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum, CrmIndustryEnum} from "../enums/common";
+
+import {
+  CrmDealSortEnum,
+  CrmDealStageEnum,
+  CrmIndustryEnum,
+  CrmPriorityEnum
+} from "../enums/common";
 
 export interface CrmOwner {
   employeeId: number;
