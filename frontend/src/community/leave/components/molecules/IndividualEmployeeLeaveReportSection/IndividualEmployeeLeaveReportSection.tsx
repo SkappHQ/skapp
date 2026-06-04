@@ -9,10 +9,10 @@ import UserLeaveUtilization from "~community/leave/components/molecules/UserLeav
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveType } from "~community/leave/types/CustomLeaveAllocationTypes";
 import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverlay/UpgradeOverlay";
+import useTier from "~enterprise/common/hooks/useTier";
 import leaveTypesMockData from "~enterprise/leave/data/leaveTypesMockData.json";
 
 import styles from "./styles";
-import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   selectedUser: number;
@@ -39,7 +39,7 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
   const [leaveTypesList, setLeaveTypesList] = useState<LeaveType[]>([]);
 
   const { data: leaveTypesData, isLoading: leaveTypeIsLoading } =
-    useGetLeaveTypes(isAtLeastCoreTier);
+    useGetLeaveTypes(isAtLeastCoreTier, undefined, selectedUser);
 
   const leaveTypes = useMemo(() => {
     return isAtLeastCoreTier ? leaveTypesData : leaveTypesMockData;

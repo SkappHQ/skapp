@@ -20,7 +20,6 @@ import {
   leaveQueryKeys,
   leaveTypeQueryKeys
 } from "~community/leave/api/utils/QueryKeys";
-
 import { dashboardQueryKeys } from "~enterprise/common/api/utils/QueryKeys";
 
 import { leaveRequestPreProcessor } from "../actions/LeaveRequestPreprocessor";
@@ -202,11 +201,13 @@ export const useUpdateLeaveRequest = (data: {
 
 export const useGetLeaveTypes = (
   filterByInUse?: boolean,
-  isCarryForward?: boolean
+  isCarryForward?: boolean,
+  employeeId?: number
 ): UseQueryResult<LeaveTypeType[]> => {
   const params = {
     filterByInUse,
-    isCarryForward
+    isCarryForward,
+    employeeId
   };
 
   return useQuery({
