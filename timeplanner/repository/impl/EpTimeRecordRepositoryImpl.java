@@ -30,8 +30,8 @@ public class EpTimeRecordRepositoryImpl extends TimeRecordRepositoryImpl {
 	}
 
 	@Override
-	protected void addEnterpriseSelections(CriteriaBuilder cb, CriteriaQuery<Tuple> query, Root<TimeRecord> timeRecord,
-			List<Selection<?>> selections) {
+	protected void addLocationStatusSelections(CriteriaBuilder cb, CriteriaQuery<Tuple> query,
+			Root<TimeRecord> timeRecord, List<Selection<?>> selections) {
 		selections.add(buildLocationStatusSubquery(cb, query, timeRecord, TimeRecordLocation_.clockInLocationStatus));
 		selections.add(buildLocationStatusSubquery(cb, query, timeRecord, TimeRecordLocation_.clockOutLocationStatus));
 	}

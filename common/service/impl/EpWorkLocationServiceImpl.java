@@ -82,11 +82,14 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 			geofence.setLongitude(workLocationRequestDto.getGeofence().getLongitude());
 			geofence.setRadiusMeters(workLocationRequestDto.getGeofence().getRadiusMeters());
 			workLocationGeofenceDao.save(geofence);
+			clearTimeRecordLocationsForWorkLocation(id);
 		}
 		else {
-			workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
+			workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(existingGeofence -> {
+				clearTimeRecordLocationsForWorkLocation(id);
+				workLocationGeofenceDao.delete(existingGeofence);
+			});
 		}
-		onGeofenceRemovedOrUpdated(id);
 		log.info("EpWorkLocationServiceImpl updateWorkLocation: execution ended");
 		return result;
 	}
@@ -96,7 +99,7 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 	public ResponseEntityDto deleteWorkLocation(Long id) {
 		log.info("EpWorkLocationServiceImpl deleteWorkLocation: execution started");
 		workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(existingGeofence -> {
-			onGeofenceRemovedOrUpdated(id);
+			clearTimeRecordLocationsForWorkLocation(id);
 			workLocationGeofenceDao.delete(existingGeofence);
 		});
 		ResponseEntityDto result = super.deleteWorkLocation(id);
@@ -125,7 +128,7 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 		return response;
 	}
 
-	private void onGeofenceRemovedOrUpdated(Long workLocationId) {
+	private void clearTimeRecordLocationsForWorkLocation(Long workLocationId) {
 		List<Long> employeeIds = employeeDao.findByWorkLocationWorkLocationId(workLocationId)
 			.stream()
 			.map(Employee::getEmployeeId)
@@ -142,7 +145,8 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 
 		if (!timeRecordIds.isEmpty()) {
 			timeRecordLocationDao.deleteAllByTimeRecordTimeRecordIdIn(timeRecordIds);
-			log.info("onGeofenceRemovedOrUpdated: deleted time record location indicators for work location");
+			log.info(
+					"clearTimeRecordLocationsForWorkLocation: deleted time record location indicators for work location");
 		}
 	}
 
