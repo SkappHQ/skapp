@@ -10,6 +10,7 @@ import { useWorkLocationStore } from "~community/configurations/stores/workLocat
 const WorkLocationCreatePage: NextPage = () => {
   const router = useRouter();
   const translateText = useTranslator("configurations", "workLocation");
+  const translateConfigurations = useTranslator("configurations");
   const { isFormDirty, setIsUnsavedModalOpen } = useWorkLocationStore();
 
   const handleBackClick = () => {
@@ -22,6 +23,19 @@ const WorkLocationCreatePage: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateConfigurations(["title"])
+        },
+        {
+          label: translateConfigurations(["tabs.organization"]),
+          onClick: () =>
+            router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`)
+        },
+        {
+          label: translateText(["form.addLocationButton"])
+        }
+      ]}
       pageHead={translateText(["pageHead"])}
       title={translateText(["form.addLocationButton"])}
       isDividerVisible

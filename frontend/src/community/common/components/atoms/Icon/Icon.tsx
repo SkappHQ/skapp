@@ -86,6 +86,7 @@ import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon"
 import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
+import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
 import LockIcon from "~community/common/assets/Icons/LockIcon";
 import MagnifyingGlassIcon from "~community/common/assets/Icons/MagnifyingGlassIcon";
 import MenuIcon from "~community/common/assets/Icons/MenuIcon";
@@ -334,7 +335,8 @@ export const IconMapping: Partial<
   [IconName.SCAN_DOCUMENT_ICON]: ScanDocumentIcon,
   [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon,
   [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
-  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon
+  [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon,
+  [IconName.LOCAL_PHONE_ICON]: LocalPhoneIcon
   // Add more icons here as needed
 };
 

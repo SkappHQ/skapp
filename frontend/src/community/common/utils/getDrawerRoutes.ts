@@ -294,9 +294,7 @@ const getDrawerRoutes = ({
             icon: route?.icon,
             hasSubTree: false,
             notificationCount:
-              notificationSignCount > 0
-                ? notificationSignCount.toString()
-                : undefined
+              notificationSignCount > 0 ? notificationSignCount : undefined
           };
         }
       }
@@ -314,7 +312,7 @@ const getDrawerRoutes = ({
             if (subRoute.id === "2B" && notificationLeaveCount > 0) {
               return {
                 ...subRoute,
-                notificationCount: notificationLeaveCount.toString()
+                notificationCount: notificationLeaveCount
               };
             }
 
@@ -322,15 +320,15 @@ const getDrawerRoutes = ({
             if (subRoute.id === "1B" && notificationTimesheetCount > 0) {
               return {
                 ...subRoute,
-                notificationCount: notificationTimesheetCount.toString()
+                notificationCount: notificationTimesheetCount
               };
             }
 
             // Add notification count to "Inbox" if there are pending documents to sign
-            if (subRoute.id === "4A" && notificationSignCount > 0) {
+            if (subRoute.id === "5A" && notificationSignCount > 0) {
               return {
                 ...subRoute,
-                notificationCount: notificationSignCount.toString()
+                notificationCount: notificationSignCount
               };
             }
 
