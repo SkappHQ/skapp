@@ -8,6 +8,57 @@
     "contactDetailsPanel": {
       "lastUpdated": "Last updated"
     },
+    "editContactModal": {
+      "title": "Edit Contact",
+      "labels": {
+        "name": "Name",
+        "email": "Email",
+        "company": "Company",
+        "contactNumber": "Contact no.",
+        "owner": "Owner"
+      },
+      "placeholders": {
+        "name": "Enter name",
+        "email": "Enter email",
+        "company": "Search company",
+        "contactNumber": "Enter contact no.",
+        "owner": "Search owner"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancelEditContact": "Cancel"
+      },
+      "ariaLabels": {
+        "name": "Contact Name",
+        "email": "Contact Email",
+        "company": "Company",
+        "clearCompany": "Clear Company",
+        "contactNumber": "Contact Number",
+        "owner": "Owner",
+        "clearOwner": "Clear Owner",
+        "save": "Save",
+        "cancelEditContact": "Cancel Edit Contact"
+      },
+      "emptyStates": {
+        "noCompanies": "No companies found",
+        "noOwners": "No owners found"
+      },
+      "validations": {
+        "name": "Name is required",
+        "nameLength": "Name must be less than 50 characters",
+        "email": "Email is required",
+        "invalidEmail": "Please enter a valid email address",
+        "emailExists": "A contact with this email already exists",
+        "characterLength": "Entry must be less than 50 characters",
+        "contactNumber": "Contact number is invalid",
+        "contactNumberLength": "Contact number must be less than 20 characters"
+      }
+    },
+    "editContactToastMessages": {
+      "successTitle": "Contact updated successfully",
+      "errorTitle": "Failed to update contact",
+      "errorDescription": "Please try again or contact support"
+    },
     "table": {
       "clearButtonAriaLabel": "Clear search",
       "search": "Search contact",
