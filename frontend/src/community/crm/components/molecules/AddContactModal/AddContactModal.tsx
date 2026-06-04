@@ -33,18 +33,8 @@ import {
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
+import { toOwnerAvatarProps } from "~community/crm/utils/crmUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
-
-const getOwnerFullName = (owner: CrmOwner): string =>
-  concatStrings([owner.firstName, owner.lastName ?? ""]);
-
-const toOwnerAvatarProps = (owner: CrmOwner) => ({
-  id: String(owner.employeeId),
-  firstName: owner.firstName,
-  lastName: owner.lastName ?? "",
-  src: owner.authPic ?? undefined,
-  size: "sm" as const
-});
 
 const AddContactModal: React.FC = () => {
   const { setToastMessage } = useToast();
@@ -191,8 +181,8 @@ const AddContactModal: React.FC = () => {
       id: String(owner.employeeId),
       content: (
         <AvatarChip
-          avatarProps={toOwnerAvatarProps(owner)}
-          label={getOwnerFullName(owner)}
+          avatarProps={{ ...toOwnerAvatarProps(owner), size: "sm" }}
+          label={concatStrings([owner.firstName, owner.lastName ?? ""])}
         />
       )
     })) ?? [];
@@ -218,7 +208,7 @@ const AddContactModal: React.FC = () => {
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
     const owner = ownerLookupData?.items?.find(
-      (o) => String(o.employeeId) === item.id
+      (owner) => String(owner.employeeId) === item.id
     );
     if (!owner) return;
     setFieldValue("ownerId", owner.employeeId);
@@ -243,7 +233,6 @@ const AddContactModal: React.FC = () => {
         placeholder={translateText(["placeholders", "name"])}
         onChange={handleChange}
         aria-label={translateText(["ariaLabels", "name"])}
-        maxLength={characterLengths.NAME_LENGTH}
         required
         fullWidth
       />
@@ -325,8 +314,11 @@ const AddContactModal: React.FC = () => {
           </span>
           <div className="flex h-[3.125rem] items-center rounded-lg bg-gray-100 px-3">
             <AvatarChip
-              label={getOwnerFullName(selectedOwner)}
-              avatarProps={toOwnerAvatarProps(selectedOwner)}
+              label={concatStrings([
+                selectedOwner.firstName,
+                selectedOwner.lastName ?? ""
+              ])}
+              avatarProps={{ ...toOwnerAvatarProps(selectedOwner), size: "sm" }}
               showActionButton={!isOwnerReadonly}
               onActionClick={isOwnerReadonly ? undefined : handleClearOwner}
               actionIcon={isOwnerReadonly ? undefined : <CloseIcon />}
