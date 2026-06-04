@@ -46,7 +46,7 @@ public class UserRepositoryImpl implements UserRepository {
 		Root<User> userRoot = query.from(User.class);
 
 		Join<User, Employee> employeeJoin = userRoot.join(User_.EMPLOYEE, JoinType.INNER);
-		Join<Employee, EmployeeRole> roleJoin = employeeJoin.join(Employee_.EMPLOYEE_ROLE, JoinType.INNER);
+		Join<Employee, EmployeeRole> roleJoin = employeeJoin.join(Employee_.EMPLOYEE_ROLE, JoinType.LEFT);
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isTrue(userRoot.get(User_.IS_ACTIVE)));

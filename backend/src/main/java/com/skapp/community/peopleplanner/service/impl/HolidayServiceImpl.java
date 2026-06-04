@@ -1,12 +1,15 @@
 package com.skapp.community.peopleplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.OrganizationService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -92,6 +95,8 @@ public class HolidayServiceImpl implements HolidayService {
 
 	private final WorkLocationDao workLocationDao;
 
+	private final UserDao userDao;
+
 	@Override
 	public ResponseEntityDto getAllHolidays(HolidayFilterDto holidayFilterDto) {
 		log.info("getAllHolidays: execution started");
@@ -167,8 +172,15 @@ public class HolidayServiceImpl implements HolidayService {
 
 		List<Holiday> savedHolidays = holidayDao.saveAll(savableHolidays);
 		if (savedHolidays.size() == 1) {
-			peopleEmailService.sendNewHolidayDeclarationEmail(savedHolidays.getFirst());
-			peopleNotificationService.sendNewHolidayDeclarationNotification(savedHolidays.getFirst());
+
+			List<User> users = (savedHolidays.getFirst().getWorkLocations() == null
+					|| savedHolidays.getFirst().getWorkLocations().isEmpty())
+							? userDao.findAllByIsActiveTrueAndEmployeeRolePmRoleNot(Role.PM_GUEST_EMPLOYEE)
+							: userDao.findAllByIsActiveTrueAndEmployeeWorkLocationInAndEmployeeRolePmRoleNot(
+									savedHolidays.getFirst().getWorkLocations(), Role.PM_GUEST_EMPLOYEE);
+
+			peopleEmailService.sendNewHolidayDeclarationEmail(savedHolidays.getFirst(), users);
+			peopleNotificationService.sendNewHolidayDeclarationNotification(savedHolidays.getFirst(), users);
 		}
 
 		HolidayBulkSaveResponseDto responseDto = getHolidayBulkUploadResponseSummaryText(

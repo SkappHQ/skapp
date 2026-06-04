@@ -39,25 +39,17 @@ public class PeopleNotificationServiceImpl implements PeopleNotificationService 
 	private final OrganizationDao organizationDao;
 
 	@NonNull
-	private final UserDao userDao;
-
-	@NonNull
 	private final EmployeeRoleDao employeeRoleDao;
 
 	@Async
 	@Transactional(readOnly = true)
 	@Override
-	public void sendNewHolidayDeclarationNotification(Holiday holiday) {
+	public void sendNewHolidayDeclarationNotification(Holiday holiday, List<User> users) {
 		try {
 			PeopleEmailDynamicFields peopleEmailDynamicFields = new PeopleEmailDynamicFields();
 			peopleEmailDynamicFields.setOrganizationName(getOrganizationName());
 			peopleEmailDynamicFields.setHolidayDate(holiday.getDate().toString());
 			peopleEmailDynamicFields.setHolidayName(holiday.getName());
-
-			List<User> users = (holiday.getWorkLocations() == null || holiday.getWorkLocations().isEmpty())
-					? userDao.findAllByIsActiveTrueAndEmployeeRolePmRoleNot(Role.PM_GUEST_EMPLOYEE)
-					: userDao.findAllByIsActiveTrueAndEmployeeWorkLocationInAndEmployeeRolePmRoleNot(
-							holiday.getWorkLocations(), Role.PM_GUEST_EMPLOYEE);
 
 			users.forEach(user -> notificationService.createNotification(user.getEmployee(), holiday.getId().toString(),
 					NotificationType.HOLIDAY, EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED,

@@ -87,17 +87,13 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 	@Async
 	@Transactional(readOnly = true)
 	@Override
-	public void sendNewHolidayDeclarationEmail(Holiday holiday) {
+	public void sendNewHolidayDeclarationEmail(Holiday holiday, List<User> users) {
 		try {
 			PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
 			emailDynamicFields.setOrganizationName(getOrganizationName());
 			emailDynamicFields.setHolidayDate(holiday.getDate().toString());
 			emailDynamicFields.setHolidayName(holiday.getName());
 
-			List<User> users = (holiday.getWorkLocations() == null || holiday.getWorkLocations().isEmpty())
-					? userDao.findAllByIsActiveTrueAndEmployeeRolePmRoleNot(Role.PM_GUEST_EMPLOYEE)
-					: userDao.findAllByIsActiveTrueAndEmployeeWorkLocationInAndEmployeeRolePmRoleNot(
-							holiday.getWorkLocations(), Role.PM_GUEST_EMPLOYEE);
 			users.forEach(user -> {
 				emailDynamicFields.setEmployeeOrManagerName(
 						user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
