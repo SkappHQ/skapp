@@ -74,23 +74,31 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		task.setNotes(normalizeNullableText(requestDto.getNotes()));
 		task.setOwner(owner);
 
+		CrmContact contact = null;
+		CrmCompany company = null;
+		CrmDeal deal = null;
+
 		if (requestDto.getContactId() != null) {
-			CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
+			contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 			task.setContact(contact);
 		}
 
 		if (requestDto.getCompanyId() != null) {
-			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			task.setCompany(company);
 		}
 
 		if (requestDto.getDealId() != null) {
-			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+			deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			task.setDeal(deal);
 		}
+
+		CrmValidations.validateContactBelongsToCompany(contact, company);
+		CrmValidations.validateDealBelongsToContact(deal, contact);
+		CrmValidations.validateDealBelongsToCompany(deal, company);
 
 		CrmTask savedTask = crmTaskDao.save(task);
 

@@ -56,7 +56,10 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_SUCCESS_CONTACT_UPDATED("api.success.crm.contact-updated"),
 	CRM_SUCCESS_DEAL_CREATED("api.success.crm.deal-created"),
 	CRM_SUCCESS_COMPANY_DELETED("api.success.crm.company-deleted"),
-	CRM_ERROR_COMPANY_ALREADY_DELETED("api.error.crm.company-already-deleted");
+	CRM_ERROR_COMPANY_ALREADY_DELETED("api.error.crm.company-already-deleted"),
+	CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH("api.error.crm.task.contact-company-mismatch"),
+	CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH("api.error.crm.task.deal-contact-mismatch"),
+	CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH("api.error.crm.task.deal-company-mismatch");
 
 	private final String messageKey;
 

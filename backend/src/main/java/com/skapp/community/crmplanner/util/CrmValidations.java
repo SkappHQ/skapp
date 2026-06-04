@@ -5,6 +5,9 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
@@ -215,6 +218,33 @@ public class CrmValidations {
 	public static void validateIndustry(CrmIndustry industry) {
 		if (industry == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_INVALID);
+		}
+	}
+
+	public static void validateContactBelongsToCompany(CrmContact contact, CrmCompany company) {
+		if (contact == null || company == null) {
+			return;
+		}
+		if (contact.getCompany() == null || !contact.getCompany().getId().equals(company.getId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH);
+		}
+	}
+
+	public static void validateDealBelongsToContact(CrmDeal deal, CrmContact contact) {
+		if (deal == null || contact == null) {
+			return;
+		}
+		if (!deal.getContact().getId().equals(contact.getId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH);
+		}
+	}
+
+	public static void validateDealBelongsToCompany(CrmDeal deal, CrmCompany company) {
+		if (deal == null || company == null) {
+			return;
+		}
+		if (deal.getCompany() == null || !deal.getCompany().getId().equals(company.getId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH);
 		}
 	}
 
