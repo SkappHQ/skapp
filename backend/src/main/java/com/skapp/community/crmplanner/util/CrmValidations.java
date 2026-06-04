@@ -16,6 +16,7 @@ import lombok.experimental.UtilityClass;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @UtilityClass
@@ -200,7 +201,7 @@ public class CrmValidations {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_REQUIRED);
 		}
 
-		if (dueAt.isBefore(DateTimeUtils.getCurrentUtcDateTime())) {
+		if (dueAt.isBefore(LocalDate.now().atStartOfDay())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_IN_PAST);
 		}
 	}
