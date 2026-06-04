@@ -27,8 +27,7 @@
       },
       "buttons": {
         "save": "Save",
-        "cancelAddContact": "Cancel",
-        "addCompany": "Add company"
+        "cancelAddContact": "Cancel"
       },
       "ariaLabels": {
         "name": "Name",
@@ -38,7 +37,6 @@
         "owner": "Contact Owner",
         "clearCompany": "Clear selected company",
         "clearOwner": "Clear selected contact owner",
-        "addCompany": "Add company",
         "save": "Save",
         "cancelAddContact": "Cancel Add Contact"
       },
