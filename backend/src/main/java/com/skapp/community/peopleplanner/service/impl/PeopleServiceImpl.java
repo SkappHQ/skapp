@@ -219,6 +219,8 @@ public class PeopleServiceImpl implements PeopleService {
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
 			employee = user.getEmployee();
+			// Reset to PENDING so createUserEntity triggers credential setup and
+			// invitation email
 			employee.setAccountStatus(AccountStatus.PENDING);
 			isGuestConversion = true;
 		}
@@ -234,9 +236,11 @@ public class PeopleServiceImpl implements PeopleService {
 		userDao.save(user);
 
 		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, user));
-		peopleEmailService.sendUserInvitationEmail(user);
 		addNewEmployeeTimeLineRecords(employee, requestDto);
 		if (!isGuestConversion) {
+			// Skip for guest conversion: email is sent via createUserEntity ->
+			// resendInvitationEmail
+			peopleEmailService.sendUserInvitationEmail(user);
 			updateSubscriptionQuantity(1L, true, false);
 		}
 		invalidateUserCache();
@@ -261,6 +265,8 @@ public class PeopleServiceImpl implements PeopleService {
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
 			employee = user.getEmployee();
+			// Reset to PENDING so createUserEntity triggers credential setup and
+			// invitation email
 			employee.setAccountStatus(AccountStatus.PENDING);
 			isGuestConversion = true;
 		}
@@ -273,9 +279,11 @@ public class PeopleServiceImpl implements PeopleService {
 		userDao.save(user);
 
 		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, user));
-		peopleEmailService.sendUserInvitationEmail(user);
 		addNewQuickUploadedEmployeeTimeLineRecords(employee, employeeQuickAddDto);
 		if (!isGuestConversion) {
+			// Skip for guest conversion: email is sent via createUserEntity ->
+			// resendInvitationEmail
+			peopleEmailService.sendUserInvitationEmail(user);
 			updateSubscriptionQuantity(1L, true, false);
 		}
 		invalidateUserCache();
