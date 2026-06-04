@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.payload.response;
 
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,7 +16,7 @@ public class CrmCompanyMetricsResponseDto {
 
 	private String contactNumber;
 
-	private String industry;
+	private CrmIndustry industry;
 
 	private String website;
 

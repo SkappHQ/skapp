@@ -143,4 +143,49 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED), false);
 	}
 
+	@Override
+	@Transactional
+	public ResponseEntityDto editCompany(Long id, CrmCompanyEditDto crmCompany) {
+		log.info("editCompany: execution started");
+
+		CrmValidations.validateCompanyId(id);
+
+		CrmCompany existingCompany = crmCompanyDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+
+		if (crmCompany.getName() != null) {
+			CrmValidations.validateCompanyName(crmCompany.getName());
+			if (!existingCompany.getName().equalsIgnoreCase(crmCompany.getName())
+					&& checkCompanyExists(crmCompany.getName())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
+			}
+			existingCompany.setName(crmCompany.getName());
+		}
+
+		if (crmCompany.getContactNumber() != null) {
+			CrmValidations.validateContactNumber(crmCompany.getContactNumber());
+			existingCompany.setContactNumber(crmCompany.getContactNumber());
+		}
+
+		if (crmCompany.getWebsite() != null) {
+			CrmValidations.validateWebsite(crmCompany.getWebsite());
+			existingCompany.setWebsite(crmCompany.getWebsite());
+		}
+
+		if (crmCompany.getAddress() != null) {
+			CrmValidations.validateAddress(crmCompany.getAddress());
+			existingCompany.setAddress(crmCompany.getAddress());
+		}
+
+		if (crmCompany.getIndustry() != null) {
+			existingCompany.setIndustry(crmCompany.getIndustry());
+		}
+
+		CrmCompany updatedCompany = crmCompanyDao.save(existingCompany);
+		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(updatedCompany);
+
+		log.info("editCompany: execution ended successfully");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
 }

@@ -30,7 +30,8 @@
       "appBar": "App bar",
       "menuIcon": "Expand menu",
       "notifications": "Notifications",
-      "accountDetails": "Account details"
+      "accountDetails": "Account details",
+      "breadcrumb": "Breadcrumb"
     },
     "avatar": {
       "alt": "Employee avatar",

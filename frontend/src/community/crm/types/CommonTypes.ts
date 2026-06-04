@@ -1,4 +1,12 @@
-import { CrmDealStageEnum, CrmIndustryEnum } from "../enums/common";
+import { SortOrderTypes } from "~community/common/types/CommonTypes";
+import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum, CrmIndustryEnum} from "../enums/common";
+
+export interface CrmOwner {
+  employeeId: number;
+  firstName: string;
+  lastName: string | null;
+  authPic: string | null;
+}
 
 export interface CrmCompanyType {
   id: number;
@@ -48,13 +56,6 @@ export interface CrmCompanyCreatePayload {
   contactNumber: string | null;
 }
 
-export interface CrmOwnerType {
-  employeeId: number;
-  firstName: string;
-  lastName: string | null;
-  authPic: string | null;
-}
-
 export interface CrmContactType {
   id: number;
   name: string;
@@ -63,7 +64,7 @@ export interface CrmContactType {
   lastContactAt: string | null;
   lastModifiedDate: string;
   company: CrmCompanyType | null;
-  owner: CrmOwnerType;
+  owner: CrmOwner;
   isDeleted: boolean;
 }
 
@@ -86,7 +87,7 @@ export interface CrmContactMetricsType {
   contactNumber: string | null;
   lastContactAt: string | null;
   company: CompanyLookup | null;
-  owner: CrmOwnerType;
+  owner: CrmOwner;
   closedDealValue: number;
   closedDealCount: number;
   openTaskCount: number;
@@ -104,13 +105,13 @@ export interface CrmDealType {
   id: number;
   name: string;
   stage: CrmDealStageType;
-  priority: CrmPriorityType | null;
+  priority: CrmPriorityEnum | null;
   closingAt: string | null;
   amount: string | null;
   currencyCode: string | null;
   company: CrmCompanyType | null;
   contact: CrmContactType;
-  owner: CrmOwnerType;
+  owner: CrmOwner;
   isDeleted: boolean;
 }
 
@@ -126,11 +127,11 @@ export interface CrmTaskType {
   id: number;
   name: string;
   type: CrmTaskCategory;
-  priority: CrmPriorityType;
+  priority: CrmPriorityEnum;
   isCompleted: boolean;
   dueAt: string | null;
   notes: string | null;
-  owner: CrmOwnerType;
+  owner: CrmOwner;
   contact: CrmContactType | null;
   company: CrmCompanyType | null;
   deal: CrmDealType | null;
@@ -143,10 +144,31 @@ export interface CrmTaskCategory {
   orderIndex: number;
 }
 
-export interface CrmPriorityType {
+export interface CrmDealListItem {
   id: number;
   name: string;
-  orderIndex: number;
+  stageName: string;
+  stageColor: string;
+  amount: string;
+  companyName: string | null;
+  contactName: string;
+  owner: CrmOwner;
+}
+
+export interface CrmDealPaginatedResponse {
+  items: CrmDealListItem[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmDealFilterParams {
+  size: number;
+  sortOrder: SortOrderTypes;
+  sortKey: CrmDealSortEnum;
+  searchKeyword?: string;
+  stageId?: number;
+  priority?: CrmPriorityEnum;
 }
 
 export interface CrmTaskAddFormTypes {
