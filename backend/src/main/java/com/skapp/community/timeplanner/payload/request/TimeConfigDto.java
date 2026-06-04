@@ -1,8 +1,6 @@
 package com.skapp.community.timeplanner.payload.request;
 
 import com.skapp.community.timeplanner.type.TimeBlocks;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,14 +12,13 @@ import java.util.Set;
 @Setter
 public class TimeConfigDto {
 
-	@Valid
 	private Set<DayCapacity> dayCapacities;
 
-	public record TimeBlock(@NotNull TimeBlocks timeBlock, @NotNull Float hours) {
+	public record TimeBlock(TimeBlocks timeBlock, Float hours) {
 	}
 
-	public record DayCapacity(@NotNull DayOfWeek day, @Valid Set<TimeBlock> timeBlocks, @NotNull Float totalHours,
-			@NotNull boolean isWeekStartDay, @NotNull LocalTime time) {
+	public record DayCapacity(DayOfWeek day, Set<TimeBlock> timeBlocks, Float totalHours, boolean isWeekStartDay,
+			LocalTime time) {
 	}
 
 }
