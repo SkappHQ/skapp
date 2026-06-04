@@ -12,11 +12,7 @@ export const getDueDateDisplay = (
 ): DueDateDisplay => {
   if (!dueAt) return { textKey: "dueDateNoDate", colorClass: "text-gray-400" };
 
-  const parsedDue = DateTime.fromISO(dueAt);
-  if (!parsedDue.isValid)
-    return { textKey: "dueDateNoDate", colorClass: "text-gray-400" };
-
-  const due = parsedDue.startOf("day");
+  const due = DateTime.fromISO(dueAt).startOf("day");
   const today = DateTime.now().startOf("day");
 
   if (!isCompleted && due < today) {
@@ -30,6 +26,6 @@ export const getDueDateDisplay = (
   return {
     textKey: "dueDateDueOn",
     dateValue: due.toLocaleString({ month: "short", day: "numeric" }),
-    colorClass: "text-gray-600"
+    colorClass: "text-secondary-text"
   };
 };

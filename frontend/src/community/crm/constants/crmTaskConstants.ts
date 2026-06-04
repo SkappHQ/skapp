@@ -19,22 +19,27 @@ export interface PriorityConfig {
 const PRIORITY_CONFIG_MAP: Record<string, PriorityConfig> = {
   high: {
     IconComponent: HighPriorityIcon,
-    bgColor:
-      "bg-semantic-red-background [&_path]:fill-[var(--color-semantic-amber-text)]"
+    bgColor: "bg-semantic-red-background"
   },
   medium: {
     IconComponent: MediumPriorityIcon,
-    bgColor: "bg-amber-100 [&_path]:fill-[var(--color-semantic-amber-accent)]"
+    bgColor: "bg-amber-100"
   },
   low: {
     IconComponent: LowPriorityIcon,
-    bgColor:
-      "bg-semantic-green-background [&_path]:fill-[var(--color-semantic-green-text)]"
+    bgColor: "bg-semantic-green-background"
   }
 };
 
-export const getPriorityConfig = (priority: CrmPriorityEnum): PriorityConfig =>
-  PRIORITY_CONFIG_MAP[priority.toLowerCase()] ?? PRIORITY_CONFIG_MAP.low;
+export const getPriorityConfig = (
+  priority: CrmPriorityEnum
+): PriorityConfig => {
+  const name =
+    typeof priority === "object"
+      ? (priority as unknown as { name: string }).name
+      : priority;
+  return PRIORITY_CONFIG_MAP[name.toLowerCase()] ?? PRIORITY_CONFIG_MAP.low;
+};
 
 const TASK_TYPE_ICON_MAP: Record<string, FC> = {
   email: EmailFilledIcon,
@@ -45,9 +50,3 @@ const TASK_TYPE_ICON_MAP: Record<string, FC> = {
 
 export const getTaskTypeIcon = (typeName: string): FC =>
   TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ?? ChecklistVerificationFilledIcon;
-
-export const getTasksPageTabs = (translateText: (keys: string[]) => string) => [
-  { id: "my-tasks", label: translateText(["tabs", "myTasks"]) },
-  { id: "team-tasks", label: translateText(["tabs", "teamTasks"]) },
-  { id: "completed", label: translateText(["tabs", "completed"]) }
-];

@@ -16,11 +16,7 @@ interface Props {
   onRowClick?: () => void;
 }
 
-const SidePanelTaskRow: FC<Props> = ({
-  task,
-  onToggleComplete,
-  onRowClick
-}) => {
+const TaskRow: FC<Props> = ({ task, onToggleComplete, onRowClick }) => {
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -36,6 +32,7 @@ const SidePanelTaskRow: FC<Props> = ({
   const [optimisticCompleted, setOptimisticCompleted] = useState(
     task.isCompleted
   );
+
   useEffect(() => {
     setOptimisticCompleted(task.isCompleted);
   }, [task.isCompleted]);
@@ -45,7 +42,6 @@ const SidePanelTaskRow: FC<Props> = ({
     try {
       await onToggleComplete(task.id, checked);
     } catch {
-      // Revert to server state on failure
       setOptimisticCompleted(task.isCompleted);
     }
   };
@@ -60,25 +56,17 @@ const SidePanelTaskRow: FC<Props> = ({
 
   return (
     <div
-      role={onRowClick ? "button" : undefined}
-      tabIndex={onRowClick ? 0 : undefined}
-      className={[
-        "flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white [&:first-child]:rounded-t-[8px] [&:last-child]:rounded-b-[8px]",
-        onRowClick && "cursor-pointer hover:bg-gray-50"
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      aria-label={
-        onRowClick
-          ? translateText(["openTaskDetails"], { name: task.name })
-          : undefined
-      }
+      role="button"
+      tabIndex={0}
+      className="flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white cursor-pointer hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-inset [&:first-child]:rounded-t-[8px] [&:last-child]:rounded-b-[8px]"
+      aria-label={translateText(["openTaskDetails"], { name: task.name })}
       onClick={onRowClick}
-      onKeyDown={onRowClick ? handleKeyDown : undefined}
+      onKeyDown={handleKeyDown}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
+        className="shrink-0  flex items-center justify-center pr-1"
       >
         <CheckTask
           checked={optimisticCompleted}
@@ -100,27 +88,17 @@ const SidePanelTaskRow: FC<Props> = ({
 
       <div className="flex-1 min-w-0">
         <p
-          className={
-            optimisticCompleted
-              ? "text-sm text-black line-through leading-snug truncate"
-              : "text-sm text-black leading-snug truncate"
-          }
+          className={`text-sm text-black  leading-snug truncate ${optimisticCompleted ? "line-through" : ""}`}
         >
           {task.name}
         </p>
         <p
-          className={
-            optimisticCompleted
-              ? "text-xs leading-none mt-0.5 line-through text-gray-600"
-              : `text-xs leading-none mt-0.5 ${dueDateDisplay.colorClass}`
-          }
+          className={`  
+   text-xs leading-none mt-0.5  ${optimisticCompleted ? "line-through text-secondary-text" : `${dueDateDisplay.colorClass}`} `}
         >
-          {translateText(
-            [dueDateDisplay.textKey],
-            dueDateDisplay.dateValue
-              ? { date: dueDateDisplay.dateValue }
-              : undefined
-          )}
+          {translateText([dueDateDisplay.textKey], {
+            date: dueDateDisplay.dateValue ?? ""
+          })}
         </p>
       </div>
 
@@ -132,7 +110,6 @@ const SidePanelTaskRow: FC<Props> = ({
         <PriorityIcon
           icon={<PriorityIconComp />}
           bgColor={priorityConfig.bgColor}
-          className="w-8! h-8!"
         />
         {task.owner && (
           <Avatar
@@ -148,4 +125,4 @@ const SidePanelTaskRow: FC<Props> = ({
   );
 };
 
-export default SidePanelTaskRow;
+export default TaskRow;

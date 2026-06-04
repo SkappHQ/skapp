@@ -14,8 +14,7 @@ const fetchCrmTaskTypes = async (): Promise<CrmTaskCategory[]> => {
 export const useGetCrmTaskTypes = () => {
   return useQuery({
     queryKey: taskQueryKeys.GET_TASK_TYPES,
-    queryFn: fetchCrmTaskTypes,
-    staleTime: Infinity
+    queryFn: fetchCrmTaskTypes
   });
 };
 
@@ -41,8 +40,7 @@ export const useUpdateTaskCompletion = (
   return useMutation({
     mutationFn: updateTaskStatusFn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.ALL });
-      // TODO: also invalidate contact/company detailed view queries once those API layers are implemented
+      // TODO: invalidate contact/company/deals detailed view queries and tasks and task by id once those API layers are implemented
       onSuccess();
     },
     onError
