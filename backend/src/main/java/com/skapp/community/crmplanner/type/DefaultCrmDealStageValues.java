@@ -1,26 +1,34 @@
 package com.skapp.community.crmplanner.type;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum DefaultCrmDealStageValues {
+public class DefaultCrmDealStageValues {
 
-	LEAD("Lead", CrmDealStageColors.SKY, 1, CrmDealStageType.INITIAL),
-	QUALIFIED("Qualified", CrmDealStageColors.APRICOT, 2, CrmDealStageType.OPEN),
-	DEMO_SCHEDULED("Demo Scheduled", CrmDealStageColors.TEAL, 3, CrmDealStageType.OPEN),
-	PROPOSAL_SENT("Proposal Sent", CrmDealStageColors.LAVENDER, 4, CrmDealStageType.OPEN),
-	NEGOTIATION("Negotiation", CrmDealStageColors.SUNSHINE, 3, CrmDealStageType.OPEN),
-	WON("Deal Won", CrmDealStageColors.LIME, 4, CrmDealStageType.WON),
-	LOST("Deal Lost", CrmDealStageColors.ROSEWOOD, 5, CrmDealStageType.LOST);
-
-	private final String name;
+	private final CrmDealStageName stage;
 
 	private final CrmDealStageColors color;
 
 	private final int orderIndex;
 
 	private final CrmDealStageType stageType;
+
+	public static final List<DefaultCrmDealStageValues> DEFAULT_STAGES = List.of(
+			new DefaultCrmDealStageValues(CrmDealStageName.LEAD, CrmDealStageColors.SKY, 1, CrmDealStageType.INITIAL),
+			new DefaultCrmDealStageValues(CrmDealStageName.QUALIFIED, CrmDealStageColors.APRICOT, 2,
+					CrmDealStageType.OPEN),
+			new DefaultCrmDealStageValues(CrmDealStageName.DEMO_SCHEDULED, CrmDealStageColors.TEAL, 3,
+					CrmDealStageType.OPEN),
+			new DefaultCrmDealStageValues(CrmDealStageName.PROPOSAL_SENT, CrmDealStageColors.LAVENDER, 4,
+					CrmDealStageType.OPEN),
+			new DefaultCrmDealStageValues(CrmDealStageName.NEGOTIATION, CrmDealStageColors.SUNSHINE, 5,
+					CrmDealStageType.OPEN),
+			new DefaultCrmDealStageValues(CrmDealStageName.WON, CrmDealStageColors.LIME, 6, CrmDealStageType.WON),
+			new DefaultCrmDealStageValues(CrmDealStageName.LOST, CrmDealStageColors.ROSEWOOD, 7,
+					CrmDealStageType.LOST));
 
 }

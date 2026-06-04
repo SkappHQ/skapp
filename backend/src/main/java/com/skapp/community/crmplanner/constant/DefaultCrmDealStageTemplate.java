@@ -8,18 +8,17 @@ import com.skapp.community.crmplanner.type.DefaultCrmDealStageValues;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class DefaultCrmDealTemplate {
+public class DefaultCrmDealStageTemplate {
 
 	public static List<CrmDealStage> getDefaultStages() {
-		return List.of(stage(DefaultCrmDealStageValues.LEAD), stage(DefaultCrmDealStageValues.QUALIFIED),
-				stage(DefaultCrmDealStageValues.DEMO_SCHEDULED), stage(DefaultCrmDealStageValues.PROPOSAL_SENT),
-				stage(DefaultCrmDealStageValues.NEGOTIATION), stage(DefaultCrmDealStageValues.WON),
-				stage(DefaultCrmDealStageValues.LOST));
+		return DefaultCrmDealStageValues.DEFAULT_STAGES.stream()
+			.map(DefaultCrmDealStageTemplate::toCrmDealStageEntity)
+			.toList();
 	}
 
-	private static CrmDealStage stage(DefaultCrmDealStageValues value) {
+	private static CrmDealStage toCrmDealStageEntity(DefaultCrmDealStageValues value) {
 		CrmDealStage stage = new CrmDealStage();
-		stage.setName(value.getName());
+		stage.setName(value.getStage().getName());
 		stage.setColor(value.getColor().name());
 		stage.setOrderIndex(value.getOrderIndex());
 		stage.setStageType(value.getStageType());

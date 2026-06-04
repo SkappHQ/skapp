@@ -11,13 +11,14 @@ import lombok.experimental.UtilityClass;
 public class DefaultCrmTaskTypeTemplate {
 
 	public static List<CrmTaskType> getDefaultTaskTypes() {
-		return List.of(taskType(DefaultCrmTaskTypeValues.CALL), taskType(DefaultCrmTaskTypeValues.EMAIL),
-				taskType(DefaultCrmTaskTypeValues.MEETING), taskType(DefaultCrmTaskTypeValues.OTHER));
+		return DefaultCrmTaskTypeValues.DEFAULT_TASK_TYPES.stream()
+			.map(DefaultCrmTaskTypeTemplate::toCrmTaskTypeEntity)
+			.toList();
 	}
 
-	private static CrmTaskType taskType(DefaultCrmTaskTypeValues value) {
+	private static CrmTaskType toCrmTaskTypeEntity(DefaultCrmTaskTypeValues value) {
 		CrmTaskType taskType = new CrmTaskType();
-		taskType.setName(value.getName());
+		taskType.setName(value.getName().getDisplayName());
 		taskType.setOrderIndex(value.getOrderIndex());
 		return taskType;
 	}

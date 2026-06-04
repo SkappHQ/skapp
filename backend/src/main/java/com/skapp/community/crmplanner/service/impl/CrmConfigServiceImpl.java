@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.service.impl;
 
-import com.skapp.community.crmplanner.constant.DefaultCrmDealTemplate;
+import com.skapp.community.crmplanner.constant.DefaultCrmDealStageTemplate;
 import com.skapp.community.crmplanner.constant.DefaultCrmTaskTypeTemplate;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
@@ -31,7 +31,7 @@ public class CrmConfigServiceImpl implements CrmConfigService {
 	private void setDefaultCrmDealStages() {
 		log.info("setDefaultCrmDealStages: execution started");
 
-		crmDealStageDao.saveAll(DefaultCrmDealTemplate.getDefaultStages());
+		crmDealStageDao.saveAll(DefaultCrmDealStageTemplate.getDefaultStages());
 
 		log.info("setDefaultCrmDealStages: execution ended");
 	}
