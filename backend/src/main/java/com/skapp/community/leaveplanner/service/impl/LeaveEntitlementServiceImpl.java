@@ -13,6 +13,7 @@ import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.BulkItemStatus;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -207,6 +208,10 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		Optional<Employee> optionalEmployee = employeeDao.findById(leaveEntitlementsDto.getEmployeeId());
 		if (optionalEmployee.isEmpty()) {
 			throw new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		if (CommonModuleUtils.isGuestEmployee(optionalEmployee.get())) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED);
 		}
 
 		List<Long> leaveTypeIds = leaveEntitlementsDto.getEntitlementList()
@@ -514,6 +519,10 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		Optional<Employee> employeeOpt = employeeDao.findById(customLeaveEntitlementDto.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			throw new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		if (CommonModuleUtils.isGuestEmployee(employeeOpt.get())) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED);
 		}
 
 		Optional<LeaveType> leaveTypeOpt = leaveTypeDao.findById(customLeaveEntitlementDto.getTypeId());
@@ -999,6 +1008,10 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		if (userByEmailOpt.isEmpty()) {
 			errors.add(messageUtil.getMessage(LeaveMessageConstant.USER_IN_BULK_NOT_FOUND,
 					new String[] { entitlementDetailsDto.getEmail() }));
+		}
+
+		else if (CommonModuleUtils.isGuestEmployee(userByEmailOpt.get().getEmployee())) {
+			errors.add(messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED));
 		}
 
 		if (!errors.isEmpty()) {
