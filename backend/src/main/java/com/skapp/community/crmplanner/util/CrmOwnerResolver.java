@@ -6,7 +6,6 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,10 +19,9 @@ public class CrmOwnerResolver {
 	public Employee resolveOwner(Long ownerId, User currentUser) {
 		Employee currentEmployee = currentUser.getEmployee();
 
-		boolean isSuperAdmin = currentEmployee.getEmployeeRole().getIsSuperAdmin();
 		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
 
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
+		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE) {
 			return currentEmployee;
 		}
 
@@ -33,8 +31,8 @@ public class CrmOwnerResolver {
 	private Employee validateAssignableOwner(Long ownerId) {
 		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(ownerId);
 
-		if (owner == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+		if (owner == null || !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(owner.getEmployeeRole().getCrmRole())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE);
 		}
 
 		return owner;
