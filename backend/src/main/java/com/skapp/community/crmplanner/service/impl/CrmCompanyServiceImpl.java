@@ -179,7 +179,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		}
 
 		if (crmCompany.getIndustry() != null) {
-			CrmValidations.validateIndustry(crmCompany.getIndustry());
 			existingCompany.setIndustry(crmCompany.getIndustry());
 		}
 
