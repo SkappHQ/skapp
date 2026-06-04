@@ -152,11 +152,15 @@ const AddContactModal: React.FC = () => {
 
   const hasSetDefaultOwnerAsCurrentUser = useRef(false);
 
+  // Remembers the last owner that was set, so an accidental clear can be undone
+  const lastSelectedOwnerRef = useRef<CrmOwner | null>(null);
+
   useEffect(() => {
     if (currentUserAsOwner && !hasSetDefaultOwnerAsCurrentUser.current) {
       hasSetDefaultOwnerAsCurrentUser.current = true;
       setSelectedOwner(currentUserAsOwner);
       setFieldValue("ownerId", currentUserAsOwner.employeeId);
+      lastSelectedOwnerRef.current = currentUserAsOwner;
     }
   }, [currentUserAsOwner, setFieldValue]);
 
@@ -213,12 +217,20 @@ const AddContactModal: React.FC = () => {
     if (!owner) return;
     setFieldValue("ownerId", owner.employeeId);
     setSelectedOwner(owner);
+    lastSelectedOwnerRef.current = owner;
     setOwnerSearch("");
   };
 
   const handleClearOwner = () => {
     setFieldValue("ownerId", null);
     setSelectedOwner(null);
+    setOwnerSearch("");
+  };
+
+  const restoreLastOwnerIfEmpty = () => {
+    if (selectedOwner || !lastSelectedOwnerRef.current) return;
+    setSelectedOwner(lastSelectedOwnerRef.current);
+    setFieldValue("ownerId", lastSelectedOwnerRef.current.employeeId);
     setOwnerSearch("");
   };
 
@@ -339,7 +351,10 @@ const AddContactModal: React.FC = () => {
           value={ownerSearch}
           onChange={(e) => setOwnerSearch(e.target.value)}
           onSelect={handleOwnerSelect}
-          onClose={() => setOwnerSearch("")}
+          onClose={() => {
+            setOwnerSearch("");
+            restoreLastOwnerIfEmpty();
+          }}
           emptyMessage={
             isOwnerFetching
               ? undefined
