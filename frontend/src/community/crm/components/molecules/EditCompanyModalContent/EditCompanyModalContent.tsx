@@ -20,7 +20,10 @@ import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyCon
 import { CrmIndustryEnum } from "~community/crm/enums/common";
 import useGetIndustryOptions from "~community/crm/hooks/useGetIndustryOptions";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmCompanyEditFormTypes, EditCompanyPayload } from "~community/crm/types/CommonTypes";
+import {
+  CrmCompanyEditFormTypes,
+  EditCompanyPayload
+} from "~community/crm/types/CommonTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
 
 const EditCompanyModalContent: React.FC = () => {
@@ -88,7 +91,7 @@ const EditCompanyModalContent: React.FC = () => {
   const submitEditCompany = (values: CrmCompanyEditFormTypes) => {
     if (!selectedCompany) return;
 
-    const payload : EditCompanyPayload = {
+    const payload: EditCompanyPayload = {
       id: selectedCompany.id,
       name: values.name.trim(),
       industry: values.industry,
@@ -118,27 +121,32 @@ const EditCompanyModalContent: React.FC = () => {
     submitForm
   } = formik;
 
-  const isNameUnchanged = values.name.trim() === selectedCompany?.name?.trim();
-
   const debouncedCompanyName = useDebounce(
     values.name.trim(),
     COMPANY_NAME_DEBOUNCE_DELAY
   );
 
-  const { data: companyNameData } = useCheckCompanyNameExists(
+  const { data: checkedCompanyName } = useCheckCompanyNameExists(
     debouncedCompanyName,
     debouncedCompanyName.length > 0 &&
       debouncedCompanyName !== selectedCompany?.name?.trim()
   );
 
+  const isNameUnchanged = values.name.trim() === selectedCompany?.name?.trim();
+
+  const hasNameConflict =
+    !isNameUnchanged && checkedCompanyName?.isExists === true;
+
+  const nameError = hasNameConflict
+    ? translateText(["validations", "companyExists"])
+    : errors.name;
+
+  const isSubmitDisabled =
+    !selectedCompany || isSubmitting || isPending || hasNameConflict;
+
   const handleIndustryChange = (value: string) => {
     formik.setFieldValue("industry", value);
   };
-
-  const nameError =
-    !isNameUnchanged && companyNameData?.isExists
-      ? translateText(["validations", "companyExists"])
-      : errors.name;
 
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
@@ -219,13 +227,8 @@ const EditCompanyModalContent: React.FC = () => {
         <ButtonV2
           variant="primary"
           type="button"
-          onClick={() => submitForm()}
-          disabled={
-            !selectedCompany ||
-            isSubmitting ||
-            isPending ||
-            (!isNameUnchanged && companyNameData?.isExists === true)
-          }
+          onClick={submitForm}
+          disabled={isSubmitDisabled}
           aria-label={translateText(["ariaLabels", "save"])}
         >
           {translateText(["buttons", "save"])}
