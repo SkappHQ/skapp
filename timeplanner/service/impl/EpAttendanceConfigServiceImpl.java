@@ -1,7 +1,6 @@
 package com.skapp.enterprise.timeplanner.service.impl;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.timeplanner.model.AttendanceConfig;
