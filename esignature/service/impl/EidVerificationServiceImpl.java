@@ -366,7 +366,11 @@ public class EidVerificationServiceImpl implements EidVerificationService {
 
 	private boolean isSessionActive(EidVerificationSession session) {
 		EidVerificationStatus status = session.getStatus();
-		return status == EidVerificationStatus.PENDING || status == EidVerificationStatus.USER_ACTION_REQUIRED;
+		boolean hasActiveStatus = status == EidVerificationStatus.PENDING
+				|| status == EidVerificationStatus.USER_ACTION_REQUIRED;
+		boolean withinOverallLimit = session.getOverallExpiresAt() == null
+				|| !Instant.now().isAfter(session.getOverallExpiresAt());
+		return hasActiveStatus && withinOverallLimit;
 	}
 
 	private boolean isSessionRenewable(EidVerificationSession session) {

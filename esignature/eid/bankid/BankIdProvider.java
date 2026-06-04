@@ -2,6 +2,7 @@ package com.skapp.enterprise.esignature.eid.bankid;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.enterprise.common.util.HashUtil;
+import com.skapp.enterprise.esignature.constant.EidErrorConstant;
 import com.skapp.enterprise.esignature.constant.EidMessageConstant;
 import com.skapp.enterprise.esignature.constant.EsignConstants;
 import com.skapp.enterprise.esignature.eid.EidProvider;
@@ -195,11 +196,18 @@ public class BankIdProvider implements EidProvider {
 		String orderRef = session.getProviderSessionId();
 		log.debug("BankIdProvider: Checking status for session={}, orderRef={}", session.getSessionUuid(), orderRef);
 
-		// Check if session has expired locally
-		if (session.getExpiresAt() != null && Instant.now().isAfter(session.getExpiresAt())) {
+		// Check if session has expired (overall hard cap or per-order timeout)
+		boolean overallExpired = session.getOverallExpiresAt() != null
+				&& Instant.now().isAfter(session.getOverallExpiresAt());
+		boolean orderExpired = session.getExpiresAt() != null && Instant.now().isAfter(session.getExpiresAt())
+				&& session.getStatus() != EidVerificationStatus.USER_ACTION_REQUIRED;
+
+		if (overallExpired || orderExpired) {
+			String errorMessage = overallExpired ? EidErrorConstant.OVERALL_SESSION_EXPIRED.getMessage()
+					: EidErrorConstant.ORDER_TRANSACTION_EXPIRED.getMessage();
 			session.setStatus(EidVerificationStatus.EXPIRED);
 			session.setHintCode(BankIdHintCode.EXPIRED_TRANSACTION.getValue());
-			session.setErrorMessage("The transaction has expired.");
+			session.setErrorMessage(errorMessage);
 			clearTransientData(session);
 			return sessionRepository.save(session);
 		}
@@ -290,7 +298,7 @@ public class BankIdProvider implements EidProvider {
 		BankIdHintCode bankIdHintCode = BankIdHintCode.fromValue(hintCode);
 		if (bankIdHintCode == null) {
 			session.setStatus(EidVerificationStatus.FAILED);
-			session.setErrorMessage("Signing failed: " + hintCode);
+			session.setErrorMessage(EidErrorConstant.SIGNING_FAILED_PREFIX.getMessage() + hintCode);
 			clearTransientData(session);
 			return;
 		}
@@ -298,19 +306,19 @@ public class BankIdProvider implements EidProvider {
 		switch (bankIdHintCode) {
 			case EXPIRED_TRANSACTION -> {
 				session.setStatus(EidVerificationStatus.EXPIRED);
-				session.setErrorMessage("The transaction has expired.");
+				session.setErrorMessage(EidErrorConstant.ORDER_TRANSACTION_EXPIRED.getMessage());
 			}
 			case USER_CANCEL -> {
 				session.setStatus(EidVerificationStatus.CANCELLED);
-				session.setErrorMessage("User cancelled the signing.");
+				session.setErrorMessage(EidErrorConstant.USER_CANCELLED_SIGNING.getMessage());
 			}
 			case CANCELLED -> {
 				session.setStatus(EidVerificationStatus.CANCELLED);
-				session.setErrorMessage("The order was cancelled.");
+				session.setErrorMessage(EidErrorConstant.ORDER_CANCELLED.getMessage());
 			}
 			default -> {
 				session.setStatus(EidVerificationStatus.FAILED);
-				session.setErrorMessage("Signing failed: " + hintCode);
+				session.setErrorMessage(EidErrorConstant.SIGNING_FAILED_PREFIX.getMessage() + hintCode);
 			}
 		}
 
