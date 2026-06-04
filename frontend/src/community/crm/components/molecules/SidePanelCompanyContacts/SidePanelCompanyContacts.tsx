@@ -107,11 +107,11 @@ const SidePanelCompanyContacts: React.FC<{ contacts: CrmSidePanelContactRow[] }>
       <h3 className="h3">{translateText(["title"])}</h3>
       <div className="w-full h-px bg-secondary-accent my-3"></div>
       <Table
-        className="w-full max-h-[17.25rem]"
+        className="w-full"
         columns={columns as TableColumn<any>[]}
         data={contacts ?? []}
         emptyStateType={EmptyStateTypeEnum.NO_DATA}
-        height="auto"
+        height="17.25rem"
         noDataState={{
           icon: <SearchIcon />,
           title: translateText(["noContacts"]),
