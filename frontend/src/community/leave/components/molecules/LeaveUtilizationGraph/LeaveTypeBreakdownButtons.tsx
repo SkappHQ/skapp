@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { Box, type SxProps } from "@mui/system";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { Chip } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useCallback, useState } from "react";
 
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
@@ -12,15 +12,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import { getTabIndex } from "~community/common/utils/keyboardUtils";
 import { SelectedFiltersTypes } from "~community/leave/types/LeaveUtilizationTypes";
-
-const buttonStyles = {
-  borderRadius: "64px",
-  padding: "4px 8px",
-  width: "fit-content",
-  fontSize: "12px",
-  margin: "2px",
-  lineHeight: "16px"
-};
 
 type Props = {
   toggle?: SelectedFiltersTypes;
@@ -75,21 +66,18 @@ const LeaveTypeBreakdownButtons = ({
     (filterTypesArray: SelectedFiltersTypes) => {
       return Object.keys(filterTypesArray).map((filterType) => {
         return (
-          <ButtonV2
-            disabled={isFreeTier}
+          <Chip
             key={filterType}
+            disabled={isFreeTier}
             onClick={() => onClick(filterType)}
-            variant={toggle[filterType] ? "secondary" : "tertiary"}
+            isSelected={toggle[filterType]}
             size={"sm"}
-            icon={
-              !isGraph
-                ? undefined
-                : (colorIndicator(colors[filterType]) ?? undefined)
+            prefixIcon={
+              isGraph ? colorIndicator(colors[filterType]) : undefined
             }
-            iconPosition="start"
-          >
-            {filterType}
-          </ButtonV2>
+            className="m-1"
+            label={filterType}
+          />
         );
       });
     },
