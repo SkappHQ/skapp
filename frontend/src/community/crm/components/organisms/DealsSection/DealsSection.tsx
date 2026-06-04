@@ -1,0 +1,54 @@
+import { FC, useMemo, useState } from "react";
+
+import useDebounce from "~community/common/hooks/useDebounce";
+import { SortOrderTypes } from "~community/common/types/CommonTypes";
+import { useGetDealsInfinite } from "~community/crm/api/crmDealApi";
+import DealsTable from "~community/crm/components/organisms/DealsTable/DealsTable";
+import {
+  DEAL_PAGE_SIZE,
+  DEAL_SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/dealConstants";
+import { CrmDealSortEnum } from "~community/crm/enums/common";
+
+import DealsHeader from "./DealsHeader/DealsHeader";
+
+const DealsSection: FC = () => {
+  const [inputValue, setInputValue] = useState("");
+  const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isFetchingNextPage
+  } = useGetDealsInfinite({
+    size: DEAL_PAGE_SIZE,
+    sortKey: CrmDealSortEnum.STAGE_ORDER,
+    sortOrder: SortOrderTypes.ASC,
+    searchKeyword: debouncedSearch
+  });
+
+  const allDeals = useMemo(() => data?.pages.flatMap((p) => p?.items ?? []), [data]);
+
+  const loadMore = async () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextPage();
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      <DealsHeader inputValue={inputValue} onSearchChange={setInputValue} />
+      <DealsTable
+        searchKeyword={debouncedSearch}
+        isLoading={isLoading}
+        allDeals={allDeals ?? []}
+        hasNextPage={hasNextPage}
+        onLoadMore={loadMore}
+      />
+    </div>
+  );
+};
+
+export default DealsSection;

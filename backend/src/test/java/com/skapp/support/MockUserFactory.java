@@ -123,6 +123,23 @@ public class MockUserFactory {
 		return mockUser;
 	}
 
+	/**
+	 * Creates a leave manager user (not admin, not super admin). Used by Leave Analytics
+	 * manager-scoped tests.
+	 */
+	public static User createLeaveManager(String email, Long userId, Long employeeId) {
+		User mockUser = createBaseUser(email, userId);
+
+		Employee mockEmployee = createBaseEmployee(employeeId);
+		EmployeeRole role = new EmployeeRole();
+		role.setLeaveRole(Role.LEAVE_MANAGER);
+		role.setIsSuperAdmin(false);
+		mockEmployee.setEmployeeRole(role);
+
+		linkUserAndEmployee(mockUser, mockEmployee);
+		return mockUser;
+	}
+
 	private static User createBaseUser(String email, Long userId) {
 		User user = new User();
 		user.setEmail(email);

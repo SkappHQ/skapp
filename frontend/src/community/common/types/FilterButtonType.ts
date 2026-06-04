@@ -20,7 +20,6 @@ export type FilterButtonFilterItemTypes = {
 
 export type SelectedFilters = {
   filter: string[];
-  handleFilterDelete: (filter: string) => void;
 };
 
 export type FilterButtonTypes = {
