@@ -19,12 +19,12 @@ import com.skapp.community.timeplanner.payload.request.TimeConfigDto;
 import com.skapp.community.timeplanner.payload.request.TimeRecordFilterDto;
 import com.skapp.community.timeplanner.payload.request.TimeRequestAvailabilityRequestDto;
 import com.skapp.community.timeplanner.payload.request.TimeRequestManagerPatchDto;
+import com.skapp.community.timeplanner.payload.request.GetTimeConfigDeleteAvailabilityRequestDto;
 import com.skapp.community.timeplanner.payload.request.UpdateIncompleteTimeRecordsRequestDto;
 import com.skapp.community.timeplanner.payload.request.UpdateTimeRequestsFilterDto;
 import com.skapp.community.timeplanner.payload.response.UtilizationPercentageDto;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -80,7 +80,7 @@ public interface TimeService {
 
 	ResponseEntityDto getIndividualWorkUtilizationByManager(Long id);
 
-	ResponseEntityDto getIfTimeConfigRemovable(List<DayOfWeek> days);
+	ResponseEntityDto getIfTimeConfigRemovable(GetTimeConfigDeleteAvailabilityRequestDto requestDto);
 
 	UtilizationPercentageDto calculateWorkTimeUtilization(List<Long> employeeId, List<TimeConfig> timeConfigs,
 			List<LocalDate> holidays);
