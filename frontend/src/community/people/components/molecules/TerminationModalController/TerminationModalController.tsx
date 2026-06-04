@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import SupervisorReassignmentModal from "~community/people/components/organisms/SupervisorReassignmentModal/SupervisorReassignmentModal";
 import { usePeopleStore } from "~community/people/store/store";
-import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
+import { EmployeeRemoveAction } from "~community/people/types/PeopleTypes";
 
 import TerminateConfirmationModal from "../TerminateConfirmationModal/TerminateConfirmationModal";
 
@@ -13,7 +13,7 @@ const TerminationModalController: FC = () => {
     selectedEmployeeId,
     isSupervisorReassignmentModalOpen,
     supervisorReassignmentActionType,
-    setIsSupervisorReassignmentModalOpen,
+    setIsSupervisorReassignmentModalOpen
   } = usePeopleStore((state) => state);
 
   return (
@@ -21,12 +21,11 @@ const TerminationModalController: FC = () => {
       <SupervisorReassignmentModal
         isOpen={
           isSupervisorReassignmentModalOpen &&
-          supervisorReassignmentActionType ===
-            SupervisorReassignmentActionType.TERMINATE
+          supervisorReassignmentActionType === EmployeeRemoveAction.TERMINATE
         }
         onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
         employeeId={Number(selectedEmployeeId)}
-        actionType={SupervisorReassignmentActionType.TERMINATE}
+        actionType={EmployeeRemoveAction.TERMINATE}
         onActionSuccess={() => setIsSupervisorReassignmentModalOpen(false)}
       />
       <TerminateConfirmationModal

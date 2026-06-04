@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
 import { NextPage } from "next";
 import { useEffect } from "react";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -13,7 +13,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Directory: NextPage = () => {
-  const translateText = useTranslator("peopleModule", "peoples");
+  const translateText = useTranslator("peopleModule");
   const { user } = useAuth();
 
   const isAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
@@ -39,11 +39,21 @@ const Directory: NextPage = () => {
   return (
     <>
       <ContentLayout
-        pageHead={translateText(["pageHead"])}
-        title={translateText(["title"])}
-        primaryButtonText={isAdmin ? translateText(["addPeople"]) : undefined}
+        breadcrumbs={[
+          {
+            label: translateText(["dashboard.people"])
+          },
+          {
+            label: translateText(["peoples.title"])
+          }
+        ]}
+        pageHead={translateText(["peoples.pageHead"])}
+        title={translateText(["peoples.title"])}
+        primaryButtonText={
+          isAdmin ? translateText(["peoples.addPeople"]) : undefined
+        }
         secondaryBtnText={
-          isAdmin ? translateText(["addBulkPeople"]) : undefined
+          isAdmin ? translateText(["peoples.addBulkPeople"]) : undefined
         }
         secondaryBtnIconName={IconName.UP_ARROW_ICON}
         onPrimaryButtonClick={() => {

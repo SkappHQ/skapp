@@ -321,7 +321,7 @@ const Drawer = (): JSX.Element => {
                           />
                           <NotificationDot
                             show={
-                              route.id === "4" &&
+                              route.id === "5" &&
                               notificationSignCount > 0 &&
                               ((hasSubTree && !isExpanded) ||
                                 (!hasSubTree && !isDrawerExpanded))
@@ -392,7 +392,7 @@ const Drawer = (): JSX.Element => {
                           if (!subTreeRoute) return null;
                           const subRoute =
                             subTreeRoute as typeof subTreeRoute & {
-                              notificationCount?: string;
+                              notificationCount?: number;
                             };
 
                           return (

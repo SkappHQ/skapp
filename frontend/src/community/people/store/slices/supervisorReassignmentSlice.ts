@@ -1,28 +1,24 @@
 import { SetType } from "~community/common/types/storeTypes";
-import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
+import { EmployeeRemoveAction } from "~community/people/types/PeopleTypes";
 
 interface SupervisorReassignmentSliceType {
   isSupervisorReassignmentModalOpen: boolean;
-  supervisorReassignmentActionType: SupervisorReassignmentActionType;
+  supervisorReassignmentActionType: EmployeeRemoveAction;
   setIsSupervisorReassignmentModalOpen: (value: boolean) => void;
-  setSupervisorReassignmentActionType: (
-    value: SupervisorReassignmentActionType
-  ) => void;
+  setSupervisorReassignmentActionType: (value: EmployeeRemoveAction) => void;
 }
 
 export const supervisorReassignmentSlice = (
   set: SetType<SupervisorReassignmentSliceType>
 ): SupervisorReassignmentSliceType => ({
   isSupervisorReassignmentModalOpen: false,
-  supervisorReassignmentActionType: SupervisorReassignmentActionType.TERMINATE,
+  supervisorReassignmentActionType: EmployeeRemoveAction.TERMINATE,
   setIsSupervisorReassignmentModalOpen: (value: boolean) =>
     set((state) => ({
       ...state,
       isSupervisorReassignmentModalOpen: value
     })),
-  setSupervisorReassignmentActionType: (
-    value: SupervisorReassignmentActionType
-  ) =>
+  setSupervisorReassignmentActionType: (value: EmployeeRemoveAction) =>
     set((state) => ({
       ...state,
       supervisorReassignmentActionType: value

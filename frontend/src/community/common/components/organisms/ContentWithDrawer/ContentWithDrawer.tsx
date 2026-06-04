@@ -2,9 +2,11 @@ import { Stack } from "@mui/material";
 import { ReactNode } from "react";
 
 import TimeWidgetPopupController from "~community/attendance/components/organisms/TimeWidgetPopupController/TimeWidgetPopupController";
+import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import AppBar from "~community/common/components/organisms/AppBar/AppBar";
 import Drawer from "~community/common/components/organisms/Drawer/Drawer";
+import useRouteLoading from "~community/common/hooks/useRouteLoading";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   initialState,
@@ -24,6 +26,7 @@ const ContentWithDrawer = ({ children }: Props) => {
 
   const { toastMessage, setToastMessage } = useToast();
   const translateAria = useTranslator("commonAria", "contentWithDrawer");
+  const loading = useRouteLoading();
 
   return (
     <>
@@ -32,23 +35,27 @@ const ContentWithDrawer = ({ children }: Props) => {
         <Stack sx={classes.contentWrapper}>
           <AppBar />
           <main
+            aria-busy={loading}
             style={{
               display: "flex",
               flexDirection: "column",
               width: "100%",
-              height: "100%",
-              overflowX: "hidden"
+              flex: 1,
+              overflowX: "hidden",
+              position: "relative"
             }}
           >
+            {loading && <FullScreenLoader fullPage={false} />}
             <Stack
               id="content-with-drawer-main-content"
-              tabIndex={0}
+              tabIndex={loading ? -1 : 0}
               role="document"
               aria-label={translateAria(["contentAreaWithDrawer"])}
+              {...(loading && { inert: "" })}
               style={{
                 flexDirection: "column",
                 width: "100%",
-                height: "100%",
+                flex: 1,
                 overflowX: "hidden"
               }}
             >
@@ -67,8 +74,8 @@ const ContentWithDrawer = ({ children }: Props) => {
         handleToastClick={toastMessage.handleToastClick}
         isIcon={toastMessage.isIcon}
         onClose={() => {
-            setToastMessage((state) => ({ ...state, open: false }));
-          }}
+          setToastMessage((state) => ({ ...state, open: false }));
+        }}
       />
       <TimeWidgetPopupController />
       <MyRequestModalController />

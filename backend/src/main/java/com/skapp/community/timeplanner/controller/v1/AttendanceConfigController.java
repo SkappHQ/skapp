@@ -29,16 +29,16 @@ public class AttendanceConfigController {
 	@PatchMapping
 	public ResponseEntity<ResponseEntityDto> updateAttendanceConfig(
 			@RequestBody AttendanceConfigRequestDto updateRequestDto) {
-		ResponseEntityDto responseDto = attendanceConfigService.updateAttendanceConfig(updateRequestDto);
-		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+		ResponseEntityDto response = attendanceConfigService.updateAttendanceConfig(updateRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Get All Attendance Configs", description = "This endpoint used to get all attendance configs")
 	@PreAuthorize("hasAnyRole('ATTENDANCE_EMPLOYEE')")
 	@GetMapping
 	public ResponseEntity<ResponseEntityDto> getAllAttendanceConfigs() {
-		ResponseEntityDto responseDto = attendanceConfigService.getAllAttendanceConfigs();
-		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+		ResponseEntityDto response = attendanceConfigService.getAllAttendanceConfigs();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

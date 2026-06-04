@@ -7,9 +7,11 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CrmContactDao extends JpaRepository<CrmContact, Long> {
+public interface CrmContactDao extends JpaRepository<CrmContact, Long>, CrmContactRepository {
 
 	boolean existsByEmailIgnoreCaseAndIsDeletedFalse(String email);
+
+	boolean existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(String email, Long id);
 
 	Optional<CrmContact> findByIdAndIsDeletedFalse(Long id);
 

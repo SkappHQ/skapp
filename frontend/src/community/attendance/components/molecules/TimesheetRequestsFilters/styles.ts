@@ -11,16 +11,6 @@ const styles = (theme: Theme) => ({
   },
   fontStyles: {
     pr: "1rem"
-  },
-  iconButtonStyles: {
-    border: "0.0625rem solid",
-    borderColor: "grey.500",
-    bgcolor: theme.palette.grey[100],
-    p: "0.625rem 1.25rem",
-    transition: "0.2s ease",
-    "&:hover": {
-      boxShadow: `inset 0 0 0 0.125rem ${theme.palette.grey[500]}`
-    }
   }
 });
 
