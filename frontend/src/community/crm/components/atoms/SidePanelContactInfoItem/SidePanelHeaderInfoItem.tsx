@@ -22,12 +22,7 @@ const renderIcon = (icon: IconName | ReactElement) =>
     icon
   );
 
-const SidePanelContactInfoItem: FC<Props> = ({
-  icon,
-  value,
-  endIcon,
-  href
-}) => {
+const SidePanelHeaderInfoItem: FC<Props> = ({ icon, value, endIcon, href }) => {
   const isInteractive = !!href && !!value;
 
   return (
@@ -53,13 +48,7 @@ const SidePanelContactInfoItem: FC<Props> = ({
           )}
         </a>
       ) : (
-        <span
-          className={
-            value
-              ? "body2 leading-6 tracking-[0.5px] text-black"
-              : "body2 leading-6 tracking-[0.5px] text-primary-text"
-          }
-        >
+        <span className="body2 leading-6 tracking-[0.5px] text-black">
           {value ?? "—"}
         </span>
       )}
@@ -67,4 +56,4 @@ const SidePanelContactInfoItem: FC<Props> = ({
   );
 };
 
-export default SidePanelContactInfoItem;
+export default SidePanelHeaderInfoItem;

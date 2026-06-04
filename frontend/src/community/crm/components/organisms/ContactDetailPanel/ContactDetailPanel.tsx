@@ -112,7 +112,6 @@ const ContactDetailPanel: FC = () => {
           <div className="flex flex-col  pb-4 gap-[16px]">
             <SidePanelContactHeader
               contact={contact ?? undefined}
-              isLoading={isContactLoading}
               companyHref={
                 contact?.company
                   ? `/crm/companies/${contact.company.id}`
