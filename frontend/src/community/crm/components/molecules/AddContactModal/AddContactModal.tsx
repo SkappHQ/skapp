@@ -60,6 +60,7 @@ const AddContactModal: React.FC = () => {
   const { isCrmSalesManager } = useSessionData();
   const { data: currentUser } = useGetUserPersonalDetails();
 
+  // If the user has Sales Manager Role, they should not be able to edit the owner field.
   const isOwnerReadonly = !isCrmSalesManager;
 
   const [ownerSearch, setOwnerSearch] = useState("");
@@ -88,7 +89,6 @@ const AddContactModal: React.FC = () => {
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateToasts(["successTitle"]),
-      description: translateToasts(["successDescription"])
     });
   };
 
