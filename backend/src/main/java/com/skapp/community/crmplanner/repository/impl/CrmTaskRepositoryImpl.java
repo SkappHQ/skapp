@@ -30,7 +30,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds, LocalDateTime now) {
+	public List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds) {
 		if (contactIds == null || contactIds.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -39,24 +39,17 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		CriteriaQuery<CrmTaskSummary> query = cb.createQuery(CrmTaskSummary.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
-		Join<CrmTask, CrmContact> directContact = task.join(CrmTask_.contact, JoinType.LEFT);
-		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
-		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
-
-		Expression<Long> effectiveContactId = cb.coalesce(directContact.get(CrmContact_.id),
-				dealContact.get(CrmContact_.id));
-
-		query.select(cb.construct(CrmTaskSummary.class, effectiveContactId, cb.countDistinct(task.get(CrmTask_.id)),
+		query.select(cb.construct(CrmTaskSummary.class, task.get(CrmTask_.contact).get(CrmContact_.id),
+				cb.count(task.get(CrmTask_.id)),
 				cb.sum(cb.<Long>selectCase()
 					.when(cb.and(cb.isNotNull(task.get(CrmTask_.dueAt)),
-							cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(now))), 1L)
+							cb.lessThan(task.get(CrmTask_.dueAt), cb.localDateTime())), 1L)
 					.otherwise(0L))));
 
-		query.where(cb.and(
-				cb.or(directContact.get(CrmContact_.id).in(contactIds), dealContact.get(CrmContact_.id).in(contactIds)),
-				cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isFalse(task.get(CrmTask_.isDeleted))));
+		query.where(task.get(CrmTask_.contact).get(CrmContact_.id).in(contactIds),
+				cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isFalse(task.get(CrmTask_.isDeleted)));
 
-		query.groupBy(effectiveContactId);
+		query.groupBy(task.get(CrmTask_.contact).get(CrmContact_.id));
 
 		return entityManager.createQuery(query).getResultList();
 	}

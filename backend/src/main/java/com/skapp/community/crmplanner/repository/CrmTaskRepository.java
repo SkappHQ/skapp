@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CrmTaskRepository {
 
-	List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds, LocalDateTime now);
+	List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds);
 
 	List<CrmTask> findByContactIdWithAssociations(Long contactId);
 

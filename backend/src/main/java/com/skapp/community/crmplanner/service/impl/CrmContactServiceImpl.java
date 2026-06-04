@@ -239,10 +239,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 			.stream()
 			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
 
-		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao
-			.findOpenTaskSummaryByContactIds(contactIds, LocalDateTime.now().toLocalDate().atStartOfDay())
-			.stream()
-			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
+		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao.findOpenTaskSummaryByContactIds(contactIds)
+				.stream()
+				.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
 
 		List<CrmContactListItemDto> contactDtos = contactPage.getContent()
 			.stream()
