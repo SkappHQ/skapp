@@ -213,6 +213,14 @@ public class PeopleServiceImpl implements PeopleService {
 
 		User user = new User();
 		Employee employee = new Employee();
+		boolean isGuestConversion = false;
+
+		Optional<User> existingGuestUser = findGuestUserByEmail(requestDto);
+		if (existingGuestUser.isPresent()) {
+			user = existingGuestUser.get();
+			employee = user.getEmployee();
+			isGuestConversion = true;
+		}
 
 		employeeValidationService.validateCreateEmployeeRequestRequiredFields(requestDto, user);
 		employeeValidationService.validateCreateEmployeeRequestPersonalDetails(requestDto.getPersonal(), user);
@@ -227,6 +235,9 @@ public class PeopleServiceImpl implements PeopleService {
 		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, user));
 		peopleEmailService.sendUserInvitationEmail(user);
 		addNewEmployeeTimeLineRecords(employee, requestDto);
+		if (!isGuestConversion) {
+			updateSubscriptionQuantity(1L, true, false);
+		}
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
 
@@ -241,8 +252,17 @@ public class PeopleServiceImpl implements PeopleService {
 
 		User user = new User();
 		Employee employee = new Employee();
+		boolean isGuestConversion = false;
 
 		CreateEmployeeRequestDto createEmployeeRequestDto = createEmployeeRequest(employeeQuickAddDto);
+
+		Optional<User> existingGuestUser = findGuestUserByEmail(createEmployeeRequestDto);
+		if (existingGuestUser.isPresent()) {
+			user = existingGuestUser.get();
+			employee = user.getEmployee();
+			isGuestConversion = true;
+		}
+
 		employeeValidationService.validateCreateEmployeeRequestRequiredFields(createEmployeeRequestDto, user);
 
 		user.setEmployee(createEmployeeEntity(employee, createEmployeeRequestDto));
@@ -253,7 +273,9 @@ public class PeopleServiceImpl implements PeopleService {
 		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, user));
 		peopleEmailService.sendUserInvitationEmail(user);
 		addNewQuickUploadedEmployeeTimeLineRecords(employee, employeeQuickAddDto);
-		updateSubscriptionQuantity(1L, true, false);
+		if (!isGuestConversion) {
+			updateSubscriptionQuantity(1L, true, false);
+		}
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
 
@@ -298,6 +320,18 @@ public class PeopleServiceImpl implements PeopleService {
 
 	protected void enterpriseValidations(String email) {
 		// This method is a placeholder for any enterprise-specific validations
+	}
+
+	private Optional<User> findGuestUserByEmail(CreateEmployeeRequestDto requestDto) {
+		if (requestDto == null || requestDto.getEmployment() == null
+				|| requestDto.getEmployment().getEmploymentDetails() == null
+				|| requestDto.getEmployment().getEmploymentDetails().getEmail() == null) {
+			return Optional.empty();
+		}
+		String email = requestDto.getEmployment().getEmploymentDetails().getEmail();
+		return userDao.findByEmail(email)
+			.filter(u -> u.getEmployee() != null && u.getEmployee().getEmployeeRole() != null
+					&& u.getEmployee().getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE);
 	}
 
 	private CreateEmployeeRequestDto createEmployeeRequest(EmployeeQuickAddDto dto) {
@@ -1201,6 +1235,9 @@ public class PeopleServiceImpl implements PeopleService {
 		List<Employee> newEmployees = employeeDao.findByIdentificationNo(identificationNoCheck);
 		EmployeeDataValidationResponseDto employeeDataValidationResponseDto = new EmployeeDataValidationResponseDto();
 		employeeDataValidationResponseDto.setIsWorkEmailExists(newUser.isPresent());
+		employeeDataValidationResponseDto.setIsGuestUser(newUser.map(u -> u.getEmployee() != null
+				&& u.getEmployee().getEmployeeRole() != null
+				&& u.getEmployee().getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE).orElse(false));
 		String userDomain = workEmailCheck.substring(workEmailCheck.indexOf("@") + 1);
 		employeeDataValidationResponseDto.setIsGoogleDomain(Validation.ssoTypeMatches(userDomain));
 

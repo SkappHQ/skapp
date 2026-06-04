@@ -221,7 +221,9 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 				&& createEmployeeRequestDto.getEmployment().getEmploymentDetails().getEmail() != null) {
 			userDao.findByEmail(createEmployeeRequestDto.getEmployment().getEmploymentDetails().getEmail())
 				.ifPresent(u -> {
-					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_USER_EMAIL_ALREADY_EXIST);
+					if (!u.getUserId().equals(user.getUserId())) {
+						throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_USER_EMAIL_ALREADY_EXIST);
+					}
 				});
 
 			Validations.validateWorkEmail(createEmployeeRequestDto.getEmployment().getEmploymentDetails().getEmail());
