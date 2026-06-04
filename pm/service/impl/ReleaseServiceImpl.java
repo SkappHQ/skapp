@@ -278,10 +278,26 @@ public class ReleaseServiceImpl implements ReleaseService {
 			template = template.replace("{{versionName}}",
 					escapeHtml(request.getName() != null ? request.getName() : ""));
 			template = template.replace("{{releaseDate}}", escapeHtml(releaseDate));
-			template = template.replace("{{environment}}",
-					escapeHtml(request.getEnvironment() != null ? request.getEnvironment() : ""));
-			template = template.replace("{{description}}",
-					stripHtmlTags(request.getDescription() != null ? request.getDescription() : ""));
+
+			boolean hasEnvironment = request.getEnvironment() != null && !request.getEnvironment().isEmpty();
+			if (hasEnvironment) {
+				template = template.replace("{{#hasEnvironment}}", "").replace("{{/hasEnvironment}}", "");
+				template = template.replace("{{environment}}", escapeHtml(request.getEnvironment()));
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#hasEnvironment}}", "{{/hasEnvironment}}");
+			}
+
+			String description = request.getDescription() != null ? stripHtmlTags(request.getDescription()) : "";
+			boolean hasDescription = !description.isEmpty();
+			if (hasDescription) {
+				template = template.replace("{{#hasDescription}}", "").replace("{{/hasDescription}}", "");
+				template = template.replace("{{description}}", description);
+			}
+			else {
+				template = removeConditionalBlock(template, "{{#hasDescription}}", "{{/hasDescription}}");
+			}
+
 			template = template.replace("{{logo}}", getIcon(ReleaseIconEnum.SKAPP_ICON.name()));
 
 			template = processWorkItems(template, request, projectKey);
