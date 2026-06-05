@@ -67,3 +67,6 @@ jwt:
 
 encryptDecryptAlgorithm:
   secret: ${ENCRYPT_DECRYPT_SECRET}
+
+domain:
+  base: ${DOMAIN_BASE:localhost}
