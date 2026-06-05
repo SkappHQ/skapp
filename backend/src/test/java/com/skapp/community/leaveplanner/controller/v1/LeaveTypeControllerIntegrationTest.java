@@ -46,12 +46,20 @@ class LeaveTypeControllerIntegrationTest {
 
 	private ResultActions performGetLeaveTypes(String authToken, Boolean filterByInUse, Boolean isCarryForward)
 			throws Exception {
+		return performGetLeaveTypes(authToken, filterByInUse, isCarryForward, null);
+	}
+
+	private ResultActions performGetLeaveTypes(String authToken, Boolean filterByInUse, Boolean isCarryForward,
+			Long employeeId) throws Exception {
 		var requestBuilder = get(ENDPOINT).accept(MediaType.APPLICATION_JSON);
 		if (filterByInUse != null) {
 			requestBuilder = requestBuilder.param("filterByInUse", filterByInUse.toString());
 		}
 		if (isCarryForward != null) {
 			requestBuilder = requestBuilder.param("isCarryForward", isCarryForward.toString());
+		}
+		if (employeeId != null) {
+			requestBuilder = requestBuilder.param("employeeId", employeeId.toString());
 		}
 		return mvc.perform(requestBuilder.with(SecurityTestUtils.bearerToken(authToken)));
 	}
@@ -187,6 +195,39 @@ class LeaveTypeControllerIntegrationTest {
 				.andExpect(jsonPath(RESULTS_PATH, hasSize(1)))
 				.andExpect(jsonPath("$.results[0].name").value("CarryForwardUsed"))
 				.andExpect(jsonPath("$.results[0].isCarryForwardEnabled").value(true));
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Leave Admin - Filter by In Use with EmployeeId")
+	class LeaveAdminFilterByInUseWithEmployeeIdTests {
+
+		@Test
+		@DisplayName("Returns target employee's used leave types when employeeId is provided")
+		void getLeaveTypes_FilterByInUseWithEmployeeId_ReturnsTargetEmployeeUsedLeaveTypes() throws Exception {
+			SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createLeaveAdmin());
+			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"),
+					1L);
+
+			performGetLeaveTypes(authToken, true, false, 2L).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_PATH, hasSize(1)))
+				.andExpect(jsonPath("$.results[0].name").value("Study"));
+		}
+
+		@Test
+		@DisplayName("Returns empty list when employeeId does not exist")
+		void getLeaveTypes_FilterByInUseWithNonExistentEmployeeId_ReturnsEmptyList() throws Exception {
+			SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createLeaveAdmin());
+			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"),
+					1L);
+
+			performGetLeaveTypes(authToken, true, false, 99999L).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_PATH, hasSize(0)));
 		}
 
 	}

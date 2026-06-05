@@ -71,9 +71,9 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 		List<LeaveType> leaveTypes;
 
 		if (Boolean.TRUE.equals(leaveTypeFilterDto.getFilterByInUse())) {
-			Long userId = leaveTypeFilterDto.getEmployeeId() != null ? leaveTypeFilterDto.getEmployeeId()
+			Long employeeId = leaveTypeFilterDto.getEmployeeId() != null ? leaveTypeFilterDto.getEmployeeId()
 					: userService.getCurrentUser().getUserId();
-			leaveTypes = leaveTypeDao.getUsedUserLeaveTypes(userId,
+			leaveTypes = leaveTypeDao.getUsedUserLeaveTypes(employeeId,
 					Boolean.TRUE.equals(leaveTypeFilterDto.getIsCarryForward()));
 		}
 		else if (Boolean.TRUE.equals(leaveTypeFilterDto.getIsCarryForward())) {
