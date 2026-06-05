@@ -141,7 +141,7 @@ const AddNewResourceModal = () => {
 
   const validateWorkEmail = () => {
     const updatedData = checkEmailAndIdentificationNo;
-    if (updatedData?.isWorkEmailExists) {
+    if (updatedData?.isWorkEmailExists && !updatedData?.isGuestUser) {
       setFieldError("email", translateText(["uniqueEmailError"]));
       return false;
     }
