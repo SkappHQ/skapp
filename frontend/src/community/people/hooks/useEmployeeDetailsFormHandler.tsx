@@ -393,7 +393,11 @@ const useEmployeeDetailsFormHandler = ({
   useEffect(() => {
     const updatedData = checkEmailAndIdentificationNo;
     if (updatedData && isSuccess && !isProfileView && !isManager) {
-      if (updatedData.isWorkEmailExists && !formik.touched.email && !updatedData.isGuestUser) {
+      if (
+        updatedData.isWorkEmailExists &&
+        !formik.touched.email &&
+        !updatedData.isGuestUser
+      ) {
         setIsUniqueEmail(false);
       } else {
         setIsUniqueEmail(true);
