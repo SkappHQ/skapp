@@ -30,6 +30,7 @@ const Companies: NextPage = () => {
       primaryButtonText={translateText(["addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
+      containerStyles={{ position: "relative", zIndex: 1200 }}
     >
       <>
         <CompanyModalController />

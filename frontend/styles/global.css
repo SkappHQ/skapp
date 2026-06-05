@@ -1,6 +1,7 @@
 @import "pdfjs-dist/web/pdf_viewer.css";
 @import "@rootcodelabs/skapp-ui";
 @import "tailwindcss";
+@source "../node_modules/@rootcodelabs/skapp-ui;
 
 @theme {
   --color-primary: #93c5fd;

@@ -13,6 +13,7 @@ const Tasks: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
+      containerStyles={{ position: "relative", zIndex: 1200 }}
     >
       <></>
     </ContentLayout>

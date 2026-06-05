@@ -14,6 +14,7 @@ const Deals: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
+      containerStyles={{ position: "relative", zIndex: 1200 }}
     >
       <DealsSection />
     </ContentLayout>
