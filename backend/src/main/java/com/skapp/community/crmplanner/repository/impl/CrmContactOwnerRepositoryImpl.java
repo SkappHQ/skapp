@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.repository.impl;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
@@ -50,9 +51,7 @@ public class CrmContactOwnerRepositoryImpl implements CrmContactOwnerRepository 
 				employee.get(Employee_.authPic)));
 
 		query.where(cb.isTrue(user.get(User_.isActive)),
-				cb.or(cb.isTrue(employeeRole.get(EmployeeRole_.isSuperAdmin)),
-						cb.and(cb.isNotNull(employeeRole.get(EmployeeRole_.crmRole)),
-								cb.notEqual(employeeRole.get(EmployeeRole_.crmRole), Role.CRM_NONE))));
+				employeeRole.get(EmployeeRole_.crmRole).in(CrmConstants.ASSIGNABLE_CRM_ROLES));
 
 		query.orderBy(cb.asc(cb.lower(employee.get(Employee_.firstName))),
 				cb.asc(cb.lower(employee.get(Employee_.lastName))));
