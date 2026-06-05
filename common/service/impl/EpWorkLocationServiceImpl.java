@@ -3,6 +3,7 @@ package com.skapp.enterprise.common.service.impl;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.payload.request.WorkLocationGeofenceRequestDto;
 import com.skapp.community.common.payload.request.WorkLocationRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.payload.response.WorkLocationDetailResponseDto;
@@ -10,15 +11,19 @@ import com.skapp.community.common.payload.response.WorkLocationGeofenceResponseD
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.impl.WorkLocationServiceImpl;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.timeplanner.model.TimeRecord;
+import com.skapp.community.timeplanner.repository.TimeRecordDao;
 import com.skapp.enterprise.timeplanner.model.WorkLocationGeofence;
+import com.skapp.enterprise.timeplanner.repository.TimeRecordLocationDao;
 import com.skapp.enterprise.timeplanner.repository.WorkLocationGeofenceDao;
-import com.skapp.community.common.payload.request.WorkLocationGeofenceRequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Primary
@@ -30,11 +35,21 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 
 	private final WorkLocationGeofenceDao workLocationGeofenceDao;
 
+	private final EmployeeDao employeeDao;
+
+	private final TimeRecordDao timeRecordDao;
+
+	private final TimeRecordLocationDao timeRecordLocationDao;
+
 	public EpWorkLocationServiceImpl(WorkLocationDao workLocationDao, EmployeeDao employeeDao, MessageUtil messageUtil,
-			WorkLocationGeofenceDao workLocationGeofenceDao) {
+			WorkLocationGeofenceDao workLocationGeofenceDao, TimeRecordDao timeRecordDao,
+			TimeRecordLocationDao timeRecordLocationDao) {
 		super(workLocationDao, employeeDao, messageUtil);
 		this.workLocationDao = workLocationDao;
 		this.workLocationGeofenceDao = workLocationGeofenceDao;
+		this.employeeDao = employeeDao;
+		this.timeRecordDao = timeRecordDao;
+		this.timeRecordLocationDao = timeRecordLocationDao;
 	}
 
 	@Override
@@ -67,9 +82,13 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 			geofence.setLongitude(workLocationRequestDto.getGeofence().getLongitude());
 			geofence.setRadiusMeters(workLocationRequestDto.getGeofence().getRadiusMeters());
 			workLocationGeofenceDao.save(geofence);
+			clearTimeRecordLocationsForWorkLocation(id);
 		}
 		else {
-			workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
+			workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(existingGeofence -> {
+				clearTimeRecordLocationsForWorkLocation(id);
+				workLocationGeofenceDao.delete(existingGeofence);
+			});
 		}
 		log.info("EpWorkLocationServiceImpl updateWorkLocation: execution ended");
 		return result;
@@ -79,7 +98,10 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 	@Transactional
 	public ResponseEntityDto deleteWorkLocation(Long id) {
 		log.info("EpWorkLocationServiceImpl deleteWorkLocation: execution started");
-		workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
+		workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(existingGeofence -> {
+			clearTimeRecordLocationsForWorkLocation(id);
+			workLocationGeofenceDao.delete(existingGeofence);
+		});
 		ResponseEntityDto result = super.deleteWorkLocation(id);
 		log.info("EpWorkLocationServiceImpl deleteWorkLocation: execution ended");
 		return result;
@@ -104,6 +126,28 @@ public class EpWorkLocationServiceImpl extends WorkLocationServiceImpl {
 		}
 		log.info("EpWorkLocationServiceImpl getWorkLocationById: execution ended");
 		return response;
+	}
+
+	private void clearTimeRecordLocationsForWorkLocation(Long workLocationId) {
+		List<Long> employeeIds = employeeDao.findByWorkLocationWorkLocationId(workLocationId)
+			.stream()
+			.map(Employee::getEmployeeId)
+			.toList();
+
+		if (employeeIds.isEmpty()) {
+			return;
+		}
+
+		List<Long> timeRecordIds = timeRecordDao.findByEmployeeEmployeeIdIn(employeeIds)
+			.stream()
+			.map(TimeRecord::getTimeRecordId)
+			.toList();
+
+		if (!timeRecordIds.isEmpty()) {
+			timeRecordLocationDao.deleteAllByTimeRecordTimeRecordIdIn(timeRecordIds);
+			log.info(
+					"clearTimeRecordLocationsForWorkLocation: deleted time record location indicators for work location");
+		}
 	}
 
 	private WorkLocationGeofence buildGeofence(WorkLocation workLocation, WorkLocationGeofenceRequestDto dto) {

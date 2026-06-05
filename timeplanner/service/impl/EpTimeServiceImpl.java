@@ -24,6 +24,8 @@ import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.timeplanner.mapper.TimeMapper;
 import com.skapp.community.timeplanner.model.TimeRecord;
+import com.skapp.community.timeplanner.payload.response.TimeRecordChipResponseDto;
+import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecord;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import com.skapp.community.timeplanner.repository.TimeRecordDao;
 import com.skapp.community.timeplanner.repository.TimeRequestDao;
@@ -38,7 +40,10 @@ import com.skapp.enterprise.leaveplanner.service.EpLeaveCalendarService;
 import com.skapp.enterprise.timeplanner.constant.EpTimeMessageConstant;
 import com.skapp.enterprise.timeplanner.model.TimeRecordLocation;
 import com.skapp.enterprise.timeplanner.payload.request.EpAddTimeRecordDto;
+import com.skapp.enterprise.timeplanner.payload.response.EpTimeRecordChipResponseDto;
 import com.skapp.enterprise.timeplanner.repository.TimeRecordLocationDao;
+import com.skapp.enterprise.timeplanner.repository.impl.EpTimeRecordRepositoryImpl;
+import com.skapp.enterprise.timeplanner.repository.projection.EpEmployeeTimeRecord;
 import com.skapp.enterprise.timeplanner.service.EpTimeService;
 import com.skapp.enterprise.timeplanner.type.RecordLocationStatus;
 import com.skapp.enterprise.timeplanner.util.GeoFenceUtils;
@@ -48,6 +53,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Primary
@@ -61,6 +68,8 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 
 	private final TimeRecordLocationDao timeRecordLocationDao;
 
+	private final EpTimeRecordRepositoryImpl epTimeRecordRepository;
+
 	public EpTimeServiceImpl(TimeConfigDao timeConfigDao, JsonMapper mapper, MessageUtil messageUtil,
 			UserService userService, TimeRecordDao timeRecordDao, TimeSlotDao timeSlotDao,
 			AttendanceConfigService attendanceConfigService, LeaveRequestDao leaveRequestDao, HolidayDao holidayDao,
@@ -70,7 +79,8 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 			AttendanceNotificationService attendanceNotificationService,
 			LeaveRequestEntitlementDao leaveRequestEntitlementDao, LeaveEntitlementDao leaveEntitlementDao,
 			OrganizationService organizationService, EpLeaveCalendarService epLeaveCalendarService,
-			WorkLocationGeofenceDao workLocationGeofenceDao, TimeRecordLocationDao timeRecordLocationDao) {
+			WorkLocationGeofenceDao workLocationGeofenceDao, TimeRecordLocationDao timeRecordLocationDao,
+			EpTimeRecordRepositoryImpl epTimeRecordRepository) {
 		super(timeConfigDao, mapper, messageUtil, userService, timeRecordDao, timeSlotDao, attendanceConfigService,
 				leaveRequestDao, holidayDao, employeeDao, peopleMapper, leaveMapper, timeRequestDao, teamDao,
 				timeMapper, commonMapper, timeEmailService, pageTransformer, employeeManagerDao,
@@ -78,6 +88,7 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 		this.epLeaveCalendarService = epLeaveCalendarService;
 		this.workLocationGeofenceDao = workLocationGeofenceDao;
 		this.timeRecordLocationDao = timeRecordLocationDao;
+		this.epTimeRecordRepository = epTimeRecordRepository;
 	}
 
 	@Override
@@ -87,6 +98,37 @@ public class EpTimeServiceImpl extends TimeServiceImpl implements EpTimeService 
 				|| leaveRequest.getStatus().equals(LeaveRequestStatus.CANCELLED))) {
 			epLeaveCalendarService.deleteOutOfOfficeEventsForLeave(leaveRequest);
 		}
+	}
+
+	@Override
+	protected TimeRecordChipResponseDto createTimeRecordChipDto() {
+		return new EpTimeRecordChipResponseDto();
+	}
+
+	@Override
+	protected boolean isGeoFencingEnabled() {
+		return attendanceConfigService.getAttendanceConfigByType(AttendanceConfigType.GEO_FENCING_ENABLED);
+	}
+
+	@Override
+	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,
+			boolean isGeoFencingEnabled) {
+		if (!isGeoFencingEnabled) {
+			return;
+		}
+
+		if (chip instanceof EpTimeRecordChipResponseDto epChip
+				&& employeeTimeRecord instanceof EpEmployeeTimeRecord epRecord) {
+			epChip.setClockInLocationStatus(epRecord.getClockInLocationStatus());
+			epChip.setClockOutLocationStatus(epRecord.getClockOutLocationStatus());
+		}
+	}
+
+	@Override
+	protected List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,
+			LocalDate startDate, LocalDate endDate, int limit, long offset) {
+		return epTimeRecordRepository.findEmployeesTimeRecordsWithTeams(employeeIds, teamIds, startDate, endDate, limit,
+				offset);
 	}
 
 	@Override
