@@ -146,6 +146,11 @@ const AddNewResourceModal = () => {
       return false;
     }
 
+    if (updatedData?.isWorkEmailExists && updatedData?.isGuestUser) {
+      setDirectoryModalType(DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION);
+      return false;
+    }
+
     if (isEnterpriseMode) {
       if (globalLogin == "GOOGLE" && !updatedData?.isGoogleDomain) {
         setFieldError("email", translateText(["workEmailGoogle"]));
