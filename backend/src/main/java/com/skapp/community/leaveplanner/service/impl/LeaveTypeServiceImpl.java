@@ -1,7 +1,9 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
@@ -18,6 +20,8 @@ import com.skapp.community.leaveplanner.repository.LeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
 import com.skapp.community.leaveplanner.type.CalculationType;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
+import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
+import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +50,9 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 	@NonNull
 	private final LeaveEntitlementDao leaveEntitlementDao;
 
+	@NonNull
+	private final EmployeeTeamDao employeeTeamDao;
+
 	@Override
 	public ResponseEntityDto addLeaveType(LeaveTypeRequestDto leaveTypeRequestDto) {
 		log.info("addLeaveType: execution started");
@@ -71,8 +78,12 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 		List<LeaveType> leaveTypes;
 
 		if (Boolean.TRUE.equals(leaveTypeFilterDto.getFilterByInUse())) {
+			User currentUser = userService.getCurrentUser();
 			Long employeeId = leaveTypeFilterDto.getEmployeeId() != null ? leaveTypeFilterDto.getEmployeeId()
-					: userService.getCurrentUser().getUserId();
+					: currentUser.getUserId();
+
+			validateEmployeeAccess(currentUser, employeeId);
+
 			leaveTypes = leaveTypeDao.getUsedUserLeaveTypes(employeeId,
 					Boolean.TRUE.equals(leaveTypeFilterDto.getIsCarryForward()));
 		}
@@ -265,6 +276,16 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 	private boolean isLeaveTypeNameExist(String name) {
 		LeaveType defineLeaveType = leaveTypeDao.findLeaveTypeByName(name);
 		return defineLeaveType != null;
+	}
+
+	private void validateEmployeeAccess(User currentUser, Long targetEmployeeId) {
+		if (!currentUser.getUserId().equals(targetEmployeeId)
+				&& !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
+			Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
+			if (!employeeTeamDao.existsEmployeeInSupervisedTeam(targetEmployeeId, currentEmployeeId)) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
 	}
 
 }

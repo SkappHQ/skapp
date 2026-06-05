@@ -251,6 +251,38 @@ class LeaveTypeControllerIntegrationTest {
 		}
 
 		@Test
+		@DisplayName("Leave manager cannot query leave types for an employee they do not supervise")
+		void getLeaveTypes_LeaveManagerQueryingUnsupervisedEmployee_ReturnsBadRequest() throws Exception {
+			SecurityTestUtils.setupSecurityContext(authorityService,
+					MockUserFactory.createLeaveManager("user2@gmail.com", 2L, 2L));
+			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+					2L);
+
+			performGetLeaveTypes(authToken, true, false, 3L).andDo(print()).andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Leave manager can query leave types for an employee they supervise")
+		@Sql(statements = {
+				"INSERT INTO employee_team (id, team_id, employee_id, is_supervisor) VALUES (default, 1, 2, true)",
+				"INSERT INTO employee_team (id, team_id, employee_id, is_supervisor) VALUES (default, 1, 3, false)",
+				"INSERT INTO leave_request (leave_req_id, start_date, end_date, leave_state, status, employee_id, type_id, duration_days, is_viewed, is_auto_approved) "
+						+ "VALUES (200, YEAR(CURRENT_TIMESTAMP) || '-06-01', YEAR(CURRENT_TIMESTAMP) || '-06-02', 'FULLDAY', 'APPROVED', 3, "
+						+ "(SELECT type_id FROM leave_type WHERE name = 'Medical'), 1, false, false)" })
+		void getLeaveTypes_LeaveManagerQueryingSupervisedEmployee_ReturnsOk() throws Exception {
+			SecurityTestUtils.setupSecurityContext(authorityService,
+					MockUserFactory.createLeaveManager("user2@gmail.com", 2L, 2L));
+			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+					2L);
+
+			performGetLeaveTypes(authToken, true, false, 3L).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_PATH, hasSize(1)))
+				.andExpect(jsonPath("$.results[0].name").value("Medical"));
+		}
+
+		@Test
 		@DisplayName("Returns 401 when no authentication token is provided")
 		void getLeaveTypes_NoAuth_ReturnsUnauthorized() throws Exception {
 			mvc.perform(get(ENDPOINT).accept(MediaType.APPLICATION_JSON))
