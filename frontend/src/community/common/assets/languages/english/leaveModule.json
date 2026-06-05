@@ -308,6 +308,8 @@
     "employeeNameHeader": "NAME",
     "exportBtnTxt": "Export CSV",
     "addEntitlementsModalTitle": "Add entitlements",
+    "downloadExcelDes": "Download the Excel template, fill in the details of the people you wish to add to the organization, and then upload the completed file.",
+    "downloadExcelButton": "Download Excel template",
     "downloadCsvModalDes": "Download the CSV template, fill in the entitlements you wish to add to the organization, and then upload the completed file.",
     "downloadCsvButton": "Download CSV template",
     "nextButton": "Next",

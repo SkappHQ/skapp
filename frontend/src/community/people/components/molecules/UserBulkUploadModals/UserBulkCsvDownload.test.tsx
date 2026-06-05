@@ -44,8 +44,8 @@ describe("UserBulkCsvDownload", () => {
       </MockTheme>
     );
 
-    expect(screen.getByText("downloadCsvDes")).toBeInTheDocument();
-    expect(screen.getByText("downloadCsvButton")).toBeInTheDocument();
+    expect(screen.getByText("downloadExcelDes")).toBeInTheDocument();
+    expect(screen.getByText("downloadExcelButton")).toBeInTheDocument();
     expect(screen.getByText("nextButton")).toBeInTheDocument();
   });
 
