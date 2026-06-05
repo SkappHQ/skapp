@@ -162,7 +162,7 @@ const CarryForwardBalances: NextPage = () => {
           { label: translateBreadcrumbs(["analytics.stepLeave"]) },
           {
             label: translateBreadcrumbs(["leaveEntitlements.title"]),
-            href: ROUTES.LEAVE.LEAVE_ENTITLEMENTS
+            onClick: () => router.push(ROUTES.LEAVE.LEAVE_ENTITLEMENTS)
           },
           {
             label: translateText(["carryForwardingBalance.title"])
