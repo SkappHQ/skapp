@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CrmOwnerUtils {
+public class CrmOwnerResolver {
 
 	private final EmployeeDao employeeDao;
 
@@ -31,7 +31,11 @@ public class CrmOwnerUtils {
 	private Employee validateAssignableOwner(Long ownerId) {
 		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(ownerId);
 
-		if (owner == null || !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(owner.getEmployeeRole().getCrmRole())) {
+		if (owner == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+		}
+
+		if (!CrmConstants.ASSIGNABLE_CRM_ROLES.contains(owner.getEmployeeRole().getCrmRole())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE);
 		}
 

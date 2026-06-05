@@ -4,6 +4,9 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.peopleplanner.util.Validations;
 import lombok.experimental.UtilityClass;
@@ -212,6 +215,26 @@ public class CrmValidations {
 	public static void validateDealId(Long dealId) {
 		if (dealId == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
+	}
+
+	public static void validateTaskEntityRelationships(CrmContact contact, CrmCompany company, CrmDeal deal) {
+		if (contact != null && company != null) {
+			if (contact.getCompany() == null || !contact.getCompany().getId().equals(company.getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH);
+			}
+		}
+
+		if (deal != null && contact != null) {
+			if (deal.getContact() == null || !deal.getContact().getId().equals(contact.getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH);
+			}
+		}
+
+		if (deal != null && company != null) {
+			if (deal.getCompany() == null || !deal.getCompany().getId().equals(company.getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH);
+			}
 		}
 	}
 

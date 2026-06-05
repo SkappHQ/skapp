@@ -20,7 +20,7 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmTaskService;
-import com.skapp.community.crmplanner.util.CrmOwnerUtils;
+import com.skapp.community.crmplanner.util.CrmOwnerResolver;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
@@ -44,7 +44,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	private final CrmDealDao crmDealDao;
 
-	private final CrmOwnerUtils crmOwnerUtils;
+	private final CrmOwnerResolver crmOwnerResolver;
 
 	private final CrmMapper crmMapper;
 
@@ -97,7 +97,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		if (requestDto.getOwnerId() != null) {
 			CrmValidations.validateOwnerId(requestDto.getOwnerId());
-			Employee owner = crmOwnerUtils.resolveOwner(requestDto.getOwnerId(), currentUser);
+			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 			task.setOwner(owner);
 		}
 
@@ -121,6 +121,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			task.setDeal(deal);
 		}
+
+		CrmValidations.validateTaskEntityRelationships(task.getContact(), task.getCompany(), task.getDeal());
 
 		CrmTask updatedTask = crmTaskDao.save(task);
 		CrmTaskResponseDto responseDto = crmMapper.crmTaskToCrmTaskResponseDto(updatedTask);
