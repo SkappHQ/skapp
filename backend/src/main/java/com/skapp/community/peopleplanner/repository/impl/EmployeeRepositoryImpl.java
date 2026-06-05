@@ -41,7 +41,6 @@ import com.skapp.community.peopleplanner.type.Gender;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocation_;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -1573,6 +1572,28 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		criteriaQuery.select(criteriaBuilder.count(root));
 
 		return entityManager.createQuery(criteriaQuery).getSingleResult();
+	}
+
+	@Override
+	public List<Employee> findAllActiveEmployeesExcludingRole(Role excludedRole, Set<WorkLocation> workLocations) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Employee> query = cb.createQuery(Employee.class);
+		Root<Employee> root = query.from(Employee.class);
+
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.EMPLOYEE_ROLE, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
+		predicates.add(cb.or(roleJoin.get(EmployeeRole_.PM_ROLE).isNull(),
+				cb.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), excludedRole)));
+
+		if (workLocations != null && !workLocations.isEmpty()) {
+			predicates.add(root.get(Employee_.workLocation).in(workLocations));
+		}
+
+		query.select(root).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(query).getResultList();
 	}
 
 }

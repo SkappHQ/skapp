@@ -8,6 +8,7 @@ import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -83,18 +84,17 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 	@Async
 	@Transactional(readOnly = true)
 	@Override
-	public void sendNewHolidayDeclarationEmail(Holiday holiday, List<User> users) {
+	public void sendNewHolidayDeclarationEmail(Holiday holiday, List<Employee> employees) {
 		try {
 			PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
 			emailDynamicFields.setOrganizationName(getOrganizationName());
 			emailDynamicFields.setHolidayDate(holiday.getDate().toString());
 			emailDynamicFields.setHolidayName(holiday.getName());
 
-			users.forEach(user -> {
-				emailDynamicFields.setEmployeeOrManagerName(
-						user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
+			employees.forEach(employee -> {
+				emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName() + " " + employee.getLastName());
 				emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED, emailDynamicFields,
-						user.getEmail());
+						employee.getUser().getEmail());
 			});
 		}
 		catch (Exception e) {
