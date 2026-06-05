@@ -26,7 +26,7 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
 
-const AddCompanyModal: React.FC = () => {
+const AddCompanyModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator(
@@ -43,8 +43,8 @@ const AddCompanyModal: React.FC = () => {
 
   const industryOptions = useGetIndustryOptions();
 
-  const { setIsAddCompanyModalOpen } = useCrmStore((store) => ({
-    setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen
+  const { setIsCompanyModalOpen } = useCrmStore((store) => ({
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen
   }));
 
   const initialValues: CrmCompanyAddFormTypes = {
@@ -76,7 +76,7 @@ const AddCompanyModal: React.FC = () => {
   };
 
   const handleCloseModal = (): void => {
-    setIsAddCompanyModalOpen(false);
+    setIsCompanyModalOpen(false);
   };
 
   const { mutate: createNewCompany, isPending } = useCreateNewCompany(
@@ -230,4 +230,4 @@ const AddCompanyModal: React.FC = () => {
   );
 };
 
-export default AddCompanyModal;
+export default AddCompanyModalContent;
