@@ -65,13 +65,6 @@ public interface CrmMapper {
 
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
 
-	@Mapping(target = "totalRevenue", ignore = true)
-	@Mapping(target = "pipelineRevenue", ignore = true)
-	@Mapping(target = "activeDealsCount", ignore = true)
-	@Mapping(target = "openTasksCount", ignore = true)
-	@Mapping(target = "overdueTasksCount", ignore = true)
-	@Mapping(target = "deals", ignore = true)
-	@Mapping(target = "tasks", ignore = true)
 	CrmContactDetailResponseDto crmContactToCrmContactDetailResponseDto(CrmContact contact);
 
 	@Mapping(target = "value", source = "amount")
