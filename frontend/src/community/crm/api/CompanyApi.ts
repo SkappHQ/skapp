@@ -7,7 +7,10 @@ import {
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
-import { CrmCompanyCreatePayload } from "../types/CommonTypes";
+import {
+  CrmCompanyCreatePayload,
+  EditCompanyPayload
+} from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
@@ -83,6 +86,28 @@ export const useCheckCompanyNameExists = (name: string, enabled: boolean) => {
       return response?.data?.results?.[0];
     },
     enabled
+  });
+};
+
+const editCompany = async ({ id, ...companyDetails }: EditCompanyPayload) => {
+  const response = await authFetch.patch(
+    companyEndpoints.EDIT_COMPANY(id),
+    companyDetails
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useEditCompany = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: editCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKeys.GET_COMPANY_DATA
+      });
+      onSuccess();
+    },
+    onError: onError
   });
 };
 
