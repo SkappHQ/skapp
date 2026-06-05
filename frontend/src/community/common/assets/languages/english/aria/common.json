@@ -28,7 +28,10 @@
     },
     "appBar": {
       "appBar": "App bar",
-      "menuIcon": "Expand menu"
+      "menuIcon": "Expand menu",
+      "notifications": "Notifications",
+      "accountDetails": "Account details",
+      "breadcrumb": "Breadcrumb"
     },
     "avatar": {
       "alt": "Employee avatar",
@@ -79,6 +82,9 @@
     },
     "iconChip": {
       "label": "icon chip"
+    },
+    "contentAreaLoader": {
+      "loading": "Loading content"
     },
     "filterButton": {
       "appliedFilter": "Applied filter {{filterLabel}}",
