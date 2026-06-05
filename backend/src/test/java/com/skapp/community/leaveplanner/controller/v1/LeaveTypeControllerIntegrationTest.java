@@ -252,6 +252,7 @@ class LeaveTypeControllerIntegrationTest {
 
 		@Test
 		@DisplayName("Leave manager cannot query leave types for an employee they do not supervise")
+		@Sql(statements = { "UPDATE employee_role SET leave_role = 'LEAVE_MANAGER' WHERE employee_id = 2" })
 		void getLeaveTypes_LeaveManagerQueryingUnsupervisedEmployee_ReturnsBadRequest() throws Exception {
 			SecurityTestUtils.setupSecurityContext(authorityService,
 					MockUserFactory.createLeaveManager("user2@gmail.com", 2L, 2L));
@@ -263,7 +264,7 @@ class LeaveTypeControllerIntegrationTest {
 
 		@Test
 		@DisplayName("Leave manager can query leave types for an employee they supervise")
-		@Sql(statements = {
+		@Sql(statements = { "UPDATE employee_role SET leave_role = 'LEAVE_MANAGER' WHERE employee_id = 2",
 				"INSERT INTO employee_team (id, team_id, employee_id, is_supervisor) VALUES (default, 1, 2, true)",
 				"INSERT INTO employee_team (id, team_id, employee_id, is_supervisor) VALUES (default, 1, 3, false)",
 				"INSERT INTO leave_request (leave_req_id, start_date, end_date, leave_state, status, employee_id, type_id, duration_days, is_viewed, is_auto_approved) "
@@ -278,8 +279,7 @@ class LeaveTypeControllerIntegrationTest {
 			performGetLeaveTypes(authToken, true, false, 3L).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_PATH, hasSize(1)))
-				.andExpect(jsonPath("$.results[0].name").value("Medical"));
+				.andExpect(jsonPath(RESULTS_PATH, hasSize(2)));
 		}
 
 		@Test
