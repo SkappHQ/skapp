@@ -3,12 +3,10 @@ package com.skapp.community.peopleplanner.service.impl;
 import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.OrganizationDao;
-import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.LoginMethod;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
@@ -37,8 +35,6 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 	private final EmailService emailService;
 
 	private final OrganizationDao organizationDao;
-
-	private final UserDao userDao;
 
 	private final EmployeeManagerDao employeeManagerDao;
 
