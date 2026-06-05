@@ -62,6 +62,10 @@ export interface CrmCompanyCreatePayload {
   contactNumber: string | null;
 }
 
+export interface EditCompanyPayload extends CrmCompanyCreatePayload {
+  id: number;
+}
+
 export interface CrmContactType {
   id: number;
   name: string;
@@ -175,4 +179,12 @@ export interface CrmDealFilterParams {
   searchKeyword?: string;
   stageId?: number;
   priority?: CrmPriorityEnum;
+}
+
+export interface CrmCompanyEditFormTypes {
+  name: string;
+  industry: CrmIndustryEnum;
+  website: string | null;
+  address: string | null;
+  contactNumber: string | null;
 }
