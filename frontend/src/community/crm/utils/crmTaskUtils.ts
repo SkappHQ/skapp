@@ -10,7 +10,8 @@ export const getDueDateDisplay = (
   dueAt: string | null,
   isCompleted: boolean
 ): DueDateDisplay => {
-  if (!dueAt) return { textKey: "dueDateNoDate", colorClass: "text-gray-400" };
+  if (!dueAt)
+    return { textKey: "dueDateNoDate", colorClass: "text-tertiary-text" };
 
   const due = DateTime.fromISO(dueAt).startOf("day");
   const today = DateTime.now().startOf("day");

@@ -16,16 +16,16 @@ export interface PriorityConfig {
   bgColor: string;
 }
 
-const PRIORITY_CONFIG_MAP: Record<string, PriorityConfig> = {
-  high: {
+const PRIORITY_CONFIG_MAP: Record<CrmPriorityEnum, PriorityConfig> = {
+  [CrmPriorityEnum.HIGH]: {
     IconComponent: HighPriorityIcon,
     bgColor: "bg-semantic-red-background"
   },
-  medium: {
+  [CrmPriorityEnum.MEDIUM]: {
     IconComponent: MediumPriorityIcon,
-    bgColor: "bg-amber-100"
+    bgColor: "bg-semantic-amber-background"
   },
-  low: {
+  [CrmPriorityEnum.LOW]: {
     IconComponent: LowPriorityIcon,
     bgColor: "bg-semantic-green-background"
   }
@@ -34,11 +34,7 @@ const PRIORITY_CONFIG_MAP: Record<string, PriorityConfig> = {
 export const getPriorityConfig = (
   priority: CrmPriorityEnum
 ): PriorityConfig | undefined => {
-  const name =
-    typeof priority === "object"
-      ? (priority as unknown as { name: string }).name
-      : priority;
-  return PRIORITY_CONFIG_MAP[name.toLowerCase()];
+  return PRIORITY_CONFIG_MAP[priority];
 };
 
 const TASK_TYPE_ICON_MAP: Record<string, FC> = {
