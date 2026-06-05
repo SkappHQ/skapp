@@ -960,11 +960,12 @@ public class TimeServiceImpl implements TimeService {
 		timeRecordFilterDto.setEndDate(endDate);
 		Pageable timeRecordsPageable = PageRequest.of(timeRecordFilterDto.getPage(), Integer.MAX_VALUE,
 				timeRecordFilterDto.getSortOrder(), timeRecordFilterDto.getSortKey().toString());
-		List<EmployeeTimeRecord> timeRecords = timeRecordDao.findEmployeesTimeRecordsWithTeams(employeeIds,
+		List<EmployeeTimeRecord> timeRecords = findEmployeesTimeRecordsWithTeams(employeeIds,
 				teamIdsToFilter.contains(-1L) ? null : teamIdsToFilter, startDate, endDate,
 				timeRecordsPageable.getPageSize(), timeRecordsPageable.getOffset());
 
 		List<LeaveRequest> leaveRequests = getLeaveRequests(startDate, endDate, employeeIds);
+		boolean geoFencingEnabled = isGeoFencingEnabled();
 
 		List<TimeRecordsResponseDto> response = new ArrayList<>();
 		for (Employee employee : employees.getContent()) {
@@ -977,11 +978,12 @@ public class TimeServiceImpl implements TimeService {
 
 			List<TimeRecordChipResponseDto> timeRecordRow = new ArrayList<>();
 			for (EmployeeTimeRecord timeRecord : employeeTimeRecords) {
-				TimeRecordChipResponseDto timeRecordChip = new TimeRecordChipResponseDto();
+				TimeRecordChipResponseDto timeRecordChip = createTimeRecordChipDto();
 				timeRecordChip.setTimeRecordId(timeRecord.getTimeRecordId());
 				timeRecordChip.setDate(timeRecord.getDate());
 				timeRecordChip.setWorkedHours(timeRecord.getWorkedHours());
 				timeRecordChip.setLeaveRequest(getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
+				populateEnterpriseChipFields(timeRecordChip, timeRecord, geoFencingEnabled);
 				timeRecordRow.add(timeRecordChip);
 			}
 
@@ -2155,6 +2157,24 @@ public class TimeServiceImpl implements TimeService {
 	 */
 	protected void handleCalendarEventsDeletion(LeaveRequest leaveRequest) {
 		// This feature is available only for Pro tenants.
+	}
+
+	protected TimeRecordChipResponseDto createTimeRecordChipDto() {
+		return new TimeRecordChipResponseDto();
+	}
+
+	protected boolean isGeoFencingEnabled() {
+		return false;
+	}
+
+	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,
+			boolean isGeoFencingEnabled) {
+		// No-op in community edition; enterprise edition overrides this method
+	}
+
+	protected List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,
+			LocalDate startDate, LocalDate endDate, int limit, long offset) {
+		return timeRecordDao.findEmployeesTimeRecordsWithTeams(employeeIds, teamIds, startDate, endDate, limit, offset);
 	}
 
 }
