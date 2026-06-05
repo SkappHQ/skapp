@@ -39,7 +39,11 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
   const [leaveTypesList, setLeaveTypesList] = useState<LeaveType[]>([]);
 
   const { data: leaveTypesData, isLoading: leaveTypeIsLoading } =
-    useGetLeaveTypes(isAtLeastCoreTier, undefined, selectedUser);
+    useGetLeaveTypes({
+      filterByInUse: isAtLeastCoreTier,
+      employeeId: isAtLeastCoreTier ? selectedUser : undefined,
+      enabled: isAtLeastCoreTier
+    });
 
   const leaveTypes = useMemo(() => {
     return isAtLeastCoreTier ? leaveTypesData : leaveTypesMockData;

@@ -36,10 +36,10 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
     setCarryForwardLeaveTypes
   } = useLeaveStore((state) => state);
 
-  const { data: carryForwardLeaveTypes, isLoading } = useGetLeaveTypes(
-    false,
-    true
-  );
+  const { data: carryForwardLeaveTypes, isLoading } = useGetLeaveTypes({
+    filterByInUse: false,
+    isCarryForward: true
+  });
 
   const translateTexts = useTranslator("leaveModule", "leaveCarryForward");
   const router = useRouter();

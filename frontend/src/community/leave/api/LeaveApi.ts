@@ -199,11 +199,17 @@ export const useUpdateLeaveRequest = (data: {
   );
 };
 
-export const useGetLeaveTypes = (
-  filterByInUse?: boolean,
-  isCarryForward?: boolean,
-  employeeId?: number
-): UseQueryResult<LeaveTypeType[]> => {
+export const useGetLeaveTypes = ({
+  filterByInUse,
+  isCarryForward,
+  employeeId,
+  enabled = true
+}: {
+  filterByInUse?: boolean;
+  isCarryForward?: boolean;
+  employeeId?: number;
+  enabled?: boolean;
+} = {}): UseQueryResult<LeaveTypeType[]> => {
   const params = {
     filterByInUse,
     isCarryForward,
@@ -217,7 +223,8 @@ export const useGetLeaveTypes = (
         params
       });
       return (result?.data?.results ?? []) as LeaveTypeType[];
-    }
+    },
+    enabled
   });
 };
 
