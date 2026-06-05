@@ -31,7 +31,7 @@ import {
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
-const AddTaskModal: React.FC = () => {
+const AddTaskModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
@@ -295,4 +295,4 @@ const AddTaskModal: React.FC = () => {
   );
 };
 
-export default AddTaskModal;
+export default AddTaskModalContent;
