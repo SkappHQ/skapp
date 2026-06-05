@@ -65,7 +65,10 @@ const DirectoryPopupController = () => {
   };
 
   const onClose = (): void => {
-    if (directoryModalType === DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION) {
+    if (
+      directoryModalType ===
+      DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION
+    ) {
       setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);
       return;
     }
@@ -118,7 +121,8 @@ const DirectoryPopupController = () => {
       {directoryModalType === DirectoryModalTypes.USER_CREDENTIALS && (
         <LoginCredentialsModal />
       )}
-      {directoryModalType === DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION && (
+      {directoryModalType ===
+        DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION && (
         <GuestToInternalUserConfirmationModal />
       )}
     </>

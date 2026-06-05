@@ -61,6 +61,7 @@ const GuestToInternalUserConfirmationModal = () => {
       secondaryBtn={{
         label: translateText(["guestUserConfirmationModalCancelBtn"]),
         onClick: handleCancel,
+        isDisabled: isPending,
         endIcon: IconName.CLOSE_ICON
       }}
     />
