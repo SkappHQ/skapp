@@ -18,7 +18,7 @@ export function phoneNumberPattern(): RegExp {
 }
 
 export function emailDomainPattern(): RegExp {
-  return /^[^@]+@([a-z0-9.-]+\.[a-z]{2,})$/i;
+  return /^[^@]+@([a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,})$/i;
 }
 
 export function isValidNameWithAccentsAndApostrophes(): RegExp {
