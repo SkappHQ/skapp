@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CrmTaskTypeName {
 
-	CALL("Call"), EMAIL("Email"), MEETING("Meeting"), OTHER("Other");
+	CALL("CALL"), EMAIL("EMAIL"), MEETING("MEETING"), OTHER("OTHER");
 
 	private final String displayName;
 

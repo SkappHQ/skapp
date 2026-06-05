@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CrmDealStageName {
 
-	LEAD("Lead"), QUALIFIED("Qualified"), DEMO_SCHEDULED("Demo Scheduled"), PROPOSAL_SENT("Proposal Sent"),
-	NEGOTIATION("Negotiation"), WON("Deal Won"), LOST("Deal Lost");
+	LEAD("LEAD"), QUALIFIED("QUALIFIED"), DEMO_SCHEDULED("DEMO_SCHEDULED"), PROPOSAL_SENT("PROPOSAL_SENT"),
+	NEGOTIATION("NEGOTIATION"), WON("WON"), LOST("LOST");
 
 	private final String name;
 
