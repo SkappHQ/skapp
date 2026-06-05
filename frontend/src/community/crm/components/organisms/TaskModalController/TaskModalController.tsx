@@ -2,7 +2,7 @@ import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import AddTaskModal from "~community/crm/components/molecules/AddTaskModal/AddTaskModal";
+import AddTaskModal from "~community/crm/components/molecules/AddTaskModalContent/AddTaskModalContent";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
