@@ -1,8 +1,7 @@
 import {
+  EmptyDataView,
   InputField,
-  ProjectTableSkeletonLoader,
   SearchIcon,
-  Table,
   Tabs
 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, useState } from "react";
@@ -54,36 +53,17 @@ const TasksTable = () => {
             customStyles={{ borderRadius: "rounded-[1.5rem]" }}
           />
         </div>
-        <Table
-          columns={[]}
-          data={[]}
-          emptyStateType={emptyStateType}
-          isLoading={false}
-          customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-          height="34.5rem"
-          hasMore={false}
-          infiniteScrollLoadingMessage={translateText([
-            "table",
-            "infiniteScrollLoadingMessage"
-          ])}
-          noDataState={{
-            icon: <SearchIcon />,
-            title: translateText(["table", "emptyDataState", "title"]),
-            description: translateText([
-              "table",
-              "emptyDataState",
-              "description"
-            ])
-          }}
-          noSearchResultsState={{
-            icon: <SearchIcon />,
-            title: translateText(["table", "emptySearchState", "title"]),
-            description: translateText([
-              "table",
-              "emptySearchState",
-              "description"
-            ])
-          }}
+        <EmptyDataView
+          title={
+            emptyStateType === EmptyStateTypeEnum.NO_DATA
+              ? translateText(["table", "emptyDataState", "title"])
+              : translateText(["table", "emptySearchState", "title"])
+          }
+          description={emptyStateType === EmptyStateTypeEnum.NO_DATA
+            ? translateText(["table", "emptyDataState", "description"])
+            : translateText(["table", "emptySearchState", "description"])
+          }
+          icon={<SearchIcon />}
         />
       </div>
     </div>
