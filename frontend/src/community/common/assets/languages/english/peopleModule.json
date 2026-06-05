@@ -321,6 +321,8 @@
     "reactivateSuccessMessage": "The user has been successfully reactivated",
     "reactiveUserDescription": "The user will be reassigned to the same configurations prior to the deactivation. Profile details can be edited once reactivated.",
     "deactivatedLabel": "Deactivated",
+    "downloadExcelDes": "Download the Excel template, fill in the details of the people you wish to add to the organization, and then upload the completed file.",
+    "downloadExcelButton": "Download Excel template",
     "downloadCsvDes": "Download the CSV template, fill in the details of the people you wish to add to the organization, and then upload the completed file.",
     "downloadCsvButton": "Download CSV template",
     "downloadCsvDesQuickWizard": "Download the template, fill in the details for all people and upload the completed file.",
