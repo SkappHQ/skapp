@@ -10,7 +10,7 @@ import { ChangeEvent, useState } from "react";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { TASK_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/taskConstants";
+import { TASK_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/taskConstants";
 import { useGetTasksTabs } from "~community/crm/hooks/useGetTasksTabs";
 
 const TasksTable = () => {
@@ -20,7 +20,7 @@ const TasksTable = () => {
   const [activeTab, setActiveTab] = useState(tabs[0]?.id);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, TASK_NAME_DEBOUNCE_DELAY);
+  const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
   const emptyStateType =
     debouncedSearch.trim() === ""
       ? EmptyStateTypeEnum.NO_DATA

@@ -1,1 +1,1 @@
-export const TASK_NAME_DEBOUNCE_DELAY = 500;
+export const TASK_SEARCH_DEBOUNCE_DELAY = 500;
