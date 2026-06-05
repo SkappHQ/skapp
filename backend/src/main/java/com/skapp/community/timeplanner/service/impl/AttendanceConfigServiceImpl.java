@@ -43,24 +43,22 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateAttendanceConfig(AttendanceConfigRequestDto dto) {
+	public ResponseEntityDto updateAttendanceConfig(AttendanceConfigRequestDto attendanceConfigRequestDto) {
 		log.info("updateAttendanceConfig: execution started");
 
 		updateOrCreateConfig(AttendanceConfigType.CLOCK_IN_ON_NON_WORKING_DAYS,
-				String.valueOf(dto.getIsClockInOnNonWorkingDays()));
+				String.valueOf(attendanceConfigRequestDto.getIsClockInOnNonWorkingDays()));
 		updateOrCreateConfig(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS,
-				String.valueOf(dto.getIsClockInOnCompanyHolidays()));
+				String.valueOf(attendanceConfigRequestDto.getIsClockInOnCompanyHolidays()));
 		updateOrCreateConfig(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS,
-				String.valueOf(dto.getIsClockInOnLeaveDays()));
+				String.valueOf(attendanceConfigRequestDto.getIsClockInOnLeaveDays()));
 		updateOrCreateConfig(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES,
-				String.valueOf(dto.getIsAutoApprovalForChanges()));
+				String.valueOf(attendanceConfigRequestDto.getIsAutoApprovalForChanges()));
 
 		if (attendanceConfigRequestDto.getIsGeoFencingEnabled() != null) {
-			configMap.put(AttendanceConfigType.GEO_FENCING_ENABLED,
+			updateOrCreateConfig(AttendanceConfigType.GEO_FENCING_ENABLED,
 					String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
 		}
-
-		configMap.forEach(this::updateOrCreateConfig);
 
 		log.info("updateAttendanceConfig: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(TimeMessageConstant.TIME_SUCCESS_ATTENDANCE_CONFIG_UPDATED),
