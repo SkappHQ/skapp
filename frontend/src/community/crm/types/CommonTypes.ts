@@ -1,5 +1,3 @@
-import { ReactNode } from "react";
-
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
 import {
@@ -177,11 +175,4 @@ export interface CrmDealFilterParams {
   searchKeyword?: string;
   stageId?: number;
   priority?: CrmPriorityEnum;
-}
-
-export interface CrmTaskTab {
-  id: string;
-  label: string;
-  component: ReactNode;
-  position?: number;
 }

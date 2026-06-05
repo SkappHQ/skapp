@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmTaskTab } from "~community/crm/types/CommonTypes";
+import { CrmTaskTab } from "~community/crm/types/TaskTabTypes";
 
 export const useGetTasksTabs = (): CrmTaskTab[] => {
   const translateText = useTranslator("crmModule", "tasks", "tabs");
