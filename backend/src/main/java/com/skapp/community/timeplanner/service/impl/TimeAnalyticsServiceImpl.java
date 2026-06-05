@@ -1,5 +1,6 @@
 package com.skapp.community.timeplanner.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
@@ -42,6 +43,7 @@ import com.skapp.community.timeplanner.repository.TimeRecordDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
 import com.skapp.community.timeplanner.service.TimeAnalyticsService;
 import com.skapp.community.timeplanner.service.TimeService;
+import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import com.skapp.community.timeplanner.type.ClockInType;
 import com.skapp.community.timeplanner.type.RecordType;
 import com.skapp.community.timeplanner.type.TrendPeriod;
@@ -65,10 +67,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-
-import static com.skapp.community.common.constant.CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND;
-import static com.skapp.community.timeplanner.constant.TimeMessageConstant.TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED;
-import static com.skapp.community.timeplanner.type.AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS;
 
 @Service
 @Slf4j
@@ -115,8 +113,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			.collect(Collectors.toMap(TimeRecordTrendDto::getSlot, TimeRecordTrendDto::getCount,
 					(oldValue, newValue) -> oldValue, TreeMap::new));
 
-		log.info("getClockInClockOutTrend: execution ended successfully with result size: {}",
-				sortedResponseMap.size());
+		log.info("getClockInClockOutTrend: execution ended");
 		return new ResponseEntityDto(false, sortedResponseMap);
 	}
 
@@ -184,6 +181,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto clockInSummary(ClockInSummaryFilterDto clockInSummaryFilterDto) {
 		log.info("clockInSummary: execution started");
 		validateAndFilterTeams(clockInSummaryFilterDto.getTeams());
@@ -212,15 +210,15 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			.map(Optional::get)
 			.toList();
 
-		log.info("clockInSummary: execution ended successfully with result size: {}",
-				clockInSummaryResponseDtos.size());
+		log.info("clockInSummary: execution ended");
 		return new ResponseEntityDto(false, clockInSummaryResponseDtos);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getIndividualWorkUtilization(Long id) {
+		log.info("getIndividualWorkUtilization: execution started");
 		User currentUser = userService.getCurrentUser();
-		log.info("getIndividualWorkUtilizationByAdmin: execution started by {}", currentUser.getUserId());
 
 		boolean isAttendanceAdminOrManager = currentUser.getEmployee()
 			.getEmployeeRole()
@@ -228,12 +226,12 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			.equals(Role.ATTENDANCE_ADMIN)
 				|| currentUser.getEmployee().getEmployeeRole().getAttendanceRole().equals(Role.ATTENDANCE_MANAGER);
 		if (!isAttendanceAdminOrManager) {
-			throw new ModuleException(TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
 		}
 
 		Optional<Employee> employeeOpt = employeeDao.findById(id);
 		if (employeeOpt.isEmpty()) {
-			throw new ModuleException(COMMON_ERROR_USER_NOT_FOUND);
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
@@ -242,11 +240,12 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		UtilizationPercentageDto utilizationInfo = timeService
 			.calculateWorkTimeUtilization(List.of(employeeOpt.get().getEmployeeId()), timeConfigs, holidays);
 
-		log.info("getIndividualWorkUtilizationByAdmin: execution ended {}", currentUser.getUserId());
+		log.info("getIndividualWorkUtilization: execution ended");
 		return new ResponseEntityDto(false, utilizationInfo);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto averageEmployeeHoursWorkedTrend(
 			AverageHoursWorkedTrendFilterDto averageHoursWorkedTrendFilterDto, Long employeeId) {
 		log.info("averageEmployeeHoursWorkedTrend: execution started");
@@ -278,17 +277,18 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		List<LeaveRequest> leaveRequestsList = leaveRequestDao
 			.findLeaveRequestsForTodayByUser(DateTimeUtils.getCurrentUtcDate(), employee.getEmployeeId());
 
-		boolean clockInOnLeaveDaysStatus = attendanceConfigService.getAttendanceConfigByType(CLOCK_IN_ON_LEAVE_DAYS);
+		boolean clockInOnLeaveDaysStatus = attendanceConfigService
+			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS);
 
 		if (!clockInOnLeaveDaysStatus && !leaveRequestsList.isEmpty()) {
 			return Optional.empty();
 		}
 
-		if (filterDto.getClockInType().contains(ClockInType.ALL_CLOCK_INS) || filterDto.getClockInType().isEmpty()) {
-			return createClockInSummaryResponse(filterDto, employee);
-		}
-
 		TimeRecord timeRecord = timeRecordDao.findByDateAndEmployee(filterDto.getDate(), employee);
+
+		if (filterDto.getClockInType().contains(ClockInType.ALL_CLOCK_INS) || filterDto.getClockInType().isEmpty()) {
+			return createClockInSummaryResponse(filterDto, employee, timeRecord);
+		}
 
 		if (filterDto.getClockInType().contains(ClockInType.LATE_CLOCK_INS)
 				&& filterDto.getClockInType().contains(ClockInType.NOT_CLOCKED_INS) && timeRecord != null
@@ -302,12 +302,11 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			return Optional.empty();
 		}
 
-		return createClockInSummaryResponse(filterDto, employee);
+		return createClockInSummaryResponse(filterDto, employee, timeRecord);
 	}
 
 	private Optional<ClockInSummaryResponseDto> createClockInSummaryResponse(ClockInSummaryFilterDto filterDto,
-			Employee employee) {
-		TimeRecord timeRecord = timeRecordDao.findByDateAndEmployee(filterDto.getDate(), employee);
+			Employee employee, TimeRecord timeRecord) {
 		ClockInSummaryResponseDto responseDto = new ClockInSummaryResponseDto();
 		responseDto.setEmployee(peopleMapper.employeeToEmployeeBasicDetailsResponseDto(employee));
 		responseDto.setIsLateArrival(timeRecord != null && isLateArrival(timeRecord));
@@ -391,7 +390,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		ZoneId orgTimeZone = ZoneId.of(organizationService.getOrganizationTimeZone());
 		LocalTime utcTime = DateTimeUtils.epochMillisToUtcLocalTime(timeRecord.getClockInTime());
 
-		ZonedDateTime orgDateTime = ZonedDateTime.of(LocalDate.now(orgTimeZone), utcTime, ZoneOffset.UTC)
+		ZonedDateTime orgDateTime = ZonedDateTime.of(timeRecord.getDate(), utcTime, ZoneOffset.UTC)
 			.withZoneSameInstant(orgTimeZone);
 
 		LocalTime recordStartTime = orgDateTime.toLocalTime();
@@ -489,11 +488,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			LocalDate currentWeekEnd = currentWeekStart.plusDays(6);
 			String weekLabel = formatWeekRange(currentWeekStart, currentWeekEnd);
 
-			LocalDate finalCurrentWeekStart = currentWeekStart;
-			long count = lateArrivals.stream().filter(timeRecord -> {
-				LocalDate slotDate = DateTimeUtils.epochMillisToUtcLocalDate(timeRecord.getClockInTime());
-				return !slotDate.isBefore(finalCurrentWeekStart) && !slotDate.isAfter(currentWeekEnd);
-			}).count();
+			long count = countRecordsInRange(lateArrivals, currentWeekStart, currentWeekEnd);
 
 			weeklyCount.put(weekLabel, count);
 			currentWeekStart = currentWeekEnd.plusDays(1);
@@ -510,17 +505,20 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
 			String monthLabel = startOfMonth.format(DateTimeFormatter.ofPattern("MMM"));
 
-			LocalDate finalStartOfMonth = startOfMonth;
-			long count = lateArrivals.stream().filter(timeRecord -> {
-				LocalDate slotDate = DateTimeUtils.epochMillisToUtcLocalDate(timeRecord.getClockInTime());
-				return !slotDate.isBefore(finalStartOfMonth) && !slotDate.isAfter(endOfMonth);
-			}).count();
+			long count = countRecordsInRange(lateArrivals, startOfMonth, endOfMonth);
 
 			monthlyCount.put(monthLabel, count);
 			startOfMonth = startOfMonth.plusMonths(1);
 		}
 
 		return monthlyCount;
+	}
+
+	private long countRecordsInRange(List<TimeRecord> records, LocalDate start, LocalDate end) {
+		return records.stream().filter(timeRecord -> {
+			LocalDate slotDate = DateTimeUtils.epochMillisToUtcLocalDate(timeRecord.getClockInTime());
+			return !slotDate.isBefore(start) && !slotDate.isAfter(end);
+		}).count();
 	}
 
 	private String formatWeekRange(LocalDate start, LocalDate end) {

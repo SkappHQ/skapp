@@ -15,8 +15,6 @@ public interface TimeRecordDao
 
 	Optional<TimeRecord> findByEmployeeAndDate(Employee employee, LocalDate currentDate);
 
-	Optional<TimeRecord> findByTimeRecordIdAndEmployee(Long recordId, Employee employee);
-
 	TimeRecord findByDateAndEmployee(LocalDate date, Employee employee);
 
 }

@@ -1,4 +1,4 @@
-package com.skapp.community.timeplanner.repository;
+package com.skapp.community.timeplanner.repository.impl;
 
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.type.Role;
@@ -21,6 +21,7 @@ import com.skapp.community.timeplanner.payload.projection.TimeRecordsByEmployees
 import com.skapp.community.timeplanner.payload.projection.impl.EmployeeWorkHoursImpl;
 import com.skapp.community.timeplanner.payload.request.AttendanceSummaryDto;
 import com.skapp.community.timeplanner.payload.response.TimeSheetSummaryData;
+import com.skapp.community.timeplanner.repository.TimeRecordRepository;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecord;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecordImpl;
 import jakarta.persistence.EntityManager;
@@ -36,7 +37,6 @@ import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -56,7 +56,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
-	@NonNull
 	private final EntityManager entityManager;
 
 	@Override
@@ -81,7 +80,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	}
 
 	@Override
-	public Optional<TimeRecord> findIncompleteClockoutTimeRecords(LocalDate lastClockInDate, Long employeeId) {
+	public Optional<TimeRecord> findIncompleteClockOutTimeRecords(LocalDate lastClockInDate, Long employeeId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<TimeRecord> criteriaQuery = criteriaBuilder.createQuery(TimeRecord.class);
 		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
@@ -352,7 +351,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	public List<EmployeeTimeRecord> findEmployeesTimeRecords(List<Long> employeeIds, LocalDate startDate,
 			LocalDate endDate, int limit, long offset) {
 
-		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
+		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).toList();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Employee> empQuery = cb.createQuery(Employee.class);
@@ -592,7 +591,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
 						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 			}))
-			.collect(java.util.stream.Collectors.toList());
+			.toList();
 
 		Map<String, Long> slotCounts = records.stream()
 			.map(record -> record.get(1, Long.class))
@@ -601,7 +600,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockInTimeMillis);
 				return instant.atZone(targetZone).toLocalTime();
 			})
-			.map(clockInLocalTime -> findTimeSlot(clockInLocalTime))
+			.map(this::findTimeSlot)
 			.filter(java.util.Objects::nonNull)
 			.collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(),
 					java.util.stream.Collectors.counting()));
@@ -663,7 +662,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
 						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 			}))
-			.collect(java.util.stream.Collectors.toList());
+			.toList();
 
 		Map<String, Long> slotCounts = records.stream()
 			.map(record -> record.get(1, Long.class))
@@ -672,7 +671,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockOutTimeMillis);
 				return instant.atZone(targetZone).toLocalTime();
 			})
-			.map(clockOutLocalTime -> findTimeSlot(clockOutLocalTime))
+			.map(this::findTimeSlot)
 			.filter(java.util.Objects::nonNull)
 			.collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(),
 					java.util.stream.Collectors.counting()));

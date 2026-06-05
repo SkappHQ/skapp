@@ -55,7 +55,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 		List<EmployeeManager> managers = employeeManagerDao.findByEmployee(leaveRequest.getEmployee());
 
 		createAttendanceEmailForManagers(managers, emailDynamicFields,
-				EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_SINGLE_DAY_PENDING_LEAVE_REQUEST_CANCELED_EMPLOYEE);
+				EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_SINGLE_DAY_PENDING_LEAVE_REQUEST_CANCELED_MANAGER);
 	}
 
 	@Override
@@ -100,7 +100,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 		List<EmployeeManager> managers = employeeManagerDao.findByEmployee(leaveRequest.getEmployee());
 
 		createAttendanceEmailForManagers(managers, emailDynamicFields,
-				EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_MULTI_DAY_PENDING_LEAVE_REQUEST_CANCELED_EMPLOYEE);
+				EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_MULTI_DAY_PENDING_LEAVE_REQUEST_CANCELED_MANAGER);
 	}
 
 	@Override
@@ -109,7 +109,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		emailDynamicFields.setEmployeeOrManagerName(
 				leaveRequest.getEmployee().getFirstName() + " " + leaveRequest.getEmployee().getLastName());
-		emailDynamicFields.setLeaveType(String.valueOf(leaveRequest.getLeaveState()));
+		emailDynamicFields.setLeaveDuration(String.valueOf(leaveRequest.getLeaveState()));
 		emailDynamicFields.setLeaveType(leaveRequest.getLeaveType().getName());
 		emailDynamicFields.setLeaveStartDate(leaveRequest.getStartDate().toString());
 
@@ -204,8 +204,6 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 	public void sendTimeEntryRequestApprovedEmployeeEmail(TimeRequest timeRequestResponse, User managerUser) {
 		AttendanceEmailDynamicFields emailDynamicFields = new AttendanceEmailDynamicFields();
 
-		emailDynamicFields.setEmployeeOrManagerName(timeRequestResponse.getEmployee().getFirstName() + " "
-				+ timeRequestResponse.getEmployee().getLastName());
 		emailDynamicFields.setEmployeeOrManagerName(timeRequestResponse.getEmployee().getFirstName() + " "
 				+ timeRequestResponse.getEmployee().getLastName());
 		emailDynamicFields.setTimeEntryDate(
