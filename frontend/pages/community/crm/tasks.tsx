@@ -4,6 +4,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
+import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -28,7 +29,10 @@ const Tasks: NextPage = () => {
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
-      <TaskModalController />
+      <>
+        <TaskModalController />
+        <TasksTable />
+      </>
     </ContentLayout>
   );
 };
