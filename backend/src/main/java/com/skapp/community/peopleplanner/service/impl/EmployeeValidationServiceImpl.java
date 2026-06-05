@@ -210,6 +210,7 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 
 		if ((user.getEmail() != null && user.getEmployee() != null
 				&& user.getEmployee().getAccountStatus() != AccountStatus.PENDING)
+				&& user.getEmployee().getEmployeeRole() != null
 				&& user.getEmployee().getEmployeeRole().getPmRole() != Role.PM_GUEST_EMPLOYEE
 				&& createEmployeeRequestDto.getEmployment() != null
 				&& createEmployeeRequestDto.getEmployment().getEmploymentDetails() != null
