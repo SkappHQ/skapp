@@ -1588,7 +1588,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 				cb.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), excludedRole)));
 
 		if (workLocations != null && !workLocations.isEmpty()) {
-			predicates.add(root.get(Employee_.workLocation).in(workLocations));
+			predicates.add(root.get(Employee_.WORK_LOCATION).in(workLocations));
 		}
 
 		query.select(root).where(predicates.toArray(new Predicate[0]));
