@@ -28,21 +28,6 @@ export enum CrmIndustryEnum {
   WHOLESALE = "WHOLESALE"
 }
 
-export enum CrmPriorityEnum {
-  LOW = "LOW",
-  MEDIUM = "MEDIUM",
-  HIGH = "HIGH"
-}
-
-export enum CrmDealSortEnum {
-  CREATED_DATE = "CREATED_DATE",
-  NAME = "NAME",
-  CLOSING_AT = "CLOSING_AT",
-  AMOUNT = "AMOUNT",
-  STAGE_TYPE = "STAGE_TYPE",
-  STAGE_ORDER = "STAGE_ORDER"
-}
-
 export enum CrmDealStageEnum {
   INITIAL = "INITIAL",
   OPEN = "OPEN",
