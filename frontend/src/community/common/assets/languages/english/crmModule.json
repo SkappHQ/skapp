@@ -213,6 +213,24 @@
   "tasks": {
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
-    "addTaskBtn": "Add Task"
+    "addTaskBtn": "Add Task",
+    "tabs": {
+      "myTasks": "My Tasks",
+      "teamTasks": "Team Tasks",
+      "completedTasks": "Completed"
+    },
+    "table": {
+      "clearButtonAriaLabel": "Clear search",
+      "search": "Search task",
+      "infiniteScrollLoadingMessage": "Loading tasks...",
+      "emptyDataState": {
+        "title": "No tasks",
+        "description": "No tasks to complete. You're all caught up!"
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any matches for your search. Please try using a different term."
+      }
+    }
   }
 }

@@ -1,0 +1,1 @@
+export const TASK_SEARCH_DEBOUNCE_DELAY = 500;
