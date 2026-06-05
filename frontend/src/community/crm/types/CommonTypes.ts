@@ -191,9 +191,9 @@ export interface CrmCompanyEditFormTypes {
 
 export interface CrmTaskAddFormTypes {
   name: string;
-  type: string | null;
+  type: CrmTaskCategory | null;
   dueDate: string | null;
-  priority: string | null;
+  priority: CrmPriorityEnum;
   contactName: string;
   deal: string;
   owner: number | null;
@@ -202,9 +202,9 @@ export interface CrmTaskAddFormTypes {
 
 export interface CrmTaskCreatePayload {
   name: string;
-  type: string | null;
+  type: CrmTaskCategory | null;
   dueAt: string | null;
-  priority: string | null;
+  priority: CrmPriorityEnum;
   contactName: string | null;
   deal: string | null;
   owner: number | null;

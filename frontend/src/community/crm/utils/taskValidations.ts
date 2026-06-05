@@ -6,7 +6,7 @@ import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 
 export const addTaskValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
-    type: Yup.string()
+    type: Yup.object()
       .nullable()
       .required(translator(["validations", "type"])),
     name: Yup.string()

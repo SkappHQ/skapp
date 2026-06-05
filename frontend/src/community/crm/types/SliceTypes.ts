@@ -12,8 +12,8 @@ export interface CrmCompanyModalSliceTypes extends Pick<
 
 export interface CrmTaskModalSliceTypes extends Pick<
   CrmStore,
-  | "isAddTaskModalOpen"
-  | "setIsAddTaskModalOpen"
+  | "isTaskModalOpen"
+  | "setIsTaskModalOpen"
   | "taskModalType"
   | "setTaskModalType"
 > {}

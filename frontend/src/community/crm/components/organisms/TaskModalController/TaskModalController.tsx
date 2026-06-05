@@ -9,15 +9,16 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const TaskModalController = () => {
   const translateText = useTranslator("crmModule", "tasks");
 
-  const { isAddTaskModalOpen, taskModalType, setIsAddTaskModalOpen } =
-    useCrmStore((store) => ({
-      isAddTaskModalOpen: store.isAddTaskModalOpen,
+  const { isTaskModalOpen, taskModalType, setIsTaskModalOpen } = useCrmStore(
+    (store) => ({
+      isTaskModalOpen: store.isTaskModalOpen,
       taskModalType: store.taskModalType,
-      setIsAddTaskModalOpen: store.setIsAddTaskModalOpen
-    }));
+      setIsTaskModalOpen: store.setIsTaskModalOpen
+    })
+  );
 
   const handleCloseModal = (): void => {
-    setIsAddTaskModalOpen(false);
+    setIsTaskModalOpen(false);
   };
 
   const getModalTitle = (modalType: CrmModalTypes): string => {
@@ -40,7 +41,7 @@ const TaskModalController = () => {
 
   return (
     <SmallModal
-      isOpen={isAddTaskModalOpen}
+      isOpen={isTaskModalOpen}
       onClose={handleCloseModal}
       modalHeader={getModalTitle(taskModalType)}
       content={getModalContent()}

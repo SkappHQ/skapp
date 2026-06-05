@@ -1,12 +1,10 @@
 import {
-  AvatarChip,
   ButtonV2,
   CalendarIcon,
   CloseIcon,
   DatePicker,
   Dropdown,
   InputField,
-  Label,
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
@@ -19,10 +17,11 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { concatStrings } from "~community/common/utils/commonUtil";
 import { useCreateTask } from "~community/crm/api/TaskApi";
-import { priorityOptions } from "~community/crm/constants/taskConstants";
+import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
+import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
+import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmOwner,
@@ -32,22 +31,16 @@ import {
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
-interface TaskTypeOption {
-  id: string;
-  label: string;
-  value: string;
-}
-
 const AddTaskModal: React.FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsAddTaskModalOpen } = useCrmStore((store) => ({
-    setIsAddTaskModalOpen: store.setIsAddTaskModalOpen
+  const { setIsTaskModalOpen } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen
   }));
 
-  const { data: user } = useGetUserPersonalDetails();
+  const { data: currentUser } = useGetUserPersonalDetails();
 
   const { isCrmSalesManager } = useSessionData();
 
@@ -55,93 +48,22 @@ const AddTaskModal: React.FC = () => {
 
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
+  const priorityDropdownOptions = useGetPriorityOptions();
+  const { options: taskTypeOptions, getCategoryById } = useGetTaskTypeOptions();
+
   const defaultOwner = useMemo(() => {
-    if (!user?.employeeId) return null;
+    if (!currentUser?.employeeId) return null;
     return {
-      employeeId: user.employeeId,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      authPic: user.authPic as string | null
+      employeeId: currentUser.employeeId,
+      firstName: currentUser.firstName,
+      lastName: currentUser.lastName,
+      authPic: currentUser.authPic as string | null
     };
-  }, [user]);
-
-  const priorityDropdownOptions = useMemo(
-    () =>
-      priorityOptions.map((option) => ({
-        id: option.key,
-        label: (
-          <Label
-            key={option.key}
-            backgroundColor={option.backgroundColor}
-            textColor={option.textColor}
-          >
-            {translateText(["priorityOptions", option.key])}
-          </Label>
-        ),
-        value: option.value
-      })),
-    [translateText]
-  );
-
-  // TODO: Replace with API data when backend integrated -----------------
-  const taskTypeOptions: TaskTypeOption[] = useMemo(
-    () =>
-      (["call", "email", "meeting", "other"] as const).map((type) => ({
-        id: type,
-        label: translateText(["taskTypes", type]),
-        value: type.toUpperCase()
-      })),
-    [translateText]
-  );
-  const ownerOptions: CrmOwner[] = useMemo(
-    () => [
-      {
-        firstName: "John",
-        lastName: "Doe",
-        employeeId: 1,
-        authPic: null
-      },
-      {
-        firstName: "Jane",
-        lastName: "Smith",
-        employeeId: 2,
-        authPic: null
-      }
-    ],
-    []
-  );
-  const contactOptions = useMemo(() => ["John Doe", "Jane Smith"], []);
-  const dealOptions = useMemo(() => ["deal1", "deal2"], []);
-  // =====================================================================
-
-  // filtration should be done in backend
-  const filteredOwnerOptions: SearchableDropdownItem[] = useMemo(() => {
-    const filtered = ownerOptions.filter((owner) => {
-      const fullName = concatStrings([
-        owner.firstName,
-        owner.lastName ?? ""
-      ]).toLowerCase();
-      return fullName.includes(ownerSearchText.toLowerCase());
-    });
-
-    return filtered.map((opt) => ({
-      id: opt.employeeId.toString(),
-      content: (
-        <AvatarChip
-          label={concatStrings([opt.firstName, opt.lastName ?? ""])}
-          avatarProps={
-            opt.authPic
-              ? { id: opt.employeeId.toString(), src: opt.authPic }
-              : undefined
-          }
-        />
-      ) as React.ReactNode
-    }));
-  }, [ownerSearchText, ownerOptions]);
+  }, [currentUser]);
 
   const initialValues: CrmTaskAddFormTypes = {
     name: "",
-    type: taskTypeOptions[0].value,
+    type: null,
     dueDate: null,
     priority: CrmPriorityEnum.MEDIUM,
     contactName: "",
@@ -171,30 +93,10 @@ const AddTaskModal: React.FC = () => {
   } = formik;
 
   const handleCloseModal = (): void => {
-    setIsAddTaskModalOpen(false);
+    setIsTaskModalOpen(false);
     resetForm();
     setOwnerSearchText("");
   };
-
-  const filteredContactOptions = useMemo(
-    () =>
-      values.contactName
-        ? contactOptions.filter((c) =>
-            c.toLowerCase().includes(values.contactName!.toLowerCase())
-          )
-        : contactOptions,
-    [contactOptions, values.contactName]
-  );
-
-  const filteredDealOptions = useMemo(
-    () =>
-      values.deal
-        ? dealOptions.filter((d) =>
-            d.toLowerCase().includes(values.deal!.toLowerCase())
-          )
-        : dealOptions,
-    [dealOptions, values.deal]
-  );
 
   const handleSuccess = () => {
     setSubmitting(false);
@@ -219,9 +121,8 @@ const AddTaskModal: React.FC = () => {
   const handleOwnerSelect = (owner: SearchableDropdownItem) => {
     setFieldValue("owner", Number(owner.id));
     setOwnerSearchText("");
-    setSelectedOwner(
-      ownerOptions.find((opt) => opt.employeeId.toString() === owner.id) || null
-    );
+    // TODO: Lookup owner from owner.id and construct CrmOwner to set
+    setSelectedOwner(null);
   };
 
   const { mutate: createNewTask, isPending } = useCreateTask(
@@ -236,7 +137,7 @@ const AddTaskModal: React.FC = () => {
       dueAt: formValues.dueDate,
       priority: formValues.priority,
       contactName: formValues.contactName?.trim() || null,
-      deal: formValues.deal?.trim() || null,
+      deal: formValues.deal?.trim(),
       owner: formValues.owner,
       notes: formValues.notes?.trim() || null
     };
@@ -250,8 +151,10 @@ const AddTaskModal: React.FC = () => {
         label={translateText(["labels", "type"])}
         placeholder={translateText(["placeholders", "type"])}
         options={taskTypeOptions}
-        value={values.type ?? undefined}
-        onChange={(value) => setFieldValue("type", value)}
+        value={values.type?.id?.toString() ?? undefined}
+        onChange={(value) =>
+          setFieldValue("type", getCategoryById(Number(value)) ?? null)
+        }
         errorMessage={errors.type}
         variant={errors.type ? "primary-error" : "primary"}
         width="100%"
@@ -314,58 +217,41 @@ const AddTaskModal: React.FC = () => {
         ariaLabel={translateText(["ariaLabels", "priority"])}
       />
 
-      {/* TODO: Replace hardcoded options with API data when backend integrated */}
       <SearchableDropdown
         id="contact-search"
         label={translateText(["labels", "contactName"])}
         placeholder={translateText(["placeholders", "contactName"])}
         value={values.contactName ?? ""}
         onChange={(e) => setFieldValue("contactName", e.target.value)}
-        items={filteredContactOptions.map((c) => ({ id: c, content: c }))}
+        items={[]}
         onSelect={(item) => setFieldValue("contactName", item.id)}
       />
 
-      {/* TODO: Replace hardcoded options with API data when backend integrated */}
       <SearchableDropdown
         id="deal-search"
         label={translateText(["labels", "deal"])}
         placeholder={translateText(["placeholders", "deal"])}
         value={values.deal ?? ""}
         onChange={(e) => setFieldValue("deal", e.target.value)}
-        items={filteredDealOptions.map((d) => ({ id: d, content: d }))}
+        items={[]}
         onSelect={(item) => setFieldValue("deal", item.id)}
       />
 
       {selectedOwner ? (
-        <div className="flex w-full flex-col gap-2">
-          <span className="subtitle1 leading-normal inline-flex h-6 items-center">
-            {translateText(["labels", "taskOwner"])}
-          </span>
-          <div className="flex h-[3.125rem] items-center rounded-lg bg-tertiary-background">
-            <AvatarChip
-              label={concatStrings([
-                selectedOwner.firstName,
-                selectedOwner.lastName ?? ""
-              ])}
-              avatarProps={{
-                id: selectedOwner.employeeId.toString(),
-                src: selectedOwner.authPic ?? undefined,
-                size: "sm"
-              }}
-              actionIcon={<CloseIcon />}
-              onActionClick={() => {
-                setSelectedOwner(null);
-                setFieldValue("owner", null);
-              }}
-              showActionButton={isCrmSalesManager}
-              aria-label={translateText(["ariaLabels", "removeOwner"])}
-            />
-          </div>
-        </div>
+        <SelectedOwnerField
+          label={translateText(["labels", "taskOwner"])}
+          owner={selectedOwner}
+          onRemove={() => {
+            setSelectedOwner(null);
+            setFieldValue("owner", null);
+          }}
+          showRemoveButton={isCrmSalesManager ?? false}
+          ariaLabel={translateText(["ariaLabels", "removeOwner"])}
+        />
       ) : (
         <SearchableDropdown
           id="owner-search"
-          items={filteredOwnerOptions}
+          items={[]}
           onSelect={handleOwnerSelect}
           label={translateText(["labels", "taskOwner"])}
           placeholder={translateText(["placeholders", "taskOwner"])}

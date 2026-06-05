@@ -11,13 +11,13 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
 
-  const { setIsAddTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
-    setIsAddTaskModalOpen: store.setIsAddTaskModalOpen,
+  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType
   }));
 
   const onPrimaryButtonClick = () => {
-    setIsAddTaskModalOpen(true);
+    setIsTaskModalOpen(true);
     setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
   };
 
