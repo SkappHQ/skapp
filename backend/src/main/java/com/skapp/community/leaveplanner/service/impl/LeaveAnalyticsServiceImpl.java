@@ -361,9 +361,11 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 
 		User currentUser = userService.getCurrentUser();
 
+		List<Long> employeeIds = null;
 		if (teamIds.contains(-1L) && !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
 			teamIds = teamDao.findLeadingTeamIdsByManagerId(currentUser.getEmployee().getEmployeeId());
-			if (teamIds.isEmpty()) {
+			employeeIds = employeeDao.findEmployeeIdsByManagerId(currentUser.getEmployee().getEmployeeId());
+			if (teamIds.isEmpty() && employeeIds.isEmpty()) {
 				LeaveUtilizationResponseDto emptyResponse = new LeaveUtilizationResponseDto();
 				emptyResponse.setTotalLeaves(Collections.emptyMap());
 				emptyResponse.setTotalLeavesWithType(Collections.emptyList());
@@ -388,7 +390,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		LocalDate endDate = LocalDate.of(cycleEndYear, leaveCycleDetail.getEndMonth(), leaveCycleDetail.getEndDate());
 
 		var list = leaveRequestDao.findLeaveTypeBreakDown(getWorkingDaysIndex(), holidayDates, startDate, endDate,
-				typeIds.contains(-1L) ? null : typeIds, teamIds.contains(-1L) ? null : teamIds);
+				typeIds.contains(-1L) ? null : typeIds, teamIds.contains(-1L) ? null : teamIds, employeeIds);
 		Map<Integer, Double> totalLeavesWithMonths = list.stream()
 			.collect(Collectors.groupingBy(LeaveTypeBreakDown::getKeyValue,
 					Collectors.summingDouble(LeaveTypeBreakDown::getLeaveCount)));

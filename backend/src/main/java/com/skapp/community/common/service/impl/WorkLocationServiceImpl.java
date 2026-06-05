@@ -5,7 +5,6 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.payload.response.WorkLocationDetailResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationEmployeeResponseDto;
-import com.skapp.community.common.payload.response.WorkLocationGeofenceResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationNameAvailabilityResponseDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -14,13 +13,11 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.model.WorkLocation;
-import com.skapp.community.common.model.WorkLocationGeofence;
 import com.skapp.community.common.payload.request.WorkLocationFilterDto;
 import com.skapp.community.common.payload.request.WorkLocationRequestDto;
 import com.skapp.community.common.payload.response.WorkLocationResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationSummaryResponseDto;
 import com.skapp.community.common.repository.WorkLocationDao;
-import com.skapp.community.common.repository.WorkLocationGeofenceDao;
 import com.skapp.community.common.service.WorkLocationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -41,8 +37,6 @@ import java.util.Set;
 public class WorkLocationServiceImpl implements WorkLocationService {
 
 	private final WorkLocationDao workLocationDao;
-
-	private final WorkLocationGeofenceDao workLocationGeofenceDao;
 
 	private final EmployeeDao employeeDao;
 
@@ -63,11 +57,6 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		workLocation.setName(workLocationName);
 		workLocation.setAddress(workLocationRequestDto.getAddress());
 		workLocation = workLocationDao.save(workLocation);
-
-		if (workLocationRequestDto.getGeofence() != null) {
-			WorkLocationGeofence geofence = createGeofence(workLocationRequestDto, workLocation);
-			workLocationGeofenceDao.save(geofence);
-		}
 
 		assignEmployeesToWorkLocation(workLocationRequestDto, workLocation);
 
@@ -103,21 +92,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		clearWorkLocationFromEmployees(id);
 		assignEmployeesToWorkLocation(workLocationRequestDto, workLocation);
 
-		if (workLocationRequestDto.getGeofence() != null) {
-			Optional<WorkLocationGeofence> existingGeofence = workLocationGeofenceDao
-				.findByWorkLocationWorkLocationId(id);
-			WorkLocationGeofence geofence = existingGeofence.orElseGet(WorkLocationGeofence::new);
-			geofence.setWorkLocation(workLocation);
-			geofence.setLatitude(workLocationRequestDto.getGeofence().getLatitude());
-			geofence.setLongitude(workLocationRequestDto.getGeofence().getLongitude());
-			geofence.setRadiusMeters(workLocationRequestDto.getGeofence().getRadiusMeters());
-			workLocationGeofenceDao.save(geofence);
-		}
-		else {
-			workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
-		}
-
-		workLocation = workLocationDao.save(workLocation);
+		workLocationDao.save(workLocation);
 
 		log.info("updateWorkLocation: execution ended");
 
@@ -134,7 +109,6 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
 		clearWorkLocationFromEmployees(id);
-		workLocationGeofenceDao.findByWorkLocationWorkLocationId(id).ifPresent(workLocationGeofenceDao::delete);
 		workLocationDao.delete(workLocation);
 
 		log.info("deleteWorkLocation: execution ended");
@@ -206,8 +180,6 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		WorkLocation workLocation = workLocationDao.findById(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
-		Optional<WorkLocationGeofence> geofence = workLocationGeofenceDao.findByWorkLocationWorkLocationId(id);
-
 		List<Employee> locationEmployees = employeeDao.findActiveEmployeesExcludingGuests(id);
 		Long totalActiveCount = employeeDao.countActiveEmployeesExcludingGuests();
 		boolean isAllEmployeesAssigned = !locationEmployees.isEmpty() && locationEmployees.size() == totalActiveCount;
@@ -226,28 +198,11 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 			empDto.setAuthPic(emp.getAuthPic());
 			return empDto;
 		}).toList());
-		responseDto.setGeofence(geofence.map(g -> {
-			WorkLocationGeofenceResponseDto geoDto = new WorkLocationGeofenceResponseDto();
-			geoDto.setId(g.getId());
-			geoDto.setLatitude(g.getLatitude());
-			geoDto.setLongitude(g.getLongitude());
-			geoDto.setRadiusMeters(g.getRadiusMeters());
-			return geoDto;
-		}).orElse(null));
+		responseDto.setGeofence(null);
 
 		log.info("getWorkLocationById: execution ended");
 
 		return new ResponseEntityDto(false, responseDto);
-	}
-
-	private WorkLocationGeofence createGeofence(WorkLocationRequestDto workLocationRequestDto,
-			WorkLocation workLocation) {
-		WorkLocationGeofence geofence = new WorkLocationGeofence();
-		geofence.setWorkLocation(workLocation);
-		geofence.setLatitude(workLocationRequestDto.getGeofence().getLatitude());
-		geofence.setLongitude(workLocationRequestDto.getGeofence().getLongitude());
-		geofence.setRadiusMeters(workLocationRequestDto.getGeofence().getRadiusMeters());
-		return geofence;
 	}
 
 	private WorkLocationResponseDto mapWorkLocationToResponseDto(WorkLocation workLocation, Long employeeCount) {

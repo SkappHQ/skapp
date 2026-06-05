@@ -207,7 +207,7 @@ const TeamTimeSheetAnalytics: NextPage = () => {
         },
         {
           label: translateLeave(["leaveRequests.title"]),
-          href: ROUTES.LEAVE.LEAVE_REQUESTS
+          onClick: () => router.push(ROUTES.LEAVE.LEAVE_REQUESTS)
         },
         {
           label: translatePeople(["title"])

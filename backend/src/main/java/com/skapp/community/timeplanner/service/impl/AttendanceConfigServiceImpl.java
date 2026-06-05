@@ -55,10 +55,12 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		updateOrCreateConfig(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES,
 				String.valueOf(dto.getIsAutoApprovalForChanges()));
 
-		if (dto.getIsGeoFencingEnabled() != null) {
-			updateOrCreateConfig(AttendanceConfigType.GEO_FENCING_ENABLED,
-					String.valueOf(dto.getIsGeoFencingEnabled()));
+		if (attendanceConfigRequestDto.getIsGeoFencingEnabled() != null) {
+			configMap.put(AttendanceConfigType.GEO_FENCING_ENABLED,
+					String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
 		}
+
+		configMap.forEach(this::updateOrCreateConfig);
 
 		log.info("updateAttendanceConfig: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(TimeMessageConstant.TIME_SUCCESS_ATTENDANCE_CONFIG_UPDATED),

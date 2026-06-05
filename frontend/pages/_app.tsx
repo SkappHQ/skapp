@@ -9,7 +9,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import { I18nextProvider, useSSR } from "react-i18next";
 
 import { AuthProvider } from "~community/auth/providers/AuthProvider";
-import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
@@ -90,34 +89,6 @@ function MyApp({
     }
   }, []);
 
-  function RouteChangeLoader() {
-    const router = useRouter();
-
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-      const handleStart = (url: string): void => {
-        url !== router.asPath && setLoading(true);
-      };
-
-      const handleComplete = (): void => {
-        setLoading(false);
-      };
-
-      router.events.on("routeChangeStart", handleStart);
-      router.events.on("routeChangeComplete", handleComplete);
-      router.events.on("routeChangeError", handleComplete);
-
-      return () => {
-        router.events.off("routeChangeStart", handleStart);
-        router.events.off("routeChangeComplete", handleComplete);
-        router.events.off("routeChangeError", handleComplete);
-      };
-    }, [router.asPath, router.events]);
-
-    return <>{loading && <FullScreenLoader />}</>;
-  }
-
   const shouldUseWebSocketProvider =
     process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE;
 
@@ -131,7 +102,6 @@ function MyApp({
                 <ThemeProvider theme={newTheme}>
                   <I18nextProvider i18n={i18n}>
                     <ErrorBoundary FallbackComponent={Error}>
-                      <RouteChangeLoader />
                       <BaseLayout>
                         <Component {...pageProps} />
                       </BaseLayout>
@@ -152,7 +122,6 @@ function MyApp({
                 <I18nextProvider i18n={i18n}>
                   <AnnouncementProvider>
                     <ErrorBoundary FallbackComponent={Error}>
-                      <RouteChangeLoader />
                       <BaseLayout>
                         <Component {...pageProps} />
                       </BaseLayout>

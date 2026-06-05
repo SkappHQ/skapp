@@ -758,13 +758,37 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
-		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
-
 		List<Predicate> predicates = new ArrayList<>();
 
-		Join<LeaveRequest, Employee> employee = root.join(LeaveRequest_.EMPLOYEE);
-		predicates.add(criteriaBuilder.equal(employee.get(Employee_.EMPLOYEE_ID), employeeId));
+		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
+		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
+		buildEmployeeLeavePredicates(criteriaBuilder, root, predicates, employeeId, leaveRequestFilterDto);
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+
+		TypedQuery<LeaveRequest> query = entityManager.createQuery(criteriaQuery);
+		if (page.isPaged()) {
+			query.setFirstResult(page.getPageNumber() * page.getPageSize());
+			query.setMaxResults(page.getPageSize());
+
+			predicates.clear();
+			CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+			Root<LeaveRequest> countRoot = countQuery.from(LeaveRequest.class);
+			buildEmployeeLeavePredicates(criteriaBuilder, countRoot, predicates, employeeId, leaveRequestFilterDto);
+			countQuery.select(criteriaBuilder.count(countRoot));
+			countQuery.where(predicates.toArray(new Predicate[0]));
+			long totalRows = entityManager.createQuery(countQuery).getSingleResult();
+
+			return new PageImpl<>(query.getResultList(), page, totalRows);
+		}
+
+		List<LeaveRequest> results = query.getResultList();
+		return new PageImpl<>(results, page, results.size());
+	}
+
+	private void buildEmployeeLeavePredicates(CriteriaBuilder criteriaBuilder, Root<LeaveRequest> root,
+			List<Predicate> predicates, Long employeeId, LeaveRequestFilterDto leaveRequestFilterDto) {
+		predicates.add(criteriaBuilder.equal(root.get(LeaveRequest_.EMPLOYEE).get(Employee_.EMPLOYEE_ID), employeeId));
 
 		if (!CollectionUtils.isEmpty(leaveRequestFilterDto.getLeaveType())) {
 			predicates.add(root.get(LeaveRequest_.LEAVE_TYPE)
@@ -784,19 +808,6 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 							leaveRequestFilterDto.getEndDate()));
 			predicates.add(dateBetween);
 		}
-
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		criteriaQuery.where(predArray);
-		criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
-
-		TypedQuery<LeaveRequest> query = entityManager.createQuery(criteriaQuery);
-
-		int totalRows = query.getResultList().size();
-		query.setFirstResult(page.getPageNumber() * page.getPageSize());
-		query.setMaxResults(page.getPageSize());
-
-		return new PageImpl<>(query.getResultList(), page, totalRows);
 	}
 
 	@Override
@@ -884,8 +895,46 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			LeaveRequestFilterDto leaveRequestFilterDto, Pageable page) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
+		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+		Root<LeaveRequest> countRoot = countQuery.from(LeaveRequest.class);
+
+		Join<LeaveRequest, Employee> countEmployee = countRoot.join(LeaveRequest_.employee);
+		Join<Employee, EmployeeManager> countManagers = countEmployee.join(Employee_.employeeManagers);
+		Join<EmployeeManager, Employee> countManEmp = countManagers.join(EmployeeManager_.manager);
+		Join<Employee, User> countUser = countEmployee.join(Employee_.user);
+
+		List<Predicate> countPredicates = new ArrayList<>();
+		countPredicates.add(criteriaBuilder.equal(countUser.get(User_.isActive), true));
+		countPredicates.add(criteriaBuilder.equal(countManEmp.get(Employee_.employeeId), managerEmployeeId));
+
+		if (!CollectionUtils.isEmpty(leaveRequestFilterDto.getLeaveType())) {
+			countPredicates.add(countRoot.get(LeaveRequest_.leaveType)
+				.get(LeaveType_.typeId)
+				.in(leaveRequestFilterDto.getLeaveType()));
+		}
+
+		if (!CollectionUtils.isEmpty(leaveRequestFilterDto.getStatus())) {
+			countPredicates.add(countRoot.get(LeaveRequest_.status).in(leaveRequestFilterDto.getStatus()));
+		}
+		setDateRangeFiltration(leaveRequestFilterDto, criteriaBuilder, countRoot, countPredicates);
+
+		if (!CollectionUtils.isEmpty(leaveRequestFilterDto.getManagerType())) {
+			countPredicates
+				.add(countManagers.get(EmployeeManager_.managerType).in(leaveRequestFilterDto.getManagerType()));
+		}
+
+		countQuery.select(criteriaBuilder.countDistinct(countRoot.get(LeaveRequest_.leaveRequestId)));
+		countQuery.where(countPredicates.toArray(new Predicate[0]));
+		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
+
+		if (totalRows == 0) {
+			return new PageImpl<>(Collections.emptyList(), page, 0);
+		}
+
 		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
 		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
+
+		root.fetch(LeaveRequest_.leaveType, JoinType.INNER);
 
 		List<Predicate> predicates = new ArrayList<>();
 
@@ -911,15 +960,11 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			predicates.add(managers.get(EmployeeManager_.managerType).in(leaveRequestFilterDto.getManagerType()));
 		}
 
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		criteriaQuery.where(predArray);
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(root).distinct(true);
 		criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
 
 		TypedQuery<LeaveRequest> query = entityManager.createQuery(criteriaQuery);
-
-		int totalRows = query.getResultList().size();
 		query.setFirstResult(page.getPageNumber() * page.getPageSize());
 		query.setMaxResults(page.getPageSize());
 
@@ -1251,7 +1296,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	public List<LeaveTypeBreakDown> findLeaveTypeBreakDown(List<Integer> workingDaysIndex, List<LocalDate> holidayDates,
-			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds) {
+			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds, List<Long> employeeIds) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1)).toList();
@@ -1293,20 +1338,29 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				predicates.add(leaveType.get(LeaveType_.typeId).in(typeIds));
 			}
 
+			List<Predicate> teamOrEmployeePredicates = new ArrayList<>();
 			if (teamIds != null && !teamIds.isEmpty() && employeeTeam != null) {
-				predicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+				teamOrEmployeePredicates.add(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+			}
+			if (employeeIds != null && !employeeIds.isEmpty()) {
+				teamOrEmployeePredicates.add(employee.get(Employee_.employeeId).in(employeeIds));
+			}
+			if (!teamOrEmployeePredicates.isEmpty()) {
+				predicates.add(cb.or(teamOrEmployeePredicates.toArray(new Predicate[0])));
 			}
 
 			predicates.add(cb.equal(leaveType.get(LeaveType_.isActive), true));
 
-			leaveQuery.multiselect(leaveType.get(LeaveType_.typeId), leaveRequest.get(LeaveRequest_.leaveState));
+			leaveQuery.select(cb.array(leaveRequest.get(LeaveRequest_.leaveRequestId), leaveType.get(LeaveType_.typeId),
+					leaveRequest.get(LeaveRequest_.leaveState)));
+			leaveQuery.distinct(true);
 			leaveQuery.where(predicates.toArray(new Predicate[0]));
 
 			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
 
 			for (Object[] result : results) {
-				Long leaveTypeId = (Long) result[0];
-				LeaveState leaveState = (LeaveState) result[1];
+				Long leaveTypeId = (Long) result[1];
+				LeaveState leaveState = (LeaveState) result[2];
 
 				double leaveCount = 1.0;
 				if (leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING) {

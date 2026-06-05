@@ -3,7 +3,8 @@ const styles = () => ({
     flexDirection: "column",
     width: "100dvw",
     height: "100dvh",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
+    position: "relative"
   }
 });
 
