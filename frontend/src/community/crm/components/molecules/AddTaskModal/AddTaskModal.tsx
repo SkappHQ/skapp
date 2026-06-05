@@ -47,23 +47,23 @@ const AddTaskModal: React.FC = () => {
     setIsAddTaskModalOpen: store.setIsAddTaskModalOpen
   }));
 
-  const { data: me } = useGetUserPersonalDetails();
+  const { data: user } = useGetUserPersonalDetails();
 
   const { isCrmSalesManager } = useSessionData();
 
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
-  
+
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
   const defaultOwner = useMemo(() => {
-    if (!me?.employeeId) return null;
+    if (!user?.employeeId) return null;
     return {
-      employeeId: me.employeeId,
-      firstName: me.firstName,
-      lastName: me.lastName,
-      authPic: me.authPic as string | null
+      employeeId: user.employeeId,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      authPic: user.authPic as string | null
     };
-  }, [me]);
+  }, [user]);
 
   const priorityDropdownOptions = useMemo(
     () =>
@@ -141,7 +141,7 @@ const AddTaskModal: React.FC = () => {
 
   const initialValues: CrmTaskAddFormTypes = {
     name: "",
-    type: null,
+    type: taskTypeOptions[0].value,
     dueDate: null,
     priority: CrmPriorityEnum.MEDIUM,
     contactName: "",
@@ -217,7 +217,7 @@ const AddTaskModal: React.FC = () => {
   };
 
   const handleOwnerSelect = (owner: SearchableDropdownItem) => {
-    setFieldValue("owner", owner.id);
+    setFieldValue("owner", Number(owner.id));
     setOwnerSearchText("");
     setSelectedOwner(
       ownerOptions.find((opt) => opt.employeeId.toString() === owner.id) || null
@@ -277,7 +277,7 @@ const AddTaskModal: React.FC = () => {
         mode="single"
         selected={values.dueDate ? new Date(values.dueDate) : undefined}
         onSelect={(date: Date | undefined) =>
-          setFieldValue("dueDate", date ?? null)
+          setFieldValue("dueDate", date ? date.toISOString() : null)
         }
         popperProps={{ position: "bottom-end" }}
       >
@@ -358,6 +358,7 @@ const AddTaskModal: React.FC = () => {
                 setFieldValue("owner", null);
               }}
               showActionButton={isCrmSalesManager}
+              aria-label={translateText(["ariaLabels", "removeOwner"])}
             />
           </div>
         </div>

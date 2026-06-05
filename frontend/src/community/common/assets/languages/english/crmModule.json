@@ -225,6 +225,7 @@
         "type": "Please select a task type.",
         "name": "Task subject is required",
         "nameLength": "Task name must be less than 50 characters",
+        "notesLength": "Notes must be less than 255 characters",
         "dueDate": "Please select a valid due date.",
         "dueDatePast": "Due date cannot be in the past."
       }

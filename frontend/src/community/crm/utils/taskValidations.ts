@@ -16,6 +16,12 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
         characterLengths.NAME_LENGTH,
         translator(["validations", "nameLength"])
       ),
+    notes: Yup.string()
+      .nullable()
+      .max(
+        characterLengths.TASK_NOTES_LENGTH,
+        translator(["validations", "notesLength"])
+      ),
     dueDate: Yup.date()
       .nullable()
       .required(translator(["validations", "dueDate"]))
