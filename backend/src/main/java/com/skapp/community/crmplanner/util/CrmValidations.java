@@ -178,6 +178,10 @@ public class CrmValidations {
 		if (domain == null || domain.isBlank()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_REQUIRED);
 		}
+
+		if (domain.length() > CrmConstants.DOMAIN_MAX_LENGTH || !domain.matches(CrmConstants.DOMAIN_PATTERN)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_INVALID);
+		}
 	}
 
 }

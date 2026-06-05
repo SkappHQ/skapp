@@ -31,6 +31,10 @@ public class CrmConstants {
 
 	public static final int CHARACTER_MAX_LENGTH = 50;
 
+	public static final int DOMAIN_MAX_LENGTH = 253;
+
+	public static final String DOMAIN_PATTERN = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$";
+
 	public static final int PHONE_MAX_LENGTH = 15;
 
 }

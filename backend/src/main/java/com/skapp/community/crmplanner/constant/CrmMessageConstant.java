@@ -46,6 +46,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_INDUSTRY_INVALID("api.error.crm.validation.industry-invalid"),
 	CRM_ERROR_COMPANY_EXISTS("api.error.crm.company-name-exists"),
 	CRM_ERROR_DOMAIN_REQUIRED("api.error.crm.validation.domain-required"),
+	CRM_ERROR_DOMAIN_INVALID("api.error.crm.validation.domain-invalid"),
 	CRM_SUCCESS_CONTACT_CREATED("api.success.crm.contact-created"),
 	CRM_SUCCESS_CONTACT_DELETED("api.success.crm.contact-deleted"),
 	CRM_SUCCESS_CONTACT_UPDATED("api.success.crm.contact-updated"),

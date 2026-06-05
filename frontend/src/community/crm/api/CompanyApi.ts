@@ -73,10 +73,7 @@ export const useCreateNewCompany = (
   });
 };
 
-export const useCheckCompanyNameExists = (
-  name: string,
-  enabled: boolean = true
-) => {
+export const useCheckCompanyNameExists = (name: string, enabled: boolean) => {
   return useQuery({
     queryKey: [...companyQueryKeys.CHECK_COMPANY_NAME_EXISTS, name],
     queryFn: async () => {
