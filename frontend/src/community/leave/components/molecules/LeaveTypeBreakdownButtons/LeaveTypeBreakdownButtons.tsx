@@ -74,7 +74,7 @@ const LeaveTypeBreakdownButtons = ({
             key={filterType}
             onClick={() => onClick(filterType)}
             isSelected={toggle[filterType]}
-            size={"sm"}
+            size="sm"
             prefixIcon={
               isGraph ? colorIndicator(colors[filterType]) : undefined
             }
