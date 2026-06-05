@@ -35,33 +35,36 @@ const TasksTable = () => {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <Tabs tabs={tabs} activeTabId={activeTab} onTabChange={handleTabChange} />
-      <div className="flex flex-col gap-4 w-full">
-        <div className="flex flex-row gap-4 w-full h-[3rem] items-center pb-2">
-          <InputField
-            ariaLabelClearButton={translateText([
-              "table",
-              "clearButtonAriaLabel"
-            ])}
-            className="w-[25.75rem] h-[3rem]"
-            placeholder={translateText(["table", "search"])}
-            rightIcon={<SearchIcon />}
-            state="default"
-            type="search"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            customStyles={{ borderRadius: "rounded-[1.5rem]" }}
-          />
-        </div>
+      <div className="flex flex-col pb-1">
+        <Tabs
+          tabs={tabs}
+          activeTabId={activeTab}
+          onTabChange={handleTabChange}
+        />
+        <hr className="border-secondary-accent" />
+      </div>
+      <InputField
+        ariaLabelClearButton={translateText(["table", "clearButtonAriaLabel"])}
+        className="w-[25.75rem] h-[3rem]"
+        placeholder={translateText(["table", "search"])}
+        rightIcon={<SearchIcon />}
+        state="default"
+        type="search"
+        value={searchTerm}
+        onChange={handleSearchChange}
+        customStyles={{ borderRadius: "rounded-[1.5rem]" }}
+      />
+      <div className="bg-secondary-background w-full rounded-lg h-[23.25rem]">
         <EmptyDataView
           title={
             emptyStateType === EmptyStateTypeEnum.NO_DATA
               ? translateText(["table", "emptyDataState", "title"])
               : translateText(["table", "emptySearchState", "title"])
           }
-          description={emptyStateType === EmptyStateTypeEnum.NO_DATA
-            ? translateText(["table", "emptyDataState", "description"])
-            : translateText(["table", "emptySearchState", "description"])
+          description={
+            emptyStateType === EmptyStateTypeEnum.NO_DATA
+              ? translateText(["table", "emptyDataState", "description"])
+              : translateText(["table", "emptySearchState", "description"])
           }
           icon={<SearchIcon />}
         />
