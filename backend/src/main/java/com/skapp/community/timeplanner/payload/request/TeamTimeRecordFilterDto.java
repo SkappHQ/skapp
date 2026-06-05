@@ -1,6 +1,5 @@
 package com.skapp.community.timeplanner.payload.request;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Sort;
@@ -21,10 +20,8 @@ public class TeamTimeRecordFilterDto {
 
 	private Boolean isExport = false;
 
-	@NotNull
 	private LocalDate startDate;
 
-	@NotNull
 	private LocalDate endDate;
 
 }
