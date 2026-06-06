@@ -1,10 +1,10 @@
-import { Label } from "@rootcodelabs/skapp-ui";
+import { DropdownOption, Label } from "@rootcodelabs/skapp-ui";
 import { useMemo } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { priorityOptions } from "~community/crm/constants/taskConstants";
 
-const useGetPriorityOptions = () => {
+const useGetPriorityOptions = (): DropdownOption[] => {
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
   return useMemo(
