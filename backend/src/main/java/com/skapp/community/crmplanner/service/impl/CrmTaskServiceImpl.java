@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
+import com.skapp.community.crmplanner.payload.response.CrmTaskListResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmTaskService;
@@ -28,9 +29,12 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findByIsDeletedFalse());
 
+		CrmTaskListResponseDto response = new CrmTaskListResponseDto();
+		response.setTasks(tasks);
+
 		log.info("getTasks: execution ended");
 
-		return new ResponseEntityDto(false, tasks);
+		return new ResponseEntityDto(false, response);
 	}
 
 }

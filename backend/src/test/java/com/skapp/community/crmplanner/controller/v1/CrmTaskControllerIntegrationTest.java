@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
-import static com.skapp.support.TestConstants.RESULTS_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -81,13 +80,13 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get tasks with no tasks - Returns OK with empty results")
+	@DisplayName("Get tasks with no tasks - Returns OK with empty tasks list")
 	void getTasks_NoTasks_ReturnsOkEmpty() throws Exception {
 		performGetRequest(authToken).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_PATH).isArray())
-			.andExpect(jsonPath(RESULTS_PATH).isEmpty());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks']").isEmpty());
 	}
 
 	@Test
@@ -99,9 +98,8 @@ class CrmTaskControllerIntegrationTest {
 		performGetRequest(authToken).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_PATH).isArray())
-			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Active task"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Active task"));
 	}
 
 }
