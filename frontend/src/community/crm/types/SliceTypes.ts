@@ -9,3 +9,10 @@ export interface CrmCompanyModalSliceTypes extends Pick<
   | "selectedCompany"
   | "setSelectedCompany"
 > {}
+
+export interface CrmSidePanelSliceTypes extends Pick<
+  CrmStore,
+  | "isSidePanelOpen"
+  | "openSidePanel"
+  | "closeSidePanel"
+> {}
