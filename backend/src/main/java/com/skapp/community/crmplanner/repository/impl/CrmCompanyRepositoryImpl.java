@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
@@ -154,7 +155,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 				cb.like(cb.lower(company.get(CrmCompany_.website)), likePattern, '\\'));
 		query.orderBy(cb.asc(cb.lower(company.get(CrmCompany_.name))));
 
-		return entityManager.createQuery(query).getResultList();
+		return entityManager.createQuery(query).setMaxResults(CrmConstants.DOMAIN_SEARCH_MAX_RESULTS).getResultList();
 	}
 
 	@Override
