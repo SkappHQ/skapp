@@ -27,7 +27,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	public ResponseEntityDto getTasks() {
 		log.info("getTasks: execution started");
 
-		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findByIsDeletedFalse());
+		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwner());
 
 		CrmTaskListResponseDto response = new CrmTaskListResponseDto();
 		response.setTasks(tasks);

@@ -22,6 +22,20 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	private final EntityManager entityManager;
 
 	@Override
+	public List<CrmTask> findAllWithTypeAndOwner() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		task.fetch(CrmTask_.type);
+		task.fetch(CrmTask_.owner);
+
+		query.select(task).where(cb.isFalse(task.get(CrmTask_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
 	public List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds) {
 		if (contactIds == null || contactIds.isEmpty()) {
 			return Collections.emptyList();

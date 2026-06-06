@@ -9,8 +9,6 @@ import java.util.List;
 @Repository
 public interface CrmTaskDao extends JpaRepository<CrmTask, Long>, CrmTaskRepository {
 
-	List<CrmTask> findByIsDeletedFalse();
-
 	List<CrmTask> findByContact_IdAndIsDeletedFalse(Long contactId);
 
 	List<CrmTask> findByDeal_Contact_IdAndIsDeletedFalse(Long contactId);
