@@ -149,7 +149,6 @@ const AddTaskModalContent: React.FC = () => {
       notes: formValues.notes?.trim()
     };
 
-    console.log("Creating task with payload:", payload);
     createNewTask(payload);
   };
 
