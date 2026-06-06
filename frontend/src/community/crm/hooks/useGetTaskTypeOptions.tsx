@@ -1,4 +1,3 @@
-import { DropdownOption } from "@rootcodelabs/skapp-ui";
 import { useMemo } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -15,7 +14,7 @@ const STATIC_TASK_CATEGORIES: CrmTaskCategory[] = [
 const useGetTaskTypeOptions = () => {
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const options: DropdownOption[] = useMemo(
+  const options = useMemo(
     () =>
       STATIC_TASK_CATEGORIES.map((category) => ({
         id: category.id.toString(),
