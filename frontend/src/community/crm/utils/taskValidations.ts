@@ -34,5 +34,8 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
             isToday(value) || isAfter(startOfDay(value), startOfDay(new Date()))
           );
         }
-      )
+      ),
+    owner: Yup.number()
+      .nullable()
+      .required(translator(["validations", "owner"]))
   });

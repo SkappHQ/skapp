@@ -8,7 +8,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -51,15 +51,21 @@ const AddTaskModalContent: React.FC = () => {
   const priorityDropdownOptions = useGetPriorityOptions();
   const { options: taskTypeOptions, getCategoryById } = useGetTaskTypeOptions();
 
-  const defaultOwner = useMemo(() => {
+  const defaultOwner = useMemo((): CrmOwner | null => {
     if (!currentUser?.employeeId) return null;
     return {
-      employeeId: currentUser.employeeId,
-      firstName: currentUser.firstName,
-      lastName: currentUser.lastName,
+      employeeId: Number(currentUser.employeeId),
+      firstName: currentUser.firstName ?? "",
+      lastName: currentUser.lastName ?? null,
       authPic: currentUser.authPic as string | null
     };
   }, [currentUser]);
+
+  useEffect(() => {
+    if (defaultOwner) {
+      setSelectedOwner(defaultOwner);
+    }
+  }, [defaultOwner]);
 
   const initialValues: CrmTaskAddFormTypes = {
     name: "",
@@ -96,6 +102,7 @@ const AddTaskModalContent: React.FC = () => {
     setIsTaskModalOpen(false);
     resetForm();
     setOwnerSearchText("");
+    setSelectedOwner(defaultOwner);
   };
 
   const handleSuccess = () => {
@@ -142,6 +149,7 @@ const AddTaskModalContent: React.FC = () => {
       notes: formValues.notes?.trim()
     };
 
+    console.log("Creating task with payload:", payload);
     createNewTask(payload);
   };
 
@@ -257,6 +265,7 @@ const AddTaskModalContent: React.FC = () => {
           placeholder={translateText(["placeholders", "taskOwner"])}
           value={ownerSearchText}
           onChange={(e) => setOwnerSearchText(e.target.value)}
+          state={errors.owner ? "error" : "default"}
         />
       )}
 
