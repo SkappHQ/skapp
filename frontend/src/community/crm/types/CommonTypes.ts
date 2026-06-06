@@ -205,8 +205,8 @@ export interface CrmTaskCreatePayload {
   type: CrmTaskCategory | null;
   dueAt: string | null;
   priority: CrmPriorityEnum;
-  contactName: string | null;
-  deal: string | null;
+  contactName: string;
+  deal: string;
   owner: number | null;
-  notes: string | null;
+  notes: string;
 }

@@ -136,10 +136,10 @@ const AddTaskModalContent: React.FC = () => {
       type: formValues.type,
       dueAt: formValues.dueDate,
       priority: formValues.priority,
-      contactName: formValues.contactName?.trim() || null,
+      contactName: formValues.contactName?.trim(),
       deal: formValues.deal?.trim(),
       owner: formValues.owner,
-      notes: formValues.notes?.trim() || null
+      notes: formValues.notes?.trim()
     };
 
     createNewTask(payload);
