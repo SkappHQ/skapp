@@ -1,121 +1,145 @@
 import {
-  DropdownWithSearchablePopup,
-  DropdownValue
+  Dropdown,
+  HighPriorityIcon,
+  Label,
+  LowPriorityIcon,
+  MediumPriorityIcon
 } from "@rootcodelabs/skapp-ui";
-import type {
-  DropdownOption,
-  TriggerProps
-} from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
-import { FC, useMemo } from "react";
+import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/Dropdown/Dropdown";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
+import PriorityLabel from "../../atoms/PriorityLabel/PriorityLabel";
+
 interface Props {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-}
-
-interface PriorityStyle {
-  bg: string;
-  text: string;
-  arrow: string;
   label: string;
+  value?: string;
+  placeholder?: string;
+  onChange?: (value: string) => void;
+  onSave?: (value: string) => void;
 }
 
-const PRIORITY_CONFIG: Record<CrmPriorityEnum, PriorityStyle> = {
-  [CrmPriorityEnum.HIGH]: {
-    bg: "#FFF1F2",
-    text: "#9F1239",
-    arrow: "↑",
-    label: "High"
+const PRIORITY_OPTIONS: DropdownOption[] = [
+  {
+    id: "high",
+    value: CrmPriorityEnum.HIGH,
+    label: (
+      <Label
+        backgroundColor="bg-semantic-red-background"
+        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium"
+      >
+        <HighPriorityIcon size={12} />
+        <span>High</span>
+      </Label>
+    )
   },
-  [CrmPriorityEnum.MEDIUM]: {
-    bg: "#FFFBEB",
-    text: "#92400E",
-    arrow: "→",
-    label: "Medium"
+  {
+    id: "medium",
+    value: CrmPriorityEnum.MEDIUM,
+    label: (
+      <Label
+        backgroundColor="bg-semantic-amber-background"
+        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium"
+      >
+        <MediumPriorityIcon size={12} />
+        <span>Medium</span>
+      </Label>
+    )
   },
-  [CrmPriorityEnum.LOW]: {
-    bg: "#F0FDF4",
-    text: "#14532D",
-    arrow: "↓",
-    label: "Low"
+  {
+    id: "low",
+    value: CrmPriorityEnum.LOW,
+    label: (
+      <Label
+        backgroundColor="bg-semantic-green-background"
+        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium"
+      >
+        <LowPriorityIcon size={12} />
+        <span>Low</span>
+      </Label>
+    )
   }
-};
+];
 
-const PriorityDropdown: FC<Props> = ({ value, onChange, placeholder }) => {
-  const options = useMemo<DropdownOption[]>(
-    () =>
-      Object.values(CrmPriorityEnum).map((p) => {
-        const cfg = PRIORITY_CONFIG[p];
-        return {
-          id: p,
-          value: p,
-          label: (
-            <span
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[13px] font-medium"
-              style={{ backgroundColor: cfg.bg, color: cfg.text }}
-            >
-              {cfg.arrow} {cfg.label}
-            </span>
-          )
-        };
-      }),
-    []
-  );
+const PriorityDropdown: FC<Props> = ({
+  label,
+  value,
+  placeholder = "None",
+  onChange,
+  onSave
+}) => {
+  const [localValue, setLocalValue] = useState(value ?? "");
+  const [isEditing, setIsEditing] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedConfig = value ? PRIORITY_CONFIG[value as CrmPriorityEnum] : null;
+  useEffect(() => {
+    setLocalValue(value ?? "");
+  }, [value]);
+
+  useEffect(() => {
+    if (!isEditing) return;
+    const timer = setTimeout(() => {
+      const trigger = containerRef.current?.querySelector<HTMLElement>(
+        "button, [role='button'], .dropdown-trigger"
+      );
+      trigger?.click();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [isEditing]);
+
+  useEffect(() => {
+    if (!isEditing) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setIsEditing(false);
+        const save = onSave ?? onChange;
+        if (localValue) save?.(localValue);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isEditing, localValue, onChange, onSave]);
+
+  const handleChange = (val: string) => {
+    setLocalValue(val);
+    setIsEditing(false);
+    onChange?.(val);
+    onSave?.(val);
+  };
 
   return (
-    <DropdownWithSearchablePopup
-      options={options}
-      value={
-        selectedConfig
-          ? { id: value, value, label: selectedConfig.label }
-          : null
-      }
-      onChange={(v: DropdownValue | null) => {
-        if (!v) return;
-        const id =
-          typeof v === "object" ? String(v.id) : String(v);
-        onChange(id);
-      }}
-      placeholder={placeholder}
-      searchable={false}
-      clearable={false}
-      width="100%"
-      renderTrigger={(
-        _val: DropdownValue | null,
-        _isOpen: boolean,
-        _disabled: boolean,
-        triggerProps: TriggerProps
-      ) => {
-        const { ref, ...rest } = triggerProps;
-        return (
+    <div className="flex items-center min-h-8">
+      <span className="shrink-0 w-28 text-[13px] text-gray-500">{label}</span>
+      <div className="flex-1" ref={containerRef}>
+        {isEditing ? (
+          <Dropdown
+            options={PRIORITY_OPTIONS}
+            value={localValue}
+            onChange={handleChange}
+            variant="jsx-content"
+            width="100%"
+            placeholder={placeholder}
+            hideArrowIcon
+          />
+        ) : (
           <button
             type="button"
-            ref={ref as React.RefObject<HTMLButtonElement>}
-            {...rest}
-            className="flex items-center h-8"
+            className="flex items-center min-h-8 px-2 rounded hover:bg-gray-50 cursor-pointer w-full text-left"
+            onClick={() => setIsEditing(true)}
           >
-          {selectedConfig ? (
-            <span
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[13px] font-medium"
-              style={{
-                backgroundColor: selectedConfig.bg,
-                color: selectedConfig.text
-              }}
-            >
-              {selectedConfig.arrow} {selectedConfig.label}
-            </span>
-          ) : (
-            <span className="text-[14px] text-[#9CA3AF]">{placeholder}</span>
-          )}
+            {localValue ? (
+              <PriorityLabel priority={localValue} />
+            ) : (
+              <span className="text-[13px] text-gray-400">{placeholder}</span>
+            )}
           </button>
-        );
-      }}
-    />
+        )}
+      </div>
+    </div>
   );
 };
 
