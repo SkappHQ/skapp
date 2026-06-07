@@ -1,6 +1,9 @@
 package com.skapp.community.crmplanner.service.impl;
 
+import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.payload.response.CrmTaskListResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -22,12 +26,23 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	private final CrmMapper crmMapper;
 
+	private final UserService userService;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getTasks() {
 		log.info("getTasks: execution started");
 
-		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwner());
+		Set<String> roles = userService.getCurrentUserRoles();
+		List<CrmTaskResponseDto> tasks;
+
+		if (roles.contains(AuthConstants.AUTH_ROLE + Role.CRM_SALES_MANAGER)) {
+			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwner());
+		}
+		else {
+			Long employeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
+			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwnerByOwnerId(employeeId));
+		}
 
 		CrmTaskListResponseDto response = new CrmTaskListResponseDto();
 		response.setTasks(tasks);

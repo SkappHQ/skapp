@@ -5,9 +5,11 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
+import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -23,6 +25,15 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 	@Override
 	public List<CrmTask> findAllWithTypeAndOwner() {
+		return buildFindTaskQuery(null);
+	}
+
+	@Override
+	public List<CrmTask> findAllWithTypeAndOwnerByOwnerId(Long ownerId) {
+		return buildFindTaskQuery(ownerId);
+	}
+
+	private List<CrmTask> buildFindTaskQuery(Long ownerId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
@@ -30,7 +41,12 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		task.fetch(CrmTask_.type);
 		task.fetch(CrmTask_.owner);
 
-		query.select(task).where(cb.isFalse(task.get(CrmTask_.isDeleted)));
+		Predicate predicate = cb.isFalse(task.get(CrmTask_.isDeleted));
+		if (ownerId != null) {
+			predicate = cb.and(predicate, cb.equal(task.get(CrmTask_.owner).get(Employee_.employeeId), ownerId));
+		}
+
+		query.select(task).where(predicate);
 
 		return entityManager.createQuery(query).getResultList();
 	}

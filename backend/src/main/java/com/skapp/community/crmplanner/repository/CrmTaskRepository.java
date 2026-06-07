@@ -11,4 +11,6 @@ public interface CrmTaskRepository {
 
 	List<CrmTask> findAllWithTypeAndOwner();
 
+	List<CrmTask> findAllWithTypeAndOwnerByOwnerId(Long ownerId);
+
 }
