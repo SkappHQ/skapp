@@ -2,10 +2,7 @@ import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
 
 export const crmDealQueryKeys = {
   GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
-  DEAL_STAGES: ["crm-deal-stages"],
-  CONTACT_LOOKUP: ["crm-contacts-lookup"],
-  COMPANY_LOOKUP: ["crm-companies-lookup"],
-  OWNER_LOOKUP: ["crm-owners-lookup"]
+  DEAL_STAGES: ["crm-deal-stages"]
 };
 
 export const contactQueryKeys = {
@@ -14,7 +11,9 @@ export const contactQueryKeys = {
     searchKeyword,
     companyId
   ],
-  CRM_COMPANIES: ["crm-companies"]
+  CRM_COMPANIES: ["crm-companies"],
+  CONTACT_LOOKUP: ["crm-contacts-lookup"],
+  OWNER_LOOKUP: ["crm-owners-lookup"]
 };
 
 export const companyQueryKeys = {
@@ -24,5 +23,6 @@ export const companyQueryKeys = {
     searchKeyword,
     limit
   ],
-  CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"]
+  CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"],
+  COMPANY_LOOKUP: ["crm-companies-lookup"]
 };

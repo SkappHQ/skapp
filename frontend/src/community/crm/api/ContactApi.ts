@@ -1,11 +1,19 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  UseQueryResult,
+  useInfiniteQuery,
+  useQuery
+} from "@tanstack/react-query";
 
+import useDebounce from "~community/common/hooks/useDebounce";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { contactEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { contactQueryKeys } from "~community/crm/api/utils/QueryKeys";
+import { CONTACT_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/contactConstants";
 import {
   CrmCompaniesResponseType,
-  CrmContactMetricsResponseType
+  CrmContactLookup,
+  CrmContactMetricsResponseType,
+  CrmOwner
 } from "~community/crm/types/CommonTypes";
 
 interface ContactMetricsSearchParams {
@@ -60,6 +68,44 @@ export const useGetCrmCompanies = (size: number) => {
         params: { size }
       });
       return response?.data?.results?.[0];
+    }
+  });
+};
+
+export const useGetCrmContacts = (
+  searchKeyword: string,
+  size: number
+): UseQueryResult<CrmContactLookup[]> => {
+  const debouncedSearch = useDebounce(
+    searchKeyword,
+    CONTACT_SEARCH_DEBOUNCE_DELAY
+  );
+  return useQuery({
+    queryKey: [...contactQueryKeys.CONTACT_LOOKUP, debouncedSearch],
+    queryFn: async (): Promise<CrmContactLookup[]> => {
+      const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
+        params: { searchKeyword: debouncedSearch, size }
+      });
+      return response?.data?.results?.[0]?.items ?? [];
+    }
+  });
+};
+
+export const useGetCrmOwners = (
+  searchKeyword: string,
+  size: number
+): UseQueryResult<CrmOwner[]> => {
+  const debouncedSearch = useDebounce(
+    searchKeyword,
+    CONTACT_SEARCH_DEBOUNCE_DELAY
+  );
+  return useQuery({
+    queryKey: [...contactQueryKeys.OWNER_LOOKUP, debouncedSearch],
+    queryFn: async (): Promise<CrmOwner[]> => {
+      const response = await authFetch.get(contactEndpoints.GET_OWNERS, {
+        params: { searchKeyword: debouncedSearch, size }
+      });
+      return response?.data?.results?.[0]?.items ?? [];
     }
   });
 };

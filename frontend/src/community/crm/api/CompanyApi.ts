@@ -1,17 +1,21 @@
 import {
+  UseQueryResult,
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient
 } from "@tanstack/react-query";
 
+import useDebounce from "~community/common/hooks/useDebounce";
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyConstants";
 
 import {
+  CompanyLookup,
   CrmCompanyCreatePayload,
   EditCompanyPayload
 } from "../types/CommonTypes";
-import { companyEndpoints } from "./utils/ApiEndpoints";
+import { companyEndpoints, contactEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
 
 interface CompanyMetricSearchParams {
@@ -48,6 +52,25 @@ export const useGetCompanyMetrics = (searchKeyword: string, limit: number) => {
     getNextPageParam: (lastPage) => {
       if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
       return lastPage.currentPage + 1;
+    }
+  });
+};
+
+export const useGetCompanyLookup = (
+  searchKeyword: string,
+  size: number
+): UseQueryResult<CompanyLookup[]> => {
+  const debouncedSearch = useDebounce(
+    searchKeyword,
+    COMPANY_NAME_DEBOUNCE_DELAY
+  );
+  return useQuery({
+    queryKey: [...companyQueryKeys.COMPANY_LOOKUP, debouncedSearch],
+    queryFn: async (): Promise<CompanyLookup[]> => {
+      const response = await authFetch.get(contactEndpoints.GET_COMPANIES, {
+        params: { searchKeyword: debouncedSearch, size }
+      });
+      return response?.data?.results?.[0]?.items ?? [];
     }
   });
 };
