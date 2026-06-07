@@ -1,21 +1,17 @@
-import { CircularProgress } from "@mui/material";
 import {
   DropdownWithSearchablePopup,
   DropdownValue
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
-import { FC, useCallback, useRef } from "react";
+import { FC } from "react";
 
-import { CrmOwnerType } from "~community/crm/types/CommonTypes";
+import { CrmOwner } from "~community/crm/types/CommonTypes";
 
 interface Props {
-  users: CrmOwnerType[];
-  selectedUser: CrmOwnerType | null;
+  users: CrmOwner[];
+  selectedUser: CrmOwner | null;
   onSearch: (term: string) => void;
-  onChange: (user: CrmOwnerType | null) => void;
-  fetchNextPage: () => void;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
+  onChange: (user: CrmOwner | null) => void;
   placeholder: string;
   searchPlaceholder: string;
   ariaInvalid?: boolean;
@@ -26,34 +22,10 @@ const PeoplePopupSearch: FC<Props> = ({
   selectedUser,
   onSearch,
   onChange,
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage,
   placeholder,
   searchPlaceholder,
   ariaInvalid
 }) => {
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
-  const sentinelRef = useCallback(
-    (node: HTMLElement | null) => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
-      if (!node || !hasNextPage) return;
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && !isFetchingNextPage) {
-            fetchNextPage();
-          }
-        },
-        { threshold: 0.1 }
-      );
-      observerRef.current.observe(node);
-    },
-    [fetchNextPage, hasNextPage, isFetchingNextPage]
-  );
 
   const options: DropdownOption[] = users.map((u) => ({
     id: u.employeeId,
@@ -99,11 +71,9 @@ const PeoplePopupSearch: FC<Props> = ({
       renderOption={(option, index, onSelect) => {
         const opt = option as DropdownOption;
         const user = users.find((u) => u.employeeId === Number(opt.id));
-        const isLast = hasNextPage && index === users.length - 1;
         return (
           <button
             type="button"
-            ref={isLast ? sentinelRef : undefined}
             className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer w-full text-left"
             onClick={() => onSelect(option)}
           >
@@ -122,15 +92,9 @@ const PeoplePopupSearch: FC<Props> = ({
           </button>
         );
       }}
-      renderNoResults={() =>
-        isFetchingNextPage ? (
-          <div className="flex justify-center py-3">
-            <CircularProgress size={16} />
-          </div>
-        ) : (
-          <div className="px-4 py-2 text-sm text-gray-400">No results</div>
-        )
-      }
+      renderNoResults={() => (
+        <div className="px-4 py-2 text-sm text-gray-400">No results</div>
+      )}
     />
   );
 };
