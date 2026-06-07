@@ -6,12 +6,12 @@ export interface CrmCompanyModalSliceTypes extends Pick<
   | "setIsCompanyModalOpen"
   | "companyModalType"
   | "setCompanyModalType"
-  | "selectedCompany"
-  | "setSelectedCompany"
 > {}
 
 export interface CrmCompanySidePanelSliceTypes extends Pick<
   CrmStore,
   | "isCompanySidePanelOpen"
   | "setIsCompanySidePanelOpen"
+  | "selectedCompany"
+  | "setSelectedCompany"
 > {}
