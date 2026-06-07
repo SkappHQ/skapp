@@ -35,7 +35,7 @@ const CompanyModalController = () => {
         return translateText(["addCompanyModal", "title"]);
       case CrmModalTypes.EDIT_COMPANY_MODAL:
         return translateText(["editCompanyModal", "title"]);
-      case CrmModalTypes.DELETE_COMPANY_CONFIRMATION:
+      case CrmModalTypes.DELETE_COMPANY_MODAL:
         return translateText(["deleteCompanyModal", "title"]);
       default:
         return "";
@@ -48,7 +48,7 @@ const CompanyModalController = () => {
         return <AddCompanyModalContent />;
       case CrmModalTypes.EDIT_COMPANY_MODAL:
         return <EditCompanyModalContent />;
-      case CrmModalTypes.DELETE_COMPANY_CONFIRMATION:
+      case CrmModalTypes.DELETE_COMPANY_MODAL:
         return <DeleteCompanyModalContent />;
       default:
         return null;

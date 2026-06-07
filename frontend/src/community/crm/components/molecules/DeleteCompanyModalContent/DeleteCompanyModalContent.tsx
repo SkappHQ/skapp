@@ -9,13 +9,15 @@ import { useCrmStore } from "~community/crm/store/store";
 const DeleteCompanyModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
-  const { selectedCompany, setSelectedCompany, setIsCompanySidePanelOpen } = useCrmStore((store) => ({
+  const {
+    selectedCompany,
+    setSelectedCompany,
+    setIsCompanySidePanelOpen,
+    setIsCompanyModalOpen
+  } = useCrmStore((store) => ({
     selectedCompany: store.selectedCompany,
     setSelectedCompany: store.setSelectedCompany,
-    setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen
-  }));
-
-  const { setIsCompanyModalOpen } = useCrmStore((store) => ({
+    setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen,
     setIsCompanyModalOpen: store.setIsCompanyModalOpen
   }));
 
@@ -50,7 +52,19 @@ const DeleteCompanyModalContent: React.FC = () => {
     setSelectedCompany(null);
   };
 
-  const { mutate: deleteCompany } = useDeleteCompany(handleSuccess, () => {});
+  const handleError = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateToasts(["errorTitle"]),
+      description: translateToasts(["errorDescription"])
+    });
+  };
+
+  const { mutate: deleteCompany, isPending } = useDeleteCompany(
+    handleSuccess,
+    handleError
+  );
 
   const handleDeleteCompany = () => {
     if (selectedCompany?.id === undefined) return;
@@ -75,6 +89,7 @@ const DeleteCompanyModalContent: React.FC = () => {
         </ButtonV2>
         <ButtonV2
           variant="error"
+          type="button"
           icon={
             <DeleteButtonIcon
               height="12px"
@@ -84,6 +99,7 @@ const DeleteCompanyModalContent: React.FC = () => {
           }
           iconPosition="end"
           onClick={handleDeleteCompany}
+          disabled={isPending}
           aria-label={translateText(["ariaLabels", "confirm"])}
         >
           {translateText(["buttons", "confirm"])}
