@@ -9,7 +9,7 @@ import {
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Theme, useTheme } from "@mui/material/styles";
 import { Box, SxProps } from "@mui/system";
-import { FC, JSX, KeyboardEvent, SyntheticEvent } from "react";
+import { FC, JSX, KeyboardEvent, SyntheticEvent, useRef } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
@@ -103,6 +103,7 @@ const DropdownList: FC<Props> = ({
 }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (
     event:
@@ -116,6 +117,7 @@ const DropdownList: FC<Props> = ({
   return (
     <Box
       component="div"
+      ref={containerRef}
       sx={{ ...classes.componentStyle, ...componentStyle } as SxProps}
     >
       <Stack
@@ -172,6 +174,7 @@ const DropdownList: FC<Props> = ({
             disabled={isDisabled}
             multiple={isMultiValue}
             MenuProps={{
+              container: containerRef.current,
               style: {
                 maxHeight: 300,
                 zIndex: ZIndexEnums.NEWMODAL,
