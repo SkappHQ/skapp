@@ -86,6 +86,7 @@ export interface CompanyLookup {
 export interface CrmContactLookup {
   id: number;
   name: string;
+  company?: CompanyLookup | null;
 }
 
 export interface CrmCompaniesResponseType {

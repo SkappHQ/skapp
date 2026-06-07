@@ -1,5 +1,7 @@
 import {
   UseInfiniteQueryResult,
+  UseMutationResult,
+  UseQueryResult,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -11,11 +13,12 @@ import {
   CrmCreateDealPayload,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
-  CrmDealStageType
+  CrmDealStageType,
+  CrmDealType
 } from "~community/crm/types/CommonTypes";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { crmDealQueryKeys } from "./utils/QueryKeys";
+import { companyQueryKeys, contactQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
@@ -40,7 +43,7 @@ export const useGetDealsInfinite = (
   });
 };
 
-export const useGetDealStages = () => {
+export const useGetDealStages = (): UseQueryResult<CrmDealStageType[]> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_STAGES,
     queryFn: async (): Promise<CrmDealStageType[]> => {
@@ -50,20 +53,22 @@ export const useGetDealStages = () => {
   });
 };
 
-export const useCreateDeal = (onSuccess: () => void, onError: () => void) => {
+const createDeal = async (payload: CrmCreateDealPayload): Promise<CrmDealType> => {
+  const response = await authFetch.post(crmDealEndpoints.CREATE_DEAL, payload);
+  return response?.data?.results?.[0];
+};
+
+export const useCreateDeal = (
+  onSuccess: () => void,
+  onError: (error: unknown) => void
+): UseMutationResult<CrmDealType, unknown, CrmCreateDealPayload> => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: CrmCreateDealPayload) => {
-      const response = await authFetch.post(
-        crmDealEndpoints.CREATE_DEAL,
-        payload
-      );
-      return response?.data;
-    },
+    mutationFn: createDeal,
     onSuccess: () => {
-      queryClient
-        .invalidateQueries({ queryKey: ["crm-deals"] })
-        .catch(() => undefined);
+      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
+      queryClient.invalidateQueries({ queryKey: contactQueryKeys.ALL });
+      queryClient.invalidateQueries({ queryKey: companyQueryKeys.GET_COMPANY_DATA });
       onSuccess();
     },
     onError

@@ -62,7 +62,7 @@ export const useGetContactMetrics = (
 
 export const useGetCrmCompanies = (size: number) => {
   return useQuery({
-    queryKey: contactQueryKeys.CRM_COMPANIES,
+    queryKey: [...contactQueryKeys.CRM_COMPANIES, size],
     queryFn: async (): Promise<CrmCompaniesResponseType> => {
       const response = await authFetch.get(contactEndpoints.GET_COMPANIES, {
         params: { size }
@@ -81,13 +81,14 @@ export const useGetCrmContacts = (
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
   return useQuery({
-    queryKey: [...contactQueryKeys.CONTACT_LOOKUP, debouncedSearch],
+    queryKey: [...contactQueryKeys.CONTACT_LOOKUP, debouncedSearch, size],
     queryFn: async (): Promise<CrmContactLookup[]> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
         params: { searchKeyword: debouncedSearch, size }
       });
       return response?.data?.results?.[0]?.items ?? [];
-    }
+    },
+    enabled: !!debouncedSearch
   });
 };
 
@@ -100,12 +101,13 @@ export const useGetCrmOwners = (
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
   return useQuery({
-    queryKey: [...contactQueryKeys.OWNER_LOOKUP, debouncedSearch],
+    queryKey: [...contactQueryKeys.OWNER_LOOKUP, debouncedSearch, size],
     queryFn: async (): Promise<CrmOwner[]> => {
       const response = await authFetch.get(contactEndpoints.GET_OWNERS, {
         params: { searchKeyword: debouncedSearch, size }
       });
       return response?.data?.results?.[0]?.items ?? [];
-    }
+    },
+    enabled: !!debouncedSearch
   });
 };
