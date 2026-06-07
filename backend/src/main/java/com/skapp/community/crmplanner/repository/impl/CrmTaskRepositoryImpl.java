@@ -9,6 +9,7 @@ import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,8 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		task.fetch(CrmTask_.type);
 		task.fetch(CrmTask_.owner);
+		task.fetch(CrmTask_.contact, JoinType.LEFT);
+		task.fetch(CrmTask_.deal, JoinType.LEFT);
 
 		Predicate predicate = cb.isFalse(task.get(CrmTask_.isDeleted));
 		if (ownerId != null) {
@@ -47,6 +50,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		}
 
 		query.select(task)
+			.distinct(true)
 			.where(predicate)
 			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
 					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));

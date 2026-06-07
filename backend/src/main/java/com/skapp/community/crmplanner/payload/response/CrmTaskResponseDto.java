@@ -26,4 +26,8 @@ public class CrmTaskResponseDto {
 
 	private CrmOwnerResponseDto owner;
 
+	private CrmContactLookupResponseDto contact;
+
+	private CrmDealLookupResponseDto deal;
+
 }

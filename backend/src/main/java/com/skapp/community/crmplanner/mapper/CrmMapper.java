@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
@@ -62,6 +63,8 @@ public interface CrmMapper {
 	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
+
+	CrmDealLookupResponseDto crmDealToCrmDealLookupResponseDto(CrmDeal crmDeal);
 
 	@Mapping(target = "typeName", source = "type.name")
 	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask crmTask);
