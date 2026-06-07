@@ -9,6 +9,12 @@ import java.util.List;
 @Setter
 public class CrmTaskListResponseDto {
 
-	private List<CrmTaskResponseDto> tasks;
+	private List<CrmTaskResponseDto> overdue;
+
+	private List<CrmTaskResponseDto> dueToday;
+
+	private List<CrmTaskResponseDto> dueTomorrow;
+
+	private List<CrmTaskResponseDto> upcoming;
 
 }

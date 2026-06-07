@@ -46,7 +46,10 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 			predicate = cb.and(predicate, cb.equal(task.get(CrmTask_.owner).get(Employee_.employeeId), ownerId));
 		}
 
-		query.select(task).where(predicate);
+		query.select(task)
+			.where(predicate)
+			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
+					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
 
 		return entityManager.createQuery(query).getResultList();
 	}

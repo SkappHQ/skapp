@@ -2,9 +2,11 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
+import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskListResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
@@ -14,6 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +33,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	private final CrmMapper crmMapper;
 
 	private final UserService userService;
+
+	private final OrganizationService organizationService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -44,8 +52,40 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwnerByOwnerId(employeeId));
 		}
 
-		CrmTaskListResponseDto response = new CrmTaskListResponseDto();
-		response.setTasks(tasks);
+		ZoneId orgZone = ZoneId.of(organizationService.getOrganizationTimeZone());
+		LocalDate today = LocalDate.now(orgZone);
+		LocalDate tomorrow = today.plusDays(1);
+
+		CrmTaskListResponseDto taskSegments = new CrmTaskListResponseDto();
+		taskSegments.setOverdue(new ArrayList<>());
+		taskSegments.setDueToday(new ArrayList<>());
+		taskSegments.setDueTomorrow(new ArrayList<>());
+		taskSegments.setUpcoming(new ArrayList<>());
+
+		for (CrmTaskResponseDto task : tasks) {
+			LocalDateTime dueAt = task.getDueAt();
+			if (dueAt == null) {
+				taskSegments.getUpcoming().add(task);
+			}
+			else {
+				LocalDate dueDate = dueAt.toLocalDate();
+				if (dueDate.isBefore(today)) {
+					taskSegments.getOverdue().add(task);
+				}
+				else if (dueDate.isEqual(today)) {
+					taskSegments.getDueToday().add(task);
+				}
+				else if (dueDate.isEqual(tomorrow)) {
+					taskSegments.getDueTomorrow().add(task);
+				}
+				else {
+					taskSegments.getUpcoming().add(task);
+				}
+			}
+		}
+
+		CrmGetTasksResponseDto response = new CrmGetTasksResponseDto();
+		response.setTasks(taskSegments);
 
 		log.info("getTasks: execution ended");
 
