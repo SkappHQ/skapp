@@ -1,6 +1,6 @@
 import {
-  DropdownWithSearchablePopup,
-  DropdownValue
+  DropdownValue,
+  DropdownWithSearchablePopup
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
 import { FC } from "react";
@@ -26,7 +26,6 @@ const ContactPopupSearch: FC<Props> = ({
   searchPlaceholder,
   ariaInvalid
 }) => {
-
   const options: DropdownOption[] = contacts.map((c) => ({
     id: c.id,
     value: c.id,
@@ -34,7 +33,11 @@ const ContactPopupSearch: FC<Props> = ({
   }));
 
   const selectedValue: DropdownOption | null = selectedContact
-    ? { id: selectedContact.id, value: selectedContact.id, label: selectedContact.name }
+    ? {
+        id: selectedContact.id,
+        value: selectedContact.id,
+        label: selectedContact.name
+      }
     : null;
 
   const handleChange = (val: DropdownValue | null) => {
@@ -42,10 +45,7 @@ const ContactPopupSearch: FC<Props> = ({
       onChange(null);
       return;
     }
-    const id =
-      typeof val === "object"
-        ? Number(val.id)
-        : Number(val);
+    const id = typeof val === "object" ? Number(val.id) : Number(val);
     const contact = contacts.find((c) => c.id === id) ?? null;
     onChange(contact);
   };
@@ -62,7 +62,7 @@ const ContactPopupSearch: FC<Props> = ({
       clearable
       ariaInvalid={ariaInvalid}
       width="100%"
-      renderOption={(option, index, onSelect) => {
+      renderOption={(option, _index, onSelect) => {
         const opt = option as DropdownOption;
         return (
           <button

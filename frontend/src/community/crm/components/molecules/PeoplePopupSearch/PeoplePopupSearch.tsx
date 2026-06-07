@@ -1,6 +1,6 @@
 import {
-  DropdownWithSearchablePopup,
-  DropdownValue
+  DropdownValue,
+  DropdownWithSearchablePopup
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
 import { FC } from "react";
@@ -26,7 +26,6 @@ const PeoplePopupSearch: FC<Props> = ({
   searchPlaceholder,
   ariaInvalid
 }) => {
-
   const options: DropdownOption[] = users.map((u) => ({
     id: u.employeeId,
     value: u.employeeId,
@@ -48,10 +47,7 @@ const PeoplePopupSearch: FC<Props> = ({
       onChange(null);
       return;
     }
-    const id =
-      typeof val === "object"
-        ? Number(val.id)
-        : Number(val);
+    const id = typeof val === "object" ? Number(val.id) : Number(val);
     const user = users.find((u) => u.employeeId === id) ?? null;
     onChange(user);
   };
@@ -68,7 +64,7 @@ const PeoplePopupSearch: FC<Props> = ({
       clearable
       ariaInvalid={ariaInvalid}
       width="100%"
-      renderOption={(option, index, onSelect) => {
+      renderOption={(option, _index, onSelect) => {
         const opt = option as DropdownOption;
         const user = users.find((u) => u.employeeId === Number(opt.id));
         return (
@@ -84,11 +80,13 @@ const PeoplePopupSearch: FC<Props> = ({
                 className="size-6 rounded-full object-cover shrink-0"
               />
             ) : (
-              <div className="size-6 rounded-full bg-[#E5E7EB] shrink-0 flex items-center justify-center text-[10px] text-[#6B7280]">
+              <div className="size-6 rounded-full bg-gray-200 shrink-0 flex items-center justify-center text-[10px] text-gray-500">
                 {user?.firstName?.[0]?.toUpperCase()}
               </div>
             )}
-            <span>{[user?.firstName, user?.lastName].filter(Boolean).join(" ")}</span>
+            <span>
+              {[user?.firstName, user?.lastName].filter(Boolean).join(" ")}
+            </span>
           </button>
         );
       }}

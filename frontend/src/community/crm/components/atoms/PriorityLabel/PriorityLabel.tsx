@@ -4,7 +4,7 @@ import {
   LowPriorityIcon,
   MediumPriorityIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
@@ -12,10 +12,14 @@ interface Props {
   priority: string;
 }
 
-const PRIORITY_LABEL_CONFIG: Record<
-  CrmPriorityEnum,
-  { bg: string; text: string; icon: React.ReactNode; label: string }
-> = {
+interface PriorityLabelConfig {
+  bg: string;
+  text: string;
+  icon: ReactNode;
+  label: string;
+}
+
+const PRIORITY_LABEL_CONFIG: Record<CrmPriorityEnum, PriorityLabelConfig> = {
   [CrmPriorityEnum.HIGH]: {
     bg: "bg-semantic-red-background",
     text: "text-semantic-red-text",
