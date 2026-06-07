@@ -21,18 +21,13 @@ import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useCreateDeal, useGetCrmCompanies, useGetCrmContacts, useGetCrmOwners, useGetDealStages } from "~community/crm/api/crmDealApi";
+import { useCreateDeal, useGetCrmContacts, useGetCrmOwners, useGetDealStages } from "~community/crm/api/crmDealApi";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
-import CompanyPopupSearch from "~community/crm/components/molecules/CompanyPopupSearch/CompanyPopupSearch";
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import PeoplePopupSearch from "~community/crm/components/molecules/PeoplePopupSearch/PeoplePopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
-import { CompanyLookup, CrmContactLookup, CrmOwnerType } from "~community/crm/types/CommonTypes";
+import { CrmContactLookup, CrmOwner } from "~community/crm/types/CommonTypes";
 import { useCrmStore } from "~community/crm/store/store";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 interface AddDealFormValues {
   name: string;
@@ -41,13 +36,8 @@ interface AddDealFormValues {
   ownerId: string;
   priority: string;
   amount: string;
-  companyId: string;
   description: string;
 }
-
-// ---------------------------------------------------------------------------
-// PropertyRow — shared row shell (layout only, no raw interactive elements)
-// ---------------------------------------------------------------------------
 
 const PropertyRow: FC<{ label: string; children: ReactNode }> = ({
   label,
@@ -63,10 +53,6 @@ const PropertyRow: FC<{ label: string; children: ReactNode }> = ({
   </div>
 );
 
-// ---------------------------------------------------------------------------
-// AddDealSidePanel
-// ---------------------------------------------------------------------------
-
 const AddDealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const { setToastMessage } = useToast();
@@ -79,43 +65,12 @@ const AddDealSidePanel: FC = () => {
     }))
   );
 
-  // ---------- stages, contacts, companies, and owner search from API ----------
   const { data: stages = [] } = useGetDealStages();
   const [contactSearchTerm, setContactSearchTerm] = useState("");
-  const {
-    data: contactPages,
-    fetchNextPage: fetchNextContactPage,
-    hasNextPage: hasNextContactPage,
-    isFetchingNextPage: isFetchingNextContactPage
-  } = useGetCrmContacts(contactSearchTerm);
-  const contacts = useMemo(
-    () => contactPages?.pages?.flatMap((p) => p?.items ?? []) ?? [],
-    [contactPages]
-  );
-
-  const [companySearchTerm, setCompanySearchTerm] = useState("");
-  const {
-    data: companyPages,
-    fetchNextPage: fetchNextCompanyPage,
-    hasNextPage: hasNextCompanyPage,
-    isFetchingNextPage: isFetchingNextCompanyPage
-  } = useGetCrmCompanies(companySearchTerm);
-  const companies = useMemo(
-    () => companyPages?.pages?.flatMap((p) => p?.items ?? []) ?? [],
-    [companyPages]
-  );
+  const { data: contacts = [] } = useGetCrmContacts(contactSearchTerm, 20);
 
   const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
-  const {
-    data: ownerPages,
-    fetchNextPage: fetchNextOwnerPage,
-    hasNextPage: hasNextOwnerPage,
-    isFetchingNextPage: isFetchingNextOwnerPage
-  } = useGetCrmOwners(ownerSearchTerm);
-  const owners = useMemo(
-    () => ownerPages?.pages?.flatMap((p) => p?.items ?? []) ?? [],
-    [ownerPages]
-  );
+  const { data: owners = [] } = useGetCrmOwners(ownerSearchTerm, 20);
 
   const stageOptions = useMemo<DropdownOption[]>(
     () =>
@@ -134,8 +89,6 @@ const AddDealSidePanel: FC = () => {
       })),
     [stages]
   );
-
-  // ---------------------------------------------------------------------------------------
 
   const validationSchema = useMemo(
     () =>
@@ -183,7 +136,6 @@ const AddDealSidePanel: FC = () => {
       ownerId: "",
       priority: "",
       amount: "",
-      companyId: "",
       description: ""
     },
     validationSchema,
@@ -195,7 +147,6 @@ const AddDealSidePanel: FC = () => {
         ownerId: Number(values.ownerId),
         ...(values.priority && { priority: values.priority }),
         ...(values.amount && { amount: values.amount }),
-        ...(values.companyId && { companyId: Number(values.companyId) }),
         ...(values.description && { description: values.description })
       });
     }
@@ -207,7 +158,6 @@ const AddDealSidePanel: FC = () => {
     closeSidePanel();
   };
 
-  // Set default stage to Lead (INITIAL) once stages are fetched
   useEffect(() => {
     if (stages.length > 0 && !formik.values.stageId) {
       const leadStage = stages.find((s) => s.stageType === CrmDealStageEnum.INITIAL);
@@ -217,7 +167,7 @@ const AddDealSidePanel: FC = () => {
     }
   }, [stages, formik.values.stageId, formik.setFieldValue]);
 
-  const selectedOwner = useMemo<CrmOwnerType | null>(
+  const selectedOwner = useMemo<CrmOwner | null>(
     () =>
       formik.values.ownerId
         ? (owners.find((u) => String(u.employeeId) === formik.values.ownerId) ?? null)
@@ -231,14 +181,6 @@ const AddDealSidePanel: FC = () => {
         ? (contacts.find((c) => String(c.id) === formik.values.contactId) ?? null)
         : null,
     [formik.values.contactId, contacts]
-  );
-
-  const selectedCompany = useMemo<CompanyLookup | null>(
-    () =>
-      formik.values.companyId
-        ? (companies.find((co) => String(co.id) === formik.values.companyId) ?? null)
-        : null,
-    [formik.values.companyId, companies]
   );
 
   return (
@@ -267,7 +209,6 @@ const AddDealSidePanel: FC = () => {
       }
     >
       <div className="flex flex-col gap-6 h-full">
-        {/* ── Top row: Deal name + Stage (parallel) ── */}
         <div className="flex gap-6 items-start">
           <div className="flex-[2_1_0] min-w-0">
             <InputField
@@ -301,7 +242,6 @@ const AddDealSidePanel: FC = () => {
           </div>
         </div>
 
-        {/* ── Bottom row: Description + Property rows ── */}
         <div className="flex gap-6 items-start flex-1">
           <div className="flex-[2_1_0] min-w-0">
             <TextArea
@@ -314,13 +254,8 @@ const AddDealSidePanel: FC = () => {
             />
           </div>
 
-          {/* ── Right column: Property rows ── */}
           <div className="flex-[1_0_0] min-w-0 flex flex-col gap-4">
-
-          {/* Property rows — bordered card with click-to-edit */}
           <div className="border border-[#E5E7EB] rounded-lg p-3 flex flex-col gap-2 w-full">
-
-            {/* Value — click to edit */}
             <PropertyRow label={translateText(["valueLabel"])}>
               {editingField === "amount" ? (
                 <div
@@ -373,7 +308,6 @@ const AddDealSidePanel: FC = () => {
               )}
             </PropertyRow>
 
-            {/* Priority */}
             <PropertyRow label={translateText(["priorityLabel"])}>
               <PriorityDropdown
                 value={formik.values.priority}
@@ -382,19 +316,15 @@ const AddDealSidePanel: FC = () => {
               />
             </PropertyRow>
 
-            {/* Owned by */}
             <PropertyRow label={translateText(["ownedByLabel"])}>
               <div className="flex flex-col w-full">
                 <PeoplePopupSearch
                   users={owners}
                   selectedUser={selectedOwner}
                   onSearch={setOwnerSearchTerm}
-                  onChange={(user: CrmOwnerType | null) => {
+                  onChange={(user: CrmOwner | null) => {
                     formik.setFieldValue("ownerId", user ? String(user.employeeId) : "");
                   }}
-                  fetchNextPage={fetchNextOwnerPage}
-                  hasNextPage={hasNextOwnerPage ?? false}
-                  isFetchingNextPage={isFetchingNextOwnerPage}
                   placeholder={translateText(["noneText"])}
                   searchPlaceholder={translateText(["ownerSearchPlaceholder"])}
                   ariaInvalid={!!(formik.touched.ownerId && formik.errors.ownerId)}
@@ -407,7 +337,6 @@ const AddDealSidePanel: FC = () => {
               </div>
             </PropertyRow>
 
-            {/* Contact name */}
             <PropertyRow label={translateText(["contactNameLabel"])}>
               <div className="flex flex-col w-full">
                 <ContactPopupSearch
@@ -417,9 +346,6 @@ const AddDealSidePanel: FC = () => {
                     formik.setFieldValue("contactId", c ? String(c.id) : "")
                   }
                   onSearch={setContactSearchTerm}
-                  fetchNextPage={fetchNextContactPage}
-                  hasNextPage={hasNextContactPage ?? false}
-                  isFetchingNextPage={isFetchingNextContactPage}
                   placeholder={translateText(["noneText"])}
                   searchPlaceholder="Search contacts"
                   ariaInvalid={!!(formik.touched.contactId && formik.errors.contactId)}
@@ -430,23 +356,6 @@ const AddDealSidePanel: FC = () => {
                   </p>
                 )}
               </div>
-            </PropertyRow>
-
-            {/* Company name */}
-            <PropertyRow label={translateText(["companyNameLabel"])}>
-              <CompanyPopupSearch
-                companies={companies}
-                selectedCompany={selectedCompany}
-                onChange={(co: CompanyLookup | null) =>
-                  formik.setFieldValue("companyId", co ? String(co.id) : "")
-                }
-                onSearch={setCompanySearchTerm}
-                fetchNextPage={fetchNextCompanyPage}
-                hasNextPage={hasNextCompanyPage ?? false}
-                isFetchingNextPage={isFetchingNextCompanyPage}
-                placeholder={translateText(["noneText"])}
-                searchPlaceholder="Search companies"
-              />
             </PropertyRow>
           </div>
         </div>

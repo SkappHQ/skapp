@@ -8,8 +8,6 @@ export interface CrmOwner {
   authPic: string | null;
 }
 
-export type CrmOwnerType = CrmOwner;
-
 export interface CrmCompanyType {
   id: number;
   name: string;
@@ -190,13 +188,4 @@ export interface CrmCompanyEditFormTypes {
   contactNumber: string | null;
 }
 
-export interface CrmCreateDealPayload {
-  name: string;
-  stageId: number;
-  contactId: number;
-  ownerId: number;
-  priority?: string;
-  amount?: string;
-  companyId?: number;
-  description?: string;
-}
+
