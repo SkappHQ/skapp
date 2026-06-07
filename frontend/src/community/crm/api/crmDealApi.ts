@@ -62,7 +62,7 @@ export const useGetCrmContacts = (
 ): UseQueryResult<CrmContactLookup[]> => {
   const debouncedSearch = useDebounce(searchKeyword, CONTACT_SEARCH_DEBOUNCE_DELAY);
   return useQuery({
-    queryKey: [...crmDealQueryKeys.CONTACT_LOOKUP, debouncedSearch],
+    queryKey: [...crmDealQueryKeys.CONTACT_LOOKUP, debouncedSearch, size],
     queryFn: async (): Promise<CrmContactLookup[]> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
         params: { searchKeyword: debouncedSearch, size }
@@ -78,7 +78,7 @@ export const useGetCrmOwners = (
 ): UseQueryResult<CrmOwner[]> => {
   const debouncedSearch = useDebounce(searchKeyword, CONTACT_SEARCH_DEBOUNCE_DELAY);
   return useQuery({
-    queryKey: [...crmDealQueryKeys.OWNER_LOOKUP, debouncedSearch],
+    queryKey: [...crmDealQueryKeys.OWNER_LOOKUP, debouncedSearch, size],
     queryFn: async (): Promise<CrmOwner[]> => {
       const response = await authFetch.get(contactEndpoints.GET_OWNERS, {
         params: { searchKeyword: debouncedSearch, size }
