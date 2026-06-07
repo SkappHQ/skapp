@@ -3,13 +3,16 @@ import { ButtonV2, CloseIcon, DeleteButtonIcon } from "@rootcodelabs/skapp-ui";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { useDeleteCompany } from "~community/crm/api/CompanyApi";
 import { useCrmStore } from "~community/crm/store/store";
 
 const DeleteCompanyModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
-  const { selectedCompany } = useCrmStore((store) => ({
-    selectedCompany: store.selectedCompany
+  const { selectedCompany, setSelectedCompany, setIsCompanySidePanelOpen } = useCrmStore((store) => ({
+    selectedCompany: store.selectedCompany,
+    setSelectedCompany: store.setSelectedCompany,
+    setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen
   }));
 
   const { setIsCompanyModalOpen } = useCrmStore((store) => ({
@@ -28,8 +31,11 @@ const DeleteCompanyModalContent: React.FC = () => {
     "deleteCompanyToastMessages"
   );
 
+  const handleCloseModal = () => {
+    setIsCompanyModalOpen(false);
+  };
+
   const handleSuccess = () => {
-    handleCloseModal();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -38,10 +44,17 @@ const DeleteCompanyModalContent: React.FC = () => {
         companyName: selectedCompany?.name
       })
     });
+
+    handleCloseModal();
+    setIsCompanySidePanelOpen(false);
+    setSelectedCompany(null);
   };
 
-  const handleCloseModal = () => {
-    setIsCompanyModalOpen(false);
+  const { mutate: deleteCompany } = useDeleteCompany(handleSuccess, () => {});
+
+  const handleDeleteCompany = () => {
+    if (selectedCompany?.id === undefined) return;
+    deleteCompany(selectedCompany.id);
   };
 
   return (
@@ -70,7 +83,7 @@ const DeleteCompanyModalContent: React.FC = () => {
             />
           }
           iconPosition="end"
-          onClick={handleSuccess}
+          onClick={handleDeleteCompany}
           aria-label={translateText(["ariaLabels", "confirm"])}
         >
           {translateText(["buttons", "confirm"])}
