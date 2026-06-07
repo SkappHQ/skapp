@@ -6,8 +6,8 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import AddCompanyModalContent from "../../molecules/AddCompanyModalContent/AddCompanyModalContent";
-import EditCompanyModalContent from "../../molecules/EditCompanyModalContent/EditCompanyModalContent";
 import DeleteCompanyModalContent from "../../molecules/DeleteCompanyModalContent/DeleteCompanyModalContent";
+import EditCompanyModalContent from "../../molecules/EditCompanyModalContent/EditCompanyModalContent";
 
 const CompanyModalController = () => {
   const translateText = useTranslator("crmModule", "companies");
