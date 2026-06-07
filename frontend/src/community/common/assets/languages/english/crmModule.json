@@ -186,6 +186,24 @@
       "successTitle": "Company updated successfully",
       "errorTitle": "Failed to update company",
       "errorDescription": "Please try again or contact support"
+    },
+    "deleteCompanyModal": {
+      "title": "Delete Company",
+      "description": "Are you sure you want to delete '{{companyName}}'? This will permanently remove this company. Any contacts linked to this company will become unlinked. This action cannot be undone.",
+      "buttons": {
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "ariaLabels": {
+        "confirm": "Confirm Delete Company",
+        "cancel": "Cancel Delete Company"
+      }
+    },
+    "deleteCompanyToastMessages": {
+      "successTitle": "Company deleted",
+      "successDescription": "{{companyName}} has been deleted and linked contacts have been unlinked.",
+      "errorTitle": "Failed to delete company",
+      "errorDescription": "Something went wrong. Please try again"
     }
   },
   "deals": {
