@@ -1,5 +1,11 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum, CrmIndustryEnum} from "../enums/common";
+
+import {
+  CrmDealSortEnum,
+  CrmDealStageEnum,
+  CrmIndustryEnum,
+  CrmPriorityEnum
+} from "../enums/common";
 
 export interface CrmOwner {
   employeeId: number;
@@ -7,8 +13,6 @@ export interface CrmOwner {
   lastName: string | null;
   authPic: string | null;
 }
-
-export type CrmOwnerType = CrmOwner;
 
 export interface CrmCompanyType {
   id: number;
@@ -188,15 +192,4 @@ export interface CrmCompanyEditFormTypes {
   website: string | null;
   address: string | null;
   contactNumber: string | null;
-}
-
-export interface CrmCreateDealPayload {
-  name: string;
-  stageId: number;
-  contactId: number;
-  ownerId: number;
-  priority?: string;
-  amount?: string;
-  companyId?: number;
-  description?: string;
 }

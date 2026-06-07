@@ -4,7 +4,6 @@ export const crmDealQueryKeys = {
   GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
   DEAL_STAGES: ["crm-deal-stages"],
   CONTACT_LOOKUP: ["crm-contacts-lookup"],
-  COMPANY_LOOKUP: ["crm-companies-lookup"],
   OWNER_LOOKUP: ["crm-owners-lookup"]
 };
 
