@@ -4,9 +4,12 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.skapp.community.common.model.Auditable;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,7 +35,8 @@ public class CrmCompany extends Auditable<String> {
 	private String name;
 
 	@Column(name = "industry")
-	private String industry;
+	@Enumerated(EnumType.STRING)
+	private CrmIndustry industry;
 
 	@Column(name = "website")
 	private String website;

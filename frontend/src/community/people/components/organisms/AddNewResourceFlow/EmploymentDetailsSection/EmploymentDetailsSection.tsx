@@ -449,7 +449,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
     useEffect(() => {
       const updatedData = checkEmailAndIdentificationNo;
       if (updatedData && isSuccess && !isProfileView && !isManager) {
-        if (updatedData.isWorkEmailExists && !formik.touched.workEmail) {
+        if (updatedData.isWorkEmailExists && !formik.touched.workEmail && !updatedData.isGuestUser) {
           setIsUniqueEmail(false);
         } else {
           setIsUniqueEmail(true);

@@ -84,7 +84,7 @@ const LeaveType: NextPage = () => {
         },
         {
           label: translateText(["leaveTypes.title"]),
-          href: ROUTES.LEAVE.TYPES
+          onClick: () => router.push(ROUTES.LEAVE.TYPES)
         },
         {
           label:

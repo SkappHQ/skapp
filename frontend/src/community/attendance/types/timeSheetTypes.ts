@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 
+import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
 import { daysTypes } from "~community/common/constants/stringConstants";
 import { LeaveStates } from "~community/common/types/CommonTypes";
 
@@ -21,6 +22,8 @@ export interface TimeRecordType {
     };
   };
   workedHours: number;
+  clockInLocationStatus?: RecordLocationStatus;
+  clockOutLocationStatus?: RecordLocationStatus;
 }
 
 export interface TimeRecordDataType {

@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,11 +47,29 @@ public class CrmContactController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Edit CRM contact", description = "Updates an existing CRM contact.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PatchMapping("/{id}")
+	public ResponseEntity<ResponseEntityDto> editContact(@PathVariable Long id,
+			@RequestBody CrmContactEditRequestDto requestDto) {
+		ResponseEntityDto response = contactService.editContact(id, requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Get CRM owners", description = "Retrieves active CRM users who can be assigned as owners.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_MANAGER')")
 	@GetMapping("/owners")
 	public ResponseEntity<ResponseEntityDto> getOwners(CrmContactOwnerFilterDto filterDto) {
 		ResponseEntityDto response = contactService.getContactOwners(filterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get CRM contact by ID",
+			description = "Returns full contact details including metrics, deals, and tasks.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping("/{id}")
+	public ResponseEntity<ResponseEntityDto> getContactById(@PathVariable Long id) {
+		ResponseEntityDto response = contactService.getContactById(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

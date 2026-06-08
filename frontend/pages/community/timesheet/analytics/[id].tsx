@@ -207,7 +207,7 @@ const TeamTimeSheetAnalytics: NextPage = () => {
         },
         {
           label: translateTimesheet(["timesheet.allTimesheets.title"]),
-          href: ROUTES.TIMESHEET.ALL_TIMESHEETS
+          onClick: () => router.push(ROUTES.TIMESHEET.ALL_TIMESHEETS)
         },
         {
           label: translatePeople(["title"])

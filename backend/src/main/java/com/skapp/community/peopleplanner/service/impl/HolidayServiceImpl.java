@@ -7,6 +7,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.OrganizationService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -23,6 +24,7 @@ import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.payload.request.HolidayBulkRequestDto;
 import com.skapp.community.peopleplanner.payload.request.HolidayFilterDto;
@@ -32,6 +34,7 @@ import com.skapp.community.peopleplanner.payload.response.HolidayBulkSaveRespons
 import com.skapp.community.peopleplanner.payload.response.HolidayDtoStatusResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayWorkLocationResponseDto;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.service.HolidayService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
@@ -91,6 +94,8 @@ public class HolidayServiceImpl implements HolidayService {
 	private final OrganizationService organizationService;
 
 	private final WorkLocationDao workLocationDao;
+
+	private final EmployeeDao employeeDao;
 
 	@Override
 	public ResponseEntityDto getAllHolidays(HolidayFilterDto holidayFilterDto) {
@@ -167,8 +172,16 @@ public class HolidayServiceImpl implements HolidayService {
 
 		List<Holiday> savedHolidays = holidayDao.saveAll(savableHolidays);
 		if (savedHolidays.size() == 1) {
-			peopleEmailService.sendNewHolidayDeclarationEmail(savedHolidays.getFirst());
-			peopleNotificationService.sendNewHolidayDeclarationNotification(savedHolidays.getFirst());
+
+			Set<WorkLocation> holidayWorkLocations = savedHolidays.getFirst().getWorkLocations();
+			Set<WorkLocation> workLocationsFilter = (holidayWorkLocations == null || holidayWorkLocations.isEmpty())
+					? null : holidayWorkLocations;
+
+			List<Employee> employees = employeeDao.findAllActiveEmployeesExcludingRole(Role.PM_GUEST_EMPLOYEE,
+					workLocationsFilter);
+
+			peopleEmailService.sendNewHolidayDeclarationEmail(savedHolidays.getFirst(), employees);
+			peopleNotificationService.sendNewHolidayDeclarationNotification(savedHolidays.getFirst(), employees);
 		}
 
 		HolidayBulkSaveResponseDto responseDto = getHolidayBulkUploadResponseSummaryText(
