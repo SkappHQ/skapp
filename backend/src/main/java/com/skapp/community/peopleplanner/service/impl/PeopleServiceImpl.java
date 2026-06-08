@@ -1289,21 +1289,13 @@ public class PeopleServiceImpl implements PeopleService {
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
 		Employee employee = user.getEmployee();
 
-		employee.setAccountStatus(AccountStatus.PENDING);
+		employee.setAccountStatus(AccountStatus.ACTIVE);
 		user.setIsActive(true);
-		user.setIsPasswordChangedForTheFirstTime(false);
-
-		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
-		user.setPassword(passwordEncoder.encode(tempPassword));
 
 		updateSubscriptionQuantity(1L, true, false);
-		userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
 		userDao.save(user);
-
-		peopleEmailService.sendUserInvitationEmail(user);
 
 		log.info("reactivateTerminatedUser: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ACTIVATED),
