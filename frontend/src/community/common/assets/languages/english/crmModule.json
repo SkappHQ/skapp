@@ -204,6 +204,10 @@
       "successDescription": "{{companyName}} has been deleted and linked contacts have been unlinked.",
       "errorTitle": "Failed to delete company",
       "errorDescription": "Something went wrong. Please try again"
+    },
+    "sidePanel": {
+      "editCompany": "Edit company",
+      "deleteCompany": "Delete company"
     }
   },
   "deals": {
