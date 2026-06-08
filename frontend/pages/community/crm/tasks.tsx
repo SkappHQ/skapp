@@ -2,6 +2,7 @@ import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { IconName } from "~community/common/types/IconTypes";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
@@ -27,6 +28,7 @@ const Tasks: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
+      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <>
