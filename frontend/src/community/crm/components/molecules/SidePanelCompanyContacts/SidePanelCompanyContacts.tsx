@@ -22,9 +22,9 @@ interface CrmSidePanelContactRow {
   overdueTasks?: number;
 }
 
-const SidePanelCompanyContacts: React.FC<{ contacts: CrmSidePanelContactRow[] }> = ({
-  contacts
-}) => {
+const SidePanelCompanyContacts: React.FC<{
+  contacts: CrmSidePanelContactRow[];
+}> = ({ contacts }) => {
   const translateText = useTranslator(
     "crmModule",
     "companies",
@@ -120,7 +120,7 @@ const SidePanelCompanyContacts: React.FC<{ contacts: CrmSidePanelContactRow[] }>
           buttonIcon: <PlusIcon />,
           buttonVariant: "tertiary",
           onButtonClick: () => {
-            // TODO: handle add contact action
+            // Add contact action
           }
         }}
       />
