@@ -39,7 +39,6 @@ const OwnerLookupDropdown: React.FC<OwnerLookupDropdownProps> = ({
   // Remembers the last confirmed selection so an accidental clear can be undone on dropdown close
   const [lastSelectedOwner, setLastSelectedOwner] = useState<CrmOwner | null>(null);
 
-
   const debouncedOwnerSearch = useDebounce(
     ownerSearch.trim(),
     SEARCH_DEBOUNCE_DELAY
