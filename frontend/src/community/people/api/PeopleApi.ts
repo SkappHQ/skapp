@@ -617,7 +617,7 @@ export const useReactivateTerminatedUser = (
       queryClient.invalidateQueries({ queryKey: peopleQueryKeys.EMPLOYEE_DATA_TABLE() });
       queryClient.invalidateQueries({ queryKey: peopleQueryKeys.EMPLOYEE_COUNT() });
       queryClient.invalidateQueries({
-        queryKey: [peopleQueryKeys.PENDING_EMPLOYEE_COUNT]
+        queryKey: peopleQueryKeys.PENDING_EMPLOYEE_COUNT
       });
       onSuccess();
     },
