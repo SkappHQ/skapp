@@ -218,6 +218,7 @@ public class PeopleServiceImpl implements PeopleService {
 		Optional<User> existingGuestUser = findGuestUserByEmail(requestDto);
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
+			user.setIsActive(true);
 			employee = user.getEmployee();
 			// Reset to PENDING so createUserEntity triggers credential setup and
 			// invitation email
@@ -264,6 +265,7 @@ public class PeopleServiceImpl implements PeopleService {
 		Optional<User> existingGuestUser = findGuestUserByEmail(createEmployeeRequestDto);
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
+			user.setIsActive(true);
 			employee = user.getEmployee();
 			// Reset to PENDING so createUserEntity triggers credential setup and
 			// invitation email

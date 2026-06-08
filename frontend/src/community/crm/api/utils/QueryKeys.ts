@@ -27,3 +27,7 @@ export const companyQueryKeys = {
   ],
   CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"]
 };
+
+export const taskQueryKeys = {
+  GET_TASK_DATA: ["get-task-data"]
+};
