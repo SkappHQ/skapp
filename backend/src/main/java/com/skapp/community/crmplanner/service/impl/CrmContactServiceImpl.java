@@ -32,6 +32,7 @@ import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.crmplanner.util.CrmValidations;
@@ -68,8 +69,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmTaskDao crmTaskDao;
 
-	private final EmployeeDao employeeDao;
-
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final UserService userService;
@@ -77,6 +76,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	private final MessageUtil messageUtil;
 
 	private final CrmMapper crmMapper;
+
+	private final CrmOwnerResolverService crmOwnerResolver;
 
 	@Override
 	@Transactional
@@ -93,7 +94,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
-		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
 		contact.setName(requestDto.getName());
@@ -148,7 +149,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		if (requestDto.getOwnerId() != null) {
 			CrmValidations.validateOwnerId(requestDto.getOwnerId());
-			Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 			contact.setOwner(owner);
 		}
 

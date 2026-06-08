@@ -17,6 +17,8 @@ import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
@@ -62,6 +64,12 @@ public interface CrmMapper {
 	@Mapping(target = "openTaskCount", ignore = true)
 	@Mapping(target = "overdueTaskCount", ignore = true)
 	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
+
+	@Mapping(target = "typeId", source = "type.id")
+	@Mapping(target = "typeName", source = "type.name")
+	@Mapping(target = "contactId", source = "contact.id")
+	@Mapping(target = "ownerName", source = "owner.fullName")
+	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask crmTask);
 
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
 
