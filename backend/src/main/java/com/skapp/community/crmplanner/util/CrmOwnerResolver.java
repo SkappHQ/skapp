@@ -7,28 +7,27 @@ import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.experimental.UtilityClass;
 
-@Component
-@RequiredArgsConstructor
+@UtilityClass
 public class CrmOwnerResolver {
 
-	private final EmployeeDao employeeDao;
-
-	public Employee resolveOwner(Long ownerId, User currentUser) {
+	public static Employee resolveOwner(Long ownerId, User currentUser, EmployeeDao employeeDao) {
 		Employee currentEmployee = currentUser.getEmployee();
 
 		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
 
 		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE) {
+			if (!currentEmployee.getEmployeeId().equals(ownerId)) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
+			}
 			return currentEmployee;
 		}
 
-		return validateAssignableOwner(ownerId);
+		return validateAssignableOwner(ownerId, employeeDao);
 	}
 
-	private Employee validateAssignableOwner(Long ownerId) {
+	private static Employee validateAssignableOwner(Long ownerId, EmployeeDao employeeDao) {
 		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(ownerId);
 
 		if (owner == null) {

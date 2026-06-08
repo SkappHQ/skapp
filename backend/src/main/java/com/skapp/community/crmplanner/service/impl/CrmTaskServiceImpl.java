@@ -24,6 +24,7 @@ import com.skapp.community.crmplanner.util.CrmOwnerResolver;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	private final CrmDealDao crmDealDao;
 
-	private final CrmOwnerResolver crmOwnerResolver;
+	private final EmployeeDao employeeDao;
 
 	private final CrmMapper crmMapper;
 
@@ -97,7 +98,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		if (requestDto.getOwnerId() != null) {
 			CrmValidations.validateOwnerId(requestDto.getOwnerId());
-			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
+			Employee owner = CrmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser, employeeDao);
 			task.setOwner(owner);
 		}
 

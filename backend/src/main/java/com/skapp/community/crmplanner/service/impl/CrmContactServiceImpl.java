@@ -32,6 +32,7 @@ import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.crmplanner.util.CrmOwnerResolver;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -61,7 +62,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmTaskDao crmTaskDao;
 
-	private final CrmOwnerResolver crmOwnerUtils;
+	private final EmployeeDao employeeDao;
 
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
@@ -86,7 +87,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
-		Employee owner = crmOwnerUtils.resolveOwner(requestDto.getOwnerId(), currentUser);
+		Employee owner = CrmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser, employeeDao);
 
 		CrmContact contact = new CrmContact();
 		contact.setName(requestDto.getName());
@@ -141,7 +142,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		if (requestDto.getOwnerId() != null) {
 			CrmValidations.validateOwnerId(requestDto.getOwnerId());
-			Employee owner = crmOwnerUtils.resolveOwner(requestDto.getOwnerId(), currentUser);
+			Employee owner = CrmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser, employeeDao);
 			contact.setOwner(owner);
 		}
 
