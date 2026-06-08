@@ -44,11 +44,8 @@ public class CrmContactOwnerRepositoryImpl implements CrmContactOwnerRepository 
 		Join<Employee, User> user = employee.join(Employee_.user, JoinType.INNER);
 		Join<Employee, EmployeeRole> employeeRole = employee.join(Employee_.employeeRole, JoinType.INNER);
 
-		query.select(cb.construct(CrmOwnerResponseDto.class,
-				employee.get(Employee_.employeeId),
-				employee.get(Employee_.firstName),
-				employee.get(Employee_.lastName),
-				employee.get(Employee_.authPic)));
+		query.select(cb.construct(CrmOwnerResponseDto.class, employee.get(Employee_.employeeId),
+				employee.get(Employee_.firstName), employee.get(Employee_.lastName), employee.get(Employee_.authPic)));
 
 		query.where(cb.isTrue(user.get(User_.isActive)),
 				employeeRole.get(EmployeeRole_.crmRole).in(CrmConstants.ASSIGNABLE_CRM_ROLES));

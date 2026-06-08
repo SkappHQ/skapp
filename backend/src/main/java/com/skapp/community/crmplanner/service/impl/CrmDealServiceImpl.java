@@ -150,10 +150,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmDealBoardInitDataResponseDto responseDto = new CrmDealBoardInitDataResponseDto();
 		responseDto.setStages(stages);
 		responseDto.setContacts(contacts);
-		responseDto.setCrmRoles(CrmConstants.ASSIGNABLE_CRM_ROLES.stream()
-			.map(Enum::name)
-			.sorted()
-			.toList());
+		responseDto.setCrmRoles(CrmConstants.ASSIGNABLE_CRM_ROLES.stream().map(Enum::name).sorted().toList());
 		responseDto.setOwners(owners);
 
 		log.info("getBoardInitData: execution ended");
