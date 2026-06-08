@@ -6,6 +6,7 @@ import { IconName } from "~community/common/types/IconTypes";
 import CompanyModalController from "~community/crm/components/organisms/CompanyPopupController/CompanyModalController";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/store";
+import { CRM_CONTAINER_STYLES } from "~community/crm/constants/styleConstants";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const Companies: NextPage = () => {
@@ -30,7 +31,7 @@ const Companies: NextPage = () => {
       primaryButtonText={translateText(["addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      containerStyles={{ position: "relative", zIndex: 1200 }}
+      containerStyles={CRM_CONTAINER_STYLES}
     >
       <>
         <CompanyModalController />

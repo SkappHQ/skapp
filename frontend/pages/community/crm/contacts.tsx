@@ -4,6 +4,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
+import { CRM_CONTAINER_STYLES } from "~community/crm/constants/styleConstants";
 
 const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
@@ -14,7 +15,7 @@ const Contacts: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      containerStyles={{ position: "relative", zIndex: 1200 }}
+      containerStyles={CRM_CONTAINER_STYLES}
     >
       <ContactTable />
     </ContentLayout>
