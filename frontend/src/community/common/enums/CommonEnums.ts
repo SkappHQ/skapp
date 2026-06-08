@@ -12,7 +12,8 @@ export enum ZIndexEnums {
   MIN = 0,
   LEVEL_2 = 2,
   MODAL = 1300,
-  NEWMODAL = 1500
+  NEWMODAL = 1500,
+  CRM_CONTENT_LAYOUT = 1200
 }
 
 export enum GlobalLoginMethod {
