@@ -83,11 +83,6 @@ export interface CompanyLookup {
   name: string;
 }
 
-export interface CrmContactLookup {
-  id: number;
-  name: string;
-}
-
 export interface CrmCompaniesResponseType {
   items: CompanyLookup[];
   totalItems: number;
