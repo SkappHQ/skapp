@@ -7,7 +7,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -15,23 +14,29 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
+import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
+import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,12 +46,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -63,8 +69,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmTaskDao crmTaskDao;
 
-	private final EmployeeDao employeeDao;
-
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final UserService userService;
@@ -73,24 +77,28 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmMapper crmMapper;
 
+	private final CrmOwnerResolverService crmOwnerResolver;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto createContact(CrmContactCreateRequestDto requestDto) {
 		log.info("createContact: execution started");
 
 		User currentUser = userService.getCurrentUser();
-		CrmValidations.validateContactName(requestDto.getName());
-		CrmValidations.validateContactEmail(requestDto.getEmail());
-		CrmValidations.validateContactNumber(requestDto.getContactNumber());
-		CrmValidations.validateOwnerId(requestDto.getOwnerId());
-		CrmValidations.validateCompanyId(requestDto.getCompanyId());
+		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
+				requestDto.getOwnerId(), requestDto.getCompanyId());
+
+		String lowercaseEmail = requestDto.getEmail().toLowerCase();
+		if (crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(lowercaseEmail)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
+		}
 
 		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
-		Employee owner = resolveOwner(requestDto.getOwnerId(), currentUser);
+		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
-		contact.setName(requestDto.getName().trim());
-		contact.setEmail(requestDto.getEmail().trim().toLowerCase(Locale.ROOT));
+		contact.setName(requestDto.getName());
+		contact.setEmail(lowercaseEmail);
 		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
 		contact.setCompany(company);
 		contact.setOwner(owner);
@@ -98,6 +106,56 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmContact savedContact = crmContactDao.save(contact);
 
 		log.info("createContact: execution ended");
+		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto editContact(Long id, CrmContactEditRequestDto requestDto) {
+		log.info("editContact: execution started");
+
+		User currentUser = userService.getCurrentUser();
+
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		checkEditPermission(contact, currentUser);
+
+		if (requestDto.getName() != null) {
+			CrmValidations.validateContactName(requestDto.getName());
+			contact.setName(requestDto.getName());
+		}
+
+		if (requestDto.getEmail() != null) {
+			CrmValidations.validateContactEmail(requestDto.getEmail());
+			String lowercaseEmail = requestDto.getEmail().toLowerCase();
+			if (!lowercaseEmail.equals(contact.getEmail())
+					&& crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(lowercaseEmail, id)) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
+			}
+			contact.setEmail(lowercaseEmail);
+		}
+
+		if (requestDto.getContactNumber() != null) {
+			CrmValidations.validateContactNumber(requestDto.getContactNumber());
+			contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
+		}
+
+		if (requestDto.getCompanyId() != null) {
+			CrmValidations.validateCompanyId(requestDto.getCompanyId());
+			CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
+			contact.setCompany(company);
+		}
+
+		if (requestDto.getOwnerId() != null) {
+			CrmValidations.validateOwnerId(requestDto.getOwnerId());
+			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
+			contact.setOwner(owner);
+		}
+
+		CrmContact savedContact = crmContactDao.save(contact);
+
+		log.info("editContact: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
 	}
 
@@ -122,6 +180,16 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactOwners: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	private void checkEditPermission(CrmContact contact, User currentUser) {
+		Employee currentEmployee = currentUser.getEmployee();
+		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
+
+		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
+				&& !currentEmployee.getEmployeeId().equals(contact.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
+		}
 	}
 
 	@Override
@@ -230,47 +298,54 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return dto;
 	}
 
-	private Employee resolveOwner(Long ownerId, User currentUser) {
-		Employee currentEmployee = currentUser.getEmployee();
-		if (currentEmployee == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactById(Long id) {
+		log.info("getContactById: execution started");
+
+		CrmContact contact = crmContactDao.findByIdWithAssociations(id);
+
+		if (contact == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
 		}
 
-		EmployeeRole currentEmployeeRole = currentEmployee.getEmployeeRole();
-		boolean isSuperAdmin = currentEmployeeRole != null
-				&& Boolean.TRUE.equals(currentEmployeeRole.getIsSuperAdmin());
-		Role currentCrmRole = currentEmployeeRole != null ? currentEmployeeRole.getCrmRole() : null;
+		List<CrmDeal> deals = crmDealDao.findByContactIdWithAssociations(id);
+		List<CrmTask> tasks = crmTaskDao.findByContactIdWithAssociations(id);
 
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
-			if (!ownerId.equals(currentEmployee.getEmployeeId())) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
-			}
-			return currentEmployee;
-		}
+		CrmContactDetailResponseDto dto = crmMapper.crmContactToCrmContactDetailResponseDto(contact);
 
-		if (!isSuperAdmin && currentCrmRole != Role.CRM_ADMIN && currentCrmRole != Role.CRM_SALES_MANAGER) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
-		}
+		CrmContactDealMetrics dealMetrics = crmDealDao.findDealMetricsByContactId(id);
+		dto.setTotalRevenue(dealMetrics.getTotalRevenue().toPlainString());
+		dto.setPipelineRevenue(dealMetrics.getPipelineRevenue().toPlainString());
+		dto.setActiveDealsCount(dealMetrics.getActiveDealsCount());
 
-		return validateAssignableOwner(ownerId);
+		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id);
+		dto.setOpenTasksCount(taskMetrics.getOpenTasksCount());
+		dto.setOverdueTasksCount(taskMetrics.getOverdueTasksCount());
+
+		List<CrmDealDetailResponseDto> dealDtos = deals.stream()
+			.map(crmMapper::crmDealToCrmDealDetailResponseDto)
+			.toList();
+		dto.setDeals(dealDtos);
+
+		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream().map(task -> {
+			CrmTaskDetailResponseDto taskDto = crmMapper.crmTaskToCrmTaskDetailResponseDto(task);
+			taskDto.setIsOverdue(!Boolean.TRUE.equals(task.getIsCompleted()) && task.getDueAt() != null
+					&& task.getDueAt().isBefore(LocalDate.now().atStartOfDay()));
+			return taskDto;
+		}).toList();
+		dto.setTasks(taskDtos);
+
+		log.info("getContactById: execution ended");
+		return new ResponseEntityDto(false, dto);
 	}
 
-	private Employee validateAssignableOwner(Long ownerId) {
-		Employee owner = employeeDao.findById(ownerId)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND));
-
-		if (owner.getUser() == null || !Boolean.TRUE.equals(owner.getUser().getIsActive())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INACTIVE);
-		}
-
-		EmployeeRole ownerRole = owner.getEmployeeRole();
-		boolean isOwnerSuperAdmin = ownerRole != null && Boolean.TRUE.equals(ownerRole.getIsSuperAdmin());
-		Role ownerCrmRole = ownerRole != null ? ownerRole.getCrmRole() : null;
-		if (!isOwnerSuperAdmin && !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(ownerCrmRole)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE);
-		}
-
-		return owner;
+	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId, Long companyId) {
+		CrmValidations.validateContactName(name);
+		CrmValidations.validateContactEmail(email);
+		CrmValidations.validateContactNumber(contactNumber);
+		CrmValidations.validateOwnerId(ownerId);
+		CrmValidations.validateCompanyId(companyId);
 	}
 
 	private String normalizeNullableText(String value) {

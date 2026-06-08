@@ -12,5 +12,7 @@ public interface CrmDealService {
 	ResponseEntityDto getDeals(CrmDealFilterDto filterDto);
 
 	ResponseEntityDto getDealsByStages(CrmDealsByStagesRequestDto requestDto);
+	
+	ResponseEntityDto getBoardInitData();
 
 }

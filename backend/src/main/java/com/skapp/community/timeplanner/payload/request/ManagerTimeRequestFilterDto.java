@@ -3,7 +3,6 @@ package com.skapp.community.timeplanner.payload.request;
 import com.skapp.community.peopleplanner.type.RequestStatus;
 import com.skapp.community.peopleplanner.type.RequestType;
 import com.skapp.community.timeplanner.type.TimeRequestSort;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Sort;
@@ -19,10 +18,8 @@ public class ManagerTimeRequestFilterDto {
 
 	private List<RequestStatus> status;
 
-	@NotNull
 	private LocalDate startDate;
 
-	@NotNull
 	private LocalDate endDate;
 
 	private int pageNumber = 0;
