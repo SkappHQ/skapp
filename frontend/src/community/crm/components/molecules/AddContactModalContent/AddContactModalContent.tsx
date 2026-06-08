@@ -15,8 +15,10 @@ import {
   useGetCompanyLookup
 } from "~community/crm/api/ContactApi";
 import OwnerLookupDropdown from "~community/crm/components/molecules/OwnerLookupDropdown/OwnerLookupDropdown";
-import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
-import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/constants/commonConstants";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactAddFormTypes,
