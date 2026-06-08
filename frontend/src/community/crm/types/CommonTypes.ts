@@ -211,3 +211,25 @@ export interface CrmCompanyEditFormTypes {
   address: string | null;
   contactNumber: string | null;
 }
+
+export interface CrmTaskAddFormTypes {
+  name: string;
+  type: CrmTaskCategory | null;
+  dueDate: string | null;
+  priority: CrmPriorityEnum;
+  contactName: string;
+  deal: string;
+  owner: number | null;
+  notes: string;
+}
+
+export interface CrmTaskCreatePayload {
+  name: string;
+  type: CrmTaskCategory | null;
+  dueAt: string | null;
+  priority: CrmPriorityEnum;
+  contactName: string;
+  deal: string;
+  owner: number | null;
+  notes: string;
+}
