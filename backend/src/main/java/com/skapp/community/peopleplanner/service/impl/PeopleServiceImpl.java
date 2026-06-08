@@ -60,6 +60,7 @@ import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPat
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
+import com.skapp.community.peopleplanner.payload.request.ReactivateTerminatedUserRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
@@ -1252,6 +1253,9 @@ public class PeopleServiceImpl implements PeopleService {
 					.map(u -> u.getEmployee() != null && u.getEmployee().getEmployeeRole() != null
 							&& u.getEmployee().getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE)
 					.orElse(false));
+		employeeDataValidationResponseDto.setIsTerminatedUser(newUser
+			.map(u -> u.getEmployee() != null && u.getEmployee().getAccountStatus() == AccountStatus.TERMINATED)
+			.orElse(false));
 		String userDomain = workEmailCheck.substring(workEmailCheck.indexOf("@") + 1);
 		employeeDataValidationResponseDto.setIsGoogleDomain(Validation.ssoTypeMatches(userDomain));
 
@@ -1272,6 +1276,37 @@ public class PeopleServiceImpl implements PeopleService {
 
 		log.info("terminateUser: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_TERMINATED),
+				false);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto reactivateTerminatedUser(
+			ReactivateTerminatedUserRequestDto reactivateTerminatedUserRequestDto) {
+		log.info("reactivateTerminatedUser: execution started");
+
+		User user = userDao.findByEmail(reactivateTerminatedUserRequestDto.getEmail())
+			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
+		Employee employee = user.getEmployee();
+
+		employee.setAccountStatus(AccountStatus.PENDING);
+		user.setIsActive(true);
+		user.setIsPasswordChangedForTheFirstTime(false);
+
+		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
+		user.setPassword(passwordEncoder.encode(tempPassword));
+
+		updateSubscriptionQuantity(1L, true, false);
+		userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
+		invalidateUserCache();
+		invalidateUserAuthPicCache();
+		userDao.save(user);
+
+		peopleEmailService.sendUserInvitationEmail(user);
+
+		log.info("reactivateTerminatedUser: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ACTIVATED),
 				false);
 	}
 

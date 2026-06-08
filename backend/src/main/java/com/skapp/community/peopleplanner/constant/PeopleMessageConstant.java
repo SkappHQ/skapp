@@ -17,6 +17,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_SUCCESS_TEAM_DELETED("api.success.people.team-deleted"),
 	PEOPLE_SUCCESS_EMPLOYEE_ADDED("api.success.people.employee-added"),
 	PEOPLE_SUCCESS_EMPLOYEE_TERMINATED("api.success.people.employee-terminated"),
+	PEOPLE_SUCCESS_EMPLOYEE_ACTIVATED("api.success.people.employee-activated"),
 	PEOPLE_SUCCESS_EMPLOYEE_DELETED("api.success.people.employee-deleted"),
 	PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED(
 			"api.success.people.supervisors-reassigned-and-employee-terminated"),
