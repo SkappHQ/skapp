@@ -32,6 +32,8 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-work-location-id.sql
   - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-com-work-location-geofence.sql
+  - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create_shr_com_work_location_ppl_holiday_table.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-module-roles-restriction.sql
