@@ -33,7 +33,6 @@ const OwnerLookupDropdown: React.FC<OwnerLookupDropdownProps> = ({
 
   const [ownerSearch, setOwnerSearch] = useState("");
 
-  // undefined = not yet initialized; null = explicitly cleared; CrmOwner = selected
   const [selectedOwner, setSelectedOwner] = useState<
     CrmOwner | null | undefined
   >(undefined);
@@ -59,8 +58,7 @@ const OwnerLookupDropdown: React.FC<OwnerLookupDropdownProps> = ({
   );
 
   useEffect(() => {
-    // Only initialize once (while selectedOwner is still undefined) and only after data has loaded
-    if (selectedOwner !== undefined || isNaN(currentUserAsOwner.employeeId))
+    if (selectedOwner !== undefined || !currentUser)
       return;
     setSelectedOwner(currentUserAsOwner);
     setLastSelectedOwner(currentUserAsOwner);
