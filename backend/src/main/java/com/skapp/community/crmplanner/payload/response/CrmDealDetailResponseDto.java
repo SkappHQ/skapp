@@ -11,7 +11,7 @@ public class CrmDealDetailResponseDto {
 
 	private String name;
 
-	private String value;
+	private String amount;
 
 	private CrmDealStageResponseDto stage;
 
