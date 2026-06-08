@@ -71,7 +71,6 @@ public interface CrmMapper {
 
 	CrmBoardContactCompanyResponseDto crmCompanyToCrmBoardContactCompanyResponseDto(CrmCompany company);
 
-	@Mapping(target = "company", source = "company")
 	CrmBoardContactResponseDto crmContactToCrmBoardContactResponseDto(CrmContact contact);
 
 	List<CrmBoardContactResponseDto> crmContactsToCrmBoardContactResponseDtos(List<CrmContact> contacts);
