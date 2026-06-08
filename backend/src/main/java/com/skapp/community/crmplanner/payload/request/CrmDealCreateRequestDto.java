@@ -27,8 +27,6 @@ public class CrmDealCreateRequestDto {
 	@JsonDeserialize(using = TrimmingStringDeserializer.class)
 	private String amount;
 
-	private Long companyId;
-
 	private Long contactId;
 
 	private Long ownerId;
