@@ -96,30 +96,37 @@ export const useCreateNewContact = (
   });
 };
 
+const fetchCompanyLookup = async (
+  searchKeyword: string,
+  size: number
+): Promise<CrmCompaniesResponseType> => {
+  const response = await authFetch.get(contactEndpoints.GET_COMPANIES, {
+    params: { searchKeyword, size }
+  });
+  return response?.data?.results?.[0];
+};
+
 export const useGetCompanyLookup = (searchKeyword: string, size: number) => {
   return useQuery({
     queryKey: contactQueryKeys.COMPANY_LOOKUP(searchKeyword),
-    queryFn: async (): Promise<CrmCompaniesResponseType> => {
-      const response = await authFetch.get(
-        contactEndpoints.GET_COMPANIES,
-        {
-          params: { searchKeyword, size }
-        }
-      );
-      return response?.data?.results?.[0];
-    }
+    queryFn: () => fetchCompanyLookup(searchKeyword, size)
   });
+};
+
+const fetchOwnerLookup = async (
+  searchKeyword: string,
+  size: number
+): Promise<CrmOwnersResponseType> => {
+  const response = await authFetch.get(contactEndpoints.GET_OWNER_LOOKUP, {
+    params: { searchKeyword, size }
+  });
+  return response?.data?.results?.[0];
 };
 
 export const useGetOwnerLookup = (searchKeyword: string, size: number, enabled: boolean) => {
   return useQuery({
     queryKey: contactQueryKeys.OWNER_LOOKUP(searchKeyword),
-    queryFn: async (): Promise<CrmOwnersResponseType> => {
-      const response = await authFetch.get(contactEndpoints.GET_OWNER_LOOKUP, {
-        params: { searchKeyword, size }
-      });
-      return response?.data?.results?.[0];
-    },
+    queryFn: () => fetchOwnerLookup(searchKeyword, size),
     enabled
   });
 };
