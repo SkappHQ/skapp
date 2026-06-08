@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,14 +41,5 @@ public class CrmDealController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get deals grouped by stages",
-			description = "Returns deals grouped by the requested stages. Multi-stage requests return first-page data for each stage; single-stage requests support page-based swim-lane loading.")
-	@PostMapping("/grouped-by-stages")
-	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getDealsByStages(
-			@RequestBody CrmDealsByStagesRequestDto crmDealsByStagesRequestDto) {
-		ResponseEntityDto response = crmDealService.getDealsByStages(crmDealsByStagesRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
 
 }

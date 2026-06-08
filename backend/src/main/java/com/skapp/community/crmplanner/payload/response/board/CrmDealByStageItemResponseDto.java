@@ -1,4 +1,4 @@
-package com.skapp.community.crmplanner.payload.response;
+package com.skapp.community.crmplanner.payload.response.board;
 
 import lombok.Getter;
 import lombok.Setter;

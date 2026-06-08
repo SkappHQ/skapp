@@ -1,4 +1,4 @@
-package com.skapp.community.crmplanner.payload.request;
+package com.skapp.community.crmplanner.payload.request.board;
 
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import lombok.Getter;

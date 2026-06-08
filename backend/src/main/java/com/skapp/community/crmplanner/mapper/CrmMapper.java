@@ -14,7 +14,7 @@ import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealByStageItemResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;

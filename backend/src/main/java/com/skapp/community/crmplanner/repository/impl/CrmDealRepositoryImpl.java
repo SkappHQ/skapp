@@ -7,7 +7,7 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmDealsByStagesRequestDto;
+import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
