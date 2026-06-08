@@ -23,13 +23,8 @@ const TerminatedToActiveUserConfirmationModal = () => {
     setDirectoryModalType(DirectoryModalTypes.NONE);
   };
 
-  const handleError = () => {
-    // keep modal open on error
-  };
-
   const { mutate, isPending } = useReactivateTerminatedUser(
     handleSuccess,
-    handleError
   );
 
   const handleConfirm = () => {
