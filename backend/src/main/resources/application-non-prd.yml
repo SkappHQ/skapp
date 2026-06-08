@@ -65,6 +65,9 @@ jwt:
     short-duration:
       expiration-time: 21600000 # Expiration time in milliseconds (6 hours)
 
+domain:
+  base: ${DOMAIN_BASE:localhost}
+
 encryptDecryptAlgorithm:
   secret: ${ENCRYPT_DECRYPT_SECRET}
 
