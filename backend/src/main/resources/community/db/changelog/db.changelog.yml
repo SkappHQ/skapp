@@ -30,5 +30,7 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-com-work-location.sql
   - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-work-location-id.sql
+  - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create_shr_com_work_location_ppl_holiday_table.sql
 
