@@ -284,6 +284,7 @@ const AddTaskModalContent: React.FC = () => {
         placeholder={translateText(["placeholders", "notes"])}
         label={translateText(["labels", "notes"])}
         onChange={handleChange}
+        rows={3}
         aria-label={translateText(["ariaLabels", "notes"])}
       />
 
