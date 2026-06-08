@@ -25,13 +25,13 @@ const CompanySidePanel: React.FC<{
   );
 
   const handleOpenDeleteCompanyModal = () => {
-    setIsCompanyModalOpen(true);
     setCompanyModalType(CrmModalTypes.DELETE_COMPANY_MODAL);
+    setIsCompanyModalOpen(true);
   };
 
   const handleOpenEditCompanyModal = () => {
-    setIsCompanyModalOpen(true);
     setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
+    setIsCompanyModalOpen(true);
   };
 
   const menuItems = [
