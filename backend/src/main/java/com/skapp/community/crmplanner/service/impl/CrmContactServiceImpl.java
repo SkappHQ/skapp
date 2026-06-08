@@ -340,29 +340,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return new ResponseEntityDto(false, dto);
 	}
 
-	private Employee resolveOwner(Long ownerId, User currentUser) {
-		Employee currentEmployee = currentUser.getEmployee();
-
-		boolean isSuperAdmin = currentEmployee.getEmployeeRole().getIsSuperAdmin();
-		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
-
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE && !isSuperAdmin) {
-			return currentEmployee;
-		}
-
-		return validateAssignableOwner(ownerId);
-	}
-
-	private Employee validateAssignableOwner(Long ownerId) {
-		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(ownerId);
-
-		if (owner == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
-		}
-
-		return owner;
-	}
-
 	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId, Long companyId) {
 		CrmValidations.validateContactName(name);
 		CrmValidations.validateContactEmail(email);
