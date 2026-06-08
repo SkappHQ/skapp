@@ -15,14 +15,16 @@ interface Props {
 }
 
 interface InfoItem {
-  key: string;
   icon: ReactElement;
   value: string | null;
   onClick?: () => void;
   endIcon?: IconName;
 }
 
-const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
+const SidePanelContactHeader: FC<Props> = ({
+  contact,
+  onCompanyClick = () => {}
+}) => {
   if (!contact) return null;
 
   const company = contact.company;
@@ -31,19 +33,16 @@ const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
 
   const infoItems: InfoItem[] = [
     {
-      key: "email",
       icon: <EmailOutlineIcon style={iconColor} />,
       value: contact.email
     },
     {
-      key: "phone",
       icon: <PhoneIcon style={iconColor} />,
       value: contact.contactNumber
     },
     ...(company
       ? [
           {
-            key: "company",
             icon: <BuildingIcon style={iconColor} />,
             value: company.name,
             onClick: onCompanyClick,
@@ -55,8 +54,8 @@ const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
 
   return (
     <div className="flex items-center justify-between max-w-[629px] w-full">
-      {infoItems.map(({ key, ...item }) => (
-        <SidePanelHeaderInfoItem key={key} {...item} />
+      {infoItems.map(({ ...item }) => (
+        <SidePanelHeaderInfoItem {...item} />
       ))}
     </div>
   );
