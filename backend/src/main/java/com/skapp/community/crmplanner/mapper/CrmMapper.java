@@ -4,6 +4,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
@@ -14,6 +15,7 @@ import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDt
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -58,6 +60,12 @@ public interface CrmMapper {
 	@Mapping(target = "openTaskCount", ignore = true)
 	@Mapping(target = "overdueTaskCount", ignore = true)
 	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
+
+	@Mapping(target = "typeId", source = "type.id")
+	@Mapping(target = "typeName", source = "type.name")
+	@Mapping(target = "contactId", source = "contact.id")
+	@Mapping(target = "ownerName", source = "owner.fullName")
+	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask crmTask);
 
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
 
