@@ -26,7 +26,7 @@ public class JacksonConfig {
 		@Override
 		public String deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
 				throws JacksonException {
-			String value = jsonParser.getValueAsString();
+			String value = jsonParser.getString();
 			return value != null ? value.trim() : null;
 		}
 

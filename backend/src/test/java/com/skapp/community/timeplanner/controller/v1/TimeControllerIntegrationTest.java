@@ -130,8 +130,8 @@ class TimeControllerIntegrationTest {
 	class TimeRecordTests {
 
 		@Test
-		@DisplayName("Add time log for current day with CLOCK_IN - Returns OK")
-		void addTimeLog_ForTheCurrentDay_CLOCK_IN_ReturnsHttpStatusOk() throws Exception {
+		@DisplayName("Add time log for current day with CLOCK_IN - Returns Created")
+		void addTimeLog_ForTheCurrentDay_CLOCK_IN_ReturnsHttpStatusCreated() throws Exception {
 			LocalDateTime startTime = DateTimeUtils.getCurrentUtcDateTime().minusDays(1L);
 			AddTimeRecordDto addTimeRecordDto = new AddTimeRecordDto();
 			addTimeRecordDto.setRecordActionType(TimeRecordActionTypes.START);
