@@ -34,6 +34,30 @@ const CompanySidePanel: React.FC<{
     setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
   };
 
+  const menuItems = [
+    {
+      id: "edit",
+      label: translateText(["editCompany"]),
+      icon: { start: <EditIcon width="16px" height="16px" /> },
+      onClick: handleOpenEditCompanyModal
+    },
+    {
+      id: "delete",
+      label: translateText(["deleteCompany"]),
+      icon: {
+        start: (
+          <DeleteButtonIcon
+            width="12px"
+            height="14px"
+            fill="var(--color-semantic-red-text)"
+          />
+        )
+      },
+      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
+      onClick: handleOpenDeleteCompanyModal
+    }
+  ];
+
   return (
     <SidePanel
       isOpen={isOpen}
@@ -41,30 +65,7 @@ const CompanySidePanel: React.FC<{
       headerActions={
         <KebabMenu
           id={"company-actions"}
-          menuItems={[
-            {
-              id: "edit",
-              label: translateText(["editCompany"]),
-              icon: { start: <EditIcon width="16px" height="16px" /> },
-              onClick: handleOpenEditCompanyModal
-            },
-            {
-              id: "delete",
-              label: translateText(["deleteCompany"]),
-              icon: {
-                start: (
-                  <DeleteButtonIcon
-                    width="12px"
-                    height="14px"
-                    fill="var(--color-semantic-red-text)"
-                  />
-                )
-              },
-              activeBehavior:
-                "hover:bg-semantic-red-background text-semantic-red-text",
-              onClick: handleOpenDeleteCompanyModal
-            }
-          ]}
+          menuItems={menuItems}
           className={{
             anchorElement:
               "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
