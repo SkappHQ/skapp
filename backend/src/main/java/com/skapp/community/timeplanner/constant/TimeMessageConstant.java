@@ -26,7 +26,6 @@ public enum TimeMessageConstant implements MessageConstant {
 	TIME_ERROR_TIME_RECORD_DATE_AND_REQUEST_START_DATETIME_MISMATCH("api.error.time.record-date.mismatch"),
 	TIME_ERROR_CLOCK_IN_NOT_FOUND("api.error.time.clock.in.not-found"),
 	TIME_ERROR_CLOCK_OUT_NOT_FOUND("api.error.time.clock.out.not-found"),
-	TIME_ERROR_MANUAL_ENTRY_OVER_WORK_SLOT("api.error.time.manual-entry-over-work-slot"),
 	TIME_ERROR_FOUND_OVERLAPPING_REQUESTS("api.error.time.found-overlapping-requests"),
 	TIME_ERROR_TIME_REQUEST_CANNOT_EDIT("api.error.time.time-request-cannot-edit"),
 	TIME_ERROR_TIME_REQUEST_NOT_FOUND("api.error.time.time-request-not-found"),

@@ -25,6 +25,8 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
+
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -158,6 +160,20 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		countQuery.select(cb.count(contact));
 		countQuery.where(buildLookupPredicates(cb, contact, filterDto).toArray(new Predicate[0]));
 		return entityManager.createQuery(countQuery).getSingleResult();
+	}
+
+	@Override
+	public CrmContact findByIdWithAssociations(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+		contact.fetch(CrmContact_.company, JoinType.LEFT);
+		contact.fetch(CrmContact_.owner, JoinType.INNER);
+
+		query.where(cb.equal(contact.get(CrmContact_.id), id), cb.isFalse(contact.get(CrmContact_.isDeleted)));
+
+		CrmContact results = entityManager.createQuery(query).getSingleResultOrNull();
+		return results;
 	}
 
 }

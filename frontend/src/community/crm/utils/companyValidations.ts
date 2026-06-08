@@ -2,8 +2,8 @@ import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { isValidPhoneNumber } from "~community/common/regex/regexPatterns";
-
-type TranslatorFunctionType = (suffixes: string[]) => string;
+import { CrmIndustryEnum } from "~community/crm/enums/common";
+import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 
 export const addCompanyValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
@@ -33,13 +33,21 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
       .optional()
       .transform((v) => (v === "" ? null : v))
       .url(translator(["validations", "website"]))
-      .max(characterLengths.CHARACTER_LENGTH, translator(["validations", "characterLength"])),
+      .max(
+        characterLengths.CHARACTER_LENGTH,
+        translator(["validations", "characterLength"])
+      ),
     address: Yup.string()
       .nullable()
       .optional()
-      .max(characterLengths.ADDRESS_LENGTH, translator(["validations", "addressLength"])),
-    industry: Yup.string()
-      .nullable()
+      .max(
+        characterLengths.ADDRESS_LENGTH,
+        translator(["validations", "addressLength"])
+      ),
+    industry: Yup.mixed<CrmIndustryEnum>()
       .optional()
-      .max(characterLengths.CHARACTER_LENGTH, translator(["validations", "characterLength"]))
+      .oneOf(
+        Object.values(CrmIndustryEnum),
+        translator(["validations", "industry"])
+      )
   });

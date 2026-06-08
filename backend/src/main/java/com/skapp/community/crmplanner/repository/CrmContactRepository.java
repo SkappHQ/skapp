@@ -16,4 +16,6 @@ public interface CrmContactRepository {
 
 	List<CrmContact> findAllContactsForBoardInit();
 
+	CrmContact findByIdWithAssociations(Long id);
+
 }
