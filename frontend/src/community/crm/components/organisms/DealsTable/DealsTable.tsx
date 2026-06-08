@@ -13,7 +13,7 @@ import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { concatStrings } from "~community/common/utils/commonUtil";
-import { formatValue, toOwnerAvatarProps } from "~community/crm/utils/crmUtil";
+import { formatValue } from "~community/crm/utils/crmUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { useContainerWidth } from "./utils/dealsTableUtils";
 
@@ -159,7 +159,13 @@ const DealsTable: FC<Props> = ({
           contactName: <span className="body2">{deal.contactName ?? "-"}</span>,
           dealOwner: (
             <AvatarChip
-              avatarProps={{ ...toOwnerAvatarProps(deal.owner), size: "sm" }}
+              avatarProps={{
+                id: String(deal.owner.employeeId),
+                firstName: deal.owner.firstName,
+                lastName: deal.owner.lastName ?? "",
+                src: deal?.owner?.authPic ?? "",
+                size: "sm"
+              }}
               label={ownerFullName}
               backgroundColor="bg-secondary-background"
             />

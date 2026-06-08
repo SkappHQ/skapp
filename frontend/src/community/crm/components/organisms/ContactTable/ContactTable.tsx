@@ -26,7 +26,6 @@ import {
 } from "~community/crm/constants/contactConstants";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
-import { toOwnerAvatarProps } from "~community/crm/utils/crmUtil";
 import {
   formatPhoneNumber,
   formatTasks
@@ -163,7 +162,12 @@ export const ContactTable: React.FC = () => {
         const { owner } = row;
         return (
           <AvatarChip
-            avatarProps={toOwnerAvatarProps(owner)}
+            avatarProps={{
+              id: `contact-${row.id}-owner-${owner?.employeeId}`,
+              src: owner?.authPic ?? undefined,
+              firstName: owner?.firstName,
+              lastName: owner?.lastName ?? ""
+            }}
             label={concatStrings([owner?.firstName, owner?.lastName ?? ""])}
             backgroundColor="bg-tertiary-background"
           />
