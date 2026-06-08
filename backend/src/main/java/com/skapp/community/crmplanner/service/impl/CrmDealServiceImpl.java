@@ -32,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -118,9 +117,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getDeals(CrmDealFilterDto filterDto) {
 		log.info("getDeals: execution started");
 
-		Sort sort = Sort.by(filterDto.getSortOrder(), filterDto.getSortKey().getSortField());
 		Page<CrmDeal> dealsPage = crmDealDao.findDeals(filterDto,
-				PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort));
+				PageRequest.of(filterDto.getPage(), filterDto.getSize()));
 
 		List<CrmDealResponseDto> deals = crmMapper.crmDealsToCrmDealResponseDtos(dealsPage.getContent());
 
