@@ -5,7 +5,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-import AddContactModal from "../../molecules/AddContactModal/AddContactModal";
+import AddContactModalContent from "../../molecules/AddContactModalContent/AddContactModalContent";
 
 const ContactModalController = () => {
   const translateText = useTranslator("crmModule", "contacts");
@@ -33,7 +33,7 @@ const ContactModalController = () => {
   const getModalContent = (): ReactNode => {
     switch (contactModalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
-        return <AddContactModal />;
+        return <AddContactModalContent />;
       default:
         return null;
     }

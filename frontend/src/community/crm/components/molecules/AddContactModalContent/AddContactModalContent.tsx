@@ -24,7 +24,7 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
 
-const AddContactModal: React.FC = () => {
+const AddContactModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator(
@@ -263,4 +263,4 @@ const AddContactModal: React.FC = () => {
   );
 };
 
-export default AddContactModal;
+export default AddContactModalContent;
