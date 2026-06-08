@@ -27,9 +27,9 @@ import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
-import com.skapp.community.crmplanner.util.CrmOwnerResolver;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -70,7 +70,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmMapper crmMapper;
 
-	private final CrmOwnerResolver crmOwnerResolver;
+	private final CrmOwnerResolverService crmOwnerResolver;
 
 	@Override
 	@Transactional

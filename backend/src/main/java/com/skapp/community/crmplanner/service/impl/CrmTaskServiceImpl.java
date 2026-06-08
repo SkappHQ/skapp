@@ -18,8 +18,8 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.service.CrmTaskService;
-import com.skapp.community.crmplanner.util.CrmOwnerResolver;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	private final UserService userService;
 
-	private final CrmOwnerResolver crmOwnerResolver;
+	private final CrmOwnerResolverService crmOwnerResolver;
 
 	private final CrmMapper crmMapper;
 
