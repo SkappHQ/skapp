@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode } from "react";
+import { ReactElement } from "react";
 
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
