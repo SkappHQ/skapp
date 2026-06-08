@@ -1,4 +1,4 @@
-package com.skapp.community.crmplanner.payload.response;
+package com.skapp.community.crmplanner.payload.response.board;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CrmOwnerResponseDto {
+public class CrmBoardOwnerResponseDto {
 
 	private Long employeeId;
 
