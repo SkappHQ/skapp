@@ -10,7 +10,7 @@ export const contactEndpoints = {
   GET_CONTACT_METRICS: `${moduleAPIPath.CRM}/contact/metrics`,
   GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`,
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
-  GET_OWNERS: `${moduleAPIPath.CRM}/contact/owners`
+  OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
 export const companyEndpoints = {

@@ -103,7 +103,7 @@ export const useGetCrmOwners = (
   return useQuery({
     queryKey: [...contactQueryKeys.OWNER_LOOKUP, debouncedSearch, size],
     queryFn: async (): Promise<CrmOwner[]> => {
-      const response = await authFetch.get(contactEndpoints.GET_OWNERS, {
+      const response = await authFetch.get(contactEndpoints.OWNER_LOOKUP, {
         params: { searchKeyword: debouncedSearch, size }
       });
       return response?.data?.results?.[0]?.items ?? [];
