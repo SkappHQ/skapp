@@ -4,36 +4,28 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
 
 interface Props {
-  icon: IconName | ReactElement;
+  icon: ReactElement;
   value: string | null;
   endIcon?: IconName;
-  href?: string;
+  onClick?: () => void;
 }
 
-const renderIcon = (icon: IconName | ReactElement) =>
-  typeof icon === "string" ? (
-    <Icon
-      name={icon}
-      fill="var(--color-secondary-icon)"
-      width="20"
-      height="20"
-    />
-  ) : (
-    icon
-  );
-
-const SidePanelHeaderInfoItem: FC<Props> = ({ icon, value, endIcon, href }) => {
-  const isInteractive = !!href && !!value;
+const SidePanelHeaderInfoItem: FC<Props> = ({
+  icon,
+  value,
+  endIcon,
+  onClick
+}) => {
+  const isInteractive = !!onClick && !!value;
 
   return (
     <div className="flex items-center gap-[12px]">
-      <span className="shrink-0 flex items-center">{renderIcon(icon)}</span>
+      <span className="shrink-0 flex items-center">{icon}</span>
       {isInteractive ? (
-        <a
-          href={href}
-          className="inline-flex items-center gap-[4px] transition-colors hover:opacity-80"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={onClick}
+          className="inline-flex items-center gap-[4px] bg-transparent border-0 p-0 cursor-pointer transition-opacity hover:opacity-80"
         >
           <span className="body2 leading-6 tracking-[0.5px] underline text-primary-text">
             {value}
@@ -46,7 +38,7 @@ const SidePanelHeaderInfoItem: FC<Props> = ({ icon, value, endIcon, href }) => {
               height="16"
             />
           )}
-        </a>
+        </button>
       ) : (
         <span className="body2 leading-6 tracking-[0.5px] text-black">
           {value ?? "—"}
