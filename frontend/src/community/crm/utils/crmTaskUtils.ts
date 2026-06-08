@@ -1,5 +1,7 @@
 import { DateTime } from "luxon";
 
+import { getOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
+
 export interface DueDateDisplay {
   textKey: string;
   dateValue?: string;
@@ -9,8 +11,8 @@ export interface DueDateDisplay {
 export const getDueDateDisplay = (
   dueAt: string | null,
   isCompleted: boolean
-): DueDateDisplay => {
-  if (!dueAt) return { textKey: "dueDateNoDate", colorClass: "text-gray-400" };
+): DueDateDisplay | null => {
+  if (!dueAt) return null;
 
   const due = DateTime.fromISO(dueAt).startOf("day");
   const today = DateTime.now().startOf("day");
@@ -25,7 +27,7 @@ export const getDueDateDisplay = (
 
   return {
     textKey: "dueDateDueOn",
-    dateValue: due.toLocaleString({ month: "short", day: "numeric" }),
+    dateValue: `${due.day}${getOrdinalIndicator(due.day)} ${due.toFormat("LLL")}`,
     colorClass: "text-secondary-text"
   };
 };
