@@ -8,6 +8,7 @@ import { FC, ReactElement } from "react";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmContactType } from "~community/crm/types/CommonTypes";
+import { formatTextValue } from "~community/crm/utils/crmUtil";
 
 interface Props {
   contact?: CrmContactType;
@@ -17,7 +18,7 @@ interface Props {
 interface InfoItem {
   key: string;
   icon: ReactElement;
-  value: string | null;
+  value: string;
   onClick?: () => void;
   endIcon?: IconName;
 }
@@ -33,12 +34,12 @@ const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
     {
       key: "email",
       icon: <EmailOutlineIcon style={iconColor} />,
-      value: contact.email
+      value: formatTextValue(contact.email)
     },
     {
       key: "phone",
       icon: <PhoneIcon style={iconColor} />,
-      value: contact.contactNumber
+      value: formatTextValue(contact.contactNumber)
     },
     ...(company
       ? [

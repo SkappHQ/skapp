@@ -5,7 +5,7 @@ import { IconName } from "~community/common/types/IconTypes";
 
 interface Props {
   icon: ReactElement;
-  value: string | null;
+  value: string;
   endIcon?: IconName;
   onClick?: () => void;
 }
@@ -16,7 +16,7 @@ const SidePanelHeaderInfoItem: FC<Props> = ({
   endIcon,
   onClick
 }) => {
-  const isInteractive = !!onClick && !!value;
+  const isInteractive = !!onClick;
 
   return (
     <div className="flex items-center gap-[12px]">
@@ -41,7 +41,7 @@ const SidePanelHeaderInfoItem: FC<Props> = ({
         </button>
       ) : (
         <span className="body2 leading-6 tracking-[0.5px] text-black">
-          {value ?? "—"}
+          {value}
         </span>
       )}
     </div>
