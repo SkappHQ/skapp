@@ -12,7 +12,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface CrmSidePanelContactRow {
   id: number;
-  name: string;
+  contact: string;
   email: string;
   company: string;
   contactNo: string;
@@ -36,11 +36,11 @@ const SidePanelCompanyContacts: React.FC<{
     {
       columnAriaLabel: translateText(["columns", "contact"]),
       header: translateText(["columns", "contact"]),
-      key: "name",
+      key: "contact",
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1">
-            <div>{row.name}</div>
+            <div>{row.contact}</div>
             <div className="body2 text-secondary-text">{row.company}</div>
           </div>
         );
