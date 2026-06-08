@@ -46,12 +46,20 @@ class LeaveTypeControllerIntegrationTest {
 
 	private ResultActions performGetLeaveTypes(String authToken, Boolean filterByInUse, Boolean isCarryForward)
 			throws Exception {
+		return performGetLeaveTypes(authToken, filterByInUse, isCarryForward, null);
+	}
+
+	private ResultActions performGetLeaveTypes(String authToken, Boolean filterByInUse, Boolean isCarryForward,
+			Long employeeId) throws Exception {
 		var requestBuilder = get(ENDPOINT).accept(MediaType.APPLICATION_JSON);
 		if (filterByInUse != null) {
 			requestBuilder = requestBuilder.param("filterByInUse", filterByInUse.toString());
 		}
 		if (isCarryForward != null) {
 			requestBuilder = requestBuilder.param("isCarryForward", isCarryForward.toString());
+		}
+		if (employeeId != null) {
+			requestBuilder = requestBuilder.param("employeeId", employeeId.toString());
 		}
 		return mvc.perform(requestBuilder.with(SecurityTestUtils.bearerToken(authToken)));
 	}
@@ -192,6 +200,39 @@ class LeaveTypeControllerIntegrationTest {
 	}
 
 	@Nested
+	@DisplayName("Leave Admin - Filter by In Use with EmployeeId")
+	class LeaveAdminFilterByInUseWithEmployeeIdTests {
+
+		@Test
+		@DisplayName("Returns target employee's used leave types when employeeId is provided")
+		void getLeaveTypes_FilterByInUseWithEmployeeId_ReturnsTargetEmployeeUsedLeaveTypes() throws Exception {
+			SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createLeaveAdmin());
+			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"),
+					1L);
+
+			performGetLeaveTypes(authToken, true, false, 2L).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_PATH, hasSize(1)))
+				.andExpect(jsonPath("$.results[0].name").value("Study"));
+		}
+
+		@Test
+		@DisplayName("Returns empty list when employeeId does not exist")
+		void getLeaveTypes_FilterByInUseWithNonExistentEmployeeId_ReturnsEmptyList() throws Exception {
+			SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createLeaveAdmin());
+			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"),
+					1L);
+
+			performGetLeaveTypes(authToken, true, false, 99999L).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_PATH, hasSize(0)));
+		}
+
+	}
+
+	@Nested
 	@DisplayName("Role-Based Access Tests")
 	class RoleBasedAccessTests {
 
@@ -207,6 +248,38 @@ class LeaveTypeControllerIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_PATH, hasSize(6)));
+		}
+
+		@Test
+		@DisplayName("Leave manager cannot query leave types for an employee they do not supervise")
+		@Sql(statements = { "UPDATE employee_role SET leave_role = 'LEAVE_MANAGER' WHERE employee_id = 2" })
+		void getLeaveTypes_LeaveManagerQueryingUnsupervisedEmployee_ReturnsBadRequest() throws Exception {
+			SecurityTestUtils.setupSecurityContext(authorityService,
+					MockUserFactory.createLeaveManager("user2@gmail.com", 2L, 2L));
+			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+					2L);
+
+			performGetLeaveTypes(authToken, true, false, 3L).andDo(print()).andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Leave manager can query leave types for an employee they supervise")
+		@Sql(statements = { "UPDATE employee_role SET leave_role = 'LEAVE_MANAGER' WHERE employee_id = 2",
+				"INSERT INTO employee_team (id, team_id, employee_id, is_supervisor) VALUES (default, 1, 2, true)",
+				"INSERT INTO employee_team (id, team_id, employee_id, is_supervisor) VALUES (default, 1, 3, false)",
+				"INSERT INTO leave_request (leave_req_id, start_date, end_date, leave_state, status, employee_id, type_id, duration_days, is_viewed, is_auto_approved) "
+						+ "VALUES (200, YEAR(CURRENT_TIMESTAMP) || '-06-01', YEAR(CURRENT_TIMESTAMP) || '-06-02', 'FULLDAY', 'APPROVED', 3, "
+						+ "(SELECT type_id FROM leave_type WHERE name = 'Medical'), 1, false, false)" })
+		void getLeaveTypes_LeaveManagerQueryingSupervisedEmployee_ReturnsOk() throws Exception {
+			SecurityTestUtils.setupSecurityContext(authorityService,
+					MockUserFactory.createLeaveManager("user2@gmail.com", 2L, 2L));
+			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+					2L);
+
+			performGetLeaveTypes(authToken, true, false, 3L).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_PATH, hasSize(2)));
 		}
 
 		@Test

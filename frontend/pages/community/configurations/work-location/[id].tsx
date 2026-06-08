@@ -32,7 +32,8 @@ const WorkLocationEditPage: NextPage = () => {
         },
         {
           label: translateConfigurations(["tabs.organization"]),
-          href: `${ROUTES.CONFIGURATIONS.BASE}?tab=organization`
+          onClick: () =>
+            router.push(`${ROUTES.CONFIGURATIONS.BASE}?tab=organization`)
         },
         {
           label: translateText(["form.editLocationTitle"])

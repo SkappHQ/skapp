@@ -1,3 +1,9 @@
+import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
+
+export const crmDealQueryKeys = {
+  GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params]
+};
+
 export const contactQueryKeys = {
   GET_CONTACT_DATA_BY_SEARCH: (searchKeyword: string, companyId?: number) => [
     "crm-contacts",
@@ -15,4 +21,8 @@ export const companyQueryKeys = {
     limit
   ],
   CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"]
+};
+
+export const taskQueryKeys = {
+  GET_TASK_DATA: ["get-task-data"]
 };
