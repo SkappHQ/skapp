@@ -138,7 +138,7 @@ class TimeControllerIntegrationTest {
 			addTimeRecordDto.setTime(startTime);
 
 			performPostRequest(BASE_PATH + "/record", addTimeRecordDto).andDo(print())
-				.andExpect(status().isOk())
+				.andExpect(status().isCreated())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH).value(messageUtil.getMessage(
 						TimeMessageConstant.TIME_SUCCESS_TIME_RECORD_ADDED, new Object[] { startTime, "START" })));
