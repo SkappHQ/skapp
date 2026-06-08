@@ -130,15 +130,15 @@ class TimeControllerIntegrationTest {
 	class TimeRecordTests {
 
 		@Test
-		@DisplayName("Add time log for current day with CLOCK_IN - Returns OK")
-		void addTimeLog_ForTheCurrentDay_CLOCK_IN_ReturnsHttpStatusOk() throws Exception {
+		@DisplayName("Add time log for current day with CLOCK_IN - Returns Created")
+		void addTimeLog_ForTheCurrentDay_CLOCK_IN_ReturnsHttpStatusCreated() throws Exception {
 			LocalDateTime startTime = DateTimeUtils.getCurrentUtcDateTime().minusDays(1L);
 			AddTimeRecordDto addTimeRecordDto = new AddTimeRecordDto();
 			addTimeRecordDto.setRecordActionType(TimeRecordActionTypes.START);
 			addTimeRecordDto.setTime(startTime);
 
 			performPostRequest(BASE_PATH + "/record", addTimeRecordDto).andDo(print())
-				.andExpect(status().isOk())
+				.andExpect(status().isCreated())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH).value(messageUtil.getMessage(
 						TimeMessageConstant.TIME_SUCCESS_TIME_RECORD_ADDED, new Object[] { startTime, "START" })));
