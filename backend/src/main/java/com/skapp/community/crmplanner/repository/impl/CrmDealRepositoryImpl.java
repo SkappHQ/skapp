@@ -123,12 +123,10 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	public Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		// Use id-first-then-fetch pattern to avoid redundant joins
 		CriteriaQuery<Long> idQuery = cb.createQuery(Long.class);
 		Root<CrmDeal> dealRoot = idQuery.from(CrmDeal.class);
 		idQuery.select(dealRoot.get(CrmDeal_.id));
 		idQuery.where(buildStagePredicates(cb, dealRoot, stageId, requestDto).toArray(new Predicate[0]));
-		// Fix: Add stable ordering with tiebreaker to prevent non-deterministic pagination
 		idQuery.orderBy(cb.desc(dealRoot.get(Auditable_.createdDate)), cb.desc(dealRoot.get(CrmDeal_.id)));
 
 		TypedQuery<Long> idTypedQuery = entityManager.createQuery(idQuery);
