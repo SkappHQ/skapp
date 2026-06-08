@@ -144,10 +144,6 @@ const AddContactModalContent: React.FC = () => {
     setCompanySearch("");
   };
 
-  const SearchableDropdownEmptyMessage = (message: string) => (
-    <p className="px-4 py-2 body2">{message}</p>
-  );
-
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
@@ -188,11 +184,11 @@ const AddContactModalContent: React.FC = () => {
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearch("")}
           emptyMessage={
-            isCompanyFetching
-              ? undefined
-              : SearchableDropdownEmptyMessage(
-                  translateText(["emptyStates", "noCompanies"])
-                )
+            isCompanyFetching ? undefined : (
+              <p className="px-4 py-2 body2">
+                {translateText(["emptyStates", "noCompanies"])}
+              </p>
+            )
           }
         />
       ) : (
