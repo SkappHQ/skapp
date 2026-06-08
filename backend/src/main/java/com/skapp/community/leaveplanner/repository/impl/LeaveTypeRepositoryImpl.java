@@ -5,15 +5,14 @@ import com.skapp.community.leaveplanner.model.LeaveRequest_;
 import com.skapp.community.leaveplanner.model.LeaveType;
 import com.skapp.community.leaveplanner.model.LeaveType_;
 import com.skapp.community.leaveplanner.repository.LeaveTypeRepository;
-import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -52,26 +51,28 @@ public class LeaveTypeRepositoryImpl implements LeaveTypeRepository {
 
 	@Override
 	public List<LeaveType> getUsedUserLeaveTypes(Long userId, boolean isCarryForward) {
-		var criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<LeaveType> criteriaQuery = criteriaBuilder.createQuery(LeaveType.class);
+		CriteriaQuery<LeaveType> criteriaQuery = cb.createQuery(LeaveType.class);
 		Root<LeaveType> root = criteriaQuery.from(LeaveType.class);
 
-		Join<LeaveType, LeaveRequest> leaveTypeLeaveRequestJoin = root.join(LeaveType_.LEAVE_REQUESTS);
-		Join<LeaveRequest, Employee> leaveRequestEmployeeJoin = leaveTypeLeaveRequestJoin.join(LeaveRequest_.EMPLOYEE);
+		Subquery<Long> subquery = criteriaQuery.subquery(Long.class);
+		Root<LeaveRequest> subRoot = subquery.from(LeaveRequest.class);
+		subquery.select(subRoot.get(LeaveRequest_.leaveRequestId));
+		subquery.where(
+				cb.equal(subRoot.get(LeaveRequest_.leaveType).get(LeaveType_.typeId), root.get(LeaveType_.typeId)),
+				cb.equal(subRoot.get(LeaveRequest_.employee).get(Employee_.employeeId), userId));
+
 		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.exists(subquery));
+		predicates.add(cb.equal(root.get(LeaveType_.isActive), Boolean.TRUE));
+		if (isCarryForward) {
+			predicates.add(cb.equal(root.get(LeaveType_.isCarryForwardEnabled), Boolean.TRUE));
+		}
 
-		predicates.add(criteriaBuilder.equal(leaveRequestEmployeeJoin.get(Employee_.EMPLOYEE_ID), userId));
-		if (isCarryForward)
-			predicates.add(criteriaBuilder.equal(root.get(LeaveType_.IS_CARRY_FORWARD_ENABLED), Boolean.TRUE));
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		criteriaQuery.distinct(true);
-		criteriaQuery.where(predArray);
-
-		TypedQuery<LeaveType> query = entityManager.createQuery(criteriaQuery);
-		return query.getResultList();
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 }

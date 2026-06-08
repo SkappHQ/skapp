@@ -444,6 +444,7 @@ export interface EmployeeDataExists {
   isIdentificationNoExists: boolean;
   isWorkEmailExists: boolean;
   isGoogleDomain: boolean;
+  isGuestUser: boolean;
 }
 
 export interface QuickAddEmployeePayload {

@@ -278,8 +278,7 @@
     "deleteSuccessTitle": "User Deleted",
     "deleteSuccessDescription": "{{name}} has been successfully deleted and all supervisor assignments have been reassigned.",
     "actionErrorTitle": "Oops! Something went wrong",
-    "actionErrorDescription": "Failed to complete the action. Please try again.",
-    "loadingEmployees": "Loading employees..."
+    "actionErrorDescription": "Failed to complete the action. Please try again."
   },
 
   "discardChangesModal": {
@@ -476,6 +475,10 @@
     "confirmAndInviteButtonTitle": "Confirm and Invite",
     "confirmAndInviteCancelButtonTitle": "Cancel",
     "reinviteButtonTitle": "Reinvite",
+    "guestUserConfirmationModalTitle": "Are you sure?",
+    "guestUserConfirmationModalDescription": "This user has already been added to the system as a guest. By proceeding, the user will be converted to an internal employee. Are you sure you want to continue?",
+    "guestUserConfirmationModalContinueBtn": "Continue",
+    "guestUserConfirmationModalCancelBtn": "Cancel",
     "unsavedModalTitle": "Unsaved changes",
     "unsavedModalDescription": "You have unsaved changes. To proceed, would you like to save or discard them?",
     "unsavedModalSaveButton": "Save Changes",
