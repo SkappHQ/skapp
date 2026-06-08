@@ -1,5 +1,9 @@
-import { BuildingIcon } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import {
+  BuildingIcon,
+  EmailOutlineIcon,
+  PhoneIcon
+} from "@rootcodelabs/skapp-ui";
+import { FC, ReactElement } from "react";
 
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelContactInfoItem/SidePanelHeaderInfoItem";
@@ -7,34 +11,53 @@ import { CrmContactType } from "~community/crm/types/CommonTypes";
 
 interface Props {
   contact?: CrmContactType;
-  companyHref?: string;
+  onCompanyClick?: () => void;
 }
 
-const SidePanelContactHeader: FC<Props> = ({ contact, companyHref }) => {
+interface InfoItem {
+  key: string;
+  icon: ReactElement;
+  value: string | null;
+  onClick?: () => void;
+  endIcon?: IconName;
+}
+
+const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
   if (!contact) return null;
 
   const company = contact.company;
 
+  const iconColor = { color: "var(--color-secondary-icon)" };
+
+  const infoItems: InfoItem[] = [
+    {
+      key: "email",
+      icon: <EmailOutlineIcon style={iconColor} />,
+      value: contact.email
+    },
+    {
+      key: "phone",
+      icon: <PhoneIcon style={iconColor} />,
+      value: contact.contactNumber
+    },
+    ...(company
+      ? [
+          {
+            key: "company",
+            icon: <BuildingIcon style={iconColor} />,
+            value: company.name,
+            onClick: onCompanyClick,
+            endIcon: IconName.POP_OUT_ICON
+          }
+        ]
+      : [])
+  ];
+
   return (
     <div className="flex items-center justify-between max-w-[629px] w-full">
-      <SidePanelHeaderInfoItem
-        icon={IconName.EMAIL_ICON}
-        value={contact.email}
-      />
-
-      <SidePanelHeaderInfoItem
-        icon={IconName.LOCAL_PHONE_ICON}
-        value={contact.contactNumber}
-      />
-
-      {company && (
-        <SidePanelHeaderInfoItem
-          icon={<BuildingIcon stroke="var(--color-secondary-icon)" />}
-          value={company.name}
-          href={companyHref}
-          endIcon={IconName.POP_OUT_ICON}
-        />
-      )}
+      {infoItems.map(({ key, ...item }) => (
+        <SidePanelHeaderInfoItem key={key} {...item} />
+      ))}
     </div>
   );
 };
