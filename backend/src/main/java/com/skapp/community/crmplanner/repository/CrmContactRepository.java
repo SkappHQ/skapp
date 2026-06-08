@@ -14,6 +14,6 @@ public interface CrmContactRepository {
 
 	Page<CrmContact> findContactsForLookup(CrmContactFilterDto filterDto, Pageable pageable);
 
-	Optional<CrmContact> findByIdWithAssociations(Long id);
+	CrmContact findByIdWithAssociations(Long id);
 
 }

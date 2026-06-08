@@ -302,8 +302,11 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto getContactById(Long id) {
 		log.info("getContactById: execution started");
 
-		CrmContact contact = crmContactDao.findByIdWithAssociations(id)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+		CrmContact contact = crmContactDao.findByIdWithAssociations(id);
+
+		if (contact == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
+		}
 
 		List<CrmDeal> deals = crmDealDao.findByContactIdWithAssociations(id);
 		List<CrmTask> tasks = crmTaskDao.findByContactIdWithAssociations(id);

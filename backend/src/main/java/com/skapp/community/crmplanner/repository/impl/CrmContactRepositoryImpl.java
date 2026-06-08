@@ -150,7 +150,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	}
 
 	@Override
-	public Optional<CrmContact> findByIdWithAssociations(Long id) {
+	public CrmContact findByIdWithAssociations(Long id) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
@@ -159,8 +159,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 
 		query.where(cb.equal(contact.get(CrmContact_.id), id), cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
-		List<CrmContact> results = entityManager.createQuery(query).getResultList();
-		return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+		CrmContact results = entityManager.createQuery(query).getSingleResultOrNull();
+		return results;
 	}
 
 }
