@@ -10,16 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+          with:
+            path: skapp
         - name: Setup Java
           uses: actions/setup-java@v4
           with:
             distribution: 'temurin'
             java-version: '21'
             cache: maven
-        - name: Checkout code
-          uses: actions/checkout@v4
-          with:
-            path: skapp
         - name: Run tests
           run: |
             cd skapp/backend
