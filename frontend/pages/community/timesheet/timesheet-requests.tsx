@@ -30,7 +30,7 @@ const TimesheetRequestsPage: NextPage = () => {
         },
         {
           label: translateText(["timesheet.allTimesheets.title"]),
-          href: ROUTES.TIMESHEET.ALL_TIMESHEETS
+          onClick: () => router.push(ROUTES.TIMESHEET.ALL_TIMESHEETS)
         },
         {
           label: translateText(["timesheet.timeEntryRequests.title"])

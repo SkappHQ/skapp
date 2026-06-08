@@ -1,5 +1,6 @@
 import { SelectChangeEvent, Stack, Typography } from "@mui/material";
 import { type NextPage } from "next";
+import router from "next/router";
 import { MouseEvent, useState } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
@@ -63,7 +64,7 @@ const LeaveReportPage: NextPage = () => {
         },
         {
           label: translateLeave(["leaveRequests.title"]),
-          href: ROUTES.LEAVE.LEAVE_REQUESTS
+          onClick: () => router.push(ROUTES.LEAVE.LEAVE_REQUESTS)
         },
         {
           label: translatePeople(["title"])

@@ -14,25 +14,29 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
+import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
+import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
-import com.skapp.community.crmplanner.util.CrmOwnerResolver;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,11 +45,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -62,8 +68,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmTaskDao crmTaskDao;
 
-	private final EmployeeDao employeeDao;
-
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final UserService userService;
@@ -71,6 +75,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	private final MessageUtil messageUtil;
 
 	private final CrmMapper crmMapper;
+
+	private final CrmOwnerResolverService crmOwnerResolver;
 
 	@Override
 	@Transactional
@@ -87,7 +93,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
-		Employee owner = CrmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser, employeeDao);
+		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
 		contact.setName(requestDto.getName());
@@ -142,7 +148,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		if (requestDto.getOwnerId() != null) {
 			CrmValidations.validateOwnerId(requestDto.getOwnerId());
-			Employee owner = CrmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser, employeeDao);
+			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 			contact.setOwner(owner);
 		}
 
@@ -289,6 +295,48 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
 
 		return dto;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactById(Long id) {
+		log.info("getContactById: execution started");
+
+		CrmContact contact = crmContactDao.findByIdWithAssociations(id);
+
+		if (contact == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
+		}
+
+		List<CrmDeal> deals = crmDealDao.findByContactIdWithAssociations(id);
+		List<CrmTask> tasks = crmTaskDao.findByContactIdWithAssociations(id);
+
+		CrmContactDetailResponseDto dto = crmMapper.crmContactToCrmContactDetailResponseDto(contact);
+
+		CrmContactDealMetrics dealMetrics = crmDealDao.findDealMetricsByContactId(id);
+		dto.setTotalRevenue(dealMetrics.getTotalRevenue().toPlainString());
+		dto.setPipelineRevenue(dealMetrics.getPipelineRevenue().toPlainString());
+		dto.setActiveDealsCount(dealMetrics.getActiveDealsCount());
+
+		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id);
+		dto.setOpenTasksCount(taskMetrics.getOpenTasksCount());
+		dto.setOverdueTasksCount(taskMetrics.getOverdueTasksCount());
+
+		List<CrmDealDetailResponseDto> dealDtos = deals.stream()
+			.map(crmMapper::crmDealToCrmDealDetailResponseDto)
+			.toList();
+		dto.setDeals(dealDtos);
+
+		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream().map(task -> {
+			CrmTaskDetailResponseDto taskDto = crmMapper.crmTaskToCrmTaskDetailResponseDto(task);
+			taskDto.setIsOverdue(!Boolean.TRUE.equals(task.getIsCompleted()) && task.getDueAt() != null
+					&& task.getDueAt().isBefore(LocalDate.now().atStartOfDay()));
+			return taskDto;
+		}).toList();
+		dto.setTasks(taskDtos);
+
+		log.info("getContactById: execution ended");
+		return new ResponseEntityDto(false, dto);
 	}
 
 	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId, Long companyId) {

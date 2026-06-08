@@ -69,6 +69,7 @@ import com.skapp.community.timeplanner.payload.request.TimeRequestDto;
 import com.skapp.community.timeplanner.payload.request.TimeRequestManagerPatchDto;
 import com.skapp.community.timeplanner.payload.request.TimeSlotFilterDto;
 import com.skapp.community.timeplanner.payload.request.UpdateIncompleteTimeRecordsRequestDto;
+import com.skapp.community.timeplanner.payload.request.GetTimeConfigDeleteAvailabilityRequestDto;
 import com.skapp.community.timeplanner.payload.request.UpdateTimeRequestsFilterDto;
 import com.skapp.community.timeplanner.payload.response.ActiveTimeSlotResponseDto;
 import com.skapp.community.timeplanner.payload.response.AttendanceSummaryResponseDto;
@@ -129,6 +130,7 @@ import java.time.ZonedDateTime;
 import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -494,31 +496,16 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getDefaultTimeConfigurations() {
 		log.info("getDefaultTimeConfigurations: execution started");
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<TimeConfigResponseDto> newTimeConfigs = new ArrayList<>();
-		for (TimeConfig tcm : timeConfigs) {
-			if (tcm.getStartHour() == null) {
-				tcm.setStartHour(0);
-			}
-			if (tcm.getStartMinute() == null) {
-				tcm.setStartMinute(0);
-			}
-			TimeConfigResponseDto obj = timeMapper.timeConfigToTimeConfigResponseDto(tcm);
-			newTimeConfigs.add(obj);
-		}
-		List<DayOfWeek> days = List.of(DayOfWeek.values());
-		List<TimeConfigResponseDto> sortedTimeConfigs = new ArrayList<>();
-		days.forEach(day -> {
-			List<TimeConfigResponseDto> timeConfig = newTimeConfigs.stream()
-				.filter(tc -> tc.getDay().equals(day))
-				.toList();
-			if (!timeConfig.isEmpty()) {
-				sortedTimeConfigs.add(timeConfig.getFirst());
-			}
-		});
+
+		List<TimeConfigResponseDto> sortedTimeConfigs = timeConfigs.stream()
+			.map(timeMapper::timeConfigToTimeConfigResponseDto)
+			.sorted(Comparator.comparingInt(timeConfig -> timeConfig.getDay().getValue()))
+			.toList();
 
 		log.info("getDefaultTimeConfigurations: execution ended");
 		return new ResponseEntityDto(false, sortedTimeConfigs);
@@ -588,10 +575,10 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
-	public ResponseEntityDto getIfTimeConfigRemovable(List<DayOfWeek> days) {
+	public ResponseEntityDto getIfTimeConfigRemovable(GetTimeConfigDeleteAvailabilityRequestDto requestDto) {
 
 		ArrayNode arrayNode = mapper.createArrayNode();
-		days.forEach(day -> {
+		requestDto.getDays().forEach(day -> {
 			ObjectNode objectNode = mapper.createObjectNode();
 
 			objectNode.put(day.name(), leaveRequestDao.findAllFutureLeaveRequestsForTheDay(day).isEmpty());
@@ -973,11 +960,12 @@ public class TimeServiceImpl implements TimeService {
 		timeRecordFilterDto.setEndDate(endDate);
 		Pageable timeRecordsPageable = PageRequest.of(timeRecordFilterDto.getPage(), Integer.MAX_VALUE,
 				timeRecordFilterDto.getSortOrder(), timeRecordFilterDto.getSortKey().toString());
-		List<EmployeeTimeRecord> timeRecords = timeRecordDao.findEmployeesTimeRecordsWithTeams(employeeIds,
+		List<EmployeeTimeRecord> timeRecords = findEmployeesTimeRecordsWithTeams(employeeIds,
 				teamIdsToFilter.contains(-1L) ? null : teamIdsToFilter, startDate, endDate,
 				timeRecordsPageable.getPageSize(), timeRecordsPageable.getOffset());
 
 		List<LeaveRequest> leaveRequests = getLeaveRequests(startDate, endDate, employeeIds);
+		boolean geoFencingEnabled = isGeoFencingEnabled();
 
 		List<TimeRecordsResponseDto> response = new ArrayList<>();
 		for (Employee employee : employees.getContent()) {
@@ -990,11 +978,12 @@ public class TimeServiceImpl implements TimeService {
 
 			List<TimeRecordChipResponseDto> timeRecordRow = new ArrayList<>();
 			for (EmployeeTimeRecord timeRecord : employeeTimeRecords) {
-				TimeRecordChipResponseDto timeRecordChip = new TimeRecordChipResponseDto();
+				TimeRecordChipResponseDto timeRecordChip = createTimeRecordChipDto();
 				timeRecordChip.setTimeRecordId(timeRecord.getTimeRecordId());
 				timeRecordChip.setDate(timeRecord.getDate());
 				timeRecordChip.setWorkedHours(timeRecord.getWorkedHours());
 				timeRecordChip.setLeaveRequest(getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
+				populateEnterpriseChipFields(timeRecordChip, timeRecord, geoFencingEnabled);
 				timeRecordRow.add(timeRecordChip);
 			}
 
@@ -2168,6 +2157,24 @@ public class TimeServiceImpl implements TimeService {
 	 */
 	protected void handleCalendarEventsDeletion(LeaveRequest leaveRequest) {
 		// This feature is available only for Pro tenants.
+	}
+
+	protected TimeRecordChipResponseDto createTimeRecordChipDto() {
+		return new TimeRecordChipResponseDto();
+	}
+
+	protected boolean isGeoFencingEnabled() {
+		return false;
+	}
+
+	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,
+			boolean isGeoFencingEnabled) {
+		// No-op in community edition; enterprise edition overrides this method
+	}
+
+	protected List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,
+			LocalDate startDate, LocalDate endDate, int limit, long offset) {
+		return timeRecordDao.findEmployeesTimeRecordsWithTeams(employeeIds, teamIds, startDate, endDate, limit, offset);
 	}
 
 }

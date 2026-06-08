@@ -5,6 +5,7 @@ import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.JobFamily;
@@ -209,6 +210,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 
 		if ((user.getEmail() != null && user.getEmployee() != null
 				&& user.getEmployee().getAccountStatus() != AccountStatus.PENDING)
+				&& user.getEmployee().getEmployeeRole() != null
+				&& user.getEmployee().getEmployeeRole().getPmRole() != Role.PM_GUEST_EMPLOYEE
 				&& createEmployeeRequestDto.getEmployment() != null
 				&& createEmployeeRequestDto.getEmployment().getEmploymentDetails() != null
 				&& createEmployeeRequestDto.getEmployment().getEmploymentDetails().getEmail() != null) {
@@ -221,7 +224,9 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 				&& createEmployeeRequestDto.getEmployment().getEmploymentDetails().getEmail() != null) {
 			userDao.findByEmail(createEmployeeRequestDto.getEmployment().getEmploymentDetails().getEmail())
 				.ifPresent(u -> {
-					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_USER_EMAIL_ALREADY_EXIST);
+					if (!u.getUserId().equals(user.getUserId())) {
+						throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_USER_EMAIL_ALREADY_EXIST);
+					}
 				});
 
 			Validations.validateWorkEmail(createEmployeeRequestDto.getEmployment().getEmploymentDetails().getEmail());

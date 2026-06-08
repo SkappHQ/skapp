@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -12,19 +13,17 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
-import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.service.CrmTaskService;
-import com.skapp.community.crmplanner.util.CrmOwnerResolver;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,17 +38,75 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
-	private final CrmCompanyDao crmCompanyDao;
-
 	private final CrmContactDao crmContactDao;
+
+	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmDealDao crmDealDao;
 
-	private final EmployeeDao employeeDao;
+	private final UserService userService;
+
+	private final CrmOwnerResolverService crmOwnerResolver;
 
 	private final CrmMapper crmMapper;
 
-	private final UserService userService;
+	@Override
+	@Transactional
+	public ResponseEntityDto createTask(CrmTaskCreateRequestDto requestDto) {
+		log.info("createTask: execution started");
+
+		CrmValidations.validateTaskName(requestDto.getName());
+		CrmValidations.validateTaskTypeId(requestDto.getTypeId());
+		CrmValidations.validateTaskTargets(requestDto.getContactId(), requestDto.getCompanyId(),
+				requestDto.getDealId());
+		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
+		CrmValidations.validateTaskNotes(requestDto.getNotes());
+
+		User currentUser = userService.getCurrentUser();
+		Employee owner = resolveTaskOwner(requestDto.getOwnerId(), currentUser);
+
+		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
+
+		CrmTask task = new CrmTask();
+		task.setName(requestDto.getName());
+		task.setType(taskType);
+		task.setPriority(
+				requestDto.getPriority() != null ? requestDto.getPriority() : CrmConstants.DEFAULT_TASK_PRIORITY);
+		task.setDueAt(requestDto.getDueAt());
+		task.setNotes(requestDto.getNotes());
+		task.setOwner(owner);
+
+		CrmContact contact = null;
+		CrmCompany company = null;
+		CrmDeal deal = null;
+
+		if (requestDto.getContactId() != null) {
+			contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+			task.setContact(contact);
+		}
+
+		if (requestDto.getCompanyId() != null) {
+			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+			task.setCompany(company);
+		}
+
+		if (requestDto.getDealId() != null) {
+			deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			task.setDeal(deal);
+		}
+
+		CrmValidations.validateContactBelongsToCompany(contact, company);
+		CrmValidations.validateDealBelongsToContact(deal, contact);
+		CrmValidations.validateDealBelongsToCompany(deal, company);
+
+		CrmTask savedTask = crmTaskDao.save(task);
+
+		log.info("createTask: execution ended with taskId={}", savedTask.getId());
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
+	}
 
 	@Override
 	@Transactional
@@ -97,39 +154,44 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		}
 
 		if (requestDto.getOwnerId() != null) {
-			CrmValidations.validateOwnerId(requestDto.getOwnerId());
-			Employee owner = CrmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser, employeeDao);
+			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 			task.setOwner(owner);
 		}
 
 		if (requestDto.getContactId() != null) {
-			CrmValidations.validateContactId(requestDto.getContactId());
 			CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 			task.setContact(contact);
 		}
 
 		if (requestDto.getCompanyId() != null) {
-			CrmValidations.validateCompanyId(requestDto.getCompanyId());
 			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			task.setCompany(company);
 		}
 
 		if (requestDto.getDealId() != null) {
-			CrmValidations.validateDealId(requestDto.getDealId());
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			task.setDeal(deal);
 		}
 
-		CrmValidations.validateTaskEntityRelationships(task.getContact(), task.getCompany(), task.getDeal());
+		CrmValidations.validateContactBelongsToCompany(task.getContact(), task.getCompany());
+		CrmValidations.validateDealBelongsToContact(task.getDeal(), task.getContact());
+		CrmValidations.validateDealBelongsToCompany(task.getDeal(), task.getCompany());
 
 		CrmTask updatedTask = crmTaskDao.save(task);
-		CrmTaskResponseDto responseDto = crmMapper.crmTaskToCrmTaskResponseDto(updatedTask);
 
 		log.info("editTask: execution ended successfully");
-		return new ResponseEntityDto(false, responseDto);
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(updatedTask));
+	}
+
+	private Employee resolveTaskOwner(Long ownerId, User currentUser) {
+		if (ownerId == null) {
+			return currentUser.getEmployee();
+		}
+
+		return crmOwnerResolver.resolveOwner(ownerId, currentUser);
 	}
 
 }
