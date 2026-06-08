@@ -147,7 +147,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
 		}
 
-		int limit = Math.min(requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT, CrmConstants.DEALS_PER_STAGE_LIMIT_MAX);
+		int limit = requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT;
 		Integer requestedPage = requestDto.getPage();
 		int page = (requestedPage != null && requestedPage >= 0 && uniqueStageIds.size() == 1)
 				? requestedPage : 0;
