@@ -1,0 +1,33 @@
+name: Run Backend Tests
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: Setup Java
+          uses: actions/setup-java@v4
+          with:
+            distribution: 'temurin'
+            java-version: '21'
+            cache: maven
+        - name: Checkout code
+          uses: actions/checkout@v4
+          with:
+            path: skapp
+        - name: Run tests
+          run: |
+            cd skapp/backend
+            mvn -B test
+        - name: Upload test reports
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: test-reports
+            path: skapp/backend/target/surefire-reports/
+            retention-days: 7
