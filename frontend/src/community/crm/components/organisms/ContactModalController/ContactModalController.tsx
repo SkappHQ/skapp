@@ -22,6 +22,7 @@ const ContactModalController = () => {
   };
 
   const getModalTitle = (modalType: CrmModalTypes) => {
+    // TODO: more switch cases to be added when more modals are added for contacts
     switch (modalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
         return translateText(["addContactModal", "title"]);
@@ -31,6 +32,7 @@ const ContactModalController = () => {
   };
 
   const getModalContent = (): ReactNode => {
+    // TODO: more switch cases to be added when more modals are added for contacts
     switch (contactModalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
         return <AddContactModalContent />;
