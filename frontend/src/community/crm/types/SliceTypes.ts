@@ -9,3 +9,11 @@ export interface CrmCompanyModalSliceTypes extends Pick<
   | "selectedCompany"
   | "setSelectedCompany"
 > {}
+
+export interface CrmTaskModalSliceTypes extends Pick<
+  CrmStore,
+  | "isTaskModalOpen"
+  | "setIsTaskModalOpen"
+  | "taskModalType"
+  | "setTaskModalType"
+> {}
