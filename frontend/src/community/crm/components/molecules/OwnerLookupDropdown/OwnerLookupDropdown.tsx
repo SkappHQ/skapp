@@ -1,4 +1,4 @@
-import { AvatarChip, CloseIcon } from "@rootcodelabs/skapp-ui";
+import { AvatarChip } from "@rootcodelabs/skapp-ui";
 import React, { useEffect, useMemo, useState } from "react";
 
 import SearchableDropdown, {
@@ -15,6 +15,8 @@ import {
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 import { toOwnerAvatarProps } from "~community/crm/utils/crmUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
+
+import SelectedOwnerField from "../SelectedOwnerField/SelectedOwnerField";
 
 interface OwnerLookupDropdownProps {
   onOwnerChange: (ownerId: number | null) => void;
@@ -58,8 +60,7 @@ const OwnerLookupDropdown: React.FC<OwnerLookupDropdownProps> = ({
   );
 
   useEffect(() => {
-    if (selectedOwner !== undefined || !currentUser)
-      return;
+    if (selectedOwner !== undefined || !currentUser) return;
     setSelectedOwner(currentUserAsOwner);
     setLastSelectedOwner(currentUserAsOwner);
     onOwnerChange(currentUserAsOwner.employeeId);
@@ -109,24 +110,13 @@ const OwnerLookupDropdown: React.FC<OwnerLookupDropdownProps> = ({
 
   if (selectedOwner) {
     return (
-      <div className="flex w-full flex-col gap-2">
-        <span className="subtitle1 leading-normal inline-flex h-6 items-center">
-          {translateText(["labels", "owner"])}
-        </span>
-        <div className="flex h-[3.125rem] items-center rounded-lg bg-gray-100 px-3">
-          <AvatarChip
-            label={concatStrings([
-              selectedOwner.firstName,
-              selectedOwner.lastName ?? ""
-            ])}
-            avatarProps={{ ...toOwnerAvatarProps(selectedOwner), size: "sm" }}
-            showActionButton={!isOwnerReadonly}
-            onActionClick={isOwnerReadonly ? undefined : handleClearOwner}
-            actionIcon={isOwnerReadonly ? undefined : <CloseIcon />}
-            actionButtonAriaLabel={translateText(["ariaLabels", "clearOwner"])}
-          />
-        </div>
-      </div>
+      <SelectedOwnerField
+        label={translateText(["labels", "owner"])}
+        owner={selectedOwner}
+        showRemoveButton={!isOwnerReadonly}
+        onRemove={handleClearOwner}
+        ariaLabel={translateText(["ariaLabels", "clearOwner"])}
+      />
     );
   }
 
