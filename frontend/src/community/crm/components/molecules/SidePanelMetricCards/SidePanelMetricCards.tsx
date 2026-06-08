@@ -1,9 +1,9 @@
 import { FC } from "react";
 
-import { Card } from "@rootcodelabs/skapp-ui";
+import { Card, Label } from "@rootcodelabs/skapp-ui";
 import { MetricItem } from "~community/crm/types/CommonTypes";
-import { getChipStyles } from "~community/crm/utils/crmMetricUtils";
-import { formatValue } from "~community/crm/utils/companyTableHelpers";
+import { getLabelStyles } from "~community/crm/utils/crmMetricUtils";
+import { formatValue } from "~community/crm/utils/crmUtil";
 
 interface Props {
   metrics: MetricItem[];
@@ -21,16 +21,16 @@ const SidePanelMetricCards: FC<Props> = ({ metrics }) => {
             {metric.title}
           </p>
           <div className="flex items-center gap-2">
-            <p className="subtitle2 text-black">
-              {metric.isCurrency ? formatValue(metric.amount as string | number) : metric.amount}
+            <p className="subtitle2">
+              {metric.isCurrency ? formatValue(metric.amount) : metric.amount}
             </p>
             {metric.chip && (
-              <span
-                className={`inline-flex items-center gap-1 rounded-[30px] px-3 py-0.5 text-xs font-medium whitespace-nowrap ${getChipStyles(metric.chip.theme)}`}
+              <Label
+                backgroundColor={getLabelStyles(metric.chip.theme).backgroundColor}
+                textColor={getLabelStyles(metric.chip.theme).textColor}
               >
-                {metric.chip.icon}
                 {metric.chip.label}
-              </span>
+              </Label>
             )}
           </div>
         </Card>

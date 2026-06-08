@@ -1,9 +1,12 @@
+import { ReactElement, ReactNode } from "react";
+
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
 import {
   CrmDealSortEnum,
   CrmDealStageEnum,
   CrmIndustryEnum,
+  CrmMetricLabelThemeEnum,
   CrmPriorityEnum
 } from "../enums/common";
 
@@ -44,6 +47,17 @@ export interface CrmCompanyMetricsResponseType {
   totalItems: number;
   currentPage: number;
   totalPages: number;
+}
+
+export interface MetricItem {
+  title: string;
+  amount: number;
+  isCurrency?: boolean;
+  chip?: {
+    label: string;
+    icon?: ReactElement;
+    theme: CrmMetricLabelThemeEnum;
+  };
 }
 
 export interface CrmCompanyAddFormTypes {

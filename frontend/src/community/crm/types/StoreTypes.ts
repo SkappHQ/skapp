@@ -1,6 +1,5 @@
 import { CrmCompanyMetricsType } from "./CommonTypes";
 import { CrmModalTypes } from "./ModalTypes";
-import { CrmCompanyMetricsType } from "./CommonTypes";
 
 interface ActionTypes {
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;

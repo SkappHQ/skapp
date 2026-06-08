@@ -35,9 +35,9 @@ export enum CrmDealStageEnum {
   LOST = "LOST"
 }
 
-export enum CrmMetricChipThemeEnum {
-  SUCCESS = "SUCCESS",
-  ERROR = "ERROR"
+export enum CrmMetricLabelThemeEnum {
+  GREEN = "GREEN",
+  RED = "RED"
 }
 
 export enum CrmTaskStatusEnum {

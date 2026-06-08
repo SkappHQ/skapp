@@ -26,23 +26,16 @@ const CompanyModalController = () => {
 
   const handleCloseModal = (): void => {
     setIsCompanyModalOpen(false);
-<<<<<<< HEAD:frontend/src/community/crm/components/organisms/CompanyPopupController/CompanyModalController.tsx
-=======
     setSelectedCompany(null);
->>>>>>> 36ba466015e97bcc88046d04efee8523d8895be4:frontend/src/community/crm/components/organisms/CompanyModalController/CompanyModalController.tsx
   };
 
   const getModalTitle = (modalType: CrmModalTypes) => {
     switch (modalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
         return translateText(["addCompanyModal", "title"]);
-<<<<<<< HEAD:frontend/src/community/crm/components/organisms/CompanyPopupController/CompanyModalController.tsx
-      case CrmModalTypes.DELETE_COMPANY_CONFIRMATION:
-=======
       case CrmModalTypes.EDIT_COMPANY_MODAL:
         return translateText(["editCompanyModal", "title"]);
       case CrmModalTypes.DELETE_COMPANY_MODAL:
->>>>>>> 36ba466015e97bcc88046d04efee8523d8895be4:frontend/src/community/crm/components/organisms/CompanyModalController/CompanyModalController.tsx
         return translateText(["deleteCompanyModal", "title"]);
       default:
         return "";
@@ -52,17 +45,11 @@ const CompanyModalController = () => {
   const getModalContent = (modalType: CrmModalTypes): ReactNode => {
     switch (modalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
-<<<<<<< HEAD:frontend/src/community/crm/components/organisms/CompanyPopupController/CompanyModalController.tsx
-        return <AddCompanyModal />;
-      case CrmModalTypes.DELETE_COMPANY_CONFIRMATION:
-        return <DeleteCompanyConfirmationModal />;
-=======
         return <AddCompanyModalContent />;
       case CrmModalTypes.EDIT_COMPANY_MODAL:
         return <EditCompanyModalContent />;
       case CrmModalTypes.DELETE_COMPANY_MODAL:
         return <DeleteCompanyModalContent />;
->>>>>>> 36ba466015e97bcc88046d04efee8523d8895be4:frontend/src/community/crm/components/organisms/CompanyModalController/CompanyModalController.tsx
       default:
         return null;
     }

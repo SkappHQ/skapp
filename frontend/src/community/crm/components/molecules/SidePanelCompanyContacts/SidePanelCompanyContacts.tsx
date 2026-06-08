@@ -1,4 +1,5 @@
 import {
+  ButtonV2,
   Label,
   PlusIcon,
   SearchIcon,
@@ -124,6 +125,19 @@ const SidePanelCompanyContacts: React.FC<{
           }
         }}
       />
+      <ButtonV2
+        variant="line"
+        size="sm"
+        onClick={() => {
+          // Add contact action
+        }}
+        aria-label={translateText(["addContact"])}
+        icon={<PlusIcon />}
+        iconPosition="end"
+        className="self-start mt-2 rounded-lg subtitle4"
+      >
+        {translateText(["addContact"])}
+      </ButtonV2>
     </div>
   );
 };
