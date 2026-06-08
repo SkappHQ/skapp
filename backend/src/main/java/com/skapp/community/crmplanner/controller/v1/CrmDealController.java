@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +26,7 @@ public class CrmDealController {
 
 	@Operation(summary = "Create a new deal",
 			description = "This endpoint creates a new CRM deal with the provided details.")
-	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> createDeal(@RequestBody CrmDealCreateRequestDto crmDealCreateRequestDto) {
 		ResponseEntityDto response = crmDealService.createDeal(crmDealCreateRequestDto);
@@ -35,7 +34,7 @@ public class CrmDealController {
 	}
 
 	@Operation(summary = "Get deals", description = "Returns a paginated list of CRM deals with optional filtering.")
-	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getDeals(CrmDealFilterDto crmDealFilterDto) {
 		ResponseEntityDto response = crmDealService.getDeals(crmDealFilterDto);
@@ -44,7 +43,7 @@ public class CrmDealController {
 
 	@Operation(summary = "Get board init data",
 			description = "Returns all data required for the kanban board initial load: stages, contacts, CRM roles, and owners.")
-	@GetMapping(value = "/board/init-data", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping("/board/init-data")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getBoardInitData() {
 		ResponseEntityDto response = crmDealService.getBoardInitData();
