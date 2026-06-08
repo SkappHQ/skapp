@@ -5,16 +5,21 @@ import SearchIcon from "~community/common/assets/Icons/SearchIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useUpdateTaskCompletion } from "~community/crm/api/TasksApi";
+import { useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
 import TaskRow from "~community/crm/components/atoms/TaskRow/TaskRow";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
 
 interface Props {
   tasks: CrmTaskType[];
   isLoading: boolean;
+  onTaskRowClick?: () => void;
 }
 
-const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
+const SidePanelTasksSection: FC<Props> = ({
+  tasks,
+  isLoading,
+  onTaskRowClick
+}) => {
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -52,10 +57,7 @@ const SidePanelTasksSection: FC<Props> = ({ tasks, isLoading }) => {
                 key={task.id}
                 task={task}
                 onToggleComplete={handleToggleComplete}
-                onRowClick={() => {
-                  // TODO: open task detail side panel
-                  // (wire up to CRM store once TaskDetailPanel is implemented)
-                }}
+                onRowClick={onTaskRowClick}
               />
             ))}
           </div>

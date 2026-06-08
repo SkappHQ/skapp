@@ -11,8 +11,7 @@ import { getDueDateDisplay } from "~community/crm/utils/crmTaskUtils";
 
 interface Props {
   task: CrmTaskType;
-  onToggleComplete: (id: number, isCompleted: boolean) => Promise<void>;
-  // TODO: wire up to CRM store once TaskDetailPanel is implemented
+  onToggleComplete?: (id: number, isCompleted: boolean) => Promise<void>;
   onRowClick?: () => void;
   className?: string;
 }
@@ -46,7 +45,7 @@ const TaskRow: FC<Props> = ({
   const handleToggleChange = async (checked: boolean) => {
     setOptimisticCompleted(checked);
     try {
-      await onToggleComplete(task.id, checked);
+      await onToggleComplete?.(task.id, checked);
     } catch {
       setOptimisticCompleted(task.isCompleted);
     }
@@ -63,34 +62,38 @@ const TaskRow: FC<Props> = ({
         onClick={onRowClick}
       />
 
-      <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
-        <CheckTask
-          checked={optimisticCompleted}
-          onChange={handleToggleChange}
-          aria-label={translateText(
-            [
-              optimisticCompleted
-                ? "checkTaskMarkIncomplete"
-                : "checkTaskMarkComplete"
-            ],
-            { name: task.name }
-          )}
-        />
-      </div>
+      {onToggleComplete && (
+        <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
+          <CheckTask
+            checked={optimisticCompleted}
+            onChange={handleToggleChange}
+            aria-label={translateText(
+              [
+                optimisticCompleted
+                  ? "checkTaskMarkIncomplete"
+                  : "checkTaskMarkComplete"
+              ],
+              { name: task.name }
+            )}
+          />
+        </div>
+      )}
 
-      <div className="relative z-10 shrink-0 flex items-center justify-center">
+      <div
+        className={`relative z-10 shrink-0 flex items-center justify-center ${optimisticCompleted ? "opacity-40" : ""}`}
+      >
         {TaskTypeIcon && <TaskTypeIcon />}
       </div>
 
       <div className="relative z-10 flex-1 min-w-0">
         <p
-          className={`body2 text-black leading-snug truncate ${optimisticCompleted ? "line-through" : ""}`}
+          className={`body2 leading-snug truncate ${optimisticCompleted ? "line-through text-secondary-icon" : "text-black"}`}
         >
           {task.name}
         </p>
         {dueDateDisplay && (
           <p
-            className={`body3 leading-none mt-0.5 ${optimisticCompleted ? "line-through text-secondary-text" : dueDateDisplay.colorClass}`}
+            className={`body3 leading-none mt-0.5 ${optimisticCompleted ? "line-through text-secondary-icon" : dueDateDisplay.colorClass}`}
           >
             {translateText([dueDateDisplay.textKey], {
               date: dueDateDisplay.dateValue ?? ""
