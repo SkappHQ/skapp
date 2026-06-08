@@ -13,11 +13,11 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealBoardInitDataResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
@@ -137,17 +137,19 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getBoardInitData() {
 		log.info("getBoardInitData: execution started");
 
-		List<CrmDealStageResponseDto> stages = crmMapper
-			.crmDealStagesToCrmDealStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmBoardStageResponseDto> stages = crmMapper
+			.crmDealStagesToCrmBoardStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 
-		List<CrmContactLookupResponseDto> contacts = crmContactDao.findAllContactsForBoardInit()
+		List<CrmBoardContactResponseDto> contacts = crmMapper
+			.crmContactsToCrmBoardContactResponseDtos(crmContactDao.findAllContactsForBoardInit());
+
+		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners()
 			.stream()
-			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
+			.map(o -> new CrmBoardOwnerResponseDto(o.getEmployeeId(), o.getFirstName(), o.getLastName(),
+					o.getAuthPic()))
 			.toList();
 
-		List<CrmOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners();
-
-		CrmDealBoardInitDataResponseDto responseDto = new CrmDealBoardInitDataResponseDto();
+		CrmBoardInitDataResponseDto responseDto = new CrmBoardInitDataResponseDto();
 		responseDto.setStages(stages);
 		responseDto.setContacts(contacts);
 		responseDto.setCrmRoles(CrmConstants.ASSIGNABLE_CRM_ROLES.stream().map(Enum::name).sorted().toList());
