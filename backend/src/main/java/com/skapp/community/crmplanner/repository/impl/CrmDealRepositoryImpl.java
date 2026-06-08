@@ -140,7 +140,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 			Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
 			countQuery.select(cb.count(countRoot))
-					.where(buildStagePredicates(cb, countRoot, stageId, requestDto).toArray(new Predicate[0]));
+				.where(buildStagePredicates(cb, countRoot, stageId, requestDto).toArray(new Predicate[0]));
 			Long total = entityManager.createQuery(countQuery).getSingleResult();
 			return new PageImpl<>(new ArrayList<>(), pageable, total);
 		}
@@ -161,7 +161,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
 		countQuery.select(cb.count(countRoot))
-				.where(buildStagePredicates(cb, countRoot, stageId, requestDto).toArray(new Predicate[0]));
+			.where(buildStagePredicates(cb, countRoot, stageId, requestDto).toArray(new Predicate[0]));
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(deals, pageable, total);
@@ -256,8 +256,9 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		query.groupBy(deal.get(CrmDeal_.stage).get(CrmDealStage_.id));
 
 		Map<Long, Long> counts = new HashMap<>();
-		entityManager.createQuery(query).getResultList()
-				.forEach(t -> counts.put(t.get("stageId", Long.class), t.get("cnt", Long.class)));
+		entityManager.createQuery(query)
+			.getResultList()
+			.forEach(t -> counts.put(t.get("stageId", Long.class), t.get("cnt", Long.class)));
 		return counts;
 	}
 

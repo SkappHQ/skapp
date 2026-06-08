@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -152,8 +153,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		int limit = requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT;
 		Integer requestedPage = requestDto.getPage();
-		int page = (requestedPage != null && requestedPage >= 0 && uniqueStageIds.size() == 1)
-				? requestedPage : 0;
+		int page = (requestedPage != null && requestedPage >= 0 && uniqueStageIds.size() == 1) ? requestedPage : 0;
 
 		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto);
 
@@ -165,7 +165,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount);
 			List<CrmDealByStageItemResponseDto> deals = crmMapper
-					.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
+				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
 
 			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
 			stageResult.setStageId(stageId);
