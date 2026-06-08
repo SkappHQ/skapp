@@ -4,7 +4,8 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { IconName } from "~community/common/types/IconTypes";
-import CompanyModalController from "~community/crm/components/organisms/CompanyPopupController/CompanyModalController";
+import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
+import CompanySidePanelController from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanelController";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
@@ -12,15 +13,15 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
 
-  const { setIsAddCompanyModalOpen, setCompanyModalType } = useCrmStore(
+  const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(
     (store) => ({
-      setIsAddCompanyModalOpen: store.setIsAddCompanyModalOpen,
+      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
       setCompanyModalType: store.setCompanyModalType
     })
   );
 
   const onPrimaryButtonClick = () => {
-    setIsAddCompanyModalOpen(true);
+    setIsCompanyModalOpen(true);
     setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL);
   };
 
@@ -34,6 +35,7 @@ const Companies: NextPage = () => {
       containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
+        <CompanySidePanelController />
         <CompanyModalController />
         <CompanyTable />
       </>
