@@ -13,7 +13,6 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
-import { toOwnerAvatarProps } from "~community/crm/utils/crmUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 import SelectedOwnerField from "../SelectedOwnerField/SelectedOwnerField";
@@ -35,14 +34,11 @@ const OwnerLookupDropdown: React.FC<OwnerLookupDropdownProps> = ({
 
   const [ownerSearch, setOwnerSearch] = useState("");
 
-  const [selectedOwner, setSelectedOwner] = useState<
-    CrmOwner | null | undefined
-  >(undefined);
+  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
 
   // Remembers the last confirmed selection so an accidental clear can be undone on dropdown close
-  const [lastSelectedOwner, setLastSelectedOwner] = useState<CrmOwner | null>(
-    null
-  );
+  const [lastSelectedOwner, setLastSelectedOwner] = useState<CrmOwner | null>(null);
+
 
   const debouncedOwnerSearch = useDebounce(
     ownerSearch.trim(),
@@ -60,7 +56,7 @@ const OwnerLookupDropdown: React.FC<OwnerLookupDropdownProps> = ({
   );
 
   useEffect(() => {
-    if (selectedOwner !== undefined || !currentUser) return;
+    if (!selectedOwner || !currentUser) return;
     setSelectedOwner(currentUserAsOwner);
     setLastSelectedOwner(currentUserAsOwner);
     onOwnerChange(currentUserAsOwner.employeeId);
@@ -78,7 +74,13 @@ const OwnerLookupDropdown: React.FC<OwnerLookupDropdownProps> = ({
       id: String(owner.employeeId),
       content: (
         <AvatarChip
-          avatarProps={{ ...toOwnerAvatarProps(owner), size: "sm" }}
+          avatarProps={{
+            id: String(owner.employeeId),
+            firstName: owner.firstName,
+            lastName: owner.lastName ?? undefined,
+            src: owner.authPic ?? undefined,
+            size: "sm"
+          }}
           label={concatStrings([owner.firstName, owner.lastName ?? ""])}
         />
       )
