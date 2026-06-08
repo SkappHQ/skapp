@@ -24,13 +24,8 @@ const CompanySidePanel: React.FC<{
     })
   );
 
-  const handleOpenDeleteCompanyModal = () => {
-    setCompanyModalType(CrmModalTypes.DELETE_COMPANY_MODAL);
-    setIsCompanyModalOpen(true);
-  };
-
-  const handleOpenEditCompanyModal = () => {
-    setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
+  const openCompanyModal = (type: CrmModalTypes) => {
+    setCompanyModalType(type);
     setIsCompanyModalOpen(true);
   };
 
@@ -39,7 +34,7 @@ const CompanySidePanel: React.FC<{
       id: "edit",
       label: translateText(["editCompany"]),
       icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: handleOpenEditCompanyModal
+      onClick: () => openCompanyModal(CrmModalTypes.EDIT_COMPANY_MODAL)
     },
     {
       id: "delete",
@@ -54,7 +49,7 @@ const CompanySidePanel: React.FC<{
         )
       },
       activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: handleOpenDeleteCompanyModal
+      onClick: () => openCompanyModal(CrmModalTypes.DELETE_COMPANY_MODAL)
     }
   ];
 
@@ -66,6 +61,9 @@ const CompanySidePanel: React.FC<{
         <KebabMenu
           id={"company-actions"}
           menuItems={menuItems}
+          anchorButton={{
+            "aria-label": translateText(["kebabMenuAriaLabel"])
+          }}
           className={{
             anchorElement:
               "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"

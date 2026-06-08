@@ -224,7 +224,8 @@
     },
     "sidePanel": {
       "editCompany": "Edit company",
-      "deleteCompany": "Delete company"
+      "deleteCompany": "Delete company",
+      "kebabMenuAriaLabel": "Company actions"
     }
   },
   "deals": {
