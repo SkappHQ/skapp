@@ -36,4 +36,6 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create_shr_com_work_location_ppl_holiday_table.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-module-roles-restriction.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-notification-add-is-type-viewed.sql
 
