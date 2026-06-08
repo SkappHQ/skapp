@@ -1,11 +1,6 @@
-import {
-  AvatarChip,
-  ButtonV2,
-  CloseIcon,
-  InputField
-} from "@rootcodelabs/skapp-ui";
+import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -13,28 +8,21 @@ import SearchableDropdown, {
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   useCreateNewContact,
-  useGetCompanyLookup,
-  useGetOwnerLookup
+  useGetCompanyLookup
 } from "~community/crm/api/ContactApi";
-import {
-  CONTACT_SEARCH_DEBOUNCE_DELAY,
-  DEFAULT_LOOKUP_PAGE_SIZE
-} from "~community/crm/constants/contactConstants";
+import OwnerLookupDropdown from "~community/crm/components/molecules/OwnerLookupDropdown/OwnerLookupDropdown";
+import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
+import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactAddFormTypes,
-  CrmContactCreatePayload,
-  CrmOwner
+  CrmContactCreatePayload
 } from "~community/crm/types/CommonTypes";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
-import { toOwnerAvatarProps } from "~community/crm/utils/crmUtil";
-import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 const AddContactModal: React.FC = () => {
   const { setToastMessage } = useToast();
@@ -54,20 +42,7 @@ const AddContactModal: React.FC = () => {
   const [selectedCompanyLabel, setSelectedCompanyLabel] = useState("");
   const debouncedCompanySearch = useDebounce(
     companySearch.trim(),
-    CONTACT_SEARCH_DEBOUNCE_DELAY
-  );
-
-  const { isCrmSalesManager } = useSessionData();
-  const { data: currentUser } = useGetUserPersonalDetails();
-
-  // If the user has Sales Manager Role, they should not be able to edit the owner field.
-  const isOwnerReadonly = !isCrmSalesManager;
-
-  const [ownerSearch, setOwnerSearch] = useState("");
-  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
-  const debouncedOwnerSearch = useDebounce(
-    ownerSearch.trim(),
-    CONTACT_SEARCH_DEBOUNCE_DELAY
+    SEARCH_DEBOUNCE_DELAY
   );
 
   const { setIsAddContactModalOpen } = useCrmStore((store) => ({
@@ -88,7 +63,7 @@ const AddContactModal: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateToasts(["successTitle"]),
+      title: translateToasts(["successTitle"])
     });
   };
 
@@ -141,38 +116,8 @@ const AddContactModal: React.FC = () => {
     submitForm
   } = formik;
 
-  const currentUserAsOwner = useMemo<CrmOwner>(() => {
-    return {
-      employeeId: Number(currentUser?.employeeId),
-      firstName: currentUser?.firstName ?? "",
-      lastName: currentUser?.lastName ?? null,
-      authPic: currentUser?.authPic as string | null
-    };
-  }, [currentUser]);
-
-  const hasSetDefaultOwnerAsCurrentUser = useRef(false);
-
-  // Remembers the last owner that was set, so an accidental clear can be undone
-  const lastSelectedOwnerRef = useRef<CrmOwner | null>(null);
-
-  useEffect(() => {
-    if (currentUserAsOwner && !hasSetDefaultOwnerAsCurrentUser.current) {
-      hasSetDefaultOwnerAsCurrentUser.current = true;
-      setSelectedOwner(currentUserAsOwner);
-      setFieldValue("ownerId", currentUserAsOwner.employeeId);
-      lastSelectedOwnerRef.current = currentUserAsOwner;
-    }
-  }, [currentUserAsOwner, setFieldValue]);
-
   const { data: companyLookupData, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
-
-  const { data: ownerLookupData, isFetching: isOwnerFetching } =
-    useGetOwnerLookup(
-      debouncedOwnerSearch,
-      DEFAULT_LOOKUP_PAGE_SIZE,
-      !isOwnerReadonly
-    );
 
   const companyDropdownItems: SearchableDropdownItem[] =
     companyLookupData?.items?.map((company) => ({
@@ -180,23 +125,14 @@ const AddContactModal: React.FC = () => {
       content: company.name
     })) ?? [];
 
-  const ownerDropdownItems: SearchableDropdownItem[] =
-    ownerLookupData?.items?.map((owner) => ({
-      id: String(owner.employeeId),
-      content: (
-        <AvatarChip
-          avatarProps={{ ...toOwnerAvatarProps(owner), size: "sm" }}
-          label={concatStrings([owner.firstName, owner.lastName ?? ""])}
-        />
-      )
-    })) ?? [];
-
   const handleCompanySelect = (companyDropDownItem: SearchableDropdownItem) => {
     const company = companyLookupData?.items?.find(
       (company) => String(company.id) === companyDropDownItem.id
     );
     setFieldValue("companyId", Number(companyDropDownItem.id));
-    setSelectedCompanyLabel(company?.name ?? String(companyDropDownItem.content));
+    setSelectedCompanyLabel(
+      company?.name ?? String(companyDropDownItem.content)
+    );
     setCompanySearch("");
   };
 
@@ -208,75 +144,6 @@ const AddContactModal: React.FC = () => {
 
   const SearchableDropdownEmptyMessage = (message: string) => (
     <p className="px-4 py-2 body2">{message}</p>
-  );
-
-  const handleOwnerSelect = (ownerDropDownItem: SearchableDropdownItem) => {
-    const owner = ownerLookupData?.items?.find(
-      (owner) => String(owner.employeeId) === ownerDropDownItem.id
-    );
-    if (!owner) return;
-    setFieldValue("ownerId", owner.employeeId);
-    setSelectedOwner(owner);
-    lastSelectedOwnerRef.current = owner;
-    setOwnerSearch("");
-  };
-
-  const handleClearOwner = () => {
-    setFieldValue("ownerId", null);
-    setSelectedOwner(null);
-    setOwnerSearch("");
-  };
-
-  const restoreLastOwnerIfEmpty = () => {
-    if (selectedOwner || !lastSelectedOwnerRef.current) return;
-    setSelectedOwner(lastSelectedOwnerRef.current);
-    setFieldValue("ownerId", lastSelectedOwnerRef.current.employeeId);
-    setOwnerSearch("");
-  };
-
-  const renderSelectedOwnerDisplay = () => (
-    <div className="flex w-full flex-col gap-2">
-      <span className="subtitle1 leading-normal inline-flex h-6 items-center">
-        {translateText(["labels", "owner"])}
-      </span>
-      <div className="flex h-[3.125rem] items-center rounded-lg bg-gray-100 px-3">
-        <AvatarChip
-          label={concatStrings([
-            selectedOwner!.firstName,
-            selectedOwner!.lastName ?? ""
-          ])}
-          avatarProps={{ ...toOwnerAvatarProps(selectedOwner!), size: "sm" }}
-          showActionButton={!isOwnerReadonly}
-          onActionClick={isOwnerReadonly ? undefined : handleClearOwner}
-          actionIcon={isOwnerReadonly ? undefined : <CloseIcon />}
-          actionButtonAriaLabel={translateText(["ariaLabels", "clearOwner"])}
-        />
-      </div>
-    </div>
-  );
-
-  const renderOwnerDropdown = () => (
-    <SearchableDropdown
-      id="add-contact-owner"
-      name="owner"
-      label={translateText(["labels", "owner"])}
-      placeholder={translateText(["placeholders", "owner"])}
-      items={ownerDropdownItems}
-      value={ownerSearch}
-      onChange={(e) => setOwnerSearch(e.target.value)}
-      onSelect={handleOwnerSelect}
-      onClose={() => {
-        setOwnerSearch("");
-        restoreLastOwnerIfEmpty();
-      }}
-      emptyMessage={
-        isOwnerFetching
-          ? undefined
-          : SearchableDropdownEmptyMessage(
-              translateText(["emptyStates", "noOwners"])
-            )
-      }
-    />
   );
 
   return (
@@ -364,11 +231,10 @@ const AddContactModal: React.FC = () => {
         fullWidth
       />
 
-      {selectedOwner ? (
-        renderSelectedOwnerDisplay()
-      ) : (
-        !isOwnerReadonly && renderOwnerDropdown()
-      )}
+      <OwnerLookupDropdown
+        onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
+        translateText={translateText}
+      />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
