@@ -32,7 +32,13 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_OWNER_ASSIGNMENT_DENIED("api.error.crm.owner-assignment-denied"),
 	CRM_ERROR_CONTACT_NOT_FOUND("api.error.crm.contact-not-found"),
 	CRM_ERROR_CONTACT_EDIT_DENIED("api.error.crm.contact-edit-denied"),
-	CRM_ERROR_TASK_TYPE_NOT_FOUND("api.error.crm.task-type-not-found"),
+	CRM_ERROR_TASK_TYPE_ID_REQUIRED("api.error.crm.task-type-id-required"),
+	CRM_ERROR_TASK_NAME_REQUIRED("api.error.crm.task-name-required"),
+	CRM_ERROR_TASK_NAME_TOO_LONG("api.error.crm.task-name-too-long"),
+	CRM_ERROR_TASK_TARGET_REQUIRED("api.error.crm.task-target-required"),
+	CRM_ERROR_TASK_DUE_DATE_REQUIRED("api.error.crm.task-due-date-required"),
+	CRM_ERROR_TASK_DUE_DATE_IN_PAST("api.error.crm.task-due-date-in-past"),
+	CRM_ERROR_TASK_NOTES_TOO_LONG("api.error.crm.task-notes-too-long"),
 	CRM_ERROR_PRIORITY_NOT_FOUND("api.error.crm.priority-not-found"),
 	CRM_ERROR_DEAL_STAGE_NOT_FOUND("api.error.crm.deal-stage-not-found"),
 	CRM_ERROR_DEAL_NOT_FOUND("api.error.crm.deal-not-found"),
@@ -46,9 +52,12 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_SUCCESS_CONTACT_CREATED("api.success.crm.contact-created"),
 	CRM_SUCCESS_CONTACT_DELETED("api.success.crm.contact-deleted"),
 	CRM_SUCCESS_CONTACT_UPDATED("api.success.crm.contact-updated"),
-	CRM_SUCCESS_TASK_CREATED("api.success.crm.task-created"), CRM_SUCCESS_DEAL_CREATED("api.success.crm.deal-created"),
+	CRM_SUCCESS_DEAL_CREATED("api.success.crm.deal-created"),
 	CRM_SUCCESS_COMPANY_DELETED("api.success.crm.company-deleted"),
-	CRM_ERROR_COMPANY_ALREADY_DELETED("api.error.crm.company-already-deleted");
+	CRM_ERROR_COMPANY_ALREADY_DELETED("api.error.crm.company-already-deleted"),
+	CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH("api.error.crm.task.contact-company-mismatch"),
+	CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH("api.error.crm.task.deal-contact-mismatch"),
+	CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH("api.error.crm.task.deal-company-mismatch");
 
 	private final String messageKey;
 
