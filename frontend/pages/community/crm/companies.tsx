@@ -2,11 +2,11 @@ import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { IconName } from "~community/common/types/IconTypes";
 import CompanyModalController from "~community/crm/components/organisms/CompanyPopupController/CompanyModalController";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/store";
-import { CRM_CONTAINER_STYLES } from "~community/crm/constants/styleConstants";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const Companies: NextPage = () => {
@@ -31,7 +31,7 @@ const Companies: NextPage = () => {
       primaryButtonText={translateText(["addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      containerStyles={CRM_CONTAINER_STYLES}
+      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
         <CompanyModalController />

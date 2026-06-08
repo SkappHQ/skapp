@@ -2,8 +2,8 @@ import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { IconName } from "~community/common/types/IconTypes";
-import { CRM_CONTAINER_STYLES } from "~community/crm/constants/styleConstants";
 
 const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
@@ -14,7 +14,7 @@ const Tasks: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      containerStyles={CRM_CONTAINER_STYLES}
+      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <></>
     </ContentLayout>
