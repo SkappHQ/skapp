@@ -29,7 +29,7 @@ const PeopleDirectoryAdd = () => {
         },
         {
           label: translatePeople(["peoples.title"]),
-          href: ROUTES.PEOPLE.DIRECTORY
+          onClick: () => router.push(ROUTES.PEOPLE.DIRECTORY)
         },
         {
           label: translatePeople(["addResource.commonText.addFullProfile"])

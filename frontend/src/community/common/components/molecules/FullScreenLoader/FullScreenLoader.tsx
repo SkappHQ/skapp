@@ -1,27 +1,39 @@
 import { Box, CircularProgress, useTheme } from "@mui/material";
 
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-import { theme } from "~community/common/theme/theme";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 
-const FullScreenLoader = () => {
+interface Props {
+  fullPage?: boolean;
+}
+
+const FullScreenLoader = ({ fullPage = true }: Props) => {
   const theme = useTheme();
+  const translateAria = useTranslator(
+    "commonAria",
+    "components",
+    "contentAreaLoader"
+  );
+
   return (
     <Box
       sx={{
-        position: "fixed",
-        
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "white",
+        position: fullPage ? "fixed" : "absolute",
+        inset: 0,
         display: "flex",
-        justifyContent: "center",
         alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: theme.palette.background.default,
         zIndex: ZIndexEnums.MAX
       }}
+      role="status"
+      aria-live="polite"
+      aria-label={translateAria(["loading"])}
     >
-      <CircularProgress sx={{ color: theme.palette.primary.light }} />
+      <CircularProgress
+        sx={{ color: theme.palette.primary.light }}
+        aria-hidden="true"
+      />
     </Box>
   );
 };

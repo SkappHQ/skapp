@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.payload.request;
 
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.enterprise.common.config.TrimmingStringDeserializer;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +13,7 @@ public class CrmCompanyEditDto {
 	@JsonDeserialize(using = TrimmingStringDeserializer.class)
 	private String name;
 
-	private String industry;
+	private CrmIndustry industry;
 
 	private String website;
 
