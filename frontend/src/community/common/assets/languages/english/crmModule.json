@@ -18,7 +18,6 @@
         "checkTaskMarkComplete": "Mark {{name}} as complete",
         "checkTaskMarkIncomplete": "Mark {{name}} as incomplete",
         "openTaskDetails": "Open task details panel for {{name}}",
-        "dueDateNoDate": "No due date",
         "dueDateOverdue": "Overdue",
         "dueDateToday": "Due today",
         "dueDateDueOn": "Due on {{date}}"

@@ -88,13 +88,15 @@ const TaskRow: FC<Props> = ({
         >
           {task.name}
         </p>
-        <p
-          className={`body3 leading-none mt-0.5 ${optimisticCompleted ? "line-through text-secondary-text" : dueDateDisplay.colorClass}`}
-        >
-          {translateText([dueDateDisplay.textKey], {
-            date: dueDateDisplay.dateValue ?? ""
-          })}
-        </p>
+        {dueDateDisplay && (
+          <p
+            className={`body3 leading-none mt-0.5 ${optimisticCompleted ? "line-through text-secondary-text" : dueDateDisplay.colorClass}`}
+          >
+            {translateText([dueDateDisplay.textKey], {
+              date: dueDateDisplay.dateValue ?? ""
+            })}
+          </p>
+        )}
       </div>
 
       <div className="relative z-10 flex items-center gap-6 shrink-0">
