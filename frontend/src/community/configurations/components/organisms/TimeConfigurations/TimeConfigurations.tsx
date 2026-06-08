@@ -10,7 +10,7 @@ import {
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
-import { JSX, useCallback, useEffect, useState } from "react";
+import { JSX, useCallback, useEffect, useRef, useState } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -50,6 +50,7 @@ const TimeConfigurations = (): JSX.Element => {
   const theme: Theme = useTheme();
   const classes = styles();
   const translateText = useTranslator("configurations", "times");
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -304,7 +305,7 @@ const TimeConfigurations = (): JSX.Element => {
 
   return (
     <>
-      <Stack sx={classes.container}>
+      <Stack ref={containerRef} sx={classes.container}>
         <Stack sx={classes.sectionContainer}>
           <Typography sx={classes.sectionTitle}>
             {translateText(["globalSettingsTitle"]) ?? ""}
@@ -366,6 +367,7 @@ const TimeConfigurations = (): JSX.Element => {
                 setWeekStartDay(e.target.value)
               }
               componentStyle={{ mt: "0rem" }}
+              container={containerRef.current}
             />
           </Stack>
 
@@ -385,6 +387,7 @@ const TimeConfigurations = (): JSX.Element => {
               onChange={(e: SelectChangeEvent) => setStartTime(e.target.value)}
               componentStyle={{ mt: "0rem" }}
               ariaLabel={translateText(["startOfAWorkDayTitle"]) ?? ""}
+              container={containerRef.current}
             />
           </Stack>
         </Stack>
@@ -409,6 +412,7 @@ const TimeConfigurations = (): JSX.Element => {
             }
             componentStyle={classes.inputField}
             ariaLabel={translateText(["numberOfWorkHoursInADayTitle"]) ?? ""}
+            container={containerRef.current}
           />
 
           <Stack sx={classes.inputField}>
