@@ -117,12 +117,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		Role currentCrmRole = currentUser.getEmployee().getEmployeeRole().getCrmRole();
-
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
-				&& !task.getOwner().getEmployeeId().equals(currentUser.getEmployee().getEmployeeId())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
-		}
+		checkEditPermission(task, currentUser);
 
 		if (requestDto.getName() != null) {
 			CrmValidations.validateTaskName(requestDto.getName());
@@ -192,6 +187,14 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		}
 
 		return crmOwnerResolver.resolveOwner(ownerId, currentUser);
+	}
+
+	private void checkEditPermission(CrmTask task, User currentUser) {
+		Role currentCrmRole = currentUser.getEmployee().getEmployeeRole().getCrmRole();
+		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
+				&& !task.getOwner().getEmployeeId().equals(currentUser.getEmployee().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
+		}
 	}
 
 }
