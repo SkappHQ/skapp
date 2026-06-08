@@ -20,6 +20,7 @@ jobs:
             distribution: 'temurin'
             java-version: '21'
             cache: maven
+            cache-dependency-path: skapp/backend/pom.xml
         - name: Run tests
           run: |
             cd skapp/backend
