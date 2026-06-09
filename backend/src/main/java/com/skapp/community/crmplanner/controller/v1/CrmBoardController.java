@@ -34,7 +34,7 @@ public class CrmBoardController {
 
 	@Operation(summary = "Move deal to a different stage",
 			description = "Moves a deal to a different stage (swimlane) on the Kanban board. The deal is appended to the end of the target stage.")
-	@PatchMapping("/deal/move")
+	@PatchMapping("/deal-move")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> moveDeal(@RequestBody CrmDealUpdateStageRequestDto requestDto) {
 		ResponseEntityDto response = crmDealService.updateDealStage(requestDto);
