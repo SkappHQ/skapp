@@ -8,6 +8,8 @@ interface ActionTypes {
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
   setIsCompanySidePanelOpen: (isCompanySidePanelOpen: boolean) => void;
+  setIsDealDeleteModalOpen: (isDealDeleteModalOpen: boolean) => void;
+  setDealToDelete: (dealName: string | null) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -17,4 +19,6 @@ export interface CrmStore extends ActionTypes {
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
   isCompanySidePanelOpen: boolean;
+  isDealDeleteModalOpen: boolean;
+  dealToDelete: string | null;
 }

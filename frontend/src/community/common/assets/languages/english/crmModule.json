@@ -226,6 +226,21 @@
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
       "infiniteScrollLoadingMessage": "Loading more deals..."
+    },
+    "deleteDealModal": {
+      "description": "Are you sure you want to delete \"{{dealName}}\"? This action cannot be undone.",
+      "buttons": {
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "ariaLabels": {
+        "cancel": "Cancel delete deal",
+        "confirm": "Confirm delete deal"
+      }
+    },
+    "deleteDealToastMessages": {
+      "success": "Deal deleted successfully",
+      "error": "Failed to delete deal"
     }
   },
   "tasks": {
