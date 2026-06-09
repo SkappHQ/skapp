@@ -80,7 +80,7 @@ const AddContactModalContent: React.FC = () => {
   const initialValues: CrmContactAddFormTypes = {
     name: "",
     email: "",
-    contactNumber: null,
+    contactNumber: "",
     companyId: null,
     ownerId: null
   };
@@ -284,7 +284,7 @@ const AddContactModalContent: React.FC = () => {
 
       <InputField
         name="contactNumber"
-        value={values.contactNumber || ""}
+        value={values.contactNumber}
         errorMessage={errors.contactNumber}
         state={errors.contactNumber ? "error" : "default"}
         label={translateContactText(["labels", "contactNumber"])}

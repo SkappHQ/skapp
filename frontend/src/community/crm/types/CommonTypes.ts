@@ -100,7 +100,7 @@ export interface CrmOwnersResponseType {
 export interface CrmContactAddFormTypes {
   name: string;
   email: string;
-  contactNumber: string | null;
+  contactNumber: string;
   companyId: number | null;
   ownerId: number | null;
 }
