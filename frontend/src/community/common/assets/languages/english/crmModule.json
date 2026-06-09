@@ -47,7 +47,8 @@
         "invalidEmail": "Please enter a valid email address",
         "contactNumber": "Contact number is invalid",
         "contactNumberLength": "Contact number is too long",
-        "characterLength": "Entry must be less than 50 characters"
+        "characterLength": "Entry must be less than 50 characters",
+        "owner": "Contact owner is required"
       },
       "contactToastMessages": {
         "successTitle": "Contact added successfully",
