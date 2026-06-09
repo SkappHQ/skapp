@@ -2544,6 +2544,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (status.equals(AccountStatus.ACTIVE) && Boolean.FALSE.equals(user.getIsActive())) {
 			employee.setAccountStatus(status);
+			employee.setTerminationDate(null);
 			user.setIsActive(true);
 
 			updateSubscriptionQuantity(1L, true, false);
