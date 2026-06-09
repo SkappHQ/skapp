@@ -3,12 +3,12 @@ package com.skapp.community.peopleplanner.service.impl;
 import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.OrganizationDao;
-import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.payload.email.PeopleEmailDynamicFields;
@@ -38,23 +38,19 @@ public class PeopleNotificationServiceImpl implements PeopleNotificationService 
 	private final OrganizationDao organizationDao;
 
 	@NonNull
-	private final UserDao userDao;
-
-	@NonNull
 	private final EmployeeRoleDao employeeRoleDao;
 
 	@Async
 	@Transactional(readOnly = true)
 	@Override
-	public void sendNewHolidayDeclarationNotification(Holiday holiday) {
+	public void sendNewHolidayDeclarationNotification(Holiday holiday, List<Employee> employees) {
 		try {
 			PeopleEmailDynamicFields peopleEmailDynamicFields = new PeopleEmailDynamicFields();
 			peopleEmailDynamicFields.setOrganizationName(getOrganizationName());
 			peopleEmailDynamicFields.setHolidayDate(holiday.getDate().toString());
 			peopleEmailDynamicFields.setHolidayName(holiday.getName());
 
-			List<User> users = userDao.findAllByIsActiveTrue();
-			users.forEach(user -> notificationService.createNotification(user.getEmployee(), holiday.getId().toString(),
+			employees.forEach(employee -> notificationService.createNotification(employee, holiday.getId().toString(),
 					NotificationType.HOLIDAY, EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED,
 					peopleEmailDynamicFields, NotificationCategory.PEOPLE));
 		}

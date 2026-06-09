@@ -14,6 +14,8 @@ public class CrmTaskResponseDto {
 
 	private String name;
 
+	private Long typeId;
+
 	private String typeName;
 
 	private CrmTaskPriority priority;
@@ -23,6 +25,10 @@ public class CrmTaskResponseDto {
 	private LocalDateTime dueAt;
 
 	private String notes;
+
+	private Long contactId;
+
+	private String ownerName;
 
 	private CrmOwnerResponseDto owner;
 
