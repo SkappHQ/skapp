@@ -1,5 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { CrmTaskCategory } from "~community/crm/types/CommonTypes";
