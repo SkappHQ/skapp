@@ -42,8 +42,8 @@ const CompanyModalController = () => {
     }
   };
 
-  const getModalContent = (modalType: CrmModalTypes): ReactNode => {
-    switch (modalType) {
+  const getModalContent = (): ReactNode => {
+    switch (crmModalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
         return <AddCompanyModalContent />;
       case CrmModalTypes.EDIT_COMPANY_MODAL:
@@ -60,7 +60,7 @@ const CompanyModalController = () => {
       isOpen={isCompanyModalOpen}
       onClose={handleCloseModal}
       modalHeader={getModalTitle(crmModalType)}
-      content={getModalContent(crmModalType)}
+      content={getModalContent()}
     />
   );
 };
