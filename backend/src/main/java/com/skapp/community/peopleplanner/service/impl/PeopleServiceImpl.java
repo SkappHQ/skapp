@@ -1285,6 +1285,8 @@ public class PeopleServiceImpl implements PeopleService {
 			ReactivateTerminatedUserRequestDto reactivateTerminatedUserRequestDto) {
 		log.info("reactivateTerminatedUser: execution started");
 
+		Validation.validateEmail(reactivateTerminatedUserRequestDto.getEmail());
+
 		User user = userDao.findByEmail(reactivateTerminatedUserRequestDto.getEmail())
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
 
