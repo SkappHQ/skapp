@@ -8,17 +8,24 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
+
+import java.time.LocalDateTime;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,6 +86,10 @@ class CrmContactControllerIntegrationTest {
 
 	private final CrmDealStageDao crmDealStageDao;
 
+	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
+
 	private final EmployeeDao employeeDao;
 
 	private final EmployeeRoleDao employeeRoleDao;
@@ -120,12 +131,53 @@ class CrmContactControllerIntegrationTest {
 		return performRequest(delete(BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON));
 	}
 
+	private ResultActions performGetByIdRequest(Long id) throws Exception {
+		return performRequest(get(BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON));
+	}
+
 	private ResultActions performGetMetricsRequest() throws Exception {
 		return performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performGetOwnersRequest() throws Exception {
 		return performRequest(get(OWNERS_PATH).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private CrmDealStage savedStage(CrmDealStageType type) {
+		CrmDealStage stage = new CrmDealStage();
+		stage.setName("Stage " + type.name());
+		stage.setColor("#AABBCC");
+		stage.setOrderIndex(1);
+		stage.setStageType(type);
+		return crmDealStageDao.save(stage);
+	}
+
+	private CrmDeal savedDeal(Long contactId, Long companyId, CrmDealStage stage, String amount) {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Test Deal");
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setStage(stage);
+		deal.setContact(crmContactDao.getReferenceById(contactId));
+		deal.setCompany(crmCompanyDao.getReferenceById(companyId));
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setAmount(amount);
+		return crmDealDao.save(deal);
+	}
+
+	private CrmTask savedTask(Long contactId, boolean completed, LocalDateTime dueAt) {
+		CrmTaskType type = new CrmTaskType();
+		type.setName("Call");
+		crmTaskTypeDao.save(type);
+
+		CrmTask task = new CrmTask();
+		task.setName("Test Task");
+		task.setType(type);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setIsCompleted(completed);
+		task.setDueAt(dueAt);
+		task.setContact(crmContactDao.getReferenceById(contactId));
+		task.setOwner(employeeDao.getReferenceById(1L));
+		return crmTaskDao.save(task);
 	}
 
 	private CrmCompany savedCompany() {
@@ -598,6 +650,122 @@ class CrmContactControllerIntegrationTest {
 	@DisplayName("Get contact metrics without CRM role - Returns Forbidden")
 	void getContactMetrics_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
+	// --- getContactById ---
+
+	@Test
+	@DisplayName("Get contact by ID - Returns full contact detail with zero metrics when no deals or tasks")
+	void getContactById_HappyPath_ReturnsContactDetail() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "detail.contact@example.com").getId();
+
+		performGetByIdRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(contactId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("detail.contact@example.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").value("0"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['pipelineRevenue']").value("0"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['activeDealsCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks']").isArray());
+	}
+
+	@Test
+	@DisplayName("Get contact by ID that does not exist - Returns Bad Request with not-found error")
+	void getContactById_NotFound_ReturnsBadRequest() throws Exception {
+		performGetByIdRequest(999999L).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get soft-deleted contact by ID - Returns Bad Request with not-found error")
+	void getContactById_SoftDeletedContact_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany().getId();
+		CrmContact contact = savedContact(companyId, "deleted.detail@example.com");
+		contact.setIsDeleted(true);
+		crmContactDao.save(contact);
+
+		performGetByIdRequest(contact.getId()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get contact by ID with WON deal - Total revenue reflects deal amount")
+	void getContactById_WithWonDeal_TotalRevenueReflected() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "won.deal@example.com").getId();
+		savedDeal(contactId, companyId, savedStage(CrmDealStageType.WON), "5000.00");
+
+		performGetByIdRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").value("5000.00"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['pipelineRevenue']").value("0"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['activeDealsCount']").value(0));
+	}
+
+	@Test
+	@DisplayName("Get contact by ID with OPEN deal - Pipeline revenue and active deal count reflect deal")
+	void getContactById_WithOpenDeal_PipelineRevenueAndActiveCountReflected() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "open.deal@example.com").getId();
+		savedDeal(contactId, companyId, savedStage(CrmDealStageType.OPEN), "3000.00");
+
+		performGetByIdRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").value("0"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['pipelineRevenue']").value("3000.00"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['activeDealsCount']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get contact by ID with overdue task - Open and overdue counts are correct")
+	void getContactById_WithOverdueTask_CountsAreCorrect() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "overdue.task@example.com").getId();
+		savedTask(contactId, false, LocalDateTime.now().minusDays(1));
+
+		performGetByIdRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get contact by ID with completed task - Open and overdue counts remain zero")
+	void getContactById_WithCompletedTask_OpenAndOverdueCountZero() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "completed.task@example.com").getId();
+		savedTask(contactId, true, LocalDateTime.now().minusDays(1));
+
+		performGetByIdRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(0));
+	}
+
+	@Test
+	@DisplayName("Get contact by ID without CRM role - Returns Forbidden")
+	void getContactById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "forbidden.detail@example.com").getId();
+
+		performRequest(get(BY_ID_PATH, contactId).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
 			.andExpect(status().isForbidden());
 	}
 
