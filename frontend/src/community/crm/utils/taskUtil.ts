@@ -1,6 +1,4 @@
-import { DateTime } from "luxon";
-
-import { getOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
+import { format, isBefore, isToday, parseISO, startOfDay } from "date-fns";
 
 export interface DueDateDisplay {
   textKey: string;
@@ -14,20 +12,19 @@ export const getDueDateDisplay = (
 ): DueDateDisplay | null => {
   if (!dueAt) return null;
 
-  const due = DateTime.fromISO(dueAt).startOf("day");
-  const today = DateTime.now().startOf("day");
+  const due = startOfDay(parseISO(dueAt));
 
-  if (!isCompleted && due < today) {
+  if (!isCompleted && isBefore(due, startOfDay(new Date()))) {
     return { textKey: "dueDateOverdue", colorClass: "text-semantic-red-text" };
   }
 
-  if (!isCompleted && due.equals(today)) {
+  if (!isCompleted && isToday(due)) {
     return { textKey: "dueDateToday", colorClass: "text-semantic-amber-text" };
   }
 
   return {
     textKey: "dueDateDueOn",
-    dateValue: `${due.day}${getOrdinalIndicator(due.day)} ${due.toFormat("LLL")}`,
+    dateValue: format(due, "do LLL"),
     colorClass: "text-secondary-text"
   };
 };
