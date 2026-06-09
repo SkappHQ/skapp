@@ -17,7 +17,7 @@ import {
 } from "~community/crm/types/CommonTypes";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { companyQueryKeys, contactQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
+import { crmDealQueryKeys } from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
@@ -52,7 +52,9 @@ export const useGetDealStages = (): UseQueryResult<CrmDealStageType[]> => {
   });
 };
 
-const createDeal = async (payload: CrmCreateDealPayload): Promise<CrmDealType> => {
+const createDeal = async (
+  payload: CrmCreateDealPayload
+): Promise<CrmDealType> => {
   const response = await authFetch.post(crmDealEndpoints.CREATE_DEAL, payload);
   return response?.data?.results?.[0];
 };
