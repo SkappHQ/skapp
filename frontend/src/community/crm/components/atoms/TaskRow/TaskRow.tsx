@@ -5,14 +5,15 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   getPriorityConfig,
   getTaskTypeIcon
-} from "~community/crm/constants/crmTaskConstants";
+} from "~community/crm/constants/taskConstants";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
-import { getDueDateDisplay } from "~community/crm/utils/crmTaskUtils";
+import { getDueDateDisplay } from "~community/crm/utils/taskUtil";
 
 interface Props {
   task: CrmTaskType;
   onToggleComplete?: (id: number, isCompleted: boolean) => Promise<void>;
   onRowClick?: () => void;
+  showContact?: boolean;
   className?: string;
 }
 
@@ -20,6 +21,7 @@ const TaskRow: FC<Props> = ({
   task,
   onToggleComplete,
   onRowClick,
+  showContact = false,
   className = "w-full"
 }) => {
   const translateText = useTranslator(
@@ -51,6 +53,9 @@ const TaskRow: FC<Props> = ({
     }
   };
 
+  const showCompletedStyle = !!onToggleComplete && optimisticCompleted;
+  const showInlineContact = showContact && !!task.contact;
+
   return (
     <div
       className={`relative flex items-center gap-4 p-3 min-w-0 ${className} min-h-[63px] bg-white hover:bg-gray-50 overflow-hidden`}
@@ -80,24 +85,44 @@ const TaskRow: FC<Props> = ({
       )}
 
       <div
-        className={`relative z-10 shrink-0 flex items-center justify-center ${optimisticCompleted ? "opacity-40" : ""}`}
+        className={`relative z-10 shrink-0 flex items-center justify-center ${showCompletedStyle ? "opacity-40" : ""}`}
       >
         {TaskTypeIcon && <TaskTypeIcon />}
       </div>
 
       <div className="relative z-10 flex-1 min-w-0">
         <p
-          className={`body2 leading-snug truncate ${optimisticCompleted ? "line-through text-secondary-icon" : "text-black"}`}
+          className={`body2 leading-snug truncate ${showCompletedStyle ? "line-through text-secondary-icon" : "text-black"}`}
         >
           {task.name}
         </p>
-        {dueDateDisplay && (
-          <p
-            className={`body3 leading-none mt-0.5 ${optimisticCompleted ? "line-through text-secondary-icon" : dueDateDisplay.colorClass}`}
-          >
-            {translateText([dueDateDisplay.textKey], {
-              date: dueDateDisplay.dateValue ?? ""
-            })}
+        {(dueDateDisplay || showInlineContact) && (
+          <p className="body3 leading-none mt-0.5">
+            {dueDateDisplay && (
+              <span
+                className={
+                  showCompletedStyle
+                    ? "line-through text-secondary-icon"
+                    : dueDateDisplay.colorClass
+                }
+              >
+                {translateText([dueDateDisplay.textKey], {
+                  date: dueDateDisplay.dateValue ?? ""
+                })}
+              </span>
+            )}
+            {showInlineContact && (
+              <span
+                className={
+                  showCompletedStyle
+                    ? "text-secondary-icon"
+                    : "text-secondary-text"
+                }
+              >
+                {dueDateDisplay && " · "}
+                {task.contact!.name}
+              </span>
+            )}
           </p>
         )}
       </div>
@@ -106,7 +131,7 @@ const TaskRow: FC<Props> = ({
         {priorityConfig && PriorityIconComp && (
           <PriorityIcon
             icon={<PriorityIconComp />}
-            bgColor={priorityConfig.bgColor}
+            bgColor={priorityConfig.backgroundColor}
           />
         )}
         {task.owner && (

@@ -1,5 +1,7 @@
 import { DateTime } from "luxon";
 
+import { getOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
+
 export interface DueDateDisplay {
   textKey: string;
   dateValue?: string;
@@ -25,7 +27,7 @@ export const getDueDateDisplay = (
 
   return {
     textKey: "dueDateDueOn",
-    dateValue: due.toLocaleString({ month: "short", day: "numeric" }),
+    dateValue: `${due.day}${getOrdinalIndicator(due.day)} ${due.toFormat("LLL")}`,
     colorClass: "text-secondary-text"
   };
 };
