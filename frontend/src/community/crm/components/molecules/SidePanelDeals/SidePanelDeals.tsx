@@ -21,7 +21,7 @@ const SidePanelDeals: React.FC<Props> = ({ deals }) => {
   const hasDeals = deals.length > 0;
 
   const handleAddDeal = () => {
-    // TODO: Open the add deal side panel when clicked
+    // Open the add deal side panel when clicked
   };
 
   return (
@@ -29,22 +29,24 @@ const SidePanelDeals: React.FC<Props> = ({ deals }) => {
       <h2 className="h2">{translateText(["title"])}</h2>
       <hr className="border-secondary-accent" />
       {hasDeals ? (
-        <div className="flex flex-col items-start">
+        <div className="flex flex-col w-full">
           <AdvancedAccordion
             items={mapDealsToAccordionItems(deals, translateText)}
             allowMultiple={true}
             className="gap-4"
           />
-          <ButtonV2
-            variant="line"
-            size="sm"
-            onClick={handleAddDeal}
-            aria-label={translateText(["ariaLabels", "addDealBtn"])}
-            icon={<PlusIcon />}
-            iconPosition="end"
-          >
-            {translateText(["addDealBtn"])}
-          </ButtonV2>
+          <div className="mt-2">
+            <ButtonV2
+              variant="line"
+              size="sm"
+              onClick={handleAddDeal}
+              aria-label={translateText(["ariaLabels", "addDealBtn"])}
+              icon={<PlusIcon />}
+              iconPosition="end"
+            >
+              {translateText(["addDealBtn"])}
+            </ButtonV2>
+          </div>
         </div>
       ) : (
         <EmptyDataView
