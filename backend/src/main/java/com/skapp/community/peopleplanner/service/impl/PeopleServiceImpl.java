@@ -1288,6 +1288,10 @@ public class PeopleServiceImpl implements PeopleService {
 		User user = userDao.findByEmail(reactivateTerminatedUserRequestDto.getEmail())
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
 
+		if (user.getEmployee().getAccountStatus() != AccountStatus.TERMINATED) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED);
+		}
+
 		updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false);
 
 		log.info("reactivateTerminatedUser: execution ended");

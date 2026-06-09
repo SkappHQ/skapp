@@ -100,6 +100,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_EMPLOYEE_FAMILY_DETAILS_NOT_FOUND("api.error.people.employee-family-details.not-found"),
 	PEOPLE_ERROR_MANAGER_NOT_FOUND("api.error.people.manager.not-found"),
 	PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL("api.error.people.employee-id-cannot-null"),
+	PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED("api.error.people.employee-not-terminated"),
 	PEOPLE_ERROR_EMPLOYEE_ACCESS_DENIED("api.error.people.employee.access-denied"),
 	PEOPLE_ERROR_MISSING_PREVIOUS_EMPLOYMENT_START_AND_END_DATES(
 			"api.error.people.missing-previous-employment-start-and-end-dates"),
