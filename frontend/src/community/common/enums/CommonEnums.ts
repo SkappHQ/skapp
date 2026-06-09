@@ -13,6 +13,7 @@ export enum ZIndexEnums {
   LEVEL_2 = 2,
   MODAL = 1300,
   NEWMODAL = 1500,
+  POPUP = 1600,
   CRM_CONTENT_LAYOUT = 1200
 }
 
