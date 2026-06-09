@@ -32,12 +32,11 @@ const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
   const infoItems: InfoItem[] = [
     {
       icon: <EmailOutlineIcon style={iconColor} />,
-      value: formatTextValue(contact.email)
+      value: contact.email
     },
     {
-
       icon: <PhoneIcon style={iconColor} />,
-      value: formatTextValue(contact.contactNumber)
+      value: contact.contactNumber ?? "—"
     },
     ...(company
       ? [
@@ -53,7 +52,7 @@ const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
 
   return (
     <div className="flex items-center justify-between max-w-[629px] w-full">
-      {infoItems.map(({...item }) => (
+      {infoItems.map(({ ...item }) => (
         <SidePanelHeaderInfoItem {...item} />
       ))}
     </div>

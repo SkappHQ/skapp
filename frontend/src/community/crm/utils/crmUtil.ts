@@ -4,5 +4,3 @@ export const formatValue = (value: NumericValue): string => {
   if (value == null || value === "") return "-";
   return `$${Number.parseFloat(value).toFixed(2)}`;
 };
-
-export const formatTextValue = (value: string | null): string => value ?? "—";
