@@ -8,13 +8,13 @@ export const crmDealEndpoints = {
 
 export const contactEndpoints = {
   GET_CONTACT_METRICS: `${moduleAPIPath.CRM}/contact/metrics`,
-  GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`,
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
 export const companyEndpoints = {
   GET_COMPANY_METRICS: `${moduleAPIPath.CRM}/company/metrics`,
+  GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`,
   CREATE_COMPANY: `${moduleAPIPath.CRM}/company`,
   EDIT_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   DELETE_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,

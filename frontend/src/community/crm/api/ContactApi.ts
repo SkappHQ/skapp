@@ -4,11 +4,9 @@ import {
   useQuery
 } from "@tanstack/react-query";
 
-import useDebounce from "~community/common/hooks/useDebounce";
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { contactEndpoints } from "~community/crm/api/utils/ApiEndpoints";
-import { contactQueryKeys } from "~community/crm/api/utils/QueryKeys";
-import { CONTACT_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/contactConstants";
+import { companyEndpoints, contactEndpoints } from "~community/crm/api/utils/ApiEndpoints";
+import { contactQueryKeys, companyQueryKeys } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
   CrmContactLookup,
@@ -62,9 +60,9 @@ export const useGetContactMetrics = (
 
 export const useGetCrmCompanies = (size: number) => {
   return useQuery({
-    queryKey: [...contactQueryKeys.CRM_COMPANIES, size],
+    queryKey: [...companyQueryKeys.CRM_COMPANIES, size],
     queryFn: async (): Promise<CrmCompaniesResponseType> => {
-      const response = await authFetch.get(contactEndpoints.GET_COMPANIES, {
+      const response = await authFetch.get(companyEndpoints.GET_COMPANIES, {
         params: { size }
       });
       return response?.data?.results?.[0];
@@ -74,40 +72,34 @@ export const useGetCrmCompanies = (size: number) => {
 
 export const useGetCrmContacts = (
   searchKeyword: string,
-  size: number
+  size: number,
+  enabled: boolean = true
 ): UseQueryResult<CrmContactLookup[]> => {
-  const debouncedSearch = useDebounce(
-    searchKeyword,
-    CONTACT_SEARCH_DEBOUNCE_DELAY
-  );
   return useQuery({
-    queryKey: [...contactQueryKeys.CONTACT_LOOKUP, debouncedSearch, size],
+    queryKey: [...contactQueryKeys.CONTACT_LOOKUP, searchKeyword, size],
     queryFn: async (): Promise<CrmContactLookup[]> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
-        params: { searchKeyword: debouncedSearch, size }
+        params: { searchKeyword, size }
       });
-      return response?.data?.results?.[0]?.items ?? [];
+      return response?.data?.results?.[0];
     },
-    enabled: !!debouncedSearch
+    enabled
   });
 };
 
 export const useGetCrmOwners = (
   searchKeyword: string,
-  size: number
+  size: number,
+  enabled: boolean = true
 ): UseQueryResult<CrmOwner[]> => {
-  const debouncedSearch = useDebounce(
-    searchKeyword,
-    CONTACT_SEARCH_DEBOUNCE_DELAY
-  );
   return useQuery({
-    queryKey: [...contactQueryKeys.OWNER_LOOKUP, debouncedSearch, size],
+    queryKey: [...contactQueryKeys.OWNER_LOOKUP, searchKeyword, size],
     queryFn: async (): Promise<CrmOwner[]> => {
       const response = await authFetch.get(contactEndpoints.OWNER_LOOKUP, {
-        params: { searchKeyword: debouncedSearch, size }
+        params: { searchKeyword, size }
       });
-      return response?.data?.results?.[0]?.items ?? [];
+      return response?.data?.results?.[0];
     },
-    enabled: !!debouncedSearch
+    enabled
   });
 };

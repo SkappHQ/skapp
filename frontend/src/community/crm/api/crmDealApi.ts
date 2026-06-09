@@ -1,6 +1,5 @@
 import {
   UseInfiniteQueryResult,
-  UseMutationResult,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -61,14 +60,12 @@ const createDeal = async (payload: CrmCreateDealPayload): Promise<CrmDealType> =
 export const useCreateDeal = (
   onSuccess: () => void,
   onError: (error: unknown) => void
-): UseMutationResult<CrmDealType, unknown, CrmCreateDealPayload> => {
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createDeal,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
-      queryClient.invalidateQueries({ queryKey: contactQueryKeys.ALL });
-      queryClient.invalidateQueries({ queryKey: companyQueryKeys.GET_COMPANY_DATA });
       onSuccess();
     },
     onError
