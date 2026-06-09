@@ -32,7 +32,7 @@ const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
   const infoItems: InfoItem[] = [
     {
       icon: <EmailOutlineIcon style={iconColor} />,
-      value: formatTextValue(contact.email)
+      value: contact.email
     },
     {
       icon: <PhoneIcon style={iconColor} />,
