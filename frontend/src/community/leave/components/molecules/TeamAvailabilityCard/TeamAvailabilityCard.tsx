@@ -129,7 +129,7 @@ const TeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
           }}
           customStyles={{
             menuProps: {
-              sx: { zIndex: ZIndexEnums.MAX }
+              sx: { zIndex: ZIndexEnums.POPUP }
             }
           }}
         />
