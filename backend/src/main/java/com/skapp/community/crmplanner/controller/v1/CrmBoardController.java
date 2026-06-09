@@ -34,7 +34,7 @@ public class CrmBoardController {
 
 	@Operation(summary = "Reorder a deal on the board",
 			description = "Reorders a deal using fractional indexing. Provide prevDealId and/or nextDealId to position the deal between neighbours.")
-	@PatchMapping("/reorder")
+	@PatchMapping("/deal-reorder")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> reorderDeal(@RequestBody CrmDealReorderRequestDto requestDto) {
 		ResponseEntityDto response = crmDealService.reorderDeal(requestDto);
