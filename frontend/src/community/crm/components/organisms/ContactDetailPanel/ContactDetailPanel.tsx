@@ -88,7 +88,7 @@ const ContactDetailPanel: FC = () => {
           isOpen={isContactDetailPanelOpen}
           onClose={closeContactDetailPanel}
           closeOnBackdropClick
-          width="xl"
+          width="lg"
           ariaLabelledBy="contact-panel-title"
           header={
             <div className=" flex flex-col gap-2 pl-2">

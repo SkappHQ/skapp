@@ -1,4 +1,5 @@
 import { NextPage } from "next";
+
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -26,8 +27,6 @@ const Contacts: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      secondaryBtnText={translateText(["exportDataBtn"])}
-      secondaryBtnIconName={IconName.FILE_UPLOAD_ICON_V2}
       onPrimaryButtonClick={handleAddContact}
     >
       <>

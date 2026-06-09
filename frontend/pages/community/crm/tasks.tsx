@@ -1,17 +1,26 @@
-import { Tabs } from "@rootcodelabs/skapp-ui";
-import { NextPage } from "next";
-import { useState } from "react";
+﻿import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { IconName } from "~community/common/types/IconTypes";
-import { getTasksPageTabs } from "~community/crm/constants/crmTaskConstants";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
+import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
 
-  const tabs = getTasksPageTabs(translateText);
-  const [activeTabId, setActiveTabId] = useState(tabs[0].id);
+  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    setTaskModalType: store.setTaskModalType
+  }));
+
+  const onPrimaryButtonClick = () => {
+    setIsTaskModalOpen(true);
+    setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+  };
 
   return (
     <ContentLayout
@@ -19,16 +28,13 @@ const Tasks: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
+      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
+      onPrimaryButtonClick={onPrimaryButtonClick}
     >
-      <div className="border-b border-secondary-accent">
-        <Tabs
-          tabs={tabs}
-          activeTabId={activeTabId}
-          onTabChange={setActiveTabId}
-          size="md"
-          ariaLabel={translateText(["tabs", "ariaLabel"])}
-        />
-      </div>
+      <>
+        <TaskModalController />
+        <TasksTable />
+      </>
     </ContentLayout>
   );
 };
