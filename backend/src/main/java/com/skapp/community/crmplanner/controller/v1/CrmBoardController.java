@@ -34,7 +34,7 @@ public class CrmBoardController {
 
 	@Operation(summary = "Get deals grouped by stages",
 			description = "Returns deals grouped by the requested stages. Multi-stage requests return first-page data for each stage; single-stage requests support page-based swim-lane loading.")
-	@PostMapping("/deals/grouped-by-stages")
+	@PostMapping("/deals-grouped-by-stages")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getDealsByStages(
 			@RequestBody CrmDealsByStagesRequestDto crmDealsByStagesRequestDto) {
