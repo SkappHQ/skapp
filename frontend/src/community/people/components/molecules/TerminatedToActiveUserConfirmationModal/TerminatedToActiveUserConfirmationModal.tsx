@@ -1,5 +1,7 @@
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { useReactivateTerminatedUser } from "~community/people/api/PeopleApi";
 import { usePeopleStore } from "~community/people/store/store";
@@ -7,6 +9,7 @@ import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const TerminatedToActiveUserConfirmationModal = () => {
   const translateText = useTranslator("peopleModule", "peoples");
+  const { setToastMessage } = useToast();
 
   const {
     setDirectoryModalType,
@@ -28,7 +31,16 @@ const TerminatedToActiveUserConfirmationModal = () => {
   );
 
   const handleConfirm = () => {
-    if (!pendingAddResourceData?.email) return;
+    if (!pendingAddResourceData?.email) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["reactivateErrorTitle"]),
+        description: translateText(["reactivateErrorDescription"])
+      });
+      setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);
+      return;
+    }
     mutate(pendingAddResourceData.email);
   };
 

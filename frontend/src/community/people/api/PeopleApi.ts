@@ -613,11 +613,7 @@ export const useReactivateTerminatedUser = (
       return authFetch.patch(peoplesEndpoints.REACTIVATE_EMPLOYEE, { email });
     },
     onSuccess: () => {
-      [
-        peopleQueryKeys.EMPLOYEE_DATA_TABLE(),
-        peopleQueryKeys.EMPLOYEE_COUNT(),
-        peopleQueryKeys.PENDING_EMPLOYEE_COUNT
-      ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
+      queryClient.invalidateQueries({ queryKey: peopleQueryKeys.EMPLOYEE_DATA_TABLE() });
       onSuccess();
     },
   });

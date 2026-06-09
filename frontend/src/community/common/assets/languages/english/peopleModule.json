@@ -483,6 +483,8 @@
     "terminatedUserConfirmationModalDescription": "This email belongs to a previously terminated employee. By proceeding, the employee will be reactivated with their existing data. Are you sure you want to continue?",
     "terminatedUserConfirmationModalContinueBtn": "Continue",
     "terminatedUserConfirmationModalCancelBtn": "Cancel",
+    "reactivateErrorTitle": "Oops! Something went wrong",
+    "reactivateErrorDescription": "Failed to reactivate the user. Please try again.",
     "unsavedModalTitle": "Unsaved changes",
     "unsavedModalDescription": "You have unsaved changes. To proceed, would you like to save or discard them?",
     "unsavedModalSaveButton": "Save Changes",
