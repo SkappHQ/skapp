@@ -13,8 +13,16 @@ export const contactQueryKeys = {
     searchKeyword,
     companyId
   ],
-  CONTACT_LOOKUP: ["crm-contacts-lookup"],
-  OWNER_LOOKUP: ["crm-owners-lookup"]
+  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-contacts-lookup",
+    searchKeyword,
+    size
+  ],
+  OWNER_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-owners-lookup",
+    searchKeyword,
+    size
+  ]
 };
 
 export const companyQueryKeys = {
@@ -25,7 +33,7 @@ export const companyQueryKeys = {
     limit
   ],
   CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"],
-  CRM_COMPANIES: ["crm-companies"]
+  CRM_COMPANIES: (size: number) => ["crm-companies", size]
 };
 
 export const taskQueryKeys = {

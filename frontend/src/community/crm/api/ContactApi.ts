@@ -5,8 +5,14 @@ import {
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { companyEndpoints, contactEndpoints } from "~community/crm/api/utils/ApiEndpoints";
-import { contactQueryKeys, companyQueryKeys } from "~community/crm/api/utils/QueryKeys";
+import {
+  companyEndpoints,
+  contactEndpoints
+} from "~community/crm/api/utils/ApiEndpoints";
+import {
+  companyQueryKeys,
+  contactQueryKeys
+} from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
   CrmContactLookup,
@@ -60,7 +66,7 @@ export const useGetContactMetrics = (
 
 export const useGetCrmCompanies = (size: number) => {
   return useQuery({
-    queryKey: [...companyQueryKeys.CRM_COMPANIES, size],
+    queryKey: companyQueryKeys.CRM_COMPANIES(size),
     queryFn: async (): Promise<CrmCompaniesResponseType> => {
       const response = await authFetch.get(companyEndpoints.GET_COMPANIES, {
         params: { size }
@@ -76,7 +82,7 @@ export const useGetCrmContacts = (
   enabled: boolean = true
 ): UseQueryResult<CrmContactLookup[]> => {
   return useQuery({
-    queryKey: [...contactQueryKeys.CONTACT_LOOKUP, searchKeyword, size],
+    queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size),
     queryFn: async (): Promise<CrmContactLookup[]> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
         params: { searchKeyword, size }
@@ -93,7 +99,7 @@ export const useGetCrmOwners = (
   enabled: boolean = true
 ): UseQueryResult<CrmOwner[]> => {
   return useQuery({
-    queryKey: [...contactQueryKeys.OWNER_LOOKUP, searchKeyword, size],
+    queryKey: contactQueryKeys.OWNER_LOOKUP(searchKeyword, size),
     queryFn: async (): Promise<CrmOwner[]> => {
       const response = await authFetch.get(contactEndpoints.OWNER_LOOKUP, {
         params: { searchKeyword, size }
