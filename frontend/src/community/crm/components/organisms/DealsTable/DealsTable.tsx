@@ -150,7 +150,7 @@ const DealsTable: FC<Props> = ({
             <div className="inline-flex items-center gap-2">
               <div
                 className="size-2 rounded-full shrink-0"
-                style={{ backgroundColor: deal.stageColor }}
+                style={{ backgroundColor: `var(--color-status-${deal.stageColor.toLowerCase()})` }}
               />
               <span className="body2">{deal.stageName}</span>
             </div>
