@@ -51,7 +51,7 @@ export interface CrmCompanyMetricsResponseType {
 
 export interface MetricItem {
   title: string;
-  amount: number;
+  amount: string;
   isCurrency?: boolean;
   chip?: {
     label: string;
