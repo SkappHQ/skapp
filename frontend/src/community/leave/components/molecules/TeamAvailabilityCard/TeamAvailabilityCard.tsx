@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarGroupWithLabel from "~community/common/components/molecules/AvatarGroupWithLabel/AvatarGroupWithLabel";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
@@ -125,6 +126,11 @@ const TeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
           }}
           accessibility={{
             label: translateAria(["teamAvailabilityCard", "dropdown"])
+          }}
+          customStyles={{
+            menuProps: {
+              sx: { zIndex: ZIndexEnums.MAX }
+            }
           }}
         />
       </Stack>
