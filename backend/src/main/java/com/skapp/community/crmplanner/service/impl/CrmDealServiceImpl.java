@@ -14,6 +14,7 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
@@ -153,6 +154,36 @@ public class CrmDealServiceImpl implements CrmDealService {
 		responseDto.setOwners(owners);
 
 		log.info("getBoardInitData: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto updateDealStage(CrmDealUpdateStageRequestDto requestDto) {
+		log.info("updateDealStage: updating deal id={} to stage id={}", requestDto.getDealId(),
+				requestDto.getNewStageId());
+
+		if (requestDto.getDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
+		}
+		if (requestDto.getNewStageId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_ID_REQUIRED);
+		}
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		CrmDealStage newStage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getNewStageId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+
+		deal.setStage(newStage);
+		String lastOrderIndex = crmDealDao.findMaxOrderIndexByStageId(newStage.getId());
+		deal.setOrderIndex(FractionalIndexUtil.generateKeyBetween(lastOrderIndex, null));
+
+		CrmDeal savedDeal = crmDealDao.save(deal);
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
+		log.info("updateDealStage: deal id={} moved to stage id={}", requestDto.getDealId(), newStage.getId());
 		return new ResponseEntityDto(false, responseDto);
 	}
 

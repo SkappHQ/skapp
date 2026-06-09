@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,5 +31,15 @@ public class CrmBoardController {
 		ResponseEntityDto response = crmDealService.getBoardInitData();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@Operation(summary = "Move deal to a different stage",
+			description = "Moves a deal to a different stage (swimlane) on the Kanban board. The deal is appended to the end of the target stage.")
+	@PatchMapping("/deal/move")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> moveDeal(@RequestBody CrmDealUpdateStageRequestDto requestDto) {
+		ResponseEntityDto response = crmDealService.updateDealStage(requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 
 }
