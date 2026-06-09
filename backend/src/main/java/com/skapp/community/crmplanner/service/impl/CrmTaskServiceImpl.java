@@ -4,7 +4,6 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -117,7 +116,9 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		checkEditPermission(task, currentUser);
+		if (CrmValidations.isEditRestricted(currentUser, task.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
+		}
 
 		if (requestDto.getName() != null) {
 			CrmValidations.validateTaskName(requestDto.getName());
@@ -187,14 +188,6 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		}
 
 		return crmOwnerResolver.resolveOwner(ownerId, currentUser);
-	}
-
-	private void checkEditPermission(CrmTask task, User currentUser) {
-		Role currentCrmRole = currentUser.getEmployee().getEmployeeRole().getCrmRole();
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
-				&& !task.getOwner().getEmployeeId().equals(currentUser.getEmployee().getEmployeeId())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
-		}
 	}
 
 }
