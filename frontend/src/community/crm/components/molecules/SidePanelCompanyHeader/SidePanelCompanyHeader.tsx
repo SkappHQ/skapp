@@ -8,6 +8,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 
 import { IconName } from "~community/common/types/IconTypes";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmCompanyType } from "~community/crm/types/CommonTypes";
 
@@ -18,6 +19,12 @@ interface Props {
 }
 
 const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
+  const translateIndustry = useTranslator(
+    "crmModule",
+    "companies",
+    "industryOptions"
+  );
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between max-w-[80%]">
@@ -44,7 +51,7 @@ const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
         {company.industry && (
           <SidePanelHeaderInfoItem
             icon={<BuildingIcon stroke={ICON_STROKE} width="20" height="20" />}
-            value={company.industry}
+            value={translateIndustry([company.industry])}
           />
         )}
       </div>
