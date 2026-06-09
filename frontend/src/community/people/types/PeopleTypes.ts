@@ -33,6 +33,7 @@ export interface L2PersonalDetailsType {
   educational?: L3EducationalDetailsType[];
   socialMedia?: L3SocialMediaDetailsType;
   healthAndOther?: L3HealthAndOtherDetailsType;
+  skills?: L3SkillsDetailsType;
 }
 
 export interface L2EmergencyDetailsType {
@@ -123,6 +124,10 @@ export interface L3HealthAndOtherDetailsType {
   allergies?: string;
   dietaryRestrictions?: string;
   tShirtSize?: string;
+}
+
+export interface L3SkillsDetailsType {
+  skills?: string[];
 }
 
 export interface L3EmergencyContactType {

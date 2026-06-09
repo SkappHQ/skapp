@@ -717,6 +717,13 @@
       "enterTShirtSize": "Enter T-shirt size",
       "head": "Directory | Skapp"
     },
+    "skillsDetails": {
+      "title": "Skills",
+      "skills": "Skills",
+      "searchSkills": "Search or add skills",
+      "helperText": "Add a custom skill by typing the name and pressing Enter",
+      "head": "Directory | Skapp"
+    },
     "emergencyDetails": {
       "title": "Emergency Details",
       "primaryTitle": "Primary Emergency Contact",

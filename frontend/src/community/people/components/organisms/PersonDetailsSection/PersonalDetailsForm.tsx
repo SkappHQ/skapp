@@ -16,6 +16,7 @@ import EducationalDetailsSection from "./SubSections/EducationalDetailsSection";
 import FamilyDetailsSection from "./SubSections/FamilyDetailsSection";
 import GeneralDetailsSection from "./SubSections/GeneralDetailsSections";
 import HealthAndOtherDetailsSection from "./SubSections/HealthAndOtherDetailsSection";
+import SkillsDetailsSection from "./SubSections/SkillsDetailsSection";
 import SocialMediaDetailsSection from "./SubSections/SocialMediaDetailsSection";
 
 interface Props {
@@ -33,6 +34,7 @@ const PersonalDetailsForm = ({
   const contactDetailsRef = useRef<FormMethods | null>(null);
   const socialMediaDetailsRef = useRef<FormMethods | null>(null);
   const healthAndOtherDetailsRef = useRef<FormMethods | null>(null);
+  const skillsDetailsRef = useRef<FormMethods | null>(null);
 
   const {
     nextStep,
@@ -110,6 +112,7 @@ const PersonalDetailsForm = ({
     contactDetailsRef?.current?.resetForm();
     socialMediaDetailsRef?.current?.resetForm();
     healthAndOtherDetailsRef?.current?.resetForm();
+    skillsDetailsRef?.current?.resetForm();
 
     setEmployee(initialEmployee);
     setIsUnsavedChangesModalOpen(false);
@@ -165,6 +168,11 @@ const PersonalDetailsForm = ({
       />
       <HealthAndOtherDetailsSection
         ref={healthAndOtherDetailsRef}
+        isInputsDisabled={isTerminatedEmployee}
+        isReadOnly={isReadOnly}
+      />
+      <SkillsDetailsSection
+        ref={skillsDetailsRef}
         isInputsDisabled={isTerminatedEmployee}
         isReadOnly={isReadOnly}
       />
