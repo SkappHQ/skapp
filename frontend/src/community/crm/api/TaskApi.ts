@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { CrmTaskCategory } from "~community/crm/types/CommonTypes";
@@ -60,9 +60,6 @@ export const useUpdateTaskCompletion = (
   return useMutation({
     mutationFn: updateTaskStatus,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_TASK_DATA
-      });
       // TODO: invalidate contact/company/deals detailed view queries and tasks and task by id once those API layers are implemented
       onSuccess();
     },
