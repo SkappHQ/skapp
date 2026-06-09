@@ -5,14 +5,15 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   getPriorityConfig,
   getTaskTypeIcon
-} from "~community/crm/constants/crmTaskConstants";
+} from "~community/crm/constants/taskConstants";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
-import { getDueDateDisplay } from "~community/crm/utils/crmTaskUtils";
+import { getDueDateDisplay } from "~community/crm/utils/taskUtil";
 
 interface Props {
   task: CrmTaskType;
   onToggleComplete?: (id: number, isCompleted: boolean) => Promise<void>;
   onRowClick?: () => void;
+  showContact?: boolean;
   className?: string;
 }
 
@@ -20,6 +21,7 @@ const TaskRow: FC<Props> = ({
   task,
   onToggleComplete,
   onRowClick,
+  showContact,
   className = "w-full"
 }) => {
   const translateText = useTranslator(
@@ -52,6 +54,7 @@ const TaskRow: FC<Props> = ({
   };
 
   const showCompletedStyle = !!onToggleComplete && optimisticCompleted;
+  const showInlineContact = showContact && !!task.contact;
 
   return (
     <div
@@ -93,13 +96,35 @@ const TaskRow: FC<Props> = ({
         >
           {task.name}
         </p>
-        {dueDateDisplay && (
-          <p
-            className={`body3 leading-none mt-0.5 ${showCompletedStyle ? "line-through text-secondary-icon" : dueDateDisplay.colorClass}`}
-          >
-            {translateText([dueDateDisplay.textKey], {
-              date: dueDateDisplay.dateValue ?? ""
-            })}
+        {(dueDateDisplay || showInlineContact) && (
+          <p className="body3 leading-none mt-0.5 flex items-center gap-2">
+            {dueDateDisplay && (
+              <span
+                className={
+                  showCompletedStyle
+                    ? "line-through text-secondary-icon"
+                    : dueDateDisplay.colorClass
+                }
+              >
+                {translateText([dueDateDisplay.textKey], {
+                  date: dueDateDisplay.dateValue ?? ""
+                })}
+              </span>
+            )}
+            {dueDateDisplay && showInlineContact && (
+              <span className="w-1 h-1 rounded-full bg-secondary-accent shrink-0" />
+            )}
+            {showInlineContact && (
+              <span
+                className={
+                  showCompletedStyle
+                    ? "line-through text-secondary-icon"
+                    : "text-secondary-text"
+                }
+              >
+                {task.contact!.name}
+              </span>
+            )}
           </p>
         )}
       </div>
@@ -108,7 +133,7 @@ const TaskRow: FC<Props> = ({
         {priorityConfig && PriorityIconComp && (
           <PriorityIcon
             icon={<PriorityIconComp />}
-            bgColor={priorityConfig.bgColor}
+            bgColor={priorityConfig.backgroundColor}
           />
         )}
         {task.owner && (
