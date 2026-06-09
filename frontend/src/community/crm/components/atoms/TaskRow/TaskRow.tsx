@@ -97,7 +97,7 @@ const TaskRow: FC<Props> = ({
           {task.name}
         </p>
         {(dueDateDisplay || showInlineContact) && (
-          <p className="body3 leading-none mt-0.5">
+          <p className="body3 leading-none mt-0.5 flex items-center gap-2">
             {dueDateDisplay && (
               <span
                 className={
@@ -111,15 +111,17 @@ const TaskRow: FC<Props> = ({
                 })}
               </span>
             )}
+            {dueDateDisplay && showInlineContact && (
+              <span className="w-1 h-1 rounded-full bg-secondary-accent shrink-0" />
+            )}
             {showInlineContact && (
               <span
                 className={
                   showCompletedStyle
-                    ? "text-secondary-icon"
+                    ? "line-through text-secondary-icon"
                     : "text-secondary-text"
                 }
               >
-                {dueDateDisplay && " · "}
                 {task.contact!.name}
               </span>
             )}
