@@ -14,10 +14,5 @@ export const getLabelStyles = (
         backgroundColor: "bg-semantic-red-background",
         textColor: "text-semantic-red-text"
       };
-    default:
-      return {
-        backgroundColor: "bg-semantic-green-background",
-        textColor: "text-semantic-green-text"
-      };
   }
 };

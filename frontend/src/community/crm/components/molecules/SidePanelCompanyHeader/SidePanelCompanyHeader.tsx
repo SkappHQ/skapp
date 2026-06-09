@@ -26,7 +26,7 @@ const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
             icon={<BrowserIcon stroke={ICON_STROKE} width="20" height="20" />}
             value={company.website}
             endIcon={IconName.POP_OUT_ICON}
-            onClick={() => window.open(company.website!, "_blank", "noopener,noreferrer")}
+            onClick={() => window.open(company.website, "_blank", "noopener,noreferrer")}
           />
         )}
         {company.contactNumber && (
