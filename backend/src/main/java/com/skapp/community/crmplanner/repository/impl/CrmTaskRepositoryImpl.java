@@ -57,7 +57,6 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		}
 
 		query.select(task)
-			.distinct(true)
 			.where(predicate)
 			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
 					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));

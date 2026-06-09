@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "CRM Tasks Controller", description = "Operations related to CRM Tasks")
 public class CrmTaskController {
 
-	private final CrmTaskService crmTaskService;
+	private final CrmTaskService taskService;
 
 	@Operation(summary = "Get tasks", description = "Returns all non-deleted CRM tasks.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getTasks() {
-		ResponseEntityDto response = crmTaskService.getTasks();
+		ResponseEntityDto response = taskService.getTasks();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -37,9 +37,8 @@ public class CrmTaskController {
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@PostMapping
 	public ResponseEntity<ResponseEntityDto> createTask(@RequestBody CrmTaskCreateRequestDto requestDto) {
-		ResponseEntityDto response = crmTaskService.createTask(requestDto);
+		ResponseEntityDto response = taskService.createTask(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 }
-

@@ -92,7 +92,7 @@ public interface CrmMapper {
 	List<CrmBoardContactResponseDto> crmContactsToCrmBoardContactResponseDtos(List<CrmContact> contacts);
 
 	CrmBoardOwnerResponseDto employeeToCrmBoardOwnerResponseDto(Employee employee);
-	
+
 	CrmContactDetailResponseDto crmContactToCrmContactDetailResponseDto(CrmContact contact);
 
 	CrmDealDetailResponseDto crmDealToCrmDealDetailResponseDto(CrmDeal deal);
