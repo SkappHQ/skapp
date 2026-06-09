@@ -50,7 +50,7 @@ public class AsyncEmailServiceImpl {
 			try {
 				User user = userDao.findByEmail(result.getEmail())
 					.orElseThrow(() -> new IllegalArgumentException("User not found for email: " + result.getEmail()));
-				retrySendEmail(user);
+				retrySendEmail(user, null);
 				log.info("Email sent successfully to: {}", result.getEmail());
 			}
 			catch (Exception exception) {
@@ -59,11 +59,11 @@ public class AsyncEmailServiceImpl {
 		});
 	}
 
-	private void retrySendEmail(User user) throws Exception {
+	private void retrySendEmail(User user, String tempPassword) throws Exception {
 		int retries = 0;
 		while (retries < CommonConstants.MAX_RETRIES_COUNT) {
 			try {
-				peopleEmailService.sendUserInvitationEmail(user);
+				peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 				return;
 			}
 			catch (TooManyRequestsException exception) {

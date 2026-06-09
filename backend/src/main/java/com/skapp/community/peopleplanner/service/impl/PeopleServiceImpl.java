@@ -14,7 +14,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
-import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.AsyncEmailServiceImpl;
@@ -190,8 +189,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private final JsonMapper mapper;
 
-	private final EncryptionDecryptionService encryptionDecryptionService;
-
 	private final BulkContextService bulkContextService;
 
 	private final AsyncEmailServiceImpl asyncEmailServiceImpl;
@@ -231,7 +228,8 @@ public class PeopleServiceImpl implements PeopleService {
 		employeeValidationService.validateCreateEmployeeRequestEmploymentDetails(requestDto.getEmployment(), user);
 		rolesService.validateRoles(requestDto.getSystemPermissions(), user);
 
-		employee.setUser(createUserEntity(user, requestDto));
+		String tempPassword = createUserAndReturnTempPassword(user, requestDto);
+		employee.setUser(user);
 		user.setEmployee(createEmployeeEntity(employee, requestDto));
 
 		userDao.save(user);
@@ -241,13 +239,13 @@ public class PeopleServiceImpl implements PeopleService {
 		if (!isGuestConversion) {
 			// Skip for guest conversion: email is sent via createUserEntity ->
 			// resendInvitationEmail
-			peopleEmailService.sendUserInvitationEmail(user);
+			peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 			updateSubscriptionQuantity(1L, true, false);
 		}
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
 
-		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
+		return new ResponseEntityDto(false, processCreateEmployeeResponse(user, tempPassword));
 	}
 
 	@Override
@@ -275,8 +273,9 @@ public class PeopleServiceImpl implements PeopleService {
 
 		employeeValidationService.validateCreateEmployeeRequestRequiredFields(createEmployeeRequestDto, user);
 
+		String tempPassword = createUserAndReturnTempPassword(user, createEmployeeRequestDto);
 		user.setEmployee(createEmployeeEntity(employee, createEmployeeRequestDto));
-		employee.setUser(createUserEntity(user, createEmployeeRequestDto));
+		employee.setUser(user);
 
 		userDao.save(user);
 
@@ -285,13 +284,13 @@ public class PeopleServiceImpl implements PeopleService {
 		if (!isGuestConversion) {
 			// Skip for guest conversion: email is sent via createUserEntity ->
 			// resendInvitationEmail
-			peopleEmailService.sendUserInvitationEmail(user);
+			peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 			updateSubscriptionQuantity(1L, true, false);
 		}
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
 
-		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
+		return new ResponseEntityDto(false, processCreateEmployeeResponse(user, tempPassword));
 	}
 
 	@Override
@@ -473,6 +472,17 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto) {
+		return createUserEntity(user, requestDto, null);
+	}
+
+	private String createUserAndReturnTempPassword(User user, CreateEmployeeRequestDto requestDto) {
+		AtomicReference<String> holder = new AtomicReference<>();
+		createUserEntity(user, requestDto, holder);
+		return holder.get();
+	}
+
+	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto,
+			AtomicReference<String> tempPasswordHolder) {
 		if (requestDto.getEmployment() != null && requestDto.getEmployment().getEmploymentDetails() != null) {
 			String email = requestDto.getEmployment().getEmploymentDetails().getEmail();
 			if (email != null && !email.isEmpty()) {
@@ -501,10 +511,13 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (loginMethod == LoginMethod.CREDENTIALS) {
 			String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-			CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword),
-					user::setTempPassword);
-			CommonModuleUtils.setIfExists(() -> passwordEncoder.encode(tempPassword), user::setPassword);
+			String encodedTempPassword = passwordEncoder.encode(tempPassword);
+			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setTempPassword);
+			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
+			if (tempPasswordHolder != null) {
+				tempPasswordHolder.set(tempPassword);
+			}
 		}
 		else if (loginMethod == LoginMethod.GOOGLE) {
 			user.setIsPasswordChangedForTheFirstTime(true);
@@ -524,10 +537,11 @@ public class PeopleServiceImpl implements PeopleService {
 				user::setEmail);
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-		CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword), user::setTempPassword);
-		CommonModuleUtils.setIfExists(() -> passwordEncoder.encode(tempPassword), user::setPassword);
+		String encodedTempPassword = passwordEncoder.encode(tempPassword);
+		CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setTempPassword);
+		CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setPassword);
 
-		peopleEmailService.sendUserInvitationEmail(user);
+		peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 
 	}
 
@@ -1068,14 +1082,14 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 	}
 
-	private ResponseEntityDto processCreateEmployeeResponse(User user) {
+	private ResponseEntityDto processCreateEmployeeResponse(User user, String tempPassword) {
 		Employee employee = user.getEmployee();
 		CreateEmployeeResponseDto responseDto = peopleMapper.employeeToCreateEmployeeResponseDto(employee);
 
 		if (user.getLoginMethod() == LoginMethod.CREDENTIALS) {
 			EmployeeCredentialsResponseDto credentials = new EmployeeCredentialsResponseDto();
 			credentials.setEmail(employee.getUser() != null ? employee.getUser().getEmail() : null);
-			credentials.setTempPassword(encryptionDecryptionService.decrypt(user.getTempPassword()));
+			credentials.setTempPassword(tempPassword);
 			responseDto.setEmployeeCredentials(credentials);
 		}
 
@@ -1178,7 +1192,6 @@ public class PeopleServiceImpl implements PeopleService {
 		List<CompletableFuture<Void>> tasks = createEmployeeTasks(validEmployeeBulkDtoList, executorService, results);
 		waitForTaskCompletion(tasks, executorService);
 
-		asyncEmailServiceImpl.sendEmailsInBackground(results);
 		List<EmployeeBulkDto> overflowedEmployeeBulkDtoList = getOverFlowedEmployeeBulkDtoList(employeeBulkDtoList,
 				validEmployeeBulkDtoList);
 
@@ -2027,7 +2040,7 @@ public class PeopleServiceImpl implements PeopleService {
 		return successCount;
 	}
 
-	private void createNewEmployeeFromBulk(EmployeeBulkDto employeeBulkDto) {
+	private void createNewEmployeeFromBulk(EmployeeBulkDto employeeBulkDto, String tempPassword) {
 		List<String> validationErrors = validateEmployeeBulkDto(employeeBulkDto);
 		if (!validationErrors.isEmpty()) {
 			throw new ValidationException(
@@ -2054,10 +2067,10 @@ public class PeopleServiceImpl implements PeopleService {
 			user.setLoginMethod(LoginMethod.GOOGLE);
 		}
 		else {
-			String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+			String encodedTempPassword = passwordEncoder.encode(tempPassword);
 
-			user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
-			user.setPassword(passwordEncoder.encode(tempPassword));
+			user.setTempPassword(encodedTempPassword);
+			user.setPassword(encodedTempPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
 
 			user.setIsPasswordChangedForTheFirstTime(false);
@@ -2475,9 +2488,16 @@ public class PeopleServiceImpl implements PeopleService {
 		return CompletableFuture.runAsync(() -> {
 			try {
 				bulkContextService.setContext(tenant);
-				saveEmployeeInTransaction(employeeBulkDto, transactionTemplate);
-				handleSuccessResponse(employeeBulkDto,
-						messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ADDED), results);
+				String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+				saveEmployeeInTransaction(employeeBulkDto, transactionTemplate, tempPassword);
+				EmployeeBulkResponseDto bulkResponseDto = createSuccessResponse(employeeBulkDto,
+						messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ADDED));
+				results.add(bulkResponseDto);
+
+				User user = userDao.findByEmail(employeeBulkDto.getWorkEmail()).orElse(null);
+				if (user != null && user.getLoginMethod() == LoginMethod.CREDENTIALS) {
+					peopleEmailService.sendUserInvitationEmail(user, tempPassword);
+				}
 			}
 			catch (DataIntegrityViolationException e) {
 				handleDataIntegrityException(employeeBulkDto, e, results);
@@ -2488,11 +2508,12 @@ public class PeopleServiceImpl implements PeopleService {
 		}, executorService);
 	}
 
-	private void saveEmployeeInTransaction(EmployeeBulkDto employeeBulkDto, TransactionTemplate transactionTemplate) {
+	private void saveEmployeeInTransaction(EmployeeBulkDto employeeBulkDto, TransactionTemplate transactionTemplate,
+			String tempPassword) {
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
-				createNewEmployeeFromBulk(employeeBulkDto);
+				createNewEmployeeFromBulk(employeeBulkDto, tempPassword);
 			}
 		});
 	}
