@@ -5,7 +5,7 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -51,6 +51,27 @@ const AddContactModalContent: React.FC = () => {
     companySearch.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+
+  const [ownerSearchText, setOwnerSearchText] = useState("");
+  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
+
+  const debouncedOwnerSearch = useDebounce(
+    ownerSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+
+  const { isCrmSalesManager } = useSessionData();
+  const { data: currentUser } = useGetUserPersonalDetails();
+
+  useEffect(() => {
+    if (!currentUser) return;
+    setSelectedOwner({
+      employeeId: Number(currentUser.employeeId),
+      firstName: currentUser.firstName ?? "",
+      lastName: currentUser.lastName ?? null,
+      authPic: currentUser.authPic as string | null
+    });
+  }, [currentUser]);
 
   const { setIsAddContactModalOpen } = useCrmStore((store) => ({
     setIsAddContactModalOpen: store.setIsAddContactModalOpen
@@ -152,6 +173,43 @@ const AddContactModalContent: React.FC = () => {
     setCompanySearch("");
   };
 
+  // If the user has Sales Manager Role, they should not be able to edit the owner field.
+  const isOwnerReadonly = !isCrmSalesManager;
+
+  const { data: ownerLookupData, isFetching: isOwnerFetching } =
+    useGetOwnerLookup(
+      debouncedOwnerSearch,
+      DEFAULT_LOOKUP_PAGE_SIZE,
+      !isOwnerReadonly
+    );
+
+  const ownerDropdownItems: SearchableDropdownItem[] =
+    ownerLookupData?.items?.map((owner) => ({
+      id: String(owner.employeeId),
+      content: (
+        <AvatarChip
+          avatarProps={{
+            id: String(owner.employeeId),
+            firstName: owner.firstName,
+            lastName: owner.lastName ?? undefined,
+            src: owner.authPic ?? undefined,
+            size: "sm"
+          }}
+          label={concatStrings([owner.firstName, owner.lastName ?? ""])}
+        />
+      )
+    })) ?? [];
+
+  const handleOwnerSelect = (ownerDropDownItem: SearchableDropdownItem) => {
+    const owner = ownerLookupData?.items?.find(
+      (owner) => String(owner.employeeId) === ownerDropDownItem.id
+    );
+    if (!owner) return;
+    setFieldValue("ownerId", owner.employeeId);
+    setSelectedOwner(owner);
+    setOwnerSearchText("");
+  };
+
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
@@ -237,10 +295,36 @@ const AddContactModalContent: React.FC = () => {
         fullWidth
       />
 
-      <OwnerLookupDropdown
-        onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
-        translateText={translateContactText}
-      />
+      {selectedOwner ? (
+        <SelectedOwnerField
+          label={translateContactText(["labels", "owner"])}
+          owner={selectedOwner}
+          onRemove={() => {
+            setSelectedOwner(null);
+            setFieldValue("ownerId", null);
+          }}
+          showRemoveButton={!isOwnerReadonly}
+          ariaLabel={translateContactText(["ariaLabels", "clearOwner"])}
+        />
+      ) : (
+        <SearchableDropdown
+          id="owner-search"
+          items={ownerDropdownItems}
+          onSelect={handleOwnerSelect}
+          label={translateContactText(["labels", "owner"])}
+          placeholder={translateContactText(["placeholders", "owner"])}
+          value={ownerSearchText}
+          onChange={(e) => setOwnerSearchText(e.target.value)}
+          state={errors.ownerId  ? "error" : "default"}
+          emptyMessage={
+            isOwnerFetching ? undefined : (
+              <p className="px-4 py-2 body2">
+                {translateContactText(["emptyStates", "noOwners"])}
+              </p>
+            )
+          }
+        />
+      )}
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
