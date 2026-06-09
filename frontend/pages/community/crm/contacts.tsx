@@ -4,7 +4,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import ContactSidePanelController from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanelController";
+import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
 
 const Contacts: NextPage = () => {
@@ -19,7 +19,7 @@ const Contacts: NextPage = () => {
       containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
-        <ContactSidePanelController />
+        <ContactSidePanel />
         <ContactTable />
       </>
     </ContentLayout>
