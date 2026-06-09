@@ -45,5 +45,7 @@ export const addContactValidations = (translator: TranslatorFunctionType) =>
         }
       ),
     companyId: Yup.number().nullable().optional(),
-    ownerId: Yup.number().nullable().optional()
+    ownerId: Yup.number()
+      .nullable()
+      .required(translator(["validations", "owner"]))
   });

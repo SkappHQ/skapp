@@ -315,7 +315,8 @@ const AddContactModalContent: React.FC = () => {
           placeholder={translateContactText(["placeholders", "owner"])}
           value={ownerSearchText}
           onChange={(e) => setOwnerSearchText(e.target.value)}
-          state={errors.ownerId  ? "error" : "default"}
+          state={errors.ownerId ? "error" : "default"}
+          errorMessage={errors.ownerId}
           emptyMessage={
             isOwnerFetching ? undefined : (
               <p className="px-4 py-2 body2">
