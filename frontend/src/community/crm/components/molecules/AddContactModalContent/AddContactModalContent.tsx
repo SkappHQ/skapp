@@ -5,7 +5,7 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
