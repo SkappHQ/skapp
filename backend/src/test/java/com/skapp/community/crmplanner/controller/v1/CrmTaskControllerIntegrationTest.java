@@ -482,6 +482,7 @@ class CrmTaskControllerIntegrationTest {
 		deal.setContact(contact);
 		deal.setCompany(company);
 		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setOrderIndex("a0");
 		return crmDealDao.save(deal);
 	}
 
