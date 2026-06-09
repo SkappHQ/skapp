@@ -39,4 +39,6 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-module-roles-restriction.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-notification-add-is-type-viewed.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-company-objective.sql
 

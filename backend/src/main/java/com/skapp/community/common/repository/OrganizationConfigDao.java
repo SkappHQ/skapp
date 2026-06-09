@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.Optional;
 
 public interface OrganizationConfigDao
-		extends JpaRepository<OrganizationConfig, Long>, JpaSpecificationExecutor<OrganizationConfig> {
+		extends JpaRepository<OrganizationConfig, String>, JpaSpecificationExecutor<OrganizationConfig> {
 
 	Optional<OrganizationConfig> findOrganizationConfigByOrganizationConfigType(String organizationConfigType);
 
