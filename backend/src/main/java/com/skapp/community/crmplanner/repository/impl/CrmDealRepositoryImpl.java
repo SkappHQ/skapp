@@ -163,9 +163,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
 		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.INNER);
 
-		query.select(cb.max(deal.get(CrmDeal_.orderIndex)));
-		query.where(cb.equal(stage.get(CrmDealStage_.id), stageId),
-				cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+		query.select(cb.greatest(deal.get(CrmDeal_.orderIndex)));
+		query.where(cb.equal(stage.get(CrmDealStage_.id), stageId), cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 
 		return entityManager.createQuery(query).getSingleResult();
 	}
