@@ -111,6 +111,28 @@ export const useEditCompany = (onSuccess: () => void, onError: () => void) => {
   });
 };
 
+const deleteCompany = async (id: number) => {
+  const response = await authFetch.delete(companyEndpoints.DELETE_COMPANY(id));
+  return response?.data?.results?.[0];
+};
+
+export const useDeleteCompany = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKeys.GET_COMPANY_DATA
+      });
+      onSuccess();
+    },
+    onError: onError
+  });
+};
+
 export const useSearchCompaniesByDomain = (
   domain: string,
   enabled: boolean = true
