@@ -54,7 +54,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		idQuery.select(dealRoot.get(CrmDeal_.id));
 		idQuery.where(buildPredicates(cb, dealRoot, filterDto).toArray(new Predicate[0]));
 
-		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)));
+		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)),
+				cb.asc(dealRoot.get(CrmDeal_.orderIndex)), cb.asc(dealRoot.get(CrmDeal_.id)));
 
 		TypedQuery<Long> idTypedQuery = entityManager.createQuery(idQuery);
 		idTypedQuery.setFirstResult((int) pageable.getOffset());
@@ -80,7 +81,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		fetchQuery.select(deal).where(deal.get(CrmDeal_.id).in(dealIds));
 
-		fetchQuery.orderBy(cb.asc(deal.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)));
+		fetchQuery.orderBy(cb.asc(deal.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)),
+				cb.asc(deal.get(CrmDeal_.orderIndex)), cb.asc(deal.get(CrmDeal_.id)));
 
 		List<CrmDeal> deals = entityManager.createQuery(fetchQuery).getResultList();
 
@@ -297,6 +299,19 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		query.groupBy(deal.get(CrmDeal_.contact).get(CrmContact_.id));
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public String findMaxOrderIndexByStageId(Long stageId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<String> query = cb.createQuery(String.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.INNER);
+
+		query.select(cb.greatest(deal.get(CrmDeal_.orderIndex)));
+		query.where(cb.equal(stage.get(CrmDealStage_.id), stageId), cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		return entityManager.createQuery(query).getSingleResult();
 	}
 
 	@Override

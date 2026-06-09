@@ -24,6 +24,8 @@ public interface CrmDealRepository {
 
 	Map<Long, Long> countDealsByStageIds(List<Long> stageIds, CrmDealsByStagesRequestDto requestDto);
 
+	String findMaxOrderIndexByStageId(Long stageId);
+
 	List<CrmDeal> findByContactIdWithAssociations(Long contactId);
 
 	CrmContactDealMetrics findDealMetricsByContactId(Long contactId);

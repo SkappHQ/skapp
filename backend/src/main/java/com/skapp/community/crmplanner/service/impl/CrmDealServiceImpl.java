@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.FractionalIndexUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
@@ -34,7 +35,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,6 +103,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setDescription(requestDto.getDescription());
 		deal.setStage(stage);
 		deal.setPriority(requestDto.getPriority());
+		String lastOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stage.getId());
+		deal.setOrderIndex(FractionalIndexUtil.generateKeyBetween(lastOrderIndex, null));
 		deal.setClosingAt(requestDto.getClosingAt());
 		deal.setAmount(requestDto.getAmount());
 		deal.setCompany(company);
@@ -121,9 +123,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getDeals(CrmDealFilterDto filterDto) {
 		log.info("getDeals: execution started");
 
-		Sort sort = Sort.by(filterDto.getSortOrder(), filterDto.getSortKey().getSortField());
 		Page<CrmDeal> dealsPage = crmDealDao.findDeals(filterDto,
-				PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort));
+				PageRequest.of(filterDto.getPage(), filterDto.getSize()));
 
 		List<CrmDealResponseDto> deals = crmMapper.crmDealsToCrmDealResponseDtos(dealsPage.getContent());
 
