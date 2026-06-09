@@ -8,7 +8,6 @@ import { FC, ReactElement } from "react";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmContactType } from "~community/crm/types/CommonTypes";
-import { formatTextValue } from "~community/crm/utils/crmUtil";
 
 interface Props {
   contact?: CrmContactType;
