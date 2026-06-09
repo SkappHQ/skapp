@@ -9,7 +9,7 @@ public class CrmDealReorderRequestDto {
 
 	private Long dealId;
 
-	private Long prevDealId;
+	private Long previousDealId;
 
 	private Long nextDealId;
 

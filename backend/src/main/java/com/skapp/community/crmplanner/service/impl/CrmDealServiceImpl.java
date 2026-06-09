@@ -170,8 +170,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		String prevOrderIndex = null;
-		if (requestDto.getPrevDealId() != null) {
-			CrmDeal prevDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getPrevDealId())
+		if (requestDto.getPreviousDealId() != null) {
+			CrmDeal prevDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getPreviousDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			prevOrderIndex = prevDeal.getOrderIndex();
 		}
