@@ -1,5 +1,6 @@
 import { AvatarChip, CloseIcon } from "@rootcodelabs/skapp-ui";
 
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 
@@ -18,6 +19,8 @@ const SelectedOwnerField: React.FC<Props> = ({
   showRemoveButton,
   ariaLabel
 }) => {
+  const imageUrl = useGetImageUrl(owner.authPic ?? "");
+
   return (
     <div className="flex w-full flex-col gap-2">
       <span className="subtitle1 leading-normal inline-flex h-6 items-center">
@@ -28,7 +31,9 @@ const SelectedOwnerField: React.FC<Props> = ({
           label={concatStrings([owner.firstName, owner.lastName ?? ""])}
           avatarProps={{
             id: owner.employeeId.toString(),
-            src: owner.authPic ?? undefined,
+            firstName: owner.firstName,
+            lastName: owner.lastName ?? "",
+            src: imageUrl ?? "",
             size: "sm"
           }}
           actionIcon={<CloseIcon />}
