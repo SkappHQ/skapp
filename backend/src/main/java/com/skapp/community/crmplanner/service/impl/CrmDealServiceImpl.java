@@ -14,6 +14,7 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
@@ -153,6 +154,42 @@ public class CrmDealServiceImpl implements CrmDealService {
 		responseDto.setOwners(owners);
 
 		log.info("getBoardInitData: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto) {
+		log.info("reorderDeal: reordering deal with id={}", requestDto.getDealId());
+
+		if (requestDto.getDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		String prevOrderIndex = null;
+		if (requestDto.getPrevDealId() != null) {
+			CrmDeal prevDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getPrevDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			prevOrderIndex = prevDeal.getOrderIndex();
+		}
+
+		String nextOrderIndex = null;
+		if (requestDto.getNextDealId() != null) {
+			CrmDeal nextDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getNextDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			nextOrderIndex = nextDeal.getOrderIndex();
+		}
+
+		String newOrderIndex = FractionalIndexUtil.generateKeyBetween(prevOrderIndex, nextOrderIndex);
+		deal.setOrderIndex(newOrderIndex);
+
+		CrmDeal savedDeal = crmDealDao.save(deal);
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
+		log.info("reorderDeal: deal reordered with id={}, new orderIndex={}", savedDeal.getId(), newOrderIndex);
 		return new ResponseEntityDto(false, responseDto);
 	}
 
