@@ -154,22 +154,6 @@ const AddTaskModalContent: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full h-full justify-between gap-[0.625rem]">
-      <Dropdown
-        label={translateText(["labels", "type"])}
-        placeholder={translateText(["placeholders", "type"])}
-        options={taskTypeOptions}
-        value={values.type?.id?.toString() ?? undefined}
-        onChange={(value) =>
-          setFieldValue("type", getCategoryById(Number(value)) ?? null)
-        }
-        errorMessage={errors.type}
-        variant={errors.type ? "primary-error" : "primary"}
-        width="100%"
-        className="rounded-lg"
-        ariaLabel={translateText(["ariaLabels", "type"])}
-        required
-      />
-
       <InputField
         name="name"
         value={values.name}
@@ -183,46 +167,96 @@ const AddTaskModalContent: React.FC = () => {
         required
       />
 
-      <DatePicker
-        mode="single"
-        selected={values.dueDate ? new Date(values.dueDate) : undefined}
-        onSelect={(date: Date | undefined) =>
-          setFieldValue("dueDate", date ? date.toISOString() : null)
-        }
-        popperProps={{ position: "bottom-end" }}
-      >
-        <div>
-          <InputField
-            name="dueDate"
-            value={
-              values.dueDate
-                ? new Date(values.dueDate).toLocaleDateString()
-                : ""
+      <div className="flex flex-row gap-[0.625rem]">
+        <div className="flex-1">
+          <Dropdown
+            label={translateText(["labels", "type"])}
+            placeholder={translateText(["placeholders", "type"])}
+            options={taskTypeOptions}
+            value={values.type?.id?.toString() ?? undefined}
+            onChange={(value) =>
+              setFieldValue("type", getCategoryById(Number(value)) ?? null)
             }
-            label={translateText(["labels", "dueDate"])}
-            placeholder={translateText(["placeholders", "dueDate"])}
-            state={errors.dueDate ? "error" : "default"}
-            errorMessage={errors.dueDate || ""}
-            aria-label={translateText(["ariaLabels", "dueDate"])}
-            rightIcon={<CalendarIcon />}
-            fullWidth
-            readOnly
+            errorMessage={errors.type}
+            variant={errors.type ? "primary-error" : "primary"}
+            width="100%"
+            className="rounded-lg"
+            ariaLabel={translateText(["ariaLabels", "type"])}
             required
           />
         </div>
-      </DatePicker>
+        <div className="flex-1">
+          <Dropdown
+            label={translateText(["labels", "priority"])}
+            placeholder={translateText(["placeholders", "priority"])}
+            options={priorityDropdownOptions}
+            value={values.priority ?? undefined}
+            onChange={(value) => setFieldValue("priority", value)}
+            errorMessage={errors.priority || ""}
+            width="100%"
+            className="rounded-lg"
+            ariaLabel={translateText(["ariaLabels", "priority"])}
+          />
+        </div>
+      </div>
 
-      <Dropdown
-        label={translateText(["labels", "priority"])}
-        placeholder={translateText(["placeholders", "priority"])}
-        options={priorityDropdownOptions}
-        value={values.priority ?? undefined}
-        onChange={(value) => setFieldValue("priority", value)}
-        errorMessage={errors.priority || ""}
-        width="100%"
-        className="rounded-lg"
-        ariaLabel={translateText(["ariaLabels", "priority"])}
-      />
+      <div className="flex flex-row gap-[0.625rem]">
+        <div className="flex-1">
+          <DatePicker
+            mode="single"
+            selected={values.dueDate ? new Date(values.dueDate) : undefined}
+            onSelect={(date: Date | undefined) =>
+              setFieldValue("dueDate", date ? date.toISOString() : null)
+            }
+            popperProps={{ position: "bottom-end" }}
+          >
+            <div>
+              <InputField
+                name="dueDate"
+                value={
+                  values.dueDate
+                    ? new Date(values.dueDate).toLocaleDateString()
+                    : ""
+                }
+                label={translateText(["labels", "dueDate"])}
+                placeholder={translateText(["placeholders", "dueDate"])}
+                state={errors.dueDate ? "error" : "default"}
+                errorMessage={errors.dueDate || ""}
+                aria-label={translateText(["ariaLabels", "dueDate"])}
+                rightIcon={<CalendarIcon />}
+                fullWidth
+                readOnly
+                required
+              />
+            </div>
+          </DatePicker>
+        </div>
+        <div className="flex-1">
+          {selectedOwner ? (
+            <SelectedOwnerField
+              label={translateText(["labels", "taskOwner"])}
+              owner={selectedOwner}
+              onRemove={() => {
+                setSelectedOwner(null);
+                setFieldValue("owner", null);
+              }}
+              showRemoveButton={isCrmSalesManager ?? false}
+              ariaLabel={translateText(["ariaLabels", "removeOwner"])}
+            />
+          ) : (
+            <SearchableDropdown
+              id="owner-search"
+              items={[]}
+              onSelect={handleOwnerSelect}
+              label={translateText(["labels", "taskOwner"])}
+              placeholder={translateText(["placeholders", "taskOwner"])}
+              value={ownerSearchText}
+              onChange={(e) => setOwnerSearchText(e.target.value)}
+              state={errors.owner ? "error" : "default"}
+            />
+          )}
+        </div>
+      </div>
 
       <SearchableDropdown
         id="contact-search"
@@ -244,36 +278,13 @@ const AddTaskModalContent: React.FC = () => {
         onSelect={(item) => setFieldValue("deal", item.id)}
       />
 
-      {selectedOwner ? (
-        <SelectedOwnerField
-          label={translateText(["labels", "taskOwner"])}
-          owner={selectedOwner}
-          onRemove={() => {
-            setSelectedOwner(null);
-            setFieldValue("owner", null);
-          }}
-          showRemoveButton={isCrmSalesManager ?? false}
-          ariaLabel={translateText(["ariaLabels", "removeOwner"])}
-        />
-      ) : (
-        <SearchableDropdown
-          id="owner-search"
-          items={[]}
-          onSelect={handleOwnerSelect}
-          label={translateText(["labels", "taskOwner"])}
-          placeholder={translateText(["placeholders", "taskOwner"])}
-          value={ownerSearchText}
-          onChange={(e) => setOwnerSearchText(e.target.value)}
-          state={errors.owner ? "error" : "default"}
-        />
-      )}
-
       <TextArea
         name="notes"
         value={values.notes}
         placeholder={translateText(["placeholders", "notes"])}
         label={translateText(["labels", "notes"])}
         onChange={handleChange}
+        rows={3}
         aria-label={translateText(["ariaLabels", "notes"])}
       />
 

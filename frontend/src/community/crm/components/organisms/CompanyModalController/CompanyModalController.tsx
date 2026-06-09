@@ -15,18 +15,15 @@ const CompanyModalController = () => {
   const {
     isCompanyModalOpen,
     crmModalType,
-    setIsCompanyModalOpen,
-    setSelectedCompany
+    setIsCompanyModalOpen
   } = useCrmStore((store) => ({
     isCompanyModalOpen: store.isCompanyModalOpen,
     crmModalType: store.companyModalType,
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-    setSelectedCompany: store.setSelectedCompany
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen
   }));
 
   const handleCloseModal = (): void => {
     setIsCompanyModalOpen(false);
-    setSelectedCompany(null);
   };
 
   const getModalTitle = (modalType: CrmModalTypes) => {
