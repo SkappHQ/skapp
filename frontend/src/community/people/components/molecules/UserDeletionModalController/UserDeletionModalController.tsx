@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import SupervisorReassignmentModal from "~community/people/components/organisms/SupervisorReassignmentModal/SupervisorReassignmentModal";
 import { usePeopleStore } from "~community/people/store/store";
-import { SupervisorReassignmentActionType } from "~community/people/types/PeopleTypes";
+import { EmployeeRemoveAction } from "~community/people/types/PeopleTypes";
 
 import UserDeletionConfirmationModal from "../UserDeletionConfirmationModal/UserDeletionConfirmationModal";
 
@@ -22,12 +22,11 @@ const UserDeletionModalController: FC = () => {
       <SupervisorReassignmentModal
         isOpen={
           isSupervisorReassignmentModalOpen &&
-          supervisorReassignmentActionType ===
-            SupervisorReassignmentActionType.DELETE
+          supervisorReassignmentActionType === EmployeeRemoveAction.DELETE
         }
         onCancel={() => setIsSupervisorReassignmentModalOpen(false)}
         employeeId={Number(selectedEmployeeId)}
-        actionType={SupervisorReassignmentActionType.DELETE}
+        actionType={EmployeeRemoveAction.DELETE}
         onActionSuccess={() => setIsSupervisorReassignmentModalOpen(false)}
       />
       <UserDeletionConfirmationModal

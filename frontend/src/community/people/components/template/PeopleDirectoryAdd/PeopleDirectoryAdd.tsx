@@ -25,8 +25,11 @@ const PeopleDirectoryAdd = () => {
       isDividerVisible={true}
       breadcrumbs={[
         {
-          label: translatePeople(["dashboard.people"]),
-          href: ROUTES.PEOPLE.DIRECTORY
+          label: translatePeople(["dashboard.people"])
+        },
+        {
+          label: translatePeople(["peoples.title"]),
+          onClick: () => router.push(ROUTES.PEOPLE.DIRECTORY)
         },
         {
           label: translatePeople(["addResource.commonText.addFullProfile"])

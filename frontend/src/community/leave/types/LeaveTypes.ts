@@ -84,6 +84,11 @@ export type carryForwardLeaveEntitlmentResponseType = {
   totalPages: number;
 };
 
+export interface LeaveStatusTypeFilter {
+  status: string[];
+  type: string[];
+}
+
 export interface LeaveRequestsFilterType {
   status: string[] | [];
   type: string[] | [];

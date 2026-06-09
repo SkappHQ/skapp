@@ -1,6 +1,8 @@
 import { type Theme, useTheme } from "@mui/material/styles";
+import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, JSX, useMemo } from "react";
 
+import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeRecordDataResponseType,
@@ -61,6 +63,16 @@ const EmployeeTimeRecordsTable = ({
     });
   }, [recordData, getHolidaysArrayByDate, translateText]);
 
+  const getLocationMessage = (
+    status: RecordLocationStatus | undefined
+  ): string => {
+    if (status === RecordLocationStatus.INSIDE)
+      return translateText(["locationInsideWorkLocation"]);
+    if (status === RecordLocationStatus.OUTSIDE)
+      return translateText(["locationOutsideWorkLocation"]);
+    return translateText(["locationUnavailable"]);
+  };
+
   const rows = useMemo(() => {
     if (
       !isRecordLoading &&
@@ -94,6 +106,16 @@ const EmployeeTimeRecordsTable = ({
               getHolidaysArrayByDate(dateAsISOString).length > 0;
 
             const holidayDuration = getHolidayDurationType(holidays);
+
+            const showLocationPin =
+              timeSheetRecord.clockInLocationStatus ===
+                RecordLocationStatus.OUTSIDE ||
+              timeSheetRecord.clockOutLocationStatus ===
+                RecordLocationStatus.OUTSIDE ||
+              timeSheetRecord.clockInLocationStatus ===
+                RecordLocationStatus.UNAVAILABLE ||
+              timeSheetRecord.clockOutLocationStatus ===
+                RecordLocationStatus.UNAVAILABLE;
 
             const workedHours =
               formatDuration(timeSheetRecord?.workedHours) ?? "";
@@ -167,7 +189,34 @@ const EmployeeTimeRecordsTable = ({
               );
             }
 
-            acc[timeSheetRecord.date] = data;
+            let finalCellData = data;
+            if (showLocationPin) {
+              const locationTooltipTitle = translateText(
+                ["locationPinTooltip"],
+                {
+                  clockIn: getLocationMessage(
+                    timeSheetRecord.clockInLocationStatus
+                  ),
+                  clockOut: getLocationMessage(
+                    timeSheetRecord.clockOutLocationStatus
+                  )
+                }
+              );
+
+              finalCellData = (
+                <div className="flex flex-row items-center justify-center gap-1">
+                  {data}
+                  <Tooltip content={locationTooltipTitle}>
+                    <LocationPinIcon
+                      role="img"
+                      aria-label={locationTooltipTitle}
+                    />
+                  </Tooltip>
+                </div>
+              );
+            }
+
+            acc[timeSheetRecord.date] = finalCellData;
             return acc;
           },
           {}
