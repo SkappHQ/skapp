@@ -282,6 +282,8 @@ public class PeopleServiceImpl implements PeopleService {
 		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, user));
 		addNewQuickUploadedEmployeeTimeLineRecords(employee, employeeQuickAddDto);
 		if (!isGuestConversion) {
+			// Skip for guest conversion: email is sent via createUserEntity ->
+			// resendInvitationEmail
 			peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 			updateSubscriptionQuantity(1L, true, false);
 		}
