@@ -57,9 +57,8 @@ const SidePanelDeals: React.FC<Props> = ({ deals }) => {
             children: translateText(["addDealBtn"]),
             variant: "tertiary",
             onClick: handleAddDeal,
-             icon: <PlusIcon />,
+            icon: <PlusIcon />,
             "aria-label": translateText(["ariaLabels", "addDealBtn"])
-           
           }}
           className={{
             wrapper: "h-[228px] bg-secondary-background rounded-lg"

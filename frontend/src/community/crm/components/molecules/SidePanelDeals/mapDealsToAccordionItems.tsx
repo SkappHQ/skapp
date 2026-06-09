@@ -1,8 +1,6 @@
 import { AdvancedAccordionItem, Chip } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
-import { IconName } from "~community/common/types/IconTypes";
 import { CrmDealType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
@@ -20,9 +18,7 @@ export const mapDealsToAccordionItems = (
           {deal.amount && (
             <>
               <span className="inline-block h-1 w-1 rounded-full bg-secondary-icon" />
-              <span className="body3">
-                {formatValue(deal.amount)}
-              </span>
+              <span className="body3">{formatValue(deal.amount)}</span>
             </>
           )}
         </div>
@@ -48,7 +44,7 @@ export const mapDealsToAccordionItems = (
         {deal.description ? (
           <p className="body3">{deal.description}</p>
         ) : (
-          <Icon name={IconName.DASH_ICON} />
+          <span className="body3">-</span>
         )}
       </div>
     )
