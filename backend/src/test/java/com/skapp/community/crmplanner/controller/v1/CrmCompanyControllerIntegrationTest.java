@@ -275,6 +275,7 @@ class CrmCompanyControllerIntegrationTest {
 		deal.setContact(contact);
 		deal.setOwner(employeeDao.getReferenceById(1L));
 		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
 		Long dealId = crmDealDao.save(deal).getId();
 
 		performDeleteRequest(companyId).andExpect(status().isOk())

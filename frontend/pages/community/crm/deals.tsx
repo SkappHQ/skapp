@@ -5,6 +5,7 @@ import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { IconName } from "~community/common/types/IconTypes";
 import DealDetailSidePanel from "~community/crm/components/organisms/DealDetailSidePanel/DealDetailSidePanel";
 import DealModalController from "~community/crm/components/organisms/DealModalController/DealModalController";

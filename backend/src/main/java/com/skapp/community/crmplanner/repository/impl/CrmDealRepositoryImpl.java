@@ -7,15 +7,17 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
+import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import com.skapp.community.crmplanner.model.CrmDealStage;
-import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.type.CrmDealSummary;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -47,7 +49,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		idQuery.select(dealRoot.get(CrmDeal_.id));
 		idQuery.where(buildPredicates(cb, dealRoot, filterDto).toArray(new Predicate[0]));
 
-		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)));
+		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)),
+				cb.asc(dealRoot.get(CrmDeal_.orderIndex)), cb.asc(dealRoot.get(CrmDeal_.id)));
 
 		TypedQuery<Long> idTypedQuery = entityManager.createQuery(idQuery);
 		idTypedQuery.setFirstResult((int) pageable.getOffset());
@@ -73,7 +76,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		fetchQuery.select(deal).where(deal.get(CrmDeal_.id).in(dealIds));
 
-		fetchQuery.orderBy(cb.asc(deal.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)));
+		fetchQuery.orderBy(cb.asc(deal.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)),
+				cb.asc(deal.get(CrmDeal_.orderIndex)), cb.asc(deal.get(CrmDeal_.id)));
 
 		List<CrmDeal> deals = entityManager.createQuery(fetchQuery).getResultList();
 
@@ -114,6 +118,21 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		return predicates;
 	}
 
+	@Override
+	public List<CrmDeal> findByContactIdWithAssociations(Long contactId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmDeal> query = cb.createQuery(CrmDeal.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+		deal.fetch(CrmDeal_.stage, JoinType.INNER);
+		deal.fetch(CrmDeal_.owner, JoinType.INNER);
+
+		query.where(cb.equal(deal.get(CrmDeal_.contact).get(CrmContact_.id), contactId),
+				cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
 	public List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds) {
 		if (contactIds == null || contactIds.isEmpty()) {
 			return Collections.emptyList();
@@ -135,6 +154,50 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		query.groupBy(deal.get(CrmDeal_.contact).get(CrmContact_.id));
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public String findMaxOrderIndexByStageId(Long stageId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<String> query = cb.createQuery(String.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.INNER);
+
+		query.select(cb.greatest(deal.get(CrmDeal_.orderIndex)));
+		query.where(cb.equal(stage.get(CrmDealStage_.id), stageId), cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		return entityManager.createQuery(query).getSingleResult();
+	}
+
+	@Override
+	public CrmContactDealMetrics findDealMetricsByContactId(Long contactId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmContactDealMetrics> query = cb.createQuery(CrmContactDealMetrics.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.INNER);
+
+		Expression<BigDecimal> totalRevenue = cb.coalesce(cb.sum(cb.<BigDecimal>selectCase()
+			.when(cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.WON),
+					deal.get(CrmDeal_.amount).cast(BigDecimal.class))
+			.otherwise(BigDecimal.ZERO)), BigDecimal.ZERO);
+
+		Expression<BigDecimal> pipelineRevenue = cb.coalesce(cb.sum(cb.<BigDecimal>selectCase()
+			.when(cb.or(cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.OPEN),
+					cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.INITIAL)),
+					deal.get(CrmDeal_.amount).cast(BigDecimal.class))
+			.otherwise(BigDecimal.ZERO)), BigDecimal.ZERO);
+
+		Expression<Long> activeDealsCount = cb.coalesce(cb.sum(cb.<Long>selectCase()
+			.when(cb.or(cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.OPEN),
+					cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.INITIAL)), 1L)
+			.otherwise(0L)), 0L);
+
+		query.select(cb.construct(CrmContactDealMetrics.class, totalRevenue, pipelineRevenue, activeDealsCount));
+
+		query.where(cb.equal(deal.get(CrmDeal_.contact).get(CrmContact_.id), contactId),
+				cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		return entityManager.createQuery(query).getSingleResult();
 	}
 
 }
