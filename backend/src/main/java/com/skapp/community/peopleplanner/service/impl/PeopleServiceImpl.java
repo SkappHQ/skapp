@@ -1192,6 +1192,8 @@ public class PeopleServiceImpl implements PeopleService {
 		List<CompletableFuture<Void>> tasks = createEmployeeTasks(validEmployeeBulkDtoList, executorService, results);
 		waitForTaskCompletion(tasks, executorService);
 
+		asyncEmailServiceImpl.sendEmailsInBackground(results);
+
 		List<EmployeeBulkDto> overflowedEmployeeBulkDtoList = getOverFlowedEmployeeBulkDtoList(employeeBulkDtoList,
 				validEmployeeBulkDtoList);
 
@@ -2072,8 +2074,6 @@ public class PeopleServiceImpl implements PeopleService {
 			user.setTempPassword(encodedTempPassword);
 			user.setPassword(encodedTempPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
-
-			user.setIsPasswordChangedForTheFirstTime(false);
 			user.setLoginMethod(LoginMethod.CREDENTIALS);
 		}
 
@@ -2492,12 +2492,8 @@ public class PeopleServiceImpl implements PeopleService {
 				saveEmployeeInTransaction(employeeBulkDto, transactionTemplate, tempPassword);
 				EmployeeBulkResponseDto bulkResponseDto = createSuccessResponse(employeeBulkDto,
 						messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ADDED));
+				bulkResponseDto.setTempPassword(tempPassword);
 				results.add(bulkResponseDto);
-
-				User user = userDao.findByEmail(employeeBulkDto.getWorkEmail()).orElse(null);
-				if (user != null && user.getLoginMethod() == LoginMethod.CREDENTIALS) {
-					peopleEmailService.sendUserInvitationEmail(user, tempPassword);
-				}
 			}
 			catch (DataIntegrityViolationException e) {
 				handleDataIntegrityException(employeeBulkDto, e, results);

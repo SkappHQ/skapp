@@ -409,7 +409,7 @@ public class AuthServiceImpl implements AuthService {
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		user.setTempPassword(passwordEncoder.encode(tempPassword));
 		user.setPassword(passwordEncoder.encode(tempPassword));
-		user.setIsPasswordChangedForTheFirstTime(true);
+		user.setIsPasswordChangedForTheFirstTime(false);
 		userDao.save(user);
 
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user, tempPassword);
@@ -433,7 +433,7 @@ public class AuthServiceImpl implements AuthService {
 		log.info("resetAndSharePassword: Generated new temp password for userEmail={}", user.getEmail());
 		user.setTempPassword(passwordEncoder.encode(tempPassword));
 		user.setPassword(passwordEncoder.encode(tempPassword));
-		user.setIsPasswordChangedForTheFirstTime(true);
+		user.setIsPasswordChangedForTheFirstTime(false);
 		User savedUser = userDao.save(user);
 
 		log.info("resetAndSharePassword: User password reset and saved for  userEmail={}", user.getEmail());
@@ -677,6 +677,7 @@ public class AuthServiceImpl implements AuthService {
 				tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 				user.setTempPassword(passwordEncoder.encode(tempPassword));
 				user.setPassword(passwordEncoder.encode(tempPassword));
+				user.setIsPasswordChangedForTheFirstTime(false);
 			}
 
 			userDao.save(user);

@@ -50,7 +50,7 @@ public class AsyncEmailServiceImpl {
 			try {
 				User user = userDao.findByEmail(result.getEmail())
 					.orElseThrow(() -> new IllegalArgumentException("User not found for email: " + result.getEmail()));
-				retrySendEmail(user, null);
+				retrySendEmail(user, result.getTempPassword());
 				log.info("Email sent successfully to: {}", result.getEmail());
 			}
 			catch (Exception exception) {
