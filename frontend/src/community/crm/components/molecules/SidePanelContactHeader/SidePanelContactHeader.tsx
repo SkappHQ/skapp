@@ -35,7 +35,6 @@ const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
       value: formatTextValue(contact.email)
     },
     {
-
       icon: <PhoneIcon style={iconColor} />,
       value: formatTextValue(contact.contactNumber)
     },
