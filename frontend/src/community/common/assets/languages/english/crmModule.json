@@ -48,12 +48,12 @@
         "contactNumber": "Contact number is invalid",
         "contactNumberLength": "Contact number is too long",
         "characterLength": "Entry must be less than 50 characters"
+      },
+      "contactToastMessages": {
+        "successTitle": "Contact added successfully",
+        "errorTitle": "Failed to add contact",
+        "errorDescription": "Please try again or contact support"
       }
-    },
-    "contactToastMessages": {
-      "successTitle": "Contact added successfully",
-      "errorTitle": "Failed to add contact",
-      "errorDescription": "Please try again or contact support"
     },
     "contactDetailsPanel": {
       "lastUpdated": "Last updated"
