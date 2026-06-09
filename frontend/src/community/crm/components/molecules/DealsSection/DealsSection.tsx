@@ -29,7 +29,8 @@ const DealsSection: FC<Props> = ({ contactId }) => {
   const deals: CrmDealType[] = data ?? [];
 
   const toDealItem = (deal: CrmDealType): AdvancedAccordionItem => {
-    deal.notes = "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+    deal.notes =
+      "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
     const ownerName =
       deal.owner.firstName +
       (deal.owner.lastName ? ` ${deal.owner.lastName}` : "");
@@ -62,30 +63,13 @@ const DealsSection: FC<Props> = ({ contactId }) => {
     };
   };
 
-  const dealItems: AdvancedAccordionItem[] = deals.map(toDealItem).map(withDefaultStatusBadgeColor);
+  const dealItems: AdvancedAccordionItem[] = deals
+    .map(toDealItem)
+    .map(withDefaultStatusBadgeColor);
 
   return (
     <div className={styles.wrapper}>
       {/* Section header */}
-      <div className={styles.header}>
-        <p className={styles.title}>{translateText(["sectionHeader"])}</p>
-        {/*  TODO: Wire up "Add deal" when AddDealModal is implemented */}
-        {dealItems.length > 0 && (
-          <ButtonV2
-            type="button"
-            variant="secondary"
-            size="sm"
-            icon={<PlusIcon />}
-            iconPosition="end"
-            disabled
-          >
-            {translateText(["addDealButton"])}
-          </ButtonV2>
-        )}
-      </div>
-
-      {/* Section divider */}
-      <hr className={styles.divider} />
 
       {/* Loading skeleton */}
       {isLoading && (
