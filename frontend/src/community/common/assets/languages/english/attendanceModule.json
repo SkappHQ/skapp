@@ -150,6 +150,10 @@
     "invalidEntryTitle": "Invalid Time Entry",
     "invalidEntryDes": "Clock in time cannot be the same as clock out time",
     "leaveAnalyticsButtonTitle": "Leave Analytics",
+    "locationInsideWorkLocation": "Inside work location",
+    "locationOutsideWorkLocation": "Outside work location",
+    "locationUnavailable": "Location unavailable",
+    "locationPinTooltip": "Clock-in: {{clockIn}} | Clock-out: {{clockOut}}",
     "individualTimeSheetAnalytics": {
       "chartTitle": "Worked Hours",
       "youHaveAlreadyLoggedTime": "You`ve already logged time",
