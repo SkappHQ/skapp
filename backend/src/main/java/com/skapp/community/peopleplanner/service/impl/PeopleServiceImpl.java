@@ -228,8 +228,8 @@ public class PeopleServiceImpl implements PeopleService {
 		employeeValidationService.validateCreateEmployeeRequestEmploymentDetails(requestDto.getEmployment(), user);
 		rolesService.validateRoles(requestDto.getSystemPermissions(), user);
 
-		String tempPassword = createUserAndReturnTempPassword(user, requestDto);
-		employee.setUser(user);
+		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+		employee.setUser(createUserEntity(user, requestDto, tempPassword));
 		user.setEmployee(createEmployeeEntity(employee, requestDto));
 
 		userDao.save(user);
@@ -273,17 +273,15 @@ public class PeopleServiceImpl implements PeopleService {
 
 		employeeValidationService.validateCreateEmployeeRequestRequiredFields(createEmployeeRequestDto, user);
 
-		String tempPassword = createUserAndReturnTempPassword(user, createEmployeeRequestDto);
+		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		user.setEmployee(createEmployeeEntity(employee, createEmployeeRequestDto));
-		employee.setUser(user);
+		employee.setUser(createUserEntity(user, createEmployeeRequestDto, tempPassword));
 
 		userDao.save(user);
 
 		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, user));
 		addNewQuickUploadedEmployeeTimeLineRecords(employee, employeeQuickAddDto);
 		if (!isGuestConversion) {
-			// Skip for guest conversion: email is sent via createUserEntity ->
-			// resendInvitationEmail
 			peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 			updateSubscriptionQuantity(1L, true, false);
 		}
@@ -475,14 +473,7 @@ public class PeopleServiceImpl implements PeopleService {
 		return createUserEntity(user, requestDto, null);
 	}
 
-	private String createUserAndReturnTempPassword(User user, CreateEmployeeRequestDto requestDto) {
-		AtomicReference<String> holder = new AtomicReference<>();
-		createUserEntity(user, requestDto, holder);
-		return holder.get();
-	}
-
-	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto,
-			AtomicReference<String> tempPasswordHolder) {
+	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto, String tempPassword) {
 		if (requestDto.getEmployment() != null && requestDto.getEmployment().getEmploymentDetails() != null) {
 			String email = requestDto.getEmployment().getEmploymentDetails().getEmail();
 			if (email != null && !email.isEmpty()) {
@@ -509,15 +500,11 @@ public class PeopleServiceImpl implements PeopleService {
 
 		LoginMethod loginMethod = userDao.findById(1L).map(User::getLoginMethod).orElse(LoginMethod.CREDENTIALS);
 
-		if (loginMethod == LoginMethod.CREDENTIALS) {
-			String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+		if (loginMethod == LoginMethod.CREDENTIALS && tempPassword != null) {
 			String encodedTempPassword = passwordEncoder.encode(tempPassword);
 			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setTempPassword);
 			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
-			if (tempPasswordHolder != null) {
-				tempPasswordHolder.set(tempPassword);
-			}
 		}
 		else if (loginMethod == LoginMethod.GOOGLE) {
 			user.setIsPasswordChangedForTheFirstTime(true);

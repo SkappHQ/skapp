@@ -433,7 +433,7 @@ public class AuthServiceImpl implements AuthService {
 		log.info("resetAndSharePassword: Generated new temp password for userEmail={}", user.getEmail());
 		user.setTempPassword(passwordEncoder.encode(tempPassword));
 		user.setPassword(passwordEncoder.encode(tempPassword));
-		user.setIsPasswordChangedForTheFirstTime(false);
+		user.setIsPasswordChangedForTheFirstTime(true);
 		User savedUser = userDao.save(user);
 
 		log.info("resetAndSharePassword: User password reset and saved for  userEmail={}", user.getEmail());
