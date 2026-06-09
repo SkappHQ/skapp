@@ -161,6 +161,7 @@ class CrmContactControllerIntegrationTest {
 		deal.setCompany(crmCompanyDao.getReferenceById(companyId));
 		deal.setOwner(employeeDao.getReferenceById(1L));
 		deal.setAmount(amount);
+		deal.setOrderIndex("a0");
 		return crmDealDao.save(deal);
 	}
 
