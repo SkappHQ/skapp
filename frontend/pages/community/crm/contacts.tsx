@@ -1,9 +1,10 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import ContactSidePanelController from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanelController";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
 
 const Contacts: NextPage = () => {
@@ -17,7 +18,10 @@ const Contacts: NextPage = () => {
       primaryBtnIconName={IconName.ADD_ICON}
       containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
-      <ContactTable />
+      <>
+        <ContactSidePanelController />
+        <ContactTable />
+      </>
     </ContentLayout>
   );
 };
