@@ -1,4 +1,9 @@
-import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
+import {
+  AvatarChip,
+  ButtonV2,
+  CloseIcon,
+  InputField
+} from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { useState } from "react";
 
@@ -8,13 +13,15 @@ import SearchableDropdown, {
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   useCreateNewContact,
-  useGetCompanyLookup
+  useGetCompanyLookup,
+  useGetOwnerLookup
 } from "~community/crm/api/ContactApi";
-import OwnerLookupDropdown from "~community/crm/components/molecules/OwnerLookupDropdown/OwnerLookupDropdown";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
@@ -22,24 +29,22 @@ import {
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactAddFormTypes,
-  CrmContactCreatePayload
+  CrmContactCreatePayload,
+  CrmOwner
 } from "~community/crm/types/CommonTypes";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
+import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
+
+import SelectedOwnerField from "../SelectedOwnerField/SelectedOwnerField";
 
 const AddContactModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator(
+  const translateContactText = useTranslator(
     "crmModule",
     "contacts",
     "addContactModal"
   );
-  const translateToasts = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactToastMessages"
-  );
-
   const [companySearch, setCompanySearch] = useState("");
   const [selectedCompanyLabel, setSelectedCompanyLabel] = useState("");
   const debouncedCompanySearch = useDebounce(
@@ -65,7 +70,7 @@ const AddContactModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateToasts(["successTitle"])
+      title: translateContactText(["contactToastMessages", "successTitle"])
     });
   };
 
@@ -74,8 +79,11 @@ const AddContactModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateToasts(["errorTitle"]),
-      description: translateToasts(["errorDescription"])
+      title: translateContactText(["contactToastMessages", "errorTitle"]),
+      description: translateContactText([
+        "contactToastMessages",
+        "errorDescription"
+      ])
     });
   };
 
@@ -103,7 +111,7 @@ const AddContactModalContent: React.FC = () => {
   const formik = useFormik({
     initialValues,
     onSubmit: createContact,
-    validationSchema: addContactValidations(translateText),
+    validationSchema: addContactValidations(translateContactText),
     validateOnChange: false,
     validateOnBlur: false,
     enableReinitialize: true
@@ -151,10 +159,10 @@ const AddContactModalContent: React.FC = () => {
         value={values.name}
         errorMessage={errors.name}
         state={errors.name ? "error" : "default"}
-        label={translateText(["labels", "name"])}
-        placeholder={translateText(["placeholders", "name"])}
+        label={translateContactText(["labels", "name"])}
+        placeholder={translateContactText(["placeholders", "name"])}
         onChange={handleChange}
-        aria-label={translateText(["ariaLabels", "name"])}
+        aria-label={translateContactText(["ariaLabels", "name"])}
         required
         fullWidth
       />
@@ -164,10 +172,10 @@ const AddContactModalContent: React.FC = () => {
         value={values.email}
         errorMessage={errors.email}
         state={errors.email ? "error" : "default"}
-        label={translateText(["labels", "email"])}
-        placeholder={translateText(["placeholders", "email"])}
+        label={translateContactText(["labels", "email"])}
+        placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
-        aria-label={translateText(["ariaLabels", "email"])}
+        aria-label={translateContactText(["ariaLabels", "email"])}
         required
         fullWidth
       />
@@ -176,8 +184,8 @@ const AddContactModalContent: React.FC = () => {
         <SearchableDropdown
           id="add-contact-company"
           name="company"
-          label={translateText(["labels", "company"])}
-          placeholder={translateText(["placeholders", "company"])}
+          label={translateContactText(["labels", "company"])}
+          placeholder={translateContactText(["placeholders", "company"])}
           items={companyDropdownItems}
           value={companySearch}
           onChange={(e) => setCompanySearch(e.target.value)}
@@ -186,14 +194,14 @@ const AddContactModalContent: React.FC = () => {
           emptyMessage={
             isCompanyFetching ? undefined : (
               <p className="px-4 py-2 body2">
-                {translateText(["emptyStates", "noCompanies"])}
+                {translateContactText(["emptyStates", "noCompanies"])}
               </p>
             )
           }
         />
       ) : (
         <InputField
-          label={translateText(["labels", "company"])}
+          label={translateContactText(["labels", "company"])}
           value={selectedCompanyLabel}
           readOnly
           fullWidth
@@ -203,13 +211,13 @@ const AddContactModalContent: React.FC = () => {
               "h-6 inline-flex self-stretch pr-3 justify-start items-center gap-2"
           }}
           customStyles={{ gap: "gap-2" }}
-          aria-label={translateText(["ariaLabels", "company"])}
+          aria-label={translateContactText(["ariaLabels", "company"])}
           rightIcon={
             <ButtonV2
               variant="tertiary"
               type="button"
               onClick={handleClearCompany}
-              aria-label={translateText(["ariaLabels", "clearCompany"])}
+              aria-label={translateContactText(["ariaLabels", "clearCompany"])}
               icon={<CloseIcon />}
             />
           }
@@ -219,19 +227,19 @@ const AddContactModalContent: React.FC = () => {
       <InputField
         name="contactNumber"
         value={values.contactNumber || ""}
-        errorMessage={errors.contactNumber || ""}
+        errorMessage={errors.contactNumber}
         state={errors.contactNumber ? "error" : "default"}
-        label={translateText(["labels", "contactNumber"])}
-        placeholder={translateText(["placeholders", "contactNumber"])}
+        label={translateContactText(["labels", "contactNumber"])}
+        placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
-        aria-label={translateText(["ariaLabels", "contactNumber"])}
+        aria-label={translateContactText(["ariaLabels", "contactNumber"])}
         maxLength={characterLengths.PHONE_NUMBER_LENGTH_MAX}
         fullWidth
       />
 
       <OwnerLookupDropdown
         onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
-        translateText={translateText}
+        translateText={translateContactText}
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
@@ -242,9 +250,9 @@ const AddContactModalContent: React.FC = () => {
           onClick={handleCloseModal}
           icon={<CloseIcon />}
           iconPosition="end"
-          aria-label={translateText(["ariaLabels", "cancelAddContact"])}
+          aria-label={translateContactText(["ariaLabels", "cancelAddContact"])}
         >
-          {translateText(["buttons", "cancelAddContact"])}
+          {translateContactText(["buttons", "cancelAddContact"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
@@ -252,9 +260,9 @@ const AddContactModalContent: React.FC = () => {
           onClick={() => submitForm()}
           disabled={isPending}
           isLoading={isPending}
-          aria-label={translateText(["ariaLabels", "save"])}
+          aria-label={translateContactText(["ariaLabels", "save"])}
         >
-          {translateText(["buttons", "save"])}
+          {translateContactText(["buttons", "save"])}
         </ButtonV2>
       </div>
     </div>
