@@ -228,7 +228,7 @@
       "kebabMenuAriaLabel": "Company actions"
     }
   },
-   "deals": {
+  "deals": {
     "pageHead": "Deals | Skapp",
     "title": "Deals",
     "addDealBtn": "Add Deal",
@@ -243,6 +243,7 @@
       "ariaLabels": {
         "addDealBtn": "Add Deal"
       }
+    },
     "dealsTable": {
       "dealColumn": "Deal",
       "valueColumn": "Value",
