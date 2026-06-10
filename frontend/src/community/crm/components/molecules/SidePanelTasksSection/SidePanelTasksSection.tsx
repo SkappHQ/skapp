@@ -9,12 +9,14 @@ import { CrmTaskType } from "~community/crm/types/CommonTypes";
 interface Props {
   tasks: CrmTaskType[];
   isLoading: boolean;
+  isCompletedTab?: boolean;
   onTaskRowClick?: () => void;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
   tasks,
   isLoading,
+  isCompletedTab,
   onTaskRowClick
 }) => {
   const translateText = useTranslator(
@@ -32,7 +34,13 @@ const SidePanelTasksSection: FC<Props> = ({
         <>
           <div className="border border-secondary-accent rounded-[8px] divide-y divide-secondary-accent w-full overflow-hidden">
             {tasks.map((task) => (
-              <TaskRow key={task.id} task={task} onRowClick={onTaskRowClick} />
+              <TaskRow
+                key={task.id}
+                task={task}
+                isCompletedTab={isCompletedTab}
+                onRowClick={onTaskRowClick}
+                showContact={false}
+              />
             ))}
           </div>
           <ButtonV2

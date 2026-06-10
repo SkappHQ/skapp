@@ -16,13 +16,15 @@ interface Props {
   task: CrmTaskType;
   onRowClick?: () => void;
   showContact?: boolean;
+  isCompletedTab?: boolean;
   className?: string;
 }
 
 const TaskRow: FC<Props> = ({
   task,
   onRowClick,
-  showContact = false,
+  showContact = true,
+  isCompletedTab = false,
   className = "w-full"
 }) => {
   const translateText = useTranslator(
@@ -33,7 +35,7 @@ const TaskRow: FC<Props> = ({
   );
 
   const { setToastMessage } = useToast();
-  const { mutate: updateCompletion } = useUpdateTaskCompletion((err) => {
+  const { mutate: updateCompletion } = useUpdateTaskCompletion(() => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -44,14 +46,14 @@ const TaskRow: FC<Props> = ({
 
   const priorityConfig = getPriorityConfig(task.priority);
   const taskTypeIcon = getTaskTypeIcon(task.type.name);
-  const PriorityIconComp = priorityConfig?.IconComponent;
   const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
 
   const handleToggleChange = (checked: boolean) => {
+    if (isCompletedTab) return;
     updateCompletion({ id: task.id, isCompleted: checked });
   };
 
-  const showCompletedStyle = task.isCompleted;
+  const showCompletedStyle = !isCompletedTab && task.isCompleted;
   const showInlineContact = showContact && !!task.contact;
 
   return (
@@ -65,21 +67,23 @@ const TaskRow: FC<Props> = ({
         onClick={onRowClick}
       />
 
-      <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
-        <CheckTask
-          checked={task.isCompleted}
-          onChange={handleToggleChange}
-          defaultChecked={task.isCompleted}
-          aria-label={translateText(
-            [
-              task.isCompleted
-                ? "checkTaskMarkIncomplete"
-                : "checkTaskMarkComplete"
-            ],
-            { name: task.name }
-          )}
-        />
-      </div>
+      {showCompletedStyle && (
+        <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
+          <CheckTask
+            checked={task.isCompleted}
+            onChange={handleToggleChange}
+            defaultChecked={task.isCompleted}
+            aria-label={translateText(
+              [
+                task.isCompleted
+                  ? "checkTaskMarkIncomplete"
+                  : "checkTaskMarkComplete"
+              ],
+              { name: task.name }
+            )}
+          />
+        </div>
+      )}
 
       <div
         className={`relative z-10 shrink-0 flex items-center justify-center ${showCompletedStyle ? "opacity-40" : ""}`}
@@ -131,7 +135,7 @@ const TaskRow: FC<Props> = ({
       >
         {priorityConfig && PriorityIconComp && (
           <PriorityIcon
-            icon={<PriorityIconComp />}
+            icon={priorityConfig}
             bgColor={priorityConfig.bgColor}
           />
         )}

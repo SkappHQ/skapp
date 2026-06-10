@@ -54,5 +54,9 @@ export const getTaskTypeIcon = (typeName: string): React.ReactElement => {
   return React.createElement(IconComponent);
 };
 
-export const getPriorityConfig = (priority: CrmPriorityEnum): PriorityConfig =>
-  priorityOptions.find((o) => o.value === priority)!;
+export const getPriorityConfig = (
+  priority: CrmPriorityEnum
+): PriorityConfig => {
+  const PriorityIconComp = priorityOptions.find((o) => o.value === priority)!;
+  return React.createElement(PriorityIconComp.IconComponent);
+};
