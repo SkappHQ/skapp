@@ -17,6 +17,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_SUCCESS_TEAM_DELETED("api.success.people.team-deleted"),
 	PEOPLE_SUCCESS_EMPLOYEE_ADDED("api.success.people.employee-added"),
 	PEOPLE_SUCCESS_EMPLOYEE_TERMINATED("api.success.people.employee-terminated"),
+	PEOPLE_SUCCESS_EMPLOYEE_ACTIVATED("api.success.people.employee-activated"),
 	PEOPLE_SUCCESS_EMPLOYEE_DELETED("api.success.people.employee-deleted"),
 	PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED(
 			"api.success.people.supervisors-reassigned-and-employee-terminated"),
@@ -99,6 +100,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_EMPLOYEE_FAMILY_DETAILS_NOT_FOUND("api.error.people.employee-family-details.not-found"),
 	PEOPLE_ERROR_MANAGER_NOT_FOUND("api.error.people.manager.not-found"),
 	PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL("api.error.people.employee-id-cannot-null"),
+	PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED("api.error.people.employee-not-terminated"),
 	PEOPLE_ERROR_EMPLOYEE_ACCESS_DENIED("api.error.people.employee.access-denied"),
 	PEOPLE_ERROR_MISSING_PREVIOUS_EMPLOYMENT_START_AND_END_DATES(
 			"api.error.people.missing-previous-employment-start-and-end-dates"),
