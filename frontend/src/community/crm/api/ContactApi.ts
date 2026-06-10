@@ -2,10 +2,8 @@ import {
   useInfiniteQuery,
   useMutation,
   useQuery,
-  useQueryClient
-  UseQueryResult,
-  useInfiniteQuery,
-  useQuery
+  useQueryClient,
+  UseQueryResult
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
@@ -21,9 +19,8 @@ import {
   CrmCompaniesResponseType,
   CrmContactCreatePayload,
   CrmContactMetricsResponseType,
-  CrmOwnersResponseType
+  CrmOwnersResponseType,
   CrmContactLookup,
-  CrmContactMetricsResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 
@@ -129,7 +126,7 @@ const fetchOwnerLookup = async (
   searchKeyword: string,
   size: number
 ): Promise<CrmOwnersResponseType> => {
-  const response = await authFetch.get(contactEndpoints.GET_OWNER_LOOKUP, {
+  const response = await authFetch.get(contactEndpoints.OWNER_LOOKUP, {
     params: { searchKeyword, size }
   });
   return response?.data?.results?.[0];
@@ -137,8 +134,12 @@ const fetchOwnerLookup = async (
 
 export const useGetOwnerLookup = (searchKeyword: string, size: number, enabled: boolean) => {
   return useQuery({
-    queryKey: contactQueryKeys.OWNER_LOOKUP(searchKeyword),
+    queryKey: contactQueryKeys.OWNERS_LOOKUP(searchKeyword),
     queryFn: () => fetchOwnerLookup(searchKeyword, size),
+    enabled
+  });
+};
+
 export const useGetCrmContacts = (
   searchKeyword: string,
   size: number,

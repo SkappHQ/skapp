@@ -19,7 +19,7 @@ export const contactQueryKeys = {
     "crm-company-lookup",
     searchKeyword
   ],
-  OWNER_LOOKUP: (searchKeyword: string) => ["crm-owner-lookup", searchKeyword]
+  OWNERS_LOOKUP: (searchKeyword: string) => ["crm-owners-lookup", searchKeyword],
   CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
     "crm-contacts-lookup",
     searchKeyword,
