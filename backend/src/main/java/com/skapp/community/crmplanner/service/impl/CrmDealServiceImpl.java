@@ -160,15 +160,13 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto updateDealStage(CrmDealUpdateStageRequestDto requestDto) {
+		log.info("updateDealStage: execution started");
 		if (requestDto.getDealId() == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
 		}
 		if (requestDto.getNewStageId() == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_ID_REQUIRED);
 		}
-
-		log.info("updateDealStage: updating deal id={} to stage id={}", requestDto.getDealId(),
-				requestDto.getNewStageId());
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
@@ -187,7 +185,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmDeal savedDeal = crmDealDao.save(deal);
 		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
-		log.info("updateDealStage: deal id={} moved to stage id={}", requestDto.getDealId(), newStage.getId());
+		log.info("updateDealStage: execution ended");
 		return new ResponseEntityDto(false, responseDto);
 	}
 
