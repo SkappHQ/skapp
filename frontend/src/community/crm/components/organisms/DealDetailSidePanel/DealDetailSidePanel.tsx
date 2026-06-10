@@ -12,19 +12,11 @@ import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { useCrmStore } from "~community/crm/store/store";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   deal: CrmDealListItem | null;
 }
-
-// ---------------------------------------------------------------------------
-// DealDetailSidePanel
-// ---------------------------------------------------------------------------
 
 const DealDetailSidePanel: FC<Props> = ({
   isOpen,
@@ -99,7 +91,6 @@ const DealDetailSidePanel: FC<Props> = ({
         />
       }
     >
-      <></>
     </SidePanel>
   );
 };
