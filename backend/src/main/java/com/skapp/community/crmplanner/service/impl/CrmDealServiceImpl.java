@@ -171,7 +171,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		if (requestDto.getPreviousDealId() == null && requestDto.getNextDealId() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOURS_REQUIRED);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
 		}
 
 		if (requestDto.getDealId().equals(requestDto.getPreviousDealId())

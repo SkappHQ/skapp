@@ -66,7 +66,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH("api.error.crm.deal.neighbour-stage-mismatch"),
 	CRM_ERROR_DEAL_ID_REQUIRED("api.error.crm.deal.id-required"),
 	CRM_ERROR_DEAL_EDIT_DENIED("api.error.crm.deal.edit-denied"),
-	CRM_ERROR_DEAL_NEIGHBOURS_REQUIRED("api.error.crm.deal.neighbours-required");
+	CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED("api.error.crm.deal.order-neighbours-required");
 
 	private final String messageKey;
 
