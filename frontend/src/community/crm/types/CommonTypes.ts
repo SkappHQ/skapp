@@ -49,15 +49,17 @@ export interface CrmCompanyMetricsResponseType {
   totalPages: number;
 }
 
+export interface MetricChip {
+  label: string;
+  icon?: ReactElement;
+  variant: CrmMetricLabelThemeEnum;
+}
+
 export interface MetricItem {
   title: string;
   amount: string;
   isCurrency?: boolean;
-  chip?: {
-    label: string;
-    icon?: ReactElement;
-    theme: CrmMetricLabelThemeEnum;
-  };
+  chip?: MetricChip;
 }
 
 export interface CrmCompanyAddFormTypes {

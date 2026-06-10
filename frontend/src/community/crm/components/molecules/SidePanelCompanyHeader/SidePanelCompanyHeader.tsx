@@ -1,14 +1,13 @@
-import React from "react";
-
 import {
+  BrowserIcon,
   BuildingIcon,
   LocationIcon,
-  PhoneIcon,
-  BrowserIcon
+  PhoneIcon
 } from "@rootcodelabs/skapp-ui";
+import React from "react";
 
-import { IconName } from "~community/common/types/IconTypes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { IconName } from "~community/common/types/IconTypes";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmCompanyType } from "~community/crm/types/CommonTypes";
 
@@ -19,7 +18,7 @@ interface Props {
 }
 
 const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
-  const translateIndustry = useTranslator(
+  const translateText = useTranslator(
     "crmModule",
     "companies",
     "industryOptions"
@@ -33,7 +32,9 @@ const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
             icon={<BrowserIcon stroke={ICON_STROKE} width="20" height="20" />}
             value={company.website}
             endIcon={IconName.POP_OUT_ICON}
-            onClick={() => window.open(company.website, "_blank", "noopener,noreferrer")}
+            onClick={() =>
+              window.open(company.website, "_blank", "noopener,noreferrer")
+            }
           />
         )}
         {company.contactNumber && (
@@ -51,7 +52,7 @@ const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
         {company.industry && (
           <SidePanelHeaderInfoItem
             icon={<BuildingIcon stroke={ICON_STROKE} width="20" height="20" />}
-            value={translateIndustry([company.industry])}
+            value={translateText([company.industry])}
           />
         )}
       </div>

@@ -1,18 +1,19 @@
 import { CrmMetricLabelThemeEnum } from "~community/crm/enums/common";
 
+interface LabelStyles {
+  backgroundColor: string;
+  textColor: string;
+}
+
 export const getLabelStyles = (
-  theme: CrmMetricLabelThemeEnum
-): { backgroundColor: string; textColor: string } => {
-  switch (theme) {
-    case CrmMetricLabelThemeEnum.GREEN:
-      return {
+  variant: CrmMetricLabelThemeEnum
+): LabelStyles =>
+  variant === CrmMetricLabelThemeEnum.GREEN
+    ? {
         backgroundColor: "bg-semantic-green-background",
         textColor: "text-semantic-green-text"
-      };
-    case CrmMetricLabelThemeEnum.RED:
-      return {
+      }
+    : {
         backgroundColor: "bg-semantic-red-background",
         textColor: "text-semantic-red-text"
       };
-  }
-};
