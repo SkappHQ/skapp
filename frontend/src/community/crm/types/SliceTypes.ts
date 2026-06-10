@@ -26,8 +26,10 @@ export interface CrmTaskModalSliceTypes extends Pick<
 
 export interface CrmDealModalSliceTypes extends Pick<
   CrmStore,
-  | "isDealDeleteModalOpen"
-  | "setIsDealDeleteModalOpen"
+  | "isDealModalOpen"
+  | "setIsDealModalOpen"
+  | "dealModalType"
+  | "setDealModalType"
   | "dealToDelete"
   | "setDealToDelete"
 > {}

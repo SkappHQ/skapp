@@ -263,6 +263,10 @@
     "deleteDealToastMessages": {
       "success": "Deal deleted successfully",
       "error": "Failed to delete deal"
+    },
+    "sidePanel": {
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions"
     }
   },
   "tasks": {

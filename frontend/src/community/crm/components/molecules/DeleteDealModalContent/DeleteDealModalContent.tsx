@@ -8,10 +8,10 @@ import { useCrmStore } from "~community/crm/store/store";
 const DeleteDealModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
-  const { dealToDelete, setIsDealDeleteModalOpen, setDealToDelete } =
+  const { dealToDelete, setIsDealModalOpen, setDealToDelete } =
     useCrmStore((store) => ({
       dealToDelete: store.dealToDelete,
-      setIsDealDeleteModalOpen: store.setIsDealDeleteModalOpen,
+      setIsDealModalOpen: store.setIsDealModalOpen,
       setDealToDelete: store.setDealToDelete
     }));
 
@@ -28,37 +28,12 @@ const DeleteDealModalContent: React.FC = () => {
   );
 
   const handleCloseModal = () => {
-    setIsDealDeleteModalOpen(false);
+    setIsDealModalOpen(false);
     setDealToDelete(null);
   };
 
-  const handleSuccess = () => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateToasts(["successTitle"]),
-      description: translateToasts(["successDescription"], {
-        dealName: dealToDelete
-      })
-    });
-
-    handleCloseModal();
-  };
-
-  const handleError = () => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateToasts(["errorTitle"]),
-      description: translateToasts(["errorDescription"])
-    });
-  };
-
-  // TODO: replace with useDeleteDeal hook
   const handleDeleteDeal = () => {
-    if (!dealToDelete) return;
-    // deleteDeaL(dealId);
-    handleSuccess();
+     // Add handle delete functionality with Toast messages for success and error cases
   };
 
   return (
@@ -95,7 +70,6 @@ const DeleteDealModalContent: React.FC = () => {
         </ButtonV2>
       </div>
     </div>
->>>>>>> Stashed changes
   );
 };
 
