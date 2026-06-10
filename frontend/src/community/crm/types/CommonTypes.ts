@@ -1,5 +1,11 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum, CrmIndustryEnum} from "../enums/common";
+
+import {
+  CrmDealSortEnum,
+  CrmDealStageEnum,
+  CrmIndustryEnum,
+  CrmPriorityEnum
+} from "../enums/common";
 
 export interface CrmOwner {
   employeeId: number;
@@ -56,6 +62,10 @@ export interface CrmCompanyCreatePayload {
   contactNumber: string | null;
 }
 
+export interface EditCompanyPayload extends CrmCompanyCreatePayload {
+  id: number;
+}
+
 export interface CrmContactType {
   id: number;
   name: string;
@@ -71,6 +81,12 @@ export interface CrmContactType {
 export interface CompanyLookup {
   id: number;
   name: string;
+}
+
+export interface CrmContactLookup {
+  id: number;
+  name: string;
+  company?: CompanyLookup | null;
 }
 
 export interface CrmCompaniesResponseType {
@@ -169,4 +185,45 @@ export interface CrmDealFilterParams {
   searchKeyword?: string;
   stageId?: number;
   priority?: CrmPriorityEnum;
+}
+
+export interface CrmCreateDealPayload {
+  name: string;
+  stageId: number;
+  contactId: number;
+  ownerId: number;
+  priority: CrmPriorityEnum;
+  description?: string | null;
+  amount?: string | null;
+  closingAt?: string | null;
+}
+
+export interface CrmCompanyEditFormTypes {
+  name: string;
+  industry: CrmIndustryEnum;
+  website: string | null;
+  address: string | null;
+  contactNumber: string | null;
+}
+
+export interface CrmTaskAddFormTypes {
+  name: string;
+  type: CrmTaskCategory | null;
+  dueDate: string | null;
+  priority: CrmPriorityEnum;
+  contactName: string;
+  deal: string;
+  owner: number | null;
+  notes: string;
+}
+
+export interface CrmTaskCreatePayload {
+  name: string;
+  type: CrmTaskCategory | null;
+  dueAt: string | null;
+  priority: CrmPriorityEnum;
+  contactName: string;
+  deal: string;
+  owner: number | null;
+  notes: string;
 }

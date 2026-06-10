@@ -1,19 +1,28 @@
 import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
 
 export const crmDealQueryKeys = {
-  GET_DEALS: (params: CrmDealFilterParams) => [
-    "crm-deals",
-    params
-  ]
+  ALL: ["crm-deals"],
+  GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
+  DEAL_STAGES: ["crm-deal-stages"]
 };
 
 export const contactQueryKeys = {
+  ALL: ["crm-contacts"],
   GET_CONTACT_DATA_BY_SEARCH: (searchKeyword: string, companyId?: number) => [
     "crm-contacts",
     searchKeyword,
     companyId
   ],
-  CRM_COMPANIES: ["crm-companies"]
+  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-contacts-lookup",
+    searchKeyword,
+    size
+  ],
+  OWNER_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-owners-lookup",
+    searchKeyword,
+    size
+  ]
 };
 
 export const companyQueryKeys = {
@@ -23,5 +32,10 @@ export const companyQueryKeys = {
     searchKeyword,
     limit
   ],
-  CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"]
+  CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"],
+  CRM_COMPANIES: (size: number) => ["crm-companies", size]
+};
+
+export const taskQueryKeys = {
+  GET_TASK_DATA: ["get-task-data"]
 };

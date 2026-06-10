@@ -2,7 +2,7 @@ import { Stack, Theme, useTheme } from "@mui/material";
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import Link from "next/link";
-import { ChangeEvent, useEffect } from "react";
+import { ChangeEvent, useEffect, useRef } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputField from "~community/common/components/molecules/InputField/InputField";
@@ -110,10 +110,13 @@ const AddNewResourceModal = () => {
 
   const { values, errors, setFieldValue, setFieldError, handleSubmit } = formik;
 
+  const hasExplicitRefetchRef = useRef(false);
+
   const {
     data: checkEmailAndIdentificationNo,
     refetch,
     isSuccess,
+    isFetching,
     isLoading: isCheckingEmailLoading
   } = useCheckEmailAndIdentificationNoForQuickAdd(values.email, "");
 
@@ -141,8 +144,18 @@ const AddNewResourceModal = () => {
 
   const validateWorkEmail = () => {
     const updatedData = checkEmailAndIdentificationNo;
+    if (updatedData?.isWorkEmailExists && updatedData?.isTerminatedUser) {
+      setDirectoryModalType(DirectoryModalTypes.TERMINATED_TO_ACTIVE_USER_CONFIRMATION);
+      return false;
+    }
+
     if (updatedData?.isWorkEmailExists && !updatedData?.isGuestUser) {
       setFieldError("email", translateText(["uniqueEmailError"]));
+      return false;
+    }
+
+    if (updatedData?.isWorkEmailExists && updatedData?.isGuestUser) {
+      setDirectoryModalType(DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION);
       return false;
     }
 
@@ -157,15 +170,18 @@ const AddNewResourceModal = () => {
 
   useEffect(() => {
     if (
+      !isFetching &&
+      hasExplicitRefetchRef.current &&
       checkEmailAndIdentificationNo &&
       checkEmailAndIdentificationNo.isWorkEmailExists !== null &&
       isSuccess
     ) {
+      hasExplicitRefetchRef.current = false;
       if (validateWorkEmail()) {
         handleSubmit();
       }
     }
-  }, [isEnterpriseMode, checkEmailAndIdentificationNo, isSuccess]);
+  }, [isFetching, isEnterpriseMode, checkEmailAndIdentificationNo, isSuccess]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -195,6 +211,7 @@ const AddNewResourceModal = () => {
       });
       return;
     }
+    hasExplicitRefetchRef.current = true;
     refetch();
   };
 

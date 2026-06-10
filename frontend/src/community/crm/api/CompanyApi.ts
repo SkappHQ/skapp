@@ -8,7 +8,8 @@ import {
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 import {
-  CrmCompanyCreatePayload
+  CrmCompanyCreatePayload,
+  EditCompanyPayload
 } from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
@@ -18,7 +19,12 @@ interface CompanyMetricSearchParams {
   size: number;
   searchKeyword: string;
 }
-const fetchCompanyMetrics = async ({ page, size, searchKeyword }: CompanyMetricSearchParams) => {
+
+const fetchCompanyMetrics = async ({
+  page,
+  size,
+  searchKeyword
+}: CompanyMetricSearchParams) => {
   const response = await authFetch.get(companyEndpoints.GET_COMPANY_METRICS, {
     params: {
       page,
@@ -29,10 +35,7 @@ const fetchCompanyMetrics = async ({ page, size, searchKeyword }: CompanyMetricS
   return response?.data?.results?.[0];
 };
 
-export const useGetCompanyMetrics = (
-  searchKeyword: string,
-  limit: number
-) => {
+export const useGetCompanyMetrics = (searchKeyword: string, limit: number) => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: companyQueryKeys.GET_COMPANY_DATA_BY_SEARCH(searchKeyword, limit),
@@ -65,10 +68,9 @@ export const useCreateNewCompany = (
   return useMutation({
     mutationFn: createNewCompany,
     onSuccess: () => {
-      queryClient
-        .invalidateQueries({
-          queryKey: companyQueryKeys.GET_COMPANY_DATA
-        });
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKeys.GET_COMPANY_DATA
+      });
       onSuccess();
     },
     onError: onError
@@ -88,5 +90,49 @@ export const useCheckCompanyNameExists = (
       return response?.data?.results?.[0];
     },
     enabled
+  });
+};
+
+const editCompany = async ({ id, ...companyDetails }: EditCompanyPayload) => {
+  const response = await authFetch.patch(
+    companyEndpoints.EDIT_COMPANY(id),
+    companyDetails
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useEditCompany = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: editCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKeys.GET_COMPANY_DATA
+      });
+      onSuccess();
+    },
+    onError: onError
+  });
+};
+
+const deleteCompany = async (id: number) => {
+  const response = await authFetch.delete(companyEndpoints.DELETE_COMPANY(id));
+  return response?.data?.results?.[0];
+};
+
+export const useDeleteCompany = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKeys.GET_COMPANY_DATA
+      });
+      onSuccess();
+    },
+    onError: onError
   });
 };

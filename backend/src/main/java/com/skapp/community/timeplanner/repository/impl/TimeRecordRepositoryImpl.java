@@ -34,6 +34,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Selection;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -433,29 +434,46 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				predicates.add(cb.equal(timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId), employeeId));
 				predicates.add(cb.equal(timeRecord.get(TimeRecord_.date), currentDate));
 
-				query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)),
-						cb.literal(employeeId), cb.literal(currentDate),
-						cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0),
-						cb.coalesce(timeRecord.get(TimeRecord_.breakHours), 0.0), cb.nullLiteral(String.class));
+				List<Selection<?>> selections = new ArrayList<>();
+				selections.add(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)));
+				selections.add(cb.literal(employeeId));
+				selections.add(cb.literal(currentDate));
+				selections.add(cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0));
+				selections.add(cb.coalesce(timeRecord.get(TimeRecord_.breakHours), 0.0));
+				selections.add(cb.nullLiteral(String.class));
 
+				addLocationStatusSelections(cb, query, timeRecord, selections);
+
+				query.multiselect(selections);
 				query.where(predicates.toArray(new Predicate[0]));
 
 				List<Tuple> results = entityManager.createQuery(query).getResultList();
 
 				if (results.isEmpty()) {
-					allResults.add(new EmployeeTimeRecordImpl(null, employeeId, currentDate, 0.0f, 0.0f, null));
+					allResults.add(buildEmptyTimeRecord(employeeId, currentDate));
 				}
 				else {
-
-					Tuple tuple = results.get(0);
-					allResults.add(new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
-							tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
-							tuple.get(5, String.class)));
+					allResults.add(buildTimeRecord(results.get(0)));
 				}
 			}
 		}
 
 		return allResults.stream().skip(offset).limit(limit).collect(Collectors.toList());
+	}
+
+	protected void addLocationStatusSelections(CriteriaBuilder cb, CriteriaQuery<Tuple> query,
+			Root<TimeRecord> timeRecord, List<Selection<?>> selections) {
+		// No-op in community; enterprise overrides this method
+	}
+
+	protected EmployeeTimeRecord buildTimeRecord(Tuple tuple) {
+		return new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
+				tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
+				tuple.get(5, String.class));
+	}
+
+	protected EmployeeTimeRecord buildEmptyTimeRecord(Long employeeId, LocalDate date) {
+		return new EmployeeTimeRecordImpl(null, employeeId, date, 0.0f, 0.0f, null);
 	}
 
 	private boolean isEmployeeInTeams(Long employeeId, List<Long> teamIds) {
