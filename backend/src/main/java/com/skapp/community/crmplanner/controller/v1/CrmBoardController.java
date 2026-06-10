@@ -41,5 +41,4 @@ public class CrmBoardController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-
 }

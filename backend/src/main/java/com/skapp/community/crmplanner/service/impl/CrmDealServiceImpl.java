@@ -160,9 +160,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto updateDealStage(CrmDealUpdateStageRequestDto requestDto) {
-		log.info("updateDealStage: updating deal id={} to stage id={}", requestDto.getDealId(),
-				requestDto.getNewStageId());
-
 		if (requestDto.getDealId() == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
 		}
@@ -170,11 +167,18 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_ID_REQUIRED);
 		}
 
+		log.info("updateDealStage: updating deal id={} to stage id={}", requestDto.getDealId(),
+				requestDto.getNewStageId());
+
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		CrmDealStage newStage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getNewStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+
+		if (deal.getStage() != null && deal.getStage().getId().equals(requestDto.getNewStageId())) {
+			return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(deal));
+		}
 
 		deal.setStage(newStage);
 		String lastOrderIndex = crmDealDao.findMaxOrderIndexByStageId(newStage.getId());

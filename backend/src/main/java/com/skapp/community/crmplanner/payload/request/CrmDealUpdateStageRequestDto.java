@@ -9,8 +9,6 @@ public class CrmDealUpdateStageRequestDto {
 
 	private Long dealId;
 
-	private Long previousStageId;
-
 	private Long newStageId;
 
 }
