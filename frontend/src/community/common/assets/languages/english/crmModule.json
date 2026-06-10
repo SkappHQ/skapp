@@ -259,6 +259,10 @@
         "cancel": "Cancel delete deal",
         "confirm": "Confirm delete deal"
       }
+    },
+    "sidePanel": {
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions"
     }
   },
   "tasks": {
