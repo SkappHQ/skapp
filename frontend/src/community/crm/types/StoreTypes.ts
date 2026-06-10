@@ -1,5 +1,6 @@
 import { CrmCompanyMetricsType } from "./CommonTypes";
-import { CrmModalTypes } from "./ModalTypes";
+import { CrmDealType } from "./CommonTypes";
+import { CrmDealModalTypes, CrmModalTypes } from "./ModalTypes";
 
 interface ActionTypes {
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
@@ -7,6 +8,9 @@ interface ActionTypes {
   setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
   setIsCompanyDetailDrawerOpen: (isCompanyDetailDrawerOpen: boolean) => void;
   setIsAddDealFormOpen: (isAddDealFormOpen: boolean) => void;
+  setIsDealModalOpen: (isDealModalOpen: boolean) => void;
+  setDealModalType: (dealModalType: CrmDealModalTypes) => void;
+  setCurrentDeletingDeal: (currentDeletingDeal: CrmDealType | null) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -15,4 +19,7 @@ export interface CrmStore extends ActionTypes {
   selectedCompany: CrmCompanyMetricsType | null;
   isCompanyDetailDrawerOpen: boolean;
   isAddDealFormOpen: boolean;
+  isDealModalOpen: boolean;
+  dealModalType: CrmDealModalTypes;
+  currentDeletingDeal: CrmDealType | null;
 }

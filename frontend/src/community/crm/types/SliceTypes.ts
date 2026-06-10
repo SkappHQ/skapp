@@ -17,3 +17,13 @@ export interface CrmCompanyDetailPanelSliceTypes extends Pick<
   | "isCompanyDetailDrawerOpen"
   | "setIsCompanyDetailDrawerOpen"
 > {}
+
+export interface CrmDealModalSliceTypes extends Pick<
+  CrmStore,
+  | "isDealModalOpen"
+  | "setIsDealModalOpen"
+  | "dealModalType"
+  | "setDealModalType"
+  | "currentDeletingDeal"
+  | "setCurrentDeletingDeal"
+> {}
