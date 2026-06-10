@@ -250,6 +250,7 @@
       "infiniteScrollLoadingMessage": "Loading more deals..."
     },
     "deleteDealModal": {
+      "areYouSureModalTitle": "Are you sure?",
       "description": "Are you sure you want to delete '{{dealName}}'? This will remove all tasks linked to this deal. This action cannot be undone.",
       "buttons": {
         "cancel": "Cancel",

@@ -1,12 +1,11 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 
-import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useCrmStore } from "~community/crm/store/store";
 
-const DeleteDealModalContent: React.FC = () => {
+const DeleteDealModal = () => {
   const {
     isDealModalOpen,
     currentDeletingDeal,
@@ -21,12 +20,12 @@ const DeleteDealModalContent: React.FC = () => {
 
   const translateText = useTranslator("crmModule", "deals", "deleteDealModal");
 
-  const handleCloseModal = () => {
+  const handleCloseModal = (): void => {
     setIsDealModalOpen(false);
     setCurrentDeletingDeal(null);
   };
 
-  const handleDeleteDeal = () => {
+  const handleDeleteDeal = (): void => {
     // Add handle delete functionality with Toast messages for success and error cases
   };
 
@@ -36,26 +35,35 @@ const DeleteDealModalContent: React.FC = () => {
       onClose={handleCloseModal}
       modalHeader={translateText(["areYouSureModalTitle"])}
       content={
-        <UserPromptModal
-          description={translateText(["description"], {
+        <p>
+          {translateText(["description"], {
             dealName: currentDeletingDeal?.name
           })}
-          primaryBtn={{
-            label: translateText(["buttons", "confirm"]),
-            buttonStyle: ButtonStyle.ERROR,
-            endIcon: IconName.DELETE_BUTTON_ICON,
-            onClick: handleDeleteDeal
-          }}
-          secondaryBtn={{
-            label: translateText(["buttons", "cancel"]),
-            buttonStyle: ButtonStyle.TERTIARY,
-            endIcon: IconName.CLOSE_ICON,
-            onClick: handleCloseModal
-          }}
-        />
+        </p>
       }
+      buttons={{
+        buttonLeft: {
+          variant: "tertiary",
+          onClick: handleCloseModal,
+          icon: <Icon name={IconName.CLOSE_ICON} />,
+          iconPosition: "end",
+          children: translateText(["buttons", "cancel"])
+        },
+        buttonRight: {
+          variant: "error",
+          onClick: handleDeleteDeal,
+          icon: (
+            <Icon
+              name={IconName.DELETE_BUTTON_ICON}
+              fill="var(--color-semantic-red-text)"
+            />
+          ),
+          iconPosition: "end",
+          children: translateText(["buttons", "confirm"])
+        }
+      }}
     />
   );
 };
 
-export default DeleteDealModalContent;
+export default DeleteDealModal;
