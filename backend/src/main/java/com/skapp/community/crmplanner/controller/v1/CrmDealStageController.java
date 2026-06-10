@@ -32,12 +32,12 @@ public class CrmDealStageController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Create a deal stage",
-			description = "Creates a new deal stage.")
+	@Operation(summary = "Create a deal stage", description = "Creates a new deal stage.")
 	@PostMapping()
 	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> createDealStage(@RequestBody CrmDealStageCreateRequestDto requestDto) {
 		ResponseEntityDto response = crmDealStageService.createDealStage(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
+
 }
