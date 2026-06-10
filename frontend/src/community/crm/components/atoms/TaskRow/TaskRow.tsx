@@ -24,7 +24,7 @@ const TaskRow: FC<Props> = ({
   task,
   onRowClick,
   showContact = false,
-  isCheckTaskVisible = false,
+  isCheckTaskVisible = true,
   className
 }) => {
   const translateText = useTranslator(
@@ -71,7 +71,6 @@ const TaskRow: FC<Props> = ({
           <CheckTask
             checked={task.isCompleted}
             onChange={handleToggleChange}
-            defaultChecked={task.isCompleted}
             aria-label={translateText(
               [
                 task.isCompleted
@@ -132,7 +131,12 @@ const TaskRow: FC<Props> = ({
       <div
         className={`relative z-10 flex items-center gap-6 shrink-0 ${showCompletedStyle ? "opacity-40" : ""}`}
       >
-        <PriorityIcon icon={priorityConfig} bgColor={priorityConfig.bgColor} />
+        {priorityConfig && (
+          <PriorityIcon
+            icon={priorityConfig.icon}
+            bgColor={priorityConfig.bgColor}
+          />
+        )}
 
         <Avatar
           id={`task-owner-${task.id}`}

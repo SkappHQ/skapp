@@ -39,7 +39,7 @@ const SidePanelTasksSection: FC<Props> = ({
                 task={task}
                 isCheckTaskVisible={isCheckTaskVisible}
                 onRowClick={onTaskRowClick}
-                showContact={false}
+                showContact={true}
               />
             ))}
           </div>
