@@ -12,6 +12,7 @@ import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -21,7 +22,9 @@ import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +48,7 @@ import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -59,6 +63,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CrmTaskControllerIntegrationTest {
 
 	private static final String BASE_PATH = "/v1/crm/task";
+
+	private static final String BY_ID_PATH = "/v1/crm/task/{id}";
 
 	private final JsonMapper objectMapper;
 
@@ -83,6 +89,8 @@ class CrmTaskControllerIntegrationTest {
 	private final CrmTaskDao crmTaskDao;
 
 	private final EmployeeDao employeeDao;
+
+	private final EmployeeRoleDao employeeRoleDao;
 
 	private String authToken;
 
@@ -546,7 +554,305 @@ class CrmTaskControllerIntegrationTest {
 		deal.setContact(contact);
 		deal.setCompany(company);
 		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setOrderIndex("a0");
 		return crmDealDao.save(deal);
+	}
+
+	// --- Helper methods for editTask tests ---
+
+	private CrmTask savedTask() {
+		CrmTask task = new CrmTask();
+		task.setName("Existing Task");
+		task.setType(crmTaskTypeDao.getReferenceById(taskTypeId));
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setContact(crmContactDao.getReferenceById(contactId));
+		task.setOwner(employeeDao.getReferenceById(1L));
+		return crmTaskDao.save(task);
+	}
+
+	private ResultActions performEditRequest(Long id, CrmTaskEditRequestDto dto) throws Exception {
+		return mvc.perform(patch(BY_ID_PATH, id).with(SecurityTestUtils.bearerToken(authToken))
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performEditRequest(Long id, CrmTaskEditRequestDto dto, String token) throws Exception {
+		return mvc.perform(patch(BY_ID_PATH, id).with(SecurityTestUtils.bearerToken(token))
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	// --- editTask tests ---
+
+	@Test
+	@DisplayName("Edit task name - Returns OK with updated name")
+	void editTask_UpdateName_ReturnsOk() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setName("Updated Name");
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name"));
+
+		CrmTask updated = crmTaskDao.findById(task.getId()).orElseThrow();
+		assertEquals("Updated Name", updated.getName());
+	}
+
+	@Test
+	@DisplayName("Edit task priority - Returns OK with updated priority")
+	void editTask_UpdatePriority_ReturnsOk() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setPriority(CrmTaskPriority.HIGH);
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("HIGH"));
+	}
+
+	@Test
+	@DisplayName("Edit task type - Returns OK with updated type")
+	void editTask_UpdateType_ReturnsOk() throws Exception {
+		CrmTask task = savedTask();
+
+		CrmTaskType newType = new CrmTaskType();
+		newType.setName("Email");
+		newType.setOrderIndex(2);
+		Long newTypeId = crmTaskTypeDao.save(newType).getId();
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setTypeId(newTypeId);
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['typeId']").value(newTypeId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['typeName']").value("Email"));
+	}
+
+	@Test
+	@DisplayName("Edit task mark as completed - Returns OK")
+	void editTask_MarkCompleted_ReturnsOk() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setIsCompleted(true);
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmTask updated = crmTaskDao.findById(task.getId()).orElseThrow();
+		assertEquals(true, updated.getIsCompleted());
+	}
+
+	@Test
+	@DisplayName("Edit task notes - Returns OK with updated notes")
+	void editTask_UpdateNotes_ReturnsOk() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setNotes("Updated notes content");
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmTask updated = crmTaskDao.findById(task.getId()).orElseThrow();
+		assertEquals("Updated notes content", updated.getNotes());
+	}
+
+	@Test
+	@DisplayName("Edit task with non-existent id - Returns Bad Request")
+	void editTask_NotFound_ReturnsBadRequest() throws Exception {
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setName("Ghost Task");
+
+		performEditRequest(999999L, dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Edit task with blank name - Returns Bad Request")
+	void editTask_BlankName_ReturnsBadRequest() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setName("   ");
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NAME_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Edit task with name exceeding max length - Returns Bad Request")
+	void editTask_NameTooLong_ReturnsBadRequest() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setName("a".repeat(256));
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NAME_TOO_LONG)));
+	}
+
+	@Test
+	@DisplayName("Edit task with notes exceeding max length - Returns Bad Request")
+	void editTask_NotesTooLong_ReturnsBadRequest() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setNotes("a".repeat(1001));
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOTES_TOO_LONG)));
+	}
+
+	@Test
+	@DisplayName("Edit task with non-existent type id - Returns Bad Request")
+	void editTask_NonExistentTaskType_ReturnsBadRequest() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setTypeId(999999L);
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_TYPE_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Edit task with non-existent contact id - Returns Bad Request")
+	void editTask_NonExistentContact_ReturnsBadRequest() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setContactId(999999L);
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Edit task without CRM role - Returns Forbidden")
+	void editTask_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmTask task = savedTask();
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setName("Should Fail");
+
+		performEditRequest(task.getId(), dto, noRoleToken).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Sales rep editing own task - Returns OK")
+	void editTask_RepEditingOwnTask_ReturnsOk() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		CrmTask task = new CrmTask();
+		task.setName("Rep Task");
+		task.setType(crmTaskTypeDao.getReferenceById(taskTypeId));
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setContact(crmContactDao.getReferenceById(contactId));
+		task.setOwner(employeeDao.getReferenceById(2L));
+		task = crmTaskDao.save(task);
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setName("Rep Updated Task");
+
+		performEditRequest(task.getId(), dto, repToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Rep Updated Task"));
+	}
+
+	@Test
+	@DisplayName("Sales rep editing another owner's task - Returns Bad Request with edit-denied error")
+	void editTask_RepEditingOtherOwnersTask_ReturnsBadRequest() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		CrmTask task = savedTask();
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setName("Should Not Update");
+
+		performEditRequest(task.getId(), dto, repToken).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED)));
+	}
+
+	@Test
+	@DisplayName("Sales manager editing any task - Returns OK")
+	void editTask_SalesManagerEditingAnyTask_ReturnsOk() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_MANAGER);
+		employeeRoleDao.flush();
+		String managerToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		CrmTask task = savedTask();
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setName("Manager Updated");
+
+		performEditRequest(task.getId(), dto, managerToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Manager Updated"));
+	}
+
+	@Test
+	@DisplayName("Edit task with null fields leaves existing values unchanged")
+	void editTask_NullFields_ExistingValuesPreserved() throws Exception {
+		CrmTask task = savedTask();
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Existing Task"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("MEDIUM"));
+	}
+
+	@Test
+	@DisplayName("Edit task on soft-deleted task - Returns Bad Request")
+	void editTask_SoftDeletedTask_ReturnsBadRequest() throws Exception {
+		CrmTask task = savedTask();
+		task.setIsDeleted(true);
+		crmTaskDao.save(task);
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setName("Should Fail");
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
 	}
 
 }
