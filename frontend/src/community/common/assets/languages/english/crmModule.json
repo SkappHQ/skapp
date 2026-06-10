@@ -259,14 +259,6 @@
         "cancel": "Cancel delete deal",
         "confirm": "Confirm delete deal"
       }
-    },
-    "deleteDealToastMessages": {
-      "success": "Deal deleted successfully",
-      "error": "Failed to delete deal"
-    },
-    "sidePanel": {
-      "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions"
     }
   },
   "tasks": {
