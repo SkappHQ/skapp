@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
@@ -96,15 +97,21 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		predicates.add(cb.equal(deal.get(CrmDeal_.isDeleted), false));
 
 		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().isBlank()) {
-			String keyword = "%" + filterDto.getSearchKeyword().toLowerCase() + "%";
+			String trimmedKeyword = filterDto.getSearchKeyword();
+			String keyword = "%" + trimmedKeyword.toLowerCase() + "%";
 			Join<CrmDeal, CrmContact> contactJoin = deal.join(CrmDeal_.contact, JoinType.LEFT);
 			Join<CrmDeal, Employee> ownerJoin = deal.join(CrmDeal_.owner, JoinType.LEFT);
-			predicates.add(cb.or(cb.like(cb.lower(deal.get(CrmDeal_.name)), keyword),
-					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), keyword),
-					cb.like(cb.lower(ownerJoin.get(Employee_.firstName)), keyword),
-					cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword),
-					cb.like(cb.lower(cb.concat(cb.concat(ownerJoin.get(Employee_.firstName), " "),
-							ownerJoin.get(Employee_.lastName))), keyword)));
+			List<Predicate> keywordPredicates = new ArrayList<>();
+			keywordPredicates.add(cb.like(cb.lower(deal.get(CrmDeal_.name)), keyword));
+			keywordPredicates.add(cb.like(cb.lower(contactJoin.get(CrmContact_.name)), keyword));
+			keywordPredicates.add(cb.like(cb.lower(ownerJoin.get(Employee_.firstName)), keyword));
+			keywordPredicates.add(cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword));
+			keywordPredicates.add(cb.like(cb.lower(cb.concat(cb.concat(ownerJoin.get(Employee_.firstName), " "),
+					ownerJoin.get(Employee_.lastName))), keyword));
+			if (trimmedKeyword.matches(CrmConstants.NUMERIC_ONLY_REGEX) && trimmedKeyword.length() <= CrmConstants.DEAL_ID_MAX_DIGITS) {
+				keywordPredicates.add(cb.equal(deal.get(CrmDeal_.id), Long.parseLong(trimmedKeyword)));
+			}
+			predicates.add(cb.or(keywordPredicates.toArray(new Predicate[0])));
 		}
 
 		if (filterDto.getStageId() != null) {
