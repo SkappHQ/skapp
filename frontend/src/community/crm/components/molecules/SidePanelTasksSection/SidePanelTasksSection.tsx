@@ -2,10 +2,7 @@ import { ButtonV2, EmptyDataView, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import SearchIcon from "~community/common/assets/Icons/SearchIcon";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
-import { useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
 import TaskRow from "~community/crm/components/atoms/TaskRow/TaskRow";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
 
@@ -27,24 +24,6 @@ const SidePanelTasksSection: FC<Props> = ({
     "tasks"
   );
 
-  const { setToastMessage } = useToast();
-
-  const { mutateAsync: updateCompletion } = useUpdateTaskCompletion(() => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText(["toggleErrorTitle"]),
-      description: translateText(["toggleErrorDescription"])
-    });
-  });
-
-  const handleToggleComplete = async (
-    id: number,
-    isCompleted: boolean
-  ): Promise<void> => {
-    await updateCompletion({ id, isCompleted });
-  };
-
   const hasTasks = tasks.length > 0;
 
   return (
@@ -53,12 +32,7 @@ const SidePanelTasksSection: FC<Props> = ({
         <>
           <div className="border border-secondary-accent rounded-[8px] divide-y divide-secondary-accent w-full overflow-hidden">
             {tasks.map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                onToggleComplete={handleToggleComplete}
-                onRowClick={onTaskRowClick}
-              />
+              <TaskRow key={task.id} task={task} onRowClick={onTaskRowClick} />
             ))}
           </div>
           <ButtonV2

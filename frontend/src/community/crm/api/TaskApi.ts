@@ -46,23 +46,20 @@ export const useGetCrmTaskTypes = () => {
 const updateTaskStatus = async ({
   id,
   isCompleted
-}: UpdateTaskStatusPayload): Promise<void> => {
+}: UpdateTaskStatusPayload) => {
   await authFetch.patch(taskEndpoints.UPDATE_TASK(id), {
     isCompleted
   });
 };
 
-export const useUpdateTaskCompletion = (
-  onError: (error: Error) => void,
-  onSuccess: () => void = () => {}
-) => {
+export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateTaskStatus,
-    onSuccess: () => {
-      // TODO: invalidate contact/company/deals detailed view queries and tasks and task by id once those API layers are implemented
-      onSuccess();
-    },
-    onError
+    onError,
+    onSettled: () => {
+      // TODO: invalidate contact/company/deals detailed view queries once those API layers are implemented
+      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
+    }
   });
 };

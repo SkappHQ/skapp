@@ -1,7 +1,10 @@
 import { Avatar, CheckTask, PriorityIcon } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
 import {
   getDueDateDisplay,
@@ -11,7 +14,6 @@ import {
 
 interface Props {
   task: CrmTaskType;
-  onToggleComplete?: (id: number, isCompleted: boolean) => Promise<void>;
   onRowClick?: () => void;
   showContact?: boolean;
   className?: string;
@@ -19,7 +21,6 @@ interface Props {
 
 const TaskRow: FC<Props> = ({
   task,
-  onToggleComplete,
   onRowClick,
   showContact = false,
   className = "w-full"
@@ -31,29 +32,26 @@ const TaskRow: FC<Props> = ({
     "tasks"
   );
 
+  const { setToastMessage } = useToast();
+  const { mutate: updateCompletion } = useUpdateTaskCompletion((err) => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
+    });
+  });
+
   const priorityConfig = getPriorityConfig(task.priority);
   const taskTypeIcon = getTaskTypeIcon(task.type.name);
   const PriorityIconComp = priorityConfig?.IconComponent;
   const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
 
-  const [optimisticCompleted, setOptimisticCompleted] = useState(
-    task.isCompleted
-  );
-
-  useEffect(() => {
-    setOptimisticCompleted(task.isCompleted);
-  }, [task.isCompleted]);
-
-  const handleToggleChange = async (checked: boolean) => {
-    setOptimisticCompleted(checked);
-    try {
-      await onToggleComplete?.(task.id, checked);
-    } catch {
-      setOptimisticCompleted(task.isCompleted);
-    }
+  const handleToggleChange = (checked: boolean) => {
+    updateCompletion({ id: task.id, isCompleted: checked });
   };
 
-  const showCompletedStyle = !!onToggleComplete && optimisticCompleted;
+  const showCompletedStyle = task.isCompleted;
   const showInlineContact = showContact && !!task.contact;
 
   return (
@@ -67,22 +65,21 @@ const TaskRow: FC<Props> = ({
         onClick={onRowClick}
       />
 
-      {onToggleComplete && (
-        <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
-          <CheckTask
-            checked={optimisticCompleted}
-            onChange={handleToggleChange}
-            aria-label={translateText(
-              [
-                optimisticCompleted
-                  ? "checkTaskMarkIncomplete"
-                  : "checkTaskMarkComplete"
-              ],
-              { name: task.name }
-            )}
-          />
-        </div>
-      )}
+      <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
+        <CheckTask
+          checked={task.isCompleted}
+          onChange={handleToggleChange}
+          defaultChecked={task.isCompleted}
+          aria-label={translateText(
+            [
+              task.isCompleted
+                ? "checkTaskMarkIncomplete"
+                : "checkTaskMarkComplete"
+            ],
+            { name: task.name }
+          )}
+        />
+      </div>
 
       <div
         className={`relative z-10 shrink-0 flex items-center justify-center ${showCompletedStyle ? "opacity-40" : ""}`}
