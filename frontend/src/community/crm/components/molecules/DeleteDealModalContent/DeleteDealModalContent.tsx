@@ -1,7 +1,6 @@
 import { ButtonV2, CloseIcon, DeleteButtonIcon } from "@rootcodelabs/skapp-ui";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { useCrmStore } from "~community/crm/store/store";
 
 const DeleteDealModalContent: React.FC = () => {
