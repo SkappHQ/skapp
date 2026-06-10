@@ -257,4 +257,29 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateDealStageName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_REQUIRED);
+		}
+		if (name.length() < CrmConstants.DEAL_STAGE_NAME_MIN_LENGTH
+				|| name.length() > CrmConstants.DEAL_STAGE_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_LENGTH);
+		}
+		if (!name.matches(CrmConstants.DEAL_STAGE_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealStageDescription(String description) {
+		if (description == null || description.isBlank()) {
+			return;
+		}
+		if (description.length() > CrmConstants.DEAL_STAGE_DESCRIPTION_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_TOO_LONG);
+		}
+		if (!description.matches(CrmConstants.DEAL_STAGE_DESCRIPTION_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS);
+		}
+	}
+
 }
