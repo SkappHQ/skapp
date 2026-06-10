@@ -19,6 +19,8 @@ public class CrmConstants {
 
 	public static final String DEAL_AMOUNT_REGEX = "^\\d+(\\.\\d{1,2})?$";
 
+	public static final int DEALS_PER_STAGE_LIMIT = 20;
+
 	public static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
 			Role.CRM_SALES_REPRESENTATIVE);
 
