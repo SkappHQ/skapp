@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -104,6 +105,81 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		log.info("createTask: execution ended with taskId={}", savedTask.getId());
 		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto editTask(Long id, CrmTaskEditRequestDto requestDto) {
+		log.info("editTask: execution started");
+
+		CrmTask task = crmTaskDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isEditRestricted(currentUser, task.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
+		}
+
+		if (requestDto.getName() != null) {
+			CrmValidations.validateTaskName(requestDto.getName());
+			task.setName(requestDto.getName());
+		}
+
+		if (requestDto.getTypeId() != null) {
+			CrmValidations.validateTaskTypeId(requestDto.getTypeId());
+			CrmTaskType taskType = crmTaskTypeDao.findById(requestDto.getTypeId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_TYPE_NOT_FOUND));
+			task.setType(taskType);
+		}
+
+		if (requestDto.getPriority() != null) {
+			task.setPriority(requestDto.getPriority());
+		}
+
+		if (requestDto.getIsCompleted() != null) {
+			task.setIsCompleted(requestDto.getIsCompleted());
+		}
+
+		if (requestDto.getDueAt() != null) {
+			task.setDueAt(requestDto.getDueAt());
+		}
+
+		if (requestDto.getNotes() != null) {
+			CrmValidations.validateTaskNotes(requestDto.getNotes());
+			task.setNotes(requestDto.getNotes());
+		}
+
+		if (requestDto.getOwnerId() != null) {
+			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
+			task.setOwner(owner);
+		}
+
+		if (requestDto.getContactId() != null) {
+			CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+			task.setContact(contact);
+		}
+
+		if (requestDto.getCompanyId() != null) {
+			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+			task.setCompany(company);
+		}
+
+		if (requestDto.getDealId() != null) {
+			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			task.setDeal(deal);
+		}
+
+		CrmValidations.validateContactBelongsToCompany(task.getContact(), task.getCompany());
+		CrmValidations.validateDealBelongsToContact(task.getDeal(), task.getContact());
+		CrmValidations.validateDealBelongsToCompany(task.getDeal(), task.getCompany());
+
+		CrmTask updatedTask = crmTaskDao.save(task);
+
+		log.info("editTask: execution ended successfully");
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(updatedTask));
 	}
 
 	private Employee resolveTaskOwner(Long ownerId, User currentUser) {

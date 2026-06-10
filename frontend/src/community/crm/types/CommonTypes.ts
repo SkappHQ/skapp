@@ -83,6 +83,12 @@ export interface CompanyLookup {
   name: string;
 }
 
+export interface CrmContactLookup {
+  id: number;
+  name: string;
+  company?: CompanyLookup | null;
+}
+
 export interface CrmCompaniesResponseType {
   items: CompanyLookup[];
   totalItems: number;
@@ -202,6 +208,17 @@ export interface CrmDealFilterParams {
   searchKeyword?: string;
   stageId?: number;
   priority?: CrmPriorityEnum;
+}
+
+export interface CrmCreateDealPayload {
+  name: string;
+  stageId: number;
+  contactId: number;
+  ownerId: number;
+  priority: CrmPriorityEnum;
+  description?: string | null;
+  amount?: string | null;
+  closingAt?: string | null;
 }
 
 export interface CrmCompanyEditFormTypes {

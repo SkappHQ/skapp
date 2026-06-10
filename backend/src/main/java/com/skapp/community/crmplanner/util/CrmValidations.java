@@ -2,6 +2,8 @@ package com.skapp.community.crmplanner.util;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
@@ -21,6 +23,12 @@ import java.time.LocalDateTime;
 
 @UtilityClass
 public class CrmValidations {
+
+	public static boolean isEditRestricted(User currentUser, Long ownerEmployeeId) {
+		Role currentCrmRole = currentUser.getEmployee().getEmployeeRole().getCrmRole();
+		return currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
+				&& !currentUser.getEmployee().getEmployeeId().equals(ownerEmployeeId);
+	}
 
 	public static void validateOwnerId(Long ownerId) {
 		if (ownerId == null) {
