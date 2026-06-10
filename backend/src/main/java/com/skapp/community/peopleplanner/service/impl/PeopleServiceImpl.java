@@ -2305,6 +2305,11 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private void validateCareerProgressionInBulk(EmployeeProgressionsDto employeeProgressionsDto, List<String> errors) {
 		if (employeeProgressionsDto != null) {
+			if (employeeProgressionsDto.getEmploymentType() != null && (employeeProgressionsDto.getJobFamilyId() == null
+					|| employeeProgressionsDto.getJobTitleId() == null)) {
+				errors.add(messageUtil
+					.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYMENT_TYPE_REQUIRES_JOB_FAMILY_AND_TITLE));
+			}
 			if (employeeProgressionsDto.getJobFamilyId() != null) {
 				Optional<JobFamily> jobRole = jobFamilyDao
 					.findByJobFamilyIdAndIsActive(employeeProgressionsDto.getJobFamilyId(), true);
