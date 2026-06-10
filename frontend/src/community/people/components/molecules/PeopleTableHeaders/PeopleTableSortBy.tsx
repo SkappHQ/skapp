@@ -1,5 +1,4 @@
 import { Box, SelectChangeEvent, Typography } from "@mui/material";
-import { useRef } from "react";
 
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -10,7 +9,6 @@ import {
 import { usePeopleStore } from "~community/people/store/store";
 
 const PeopleTableSortBy = ({ sortType }: { sortType: string }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const translateText = useTranslator("peopleModule", "peoples");
   const translateAria = useTranslator("peopleAria", "directory");
 
@@ -41,7 +39,7 @@ const PeopleTableSortBy = ({ sortType }: { sortType: string }) => {
   const selectedItem = dropdownItems.find((item) => item.value === sortOrder);
 
   return (
-    <Box ref={containerRef}>
+    <Box>
       <RoundedSelect
         id="people-table-sort-by"
         onChange={handleItemClick}
@@ -67,7 +65,6 @@ const PeopleTableSortBy = ({ sortType }: { sortType: string }) => {
         accessibility={{
           label: translateAria(["sortDropdown"])
         }}
-        container={containerRef.current}
       />
     </Box>
   );

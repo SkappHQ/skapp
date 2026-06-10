@@ -45,7 +45,6 @@ interface Props {
     };
   };
   variant?: TypographyProps["variant"];
-  container?: HTMLElement | null;
 }
 
 const RoundedSelect = ({
@@ -61,8 +60,7 @@ const RoundedSelect = ({
     description: ""
   },
   customStyles = {},
-  variant = "body1",
-  container
+  variant = "body1"
 }: Props) => {
   const theme = useTheme();
 
@@ -91,7 +89,6 @@ const RoundedSelect = ({
         onChange(event, child)
       }
       MenuProps={{
-        ...(container ? { container: () => container } : {}),
         PaperProps: {
           sx: {
             borderRadius: "0.75rem"
