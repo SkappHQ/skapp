@@ -1,10 +1,12 @@
 package com.skapp.community.crmplanner.payload.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class CrmOwnerResponseDto {
 
 	private Long employeeId;

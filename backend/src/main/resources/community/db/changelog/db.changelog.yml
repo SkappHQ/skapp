@@ -24,11 +24,21 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-add-employee-title.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-module-config-add-column-crm-module.sql
-  - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-employee-role-add-column-crm-role.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-dml-script-v1-update-employee-role-set-crm-role.sql
   - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-com-work-location.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-work-location-id.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-com-work-location-geofence.sql
+  - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create_shr_com_work_location_ppl_holiday_table.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-module-roles-restriction.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-notification-add-is-type-viewed.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-company-objective.sql
 
