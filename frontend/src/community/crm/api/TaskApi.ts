@@ -1,16 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { CrmTaskCategory } from "~community/crm/types/CommonTypes";
+import {
+  CrmTaskCategory,
+  UpdateTaskStatusPayload
+} from "~community/crm/types/CommonTypes";
 
 import { CrmTaskCreatePayload } from "../types/CommonTypes";
 import { taskEndpoints } from "./utils/ApiEndpoints";
 import { taskQueryKeys } from "./utils/QueryKeys";
-
-interface UpdateTaskStatusPayload {
-  id: number;
-  isCompleted: boolean;
-}
 
 const createTask = async (taskDetails: CrmTaskCreatePayload): Promise<void> => {
   // TODO: Replace with actual API call when backend is ready
@@ -28,18 +26,6 @@ export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
       onSuccess();
     },
     onError
-  });
-};
-
-const fetchCrmTaskTypes = async (): Promise<CrmTaskCategory[]> => {
-  const response = await authFetch.get(taskEndpoints.GET_TASK_TYPES);
-  return response?.data?.results?.[0];
-};
-
-export const useGetCrmTaskTypes = () => {
-  return useQuery({
-    queryKey: taskQueryKeys.GET_TASK_TYPES,
-    queryFn: fetchCrmTaskTypes
   });
 };
 

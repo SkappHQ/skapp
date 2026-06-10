@@ -16,16 +16,16 @@ interface Props {
   task: CrmTaskType;
   onRowClick?: () => void;
   showContact?: boolean;
-  isCompletedTab?: boolean;
+  isCheckTaskVisible?: boolean;
   className?: string;
 }
 
 const TaskRow: FC<Props> = ({
   task,
   onRowClick,
-  showContact = true,
-  isCompletedTab = false,
-  className = "w-full"
+  showContact = false,
+  isCheckTaskVisible = false,
+  className
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -49,12 +49,11 @@ const TaskRow: FC<Props> = ({
   const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
 
   const handleToggleChange = (checked: boolean) => {
-    if (isCompletedTab) return;
     updateCompletion({ id: task.id, isCompleted: checked });
   };
 
-  const showCompletedStyle = !isCompletedTab && task.isCompleted;
-  const showInlineContact = showContact && !!task.contact;
+  const showCompletedStyle = !isCheckTaskVisible && task.isCompleted;
+  const showInlineContact = showContact && task.contact;
 
   return (
     <div
@@ -133,21 +132,15 @@ const TaskRow: FC<Props> = ({
       <div
         className={`relative z-10 flex items-center gap-6 shrink-0 ${showCompletedStyle ? "opacity-40" : ""}`}
       >
-        {priorityConfig && PriorityIconComp && (
-          <PriorityIcon
-            icon={priorityConfig}
-            bgColor={priorityConfig.bgColor}
-          />
-        )}
-        {task.owner && (
-          <Avatar
-            id={`task-owner-${task.id}`}
-            size="xs"
-            src={task.owner.authPic ?? undefined}
-            firstName={task.owner.firstName}
-            lastName={task.owner.lastName ?? undefined}
-          />
-        )}
+        <PriorityIcon icon={priorityConfig} bgColor={priorityConfig.bgColor} />
+
+        <Avatar
+          id={`task-owner-${task.id}`}
+          size="xs"
+          src={task.owner.authPic ?? undefined}
+          firstName={task.owner.firstName}
+          lastName={task.owner.lastName ?? undefined}
+        />
       </div>
     </div>
   );

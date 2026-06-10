@@ -7,10 +7,7 @@ import {
 import { format, isBefore, isToday, parseISO, startOfDay } from "date-fns";
 import React, { ComponentType } from "react";
 
-import {
-  PriorityConfig,
-  priorityOptions
-} from "~community/crm/constants/taskConstants";
+import { priorityOptions } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export interface DueDateDisplay {
@@ -50,13 +47,13 @@ const TASK_TYPE_ICON_MAP: Record<string, ComponentType> = {
 };
 
 export const getTaskTypeIcon = (typeName: string): React.ReactElement => {
-  const IconComponent = TASK_TYPE_ICON_MAP[typeName.toLowerCase()];
-  return React.createElement(IconComponent);
+  return React.createElement(TASK_TYPE_ICON_MAP[typeName.toLowerCase()]);
 };
 
 export const getPriorityConfig = (
   priority: CrmPriorityEnum
-): PriorityConfig => {
-  const PriorityIconComp = priorityOptions.find((o) => o.value === priority)!;
-  return React.createElement(PriorityIconComp.IconComponent);
+): React.ReactElement => {
+  return React.createElement(
+    priorityOptions.find((o) => o.value === priority).IconComponent
+  );
 };

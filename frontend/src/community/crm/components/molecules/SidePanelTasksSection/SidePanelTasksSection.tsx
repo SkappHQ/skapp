@@ -9,14 +9,14 @@ import { CrmTaskType } from "~community/crm/types/CommonTypes";
 interface Props {
   tasks: CrmTaskType[];
   isLoading: boolean;
-  isCompletedTab?: boolean;
+  isCheckTaskVisible?: boolean;
   onTaskRowClick?: () => void;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
   tasks,
   isLoading,
-  isCompletedTab,
+  isCheckTaskVisible,
   onTaskRowClick
 }) => {
   const translateText = useTranslator(
@@ -32,12 +32,12 @@ const SidePanelTasksSection: FC<Props> = ({
     <>
       {!isLoading && hasTasks && (
         <>
-          <div className="border border-secondary-accent rounded-[8px] divide-y divide-secondary-accent w-full overflow-hidden">
+          <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent w-full overflow-hidden">
             {tasks.map((task) => (
               <TaskRow
                 key={task.id}
                 task={task}
-                isCompletedTab={isCompletedTab}
+                isCheckTaskVisible={isCheckTaskVisible}
                 onRowClick={onTaskRowClick}
                 showContact={false}
               />
@@ -60,7 +60,7 @@ const SidePanelTasksSection: FC<Props> = ({
       )}
 
       {!isLoading && !hasTasks && (
-        <div className="bg-secondary-background flex flex-col  h-[228px] items-center justify-center rounded-[8px] w-full">
+        <div className="bg-secondary-background flex flex-col  h-[228px] items-center justify-center rounded-lg w-full">
           <EmptyDataView
             icon={<SearchIcon width="24" height="24" />}
             title={translateText(["emptyTitle"])}
