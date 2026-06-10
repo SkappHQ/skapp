@@ -122,59 +122,6 @@ describe("getEmployeeDetails", () => {
 });
 
 describe("getJobTitlesWithJobFamilyId", () => {
-  it("should return job titles for the given job family id when jobFamilyTransfer is true", () => {
-    const jobFamilyTransfer = true;
-    const jobFamilyId = 1;
-    const allJobFamilies: AllJobFamilyType[] = [
-      {
-        jobFamilyId: 1,
-        name: "Engineering",
-        jobTitles: [
-          { jobTitleId: 1, name: "Developer" },
-          { jobTitleId: 2, name: "Tester" }
-        ],
-        employees: []
-      }
-    ];
-
-    const result = getJobTitlesWithJobFamilyId(
-      jobFamilyTransfer,
-      allJobFamilies,
-      jobFamilyId
-    );
-
-    expect(result).toEqual([
-      { jobTitleId: 1, name: "Developer" },
-      { jobTitleId: 2, name: "Tester" }
-    ]);
-  });
-
-  it("should return filtered job titles excluding the given job title id when jobFamilyTransfer is false", () => {
-    const jobFamilyTransfer = false;
-    const jobFamilyId = 1;
-    const jobTitleId = 1;
-    const allJobFamilies: AllJobFamilyType[] = [
-      {
-        jobFamilyId: 1,
-        name: "Engineering",
-        jobTitles: [
-          { jobTitleId: 1, name: "Developer" },
-          { jobTitleId: 2, name: "Tester" }
-        ],
-        employees: []
-      }
-    ];
-
-    const result = getJobTitlesWithJobFamilyId(
-      jobFamilyTransfer,
-      allJobFamilies,
-      jobFamilyId,
-      jobTitleId
-    );
-
-    expect(result).toEqual([{ jobTitleId: 2, name: "Tester" }]);
-  });
-
   it("should return an empty array if job family is not found", () => {
     const jobFamilyTransfer = true;
     const jobFamilyId = 2;

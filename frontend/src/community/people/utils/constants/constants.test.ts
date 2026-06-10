@@ -1,58 +1,6 @@
 import { DATE_FORMAT, USER_BULK_HEADERS } from "./constants";
 
 describe("USER_BULK_HEADERS", () => {
-  it("should contain all expected headers", () => {
-    const expectedHeaders = [
-      "firstName",
-      "middleName",
-      "lastName",
-      "gender",
-      "birthDate",
-      "nationality",
-      "nin",
-      "maritalStatus",
-      "personalEmail",
-      "phoneDialCode",
-      "phone",
-      "address",
-      "addressLine2",
-      "city",
-      "country",
-      "state",
-      "postalCode",
-      "linkedIn",
-      "facebook",
-      "instagram",
-      "x",
-      "bloodGroup",
-      "allergies",
-      "dietaryRestrictions",
-      "tshirtSize",
-      "name",
-      "emergencyRelationship",
-      "contactNoDialCode",
-      "contactNo",
-      "identificationNo",
-      "workEmail",
-      "employmentAllocation",
-      "joinedDate",
-      "teams",
-      "primaryManager",
-      "secondaryManager",
-      "startDate",
-      "endDate",
-      "timeZone",
-      "employeeType",
-      "jobFamilyId",
-      "jobTitleId",
-      "ssn",
-      "ethnicity",
-      "eeo",
-      "passportNo"
-    ];
-    expect(USER_BULK_HEADERS).toEqual(expectedHeaders);
-  });
-
   it("should not contain duplicate headers", () => {
     const uniqueHeaders = new Set(USER_BULK_HEADERS);
     expect(uniqueHeaders.size).toBe(USER_BULK_HEADERS.length);

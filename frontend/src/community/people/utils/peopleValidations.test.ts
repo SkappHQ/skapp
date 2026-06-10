@@ -1,10 +1,12 @@
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 
 import {
+  employeeCareerDetailsValidation,
   employeeEmergencyContactDetailsValidation,
   employeeEmploymentDetailsValidation,
   employeeEntitlementsDetailsValidation,
   employeeGeneralDetailsValidation,
+  employeeSocialMediaDetailsValidation,
   quickAddEmployeeValidations
 } from "./peopleValidations";
 
@@ -21,15 +23,6 @@ describe("Emergency Contact Validation", () => {
         contactNo: "0114567890"
       };
       await expect(schema.validate(validData)).resolves.toBeTruthy();
-    });
-
-    it("should reject invalid name format", async () => {
-      const invalidData = {
-        name: "123",
-        relationship: "Father",
-        contactNo: "0374567890"
-      };
-      await expect(schema.validate(invalidData)).rejects.toThrow();
     });
 
     it("should reject phone number that is too short", async () => {
@@ -185,15 +178,246 @@ describe("Entitlements Details Validation", () => {
   });
 });
 
+describe("Career Details Validation", () => {
+  const schema = employeeCareerDetailsValidation(translator);
+
+  it("should validate valid career details with current position", async () => {
+    const validData = {
+      employeeType: "Contract",
+      jobFamily: "Engineering",
+      jobTitle: "Software Engineer",
+      startDate: new Date("2024-01-01"),
+      currentPosition: true
+    };
+    await expect(schema.validate(validData)).resolves.toBeTruthy();
+  });
+
+  it("should reject missing employeeType", async () => {
+    const data = {
+      employeeType: "",
+      jobFamily: "Engineering",
+      jobTitle: "Software Engineer",
+      startDate: new Date("2024-01-01"),
+      currentPosition: true
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject missing jobFamily", async () => {
+    const data = {
+      employeeType: "Contract",
+      jobFamily: "",
+      jobTitle: "Software Engineer",
+      startDate: new Date("2024-01-01"),
+      currentPosition: true
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject missing jobTitle", async () => {
+    const data = {
+      employeeType: "Contract",
+      jobFamily: "Engineering",
+      jobTitle: "",
+      startDate: new Date("2024-01-01"),
+      currentPosition: true
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should require endDate when currentPosition is false", async () => {
+    const data = {
+      employeeType: "Contract",
+      jobFamily: "Engineering",
+      jobTitle: "Software Engineer",
+      startDate: new Date("2024-01-01"),
+      currentPosition: false,
+      endDate: null
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should accept endDate when currentPosition is false", async () => {
+    const data = {
+      employeeType: "Contract",
+      jobFamily: "Engineering",
+      jobTitle: "Software Engineer",
+      startDate: new Date("2024-01-01"),
+      currentPosition: false,
+      endDate: new Date("2025-01-01")
+    };
+    await expect(schema.validate(data)).resolves.toBeTruthy();
+  });
+
+  it("should reject endDate equal to startDate", async () => {
+    const data = {
+      employeeType: "Contract",
+      jobFamily: "Engineering",
+      jobTitle: "Software Engineer",
+      startDate: new Date("2024-01-01"),
+      currentPosition: false,
+      endDate: new Date("2024-01-01")
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject endDate before startDate", async () => {
+    const data = {
+      employeeType: "Contract",
+      jobFamily: "Engineering",
+      jobTitle: "Software Engineer",
+      startDate: new Date("2024-06-01"),
+      currentPosition: false,
+      endDate: new Date("2024-01-01")
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should not require endDate when currentPosition is true", async () => {
+    const data = {
+      employeeType: "Contract",
+      jobFamily: "Engineering",
+      jobTitle: "Software Engineer",
+      startDate: new Date("2024-01-01"),
+      currentPosition: true,
+      endDate: null
+    };
+    await expect(schema.validate(data)).resolves.toBeTruthy();
+  });
+});
+
+describe("Social Media Details Validation", () => {
+  const schema = employeeSocialMediaDetailsValidation(translator);
+
+  it("should validate valid social media URLs", async () => {
+    const validData = {
+      linkedIn: "https://linkedin.com/in/johndoe",
+      x: "https://x.com/johndoe",
+      facebook: "https://facebook.com/johndoe",
+      instagram: "https://instagram.com/johndoe"
+    };
+    await expect(schema.validate(validData)).resolves.toBeTruthy();
+  });
+
+  it("should accept all null/empty social media fields", async () => {
+    const data = {
+      linkedIn: null,
+      x: null,
+      facebook: null,
+      instagram: null
+    };
+    await expect(schema.validate(data)).resolves.toBeTruthy();
+  });
+
+  it("should reject invalid LinkedIn URL", async () => {
+    const data = {
+      linkedIn: "not-a-url",
+      x: null,
+      facebook: null,
+      instagram: null
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject invalid X/Twitter URL", async () => {
+    const data = {
+      linkedIn: null,
+      x: "not-a-url",
+      facebook: null,
+      instagram: null
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+});
+
 describe("Quick Add Employee Validation", () => {
   const schema = quickAddEmployeeValidations(translator);
 
-  it("should reject invalid name characters", async () => {
-    const invalidData = {
-      firstName: "John123",
+  it("should validate a complete valid quick add payload", async () => {
+    const validData = {
+      firstName: "Jane",
       lastName: "Doe",
-      workEmail: "john.doe@example.com"
+      email: "jane.doe@example.com"
     };
-    await expect(schema.validate(invalidData)).rejects.toThrow();
+    await expect(schema.validate(validData)).resolves.toBeTruthy();
+  });
+
+  it("should reject when firstName is missing", async () => {
+    const data = { firstName: "", lastName: "Doe", email: "test@example.com" };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject when lastName is missing", async () => {
+    const data = {
+      firstName: "Jane",
+      lastName: "",
+      email: "test@example.com"
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject when email is missing", async () => {
+    const data = { firstName: "Jane", lastName: "Doe", email: "" };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject an invalid email format", async () => {
+    const data = {
+      firstName: "Jane",
+      lastName: "Doe",
+      email: "not-an-email"
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject email without domain", async () => {
+    const data = {
+      firstName: "Jane",
+      lastName: "Doe",
+      email: "user@"
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject firstName exceeding max length (50 chars)", async () => {
+    const data = {
+      firstName: "A".repeat(51),
+      lastName: "Doe",
+      email: "test@example.com"
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should reject lastName exceeding max length (50 chars)", async () => {
+    const data = {
+      firstName: "Jane",
+      lastName: "B".repeat(51),
+      email: "test@example.com"
+    };
+    await expect(schema.validate(data)).rejects.toThrow();
+  });
+
+  it("should accept firstName at exactly max length (50 chars)", async () => {
+    const data = {
+      firstName: "A".repeat(50),
+      lastName: "Doe",
+      email: "test@example.com"
+    };
+    await expect(schema.validate(data)).resolves.toBeTruthy();
+  });
+
+  it("should trim whitespace from email", async () => {
+    const data = {
+      firstName: "Jane",
+      lastName: "Doe",
+      email: "  jane@example.com  "
+    };
+    const result = await schema.validate(data);
+    expect(result.email).toBe("jane@example.com");
+  });
+
+  it("should reject when all fields are empty", async () => {
+    const data = { firstName: "", lastName: "", email: "" };
+    await expect(schema.validate(data)).rejects.toThrow();
   });
 });

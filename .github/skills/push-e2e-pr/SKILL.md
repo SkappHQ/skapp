@@ -1,0 +1,185 @@
+---
+name: push-e2e-pr
+description: 'Push generated E2E tests to the automation repo and create a GitHub PR. Use when: pushing E2E tests, creating PR for Playwright tests, submitting test automation PR, opening E2E pull request.'
+argument-hint: 'PR number and optional feature name, e.g. "1979 work-location"'
+---
+
+# Push E2E Tests & Create PR
+
+Push generated Playwright E2E tests from the automation repo to remote and create a GitHub Pull Request with a test coverage report.
+
+## When to Use
+
+- After generating E2E tests with the `generate-e2e-tests` skill
+- When asked to "push E2E tests", "create test PR", or "submit automation PR"
+
+## Inputs
+
+The user must provide:
+- **PrNumber**: The source repository PR number to link in the E2E PR body
+
+Optional:
+- **FeatureName**: Short feature name for the branch (e.g. `work-location`)
+- **Automation repo path**: Path to the E2E repo (default: sibling `skapp-automation/` directory)
+- **RunTests**: Whether to run Playwright tests before pushing
+
+## Procedure
+
+### Step 1: Locate automation repo and find test files
+
+Navigate to the automation repo directory. Find all `.spec.ts` files that are new or modified:
+
+```
+cd <automation-repo>
+git status --porcelain -- "src/modules/**/*.spec.ts" "src/modules/**/*.ts"
+```
+
+Count test cases in each spec file by counting occurrences of `test(` and `it(`.
+
+### Step 2: Run tests before push (headless)
+
+If the user wants to verify before pushing, run in **headless** mode (fast, no UI):
+
+```
+cd <automation-repo> && npx playwright test src/modules/<module>/tests/ --project=chromium --reporter=list
+```
+
+### Step 3: Create feature branch
+
+```
+git fetch origin
+```
+
+Determine the branch name: `feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests`
+
+Check if the branch already exists locally or on the remote:
+
+```
+git branch --list "feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests"
+git ls-remote --heads origin "feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests"
+```
+
+- If the branch **does not exist** locally or remotely, create it:
+  ```
+  git checkout -b feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests origin/develop
+  ```
+- If the branch **already exists**, append an incrementing numeric suffix and retry:
+  ```
+  feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests-2
+  feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests-3
+  ```
+  Keep incrementing until a name is found that does not exist locally or remotely, then create it:
+  ```
+  git checkout -b feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests-<N> origin/develop
+  ```
+
+If `origin/develop` doesn't exist, use `origin/main` as the base.
+
+### Step 4: Stage and commit
+
+```
+git add src/modules/ src/shared/
+git commit -m "test: add E2E tests for <MODULE>/<FEATURE> (PR #<PR_NUMBER>)"
+```
+
+### Step 5: Push to remote
+
+```
+git push origin feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests
+```
+
+If push fails because the branch is new, use `--set-upstream`:
+
+```
+git push --set-upstream origin feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests
+```
+
+### Step 6: Create Draft PR
+
+Use `gh` CLI to create the PR **as a draft**. Build the PR body with the detailed template below:
+
+```
+gh pr create \
+  --title "test: E2E tests for <MODULE>/<FEATURE> (PR #<PR_NUMBER>)" \
+  --base develop \
+  --draft \
+  --body "<PR_BODY>"
+```
+
+If `gh` CLI is not available, print the compare URL for manual PR creation:
+```
+https://github.com/<AUTOMATION_REPO>/compare/develop...feat/<PR_NUMBER>-<FEATURE_NAME>-e2e-tests?expand=1
+```
+
+### Step 7: Summary
+
+Print a summary with:
+- Branch name
+- Number of test files and total test cases
+- PR URL (if created)
+
+## PR Body Template
+
+Use this exact template for the PR body (fill in all placeholders):
+
+```markdown
+## 🧪 E2E Test Coverage — `<MODULE>/<FEATURE>`
+
+### Source PR
+- **Repository**: SkappHQ/skapp
+- **PR**: #<PR_NUMBER>
+- **Branch**: `<SOURCE_BRANCH>`
+- **Feature**: `<FEATURE>`
+
+### Test Summary
+
+| Metric | Value |
+|--------|-------|
+| Module | `<MODULE>` |
+| Spec Files | <SPEC_COUNT> |
+| Total Test Cases | <TOTAL_TESTS> |
+| Status | 🟡 Draft — pending review |
+
+### Test Files
+
+| File | Test Cases | Description |
+|------|:----------:|-------------|
+| `<filename1>.spec.ts` | <count1> | <brief description of what it tests> |
+| `<filename2>.spec.ts` | <count2> | <brief description of what it tests> |
+
+### Page Objects
+
+| File | Methods |
+|------|---------|
+| `<PageName>.ts` | <list of key public methods> |
+
+### Affected Repositories
+
+| Repository | Layer | Branch | Changed Files |
+|-----------|-------|--------|:-------------:|
+| `SkappHQ/skapp` | community | `<branch>` | <count> |
+| `rootcodelabs/skapp-ep-fe-src` | frontend (enterprise) | `<branch>` | <count> |
+
+> Only list repos that actually have changes on the feature branch. Omit repos with no changes.
+
+### How to Run
+
+```bash
+# Headed mode (see browser)
+npx playwright test src/modules/<MODULE>/tests/ --project=chromium --headed
+
+# Headless mode
+npx playwright test src/modules/<MODULE>/tests/ --project=chromium
+```
+
+---
+*Generated by Skapp Test Automation Pipeline — <DATE>*
+```
+
+## Important Notes
+
+- Do NOT ask for confirmation — execute all steps autonomously
+- PRs are always opened as **draft** — user promotes to ready after review
+- The PR targets the `develop` branch (or `main` if develop doesn't exist)
+- The automation repo is separate from the main monorepo
+- Fill in ALL placeholders in the PR body template — do not leave `<...>` markers
