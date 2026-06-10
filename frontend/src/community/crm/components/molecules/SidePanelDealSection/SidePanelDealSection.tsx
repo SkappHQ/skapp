@@ -1,5 +1,6 @@
 import {
   AdvancedAccordion,
+  AdvancedAccordionItem,
   ButtonV2,
   EmptyDataView,
   PlusIcon,
@@ -10,19 +11,30 @@ import React from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmDealType } from "~community/crm/types/CommonTypes";
 
-import { mapDealsToAccordionItems } from "./mapDealsToAccordionItems";
+import {
+  DealAccordionItemBadge,
+  DealAccordionItemContent,
+  DealAccordionItemHeader
+} from "./DealAccordionItem";
 
 interface Props {
   deals: CrmDealType[];
 }
 
-const SidePanelDeals: React.FC<Props> = ({ deals }) => {
+const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
 
   const handleAddDeal = () => {
     // Open the add deal side panel when clicked
   };
+
+  const accordionItems: AdvancedAccordionItem[] = deals.map((deal) => ({
+    id: String(deal.id),
+    header: <DealAccordionItemHeader deal={deal} />,
+    badge: <DealAccordionItemBadge deal={deal} />,
+    content: <DealAccordionItemContent deal={deal} />
+  }));
 
   return (
     <div className="flex flex-col gap-4 mt-6">
@@ -31,7 +43,7 @@ const SidePanelDeals: React.FC<Props> = ({ deals }) => {
       {hasDeals ? (
         <div className="flex flex-col w-full">
           <AdvancedAccordion
-            items={mapDealsToAccordionItems(deals, translateText)}
+            items={accordionItems}
             allowMultiple={true}
             className="gap-4"
           />
@@ -69,4 +81,4 @@ const SidePanelDeals: React.FC<Props> = ({ deals }) => {
   );
 };
 
-export default SidePanelDeals;
+export default SidePanelDealSection;
