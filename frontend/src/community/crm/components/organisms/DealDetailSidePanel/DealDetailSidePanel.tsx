@@ -1,15 +1,10 @@
-import {
-  DeleteButtonIcon,
-  KebabMenu,
-  SidePanel
-} from "@rootcodelabs/skapp-ui";
+import { DeleteButtonIcon, KebabMenu, SidePanel } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmDealType } from "~community/crm/types/CommonTypes";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmDealType } from "~community/crm/types/CommonTypes";
 import { CrmDealModalTypes } from "~community/crm/types/ModalTypes";
 
 interface Props {
@@ -18,12 +13,12 @@ interface Props {
   deal: CrmDealType | null;
 }
 
-const DealDetailSidePanel: FC<Props> = ({
-  isOpen,
-  onClose,
-  deal
-}) => {
-  const translateText = useTranslator("crmModule", "deals", "dealDetailSidePanel");
+const DealDetailSidePanel: FC<Props> = ({ isOpen, onClose, deal }) => {
+  const translateText = useTranslator(
+    "crmModule",
+    "deals",
+    "dealDetailSidePanel"
+  );
 
   const { setIsDealModalOpen, setDealModalType, setCurrentDeletingDeal } =
     useCrmStore((store) => ({
@@ -86,8 +81,7 @@ const DealDetailSidePanel: FC<Props> = ({
           }}
         />
       }
-    >
-    </SidePanel>
+    ></SidePanel>
   );
 };
 

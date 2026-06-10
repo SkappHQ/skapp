@@ -32,7 +32,11 @@ const DeleteDealModalContent: React.FC = () => {
 
   return (
     <div className="flex flex-col">
-      <div>{translateText(["description"], { dealName: currentDeletingDeal?.name })}</div>
+      <div>
+        {translateText(["description"], {
+          dealName: currentDeletingDeal?.name
+        })}
+      </div>
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
           variant="tertiary"
