@@ -94,13 +94,13 @@ const useUserBulkConvert = () => {
               linkedIn: user?.linkedIn,
               instagram: user?.instagram
             },
+            bloodGroup: user?.bloodGroup
+              ? BloodGroupSelector[user?.bloodGroup]
+              : null,
             extraInfo: {
               allergies: user?.allergies,
               dietaryRestrictions: user?.dietaryRestrictions,
-              tshirtSize: user?.tshirtSize,
-              bloodGroup: user?.bloodGroup
-                ? BloodGroupSelector[user?.bloodGroup]
-                : null
+              tShirtSize: user?.tshirtSize
             },
             passportNo: user?.passportNo
           },
@@ -120,7 +120,7 @@ const useUserBulkConvert = () => {
             isPrimary: true
           },
           employeeProgression: {
-            employeeType: user?.employeeType
+            employmentType: user?.employeeType
               ? (user?.employeeType?.toUpperCase() as EmploymentTypes)
               : null,
             jobFamilyId: jobFamilyObject ? jobFamilyObject?.jobFamilyId : null,

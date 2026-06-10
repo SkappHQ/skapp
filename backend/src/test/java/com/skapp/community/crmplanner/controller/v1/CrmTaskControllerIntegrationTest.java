@@ -49,6 +49,7 @@ import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -97,6 +98,8 @@ class CrmTaskControllerIntegrationTest {
 
 	private Long taskTypeId;
 
+	private CrmTaskType taskType;
+
 	@BeforeEach
 	void setup() {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
@@ -107,11 +110,72 @@ class CrmTaskControllerIntegrationTest {
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		contactId = crmContactDao.save(contact).getId();
 
-		CrmTaskType type = new CrmTaskType();
-		type.setName("Call");
-		type.setOrderIndex(1);
-		taskTypeId = crmTaskTypeDao.save(type).getId();
+		taskType = new CrmTaskType();
+		taskType.setName("Call");
+		taskType.setOrderIndex(1);
+		taskType = crmTaskTypeDao.save(taskType);
+		taskTypeId = taskType.getId();
 	}
+
+	// --- GET tasks helpers and tests ---
+
+	private ResultActions performGetRequest(String token) throws Exception {
+		return mvc
+			.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(token)));
+	}
+
+	private CrmTask savedTask(String name, boolean isDeleted) {
+		return savedTask(name, isDeleted, false);
+	}
+
+	private CrmTask savedTask(String name, boolean isDeleted, boolean isCompleted) {
+		CrmTask task = new CrmTask();
+		task.setName(name);
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setIsDeleted(isDeleted);
+		task.setIsCompleted(isCompleted);
+		return crmTaskDao.save(task);
+	}
+
+	@Test
+	@DisplayName("Get tasks with no tasks - Returns OK with empty tasks list")
+	void getTasks_NoTasks_ReturnsOkEmpty() throws Exception {
+		performGetRequest(authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks']").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get tasks excludes soft-deleted tasks - Returns only non-deleted")
+	void getTasks_WithDeletedTask_ExcludesDeleted() throws Exception {
+		savedTask("Active task", false);
+		savedTask("Deleted task", true);
+
+		performGetRequest(authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Active task"));
+	}
+
+	@Test
+	@DisplayName("Get tasks excludes completed tasks - Returns only non-completed")
+	void getTasks_WithCompletedTask_ExcludesCompleted() throws Exception {
+		savedTask("Active task", false, false);
+		savedTask("Completed task", false, true);
+
+		performGetRequest(authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Active task"));
+	}
+
+	// --- CREATE task helpers and tests ---
 
 	private ResultActions performCreateRequest(CrmTaskCreateRequestDto dto) throws Exception {
 		return mvc.perform(post(BASE_PATH).with(SecurityTestUtils.bearerToken(authToken))
