@@ -146,7 +146,7 @@
       "kebabMenuAriaLabel": "Deal actions"
     },
     "deleteDealModal": {
-      "title": "Are you sure?",
+      "areYouSureModalTitle": "Are you sure?",
       "description": "Are you sure you want to delete '{{dealName}}'? This will permanently remove this contact along with all associated tasks. This action cannot be undone.",
       "buttons": {
         "cancel": "Cancel",

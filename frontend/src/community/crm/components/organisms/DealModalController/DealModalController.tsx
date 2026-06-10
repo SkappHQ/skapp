@@ -32,7 +32,7 @@ const DealModalController = () => {
   const getModalTitle = (): string => {
     switch (dealModalType) {
       case CrmDealModalTypes.CONFIRM_DELETE:
-        return translateText(["title"]);
+        return translateText(["areYouSureModalTitle"]);
       default:
         return "";
     }
