@@ -15,7 +15,7 @@ import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { formatValue } from "~community/crm/utils/crmUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/crmConstants";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/commonConstants";
 import { useContainerWidth } from "./utils/dealsTableUtils";
 
 interface DealRow extends BaseRowData {
