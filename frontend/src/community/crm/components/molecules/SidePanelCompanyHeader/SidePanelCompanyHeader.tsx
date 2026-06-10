@@ -11,7 +11,7 @@ import { IconName } from "~community/common/types/IconTypes";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmCompanyType } from "~community/crm/types/CommonTypes";
 
-const ICON_STROKE = "var(--color-secondary-icon)";
+const ICON_FILL = "var(--color-secondary-icon)";
 
 interface Props {
   company: CrmCompanyType;
@@ -29,7 +29,7 @@ const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
       <div className="flex items-center justify-between max-w-[80%]">
         {company.website && (
           <SidePanelHeaderInfoItem
-            icon={<BrowserIcon stroke={ICON_STROKE} width="20" height="20" />}
+            icon={<BrowserIcon fill={ICON_FILL} width="20" height="20" />}
             value={company.website}
             endIcon={IconName.POP_OUT_ICON}
             onClick={() =>
@@ -39,19 +39,19 @@ const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
         )}
         {company.contactNumber && (
           <SidePanelHeaderInfoItem
-            icon={<PhoneIcon stroke={ICON_STROKE} width="20" height="20" />}
+            icon={<PhoneIcon fill={ICON_FILL} width="20" height="20" />}
             value={company.contactNumber}
           />
         )}
         {company.address && (
           <SidePanelHeaderInfoItem
-            icon={<LocationIcon stroke={ICON_STROKE} width="20" height="20" />}
+            icon={<LocationIcon fill={ICON_FILL} width="20" height="20" />}
             value={company.address}
           />
         )}
         {company.industry && (
           <SidePanelHeaderInfoItem
-            icon={<BuildingIcon stroke={ICON_STROKE} width="20" height="20" />}
+            icon={<BuildingIcon fill={ICON_FILL} width="20" height="20" />}
             value={translateText([company.industry])}
           />
         )}
