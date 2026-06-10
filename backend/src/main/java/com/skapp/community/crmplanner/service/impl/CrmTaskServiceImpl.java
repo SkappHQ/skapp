@@ -1,11 +1,9 @@
 package com.skapp.community.crmplanner.service.impl;
 
-import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -25,6 +23,7 @@ import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.service.CrmTaskService;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -61,15 +59,15 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	public ResponseEntityDto getTasks() {
 		log.info("getTasks: execution started");
 
-		Set<String> roles = userService.getCurrentUserRoles();
+		User currentUser = userService.getCurrentUser();
 		List<CrmTaskResponseDto> tasks;
 
-		if (roles.contains(AuthConstants.AUTH_ROLE + Role.CRM_SALES_MANAGER)) {
-			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwner());
+		if (CrmUtil.isCrmSalesRepresentative(currentUser)) {
+			Long employeeId = currentUser.getEmployee().getEmployeeId();
+			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwnerByOwnerId(employeeId));
 		}
 		else {
-			Long employeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
-			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwnerByOwnerId(employeeId));
+			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwner());
 		}
 
 		CrmGetTasksResponseDto response = new CrmGetTasksResponseDto();
