@@ -20,6 +20,7 @@ export const peoplesEndpoints = {
   USER_BULK_UPLOAD: `${moduleAPIPath.PEOPLE}/bulk/employees`,
   TERMINATE_EMPLOYEE: (employeeId: string | number) =>
     `${moduleAPIPath.PEOPLE}/user/terminate/${employeeId}`,
+  REACTIVATE_EMPLOYEE: `${moduleAPIPath.PEOPLE}/user/reactivate`,
   SEARCH_EMPLOYEE_TEAM_ADMIN: `${moduleAPIPath.PEOPLE}/search/employee-team`,
   CHECK_IF_CURRENT_USER_HAS_MANAGERS_AVAILABILITY: `${moduleAPIPath.PEOPLE}/me/managers/availability`,
   MY_MANAGERS: `${moduleAPIPath.PEOPLE}/me/managers`,
