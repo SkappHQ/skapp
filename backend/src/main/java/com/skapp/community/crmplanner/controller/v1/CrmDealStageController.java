@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealStageCreateRequestDto;
 import com.skapp.community.crmplanner.service.CrmDealStageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,4 +32,12 @@ public class CrmDealStageController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Create a deal stage",
+			description = "Creates a new deal stage.")
+	@PostMapping()
+	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> createDealStage(@RequestBody CrmDealStageCreateRequestDto requestDto) {
+		ResponseEntityDto response = crmDealStageService.createDealStage(requestDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
 }
