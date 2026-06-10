@@ -34,34 +34,44 @@ const ContentWithDrawer = ({ children }: Props) => {
         <Drawer />
         <Stack sx={classes.contentWrapper}>
           <AppBar />
-          <main
-            aria-busy={loading}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              flex: 1,
-              overflowX: "hidden",
-              position: "relative"
-            }}
-          >
-            {loading && <FullScreenLoader fullPage={false} />}
-            <Stack
-              id="content-with-drawer-main-content"
-              tabIndex={loading ? -1 : 0}
-              role="document"
-              aria-label={translateAria(["contentAreaWithDrawer"])}
-              {...(loading && { inert: "" })}
+          {loading ? (
+            <div
               style={{
+                width: "100%",
+                flex: 1,
+                position: "relative",
+                minHeight: "calc(100vh - 64px)"
+              }}
+            >
+              <FullScreenLoader fullPage={false} />
+            </div>
+          ) : (
+            <main
+              aria-busy={loading}
+              style={{
+                display: "flex",
                 flexDirection: "column",
                 width: "100%",
                 flex: 1,
                 overflowX: "hidden"
               }}
             >
-              {children}
-            </Stack>
-          </main>
+              <Stack
+                id="content-with-drawer-main-content"
+                tabIndex={loading ? -1 : 0}
+                role="document"
+                aria-label={translateAria(["contentAreaWithDrawer"])}
+                style={{
+                  flexDirection: "column",
+                  width: "100%",
+                  flex: 1,
+                  overflowX: "hidden"
+                }}
+              >
+                {children}
+              </Stack>
+            </main>
+          )}
         </Stack>
       </Stack>
       <ToastMessage
