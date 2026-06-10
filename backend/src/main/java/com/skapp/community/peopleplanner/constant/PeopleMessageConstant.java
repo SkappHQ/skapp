@@ -112,6 +112,9 @@ public enum PeopleMessageConstant implements MessageConstant {
 			"api.error.people.invalid-value-for-employment-allocation-enum"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_STATUS_ENUM("api.error.people.invalid-value-for-employment-status-enum"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_TYPE_ENUM("api.error.people.invalid-value-for-employment-type-enum"),
+
+	PEOPLE_ERROR_EMPLOYMENT_TYPE_REQUIRES_JOB_FAMILY_AND_TITLE(
+			"api.error.people.employment-type-requires-job-family-and-title"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_ETHNICITY_ENUM("api.error.people.invalid-value-for-ethnicity-enum"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_MARITAL_STATUS_ENUM("api.error.people.invalid-value-for-marital-status-enum"),
 	PEOPLE_ERROR_LOGIN_PENDING_EMPLOYEES_NOT_FOUND("api.error.people.login-pending-employees-not-found"),
