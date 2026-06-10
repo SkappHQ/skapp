@@ -33,7 +33,6 @@ interface Props {
   allDeals: CrmDealListItem[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
-  onDealClick?: (deal: CrmDealListItem) => void;
 }
 
 const DealsTable: FC<Props> = ({
@@ -41,8 +40,7 @@ const DealsTable: FC<Props> = ({
   isLoading,
   allDeals,
   hasNextPage,
-  onLoadMore,
-  onDealClick
+  onLoadMore
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
 
@@ -133,17 +131,14 @@ const DealsTable: FC<Props> = ({
         return {
           id: String(deal.id),
           dealName: (
-            <div
-              className="flex items-center gap-2 cursor-pointer"
-              onClick={() => onDealClick?.(deal)}
-            >
+            <div className="flex items-center gap-2">
               <div
                 className="flex items-center justify-center size-6 rounded-full shrink-0 bg-teal-500"
               >
                 <HandshakeIcon width="14" height="14" fill="var(--color-white)" />
               </div>
               <span className="body2">#{deal.id}</span>
-              <span className="body2 hover:underline">{deal.name}</span>
+              <span className="body2">{deal.name}</span>
             </div>
           ),
           value: (
