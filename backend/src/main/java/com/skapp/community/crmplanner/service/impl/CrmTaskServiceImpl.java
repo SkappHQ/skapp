@@ -14,6 +14,8 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
+import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -21,12 +23,15 @@ import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.service.CrmTaskService;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -48,6 +53,30 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	private final CrmOwnerResolverService crmOwnerResolver;
 
 	private final CrmMapper crmMapper;
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getTasks() {
+		log.info("getTasks: execution started");
+
+		User currentUser = userService.getCurrentUser();
+		List<CrmTaskResponseDto> tasks;
+
+		if (CrmUtil.isCrmSalesRepresentative(currentUser)) {
+			Long employeeId = currentUser.getEmployee().getEmployeeId();
+			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwnerByOwnerId(employeeId));
+		}
+		else {
+			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwner());
+		}
+
+		CrmGetTasksResponseDto response = new CrmGetTasksResponseDto();
+		response.setTasks(tasks);
+
+		log.info("getTasks: execution ended");
+
+		return new ResponseEntityDto(false, response);
+	}
 
 	@Override
 	@Transactional
