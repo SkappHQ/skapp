@@ -15,6 +15,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.enterprise.common.config.TenantContext;
+import com.skapp.enterprise.common.config.TenantValidator;
 import com.skapp.enterprise.common.constant.EPCommonMessageConstant;
 import com.skapp.enterprise.common.constant.EpCommonConstants;
 import com.skapp.enterprise.common.payload.request.EpGuestUserApprovalRequestDto;
@@ -95,6 +96,8 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	private final EpProjectService epProjectService;
 
 	private final GuestUserRequestDao guestUserRequestDao;
+
+	private final TenantValidator tenantValidator;
 
 	@Override
 	public ResponseEntityDto createGuestUser(EpGuestUserInviteRequestDto epGuestUserInviteRequestDto) {
@@ -259,6 +262,10 @@ public class EpGuestUserServiceImpl implements EpGuestUserService {
 	@Override
 	public List<EpGuestUserResponseDto> getAllGuestUsers(String email, List<AccountStatus> statuses,
 			List<Long> projectIds) {
+		if (!tenantValidator.isCurrentTenantCoreOrPro()) {
+			return List.of();
+		}
+
 		List<Employee> guestEmployees = epEmployeeDao.getAllGuestUsers(email, statuses);
 
 		Map<Long, List<ProjectRequestDto>> guestUsersProjectsMap = epGuestUserCacheService
