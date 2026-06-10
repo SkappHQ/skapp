@@ -1,8 +1,10 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.FractionalIndexUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
@@ -58,6 +60,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final CrmMapper crmMapper;
 
 	private final PageTransformer pageTransformer;
+
+	private final UserService userService;
 
 	@Override
 	@Transactional
@@ -163,16 +167,35 @@ public class CrmDealServiceImpl implements CrmDealService {
 		log.info("reorderDeal: reordering deal with id={}", requestDto.getDealId());
 
 		if (requestDto.getDealId() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
+		}
+
+		if (requestDto.getPreviousDealId() == null && requestDto.getNextDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOURS_REQUIRED);
+		}
+
+		if (requestDto.getDealId().equals(requestDto.getPreviousDealId())
+				|| requestDto.getDealId().equals(requestDto.getNextDealId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_INVALID_NEIGHBOUR);
 		}
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
+
+		Long stageId = deal.getStage().getId();
+
 		String prevOrderIndex = null;
 		if (requestDto.getPreviousDealId() != null) {
 			CrmDeal prevDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getPreviousDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (!stageId.equals(prevDeal.getStage().getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
+			}
 			prevOrderIndex = prevDeal.getOrderIndex();
 		}
 
@@ -180,6 +203,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 		if (requestDto.getNextDealId() != null) {
 			CrmDeal nextDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getNextDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (!stageId.equals(nextDeal.getStage().getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
+			}
 			nextOrderIndex = nextDeal.getOrderIndex();
 		}
 
