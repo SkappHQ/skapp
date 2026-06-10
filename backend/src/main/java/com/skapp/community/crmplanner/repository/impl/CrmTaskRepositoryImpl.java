@@ -51,7 +51,8 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		task.fetch(CrmTask_.contact, JoinType.LEFT);
 		task.fetch(CrmTask_.deal, JoinType.LEFT);
 
-		Predicate predicate = cb.isFalse(task.get(CrmTask_.isDeleted));
+		Predicate predicate = cb.and(cb.isFalse(task.get(CrmTask_.isDeleted)),
+				cb.isFalse(task.get(CrmTask_.isCompleted)));
 		if (ownerId != null) {
 			predicate = cb.and(predicate, cb.equal(task.get(CrmTask_.owner).get(Employee_.employeeId), ownerId));
 		}

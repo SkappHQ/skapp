@@ -117,12 +117,17 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	private CrmTask savedTask(String name, boolean isDeleted) {
+		return savedTask(name, isDeleted, false);
+	}
+
+	private CrmTask savedTask(String name, boolean isDeleted, boolean isCompleted) {
 		CrmTask task = new CrmTask();
 		task.setName(name);
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
 		task.setOwner(employeeDao.getReferenceById(1L));
 		task.setIsDeleted(isDeleted);
+		task.setIsCompleted(isCompleted);
 		return crmTaskDao.save(task);
 	}
 
@@ -141,6 +146,19 @@ class CrmTaskControllerIntegrationTest {
 	void getTasks_WithDeletedTask_ExcludesDeleted() throws Exception {
 		savedTask("Active task", false);
 		savedTask("Deleted task", true);
+
+		performGetRequest(authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Active task"));
+	}
+
+	@Test
+	@DisplayName("Get tasks excludes completed tasks - Returns only non-completed")
+	void getTasks_WithCompletedTask_ExcludesCompleted() throws Exception {
+		savedTask("Active task", false, false);
+		savedTask("Completed task", false, true);
 
 		performGetRequest(authToken).andDo(print())
 			.andExpect(status().isOk())
