@@ -7,7 +7,6 @@ import CrmContactModalSlice from "./slices/crmContactModalSlice";
 import CrmTaskModalSlice from "./slices/crmTaskModalSlice";
 import CrmCompanySidePanelSlice from "./slices/crmCompanySidePanelSlice";
 import CrmContactSidePanelSlice from "./slices/crmContactSidePanelSlice";
-import CrmTaskModalSlice from "./slices/crmTaskModalSlice";
 
 export const useCrmStore = create<
   CrmStore,
