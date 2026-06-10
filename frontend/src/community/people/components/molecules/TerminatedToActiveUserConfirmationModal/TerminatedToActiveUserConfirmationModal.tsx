@@ -22,6 +22,12 @@ const TerminatedToActiveUserConfirmationModal = () => {
   }));
 
   const handleSuccess = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["reactivateSuccessTitle"]),
+      description: translateText(["reactivateSuccessDescription"])
+    });
     setPendingAddResourceData(null);
     setDirectoryModalType(DirectoryModalTypes.NONE);
   };
