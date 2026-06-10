@@ -5,7 +5,6 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -119,7 +118,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
-		checkEditPermission(contact, currentUser);
+		if (CrmValidations.isEditRestricted(currentUser, contact.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
+		}
 
 		if (requestDto.getName() != null) {
 			CrmValidations.validateContactName(requestDto.getName());
@@ -180,16 +181,6 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactOwners: execution ended");
 		return new ResponseEntityDto(false, pageDto);
-	}
-
-	private void checkEditPermission(CrmContact contact, User currentUser) {
-		Employee currentEmployee = currentUser.getEmployee();
-		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
-
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
-				&& !currentEmployee.getEmployeeId().equals(contact.getOwner().getEmployeeId())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
-		}
 	}
 
 	@Override
