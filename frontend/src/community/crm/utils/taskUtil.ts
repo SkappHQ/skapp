@@ -50,9 +50,7 @@ const TASK_TYPE_ICON_MAP: Record<string, ComponentType> = {
 };
 
 export const getTaskTypeIcon = (typeName: string): React.ReactElement => {
-  const IconComponent =
-    TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ??
-    ChecklistVerificationFilledIcon;
+  const IconComponent = TASK_TYPE_ICON_MAP[typeName.toLowerCase()];
   return React.createElement(IconComponent);
 };
 
