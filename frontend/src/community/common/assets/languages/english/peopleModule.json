@@ -318,7 +318,6 @@
     "inactiveSuccessMessage": "User account Inactivated Successfully!",
     "reactivateUserLabel": "Reactivate User",
     "reactivateAndContinueLabel": "Reactivate and Continue",
-    "reactivateSuccessMessage": "The user has been successfully reactivated",
     "reactivateSuccessTitle": "User Reactivated",
     "reactivateSuccessDescription": "The user has been successfully reactivated.",
     "reactiveUserDescription": "The user will be reassigned to the same configurations prior to the deactivation. Profile details can be edited once reactivated.",
