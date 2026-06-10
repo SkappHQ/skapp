@@ -1,4 +1,17 @@
+import {
+  ChecklistVerificationFilledIcon,
+  EmailFilledIcon,
+  MeetingFilledIcon,
+  PhoneFilledIcon
+} from "@rootcodelabs/skapp-ui";
 import { format, isBefore, isToday, parseISO, startOfDay } from "date-fns";
+import React, { ComponentType } from "react";
+
+import {
+  PriorityConfig,
+  priorityOptions
+} from "~community/crm/constants/taskConstants";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export interface DueDateDisplay {
   textKey: string;
@@ -28,3 +41,20 @@ export const getDueDateDisplay = (
     colorClass: "text-secondary-text"
   };
 };
+
+const TASK_TYPE_ICON_MAP: Record<string, ComponentType> = {
+  email: EmailFilledIcon,
+  call: PhoneFilledIcon,
+  meeting: MeetingFilledIcon,
+  other: ChecklistVerificationFilledIcon
+};
+
+export const getTaskTypeIcon = (typeName: string): React.ReactElement => {
+  const IconComponent =
+    TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ??
+    ChecklistVerificationFilledIcon;
+  return React.createElement(IconComponent);
+};
+
+export const getPriorityConfig = (priority: CrmPriorityEnum): PriorityConfig =>
+  priorityOptions.find((o) => o.value === priority)!;

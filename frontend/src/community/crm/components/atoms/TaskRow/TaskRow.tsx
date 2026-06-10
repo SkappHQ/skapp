@@ -2,12 +2,12 @@ import { Avatar, CheckTask, PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
 import {
+  getDueDateDisplay,
   getPriorityConfig,
   getTaskTypeIcon
-} from "~community/crm/constants/taskConstants";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
-import { getDueDateDisplay } from "~community/crm/utils/taskUtil";
+} from "~community/crm/utils/taskUtil";
 
 interface Props {
   task: CrmTaskType;
@@ -32,7 +32,7 @@ const TaskRow: FC<Props> = ({
   );
 
   const priorityConfig = getPriorityConfig(task.priority);
-  const TaskTypeIcon = getTaskTypeIcon(task.type.name);
+  const taskTypeIcon = getTaskTypeIcon(task.type.name);
   const PriorityIconComp = priorityConfig?.IconComponent;
   const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
 
@@ -87,7 +87,7 @@ const TaskRow: FC<Props> = ({
       <div
         className={`relative z-10 shrink-0 flex items-center justify-center ${showCompletedStyle ? "opacity-40" : ""}`}
       >
-        {TaskTypeIcon && <TaskTypeIcon />}
+        {taskTypeIcon}
       </div>
 
       <div className="relative z-10 flex-1 min-w-0">
@@ -129,11 +129,13 @@ const TaskRow: FC<Props> = ({
         )}
       </div>
 
-      <div className="relative z-10 flex items-center gap-6 shrink-0">
+      <div
+        className={`relative z-10 flex items-center gap-6 shrink-0 ${showCompletedStyle ? "opacity-40" : ""}`}
+      >
         {priorityConfig && PriorityIconComp && (
           <PriorityIcon
             icon={<PriorityIconComp />}
-            bgColor={priorityConfig.backgroundColor}
+            bgColor={priorityConfig.bgColor}
           />
         )}
         {task.owner && (
