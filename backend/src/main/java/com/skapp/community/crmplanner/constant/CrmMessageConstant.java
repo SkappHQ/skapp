@@ -61,7 +61,15 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_SUCCESS_CONTACT_DELETED("api.success.crm.contact-deleted"),
 	CRM_SUCCESS_CONTACT_UPDATED("api.success.crm.contact-updated"),
 	CRM_SUCCESS_TASK_CREATED("api.success.crm.task-created"), CRM_SUCCESS_DEAL_CREATED("api.success.crm.deal-created"),
-	CRM_SUCCESS_COMPANY_DELETED("api.success.crm.company-deleted");
+	CRM_SUCCESS_COMPANY_DELETED("api.success.crm.company-deleted"),
+	CRM_ERROR_DEAL_STAGE_NAME_REQUIRED("api.error.crm.deal-stage.name-required"),
+	CRM_ERROR_DEAL_STAGE_NAME_LENGTH("api.error.crm.deal-stage.name-length"),
+	CRM_ERROR_DEAL_STAGE_NAME_INVALID_CHARS("api.error.crm.deal-stage.name-invalid-chars"),
+	CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE("api.error.crm.deal-stage.name-duplicate"),
+	CRM_ERROR_DEAL_STAGE_DESCRIPTION_TOO_LONG("api.error.crm.deal-stage.description-too-long"),
+	CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS("api.error.crm.deal-stage.description-invalid-chars"),
+	CRM_ERROR_DEAL_STAGE_FREE_TIER_LIMIT_EXCEEDED("api.error.crm.deal-stage.free-tier-limit-exceeded"),
+	CRM_SUCCESS_DEAL_STAGE_CREATED("api.success.crm.deal-stage-created");
 
 	private final String messageKey;
 

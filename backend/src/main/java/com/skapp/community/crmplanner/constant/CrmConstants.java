@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.constant;
 
 import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.experimental.UtilityClass;
 
@@ -18,6 +19,20 @@ public class CrmConstants {
 	public static final int DEAL_AMOUNT_MAX_LENGTH = 20;
 
 	public static final String DEAL_AMOUNT_REGEX = "^\\d+(\\.\\d{1,2})?$";
+
+	public static final int DEAL_STAGE_NAME_MIN_LENGTH = 2;
+
+	public static final int DEAL_STAGE_NAME_MAX_LENGTH = 50;
+
+	public static final String DEAL_STAGE_NAME_REGEX = "^(?=.*\\p{L})[\\p{L}\\p{N} \\-.']+$";
+
+	public static final int DEAL_STAGE_DESCRIPTION_MAX_LENGTH = 250;
+
+	public static final String DEAL_STAGE_DESCRIPTION_REGEX = "^[\\p{L}\\p{N} \\-.,']+$";
+
+	public static final int FREE_TIER_MAX_OPEN_DEAL_STAGES = 3;
+
+	public static final CrmDealStageType DEFAULT_DEAL_STAGE_TYPE = CrmDealStageType.OPEN;
 
 	public static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
 			Role.CRM_SALES_REPRESENTATIVE);
