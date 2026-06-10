@@ -1,16 +1,10 @@
-import {
-  DeleteButtonIcon,
-  KebabMenu,
-  SidePanel
-} from "@rootcodelabs/skapp-ui";
+import { DeleteButtonIcon, KebabMenu, SidePanel } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmDealListItem } from "~community/crm/types/CommonTypes";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 
 interface Props {
   isOpen: boolean;
@@ -18,24 +12,15 @@ interface Props {
   deal: CrmDealListItem | null;
 }
 
-const DealDetailSidePanel: FC<Props> = ({
-  isOpen,
-  onClose,
-  deal
-}) => {
+const DealDetailSidePanel: FC<Props> = ({ isOpen, onClose, deal }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const { setIsDealModalOpen, setDealModalType, setDealToDelete } =
-    useCrmStore((store) => ({
+  const { setIsDealModalOpen, setCurrentDeletingDeal } = useCrmStore(
+    (store) => ({
       setIsDealModalOpen: store.setIsDealModalOpen,
-      setDealModalType: store.setDealModalType,
-      setDealToDelete: store.setDealToDelete
-    }));
-
-  const openDealModal = (type: CrmModalTypes) => {
-    setDealModalType(type);
-    setIsDealModalOpen(true);
-  };
+      setCurrentDeletingDeal: store.setCurrentDeletingDeal
+    })
+  );
 
   if (!deal) return null;
 
@@ -54,8 +39,8 @@ const DealDetailSidePanel: FC<Props> = ({
       },
       activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
       onClick: () => {
-        setDealToDelete(deal.name);
-        openDealModal(CrmModalTypes.DELETE_DEAL_MODAL);
+        setCurrentDeletingDeal(deal);
+        setIsDealModalOpen(true);
       }
     }
   ];
@@ -90,8 +75,7 @@ const DealDetailSidePanel: FC<Props> = ({
           }}
         />
       }
-    >
-    </SidePanel>
+    ></SidePanel>
   );
 };
 
