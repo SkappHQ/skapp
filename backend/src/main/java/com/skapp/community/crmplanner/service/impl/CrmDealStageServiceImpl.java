@@ -72,7 +72,8 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	}
 
 	protected boolean isFreeTierOpenStageLimitExceeded() {
-		return crmDealStageDao.countByStageTypeAndIsDeletedFalse(CrmDealStageType.OPEN) >= CrmConstants.FREE_TIER_MAX_OPEN_DEAL_STAGES;
+		return crmDealStageDao
+			.countByStageTypeAndIsDeletedFalse(CrmDealStageType.OPEN) >= CrmConstants.FREE_TIER_MAX_OPEN_DEAL_STAGES;
 	}
 
 }
