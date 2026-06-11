@@ -70,7 +70,7 @@ const EditContactModalContent: React.FC = () => {
 
   useEffect(() => {
     if (!selectedContact) return;
-    setSelectedOwner(selectedContact.owner ?? null);
+    setSelectedOwner(selectedContact.owner);
     setSelectedCompanyLabel(selectedContact.company?.name ?? "");
   }, [selectedContact]);
 
