@@ -143,6 +143,7 @@ export interface CrmContactMetricsResponseType {
 export interface CrmDealType {
   id: number;
   name: string;
+  description: string | null;
   stage: CrmDealStageType;
   priority: CrmPriorityEnum | null;
   closingAt: string | null;
