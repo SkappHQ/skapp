@@ -27,7 +27,7 @@ const Companies: NextPage = () => {
     setSelectedCompany: store.setSelectedCompany
   }));
 
-  const handleCloseSidePanel = (): void => {
+  const handleCloseSidePanel = () => {
     setIsCrmSidePanelOpen(false);
     setSelectedCompany(null);
   };

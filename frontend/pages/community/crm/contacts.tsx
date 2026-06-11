@@ -27,7 +27,7 @@ const Contacts: NextPage = () => {
     setContactModalType: store.setContactModalType
   }));
 
-  const handleCloseSidePanel = (): void => {
+  const handleCloseSidePanel = () => {
     setIsCrmSidePanelOpen(false);
     setSelectedContact(null);
   };
