@@ -97,7 +97,8 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		Predicate countPredicate = buildTaskPredicate(cb, countRoot, ownerId, true);
 
 		countQuery.select(cb.count(countRoot)).where(countPredicate);
-		Long total = entityManager.createQuery(countQuery).getSingleResultOrNull();
+		Long totalResult = entityManager.createQuery(countQuery).getSingleResult();
+		long total = (totalResult != null) ? totalResult : 0L;
 
 		return new PageImpl<>(content, pageable, total);
 	}
