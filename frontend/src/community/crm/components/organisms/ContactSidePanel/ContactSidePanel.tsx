@@ -7,9 +7,8 @@ import { formatISODateWithSuffix } from "~community/common/utils/dateTimeUtils";
 import { useGetContactById } from "~community/crm/api/ContactApi";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import { ContactSidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
-
-type TabId = "tasks" | "deals";
 
 const ContactSidePanel = () => {
   const translateText = useTranslator(
@@ -19,7 +18,9 @@ const ContactSidePanel = () => {
   );
   const { setToastMessage } = useToast();
 
-  const [activeTab, setActiveTab] = useState<TabId>("tasks");
+  const [activeTab, setActiveTab] = useState<ContactSidePanelTabEnum>(
+    ContactSidePanelTabEnum.TASKS
+  );
 
   const {
     isContactSidePanelOpen,
@@ -63,10 +64,6 @@ const ContactSidePanel = () => {
     { id: "deals", label: translateText(["tabs", "deals"]) }
   ];
 
-  const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId as TabId);
-  };
-
   return (
     <SidePanel
       isOpen={isContactSidePanelOpen}
@@ -93,13 +90,15 @@ const ContactSidePanel = () => {
           <Tabs
             tabs={tabs}
             activeTabId={activeTab}
-            onTabChange={handleTabChange}
+            onTabChange={(tabId) =>
+              setActiveTab(tabId as ContactSidePanelTabEnum)
+            }
           />
         </div>
-        {activeTab === "deals" && (
+        {activeTab === ContactSidePanelTabEnum.DEALS && (
           <SidePanelDealSection deals={contact?.deals ?? []} />
         )}
-        {activeTab === "tasks" && (
+        {activeTab === ContactSidePanelTabEnum.TASKS && (
           // TODO: Implement SidePanelTaskSection here
           <></>
         )}
