@@ -1,0 +1,2 @@
+export const SEARCH_DEBOUNCE_DELAY = 500;
+export const DEFAULT_LOOKUP_PAGE_SIZE = 50;
