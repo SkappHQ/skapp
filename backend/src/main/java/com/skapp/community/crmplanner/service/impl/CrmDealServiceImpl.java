@@ -1,8 +1,10 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.FractionalIndexUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
@@ -14,6 +16,7 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
@@ -63,6 +66,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final CrmMapper crmMapper;
 
 	private final PageTransformer pageTransformer;
+
+	private final UserService userService;
 
 	@Override
 	@Transactional
@@ -209,6 +214,64 @@ public class CrmDealServiceImpl implements CrmDealService {
 		responseDto.setOwners(owners);
 
 		log.info("getBoardInitData: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto) {
+		log.info("reorderDeal: reordering deal with id={}", requestDto.getDealId());
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
+
+		if (requestDto.getDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
+		}
+
+		if (requestDto.getPreviousDealId() == null && requestDto.getNextDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
+		}
+
+		if (requestDto.getDealId().equals(requestDto.getPreviousDealId())
+				|| requestDto.getDealId().equals(requestDto.getNextDealId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_INVALID_NEIGHBOUR);
+		}
+
+		Long stageId = deal.getStage().getId();
+
+		String prevOrderIndex = null;
+		if (requestDto.getPreviousDealId() != null) {
+			CrmDeal prevDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getPreviousDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (!stageId.equals(prevDeal.getStage().getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
+			}
+			prevOrderIndex = prevDeal.getOrderIndex();
+		}
+
+		String nextOrderIndex = null;
+		if (requestDto.getNextDealId() != null) {
+			CrmDeal nextDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getNextDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (!stageId.equals(nextDeal.getStage().getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
+			}
+			nextOrderIndex = nextDeal.getOrderIndex();
+		}
+
+		String newOrderIndex = FractionalIndexUtil.generateKeyBetween(prevOrderIndex, nextOrderIndex);
+		deal.setOrderIndex(newOrderIndex);
+
+		CrmDeal savedDeal = crmDealDao.save(deal);
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
+		log.info("reorderDeal: deal reordered with id={}, new orderIndex={}", savedDeal.getId(), newOrderIndex);
 		return new ResponseEntityDto(false, responseDto);
 	}
 
