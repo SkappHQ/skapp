@@ -21,7 +21,8 @@ import {
   CrmContactMetricsResponseType,
   CrmOwnersResponseType,
   CrmContactLookup,
-  CrmOwner
+  CrmOwner,
+  EditContactPayload
 } from "~community/crm/types/CommonTypes";
 
 interface ContactMetricsSearchParams {
@@ -102,6 +103,31 @@ export const useCreateNewContact = (
       onSuccess();
     },
     onError: onError
+  });
+};
+
+const editContact = async ({ id, ...payload }: EditContactPayload) => {
+  const response = await authFetch.put(
+    contactEndpoints.EDIT_CONTACT(id),
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useEditContact = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: editContact,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      onSuccess();
+    },
+    onError
   });
 };
 
