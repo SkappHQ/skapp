@@ -34,5 +34,5 @@ export interface CrmTaskModalSliceTypes extends Pick<
 
 export interface CrmSidePanelSliceTypes extends Pick<
   CrmStore,
-  "isSidePanelOpen" | "openSidePanel" | "closeSidePanel"
+  "isCrmSidePanelOpen" | "setIsCrmSidePanelOpen"
 > {}
