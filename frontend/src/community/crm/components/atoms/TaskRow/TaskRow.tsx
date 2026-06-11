@@ -44,8 +44,6 @@ const TaskRow: FC<Props> = ({
     });
   });
 
-  const priorityConfig = getPriorityConfig(task.priority);
-  const taskTypeIcon = getTaskTypeIcon(task.type.name);
   const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
 
   const handleToggleChange = (checked: boolean) => {
@@ -86,7 +84,7 @@ const TaskRow: FC<Props> = ({
       <div
         className={`relative z-10 shrink-0 flex items-center justify-center ${showCompletedStyle ? "opacity-40" : ""}`}
       >
-        {taskTypeIcon}
+        {getTaskTypeIcon(task.type.name)}
       </div>
 
       <div className="relative z-10 flex-1 min-w-0">
@@ -131,12 +129,10 @@ const TaskRow: FC<Props> = ({
       <div
         className={`relative z-10 flex items-center gap-6 shrink-0 ${showCompletedStyle ? "opacity-40" : ""}`}
       >
-        {priorityConfig && (
-          <PriorityIcon
-            icon={priorityConfig.icon}
-            bgColor={priorityConfig.bgColor}
-          />
-        )}
+        <PriorityIcon
+          icon={getPriorityConfig(task.priority).icon}
+          bgColor={getPriorityConfig(task.priority).bgColor}
+        />
 
         <Avatar
           id={`task-owner-${task.id}`}
