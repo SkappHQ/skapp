@@ -33,17 +33,10 @@ const ContactSidePanel = () => {
     selectedContact: store.selectedContact
   }));
 
-  const { data: contact, isLoading } = useGetContactById(
-    selectedContact?.id ?? 0
-  );
+  const { data: contact, isLoading } = useGetContactById(selectedContact?.id);
 
   useEffect(() => {
-    if (
-      isContactSidePanelOpen &&
-      selectedContact?.id &&
-      !isLoading &&
-      !contact
-    ) {
+    if (!isLoading && !contact) {
       setToastMessage({
         open: true,
         toastType: "error",
@@ -54,11 +47,10 @@ const ContactSidePanel = () => {
       setIsContactSidePanelOpen(false);
       setSelectedContact(null);
     }
-  }, [isContactSidePanelOpen, selectedContact, isLoading, contact]);
+  }, [isLoading, contact]);
 
   const handleClose = (): void => {
     setSelectedContact(null);
-    setActiveTab("tasks");
     setIsContactSidePanelOpen(false);
   };
 
@@ -80,9 +72,8 @@ const ContactSidePanel = () => {
       isOpen={isContactSidePanelOpen}
       onClose={handleClose}
       closeOnBackdropClick
-      width="lg"
       header={
-        <div className=" flex flex-col gap-2 pl-2">
+        <div className="flex flex-col gap-2 pl-2">
           <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
             {contact?.name}
           </h2>

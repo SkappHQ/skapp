@@ -190,7 +190,6 @@ export const useGetContactById = (
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_BY_ID(id),
     queryFn: () => fetchContactById(id),
-    enabled: !!id,
     refetchOnWindowFocus: false
   });
 };
