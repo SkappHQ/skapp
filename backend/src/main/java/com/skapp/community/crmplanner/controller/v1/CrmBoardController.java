@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +42,15 @@ public class CrmBoardController {
 	public ResponseEntity<ResponseEntityDto> getDealsByStages(
 			@RequestBody CrmDealsByStagesRequestDto crmDealsByStagesRequestDto) {
 		ResponseEntityDto response = crmDealService.getDealsByStages(crmDealsByStagesRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Reorder a deal on the board",
+			description = "Reorders a deal using fractional indexing. Provide previousDealId and/or nextDealId to position the deal between neighbours.")
+	@PatchMapping("/deal-reorder-within-stage")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> reorderDeal(@RequestBody CrmDealReorderRequestDto requestDto) {
+		ResponseEntityDto response = crmDealService.reorderDeal(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -96,6 +96,29 @@ export interface CrmCompaniesResponseType {
   totalPages: number;
 }
 
+export interface CrmOwnersResponseType {
+  items: CrmOwner[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface CrmContactAddFormTypes {
+  name: string;
+  email: string;
+  contactNumber: string;
+  companyId: number | null;
+  ownerId: number | null;
+}
+
+export interface CrmContactCreatePayload {
+  name: string;
+  email: string;
+  contactNumber?: string;
+  companyId?: number;
+  ownerId?: number;
+}
+
 export interface CrmContactMetricsType {
   id: number;
   name: string;

@@ -16,6 +16,14 @@ export interface CrmCompanySidePanelSliceTypes extends Pick<
   | "setSelectedCompany"
 > {}
 
+export interface CrmContactModalSliceTypes extends Pick<
+  CrmStore,
+  | "isAddContactModalOpen"
+  | "setIsAddContactModalOpen"
+  | "contactModalType"
+  | "setContactModalType"
+> {}
+
 export interface CrmContactSidePanelSliceTypes extends Pick<
   CrmStore,
   | "isContactSidePanelOpen"
