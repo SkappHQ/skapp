@@ -26,7 +26,7 @@ const SelectedOwnerField: React.FC<Props> = ({
       <span className="subtitle1 leading-normal inline-flex h-6 items-center">
         {label}
       </span>
-      <div className="flex h-[3.125rem] items-center rounded-lg bg-tertiary-background">
+      <div className="flex h-[3.125rem] items-center rounded-lg bg-tertiary-background px-3">
         <AvatarChip
           label={concatStrings([owner.firstName, owner.lastName ?? ""])}
           avatarProps={{

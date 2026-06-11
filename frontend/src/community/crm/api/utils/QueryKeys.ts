@@ -7,12 +7,19 @@ export const crmDealQueryKeys = {
 };
 
 export const contactQueryKeys = {
+  GET_CONTACT_DATA: ["crm-contacts"],
   ALL: ["crm-contacts"],
   GET_CONTACT_DATA_BY_SEARCH: (searchKeyword: string, companyId?: number) => [
     "crm-contacts",
     searchKeyword,
     companyId
   ],
+  CRM_COMPANIES: ["crm-companies"],
+  COMPANY_LOOKUP: (searchKeyword: string) => [
+    "crm-company-lookup",
+    searchKeyword
+  ],
+  OWNERS_LOOKUP: (searchKeyword: string) => ["crm-owners-lookup", searchKeyword],
   CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
     "crm-contacts-lookup",
     searchKeyword,
