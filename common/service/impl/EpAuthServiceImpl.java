@@ -542,7 +542,14 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 	public ResponseEntityDto sendPasswordResetOtp(EpPasswordResetDto epPasswordResetDto) {
 		log.info("sendPasswordResetOtp: execution started for email={}, tenantId={}", epPasswordResetDto.getEmail(),
 				epPasswordResetDto.getTenantId());
-		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
+		Optional<User> userOptional = findEligiblePasswordResetUser(epPasswordResetDto.getTenantId(),
+				epPasswordResetDto.getEmail());
+		if (userOptional.isEmpty()) {
+			log.info("sendPasswordResetOtp: Password reset OTP request accepted without matching user");
+			return buildPasswordResetOtpAcceptedResponse();
+		}
+
+		User user = userOptional.get();
 		String verificationCode = OtpUtil.generateOTP();
 		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
@@ -557,27 +564,35 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		epCommonEmailService.sendPasswordResetOtpEmail(user, verificationCode);
 		log.info("sendPasswordResetOtp: OTP email sent to {}", user.getEmail());
 
-		return new ResponseEntityDto(false, "Password reset OTP sent successfully");
+		return buildPasswordResetOtpAcceptedResponse();
 	}
 
 	@Override
 	public ResponseEntityDto resendVerifyPasswordResetOTP(EpPasswordResetDto epPasswordResetDto) {
 		log.info("resendVerifyPasswordResetOTP: execution started for email={}, tenantId={}",
 				epPasswordResetDto.getEmail(), epPasswordResetDto.getTenantId());
-		User user = validateDomainAndEmail(epPasswordResetDto.getTenantId(), epPasswordResetDto.getEmail());
-		String verificationCode = OtpUtil.generateOTP();
-		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
+		Optional<User> userOptional = findEligiblePasswordResetUser(epPasswordResetDto.getTenantId(),
+				epPasswordResetDto.getEmail());
+		if (userOptional.isEmpty()) {
+			log.info("resendVerifyPasswordResetOTP: Password reset OTP request accepted without matching user");
+			return buildPasswordResetOtpAcceptedResponse();
+		}
+
+		User user = userOptional.get();
 
 		PasswordResetOtp passwordResetOtp = passwordResetOtpDao.findById(user.getUserId()).orElse(null);
 		if (passwordResetOtp == null) {
 			log.warn("resendVerifyPasswordResetOTP: OTP not found for userId={}", user.getUserId());
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_NOT_FOUND);
+			return buildPasswordResetOtpAcceptedResponse();
 		}
 
 		if (passwordResetOtp.getVerificationCode() == null) {
 			log.warn("resendVerifyPasswordResetOTP: OTP already verified for userId={}", user.getUserId());
-			throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_OTP_ALREADY_VERIFIED);
+			return buildPasswordResetOtpAcceptedResponse();
 		}
+
+		String verificationCode = OtpUtil.generateOTP();
+		Instant expiryTime = Instant.now().plusSeconds(otpExpirySeconds);
 
 		passwordResetOtp.setUserId(user.getUserId());
 		passwordResetOtp.setVerificationCode(verificationCode);
@@ -589,7 +604,7 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 		epCommonEmailService.sendPasswordResetOtpEmail(user, verificationCode);
 		log.info("resendVerifyPasswordResetOTP: OTP email resent to {}", user.getEmail());
 
-		return new ResponseEntityDto(false, "Password reset OTP resent successfully");
+		return buildPasswordResetOtpAcceptedResponse();
 	}
 
 	@Override
@@ -1050,6 +1065,25 @@ public class EpAuthServiceImpl extends AuthServiceImpl implements EpAuthService 
 			}
 		}
 		throw new ModuleException(EPCommonMessageConstant.EP_COMMON_ERROR_USER_NOT_FOUND);
+	}
+
+	private Optional<User> findEligiblePasswordResetUser(String companyDomain, String email) {
+		if (companyDomain == null || companyDomain.isBlank() || email == null || email.isBlank()) {
+			return Optional.empty();
+		}
+
+		tenantContext.setTenantAndSwitchSchema(EpCommonConstants.MASTER_DATABASE);
+		if (tenantDao.findById(companyDomain).isEmpty()) {
+			return Optional.empty();
+		}
+
+		tenantContext.setTenantAndSwitchSchema(companyDomain);
+		return userDao.findByEmail(email).filter(User::getIsPasswordChangedForTheFirstTime);
+	}
+
+	private ResponseEntityDto buildPasswordResetOtpAcceptedResponse() {
+		return new ResponseEntityDto(false,
+				messageUtil.getMessage(EPCommonMessageConstant.EP_COMMON_SUCCESS_PASSWORD_RESET_OTP_SENT));
 	}
 
 	public boolean validateTenantExist(String tenantId) {
