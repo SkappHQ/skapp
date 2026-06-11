@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
@@ -30,6 +31,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,8 +85,9 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getCompletedTasks(Pageable pageable) {
-		log.info("getCompletedTasks: execution started");
+	public ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
+		log.info("getCompletedTasks: execution started");		
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 
 		User currentUser = userService.getCurrentUser();
 		Page<CrmTask> taskPage;

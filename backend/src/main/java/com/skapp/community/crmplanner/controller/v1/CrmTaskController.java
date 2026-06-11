@@ -8,8 +8,6 @@ import com.skapp.community.crmplanner.service.CrmTaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,8 +41,7 @@ public class CrmTaskController {
 	@GetMapping("/completed")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
-		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		ResponseEntityDto response = taskService.getCompletedTasks(pageable);
+		ResponseEntityDto response = taskService.getCompletedTasks(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
