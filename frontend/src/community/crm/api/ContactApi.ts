@@ -18,7 +18,6 @@ import {
 import {
   CrmCompaniesResponseType,
   CrmContactCreatePayload,
-  CrmContactDetail,
   CrmContactDetailResponseType,
   CrmContactLookup,
   CrmContactMetricsResponseType,
