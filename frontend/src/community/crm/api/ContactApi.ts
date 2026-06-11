@@ -19,6 +19,7 @@ import {
   CrmCompaniesResponseType,
   CrmContactCreatePayload,
   CrmContactDetail,
+  CrmContactDetailResponseType,
   CrmContactLookup,
   CrmContactMetricsResponseType,
   CrmOwner,
@@ -179,14 +180,16 @@ export const useGetCrmOwners = (
   });
 };
 
-const fetchContactById = async (id: number): Promise<CrmContactDetail> => {
+const fetchContactById = async (
+  id: number
+): Promise<CrmContactDetailResponseType> => {
   const response = await authFetch.get(contactEndpoints.CONTACT_BY_ID(id));
   return response?.data?.results?.[0];
 };
 
 export const useGetContactById = (
   id: number
-): UseQueryResult<CrmContactDetail> => {
+): UseQueryResult<CrmContactDetailResponseType> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_BY_ID(id),
     queryFn: () => fetchContactById(id),
