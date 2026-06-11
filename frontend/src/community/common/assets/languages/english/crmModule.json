@@ -103,7 +103,7 @@
       "labels": {
         "name": "Company name",
         "contactNumber": "Contact no.",
-        "website": "Website",
+        "website": "Website URL",
         "address": "Address",
         "industry": "Industry"
       },
