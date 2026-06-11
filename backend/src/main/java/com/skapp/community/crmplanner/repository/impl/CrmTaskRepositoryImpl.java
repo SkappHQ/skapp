@@ -61,10 +61,6 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
-		// task.fetch(CrmTask_.type);
-		// task.fetch(CrmTask_.owner);
-		// task.fetch(CrmTask_.contact, JoinType.LEFT);
-		// task.fetch(CrmTask_.deal, JoinType.LEFT);
 		applyFetchGraph(task);
 		Predicate predicate = buildTaskPredicate(cb, task, ownerId, false);
 
