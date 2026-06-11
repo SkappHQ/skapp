@@ -15,6 +15,7 @@ import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { formatValue } from "~community/crm/utils/crmUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { useContainerWidth } from "./utils/dealsTableUtils";
 
 interface DealRow extends BaseRowData {
@@ -150,7 +151,7 @@ const DealsTable: FC<Props> = ({
             <div className="inline-flex items-center gap-2">
               <div
                 className="size-2 rounded-full shrink-0"
-                style={{ backgroundColor: deal.stageColor }}
+                style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
               />
               <span className="body2">{deal.stageName}</span>
             </div>

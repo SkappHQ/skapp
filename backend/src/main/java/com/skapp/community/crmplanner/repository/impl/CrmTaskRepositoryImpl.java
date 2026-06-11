@@ -9,12 +9,14 @@ import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
+import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -28,6 +30,40 @@ import java.util.List;
 public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 	private final EntityManager entityManager;
+
+	@Override
+	public List<CrmTask> findAllWithTypeAndOwner() {
+		return buildFindTaskQuery(null);
+	}
+
+	@Override
+	public List<CrmTask> findAllWithTypeAndOwnerByOwnerId(Long ownerId) {
+		return buildFindTaskQuery(ownerId);
+	}
+
+	private List<CrmTask> buildFindTaskQuery(Long ownerId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		task.fetch(CrmTask_.type);
+		task.fetch(CrmTask_.owner);
+		task.fetch(CrmTask_.contact, JoinType.LEFT);
+		task.fetch(CrmTask_.deal, JoinType.LEFT);
+
+		Predicate predicate = cb.and(cb.isFalse(task.get(CrmTask_.isDeleted)),
+				cb.isFalse(task.get(CrmTask_.isCompleted)));
+		if (ownerId != null) {
+			predicate = cb.and(predicate, cb.equal(task.get(CrmTask_.owner).get(Employee_.employeeId), ownerId));
+		}
+
+		query.select(task)
+			.where(predicate)
+			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
+					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
 
 	@Override
 	public List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds) {
