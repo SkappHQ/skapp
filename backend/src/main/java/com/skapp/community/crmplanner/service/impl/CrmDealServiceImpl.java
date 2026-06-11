@@ -222,6 +222,14 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto) {
 		log.info("reorderDeal: reordering deal with id={}", requestDto.getDealId());
 
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
+
 		if (requestDto.getDealId() == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
 		}
@@ -233,14 +241,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 		if (requestDto.getDealId().equals(requestDto.getPreviousDealId())
 				|| requestDto.getDealId().equals(requestDto.getNextDealId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_INVALID_NEIGHBOUR);
-		}
-
-		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
-
-		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
 		}
 
 		Long stageId = deal.getStage().getId();
