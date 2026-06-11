@@ -17,11 +17,10 @@ export interface CrmStore extends ActionTypes {
   isCompanyModalOpen: boolean;
   companyModalType: CrmModalTypes;
   selectedCompany: CrmCompanyType | null;
-  isSidePanelOpen: boolean;
+  isCrmSidePanelOpen: boolean;
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
   isCompanySidePanelOpen: boolean;
   isContactSidePanelOpen: boolean;
   selectedContact: CrmContactMetricsType | null;
-  isCrmSidePanelOpen: boolean;
 }
