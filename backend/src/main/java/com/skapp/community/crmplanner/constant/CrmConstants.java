@@ -30,8 +30,6 @@ public class CrmConstants {
 
 	public static final String DEAL_STAGE_DESCRIPTION_REGEX = "^[\\p{L}\\p{N} \\-.,']+$";
 
-	public static final int FREE_TIER_MAX_OPEN_DEAL_STAGES = 1;
-
 	public static final CrmDealStageType DEFAULT_DEAL_STAGE_TYPE = CrmDealStageType.OPEN;
 
 	public static final int DEALS_PER_STAGE_LIMIT = 20;

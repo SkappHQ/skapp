@@ -97,9 +97,7 @@ class CrmDealStageControllerIntegrationTest {
 		return crmDealStageDao.save(stage);
 	}
 
-	// -------------------------------------------------------------------------
 	// GET /v1/crm/deal/stage
-	// -------------------------------------------------------------------------
 
 	@Test
 	@DisplayName("Get deal stages - Returns OK ordered by orderIndex")
@@ -124,9 +122,7 @@ class CrmDealStageControllerIntegrationTest {
 		performGetRequest().andDo(print()).andExpect(status().isForbidden());
 	}
 
-	// -------------------------------------------------------------------------
 	// POST /v1/crm/deal/stage — happy path
-	// -------------------------------------------------------------------------
 
 	@Test
 	@DisplayName("Create deal stage with valid payload - Returns Created with OPEN type and bottom orderIndex")
@@ -171,9 +167,7 @@ class CrmDealStageControllerIntegrationTest {
 		performPostRequest(validPayload()).andDo(print()).andExpect(status().isForbidden());
 	}
 
-	// -------------------------------------------------------------------------
 	// POST — name validation
-	// -------------------------------------------------------------------------
 
 	@Test
 	@DisplayName("Create deal stage with blank name - Returns Bad Request")
@@ -268,9 +262,7 @@ class CrmDealStageControllerIntegrationTest {
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE)));
 	}
 
-	// -------------------------------------------------------------------------
 	// POST — description validation
-	// -------------------------------------------------------------------------
 
 	@Test
 	@DisplayName("Create deal stage with description exceeding 250 chars - Returns Bad Request")
@@ -296,34 +288,6 @@ class CrmDealStageControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS)));
-	}
-
-	// -------------------------------------------------------------------------
-	// POST — free-tier limit
-	// -------------------------------------------------------------------------
-
-	@Test
-	@DisplayName("Create deal stage exceeding free tier OPEN limit - Returns Bad Request")
-	void createDealStage_FreeTierLimitExceeded_ReturnsBadRequest() throws Exception {
-		for (int i = 1; i <= CrmConstants.FREE_TIER_MAX_OPEN_DEAL_STAGES; i++) {
-			savedOpenStage("Stage " + i, i);
-		}
-
-		performPostRequest(validPayload()).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_FREE_TIER_LIMIT_EXCEEDED)));
-	}
-
-	@Test
-	@DisplayName("Create deal stage at exactly free tier limit - Returns Created")
-	void createDealStage_AtFreeTierLimit_ReturnsCreated() throws Exception {
-		for (int i = 1; i < CrmConstants.FREE_TIER_MAX_OPEN_DEAL_STAGES; i++) {
-			savedOpenStage("Stage " + i, i);
-		}
-
-		performPostRequest(validPayload()).andDo(print()).andExpect(status().isCreated());
 	}
 
 }
