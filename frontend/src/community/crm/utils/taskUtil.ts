@@ -56,6 +56,6 @@ export const getPriorityConfig = (
   const option = priorityOptions.find((o) => o.value === priority)!;
   return {
     icon: React.createElement(option.IconComponent),
-    bgColor: option.bgColor
+    bgColor: option.backgroundColor
   };
 };

@@ -19,7 +19,7 @@ export const priorityOptions = [
     label: "Low",
     key: "low",
     value: CrmPriorityEnum.LOW,
-    bgColor: "bg-semantic-green-background",
+    backgroundColor: "bg-semantic-green-background",
     textColor: "text-semantic-green-text",
     IconComponent: LowPriorityIcon as FC
   },
@@ -27,7 +27,7 @@ export const priorityOptions = [
     label: "Medium",
     key: "medium",
     value: CrmPriorityEnum.MEDIUM,
-    bgColor: "bg-semantic-amber-background",
+    backgroundColor: "bg-semantic-amber-background",
     textColor: "text-semantic-amber-text",
     IconComponent: MediumPriorityIcon as FC
   },
@@ -35,7 +35,7 @@ export const priorityOptions = [
     label: "High",
     key: "high",
     value: CrmPriorityEnum.HIGH,
-    bgColor: "bg-semantic-red-background",
+    backgroundColor: "bg-semantic-red-background",
     textColor: "text-semantic-red-text",
     IconComponent: HighPriorityIcon as FC
   }
