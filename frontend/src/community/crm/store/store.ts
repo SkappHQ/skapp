@@ -2,9 +2,9 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
 import { CrmStore } from "../types/StoreTypes";
-import CrmCompanyModalSlice from "./slices/crmCompanyModalSlice";
-import CrmContactModalSlice from "./slices/crmContactModalSlice";
-import CrmTaskModalSlice from "./slices/crmTaskModalSlice";
+import CrmCompanyModalSlice from "./slices/crmCompanySlice";
+import CrmContactModalSlice from "./slices/crmContactSlice";
+import CrmTaskModalSlice from "./slices/crmTaskSlice";
 import CrmSidePanelSlice from "./slices/crmSidePanelSlice";
 
 export const useCrmStore = create<
