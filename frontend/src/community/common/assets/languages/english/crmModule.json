@@ -285,6 +285,16 @@
     "addDealBtn": "Add Deal",
     "detailsPageHead": "Deal Details | Skapp",
     "detailsTitle": "Deal Details",
+    "sidePanel": {
+      "title": "Deals",
+      "addDealBtn": "Add deal",
+      "emptyTitle": "No deals",
+      "emptyDescription": "No deals associated with this company",
+      "descriptionLabel": "Description",
+      "ariaLabels": {
+        "addDealBtn": "Add Deal"
+      }
+    },
     "dealsTable": {
       "dealColumn": "Deal",
       "valueColumn": "Value",
