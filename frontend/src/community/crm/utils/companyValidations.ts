@@ -3,8 +3,7 @@ import * as Yup from "yup";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { isValidPhoneNumber } from "~community/common/regex/regexPatterns";
 import { CrmIndustryEnum } from "~community/crm/enums/common";
-
-type TranslatorFunctionType = (suffixes: string[]) => string;
+import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 
 export const addCompanyValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({

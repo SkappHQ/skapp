@@ -6,4 +6,6 @@ public interface OkrOptionsService {
 
 	ResponseEntityDto getOkrFrequency();
 
+	ResponseEntityDto getOkrCompanyObjectiveTime();
+
 }

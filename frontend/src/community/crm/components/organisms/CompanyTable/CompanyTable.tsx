@@ -10,17 +10,21 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, useMemo, useState } from "react";
 
+import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompanyMetrics } from "~community/crm/api/CompanyApi";
-import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
+import {
+  COMPANY_NAME_DEBOUNCE_DELAY,
+  DEFAULT_PAGE_SIZE
+} from "~community/crm/constants/companyConstants";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 import {
   formatPhoneNumber,
   formatTasks
 } from "~community/crm/utils/tableHelpers";
-import { COMPANY_NAME_DEBOUNCE_DELAY, DEFAULT_PAGE_SIZE } from "~community/crm/constants/companyConstants";
-import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 
 export const CompanyTable: React.FC = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -34,6 +38,13 @@ export const CompanyTable: React.FC = () => {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
+
+  const { setSelectedCompany, setIsCompanySidePanelOpen } = useCrmStore(
+    (store) => ({
+      setSelectedCompany: store.setSelectedCompany,
+      setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen
+    })
+  );
 
   const companies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
@@ -56,7 +67,9 @@ export const CompanyTable: React.FC = () => {
       header: translateText(["table", "columns", "phoneHeader"]),
       key: "contactNumber",
       render(value) {
-        return <div className="flex items-baseline">{formatPhoneNumber(value)}</div>;
+        return (
+          <div className="flex items-baseline">{formatPhoneNumber(value)}</div>
+        );
       },
       width: "20%"
     },
@@ -72,7 +85,8 @@ export const CompanyTable: React.FC = () => {
               <Label
                 backgroundColor="bg-semantic-red-background"
                 textColor="text-semantic-red-text"
-              >{`${row.overdue} ${translateText(["table", "overdueLabel"])}`}
+              >
+                {`${row.overdue} ${translateText(["table", "overdueLabel"])}`}
               </Label>
             )}
           </div>
@@ -85,7 +99,11 @@ export const CompanyTable: React.FC = () => {
       header: translateText(["table", "columns", "pipelineHeader"]),
       key: "openValue",
       render(openValue) {
-        return (<div className="flex justify-end" >{formatMonetaryValue(openValue)}</div>);
+        return (
+          <div className="flex justify-end">
+            {formatMonetaryValue(openValue)}
+          </div>
+        );
       },
       className: "text-right",
       width: "20%"
@@ -102,10 +120,13 @@ export const CompanyTable: React.FC = () => {
         return (
           <div className="flex flex-col gap-1 text-right">
             <div>{formatMonetaryValue(value)}</div>
-            <div className="subtitle4 text-secondary-text" >
-              {row.closedDeals > 0 ? `${row.closedDeals} ${translateText(["table", "closedDealsLabel"])}` : ""}
+            <div className="subtitle4 text-secondary-text">
+              {row.closedDeals > 0
+                ? `${row.closedDeals} ${translateText(["table", "closedDealsLabel"])}`
+                : ""}
             </div>
-          </div>)
+          </div>
+        );
       },
       className: "text-right",
       width: "20%"
@@ -171,6 +192,10 @@ export const CompanyTable: React.FC = () => {
             "emptySearchState",
             "description"
           ])
+        }}
+        onRowClick={(row) => {
+          setSelectedCompany(row);
+          setIsCompanySidePanelOpen(true);
         }}
       />
     </div>

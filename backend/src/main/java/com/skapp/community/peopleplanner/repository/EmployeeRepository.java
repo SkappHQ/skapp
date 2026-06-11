@@ -3,6 +3,8 @@ package com.skapp.community.peopleplanner.repository;
 import com.skapp.community.leaveplanner.payload.AdminOnLeaveDto;
 import com.skapp.community.leaveplanner.payload.EmployeeLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.EmployeesOnLeaveFilterDto;
+import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.request.EmployeeExportFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
@@ -102,5 +104,7 @@ public interface EmployeeRepository {
 	List<Employee> findActiveEmployeesExcludingGuests(Long workLocationId);
 
 	Long countActiveEmployeesExcludingGuests();
+
+	List<Employee> findAllActiveEmployeesExcludingRole(Role excludedRole, Set<WorkLocation> workLocations);
 
 }

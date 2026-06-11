@@ -24,6 +24,7 @@ import {
   DEFAULT_COMPANY_PAGE_SIZE,
   DEFAULT_PAGE_SIZE
 } from "~community/crm/constants/contactConstants";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 import {
@@ -49,6 +50,13 @@ export const ContactTable: React.FC = () => {
   const { data: companies } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
 
   const contacts = data?.pages.flatMap((page) => page.items);
+
+  const { setSelectedContact, setIsContactSidePanelOpen } = useCrmStore(
+    (store) => ({
+      setSelectedContact: store.setSelectedContact,
+      setIsContactSidePanelOpen: store.setIsContactSidePanelOpen
+    })
+  );
 
   const hasActiveFilters =
     debouncedSearch.trim() !== "" || selectedCompany !== undefined;
@@ -237,6 +245,10 @@ export const ContactTable: React.FC = () => {
             "emptySearchState",
             "description"
           ])
+        }}
+        onRowClick={(row) => {
+          setSelectedContact(row);
+          setIsContactSidePanelOpen(true);
         }}
       />
     </div>

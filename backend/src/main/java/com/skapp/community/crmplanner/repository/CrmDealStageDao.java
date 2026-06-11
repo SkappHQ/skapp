@@ -14,4 +14,6 @@ public interface CrmDealStageDao extends JpaRepository<CrmDealStage, Long> {
 
 	Optional<CrmDealStage> findByIdAndIsDeletedFalse(Long id);
 
+	List<CrmDealStage> findAllByIdInAndIsDeletedFalse(List<Long> ids);
+
 }

@@ -46,6 +46,9 @@ public class CrmDeal extends Auditable<String> {
 	@Column(name = "priority", nullable = false)
 	private CrmDealPriority priority;
 
+	@Column(name = "order_index", nullable = false)
+	private String orderIndex;
+
 	@Column(name = "closing_at")
 	private LocalDateTime closingAt;
 

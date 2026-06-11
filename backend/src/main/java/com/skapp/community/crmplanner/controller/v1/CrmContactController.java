@@ -64,6 +64,15 @@ public class CrmContactController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get CRM contact by ID",
+			description = "Returns full contact details including metrics, deals, and tasks.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping("/{id}")
+	public ResponseEntity<ResponseEntityDto> getContactById(@PathVariable Long id) {
+		ResponseEntityDto response = contactService.getContactById(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Delete CRM contact",
 			description = "Soft-deletes a contact and all associated deals and tasks.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_MANAGER')")
