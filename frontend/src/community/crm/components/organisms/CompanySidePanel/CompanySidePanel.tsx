@@ -10,7 +10,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-const CompanySidePanel = ({ isOpen, onClose }:SidePanelProps) => {
+const CompanySidePanel = ({ isOpen, onClose }: SidePanelProps) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
 
   const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(
