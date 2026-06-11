@@ -7,11 +7,10 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageCreateRequestDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealStageService;
-import com.skapp.community.crmplanner.type.CrmDealStageName;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.DefaultCrmDealStageValues;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.enterprise.common.config.TenantValidator;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,18 +38,15 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	public ResponseEntityDto getDealStages() {
 		log.info("getDealStages: execution started");
 
-		List<CrmDealStageResponseDto> stages = crmMapper
-			.crmDealStagesToCrmDealStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmDealStage> stages = crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc();
 
 		if (!tenantValidator.isCurrentTenantCoreOrPro()) {
-			stages = stages.stream()
-				.filter(stage -> !CrmConstants.FREE_TIER_HIDDEN_DEAL_STAGES.contains(stage.getName()))
-				.collect(Collectors.toList());
+			stages = stages.stream().filter(stage -> !isHiddenFreeTierDefaultStage(stage)).collect(Collectors.toList());
 		}
 
 		log.info("getDealStages: execution ended with {} result(s)", stages.size());
 
-		return new ResponseEntityDto(false, stages);
+		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(stages));
 	}
 
 	@Override
@@ -68,12 +65,13 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		if (!tenantValidator.isCurrentTenantCoreOrPro()) {
 			long openStageCount = crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc()
 				.stream()
-				.filter(s -> s.getStageType() == CrmDealStageType.OPEN)
-				.filter(s -> !CrmConstants.FREE_TIER_HIDDEN_DEAL_STAGES.contains(s.getName()))
+				.filter(stage -> stage.getStageType() == CrmDealStageType.OPEN)
+				.filter(stage -> !isHiddenFreeTierDefaultStage(stage))
 				.count();
 
 			if (openStageCount >= CrmConstants.DEAL_STAGE_OPEN_LIMIT_FREE_TIER) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_LIMIT_EXCEEDED);
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_LIMIT_EXCEEDED,
+						new Object[] { CrmConstants.DEAL_STAGE_OPEN_LIMIT_FREE_TIER });
 			}
 		}
 
@@ -82,7 +80,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		stage.setDescription(requestDto.getDescription());
 		stage.setColor(requestDto.getColor().name());
 		stage.setStageType(CrmConstants.DEFAULT_DEAL_STAGE_TYPE);
-		stage.setOrderIndex(getNextOrderIndex());
+		stage.setOrderIndex(crmDealStageDao.findNextOrderIndex());
 
 		CrmDealStage saved = crmDealStageDao.save(stage);
 
@@ -91,9 +89,16 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
 	}
 
-	private int getNextOrderIndex() {
-		Integer maxOrderIndex = crmDealStageDao.findMaxOrderIndexByIsDeletedFalse();
-		return maxOrderIndex == null ? 1 : maxOrderIndex + 1;
+	private boolean isHiddenFreeTierDefaultStage(CrmDealStage stage) {
+		return CrmConstants.FREE_TIER_HIDDEN_DEAL_STAGES.stream()
+			.anyMatch(defaultStage -> matchesDefaultStage(stage, defaultStage));
+	}
+
+	private boolean matchesDefaultStage(CrmDealStage stage, DefaultCrmDealStageValues defaultStage) {
+		return defaultStage.getStage().getName().equals(stage.getName())
+				&& defaultStage.getColor().name().equals(stage.getColor())
+				&& Objects.equals(defaultStage.getOrderIndex(), stage.getOrderIndex())
+				&& defaultStage.getStageType() == stage.getStageType();
 	}
 
 }

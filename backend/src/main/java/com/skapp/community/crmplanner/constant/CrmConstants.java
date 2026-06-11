@@ -1,11 +1,14 @@
 package com.skapp.community.crmplanner.constant;
 
 import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealStageName;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
+import com.skapp.community.crmplanner.type.DefaultCrmDealStageValues;
 import lombok.experimental.UtilityClass;
 
+import java.util.List;
 import java.util.Set;
 
 @UtilityClass
@@ -35,8 +38,11 @@ public class CrmConstants {
 
 	public static final int DEAL_STAGE_OPEN_LIMIT_FREE_TIER = 2;
 
-	public static final Set<String> FREE_TIER_HIDDEN_DEAL_STAGES = Set.of(CrmDealStageName.PROPOSAL_SENT.name(),
-			CrmDealStageName.NEGOTIATION.name());
+	public static final List<DefaultCrmDealStageValues> FREE_TIER_HIDDEN_DEAL_STAGES = List.of(
+			new DefaultCrmDealStageValues(CrmDealStageName.PROPOSAL_SENT, CrmDealStageColors.LAVENDER, 4,
+					CrmDealStageType.OPEN),
+			new DefaultCrmDealStageValues(CrmDealStageName.NEGOTIATION, CrmDealStageColors.SUNSHINE, 5,
+					CrmDealStageType.OPEN));
 
 	public static final int DEALS_PER_STAGE_LIMIT = 20;
 
