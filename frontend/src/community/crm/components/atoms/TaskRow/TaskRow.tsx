@@ -116,7 +116,7 @@ const TaskRow: FC<Props> = ({
                     : "text-secondary-text"
                 }
               >
-                {task.contact!.name}
+                {task.contact?.name}
               </span>
             )}
           </p>
