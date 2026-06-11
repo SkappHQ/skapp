@@ -11,11 +11,9 @@ import React from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmDealType } from "~community/crm/types/CommonTypes";
 
-import {
-  DealAccordionItemBadge,
-  DealAccordionItemContent,
-  DealAccordionItemHeader
-} from "./DealAccordionItem";
+import DealAccordionItemBadge from "./DealAccordionItemBadge";
+import DealAccordionItemContent from "./DealAccordionItemContent";
+import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
   deals: CrmDealType[];
