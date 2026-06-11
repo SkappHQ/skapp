@@ -55,4 +55,3 @@ const ContactModalController = () => {
 };
 
 export default ContactModalController;
-
