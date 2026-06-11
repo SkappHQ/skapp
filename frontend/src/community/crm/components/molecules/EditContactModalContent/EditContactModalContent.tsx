@@ -68,7 +68,6 @@ const EditContactModalContent: React.FC = () => {
     })
   );
 
-  // Pre-populate owner from selectedContact
   useEffect(() => {
     if (!selectedContact) return;
     setSelectedOwner(selectedContact.owner ?? null);
@@ -77,7 +76,7 @@ const EditContactModalContent: React.FC = () => {
 
   const { isCrmSalesManager } = useSessionData();
 
-  // If the user has Sales Manager Role, they should not be able to edit the owner field.
+  // If the user has Sales Rep role, they should not be able to edit the owner field.
   const isOwnerReadonly = !isCrmSalesManager;
 
   const initialValues: CrmContactEditFormTypes = {
