@@ -37,11 +37,10 @@ const EditCompanyModalContent: React.FC = () => {
 
   const industryOptions = useGetIndustryOptions();
 
-  const { setIsCompanyModalOpen, selectedCompany } =
-    useCrmStore((store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      selectedCompany: store.selectedCompany
-    }));
+  const { setIsCompanyModalOpen, selectedCompany } = useCrmStore((store) => ({
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+    selectedCompany: store.selectedCompany
+  }));
 
   const initialValues: CrmCompanyEditFormTypes = {
     name: selectedCompany?.name || "",
@@ -57,8 +56,8 @@ const EditCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages","successTitle"]),
-      description: translateText(["toastMessages","successDescription"])
+      title: translateText(["toastMessages", "successTitle"]),
+      description: translateText(["toastMessages", "successDescription"])
     });
   };
 
@@ -67,8 +66,8 @@ const EditCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages","errorTitle"]),
-      description: translateText(["toastMessages","errorDescription"])
+      title: translateText(["toastMessages", "errorTitle"]),
+      description: translateText(["toastMessages", "errorDescription"])
     });
   };
 

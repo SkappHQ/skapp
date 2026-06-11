@@ -35,8 +35,8 @@ const DeleteCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages","successTitle"]),
-      description: translateText(["toastMessages","successDescription"], {
+      title: translateText(["toastMessages", "successTitle"]),
+      description: translateText(["toastMessages", "successDescription"], {
         companyName: selectedCompany?.name
       })
     });
@@ -50,8 +50,8 @@ const DeleteCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages","errorTitle"]),
-      description: translateText(["toastMessages","errorDescription"])
+      title: translateText(["toastMessages", "errorTitle"]),
+      description: translateText(["toastMessages", "errorDescription"])
     });
   };
 
