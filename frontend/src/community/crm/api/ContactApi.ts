@@ -19,6 +19,7 @@ import {
   CrmCompaniesResponseType,
   CrmContactCreatePayload,
   CrmContactMetricsResponseType,
+  CrmContactMetricsType,
   CrmOwnersResponseType,
   CrmContactLookup,
   CrmOwner,
@@ -115,17 +116,17 @@ const editContact = async ({ id, ...payload }: EditContactPayload) => {
 };
 
 export const useEditContact = (
-  onSuccess: () => void,
+  onSuccess: (updatedData: CrmContactMetricsType) => void,
   onError: () => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editContact,
-    onSuccess: () => {
+    onSuccess: (updatedData) => {
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
       });
-      onSuccess();
+      onSuccess(updatedData);
     },
     onError
   });

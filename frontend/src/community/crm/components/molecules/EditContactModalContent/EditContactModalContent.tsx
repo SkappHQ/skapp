@@ -29,6 +29,7 @@ import {
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactEditFormTypes,
+  CrmContactMetricsType,
   CrmOwner,
   EditContactPayload
 } from "~community/crm/types/CommonTypes";
@@ -61,12 +62,12 @@ const EditContactModalContent = () => {
     SEARCH_DEBOUNCE_DELAY
   );
 
-  const { setIsAddContactModalOpen, selectedContact } = useCrmStore(
-    (store) => ({
+  const { setIsAddContactModalOpen, selectedContact, setSelectedContact } =
+    useCrmStore((store) => ({
       setIsAddContactModalOpen: store.setIsAddContactModalOpen,
-      selectedContact: store.selectedContact
-    })
-  );
+      selectedContact: store.selectedContact,
+      setSelectedContact: store.setSelectedContact
+    }));
 
   useEffect(() => {
     if (!selectedContact) return;
@@ -87,9 +88,15 @@ const EditContactModalContent = () => {
     ownerId: selectedContact?.owner?.employeeId ?? null
   };
 
-  const handleSuccess = () => {
+  const handleSuccess = (updatedData: CrmContactMetricsType) => {
     setSubmitting(false);
     handleCloseModal();
+    if (selectedContact && selectedContact.id === updatedData.id) {
+      setSelectedContact({
+        ...selectedContact,
+        ...updatedData
+      });
+    }
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
