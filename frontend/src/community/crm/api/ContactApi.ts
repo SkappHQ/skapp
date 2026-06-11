@@ -1,7 +1,9 @@
 import {
   UseQueryResult,
   useInfiniteQuery,
-  useQuery
+  useMutation,
+  useQuery,
+  useQueryClient
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
@@ -15,9 +17,12 @@ import {
 } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
+  CrmContactCreatePayload,
+  CrmContactDetail,
   CrmContactLookup,
   CrmContactMetricsResponseType,
-  CrmOwner
+  CrmOwner,
+  CrmOwnersResponseType
 } from "~community/crm/types/CommonTypes";
 
 interface ContactMetricsSearchParams {
@@ -76,6 +81,70 @@ export const useGetCrmCompanies = (size: number) => {
   });
 };
 
+const createNewContact = async (contactDetails: CrmContactCreatePayload) => {
+  const response = await authFetch.post(
+    contactEndpoints.CREATE_CONTACT,
+    contactDetails
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useCreateNewContact = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createNewContact,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      onSuccess();
+    },
+    onError: onError
+  });
+};
+
+const fetchCompanyLookup = async (
+  searchKeyword: string,
+  size: number
+): Promise<CrmCompaniesResponseType> => {
+  const response = await authFetch.get(contactEndpoints.GET_COMPANIES, {
+    params: { searchKeyword, size }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetCompanyLookup = (searchKeyword: string, size: number) => {
+  return useQuery({
+    queryKey: contactQueryKeys.COMPANY_LOOKUP(searchKeyword),
+    queryFn: () => fetchCompanyLookup(searchKeyword, size)
+  });
+};
+
+const fetchOwnerLookup = async (
+  searchKeyword: string,
+  size: number
+): Promise<CrmOwnersResponseType> => {
+  const response = await authFetch.get(contactEndpoints.OWNER_LOOKUP, {
+    params: { searchKeyword, size }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetOwnerLookup = (
+  searchKeyword: string,
+  size: number,
+  enabled: boolean
+) => {
+  return useQuery({
+    queryKey: contactQueryKeys.OWNERS_LOOKUP(searchKeyword),
+    queryFn: () => fetchOwnerLookup(searchKeyword, size),
+    enabled
+  });
+};
+
 export const useGetCrmContacts = (
   searchKeyword: string,
   size: number,
@@ -110,15 +179,18 @@ export const useGetCrmOwners = (
   });
 };
 
-const fetchContactById = async (id: number) => {
+const fetchContactById = async (id: number): Promise<CrmContactDetail> => {
   const response = await authFetch.get(contactEndpoints.CONTACT_BY_ID(id));
   return response?.data?.results?.[0];
 };
 
-export const useGetContactById = (id: number) => {
+export const useGetContactById = (
+  id: number
+): UseQueryResult<CrmContactDetail> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_BY_ID(id),
     queryFn: () => fetchContactById(id),
-    enabled: !!id
+    enabled: !!id,
+    refetchOnWindowFocus: false
   });
 };
