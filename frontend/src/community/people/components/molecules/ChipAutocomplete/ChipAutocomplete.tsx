@@ -1,10 +1,12 @@
-import { CloseIcon, InputField, Popper } from "@rootcodelabs/skapp-ui";
+import { Chip, Popper } from "@rootcodelabs/skapp-ui";
 import {
   ChangeEvent,
   FC,
   KeyboardEvent,
+  ReactElement,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -18,7 +20,7 @@ interface ChipAutocompleteProps {
   options?: string[];
   isDisabled?: boolean;
   readOnly?: boolean;
-  maxResults?: number;
+  endIcon?: ReactElement;
 }
 
 const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
@@ -30,20 +32,23 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   options = [],
   isDisabled = false,
   readOnly = false,
-  maxResults = 5
+  endIcon
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const inputWrapperRef = useRef<HTMLDivElement>(null);
+  const inputBoxRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const filteredOptions = options
-    .filter(
-      (option) =>
-        option.toLowerCase().includes(inputValue.toLowerCase()) &&
-        !value.includes(option)
-    )
-    .slice(0, maxResults);
+  const filteredOptions = useMemo(
+    () =>
+      options.filter(
+        (option) =>
+          option.toLowerCase().includes(inputValue.toLowerCase()) &&
+          !value.includes(option)
+      ),
+    [options, inputValue, value]
+  );
 
   useEffect(() => {
     setActiveIndex(null);
@@ -96,23 +101,8 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   const handleEnter = useCallback(() => {
     if (activeIndex !== null && filteredOptions[activeIndex]) {
       handleSelect(filteredOptions[activeIndex]);
-    } else if (inputValue.trim()) {
-      const trimmed = inputValue.trim();
-      if (!value.includes(trimmed)) {
-        onChange([...value, trimmed]);
-      }
-      setInputValue("");
-      handleClose();
     }
-  }, [
-    activeIndex,
-    filteredOptions,
-    inputValue,
-    value,
-    onChange,
-    handleSelect,
-    handleClose
-  ]);
+  }, [activeIndex, filteredOptions, handleSelect]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
@@ -151,89 +141,91 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   );
 
   return (
-    <div className="w-full relative" ref={inputWrapperRef}>
-      <InputField
-        id={`${id}-input`}
-        className="w-full"
-        fullWidth
-        label={label}
-        placeholder={value.length === 0 ? placeholder : ""}
-        value={inputValue}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        onFocus={() => setIsOpen(true)}
-        disabled={isDisabled}
-        readOnly={readOnly}
-        leftIcon={
-          value.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5 items-center">
-              {value.map((item) => (
-                <span
-                  key={item}
-                  className="flex items-center gap-1 rounded-full bg-tertiary-background py-0.5 px-2.5 text-sm text-secondary-text max-w-50 border border-secondary-accent"
-                >
-                  <span className="truncate">{item}</span>
-                  {!readOnly && !isDisabled && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(item);
-                      }}
-                      className="flex items-center justify-center shrink-0 cursor-pointer"
-                      aria-label={`Remove ${item}`}
-                    >
-                      <CloseIcon className="w-3 h-3" />
-                    </button>
-                  )}
-                </span>
-              ))}
-            </div>
-          ) : undefined
-        }
-      />
-
-      {isOpen && filteredOptions.length > 0 && (
-        <Popper
-          id={`${id}-popper`}
-          anchorEl={inputWrapperRef.current}
-          anchorElWidth={inputWrapperRef.current?.offsetWidth}
-          open={isOpen}
-          position="bottom"
-          handleClose={handleClose}
-          ariaRole="presentation"
-          ariaLabel={label || placeholder}
-          isFlip
-          disableAutoFocus
-          positionStrategy="absolute"
-          containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
+    <div className="w-full">
+      <div className="flex flex-col gap-2">
+        {label && <label className="subtitle1">{label}</label>}
+        <div
+          ref={inputBoxRef}
+          className={`flex items-center gap-2 min-h-12 w-full rounded-lg bg-tertiary-background px-3 ${
+            isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-text"
+          }`}
+          onClick={() => {
+            if (!isDisabled && !readOnly) {
+              inputRef.current?.focus();
+            }
+          }}
         >
-          <ul
-            className="max-h-50 overflow-y-auto"
-            role="listbox"
-            id={`${id}-list`}
-            aria-label={label || placeholder}
-          >
-            {filteredOptions.map((option, index) => (
-              <li
-                key={option}
-                id={`${id}-option-${index}`}
-                role="option"
-                aria-selected={activeIndex === index}
-                onClick={() => handleSelect(option)}
-                onMouseEnter={() => setActiveIndex(index)}
-                className={`px-4 py-2 cursor-pointer outline-none transition-all duration-150 truncate ${
-                  index === activeIndex
-                    ? "bg-tertiary-background rounded"
-                    : "hover:bg-tertiary-background"
-                }`}
-              >
-                {option}
-              </li>
+          <div className="flex flex-wrap gap-1 items-center flex-1">
+            {value.map((item) => (
+              <Chip
+                key={item}
+                label={item}
+                size="sm"
+                disabled={isDisabled}
+                onDelete={
+                  !readOnly && !isDisabled
+                    ? () => handleDelete(item)
+                    : undefined
+                }
+              />
             ))}
-          </ul>
-        </Popper>
-      )}
+            {!readOnly && (
+              <input
+                ref={inputRef}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                disabled={isDisabled}
+                placeholder={value.length === 0 ? placeholder : ""}
+                className="outline-none body1"
+              />
+            )}
+          </div>
+          {endIcon}
+        </div>
+      </div>
+
+      <Popper
+        id={`${id}-popper`}
+        anchorEl={inputBoxRef.current}
+        anchorElWidth={
+          inputBoxRef.current
+            ? inputBoxRef.current.getBoundingClientRect().width
+            : 0
+        }
+        open={isOpen}
+        position="bottom"
+        handleClose={handleClose}
+        ariaRole="presentation"
+        isFlip
+        disableAutoFocus
+        containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
+      >
+        <ul
+          className="max-h-50 overflow-y-auto"
+          role="listbox"
+          id={`${id}-list`}
+          aria-label={label || placeholder}
+        >
+          {filteredOptions.map((option, index) => (
+            <li
+              key={option}
+              id={`${id}-option-${index}`}
+              role="option"
+              aria-selected={activeIndex === index}
+              onClick={() => handleSelect(option)}
+              onMouseEnter={() => setActiveIndex(index)}
+              className={`px-4 py-2 cursor-pointer outline-none transition-all duration-150 truncate ${
+                index === activeIndex
+                  ? "bg-tertiary-background rounded"
+                  : "hover:bg-tertiary-background"
+              }`}
+            >
+              {option}
+            </li>
+          ))}
+        </ul>
+      </Popper>
     </div>
   );
 };

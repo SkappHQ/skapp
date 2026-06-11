@@ -5,6 +5,9 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { usePeopleStore } from "~community/people/store/store";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
 
+import { SearchIcon } from "@rootcodelabs/skapp-ui";
+
+import { SKILL_OPTIONS } from "~community/people/constants/skillConstants";
 import ChipAutocomplete from "../../../molecules/ChipAutocomplete/ChipAutocomplete";
 
 interface Props {
@@ -58,8 +61,10 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
         placeholder={translateText(["searchSkills"])}
         value={skills}
         onChange={handleSkillsChange}
+        options={SKILL_OPTIONS.map((s) => s.label)}
         isDisabled={isInputsDisabled}
         readOnly={isReadOnly}
+        endIcon={<SearchIcon className="size-6 text-secondary-text shrink-0" />}
       />
     </PeopleLayout>
   );
