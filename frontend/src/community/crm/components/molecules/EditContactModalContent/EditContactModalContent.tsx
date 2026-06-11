@@ -91,7 +91,7 @@ const EditContactModalContent = () => {
   const handleSuccess = (updatedData: CrmContactMetricsType) => {
     setSubmitting(false);
     handleCloseModal();
-    if (selectedContact && selectedContact.id === updatedData.id) {
+    if (selectedContact?.id === updatedData.id) {
       setSelectedContact({
         ...selectedContact,
         ...updatedData
@@ -155,7 +155,6 @@ const EditContactModalContent = () => {
     errors,
     handleChange,
     setFieldValue,
-    isSubmitting,
     setSubmitting,
     submitForm
   } = formik;
