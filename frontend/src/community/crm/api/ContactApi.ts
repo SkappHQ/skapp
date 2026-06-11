@@ -107,7 +107,7 @@ export const useCreateNewContact = (
 };
 
 const editContact = async ({ id, ...payload }: EditContactPayload) => {
-  const response = await authFetch.put(
+  const response = await authFetch.patch(
     contactEndpoints.EDIT_CONTACT(id),
     payload
   );
