@@ -83,11 +83,40 @@ export interface CompanyLookup {
   name: string;
 }
 
+export interface CrmContactLookup {
+  id: number;
+  name: string;
+  company?: CompanyLookup | null;
+}
+
 export interface CrmCompaniesResponseType {
   items: CompanyLookup[];
   totalItems: number;
   currentPage: number;
   totalPages: number;
+}
+
+export interface CrmOwnersResponseType {
+  items: CrmOwner[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface CrmContactAddFormTypes {
+  name: string;
+  email: string;
+  contactNumber: string;
+  companyId: number | null;
+  ownerId: number | null;
+}
+
+export interface CrmContactCreatePayload {
+  name: string;
+  email: string;
+  contactNumber?: string;
+  companyId?: number;
+  ownerId?: number;
 }
 
 export interface CrmContactMetricsType {
@@ -114,6 +143,7 @@ export interface CrmContactMetricsResponseType {
 export interface CrmDealType {
   id: number;
   name: string;
+  description: string | null;
   stage: CrmDealStageType;
   priority: CrmPriorityEnum | null;
   closingAt: string | null;
@@ -179,6 +209,17 @@ export interface CrmDealFilterParams {
   searchKeyword?: string;
   stageId?: number;
   priority?: CrmPriorityEnum;
+}
+
+export interface CrmCreateDealPayload {
+  name: string;
+  stageId: number;
+  contactId: number;
+  ownerId: number;
+  priority: CrmPriorityEnum;
+  description?: string | null;
+  amount?: string | null;
+  closingAt?: string | null;
 }
 
 export interface CrmCompanyEditFormTypes {

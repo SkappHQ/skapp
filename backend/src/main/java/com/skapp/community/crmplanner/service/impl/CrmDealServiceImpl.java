@@ -1,8 +1,10 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.FractionalIndexUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
@@ -14,7 +16,11 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
+import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
@@ -35,7 +41,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -57,6 +66,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final CrmMapper crmMapper;
 
 	private final PageTransformer pageTransformer;
+
+	private final UserService userService;
 
 	@Override
 	@Transactional
@@ -131,6 +142,56 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getDealsByStages(CrmDealsByStagesRequestDto requestDto) {
+		log.info("getDealsByStages: execution started for {} stage(s)",
+				requestDto.getStageIds() != null ? requestDto.getStageIds().size() : 0);
+
+		if (requestDto.getStageIds() == null || requestDto.getStageIds().isEmpty()) {
+			return new ResponseEntityDto(false, new ArrayList<>());
+		}
+
+		List<Long> uniqueStageIds = new ArrayList<>(new LinkedHashSet<>(requestDto.getStageIds()));
+
+		List<CrmDealStage> stages = crmDealStageDao.findAllByIdInAndIsDeletedFalse(uniqueStageIds);
+		if (stages.size() != uniqueStageIds.size()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
+		}
+
+		int limit = requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT;
+		Integer requestedPage = requestDto.getPage();
+		int page = (requestedPage != null && requestedPage >= 0 && uniqueStageIds.size() == 1) ? requestedPage : 0;
+
+		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto);
+
+		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
+
+		for (Long stageId : uniqueStageIds) {
+			long totalCount = stageCounts.getOrDefault(stageId, 0L);
+			PageRequest pageRequest = PageRequest.of(page, limit);
+
+			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount);
+			List<CrmDealByStageItemResponseDto> deals = crmMapper
+				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
+
+			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
+			stageResult.setStageId(stageId);
+
+			stageResult.setTotalCount(dealsPage.getTotalElements());
+			stageResult.setCurrentPage(dealsPage.getNumber());
+			stageResult.setTotalPages(dealsPage.getTotalPages());
+			stageResult.setPageSize(dealsPage.getSize());
+			stageResult.setHasNextPage(dealsPage.hasNext());
+			stageResult.setDeals(deals);
+
+			result.add(stageResult);
+		}
+
+		log.info("getDealsByStages: execution ended");
+		return new ResponseEntityDto(false, result);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getBoardInitData() {
 		log.info("getBoardInitData: execution started");
 
@@ -153,6 +214,64 @@ public class CrmDealServiceImpl implements CrmDealService {
 		responseDto.setOwners(owners);
 
 		log.info("getBoardInitData: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto) {
+		log.info("reorderDeal: reordering deal with id={}", requestDto.getDealId());
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
+
+		if (requestDto.getDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
+		}
+
+		if (requestDto.getPreviousDealId() == null && requestDto.getNextDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
+		}
+
+		if (requestDto.getDealId().equals(requestDto.getPreviousDealId())
+				|| requestDto.getDealId().equals(requestDto.getNextDealId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_INVALID_NEIGHBOUR);
+		}
+
+		Long stageId = deal.getStage().getId();
+
+		String prevOrderIndex = null;
+		if (requestDto.getPreviousDealId() != null) {
+			CrmDeal prevDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getPreviousDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (!stageId.equals(prevDeal.getStage().getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
+			}
+			prevOrderIndex = prevDeal.getOrderIndex();
+		}
+
+		String nextOrderIndex = null;
+		if (requestDto.getNextDealId() != null) {
+			CrmDeal nextDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getNextDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (!stageId.equals(nextDeal.getStage().getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
+			}
+			nextOrderIndex = nextDeal.getOrderIndex();
+		}
+
+		String newOrderIndex = FractionalIndexUtil.generateKeyBetween(prevOrderIndex, nextOrderIndex);
+		deal.setOrderIndex(newOrderIndex);
+
+		CrmDeal savedDeal = crmDealDao.save(deal);
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
+		log.info("reorderDeal: deal reordered with id={}, new orderIndex={}", savedDeal.getId(), newOrderIndex);
 		return new ResponseEntityDto(false, responseDto);
 	}
 
