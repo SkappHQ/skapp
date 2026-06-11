@@ -1,4 +1,4 @@
-import { CrmCompanyMetricsType, CrmDealType } from "./CommonTypes";
+import { CrmCompanyMetricsType } from "./CommonTypes";
 import { CrmModalTypes } from "./ModalTypes";
 
 interface ActionTypes {
@@ -8,8 +8,6 @@ interface ActionTypes {
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
   setIsCompanySidePanelOpen: (isCompanySidePanelOpen: boolean) => void;
-  setIsDealModalOpen: (isDealModalOpen: boolean) => void;
-  setCurrentDeletingDeal: (currentDeletingDeal: CrmDealType | null) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -19,6 +17,4 @@ export interface CrmStore extends ActionTypes {
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
   isCompanySidePanelOpen: boolean;
-  isDealModalOpen: boolean;
-  currentDeletingDeal: CrmDealType | null;
 }
