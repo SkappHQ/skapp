@@ -9,7 +9,8 @@ export const crmDealEndpoints = {
 export const contactEndpoints = {
   GET_CONTACT_METRICS: `${moduleAPIPath.CRM}/contact/metrics`,
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
-  OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
+  OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`,
+  CONTACT_BY_ID: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`
 };
 
 export const companyEndpoints = {

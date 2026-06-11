@@ -6,7 +6,15 @@
     "detailsPageHead": "Contact Details | Skapp",
     "detailsTitle": "Contact Details",
     "contactDetailsPanel": {
-      "lastUpdated": "Last updated"
+      "lastUpdated": "Last updated",
+      "errors": {
+        "contactNotFoundTitle": "Contact not found",
+        "contactNotFoundDescription": "This contact is no longer available."
+      },
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals"
+      }
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",

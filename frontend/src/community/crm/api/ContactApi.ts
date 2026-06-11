@@ -109,3 +109,17 @@ export const useGetCrmOwners = (
     enabled
   });
 };
+
+const fetchContactById = async (id: number) => {
+  const response = await authFetch.get(contactEndpoints.CONTACT_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetContactById = (id: number) => {
+  return useQuery({
+    queryKey: contactQueryKeys.CONTACT_BY_ID(id),
+    queryFn: () => fetchContactById(id),
+    enabled: !!id,
+    refetchOnWindowFocus: false
+  });
+};
