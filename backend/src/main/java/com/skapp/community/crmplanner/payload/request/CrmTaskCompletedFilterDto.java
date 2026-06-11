@@ -7,8 +7,8 @@ import lombok.Setter;
 @Setter
 public class CrmTaskCompletedFilterDto {
 
-	private int page = 0;
+	private int page;
 
-	private int size = 10;
+	private int size;
 
 }
