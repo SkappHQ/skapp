@@ -4,7 +4,6 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -262,7 +261,7 @@ public class CrmValidations {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_REQUIRED);
 		}
 
-		if (domain.length() > CrmConstants.DOMAIN_MAX_LENGTH || !domain.matches(CrmConstants.DOMAIN_PATTERN)) {
+		if (domain.length() > CrmConstants.CHARACTER_MAX_LENGTH || !domain.matches(CrmConstants.DOMAIN_PATTERN)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_INVALID);
 		}
 	}

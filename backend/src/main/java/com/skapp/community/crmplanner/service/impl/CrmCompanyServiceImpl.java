@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyDomainSearchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyDomainSearchResponseDto;
@@ -126,12 +127,13 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto searchCompaniesByDomain(String domain) {
+	public ResponseEntityDto searchCompaniesByDomain(CrmCompanyDomainSearchRequestDto requestDto) {
 		log.info("searchCompaniesByDomain: execution started");
 
-		CrmValidations.validateDomain(domain);
+		CrmValidations.validateDomain(requestDto.getDomain());
 
-		List<CrmCompany> companies = crmCompanyDao.findCompaniesByWebsiteDomain(domain);
+		List<CrmCompany> companies = crmCompanyDao.findCompaniesByWebsiteDomain(requestDto.getDomain(),
+				requestDto.getLimit());
 
 		List<CrmCompanyResponseDto> companyDtos = companies.stream()
 			.map(crmCompanyMapper::crmCompanyToCrmCompanyResponseDto)

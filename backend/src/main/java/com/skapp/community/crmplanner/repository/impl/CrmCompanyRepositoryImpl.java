@@ -9,7 +9,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
@@ -144,18 +143,18 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 	}
 
 	@Override
-	public List<CrmCompany> findCompaniesByWebsiteDomain(String domain) {
+	public List<CrmCompany> findCompaniesByWebsiteDomain(String domain, int limit) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmCompany> query = cb.createQuery(CrmCompany.class);
 		Root<CrmCompany> company = query.from(CrmCompany.class);
 
-		String likePattern = "%" + StringUtils.escapeLikePattern(domain.trim().toLowerCase(Locale.ROOT)) + "%";
+		String likePattern = "%" + StringUtils.escapeLikePattern(domain.toLowerCase()) + "%";
 
 		query.where(cb.isFalse(company.get(CrmCompany_.isDeleted)),
 				cb.like(cb.lower(company.get(CrmCompany_.website)), likePattern, '\\'));
 		query.orderBy(cb.asc(cb.lower(company.get(CrmCompany_.name))));
 
-		return entityManager.createQuery(query).setMaxResults(CrmConstants.DOMAIN_SEARCH_MAX_RESULTS).getResultList();
+		return entityManager.createQuery(query).setMaxResults(limit).getResultList();
 	}
 
 	@Override

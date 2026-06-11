@@ -15,6 +15,6 @@ public interface CrmCompanyRepository {
 
 	public Page<CrmCompanyMetricsResponseDto> getCompanyMetrics(Pageable pageable, String searchKeyword);
 
-	List<CrmCompany> findCompaniesByWebsiteDomain(String domain);
+	List<CrmCompany> findCompaniesByWebsiteDomain(String domain, int limit);
 
 }

@@ -110,8 +110,10 @@ class CrmCompanyControllerIntegrationTest {
 		return performRequest(get(EXISTS_PATH).param("name", name).accept(MediaType.APPLICATION_JSON));
 	}
 
-	private ResultActions performSearchByDomainRequest(String domain) throws Exception {
-		return performRequest(get(SEARCH_BY_DOMAIN_PATH).param("domain", domain).accept(MediaType.APPLICATION_JSON));
+	private ResultActions performSearchByDomainRequest(String domain, int limit) throws Exception {
+		return performRequest(get(SEARCH_BY_DOMAIN_PATH).param("domain", domain)
+			.param("limit", String.valueOf(limit))
+			.accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performDeleteRequest(Long id) throws Exception {
@@ -390,7 +392,7 @@ class CrmCompanyControllerIntegrationTest {
 	void searchCompaniesByDomain_HappyPath_ReturnsMatchingCompany() throws Exception {
 		performPostRequest(createValidPayload()).andExpect(status().isCreated());
 
-		performSearchByDomainRequest("acme.com").andDo(print())
+		performSearchByDomainRequest("acme.com", 10).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['companies'][0]['name']").value("Acme Corp"));
@@ -399,7 +401,7 @@ class CrmCompanyControllerIntegrationTest {
 	@Test
 	@DisplayName("Search companies by domain with blank domain - Returns Bad Request")
 	void searchCompaniesByDomain_BlankDomain_ReturnsBadRequest() throws Exception {
-		performSearchByDomainRequest("   ").andDo(print())
+		performSearchByDomainRequest("   ", 10).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -411,7 +413,7 @@ class CrmCompanyControllerIntegrationTest {
 	void searchCompaniesByDomain_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
-		performSearchByDomainRequest("acme.com").andDo(print()).andExpect(status().isForbidden());
+		performSearchByDomainRequest("acme.com", 10).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }
