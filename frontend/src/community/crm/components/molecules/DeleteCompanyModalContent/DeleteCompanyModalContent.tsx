@@ -27,12 +27,6 @@ const DeleteCompanyModalContent: React.FC = () => {
     "deleteCompanyModal"
   );
 
-  const translateToasts = useTranslator(
-    "crmModule",
-    "companies",
-    "deleteCompanyToastMessages"
-  );
-
   const handleCloseModal = () => {
     setIsCompanyModalOpen(false);
   };
@@ -41,8 +35,8 @@ const DeleteCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateToasts(["successTitle"]),
-      description: translateToasts(["successDescription"], {
+      title: translateText(["toastMessages","successTitle"]),
+      description: translateText(["toastMessages","successDescription"], {
         companyName: selectedCompany?.name
       })
     });
@@ -56,8 +50,8 @@ const DeleteCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateToasts(["errorTitle"]),
-      description: translateToasts(["errorDescription"])
+      title: translateText(["toastMessages","errorTitle"]),
+      description: translateText(["toastMessages","errorDescription"])
     });
   };
 

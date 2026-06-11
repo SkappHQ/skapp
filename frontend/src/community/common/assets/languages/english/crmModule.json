@@ -99,7 +99,7 @@
     "title": "Companies",
     "addCompanyBtn": "Add company",
     "addCompanyModal": {
-      "title": "Add Company",
+      "title": "Add company",
       "labels": {
         "name": "Company name",
         "contactNumber": "Contact no.",
@@ -135,6 +135,12 @@
         "characterLength": "Entry must be less than 50 characters",
         "addressLength": "Address must be less than 100 characters",
         "industry": "Please select a valid industry"
+      },
+      "toastMessages": {
+        "successTitle": "Company added successfully",
+        "successDescription": "The company has been successfully added",
+        "errorTitle": "Oops! something went wrong",
+        "errorDescription": "Failed to add the company. Please try again"
       }
     },
     "industryOptions": {
@@ -187,11 +193,6 @@
         "accountValueHeader": "ACCOUNT VALUE",
         "accountValueAriaLabel": "Account Value"
       }
-    },
-    "companyToastMessages": {
-      "successTitle": "Company added successfully",
-      "errorTitle": "Failed to add company",
-      "errorDescription": "Please try again or contact support"
     },
     "companyDetailsSidePanel": {
       "sidePanelCompanyContacts": {
@@ -248,12 +249,13 @@
         "characterLength": "Entry must be less than 50 characters",
         "addressLength": "Address must be less than 100 characters",
         "industry": "Please select a valid industry"
+      },
+      "toastMessages": {
+        "successTitle": "Company updated successfully",
+        "successDescription": "The company has been successfully updated",
+        "errorTitle": "Oops! something went wrong",
+        "errorDescription": "Failed to edit the company. Please try again"
       }
-    },
-    "editCompanyToastMessages": {
-      "successTitle": "Company updated successfully",
-      "errorTitle": "Failed to update company",
-      "errorDescription": "Please try again or contact support"
     },
     "deleteCompanyModal": {
       "title": "Delete Company",
@@ -265,13 +267,13 @@
       "ariaLabels": {
         "confirm": "Confirm Delete Company",
         "cancel": "Cancel Delete Company"
+      },
+      "toastMessages": {
+        "successTitle": "Company deleted",
+        "successDescription": "{{companyName}} has been deleted and linked contacts have been unlinked.",
+        "errorTitle": "Failed to delete company",
+        "errorDescription": "Something went wrong. Please try again"
       }
-    },
-    "deleteCompanyToastMessages": {
-      "successTitle": "Company deleted",
-      "successDescription": "{{companyName}} has been deleted and linked contacts have been unlinked.",
-      "errorTitle": "Failed to delete company",
-      "errorDescription": "Something went wrong. Please try again"
     },
     "sidePanel": {
       "editCompany": "Edit company",
