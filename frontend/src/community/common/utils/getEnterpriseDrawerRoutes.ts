@@ -3,6 +3,7 @@ import {
   AdminTypes,
   EmployeeTypes,
   ManagerTypes,
+  RepresentativeTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 
@@ -10,7 +11,12 @@ import { GlobalLoginMethod } from "../enums/CommonEnums";
 import { IconName } from "../types/IconTypes";
 import routes from "./data/routes";
 
-type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
+type Role =
+  | AdminTypes
+  | ManagerTypes
+  | EmployeeTypes
+  | SuperAdminType
+  | RepresentativeTypes;
 
 interface Props {
   userRoles: Role[] | undefined;
