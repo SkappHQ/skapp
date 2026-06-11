@@ -47,6 +47,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		CrmValidations.validateDealStageName(requestDto.getName());
 		CrmValidations.validateDealStageDescription(requestDto.getDescription());
+		CrmValidations.validateDealStageColor(requestDto.getColor());
 
 		if (crmDealStageDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE);
@@ -55,7 +56,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		CrmDealStage stage = new CrmDealStage();
 		stage.setName(requestDto.getName());
 		stage.setDescription(requestDto.getDescription());
-		stage.setColor(requestDto.getColor().toString());
+		stage.setColor(requestDto.getColor().name());
 		stage.setStageType(CrmConstants.DEFAULT_DEAL_STAGE_TYPE);
 		stage.setOrderIndex(crmDealStageDao.countByIsDeletedFalse() + 1);
 

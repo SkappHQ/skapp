@@ -10,6 +10,7 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
@@ -279,6 +280,12 @@ public class CrmValidations {
 		}
 		if (!description.matches(CrmConstants.DEAL_STAGE_DESCRIPTION_REGEX)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealStageColor(CrmDealStageColors color) {
+		if (color == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_COLOR_REQUIRED);
 		}
 	}
 
