@@ -35,10 +35,8 @@ public class CrmConstants {
 
 	public static final int DEAL_STAGE_OPEN_LIMIT_FREE_TIER = 2;
 
-	public static final Set<String> FREE_TIER_HIDDEN_DEAL_STAGES = Set.of(
-			CrmDealStageName.PROPOSAL_SENT.name(),
-			CrmDealStageName.NEGOTIATION.name()
-	);
+	public static final Set<String> FREE_TIER_HIDDEN_DEAL_STAGES = Set.of(CrmDealStageName.PROPOSAL_SENT.name(),
+			CrmDealStageName.NEGOTIATION.name());
 
 	public static final int DEALS_PER_STAGE_LIMIT = 20;
 

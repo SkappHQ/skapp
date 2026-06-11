@@ -43,8 +43,8 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		if (!tenantValidator.isCurrentTenantCoreOrPro()) {
 			stages = stages.stream()
-					.filter(stage -> !CrmConstants.FREE_TIER_HIDDEN_DEAL_STAGES.contains(stage.getName()))
-					.collect(Collectors.toList());
+				.filter(stage -> !CrmConstants.FREE_TIER_HIDDEN_DEAL_STAGES.contains(stage.getName()))
+				.collect(Collectors.toList());
 		}
 
 		log.info("getDealStages: execution ended with {} result(s)", stages.size());
@@ -66,10 +66,11 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		}
 
 		if (!tenantValidator.isCurrentTenantCoreOrPro()) {
-			long openStageCount = crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc().stream()
-					.filter(s -> s.getStageType() == CrmDealStageType.OPEN)
-					.filter(s -> !CrmConstants.FREE_TIER_HIDDEN_DEAL_STAGES.contains(s.getName()))
-					.count();
+			long openStageCount = crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc()
+				.stream()
+				.filter(s -> s.getStageType() == CrmDealStageType.OPEN)
+				.filter(s -> !CrmConstants.FREE_TIER_HIDDEN_DEAL_STAGES.contains(s.getName()))
+				.count();
 
 			if (openStageCount >= CrmConstants.DEAL_STAGE_OPEN_LIMIT_FREE_TIER) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_LIMIT_EXCEEDED);
