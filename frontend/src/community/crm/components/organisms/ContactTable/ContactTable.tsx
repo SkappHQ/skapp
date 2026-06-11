@@ -32,7 +32,7 @@ import {
   formatTasks
 } from "~community/crm/utils/tableHelpers";
 
-export const ContactTable: React.FC = () => {
+export const ContactTable = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");

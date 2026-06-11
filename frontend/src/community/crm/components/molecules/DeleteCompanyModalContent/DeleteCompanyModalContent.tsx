@@ -6,7 +6,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useDeleteCompany } from "~community/crm/api/CompanyApi";
 import { useCrmStore } from "~community/crm/store/store";
 
-const DeleteCompanyModalContent: React.FC = () => {
+const DeleteCompanyModalContent = () => {
   const { setToastMessage } = useToast();
 
   const {

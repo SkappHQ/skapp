@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useMemo, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -26,7 +26,7 @@ import {
   formatTasks
 } from "~community/crm/utils/tableHelpers";
 
-export const CompanyTable: FC = () => {
+export const CompanyTable = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const [searchTerm, setSearchTerm] = useState("");

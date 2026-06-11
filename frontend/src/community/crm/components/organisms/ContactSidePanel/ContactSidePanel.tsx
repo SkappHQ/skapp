@@ -1,7 +1,6 @@
 import { SidePanel, SidePanelProps } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
 
-const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+const ContactSidePanel = ({ isOpen, onClose }: SidePanelProps) => {
   return <SidePanel isOpen={isOpen} onClose={onClose} />;
 };
 

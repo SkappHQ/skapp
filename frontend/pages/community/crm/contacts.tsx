@@ -23,7 +23,6 @@ const Contacts: NextPage = () => {
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedContact: store.setSelectedContact,
-
     setIsAddContactModalOpen: store.setIsAddContactModalOpen,
     setContactModalType: store.setContactModalType
   }));
