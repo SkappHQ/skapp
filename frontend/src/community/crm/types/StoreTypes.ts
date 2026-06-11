@@ -1,10 +1,10 @@
-import { CrmCompanyType, CrmContactMetricsType } from "./CommonTypes";
+import { CrmCompanyMetricsType, CrmContactMetricsType } from "./CommonTypes";
 import { CrmModalTypes } from "./ModalTypes";
 
 interface ActionTypes {
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
   setCompanyModalType: (companyModalType: CrmModalTypes) => void;
-  setSelectedCompany: (selectedCompany: CrmCompanyType | null) => void;
+  setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
   setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
@@ -16,7 +16,7 @@ interface ActionTypes {
 export interface CrmStore extends ActionTypes {
   isCompanyModalOpen: boolean;
   companyModalType: CrmModalTypes;
-  selectedCompany: CrmCompanyType | null;
+  selectedCompany: CrmCompanyMetricsType | null;
   isCrmSidePanelOpen: boolean;
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
