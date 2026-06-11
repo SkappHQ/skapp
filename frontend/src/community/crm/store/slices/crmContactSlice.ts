@@ -3,7 +3,7 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmContactModalSliceTypes } from "~community/crm/types/SliceTypes";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 
-const CrmContactModalSlice = (set: SetType<CrmContactModalSliceTypes>) => ({
+const CrmContactSlice = (set: SetType<CrmContactModalSliceTypes>) => ({
   isAddContactModalOpen: false,
   contactModalType: CrmModalTypes.ADD_CONTACT_MODAL,
   selectedContact: null,
@@ -15,4 +15,4 @@ const CrmContactModalSlice = (set: SetType<CrmContactModalSliceTypes>) => ({
     set({ selectedContact })
 });
 
-export default CrmContactModalSlice;
+export default CrmContactSlice;

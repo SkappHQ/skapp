@@ -1,11 +1,5 @@
 import { CrmStore } from "./StoreTypes";
 
-export interface CrmSidePanelSliceTypes extends Pick<
-  CrmStore,
-  | "isCrmSidePanelOpen"
-  | "setIsCrmSidePanelOpen"
-> {}
-
 export interface CrmCompanyModalSliceTypes extends Pick<
   CrmStore,
   | "isCompanyModalOpen"
@@ -32,4 +26,9 @@ export interface CrmTaskModalSliceTypes extends Pick<
   | "setIsTaskModalOpen"
   | "taskModalType"
   | "setTaskModalType"
+> {}
+
+export interface CrmSidePanelSliceTypes extends Pick<
+  CrmStore,
+  "isCrmSidePanelOpen" | "setIsCrmSidePanelOpen"
 > {}
