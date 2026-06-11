@@ -9,15 +9,13 @@ import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  deal: CrmDealListItem | null;
+  deal: CrmDealListItem;
 }
 
 const DealDetailSidePanel: FC<Props> = ({ isOpen, onClose, deal }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  if (!deal) return null;
 
   const menuItems = [
     {
