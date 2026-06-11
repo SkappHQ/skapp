@@ -1,15 +1,12 @@
-import React from "react";
 import { SidePanel } from "@rootcodelabs/skapp-ui";
+import React, { FC } from "react";
 
 interface ContactSidePanelProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const ContactSidePanel: React.FC<ContactSidePanelProps> = ({
-  isOpen,
-  onClose
-}) => {
+const ContactSidePanel: FC<ContactSidePanelProps> = ({ isOpen, onClose }) => {
   return <SidePanel isOpen={isOpen} onClose={onClose} />;
 };
 

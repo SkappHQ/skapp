@@ -1,7 +1,7 @@
 import { SetType } from "~community/common/types/CommonTypes";
+import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmContactModalSliceTypes } from "~community/crm/types/SliceTypes";
-import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 
 const CrmContactSlice = (set: SetType<CrmContactModalSliceTypes>) => ({
   isAddContactModalOpen: false,

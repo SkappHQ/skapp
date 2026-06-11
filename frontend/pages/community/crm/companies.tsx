@@ -1,8 +1,8 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";

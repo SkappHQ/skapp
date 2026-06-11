@@ -1,10 +1,10 @@
-import { FC } from "react";
 import {
   DeleteButtonIcon,
   EditIcon,
   KebabMenu,
   SidePanel
 } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";

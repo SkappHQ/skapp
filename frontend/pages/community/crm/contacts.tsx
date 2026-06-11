@@ -13,15 +13,12 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
-  const {
-    isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen,
-    setSelectedContact
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedContact: store.setSelectedContact
-  }));
+  const { isCrmSidePanelOpen, setIsCrmSidePanelOpen, setSelectedContact } =
+    useCrmStore((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+      setSelectedContact: store.setSelectedContact
+    }));
 
   const handleCloseSidePanel = (): void => {
     setIsCrmSidePanelOpen(false);
