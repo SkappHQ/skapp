@@ -9,7 +9,7 @@ interface ActionTypes {
   setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
-  setIsCrmSidePanelOpen: (isCompanySidePanelOpen: boolean) => void;
+  setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
   setSelectedContact: (selectedContact: CrmContactMetricsType | null) => void;
 }
 

@@ -17,18 +17,18 @@ const Companies: NextPage = () => {
     setIsCompanyModalOpen,
     setCompanyModalType,
     isCrmSidePanelOpen,
-    setisCrmSidePanelOpen,
+    setIsCrmSidePanelOpen,
     setSelectedCompany
   } = useCrmStore((store) => ({
     setIsCompanyModalOpen: store.setIsCompanyModalOpen,
     setCompanyModalType: store.setCompanyModalType,
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setisCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedCompany: store.setSelectedCompany
   }));
 
   const handleCloseSidePanel = (): void => {
-    setisCrmSidePanelOpen(false);
+    setIsCrmSidePanelOpen(false);
     setSelectedCompany(null);
   };
 
