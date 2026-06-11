@@ -139,7 +139,7 @@
       "toastMessages": {
         "successTitle": "Company added successfully",
         "successDescription": "The company has been successfully added",
-        "errorTitle": "Oops! something went wrong",
+        "errorTitle": "Oops! Something went wrong",
         "errorDescription": "Failed to add the company. Please try again"
       }
     },
@@ -212,11 +212,11 @@
       }
     },
     "editCompanyModal": {
-      "title": "Edit Company",
+      "title": "Edit company",
       "labels": {
         "name": "Company name",
         "contactNumber": "Contact no.",
-        "website": "Website",
+        "website": "Website URL",
         "address": "Address",
         "industry": "Industry"
       },
@@ -253,7 +253,7 @@
       "toastMessages": {
         "successTitle": "Company updated successfully",
         "successDescription": "The company has been successfully updated",
-        "errorTitle": "Oops! something went wrong",
+        "errorTitle": "Oops! Something went wrong",
         "errorDescription": "Failed to edit the company. Please try again"
       }
     },
