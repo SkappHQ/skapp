@@ -122,16 +122,30 @@ const EditContactModalContent: React.FC = () => {
   const submitEditContact = (values: CrmContactEditFormTypes) => {
     if (!selectedContact) return;
 
-    const payload: EditContactPayload = {
-      id: selectedContact.id,
-      name: values.name.trim(),
-      email: values.email.trim(),
-      contactNumber: values.contactNumber?.trim() || undefined,
-      companyId: values.companyId ?? undefined,
-      ownerId: values.ownerId ?? undefined
-    };
+    const payload: EditContactPayload = { id: selectedContact.id };
 
-    editContact(payload);
+    if (values.name.trim() !== selectedContact.name) {
+      payload.name = values.name.trim();
+    }
+    if (values.email.trim() !== selectedContact.email) {
+      payload.email = values.email.trim();
+    }
+    const contactNumber = values.contactNumber?.trim() || null;
+    if (contactNumber !== (selectedContact.contactNumber || null)) {
+      payload.contactNumber = contactNumber;
+    }
+    if (values.companyId !== (selectedContact.company?.id ?? null)) {
+      payload.companyId = values.companyId;
+    }
+    if (values.ownerId !== (selectedContact.owner?.employeeId ?? null)) {
+      payload.ownerId = values.ownerId;
+    }
+
+    if (Object.keys(payload).length > 1) {
+      editContact(payload);
+    } else {
+      handleCloseModal(); // Nothing changed
+    }
   };
 
   const formik = useFormik({
