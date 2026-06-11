@@ -37,6 +37,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [anchorWidth, setAnchorWidth] = useState(0);
   const inputBoxRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -53,6 +54,18 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   useEffect(() => {
     setActiveIndex(null);
   }, [inputValue]);
+
+  useEffect(() => {
+    const node = inputBoxRef.current;
+    if (!node) return;
+
+    const updateWidth = () => setAnchorWidth(node.getBoundingClientRect().width);
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
@@ -161,6 +174,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                 key={item}
                 label={item}
                 size="sm"
+                isSelected
                 disabled={isDisabled}
                 onDelete={
                   !readOnly && !isDisabled
@@ -188,17 +202,14 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
       <Popper
         id={`${id}-popper`}
         anchorEl={inputBoxRef.current}
-        anchorElWidth={
-          inputBoxRef.current
-            ? inputBoxRef.current.getBoundingClientRect().width
-            : 0
-        }
+        anchorElWidth={anchorWidth}
         open={isOpen}
-        position="bottom"
+        position="bottom-start"
         handleClose={handleClose}
         ariaRole="presentation"
         isFlip
         disableAutoFocus
+        positionStrategy="fixed"
         containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
       >
         <ul
