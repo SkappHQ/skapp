@@ -50,7 +50,7 @@ const DealDetailSidePanel: FC<Props> = ({ isOpen, onClose, deal }) => {
         header={
           <div className="flex flex-col gap-3 pl-2">
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-teal-500">
+              <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
                 <HandshakeIcon
                   width="14"
                   height="14"
