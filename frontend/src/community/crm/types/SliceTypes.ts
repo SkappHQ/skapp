@@ -23,4 +23,3 @@ export interface CrmTaskModalSliceTypes extends Pick<
   | "taskModalType"
   | "setTaskModalType"
 > {}
-
