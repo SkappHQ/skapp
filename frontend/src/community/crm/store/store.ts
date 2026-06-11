@@ -3,10 +3,11 @@ import { devtools } from "zustand/middleware";
 
 import { CrmStore } from "../types/StoreTypes";
 import CrmCompanyModalSlice from "./slices/crmCompanyModalSlice";
+import CrmContactModalSlice from "./slices/crmContactModalSlice";
+import CrmTaskModalSlice from "./slices/crmTaskModalSlice";
 import CrmCompanySidePanelSlice from "./slices/crmCompanySidePanelSlice";
 import CrmContactSidePanelSlice from "./slices/crmContactSidePanelSlice";
 import CrmSidePanelSlice from "./slices/crmSidePanelSlice";
-import CrmTaskModalSlice from "./slices/crmTaskModalSlice";
 
 export const useCrmStore = create<
   CrmStore,
@@ -16,6 +17,7 @@ export const useCrmStore = create<
     (set) => ({
       ...CrmCompanyModalSlice(set),
       ...CrmSidePanelSlice(set),
+      ...CrmContactModalSlice(set),
       ...CrmTaskModalSlice(set),
       ...CrmCompanySidePanelSlice(set),
       ...CrmContactSidePanelSlice(set)
