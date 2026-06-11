@@ -18,7 +18,7 @@ public interface CrmDealService {
 	ResponseEntityDto getBoardInitData();
 
 	ResponseEntityDto updateDealStage(CrmDealUpdateStageRequestDto requestDto);
-	
+
 	ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto);
 
 }

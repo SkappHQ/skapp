@@ -11,4 +11,8 @@ public class CrmDealUpdateStageRequestDto {
 
 	private Long newStageId;
 
+	private Long previousDealId;
+
+	private Long nextDealId;
+
 }
