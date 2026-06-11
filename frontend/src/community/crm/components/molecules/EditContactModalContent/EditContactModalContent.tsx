@@ -36,7 +36,7 @@ import { addContactValidations } from "~community/crm/utils/contactValidations";
 
 import SelectedOwnerField from "../SelectedOwnerField/SelectedOwnerField";
 
-const EditContactModalContent: React.FC = () => {
+const EditContactModalContent = () => {
   const { setToastMessage } = useToast();
 
   const translateContactText = useTranslator(
