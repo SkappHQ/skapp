@@ -50,22 +50,19 @@ const TaskRow: FC<Props> = ({
     updateCompletion({ id: task.id, isCompleted: checked });
   };
 
-  const showCompletedStyle = !isCheckTaskVisible && task.isCompleted;
-  const showInlineContact = showContact && task.contact;
+  const isCompletedStyleVisible = !isCheckTaskVisible && task.isCompleted;
+  const isInlineContactVisible = showContact && task.contact;
 
   return (
     <div
-      className={`relative flex items-center gap-4 p-3 min-w-0 ${className} min-h-[63px] bg-white hover:bg-gray-50 overflow-hidden`}
+      className={`relative flex items-center gap-4 p-3 min-w-0 ${className} min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden`}
+      onClick={onRowClick}
     >
-      <button
-        type="button"
-        className="absolute inset-0 appearance-none border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-inset"
-        aria-label={translateText(["openTaskDetails"], { name: task.name })}
-        onClick={onRowClick}
-      />
-
-      {showCompletedStyle && (
-        <div className="relative z-10 shrink-0 flex items-center justify-center pr-1">
+      {isCompletedStyleVisible && (
+        <div
+          className="shrink-0 flex items-center justify-center pr-1"
+          onClick={(e) => e.stopPropagation()}
+        >
           <CheckTask
             checked={task.isCompleted}
             onChange={handleToggleChange}
@@ -82,23 +79,23 @@ const TaskRow: FC<Props> = ({
       )}
 
       <div
-        className={`relative z-10 shrink-0 flex items-center justify-center ${showCompletedStyle ? "opacity-40" : ""}`}
+        className={`shrink-0 flex items-center justify-center ${isCompletedStyleVisible ? "opacity-40" : ""}`}
       >
         {getTaskTypeIcon(task.type.name)}
       </div>
 
-      <div className="relative z-10 flex-1 min-w-0">
+      <div className="flex-1 min-w-0">
         <p
-          className={`body2 leading-snug truncate ${showCompletedStyle ? "line-through text-secondary-icon" : "text-black"}`}
+          className={`body2 leading-snug truncate ${isCompletedStyleVisible ? "line-through text-secondary-icon" : "text-black"}`}
         >
           {task.name}
         </p>
-        {(dueDateDisplay || showInlineContact) && (
+        {(dueDateDisplay || isInlineContactVisible) && (
           <p className="body3 leading-none mt-0.5 flex items-center gap-2">
             {dueDateDisplay && (
               <span
                 className={
-                  showCompletedStyle
+                  isCompletedStyleVisible
                     ? "line-through text-secondary-icon"
                     : dueDateDisplay.colorClass
                 }
@@ -108,13 +105,13 @@ const TaskRow: FC<Props> = ({
                 })}
               </span>
             )}
-            {dueDateDisplay && showInlineContact && (
+            {dueDateDisplay && isInlineContactVisible && (
               <span className="w-1 h-1 rounded-full bg-secondary-accent shrink-0" />
             )}
-            {showInlineContact && (
+            {isInlineContactVisible && (
               <span
                 className={
-                  showCompletedStyle
+                  isCompletedStyleVisible
                     ? "line-through text-secondary-icon"
                     : "text-secondary-text"
                 }
@@ -127,7 +124,7 @@ const TaskRow: FC<Props> = ({
       </div>
 
       <div
-        className={`relative z-10 flex items-center gap-6 shrink-0 ${showCompletedStyle ? "opacity-40" : ""}`}
+        className={`flex items-center gap-6 shrink-0 ${isCompletedStyleVisible ? "opacity-40" : ""}`}
       >
         <PriorityIcon
           icon={getPriorityConfig(task.priority).icon}
