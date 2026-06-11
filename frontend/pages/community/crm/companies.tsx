@@ -5,7 +5,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { IconName } from "~community/common/types/IconTypes";
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
-import CompanySidePanelController from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanelController";
+import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
@@ -13,12 +13,24 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
 
-  const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(
-    (store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      setCompanyModalType: store.setCompanyModalType
-    })
-  );
+  const {
+    setIsCompanyModalOpen,
+    setCompanyModalType,
+    isCompanySidePanelOpen,
+    setIsCompanySidePanelOpen,
+    setSelectedCompany
+  } = useCrmStore((store) => ({
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+    setCompanyModalType: store.setCompanyModalType,
+    isCompanySidePanelOpen: store.isCompanySidePanelOpen,
+    setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen,
+    setSelectedCompany: store.setSelectedCompany
+  }));
+
+  const handleCloseSidePanel = (): void => {
+    setIsCompanySidePanelOpen(false);
+    setSelectedCompany(null);
+  };
 
   const onPrimaryButtonClick = () => {
     setIsCompanyModalOpen(true);
@@ -35,7 +47,10 @@ const Companies: NextPage = () => {
       containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
-        <CompanySidePanelController />
+        <CompanySidePanel
+          isOpen={isCompanySidePanelOpen}
+          onClose={handleCloseSidePanel}
+        />
         <CompanyModalController />
         <CompanyTable />
       </>

@@ -1,3 +1,4 @@
+import { FC } from "react";
 import {
   DeleteButtonIcon,
   EditIcon,
@@ -7,11 +8,9 @@ import {
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-const CompanySidePanel: React.FC<{
-  company: CrmCompanyMetricsType | null;
+const CompanySidePanel: FC<{
   isOpen: boolean;
   onClose: () => void;
 }> = ({ isOpen, onClose }) => {

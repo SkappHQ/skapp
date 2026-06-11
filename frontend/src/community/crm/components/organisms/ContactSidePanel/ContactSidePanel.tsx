@@ -1,24 +1,16 @@
+import React from "react";
 import { SidePanel } from "@rootcodelabs/skapp-ui";
 
-import { useCrmStore } from "~community/crm/store/store";
+interface ContactSidePanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
-const ContactSidePanel = () => {
-  const {
-    isContactSidePanelOpen,
-    setIsContactSidePanelOpen,
-    setSelectedContact
-  } = useCrmStore((store) => ({
-    isContactSidePanelOpen: store.isContactSidePanelOpen,
-    setIsContactSidePanelOpen: store.setIsContactSidePanelOpen,
-    setSelectedContact: store.setSelectedContact
-  }));
-
-  const handleClose = (): void => {
-    setIsContactSidePanelOpen(false);
-    setSelectedContact(null);
-  };
-
-  return <SidePanel isOpen={isContactSidePanelOpen} onClose={handleClose} />;
+const ContactSidePanel: React.FC<ContactSidePanelProps> = ({
+  isOpen,
+  onClose
+}) => {
+  return <SidePanel isOpen={isOpen} onClose={onClose} />;
 };
 
 export default ContactSidePanel;
