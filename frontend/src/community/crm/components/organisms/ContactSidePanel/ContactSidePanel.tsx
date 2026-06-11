@@ -1,4 +1,4 @@
-import { SidePanel, Tabs } from "@rootcodelabs/skapp-ui";
+import { SidePanel, TabItem, Tabs } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -8,6 +8,9 @@ import { useGetContactById } from "~community/crm/api/ContactApi";
 import { useCrmStore } from "~community/crm/store/store";
 
 import SidePanelContactHeader from "../../molecules/SidePanelContactHeader/SidePanelContactHeader";
+import SidePanelDealSection from "../../molecules/SidePanelDealSection/SidePanelDealSection";
+
+type TabId = "tasks" | "deals";
 
 const ContactSidePanel = () => {
   const translateText = useTranslator(
@@ -17,7 +20,7 @@ const ContactSidePanel = () => {
   );
   const { setToastMessage } = useToast();
 
-  const [activeTab, setActiveTab] = useState("tasks");
+  const [activeTab, setActiveTab] = useState<TabId>("tasks");
 
   const {
     isContactSidePanelOpen,
@@ -63,13 +66,13 @@ const ContactSidePanel = () => {
     //TODO: Implement company Id page and link it here
   };
 
-  const tabs = [
+  const tabs: TabItem[] = [
     { id: "tasks", label: translateText(["tabs", "tasks"]) },
     { id: "deals", label: translateText(["tabs", "deals"]) }
   ];
 
   const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
+    setActiveTab(tabId as TabId);
   };
 
   return (
@@ -101,10 +104,16 @@ const ContactSidePanel = () => {
             onTabChange={handleTabChange}
           />
         </div>
+        {activeTab === "deals" && (
+          <SidePanelDealSection deals={contact?.deals ?? []} />
+        )}
+        {activeTab === "tasks" && (
+          // TODO: Implement SidePanelTaskSection here
+          <></>
+        )}
       </div>
     </SidePanel>
   );
 };
 
 export default ContactSidePanel;
-
