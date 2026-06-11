@@ -58,13 +58,18 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		stage.setDescription(requestDto.getDescription());
 		stage.setColor(requestDto.getColor().name());
 		stage.setStageType(CrmConstants.DEFAULT_DEAL_STAGE_TYPE);
-		stage.setOrderIndex(crmDealStageDao.countByIsDeletedFalse() + 1);
+		stage.setOrderIndex(getNextOrderIndex());
 
 		CrmDealStage saved = crmDealStageDao.save(stage);
 
 		log.info("createDealStage: execution ended, created stage id={}", saved.getId());
 
 		return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
+	}
+
+	private int getNextOrderIndex() {
+		Integer maxOrderIndex = crmDealStageDao.findMaxOrderIndexByIsDeletedFalse();
+		return maxOrderIndex == null ? 1 : maxOrderIndex + 1;
 	}
 
 }
