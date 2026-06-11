@@ -37,6 +37,7 @@ import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
