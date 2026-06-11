@@ -14,17 +14,17 @@ const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const {
-    isContactSidePanelOpen,
-    setIsContactSidePanelOpen,
+    isCrmSidePanelOpen,
+    setIsCrmSidePanelOpen,
     setSelectedContact
   } = useCrmStore((store) => ({
-    isContactSidePanelOpen: store.isContactSidePanelOpen,
-    setIsContactSidePanelOpen: store.setIsContactSidePanelOpen,
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedContact: store.setSelectedContact
   }));
 
   const handleCloseSidePanel = (): void => {
-    setIsContactSidePanelOpen(false);
+    setIsCrmSidePanelOpen(false);
     setSelectedContact(null);
   };
 
@@ -51,7 +51,7 @@ const Contacts: NextPage = () => {
     >
       <>
         <ContactSidePanel
-          isOpen={isContactSidePanelOpen}
+          isOpen={isCrmSidePanelOpen}
           onClose={handleCloseSidePanel}
         />
         <ContactModalController />

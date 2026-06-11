@@ -39,10 +39,10 @@ export const CompanyTable: FC = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
-  const { setSelectedCompany, setIsCompanySidePanelOpen } = useCrmStore(
+  const { setSelectedCompany, setIsCrmSidePanelOpen } = useCrmStore(
     (store) => ({
       setSelectedCompany: store.setSelectedCompany,
-      setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen
+      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
     })
   );
 
@@ -195,7 +195,7 @@ export const CompanyTable: FC = () => {
         }}
         onRowClick={(row) => {
           setSelectedCompany(row);
-          setIsCompanySidePanelOpen(true);
+          setIsCrmSidePanelOpen(true);
         }}
       />
     </div>

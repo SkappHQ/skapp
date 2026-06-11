@@ -16,19 +16,19 @@ const Companies: NextPage = () => {
   const {
     setIsCompanyModalOpen,
     setCompanyModalType,
-    isCompanySidePanelOpen,
-    setIsCompanySidePanelOpen,
+    isCrmSidePanelOpen,
+    setisCrmSidePanelOpen,
     setSelectedCompany
   } = useCrmStore((store) => ({
     setIsCompanyModalOpen: store.setIsCompanyModalOpen,
     setCompanyModalType: store.setCompanyModalType,
-    isCompanySidePanelOpen: store.isCompanySidePanelOpen,
-    setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen,
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    setisCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedCompany: store.setSelectedCompany
   }));
 
   const handleCloseSidePanel = (): void => {
-    setIsCompanySidePanelOpen(false);
+    setisCrmSidePanelOpen(false);
     setSelectedCompany(null);
   };
 
@@ -48,7 +48,7 @@ const Companies: NextPage = () => {
     >
       <>
         <CompanySidePanel
-          isOpen={isCompanySidePanelOpen}
+          isOpen={isCrmSidePanelOpen}
           onClose={handleCloseSidePanel}
         />
         <CompanyModalController />

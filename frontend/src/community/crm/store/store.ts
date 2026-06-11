@@ -5,8 +5,7 @@ import { CrmStore } from "../types/StoreTypes";
 import CrmCompanyModalSlice from "./slices/crmCompanyModalSlice";
 import CrmContactModalSlice from "./slices/crmContactModalSlice";
 import CrmTaskModalSlice from "./slices/crmTaskModalSlice";
-import CrmCompanySidePanelSlice from "./slices/crmCompanySidePanelSlice";
-import CrmContactSidePanelSlice from "./slices/crmContactSidePanelSlice";
+import CrmSidePanelSlice from "./slices/crmSidePanelSlice";
 
 export const useCrmStore = create<
   CrmStore,
@@ -17,8 +16,7 @@ export const useCrmStore = create<
       ...CrmCompanyModalSlice(set),
       ...CrmContactModalSlice(set),
       ...CrmTaskModalSlice(set),
-      ...CrmCompanySidePanelSlice(set),
-      ...CrmContactSidePanelSlice(set)
+      ...CrmSidePanelSlice(set),
     }),
     {
       name: "crmStore",

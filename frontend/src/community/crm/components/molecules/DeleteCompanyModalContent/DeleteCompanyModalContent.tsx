@@ -12,12 +12,12 @@ const DeleteCompanyModalContent: React.FC = () => {
   const {
     selectedCompany,
     setSelectedCompany,
-    setIsCompanySidePanelOpen,
+    setIsCrmSidePanelOpen,
     setIsCompanyModalOpen
   } = useCrmStore((store) => ({
     selectedCompany: store.selectedCompany,
     setSelectedCompany: store.setSelectedCompany,
-    setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setIsCompanyModalOpen: store.setIsCompanyModalOpen
   }));
 
@@ -48,7 +48,7 @@ const DeleteCompanyModalContent: React.FC = () => {
     });
 
     handleCloseModal();
-    setIsCompanySidePanelOpen(false);
+    setIsCrmSidePanelOpen(false);
     setSelectedCompany(null);
   };
 

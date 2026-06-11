@@ -1,17 +1,17 @@
 import { CrmStore } from "./StoreTypes";
 
+export interface CrmSidePanelSliceTypes extends Pick<
+  CrmStore,
+  | "isCrmSidePanelOpen"
+  | "setIsCrmSidePanelOpen"
+> {}
+
 export interface CrmCompanyModalSliceTypes extends Pick<
   CrmStore,
   | "isCompanyModalOpen"
   | "setIsCompanyModalOpen"
   | "companyModalType"
   | "setCompanyModalType"
-> {}
-
-export interface CrmCompanySidePanelSliceTypes extends Pick<
-  CrmStore,
-  | "isCompanySidePanelOpen"
-  | "setIsCompanySidePanelOpen"
   | "selectedCompany"
   | "setSelectedCompany"
 > {}
@@ -22,12 +22,6 @@ export interface CrmContactModalSliceTypes extends Pick<
   | "setIsAddContactModalOpen"
   | "contactModalType"
   | "setContactModalType"
-> {}
-
-export interface CrmContactSidePanelSliceTypes extends Pick<
-  CrmStore,
-  | "isContactSidePanelOpen"
-  | "setIsContactSidePanelOpen"
   | "selectedContact"
   | "setSelectedContact"
 > {}
