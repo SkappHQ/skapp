@@ -16,4 +16,6 @@ public interface CrmTaskDao extends JpaRepository<CrmTask, Long>, CrmTaskReposit
 
 	List<CrmTask> findByDeal_Contact_IdAndIsDeletedFalse(Long contactId);
 
+	List<CrmTask> findAllByDealIdAndIsDeletedFalse(Long dealId);
+
 }

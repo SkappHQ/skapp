@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +40,15 @@ public class CrmDealController {
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getDeals(CrmDealFilterDto crmDealFilterDto) {
 		ResponseEntityDto response = crmDealService.getDeals(crmDealFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Delete a deal by ID",
+			description = "Soft deletes a deal and all tasks linked to that deal. Only accessible by admins and sales managers.")
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN', 'ROLE_CRM_SALES_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> deleteDeal(@PathVariable Long id) {
+		ResponseEntityDto response = crmDealService.deleteDeal(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
