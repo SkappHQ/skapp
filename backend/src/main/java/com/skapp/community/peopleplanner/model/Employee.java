@@ -11,7 +11,9 @@ import com.skapp.community.peopleplanner.type.Gender;
 import com.skapp.community.peopleplanner.type.Title;
 import com.skapp.community.common.model.WorkLocation;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,6 +32,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -167,6 +170,11 @@ public class Employee extends Auditable<String> {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "work_location_id")
 	private WorkLocation workLocation;
+
+	@ElementCollection
+	@CollectionTable(name = "ppl_employee_skill", joinColumns = @JoinColumn(name = "employee_id"))
+	@Column(name = "skill_id")
+	private Set<Long> skillIds = new HashSet<>();
 
 	public String getFullName() {
 		return firstName + " " + lastName;

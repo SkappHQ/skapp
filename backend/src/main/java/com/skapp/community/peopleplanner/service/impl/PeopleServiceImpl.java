@@ -447,6 +447,11 @@ public class PeopleServiceImpl implements PeopleService {
 			processEmployeeTeams(requestDto.getEmployment(), employee);
 		}
 
+		// Skills
+		if (requestDto != null && requestDto.getPersonal() != null) {
+			processEmployeeSkills(requestDto.getPersonal(), employee);
+		}
+
 		// Managers
 		if (requestDto != null && requestDto.getEmployment() != null) {
 			processEmployeeManagers(requestDto.getEmployment(), employee);
@@ -760,6 +765,25 @@ public class PeopleServiceImpl implements PeopleService {
 
 		employee.getEmployeeTeams().clear();
 		employee.getEmployeeTeams().addAll(result);
+	}
+
+	private void processEmployeeSkills(EmployeePersonalDetailsDto requestDto, Employee employee) {
+		if (requestDto == null || employee == null) {
+			return;
+		}
+
+		Long[] skillIds = requestDto.getSkillIds();
+
+		if (skillIds == null) {
+			return;
+		}
+
+		if (employee.getSkillIds() == null) {
+			employee.setSkillIds(new HashSet<>());
+		}
+
+		employee.getSkillIds().clear();
+		employee.getSkillIds().addAll(Arrays.asList(skillIds));
 	}
 
 	private void processEmployeeManagers(EmployeeEmploymentDetailsDto requestDto, Employee employee) {

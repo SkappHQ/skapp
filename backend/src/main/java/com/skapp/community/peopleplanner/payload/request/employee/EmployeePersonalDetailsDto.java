@@ -27,4 +27,6 @@ public class EmployeePersonalDetailsDto {
 
 	private EmployeePersonalHealthAndOtherDetailsDto healthAndOther;
 
+	private Long[] skillIds;
+
 }
