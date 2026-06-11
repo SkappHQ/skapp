@@ -129,11 +129,11 @@ export interface CrmContactEditFormTypes {
 
 export interface EditContactPayload {
   id: number;
-  name?: string;
-  email?: string;
-  contactNumber?: string | null;
-  companyId?: number | null;
-  ownerId?: number | null;
+  name: string;
+  email: string;
+  contactNumber?: string;
+  companyId?: number;
+  ownerId?: number;
 }
 
 export interface CrmContactMetricsType {
