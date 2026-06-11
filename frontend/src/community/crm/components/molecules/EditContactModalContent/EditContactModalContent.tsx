@@ -213,8 +213,6 @@ const EditContactModalContent: React.FC = () => {
     setOwnerSearchText("");
   };
 
-  const isSubmitDisabled = !selectedContact || isSubmitting || isPending;
-
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
@@ -337,7 +335,7 @@ const EditContactModalContent: React.FC = () => {
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isSubmitting}
+          disabled={isPending}
           onClick={handleCloseModal}
           icon={<CloseIcon />}
           iconPosition="end"
@@ -349,7 +347,7 @@ const EditContactModalContent: React.FC = () => {
           variant="primary"
           type="button"
           onClick={() => submitForm()}
-          disabled={isSubmitDisabled}
+          disabled={isPending}
           isLoading={isPending}
           aria-label={translateContactText(["ariaLabels", "save"])}
         >
