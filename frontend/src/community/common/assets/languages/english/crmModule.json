@@ -5,6 +5,57 @@
     "addContactBtn": "Add Contact",
     "detailsPageHead": "Contact Details | Skapp",
     "detailsTitle": "Contact Details",
+    "addContactModal": {
+      "title": "Add Contact",
+      "labels": {
+        "name": "Name",
+        "email": "Email",
+        "contactNumber": "Contact no.",
+        "company": "Company",
+        "owner": "Contact owner"
+      },
+      "placeholders": {
+        "name": "Enter name",
+        "email": "Enter email",
+        "contactNumber": "Enter contact no.",
+        "company": "Search company",
+        "owner": "Search contact owner"
+      },
+      "emptyStates": {
+        "noCompanies": "No companies found",
+        "noOwners": "No contact owners found"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancelAddContact": "Cancel"
+      },
+      "ariaLabels": {
+        "name": "Name",
+        "email": "Email",
+        "contactNumber": "Contact Number",
+        "company": "Company",
+        "owner": "Contact Owner",
+        "clearCompany": "Clear selected company",
+        "clearOwner": "Clear selected contact owner",
+        "save": "Save",
+        "cancelAddContact": "Cancel Add Contact"
+      },
+      "validations": {
+        "name": "Name is required",
+        "nameLength": "Name must be less than 50 characters",
+        "email": "Email is required",
+        "invalidEmail": "Please enter a valid email address",
+        "contactNumber": "Contact number is invalid",
+        "contactNumberLength": "Contact number is too long",
+        "characterLength": "Entry must be less than 50 characters",
+        "owner": "Contact owner is required"
+      },
+      "contactToastMessages": {
+        "successTitle": "Contact added successfully",
+        "errorTitle": "Failed to add contact",
+        "errorDescription": "Please try again or contact support"
+      }
+    },
     "contactDetailsPanel": {
       "lastUpdated": "Last updated"
     },
@@ -234,6 +285,16 @@
     "addDealBtn": "Add Deal",
     "detailsPageHead": "Deal Details | Skapp",
     "detailsTitle": "Deal Details",
+    "sidePanel": {
+      "title": "Deals",
+      "addDealBtn": "Add deal",
+      "emptyTitle": "No deals",
+      "emptyDescription": "No deals associated with this company",
+      "descriptionLabel": "Description",
+      "ariaLabels": {
+        "addDealBtn": "Add Deal"
+      }
+    },
     "dealsTable": {
       "dealColumn": "Deal",
       "valueColumn": "Value",

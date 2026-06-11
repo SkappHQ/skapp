@@ -6,6 +6,8 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 
 public interface CrmTaskService {
 
+	ResponseEntityDto getTasks();
+
 	ResponseEntityDto createTask(CrmTaskCreateRequestDto requestDto);
 
 	ResponseEntityDto editTask(Long id, CrmTaskEditRequestDto requestDto);
