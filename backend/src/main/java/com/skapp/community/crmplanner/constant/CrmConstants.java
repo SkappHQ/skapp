@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.constant;
 
 import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.type.CrmDealStageName;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.experimental.UtilityClass;
@@ -31,6 +32,13 @@ public class CrmConstants {
 	public static final String DEAL_STAGE_DESCRIPTION_REGEX = "^[\\p{L}\\p{N} \\-.,']+$";
 
 	public static final CrmDealStageType DEFAULT_DEAL_STAGE_TYPE = CrmDealStageType.OPEN;
+
+	public static final int DEAL_STAGE_OPEN_LIMIT_FREE_TIER = 2;
+
+	public static final Set<String> FREE_TIER_HIDDEN_DEAL_STAGES = Set.of(
+			CrmDealStageName.PROPOSAL_SENT.name(),
+			CrmDealStageName.NEGOTIATION.name()
+	);
 
 	public static final int DEALS_PER_STAGE_LIMIT = 20;
 

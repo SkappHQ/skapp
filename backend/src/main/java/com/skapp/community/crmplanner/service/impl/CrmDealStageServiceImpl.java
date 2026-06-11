@@ -10,13 +10,17 @@ import com.skapp.community.crmplanner.payload.request.CrmDealStageCreateRequestD
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealStageService;
+import com.skapp.community.crmplanner.type.CrmDealStageName;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.util.CrmValidations;
+import com.skapp.enterprise.common.config.TenantValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -27,6 +31,8 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 	private final CrmMapper crmMapper;
 
+	private final TenantValidator tenantValidator;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getDealStages() {
@@ -34,6 +40,12 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		List<CrmDealStageResponseDto> stages = crmMapper
 			.crmDealStagesToCrmDealStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+
+		if (!tenantValidator.isCurrentTenantCoreOrPro()) {
+			stages = stages.stream()
+					.filter(stage -> !CrmConstants.FREE_TIER_HIDDEN_DEAL_STAGES.contains(stage.getName()))
+					.collect(Collectors.toList());
+		}
 
 		log.info("getDealStages: execution ended with {} result(s)", stages.size());
 
@@ -51,6 +63,17 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		if (crmDealStageDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE);
+		}
+
+		if (!tenantValidator.isCurrentTenantCoreOrPro()) {
+			long openStageCount = crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc().stream()
+					.filter(s -> s.getStageType() == CrmDealStageType.OPEN)
+					.filter(s -> !CrmConstants.FREE_TIER_HIDDEN_DEAL_STAGES.contains(s.getName()))
+					.count();
+
+			if (openStageCount >= CrmConstants.DEAL_STAGE_OPEN_LIMIT_FREE_TIER) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_LIMIT_EXCEEDED);
+			}
 		}
 
 		CrmDealStage stage = new CrmDealStage();

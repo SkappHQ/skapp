@@ -68,6 +68,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE("api.error.crm.deal-stage.name-duplicate"),
 	CRM_ERROR_DEAL_STAGE_DESCRIPTION_TOO_LONG("api.error.crm.deal-stage.description-too-long"),
 	CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS("api.error.crm.deal-stage.description-invalid-chars"),
+	CRM_ERROR_DEAL_STAGE_LIMIT_EXCEEDED("api.error.crm.deal-stage.limit-exceeded"),
 	CRM_ERROR_DEAL_INVALID_NEIGHBOUR("api.error.crm.deal.invalid-neighbour"),
 	CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH("api.error.crm.deal.neighbour-stage-mismatch"),
 	CRM_ERROR_DEAL_ID_REQUIRED("api.error.crm.deal.id-required"),
