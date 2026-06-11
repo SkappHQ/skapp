@@ -5,10 +5,9 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { formatISODateWithSuffix } from "~community/common/utils/dateTimeUtils";
 import { useGetContactById } from "~community/crm/api/ContactApi";
+import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
+import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import { useCrmStore } from "~community/crm/store/store";
-
-import SidePanelContactHeader from "../../molecules/SidePanelContactHeader/SidePanelContactHeader";
-import SidePanelDealSection from "../../molecules/SidePanelDealSection/SidePanelDealSection";
 
 type TabId = "tasks" | "deals";
 
@@ -41,7 +40,7 @@ const ContactSidePanel = () => {
   useEffect(() => {
     if (
       isContactSidePanelOpen &&
-      !selectedContact?.id &&
+      selectedContact?.id &&
       !isLoading &&
       !contact
     ) {
@@ -58,8 +57,9 @@ const ContactSidePanel = () => {
   }, [isContactSidePanelOpen, selectedContact, isLoading, contact]);
 
   const handleClose = (): void => {
-    setIsContactSidePanelOpen(false);
     setSelectedContact(null);
+    setActiveTab("tasks");
+    setIsContactSidePanelOpen(false);
   };
 
   const handleCompanyClick = () => {
@@ -87,7 +87,7 @@ const ContactSidePanel = () => {
             {contact?.name}
           </h2>
           <p className="body2 leading-[24px] text-secondary-text">
-            {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffix(contact?.lastModifiedDate ?? "")}`}
+            {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffix(contact.lastModifiedDate)}`}
           </p>
         </div>
       }
@@ -97,6 +97,7 @@ const ContactSidePanel = () => {
           contact={contact ?? undefined}
           onCompanyClick={handleCompanyClick}
         />
+
         <div className="flex flex-col pt-2 w-full">
           <Tabs
             tabs={tabs}
