@@ -215,7 +215,7 @@
       "labels": {
         "name": "Company name",
         "contactNumber": "Contact no.",
-        "website": "Website URL",
+        "website": "Website",
         "address": "Address",
         "industry": "Industry"
       },
