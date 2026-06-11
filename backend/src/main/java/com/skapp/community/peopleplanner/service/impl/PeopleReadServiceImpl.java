@@ -1,8 +1,8 @@
 package com.skapp.community.peopleplanner.service.impl;
 
 import com.skapp.community.common.constant.AuthConstants;
+import com.skapp.community.common.exception.AuthenticationException;
 import com.skapp.community.common.exception.EntityNotFoundException;
-import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
@@ -63,7 +63,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
 
 		if (CommonModuleUtils.isGuestEmployee(employee)) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ACCESS_DENIED);
+			throw new AuthenticationException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_ACCESS_DENIED);
 		}
 
 		EmployeeProfileViewAccessLevel accessLevel = resolveAccessLevel(employeeId);
