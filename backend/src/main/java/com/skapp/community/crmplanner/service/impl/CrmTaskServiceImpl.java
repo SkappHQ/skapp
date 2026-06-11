@@ -2,8 +2,11 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -74,6 +77,35 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		response.setTasks(tasks);
 
 		log.info("getTasks: execution ended");
+
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompletedTasks(Pageable pageable) {
+		log.info("getCompletedTasks: execution started");
+
+		User currentUser = userService.getCurrentUser();
+		Page<CrmTask> taskPage;
+
+		if (CrmUtil.isCrmSalesRepresentative(currentUser)) {
+			Long employeeId = currentUser.getEmployee().getEmployeeId();
+			taskPage = crmTaskDao.findCompletedTasksByOwnerId(employeeId, pageable);
+		}
+		else {
+			taskPage = crmTaskDao.findCompletedTasks(pageable);
+		}
+
+		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(taskPage.getContent());
+
+		PageDto response = new PageDto();
+		response.setItems(tasks);
+		response.setCurrentPage(taskPage.getNumber());
+		response.setTotalItems(taskPage.getTotalElements());
+		response.setTotalPages(taskPage.getTotalPages());
+
+		log.info("getCompletedTasks: execution ended");
 
 		return new ResponseEntityDto(false, response);
 	}

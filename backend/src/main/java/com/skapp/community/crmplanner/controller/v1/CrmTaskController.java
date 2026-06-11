@@ -1,9 +1,12 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.service.CrmTaskService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +30,21 @@ public class CrmTaskController {
 
 	private final CrmTaskService taskService;
 
-	@Operation(summary = "Get tasks", description = "Returns all non-deleted CRM tasks.")
+	@Operation(summary = "Get tasks", description = "Returns all open non-deleted CRM tasks.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getTasks() {
 		ResponseEntityDto response = taskService.getTasks();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get completed tasks",
+			description = "Returns a paginated list of completed non-deleted CRM tasks.")
+	@GetMapping("/completed")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		ResponseEntityDto response = taskService.getCompletedTasks(pageable);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
