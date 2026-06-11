@@ -46,7 +46,7 @@ public class CrmDealController {
 	@Operation(summary = "Delete a deal by ID",
 			description = "Soft deletes a deal and all tasks linked to that deal. Only accessible by admins and sales managers.")
 	@DeleteMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN', 'ROLE_CRM_SALES_MANAGER')")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> deleteDeal(@PathVariable Long id) {
 		ResponseEntityDto response = crmDealService.deleteDeal(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);

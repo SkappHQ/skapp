@@ -6,8 +6,8 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.FractionalIndexUtil;
-import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -294,7 +294,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ALREADY_DELETED);
 		}
 
-		List<CrmTask> linkedTasks = crmTaskDao.findAllByDealIdAndIsDeletedFalse(id);
+		List<CrmTask> linkedTasks = crmTaskDao.findByDeal_IdAndIsDeletedFalse(id);
 		linkedTasks.forEach(task -> task.setIsDeleted(true));
 		crmTaskDao.saveAll(linkedTasks);
 

@@ -2,22 +2,25 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.model.CrmDeal;
-import com.skapp.community.crmplanner.model.CrmTask;
-import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,6 +80,8 @@ class CrmDealControllerIntegrationTest {
 	private final CrmDealDao crmDealDao;
 
 	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final EmployeeDao employeeDao;
 
@@ -200,15 +205,27 @@ class CrmDealControllerIntegrationTest {
 		deal.setOrderIndex("a0");
 		deal = crmDealDao.save(deal);
 
-		// Create two tasks linked to deal
+		// Create a task type first
+		CrmTaskType taskType = new CrmTaskType();
+		taskType.setName("Meeting");
+		taskType.setOrderIndex(1);
+		taskType = crmTaskTypeDao.save(taskType);
+
+		// Create two tasks linked to deal with required fields populated
 		CrmTask task1 = new CrmTask();
 		task1.setName("Task 1");
+		task1.setType(taskType);
+		task1.setPriority(CrmTaskPriority.MEDIUM);
+		task1.setOwner(employeeDao.getReferenceById(1L));
 		task1.setDeal(deal);
 		task1.setIsDeleted(false);
 		crmTaskDao.save(task1);
 
 		CrmTask task2 = new CrmTask();
 		task2.setName("Task 2");
+		task2.setType(taskType);
+		task2.setPriority(CrmTaskPriority.MEDIUM);
+		task2.setOwner(employeeDao.getReferenceById(1L));
 		task2.setDeal(deal);
 		task2.setIsDeleted(false);
 		crmTaskDao.save(task2);
@@ -225,7 +242,7 @@ class CrmDealControllerIntegrationTest {
 		assertTrue(deletedDeal.getIsDeleted());
 
 		// Verify tasks are soft-deleted
-		List<CrmTask> tasks = crmTaskDao.findAllByDealIdAndIsDeletedFalse(deal.getId());
+		List<CrmTask> tasks = crmTaskDao.findByDeal_IdAndIsDeletedFalse(deal.getId());
 		assertThat(tasks).isEmpty();
 	}
 
@@ -268,8 +285,7 @@ class CrmDealControllerIntegrationTest {
 		// user2@gmail.com only has CRM_SALES_REPRESENTATIVE role
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
-		performDeleteRequest(1L).andDo(print())
-			.andExpect(status().isForbidden());
+		performDeleteRequest(1L).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }
