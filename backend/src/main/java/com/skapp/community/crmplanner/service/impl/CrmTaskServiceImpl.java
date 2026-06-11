@@ -86,7 +86,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
-		log.info("getCompletedTasks: execution started");		
+		log.info("getCompletedTasks: execution started");
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 
 		User currentUser = userService.getCurrentUser();
