@@ -34,9 +34,9 @@ import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -62,8 +62,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	private final CrmContactDao crmContactDao;
 
-	private final EmployeeDao employeeDao;
-
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final CrmMapper crmMapper;
@@ -72,12 +70,16 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	private final UserService userService;
 
+	private final CrmOwnerResolverService crmOwnerResolver;
+
 	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional
 	public ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto) {
 		log.info("createDeal: creating deal with name={}", requestDto.getName());
+
+		User currentUser = userService.getCurrentUser();
 
 		CrmValidations.validateDealName(requestDto.getName());
 		CrmValidations.validateDealDescription(requestDto.getDescription());
@@ -98,15 +100,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			company = crmCompanyDao.findByIdAndIsDeletedFalse(contact.getCompany().getId()).orElse(null);
 		}
 
-		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
-		if (owner == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
-		}
-
-		if (owner.getEmployeeRole() == null || owner.getEmployeeRole().getCrmRole() == null
-				|| !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(owner.getEmployeeRole().getCrmRole())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_INVALID_ROLE);
-		}
+		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmDeal deal = new CrmDeal();
 		deal.setName(requestDto.getName());
@@ -326,20 +320,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 		if (requestDto.getCompanyName() != null) {
 			CrmValidations.validateCompanyName(requestDto.getCompanyName());
 			CrmCompany company = deal.getCompany();
-			if (company != null) {
-				company.setName(requestDto.getCompanyName());
-				crmCompanyDao.save(company);
-			}
-			else {
-				company = new CrmCompany();
-				company.setName(requestDto.getCompanyName());
-				company = crmCompanyDao.save(company);
-				deal.setCompany(company);
-
-				CrmContact contact = deal.getContact();
-				contact.setCompany(company);
-				crmContactDao.save(contact);
-			}
+			CrmValidations.validateCompanyId(company == null ? null : company.getId());
+			company.setName(requestDto.getCompanyName());
+			crmCompanyDao.save(company);
 		}
 
 		if (requestDto.getOwnerId() != null && !requestDto.getOwnerId().equals(deal.getOwner().getEmployeeId())) {
@@ -348,15 +331,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_UPDATE_DENIED);
 			}
 
-			Employee newOwner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
-			if (newOwner == null) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
-			}
-
-			if (newOwner.getEmployeeRole() == null || newOwner.getEmployeeRole().getCrmRole() == null
-					|| !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(newOwner.getEmployeeRole().getCrmRole())) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_INVALID_ROLE);
-			}
+			Employee newOwner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 			deal.setOwner(newOwner);
 		}
