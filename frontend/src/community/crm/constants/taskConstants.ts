@@ -9,11 +9,6 @@ import { CrmPriorityEnum } from "../enums/common";
 
 export const TASK_SEARCH_DEBOUNCE_DELAY = 500;
 
-export interface PriorityConfig {
-  IconComponent: FC;
-  bgColor: string;
-}
-
 export const priorityOptions = [
   {
     label: "Low",

@@ -7,7 +7,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
 import {
-  getDueDateDisplay,
+  formatDueDate,
   getPriorityConfig,
   getTaskTypeIcon
 } from "~community/crm/utils/taskUtil";
@@ -42,7 +42,7 @@ const TaskRow: FC<Props> = ({
     });
   });
 
-  const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
+  const dueDateStatus = formatDueDate(task.dueAt, task.isCompleted);
 
   const handleToggleChange = (checked: boolean) => {
     updateCompletion({ id: task.id, isCompleted: checked });
@@ -86,32 +86,32 @@ const TaskRow: FC<Props> = ({
           </p>
 
           <p className="body3 leading-none mt-0.5 flex items-center gap-2">
-            {dueDateDisplay && (
+            {dueDateStatus && (
               <span
                 className={
                   task.isCompleted
                     ? "line-through text-secondary-icon"
-                    : dueDateDisplay.colorClass
+                    : dueDateStatus.colorClass
                 }
               >
-                {translateText([dueDateDisplay.textKey], {
-                  date: dueDateDisplay.dateValue ?? ""
+                {translateText([dueDateStatus.textKey], {
+                  date: dueDateStatus.dateValue ?? ""
                 })}
               </span>
             )}
             {isShowContact && (
-              <span className="w-1 h-1 rounded-full bg-secondary-accent shrink-0" />
-            )}
-            {isShowContact && (
-              <span
-                className={
-                  task.isCompleted
-                    ? "line-through text-secondary-icon"
-                    : "text-secondary-text"
-                }
-              >
-                {task.contact?.name}
-              </span>
+              <>
+                <span className="w-1 h-1 rounded-full bg-secondary-accent shrink-0" />
+                <span
+                  className={
+                    task.isCompleted
+                      ? "line-through text-secondary-icon"
+                      : "text-secondary-text"
+                  }
+                >
+                  {task.contact?.name}
+                </span>
+              </>
             )}
           </p>
         </div>

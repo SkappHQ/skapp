@@ -16,7 +16,7 @@ export interface DueDateDisplay {
   colorClass: string;
 }
 
-export const getDueDateDisplay = (
+export const formatDueDate = (
   dueAt: string | null,
   isCompleted: boolean
 ): DueDateDisplay | null => {

@@ -4,7 +4,7 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
 import {
-  getDueDateDisplay,
+  formatDueDate,
   getPriorityConfig,
   getTaskTypeIcon
 } from "~community/crm/utils/taskUtil";
@@ -23,7 +23,7 @@ const CompletedTaskRow: FC<Props> = ({ task, onRowClick, className }) => {
     "tasks"
   );
 
-  const dueDateDisplay = getDueDateDisplay(task.dueAt, task.isCompleted);
+  const dueDateStatus = formatDueDate(task.dueAt, task.isCompleted);
 
   return (
     <div
@@ -40,20 +40,22 @@ const CompletedTaskRow: FC<Props> = ({ task, onRowClick, className }) => {
 
         <div className="flex-1 min-w-0">
           <p className="body2 leading-snug truncate text-black">{task.name}</p>
-          {(dueDateDisplay || task.contact) && (
+          {dueDateStatus && (
             <p className="body3 leading-none mt-0.5 flex items-center gap-2">
-              {dueDateDisplay && (
-                <span className={dueDateDisplay.colorClass}>
-                  {translateText([dueDateDisplay.textKey], {
-                    date: dueDateDisplay.dateValue ?? ""
+              {dueDateStatus && (
+                <span className={dueDateStatus.colorClass}>
+                  {translateText([dueDateStatus.textKey], {
+                    date: dueDateStatus.dateValue ?? ""
                   })}
                 </span>
               )}
-              {dueDateDisplay && task.contact && (
-                <span className="w-1 h-1 rounded-full bg-secondary-accent shrink-0" />
-              )}
               {task.contact && (
-                <span className="text-secondary-text">{task.contact.name}</span>
+                <>
+                  <span className="w-1 h-1 rounded-full bg-secondary-accent shrink-0" />
+                  <span className="text-secondary-text">
+                    {task.contact.name}
+                  </span>
+                </>
               )}
             </p>
           )}
