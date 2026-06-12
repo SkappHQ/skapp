@@ -251,3 +251,8 @@ export interface CrmTaskCreatePayload {
   owner: number | null;
   notes: string;
 }
+
+export interface UpdateTaskStatusPayload {
+  id: number;
+  isCompleted: boolean;
+}

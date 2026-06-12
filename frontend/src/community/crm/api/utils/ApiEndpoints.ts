@@ -1,5 +1,9 @@
 import { moduleAPIPath } from "~community/common/constants/configs";
 
+export const taskEndpoints = {
+  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
+};
+
 export const crmDealEndpoints = {
   GET_DEALS: `${moduleAPIPath.CRM}/deal`,
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,

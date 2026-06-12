@@ -57,7 +57,22 @@
       }
     },
     "contactDetailsPanel": {
-      "lastUpdated": "Last updated"
+      "lastUpdated": "Last updated",
+      "tasks": {
+        "addTaskButton": "Add task +",
+        "addTaskButtonEmptyView": "Add task",
+        "addTaskPlaceholder": "Type a task name…",
+        "emptyTitle": "No tasks",
+        "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
+        "toggleErrorTitle": "Failed to update task",
+        "toggleErrorDescription": "Could not update the task status. Please try again.",
+        "checkTaskMarkComplete": "Mark {{name}} as complete",
+        "checkTaskMarkIncomplete": "Mark {{name}} as incomplete",
+        "openTaskDetails": "Open task details panel for {{name}}",
+        "dueDateOverdue": "Overdue",
+        "dueDateToday": "Due today",
+        "dueDateDueOn": "Due on {{date}}"
+      }
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
