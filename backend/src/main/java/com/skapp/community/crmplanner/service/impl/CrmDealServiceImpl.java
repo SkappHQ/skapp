@@ -278,14 +278,14 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmDeal savedDeal = crmDealDao.save(deal);
 		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
-		log.info("reorderDeal: deal reordered with id={}, new orderIndex={}", savedDeal.getId(), newOrderIndex);
+		log.info("reorderDeal: execution ended");
 		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
 	@Transactional
 	public ResponseEntityDto deleteDeal(Long id) {
-		log.info("deleteDeal: execution started for deal id={}", id);
+		log.info("deleteDeal: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
@@ -297,7 +297,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setIsDeleted(true);
 		crmDealDao.save(deal);
 
-		log.info("deleteDeal: deal id={} and {} linked task(s) soft-deleted successfully", id, linkedTasks.size());
+		log.info("deleteDeal: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_DEAL_DELETED), false);
 	}
 
