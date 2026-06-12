@@ -383,6 +383,9 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	}
 
 	private boolean isLateArrival(TimeRecord timeRecord) {
+		if (timeRecord.getEmployee() == null)
+			return false;
+
 		TimeConfig timeConfig = timeConfigDao.findByDay(timeRecord.getDay());
 		if (timeConfig == null)
 			return false;
