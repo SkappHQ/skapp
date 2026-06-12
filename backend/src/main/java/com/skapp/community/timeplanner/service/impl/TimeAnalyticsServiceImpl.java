@@ -386,6 +386,9 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		if (timeRecord.getEmployee() == null)
 			return false;
 
+		if (timeRecord.getClockInTime() == null)
+			return false;
+
 		TimeConfig timeConfig = timeConfigDao.findByDay(timeRecord.getDay());
 		if (timeConfig == null)
 			return false;
