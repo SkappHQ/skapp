@@ -5,12 +5,13 @@ import {
   SidePanel,
   SidePanelProps
 } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-const CompanySidePanel = ({ isOpen, onClose }: SidePanelProps) => {
+const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
 
   const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(

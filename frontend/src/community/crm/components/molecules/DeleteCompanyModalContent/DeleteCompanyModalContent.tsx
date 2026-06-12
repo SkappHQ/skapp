@@ -1,4 +1,5 @@
 import { ButtonV2, CloseIcon, DeleteButtonIcon } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -6,7 +7,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useDeleteCompany } from "~community/crm/api/CompanyApi";
 import { useCrmStore } from "~community/crm/store/store";
 
-const DeleteCompanyModalContent = () => {
+const DeleteCompanyModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
   const {
