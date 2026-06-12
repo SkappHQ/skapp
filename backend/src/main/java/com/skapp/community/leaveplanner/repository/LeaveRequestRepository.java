@@ -51,6 +51,8 @@ public interface LeaveRequestRepository {
 
 	List<LeaveRequest> findAllFutureLeaveRequestsForTheDay(DayOfWeek day);
 
+	List<LeaveRequest> findAllFutureLeaveRequestsForDays(List<DayOfWeek> days);
+
 	Optional<LeaveRequest> findAuthLeaveRequestById(Long id, User user, Boolean isManager);
 
 	Page<LeaveRequest> findAllRequestsByEmployee(Long employeeId, LeaveRequestFilterDto leaveRequestFilterDto,
