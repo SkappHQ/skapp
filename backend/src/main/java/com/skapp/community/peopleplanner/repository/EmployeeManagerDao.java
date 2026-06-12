@@ -19,12 +19,12 @@ public interface EmployeeManagerDao extends JpaRepository<EmployeeManager, Long>
 
 	List<EmployeeManager> findByManager(Employee employee);
 
-	List<EmployeeManager> findByManagerInAndManagerType(List<Employee> employees, ManagerType managerType);
-
 	List<EmployeeManager> findByManagerAndManagerTypeAndEmployeeAccountStatusIn(Employee manager,
 			ManagerType managerType, List<AccountStatus> accountStatuses);
 
 	Optional<EmployeeManager> findByManagerAndEmployeeAndManagerType(Employee manager, Employee employee,
 			ManagerType managerType);
+
+	boolean existsByManagerEmployeeIdAndEmployeeEmployeeId(Long managerId, Long employeeId);
 
 }

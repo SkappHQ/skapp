@@ -1,4 +1,4 @@
-package com.skapp.community.timeplanner.repository;
+package com.skapp.community.timeplanner.repository.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
@@ -15,6 +15,7 @@ import com.skapp.community.timeplanner.model.TimeRecord_;
 import com.skapp.community.timeplanner.model.TimeRequest;
 import com.skapp.community.timeplanner.model.TimeRequest_;
 import com.skapp.community.timeplanner.payload.request.ManagerTimeRequestFilterDto;
+import com.skapp.community.timeplanner.repository.TimeRequestRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;

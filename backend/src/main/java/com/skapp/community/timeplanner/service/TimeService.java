@@ -9,6 +9,7 @@ import com.skapp.community.timeplanner.model.TimeRequest;
 import com.skapp.community.timeplanner.payload.request.AddTimeRecordDto;
 import com.skapp.community.timeplanner.payload.request.EditTimeRequestDto;
 import com.skapp.community.timeplanner.payload.request.EmployeeAttendanceSummaryFilterDto;
+import com.skapp.community.timeplanner.payload.request.GetTimeConfigDeleteAvailabilityRequestDto;
 import com.skapp.community.timeplanner.payload.request.IndividualWorkHourFilterDto;
 import com.skapp.community.timeplanner.payload.request.ManagerAttendanceSummaryFilterDto;
 import com.skapp.community.timeplanner.payload.request.ManagerTimeRecordFilterDto;
@@ -19,11 +20,9 @@ import com.skapp.community.timeplanner.payload.request.TimeConfigDto;
 import com.skapp.community.timeplanner.payload.request.TimeRecordFilterDto;
 import com.skapp.community.timeplanner.payload.request.TimeRequestAvailabilityRequestDto;
 import com.skapp.community.timeplanner.payload.request.TimeRequestManagerPatchDto;
-import com.skapp.community.timeplanner.payload.request.GetTimeConfigDeleteAvailabilityRequestDto;
 import com.skapp.community.timeplanner.payload.request.UpdateIncompleteTimeRecordsRequestDto;
 import com.skapp.community.timeplanner.payload.request.UpdateTimeRequestsFilterDto;
 import com.skapp.community.timeplanner.payload.response.UtilizationPercentageDto;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -55,7 +54,6 @@ public interface TimeService {
 
 	ResponseEntityDto addTimeRecord(AddTimeRecordDto addTimeRecordDto);
 
-	@Transactional
 	ResponseEntityDto editTimeRequest(EditTimeRequestDto timeRequestDto);
 
 	ResponseEntityDto getManagerAttendanceSummary(ManagerAttendanceSummaryFilterDto managerAttendanceSummaryFilterDto);
