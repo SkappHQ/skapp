@@ -133,18 +133,22 @@ export const useDeleteCompany = (
   });
 };
 
+const fetchCompaniesByDomain = async (domain: string, limit: number) => {
+  const response = await authFetch.get(
+    companyEndpoints.SEARCH_COMPANIES_BY_DOMAIN(domain),
+    { params: { limit } }
+  );
+  return response?.data?.results?.[0];
+};
+
 export const useSearchCompaniesByDomain = (
   domain: string,
-  enabled: boolean = true
+  enabled: boolean,
+  limit: number
 ) => {
   return useQuery({
     queryKey: [...companyQueryKeys.SEARCH_COMPANIES_BY_DOMAIN, domain],
-    queryFn: async () => {
-      const response = await authFetch.get(
-        companyEndpoints.SEARCH_COMPANIES_BY_DOMAIN(domain)
-      );
-      return response?.data?.results?.[0];
-    },
+    queryFn: () => fetchCompaniesByDomain(domain, limit),
     enabled
   });
 };
