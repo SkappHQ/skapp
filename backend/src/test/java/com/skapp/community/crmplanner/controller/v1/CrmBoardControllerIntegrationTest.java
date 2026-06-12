@@ -148,6 +148,25 @@ class CrmBoardControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Move deal to empty stage without neighbors - orderIndex becomes a0")
+	void moveDeal_ToEmptyStage_NoNeighbors_OrderIndexIsA0() throws Exception {
+		// stage2 has no deals (created fresh in @BeforeEach)
+		CrmDeal dealToMove = createDeal("Deal to Move", stage1, "a0", 1L);
+
+		CrmDealUpdateStageRequestDto request = new CrmDealUpdateStageRequestDto();
+		request.setDealId(dealToMove.getId());
+		request.setNewStageId(stage2.getId());
+
+		performPatchRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmDeal updatedDeal = crmDealDao.findById(dealToMove.getId()).orElseThrow();
+		assertEquals(stage2.getId(), updatedDeal.getStage().getId());
+		assertEquals("a0", updatedDeal.getOrderIndex());
+	}
+
+	@Test
 	@DisplayName("Move deal to another stage without neighbors - appends to the end of target stage")
 	void moveDeal_NoNeighbors_AppendsToEnd() throws Exception {
 		CrmDeal dealToMove = createDeal("Deal to Move", stage1, "a0", 1L);
