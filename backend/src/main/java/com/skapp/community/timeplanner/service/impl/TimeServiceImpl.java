@@ -497,7 +497,7 @@ public class TimeServiceImpl implements TimeService {
 		return new ResponseEntityDto(false,
 				incompleteTimeRecords.isPresent() && !lastClockInDate.equals(DateTimeUtils.getCurrentUtcDate())
 						? timeMapper.timeRecordToTimeRecordResponseDto(incompleteTimeRecords.get())
-						: incompleteTimeRecords);
+						: null);
 	}
 
 	@Override

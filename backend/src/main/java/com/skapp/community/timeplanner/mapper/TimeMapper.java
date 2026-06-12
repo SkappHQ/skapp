@@ -32,6 +32,7 @@ public interface TimeMapper {
 	TimeRecordResponseDto timeRecordToTimeRecordResponseDto(TimeRecord timeRecord);
 
 	@Mapping(target = "clockInTime", source = "startTime")
+	@Mapping(target = "employee", source = "employee")
 	TimeRecord newTimeRecordToTimeRecord(Employee employee, long startTime, DayOfWeek day, LocalDate date);
 
 	@Mapping(target = "activeRightNow", source = "isActiveRightNow")
