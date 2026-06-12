@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.repository.impl;
 
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.OrganizationConfig_;
@@ -558,60 +559,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 	@Override
 	public List<LeaveRequest> findAllFutureLeaveRequestsForTheDay(DayOfWeek day) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
-		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
-
-		List<Predicate> addPredicates = new ArrayList<>();
-		List<Predicate> orPredicates = new ArrayList<>();
-
-		Join<LeaveRequest, Employee> employee = root.join(LeaveRequest_.employee);
-		Join<Employee, User> user = employee.join(Employee_.user);
-
-		addPredicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
-		addPredicates.add(root.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
-
-		ObjectNode leaveCycleConfig = getLeaveCycleConfig();
-		if (leaveCycleConfig == null) {
-			throw new IllegalArgumentException(
-					messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
-		}
-
-		int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
-			.get(LeaveCycleConfigField.MONTH.getField())
-			.intValue();
-		int startDate = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
-			.get(LeaveCycleConfigField.DATE.getField())
-			.intValue();
-		int endMonth = leaveCycleConfig.get(LeaveCycleConfigField.END.getField())
-			.get(LeaveCycleConfigField.MONTH.getField())
-			.intValue();
-		int endDate = leaveCycleConfig.get(LeaveCycleConfigField.END.getField())
-			.get(LeaveCycleConfigField.DATE.getField())
-			.intValue();
-
-		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
-		LocalDate leaveCycleEndDate = DateTimeUtils.getUtcLocalDate(leaveCycleEndYear, endMonth, endDate);
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
-
-		List<LocalDate> allFutureLeaves = getAllDaysBetween(day, today, leaveCycleEndDate);
-
-		for (LocalDate date : allFutureLeaves) {
-			orPredicates
-				.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), date),
-						criteriaBuilder.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), date)));
-		}
-
-		addPredicates.add(criteriaBuilder.or(orPredicates.toArray(new Predicate[0])));
-
-		Predicate[] predArray = new Predicate[addPredicates.size()];
-		addPredicates.toArray(predArray);
-		criteriaQuery.where(predArray);
-
-		criteriaQuery.select(root);
-		TypedQuery<LeaveRequest> typedQuery = entityManager.createQuery(criteriaQuery);
-		return typedQuery.getResultList();
+		return findFutureLeaveRequestsForDays(List.of(day));
 	}
 
 	@Override
@@ -619,7 +567,10 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		if (days == null || days.isEmpty()) {
 			return Collections.emptyList();
 		}
+		return findFutureLeaveRequestsForDays(days);
+	}
 
+	private List<LeaveRequest> findFutureLeaveRequestsForDays(List<DayOfWeek> days) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
 		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
@@ -635,8 +586,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 		if (leaveCycleConfig == null) {
-			throw new IllegalArgumentException(
-					messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
 		}
 
 		int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
@@ -682,8 +632,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 				ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 				if (leaveCycleConfig == null) {
-					throw new IllegalArgumentException(
-							messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
+					throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
 				}
 
 				int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
@@ -723,8 +672,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			if (leaveRequestFilterDto.getStartDate() == null || leaveRequestFilterDto.getEndDate() == null) {
 				ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 				if (leaveCycleConfig == null) {
-					throw new IllegalArgumentException(
-							messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
+					throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
 				}
 
 				int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())

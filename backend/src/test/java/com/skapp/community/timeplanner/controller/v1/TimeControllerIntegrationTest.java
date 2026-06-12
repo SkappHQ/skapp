@@ -1,9 +1,6 @@
 package com.skapp.community.timeplanner.controller.v1;
 
 import com.skapp.TestSkappApplication;
-import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.security.AuthorityService;
-import com.skapp.community.common.service.JwtService;
 import com.skapp.community.peopleplanner.type.RequestStatus;
 import com.skapp.community.timeplanner.payload.request.AddTimeRecordDto;
 import com.skapp.community.timeplanner.payload.request.EditTimeRequestDto;
@@ -15,73 +12,34 @@ import com.skapp.community.timeplanner.payload.request.UpdateIncompleteTimeRecor
 import com.skapp.community.timeplanner.payload.request.UpdateTimeRequestsFilterDto;
 import com.skapp.community.timeplanner.service.TimeService;
 import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
-import com.skapp.support.MockUserFactory;
-import com.skapp.support.SecurityTestUtils;
-import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
-import static com.skapp.support.TestConstants.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest(classes = TestSkappApplication.class)
 @AutoConfigureMockMvc
 @Transactional
-@RequiredArgsConstructor
 @DisplayName("Time Controller Integration Tests")
-class TimeControllerIntegrationTest {
+class TimeControllerIntegrationTest extends AbstractControllerIntegrationTest {
 
 	private static final String BASE_PATH = "/v1/time";
 
-	private final AuthorityService authorityService;
-
-	private final JwtService jwtService;
-
-	private final UserDetailsService userDetailsService;
-
-	private final MockMvc mvc;
-
-	private final JsonMapper objectMapper;
-
 	@MockitoBean
 	private TimeService timeService;
-
-	private String authToken;
-
-	@BeforeEach
-	void setup() {
-		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createSuperAdminWithManager());
-		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
-	}
-
-	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
-		return mvc.perform(request.with(SecurityTestUtils.bearerToken(authToken)));
-	}
-
-	private ResultActions performGetRequest(String path) throws Exception {
-		return performRequest(get(path).accept(MediaType.APPLICATION_JSON));
-	}
 
 	private ResultActions performPatchRequest() throws Exception {
 		return performRequest(patch("/v1/time/requests-update").accept(MediaType.APPLICATION_JSON));
@@ -97,24 +55,6 @@ class TimeControllerIntegrationTest {
 		return performRequest(post(path).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(body))
 			.accept(MediaType.APPLICATION_JSON));
-	}
-
-	private ResponseEntityDto response(String endpoint) {
-		return new ResponseEntityDto(false, Map.of("endpoint", endpoint));
-	}
-
-	private void assertOk(ResultActions resultActions, String endpoint) throws Exception {
-		resultActions.andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['endpoint']").value(endpoint));
-	}
-
-	private void assertCreated(ResultActions resultActions, String endpoint) throws Exception {
-		resultActions.andDo(print())
-			.andExpect(status().isCreated())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['endpoint']").value(endpoint));
 	}
 
 	@Nested

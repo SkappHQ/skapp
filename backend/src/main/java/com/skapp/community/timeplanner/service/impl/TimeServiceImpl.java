@@ -254,7 +254,6 @@ public class TimeServiceImpl implements TimeService {
 			Optional<TimeSlot> activeTimeSlot = timeSlotDao.findByTimeRecordAndIsActiveRightNow(timeRecord.get(), true);
 
 			if (activeTimeSlot.isEmpty()) {
-				log.info("getActiveTimeSlot: no active time slot found");
 				if (timeRecord.get().getClockOutTime() != null) {
 					LocalDateTime clockOutTimeUtc = DateTimeUtils
 						.epochMillisToUtcLocalDateTime(timeRecord.get().getClockOutTime(), null);
@@ -271,10 +270,11 @@ public class TimeServiceImpl implements TimeService {
 				activeTimeSlotResponseDto.setBreakHours(activeTimeSlot.get().getTimeRecord().getBreakHours());
 				activeTimeSlotResponseDto.setWorkHours(activeTimeSlot.get().getTimeRecord().getWorkedHours());
 			}
+			log.info("getActiveTimeSlot: execution ended with time records");
 			return new ResponseEntityDto(false, activeTimeSlotResponseDto);
 		}
 		else {
-			log.info("getActiveTimeSlot: no time record found");
+			log.info("getActiveTimeSlot: execution ended without finding time records");
 			return new ResponseEntityDto();
 		}
 	}

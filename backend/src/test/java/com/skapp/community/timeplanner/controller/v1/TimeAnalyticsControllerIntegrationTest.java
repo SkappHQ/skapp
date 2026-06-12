@@ -1,83 +1,30 @@
 package com.skapp.community.timeplanner.controller.v1;
 
 import com.skapp.TestSkappApplication;
-import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.security.AuthorityService;
-import com.skapp.community.common.service.JwtService;
 import com.skapp.community.timeplanner.service.TimeAnalyticsService;
-import com.skapp.support.MockUserFactory;
-import com.skapp.support.SecurityTestUtils;
-import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Map;
-import static com.skapp.support.TestConstants.*;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = TestSkappApplication.class)
 @AutoConfigureMockMvc
 @Transactional
-@RequiredArgsConstructor
 @DisplayName("Time Analytics Controller Integration Tests")
-class TimeAnalyticsControllerIntegrationTest {
+class TimeAnalyticsControllerIntegrationTest extends AbstractControllerIntegrationTest {
 
 	private static final String BASE_PATH = "/v1/time/analytics";
 
-	private final AuthorityService authorityService;
-
-	private final JwtService jwtService;
-
-	private final UserDetailsService userDetailsService;
-
-	private final MockMvc mvc;
-
 	@MockitoBean
 	private TimeAnalyticsService timeAnalyticsService;
-
-	private String authToken;
-
-	@BeforeEach
-	void setup() {
-		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createSuperAdminWithManager());
-		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
-	}
-
-	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
-		return mvc.perform(request.with(SecurityTestUtils.bearerToken(authToken)));
-	}
-
-	private ResultActions performGetRequest(String path) throws Exception {
-		return performRequest(get(path).accept(MediaType.APPLICATION_JSON));
-	}
-
-	private ResponseEntityDto response(String endpoint) {
-		return new ResponseEntityDto(false, Map.of("endpoint", endpoint));
-	}
-
-	private void assertOk(ResultActions resultActions, String endpoint) throws Exception {
-		resultActions.andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['endpoint']").value(endpoint));
-	}
 
 	@Nested
 	@DisplayName("Time Analytics Tests")

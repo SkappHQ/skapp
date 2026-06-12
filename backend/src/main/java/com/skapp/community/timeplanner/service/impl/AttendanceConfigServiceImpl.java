@@ -85,6 +85,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 
 		if (userService.getCurrentUserRoles().contains(Role.ATTENDANCE_ADMIN.name())) {
 			AttendanceConfigRequestDto dto = getAttendanceConfigRequestDto(attendanceConfigs);
+			log.info("getAllAttendanceConfigs: execution ended");
 			return new ResponseEntityDto(false, dto);
 		}
 

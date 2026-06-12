@@ -557,7 +557,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		Map<LocalDate, Float> workedHoursByDate = entityManager.createQuery(query)
 			.getResultList()
 			.stream()
-			.collect(Collectors.toMap(t -> t.get(0, LocalDate.class), t -> t.get(1, Float.class)));
+			.collect(Collectors.toMap(t -> t.get(0, LocalDate.class), t -> t.get(1, Float.class), (a, b) -> a));
 
 		return dateRange.stream()
 			.map(date -> (EmployeeWorkHours) new EmployeeWorkHoursImpl(date,
