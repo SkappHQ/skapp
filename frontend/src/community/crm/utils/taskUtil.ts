@@ -5,12 +5,12 @@ import {
   PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
 import { format, isBefore, isToday, parseISO, startOfDay } from "date-fns";
-import React, { ComponentType } from "react";
+import React, { ComponentType, ReactElement, createElement } from "react";
 
 import { priorityOptions } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
-export interface DueDateDisplay {
+export interface formatDueDate {
   textKey: string;
   dateValue?: string;
   colorClass: string;
@@ -19,7 +19,7 @@ export interface DueDateDisplay {
 export const formatDueDate = (
   dueAt: string | null,
   isCompleted: boolean
-): DueDateDisplay | null => {
+): formatDueDate | null => {
   if (!dueAt) return null;
 
   const due = startOfDay(parseISO(dueAt));
@@ -46,16 +46,16 @@ const TASK_TYPE_ICON_MAP: Record<string, ComponentType> = {
   other: ChecklistVerificationFilledIcon
 };
 
-export const getTaskTypeIcon = (typeName: string): React.ReactElement => {
-  return React.createElement(TASK_TYPE_ICON_MAP[typeName.toLowerCase()]);
+export const getTaskTypeIcon = (typeName: string): ReactElement => {
+  return createElement(TASK_TYPE_ICON_MAP[typeName.toLowerCase()]);
 };
 
 export const getPriorityConfig = (
   priority: CrmPriorityEnum
-): { icon: React.ReactElement; bgColor: string } => {
+): { icon: ReactElement; bgColor: string } => {
   const option = priorityOptions.find((o) => o.value === priority)!;
   return {
-    icon: React.createElement(option.IconComponent),
+    icon: createElement(option.IconComponent),
     bgColor: option.backgroundColor
   };
 };
