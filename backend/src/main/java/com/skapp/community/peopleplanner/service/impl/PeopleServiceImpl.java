@@ -107,6 +107,7 @@ import com.skapp.community.peopleplanner.service.EmployeeValidationService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.service.RolesService;
+import com.skapp.community.peopleplanner.service.SkillService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.BulkItemStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
@@ -204,6 +205,8 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeValidationService employeeValidationService;
 
 	private final EmployeeExportMapperService employeeExportMapperService;
+
+	private final SkillService skillService;
 
 	@Override
 	@Transactional
@@ -772,18 +775,11 @@ public class PeopleServiceImpl implements PeopleService {
 			return;
 		}
 
-		Long[] skillIds = requestDto.getSkillIds();
-
-		if (skillIds == null) {
+		if (requestDto.getSkills() == null) {
 			return;
 		}
 
-		if (employee.getSkillIds() == null) {
-			employee.setSkillIds(new HashSet<>());
-		}
-
-		employee.getSkillIds().clear();
-		employee.getSkillIds().addAll(Arrays.asList(skillIds));
+		skillService.saveEmployeeSkills(employee, requestDto.getSkills());
 	}
 
 	private void processEmployeeManagers(EmployeeEmploymentDetailsDto requestDto, Employee employee) {

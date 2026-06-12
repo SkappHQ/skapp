@@ -128,6 +128,7 @@ public interface PeopleMapper {
 	@Mapping(target = "email", source = "user.email")
 	@Mapping(target = "isActive", source = "user.isActive")
 	@Mapping(target = "managers", source = "employeeManagers")
+	@Mapping(target = "skills", ignore = true)
 	EmployeeDetailedResponseDto employeeToEmployeeDetailedResponseDto(Employee employee);
 
 	EmployeePeriodResponseDto employeePeriodToEmployeePeriodResponseDto(EmployeePeriod employeePeriod);

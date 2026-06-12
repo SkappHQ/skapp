@@ -1,0 +1,101 @@
+skills:
+  - id: 1
+    name: "Java"
+  - id: 2
+    name: "Python"
+  - id: 3
+    name: "JavaScript"
+  - id: 4
+    name: "TypeScript"
+  - id: 5
+    name: "React"
+  - id: 6
+    name: "Angular"
+  - id: 7
+    name: "Vue.js"
+  - id: 8
+    name: "Node.js"
+  - id: 9
+    name: "Spring Boot"
+  - id: 10
+    name: "SQL"
+  - id: 11
+    name: "NoSQL"
+  - id: 12
+    name: "AWS"
+  - id: 13
+    name: "Azure"
+  - id: 14
+    name: "Docker"
+  - id: 15
+    name: "Kubernetes"
+  - id: 16
+    name: "Git"
+  - id: 17
+    name: "CI/CD"
+  - id: 18
+    name: "Agile"
+  - id: 19
+    name: "Scrum"
+  - id: 20
+    name: "REST API"
+  - id: 21
+    name: "GraphQL"
+  - id: 22
+    name: "Microservices"
+  - id: 23
+    name: "Machine Learning"
+  - id: 24
+    name: "Data Analysis"
+  - id: 25
+    name: "Project Management"
+  - id: 26
+    name: "Communication"
+  - id: 27
+    name: "Leadership"
+  - id: 28
+    name: "Problem Solving"
+  - id: 29
+    name: "Critical Thinking"
+  - id: 30
+    name: "Team Collaboration"
+  - id: 31
+    name: "C#"
+  - id: 32
+    name: ".NET"
+  - id: 33
+    name: "Go"
+  - id: 34
+    name: "Rust"
+  - id: 35
+    name: "PHP"
+  - id: 36
+    name: "Ruby"
+  - id: 37
+    name: "Swift"
+  - id: 38
+    name: "Kotlin"
+  - id: 39
+    name: "DevOps"
+  - id: 40
+    name: "Linux"
+  - id: 41
+    name: "Terraform"
+  - id: 42
+    name: "Jenkins"
+  - id: 43
+    name: "Figma"
+  - id: 44
+    name: "UI/UX Design"
+  - id: 45
+    name: "HTML/CSS"
+  - id: 46
+    name: "MongoDB"
+  - id: 47
+    name: "PostgreSQL"
+  - id: 48
+    name: "MySQL"
+  - id: 49
+    name: "Redis"
+  - id: 50
+    name: "Kafka"
