@@ -2,16 +2,24 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +36,17 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.util.List;
+
+import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,6 +69,8 @@ class CrmDealControllerIntegrationTest {
 
 	private final JsonMapper objectMapper;
 
+	private final MessageUtil messageUtil;
+
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmContactDao crmContactDao;
@@ -61,6 +78,10 @@ class CrmDealControllerIntegrationTest {
 	private final CrmDealStageDao crmDealStageDao;
 
 	private final CrmDealDao crmDealDao;
+
+	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final EmployeeDao employeeDao;
 
@@ -81,6 +102,10 @@ class CrmDealControllerIntegrationTest {
 		return performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performDeleteRequest(Long id) throws Exception {
+		return performRequest(delete(BASE_PATH + "/{id}", id).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmDealStage savedStage() {
@@ -160,6 +185,107 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+	}
+
+	// --- Delete deal tests ---
+
+	@Test
+	@DisplayName("Delete active deal - Soft deletes deal and all associated tasks")
+	void deleteDeal_ActiveDeal_SoftDeletesDealAndTasks() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+
+		// Create deal
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Deal to Delete");
+		deal.setStage(stage);
+		deal.setContact(contact);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setPriority(CrmDealPriority.HIGH);
+		deal.setOrderIndex("a0");
+		deal = crmDealDao.save(deal);
+
+		// Create a task type first
+		CrmTaskType taskType = new CrmTaskType();
+		taskType.setName("Meeting");
+		taskType.setOrderIndex(1);
+		taskType = crmTaskTypeDao.save(taskType);
+
+		// Create two tasks linked to deal with required fields populated
+		CrmTask task1 = new CrmTask();
+		task1.setName("Task 1");
+		task1.setType(taskType);
+		task1.setPriority(CrmTaskPriority.MEDIUM);
+		task1.setOwner(employeeDao.getReferenceById(1L));
+		task1.setDeal(deal);
+		task1.setIsDeleted(false);
+		crmTaskDao.save(task1);
+
+		CrmTask task2 = new CrmTask();
+		task2.setName("Task 2");
+		task2.setType(taskType);
+		task2.setPriority(CrmTaskPriority.MEDIUM);
+		task2.setOwner(employeeDao.getReferenceById(1L));
+		task2.setDeal(deal);
+		task2.setIsDeleted(false);
+		crmTaskDao.save(task2);
+
+		// Perform delete
+		performDeleteRequest(deal.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_DEAL_DELETED)));
+
+		// Verify deal is soft-deleted
+		CrmDeal deletedDeal = crmDealDao.findById(deal.getId()).orElseThrow();
+		assertTrue(deletedDeal.getIsDeleted());
+
+		// Verify tasks are soft-deleted
+		List<CrmTask> tasks = crmTaskDao.findByDeal_IdAndIsDeletedFalse(deal.getId());
+		assertThat(tasks).isEmpty();
+	}
+
+	@Test
+	@DisplayName("Delete already deleted deal - Returns Bad Request")
+	void deleteDeal_AlreadyDeleted_ReturnsBadRequest() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Already Deleted Deal");
+		deal.setStage(stage);
+		deal.setContact(contact);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		deal.setIsDeleted(true);
+		deal = crmDealDao.save(deal);
+
+		performDeleteRequest(deal.getId()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Delete non-existent deal - Returns Bad Request")
+	void deleteDeal_NonExistent_ReturnsBadRequest() throws Exception {
+		performDeleteRequest(9999L).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Delete deal without required role - Returns Forbidden")
+	void deleteDeal_WithoutRequiredRole_ReturnsForbidden() throws Exception {
+		// user2@gmail.com only has CRM_SALES_REPRESENTATIVE role
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performDeleteRequest(1L).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }
