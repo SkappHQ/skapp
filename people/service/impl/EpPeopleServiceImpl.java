@@ -262,18 +262,22 @@ public class EpPeopleServiceImpl extends PeopleServiceImpl implements EpPeopleSe
 
 	@Override
 	public ResponseEntityDto deactivateUsers(DeactivateUsersRequestDto deactivateUsersRequestDto) {
-		if (deactivateUsersRequestDto.getEmployeeIds() == null
-				|| deactivateUsersRequestDto.getEmployeeIds().isEmpty()) {
-			return new ResponseEntityDto(true,
-					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_ERROR_NO_EMPLOYEES_TO_DEACTIVATE));
+		List<Employee> employees = new ArrayList<>();
+
+		if (deactivateUsersRequestDto.getEmployeeIds() != null
+				&& !deactivateUsersRequestDto.getEmployeeIds().isEmpty()) {
+			employees.addAll(epEmployeeDao.findAllByEmployeeIdInAndAccountStatusIn(
+					deactivateUsersRequestDto.getEmployeeIds(), Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
 		}
 
-		List<Employee> employees = epEmployeeDao.findAllByEmployeeIdInAndAccountStatusIn(
-				deactivateUsersRequestDto.getEmployeeIds(), Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+		List<Employee> guestEmployees = epEmployeeDao.findAllByEmployeeRolePmRoleAndAccountStatusIn(
+				Role.PM_GUEST_EMPLOYEE, List.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
+
+		employees.addAll(guestEmployees);
 
 		if (employees.isEmpty()) {
 			return new ResponseEntityDto(true,
-					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_ERROR_EMPLOYEES_NOT_FOUND));
+					messageUtil.getMessage(EpPeopleMessageConstant.EP_PEOPLE_ERROR_NO_EMPLOYEES_TO_DEACTIVATE));
 		}
 
 		deactivateEmployees(employees);
