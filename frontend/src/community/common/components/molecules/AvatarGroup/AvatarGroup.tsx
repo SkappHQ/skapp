@@ -85,6 +85,7 @@ const AvatarGroup: FC<Props> = ({
         onMouseLeave={handleMouseLeave}
         ref={anchorElement}
         data-cy="avatar-group"
+        role="group"
         aria-label={ariaLabel}
         renderSurplus={
           title

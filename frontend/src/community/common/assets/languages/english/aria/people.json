@@ -127,6 +127,8 @@
     "selectWorkLocation": "Select the work location"
   },
   "directory": {
+    "filterDialog": "Employee filters",
+    "sortDialog": "Sort employees",
     "userBulkUpload": "User Bulk",
     "uploadPeople": "Upload People",
     "addPeopleModal": {
