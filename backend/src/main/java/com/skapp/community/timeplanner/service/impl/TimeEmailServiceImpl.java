@@ -131,7 +131,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 		List<EmployeeManager> managers = employeeManagerDao.findByEmployee(leaveRequest.getEmployee());
 
 		createAttendanceEmailForManagers(managers, emailDynamicFields,
-				EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_SINGLE_DAY_APPROVED_LEAVE_REQUEST_REVOKED_EMPLOYEE);
+				EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_SINGLE_DAY_APPROVED_LEAVE_REQUEST_REVOKED_MANAGER);
 
 	}
 
