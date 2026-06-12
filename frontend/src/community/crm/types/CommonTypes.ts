@@ -119,6 +119,18 @@ export interface CrmContactCreatePayload {
   ownerId?: number;
 }
 
+export interface CrmContactEditFormTypes {
+  name: string;
+  email: string;
+  contactNumber: string;
+  companyId: number | null;
+  ownerId: number | null;
+}
+
+export interface EditContactPayload extends CrmContactCreatePayload {
+  id: number;
+}
+
 export interface CrmContactMetricsType {
   id: number;
   name: string;
