@@ -43,6 +43,8 @@ class AttendanceConfigServiceImplUnitTest {
 	@Mock
 	private UserService userService;
 
+	private MessageUtil originalMessageUtil;
+
 	@BeforeEach
 	void setupMessageUtil() throws Exception {
 		when(messageUtil.getMessage(any(String.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -51,7 +53,17 @@ class AttendanceConfigServiceImplUnitTest {
 		field.setAccessible(true);
 		@SuppressWarnings("unchecked")
 		AtomicReference<MessageUtil> atomicReference = (AtomicReference<MessageUtil>) field.get(null);
+		originalMessageUtil = atomicReference.get();
 		atomicReference.set(messageUtil);
+	}
+
+	@org.junit.jupiter.api.AfterEach
+	void tearDownMessageUtil() throws Exception {
+		Field field = ModuleException.class.getDeclaredField("messageUtil");
+		field.setAccessible(true);
+		@SuppressWarnings("unchecked")
+		AtomicReference<MessageUtil> atomicReference = (AtomicReference<MessageUtil>) field.get(null);
+		atomicReference.set(originalMessageUtil);
 	}
 
 	@Test
