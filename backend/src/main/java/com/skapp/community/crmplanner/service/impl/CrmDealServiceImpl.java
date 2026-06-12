@@ -272,12 +272,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmDealStage newStage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getNewStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
-		if (deal.getStage() != null && deal.getStage().getId().equals(requestDto.getNewStageId())) {
-			if (requestDto.getPreviousDealId() == null && requestDto.getNextDealId() == null) {
-				return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(deal));
-			}
-		}
-
 		String newOrderIndex = generateOrderIndex(deal.getId(), newStage.getId(), requestDto.getPreviousDealId(),
 				requestDto.getNextDealId());
 
