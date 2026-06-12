@@ -10,8 +10,8 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetContactById } from "~community/crm/api/ContactApi";
-import ContactSidePanelHeader from "~community/crm/components/molecules/ContactSidePanelHeader/ContactSidePanelHeader";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
+import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
 import { ContactSidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 
@@ -36,24 +36,24 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       selectedContact: store.selectedContact
     }));
 
-  const {
-    data: contact,
-    isLoading,
-    isError
-  } = useGetContactById(selectedContact!.id, isOpen && !!selectedContact?.id);
+  const handleContactLoadError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: "error",
+      title: translateText(["errors", "contactNotFoundTitle"]),
+      description: translateText(["errors", "contactNotFoundDescription"])
+    });
+    setIsCrmSidePanelOpen(false);
+    setSelectedContact(null);
+  };
+
+  const { data: contact, isError } = useGetContactById(
+    selectedContact!.id,
+    isOpen && !!selectedContact?.id
+  );
 
   useEffect(() => {
-    if (isError) {
-      setToastMessage({
-        open: true,
-        toastType: "error",
-        title: translateText(["errors", "contactNotFoundTitle"]),
-        description: translateText(["errors", "contactNotFoundDescription"])
-      });
-
-      setIsCrmSidePanelOpen(false);
-      setSelectedContact(null);
-    }
+    if (isError) handleContactLoadError();
   }, [isError]);
 
   const handleClose = (): void => {
@@ -94,15 +94,15 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       onClose={handleClose}
       closeOnBackdropClick
       header={
-        <ContactSidePanelHeader
-          name={contact?.name}
-          lastModifiedDate={contact?.lastModifiedDate}
+        <SidePanelContactHeader
+          name={contact.name}
+          lastModifiedDate={contact.lastModifiedDate}
         />
       }
     >
       <div className="flex flex-col pb-4 gap-[16px]">
-        <SidePanelContactHeader
-          contact={contact ?? undefined}
+        <SidePanelContactInfo
+          contact={contact}
           onCompanyClick={handleCompanyClick}
         />
 
