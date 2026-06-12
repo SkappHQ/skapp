@@ -114,7 +114,7 @@ public class EpAuthController {
 	public ResponseEntity<ResponseEntityDto> resendVerifyPasswordResetOtp(
 			@RequestBody EpPasswordResetDto epPasswordResetDto) {
 		ResponseEntityDto response = epAuthService.resendVerifyPasswordResetOTP(epPasswordResetDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PostMapping("/code-challenge/verify")

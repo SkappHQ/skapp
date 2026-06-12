@@ -43,6 +43,7 @@ public enum EPCommonMessageConstant implements MessageConstant {
 	EP_COMMON_ERROR_EMAIL_TEMPLATE_NOT_FOUND("ep.common.error.email-template-not-found"),
 	EP_COMMON_ERROR_SUPER_ADMIN_NOR_FOUND("ep.common.error.super-admin-not-found"),
 	EP_COMMON_SUCCESS_OTP_GENERATED_AND_SEND("ep.common.success.otp-generated-and-send"),
+	EP_COMMON_SUCCESS_PASSWORD_RESET_OTP_SENT("ep.common.success.password-reset-otp-sent"),
 	EP_COMMON_ERROR_OTP_GENERATION_OR_SEND("ep.common.error.otp-generation-or-send-failed"),
 	EP_COMMON_ERROR_INVALID_OR_EXPIRED_OTP("ep.common.error.invalid-or-expired-otp"),
 	EP_COMMON_SUCCESS_OTP_VERIFIED("ep.common.success.otp-verified"),
