@@ -1,4 +1,5 @@
 import { ButtonV2, CloseIcon, DeleteButtonIcon } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -6,18 +7,18 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useDeleteCompany } from "~community/crm/api/CompanyApi";
 import { useCrmStore } from "~community/crm/store/store";
 
-const DeleteCompanyModalContent: React.FC = () => {
+const DeleteCompanyModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
   const {
     selectedCompany,
     setSelectedCompany,
-    setIsCompanySidePanelOpen,
+    setIsCrmSidePanelOpen,
     setIsCompanyModalOpen
   } = useCrmStore((store) => ({
     selectedCompany: store.selectedCompany,
     setSelectedCompany: store.setSelectedCompany,
-    setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setIsCompanyModalOpen: store.setIsCompanyModalOpen
   }));
 
@@ -42,7 +43,7 @@ const DeleteCompanyModalContent: React.FC = () => {
     });
 
     handleCloseModal();
-    setIsCompanySidePanelOpen(false);
+    setIsCrmSidePanelOpen(false);
     setSelectedCompany(null);
   };
 
