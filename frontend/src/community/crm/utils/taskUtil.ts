@@ -10,7 +10,7 @@ import React, { ComponentType, ReactElement, createElement } from "react";
 import { priorityOptions } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
-export interface formatDueDate {
+export interface TaskDueDateInfo {
   textKey: string;
   dateValue?: string;
   colorClass: string;
@@ -19,7 +19,7 @@ export interface formatDueDate {
 export const formatDueDate = (
   dueAt: string | null,
   isCompleted: boolean
-): formatDueDate | null => {
+): TaskDueDateInfo | null => {
   if (!dueAt) return null;
 
   const due = startOfDay(parseISO(dueAt));
