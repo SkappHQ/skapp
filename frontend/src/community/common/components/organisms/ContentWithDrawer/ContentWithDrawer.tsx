@@ -36,18 +36,20 @@ const ContentWithDrawer = ({ children }: Props) => {
           <AppBar />
           {loading ? (
             <div
+              role="status"
+              aria-busy={true}
+              aria-live="polite"
               style={{
                 width: "100%",
                 flex: 1,
                 position: "relative",
-                minHeight: "calc(100vh - 64px)"
+                minHeight: "100dvh"
               }}
             >
               <FullScreenLoader fullPage={false} />
             </div>
           ) : (
             <main
-              aria-busy={loading}
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -58,7 +60,7 @@ const ContentWithDrawer = ({ children }: Props) => {
             >
               <Stack
                 id="content-with-drawer-main-content"
-                tabIndex={loading ? -1 : 0}
+                tabIndex={0}
                 role="document"
                 aria-label={translateAria(["contentAreaWithDrawer"])}
                 style={{
