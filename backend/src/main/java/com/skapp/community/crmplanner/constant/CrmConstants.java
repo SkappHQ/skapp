@@ -44,4 +44,6 @@ public class CrmConstants {
 
 	public static final CrmTaskPriority DEFAULT_TASK_PRIORITY = CrmTaskPriority.MEDIUM;
 
+	public static final int DOMAIN_MAX_LENGTH = 255;
+
 }
