@@ -272,6 +272,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmDealStage newStage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getNewStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
+		if (deal.getStage().getId().equals(newStage.getId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ALREADY_IN_STAGE);
+		}
+
 		String newOrderIndex = generateOrderIndex(deal.getId(), newStage.getId(), requestDto.getPreviousDealId(),
 				requestDto.getNextDealId());
 
@@ -311,8 +315,11 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		if (previousDealId == null && nextDealId == null) {
-			String lastOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stageId);
-			return FractionalIndexUtil.generateKeyBetween(lastOrderIndex, null);
+			String existingOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stageId);
+			if (existingOrderIndex != null) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
+			}
+			return FractionalIndexUtil.generateKeyBetween(null, null);
 		}
 
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);

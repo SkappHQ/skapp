@@ -167,23 +167,20 @@ class CrmBoardControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Move deal to another stage without neighbors - appends to the end of target stage")
-	void moveDeal_NoNeighbors_AppendsToEnd() throws Exception {
+	@DisplayName("Move deal to non-empty stage without neighbors - returns neighbours-required error")
+	void moveDeal_NoNeighbors_StageHasDeals_ReturnsError() throws Exception {
 		CrmDeal dealToMove = createDeal("Deal to Move", stage1, "a0", 1L);
-		CrmDeal existingDeal = createDeal("Existing Deal", stage2, "a0", 1L);
+		createDeal("Existing Deal", stage2, "a0", 1L);
 
 		CrmDealUpdateStageRequestDto request = new CrmDealUpdateStageRequestDto();
 		request.setDealId(dealToMove.getId());
 		request.setNewStageId(stage2.getId());
 
 		performPatchRequest(request, adminToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stageName']").value(stage2.getName()));
-
-		CrmDeal updatedDeal = crmDealDao.findById(dealToMove.getId()).orElseThrow();
-		// Should be positioned after existingDeal (which has orderIndex "a0")
-		assertTrue(updatedDeal.getOrderIndex().compareTo(existingDeal.getOrderIndex()) > 0);
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED)));
 	}
 
 	@Test
