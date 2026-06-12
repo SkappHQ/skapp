@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { useState } from "react";
+import { FC, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -32,7 +32,7 @@ import {
   formatTasks
 } from "~community/crm/utils/tableHelpers";
 
-export const ContactTable: React.FC = () => {
+export const ContactTable: FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,10 +51,10 @@ export const ContactTable: React.FC = () => {
 
   const contacts = data?.pages.flatMap((page) => page.items);
 
-  const { setSelectedContact, setIsContactSidePanelOpen } = useCrmStore(
+  const { setSelectedContact, setIsCrmSidePanelOpen } = useCrmStore(
     (store) => ({
       setSelectedContact: store.setSelectedContact,
-      setIsContactSidePanelOpen: store.setIsContactSidePanelOpen
+      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
     })
   );
 
@@ -248,7 +248,7 @@ export const ContactTable: React.FC = () => {
         }}
         onRowClick={(row) => {
           setSelectedContact(row);
-          setIsContactSidePanelOpen(true);
+          setIsCrmSidePanelOpen(true);
         }}
       />
     </div>

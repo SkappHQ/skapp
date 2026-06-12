@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.crmplanner.constant.CrmConstants;
@@ -12,6 +13,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
@@ -28,6 +30,9 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,6 +79,36 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		response.setTasks(tasks);
 
 		log.info("getTasks: execution ended");
+
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
+		log.info("getCompletedTasks: execution started");
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+
+		User currentUser = userService.getCurrentUser();
+		Page<CrmTask> taskPage;
+
+		if (CrmUtil.isCrmSalesRepresentative(currentUser)) {
+			Long employeeId = currentUser.getEmployee().getEmployeeId();
+			taskPage = crmTaskDao.findCompletedTasksByOwnerId(employeeId, pageable);
+		}
+		else {
+			taskPage = crmTaskDao.findCompletedTasks(pageable);
+		}
+
+		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(taskPage.getContent());
+
+		PageDto response = new PageDto();
+		response.setItems(tasks);
+		response.setCurrentPage(taskPage.getNumber());
+		response.setTotalItems(taskPage.getTotalElements());
+		response.setTotalPages(taskPage.getTotalPages());
+
+		log.info("getCompletedTasks: execution ended");
 
 		return new ResponseEntityDto(false, response);
 	}
