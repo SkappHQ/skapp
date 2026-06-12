@@ -11,8 +11,6 @@ import { IconName } from "~community/common/types/IconTypes";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmCompanyType } from "~community/crm/types/CommonTypes";
 
-const ICON_FILL = "var(--color-secondary-icon)";
-
 interface Props {
   company: CrmCompanyType;
 }
