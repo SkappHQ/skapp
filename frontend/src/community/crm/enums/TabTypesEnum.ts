@@ -1,4 +1,4 @@
 export enum ContactSidePanelTabEnum {
-  TASKS = "tasks",
-  DEALS = "deals"
+  TASKS = "TASKS",
+  DEALS = "DEALS"
 }

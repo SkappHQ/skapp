@@ -187,11 +187,13 @@ const fetchContactById = async (
 };
 
 export const useGetContactById = (
-  id: number
+  id: number,
+  enabled = true
 ): UseQueryResult<CrmContactDetailResponseType> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_BY_ID(id),
     queryFn: () => fetchContactById(id),
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    enabled
   });
 };

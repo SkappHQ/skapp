@@ -9,8 +9,7 @@ interface ActionTypes {
   setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
-  setIsCompanySidePanelOpen: (isCompanySidePanelOpen: boolean) => void;
-  setIsContactSidePanelOpen: (isContactSidePanelOpen: boolean) => void;
+  setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
   setSelectedContact: (selectedContact: CrmContactMetricsType | null) => void;
 }
 
@@ -22,7 +21,6 @@ export interface CrmStore extends ActionTypes {
   selectedCompany: CrmCompanyMetricsType | null;
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
-  isCompanySidePanelOpen: boolean;
-  isContactSidePanelOpen: boolean;
+  isCrmSidePanelOpen: boolean;
   selectedContact: CrmContactMetricsType | null;
 }

@@ -1,16 +1,23 @@
-import { SidePanel, TabItem, Tabs } from "@rootcodelabs/skapp-ui";
+import {
+  SidePanel,
+  SidePanelProps,
+  TabItem,
+  Tabs
+} from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { formatISODateWithSuffix } from "~community/common/utils/dateTimeUtils";
 import { useGetContactById } from "~community/crm/api/ContactApi";
+import ContactSidePanelHeader from "~community/crm/components/molecules/ContactSidePanelHeader/ContactSidePanelHeader";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
-import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import { ContactSidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 
-const ContactSidePanel = () => {
+import SidePanelDealSection from "../../molecules/SidePanelDealSection/SidePanelDealSection";
+
+const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -22,22 +29,21 @@ const ContactSidePanel = () => {
     ContactSidePanelTabEnum.TASKS
   );
 
-  const {
-    isContactSidePanelOpen,
-    setIsContactSidePanelOpen,
-    setSelectedContact,
-    selectedContact
-  } = useCrmStore((store) => ({
-    isContactSidePanelOpen: store.isContactSidePanelOpen,
-    setIsContactSidePanelOpen: store.setIsContactSidePanelOpen,
-    setSelectedContact: store.setSelectedContact,
-    selectedContact: store.selectedContact
-  }));
+  const { setIsCrmSidePanelOpen, setSelectedContact, selectedContact } =
+    useCrmStore((store) => ({
+      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+      setSelectedContact: store.setSelectedContact,
+      selectedContact: store.selectedContact
+    }));
 
-  const { data: contact, isLoading } = useGetContactById(selectedContact?.id);
+  const {
+    data: contact,
+    isLoading,
+    isError
+  } = useGetContactById(selectedContact!.id, isOpen && !!selectedContact?.id);
 
   useEffect(() => {
-    if (!isLoading && !contact) {
+    if (isError) {
       setToastMessage({
         open: true,
         toastType: "error",
@@ -45,39 +51,53 @@ const ContactSidePanel = () => {
         description: translateText(["errors", "contactNotFoundDescription"])
       });
 
-      setIsContactSidePanelOpen(false);
+      setIsCrmSidePanelOpen(false);
       setSelectedContact(null);
     }
-  }, [isLoading, contact]);
+  }, [isError]);
 
   const handleClose = (): void => {
     setSelectedContact(null);
-    setIsContactSidePanelOpen(false);
+    setIsCrmSidePanelOpen(false);
   };
 
   const handleCompanyClick = () => {
     //TODO: Implement company Id page and link it here
   };
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case ContactSidePanelTabEnum.DEALS:
+        return <SidePanelDealSection deals={contact?.deals ?? []} />;
+      case ContactSidePanelTabEnum.TASKS:
+        // TODO: Implement SidePanelTaskSection here
+        return null;
+      default:
+        return null;
+    }
+  };
+
   const tabs: TabItem[] = [
-    { id: "tasks", label: translateText(["tabs", "tasks"]) },
-    { id: "deals", label: translateText(["tabs", "deals"]) }
+    {
+      id: ContactSidePanelTabEnum.TASKS,
+      label: translateText(["tabs", "tasks"])
+    },
+    {
+      id: ContactSidePanelTabEnum.DEALS,
+      label: translateText(["tabs", "deals"])
+    }
   ];
 
   return (
     <SidePanel
-      isOpen={isContactSidePanelOpen}
+      isOpen={isOpen}
       onClose={handleClose}
       closeOnBackdropClick
       header={
-        <div className="flex flex-col gap-2 pl-2">
-          <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
-            {contact?.name}
-          </h2>
-          <p className="body2 leading-[24px] text-secondary-text">
-            {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffix(contact.lastModifiedDate)}`}
-          </p>
-        </div>
+        <ContactSidePanelHeader
+          name={contact?.name}
+          lastModifiedDate={contact?.lastModifiedDate}
+        />
       }
     >
       <div className="flex flex-col pb-4 gap-[16px]">
@@ -95,13 +115,7 @@ const ContactSidePanel = () => {
             }
           />
         </div>
-        {activeTab === ContactSidePanelTabEnum.DEALS && (
-          <SidePanelDealSection deals={contact?.deals ?? []} />
-        )}
-        {activeTab === ContactSidePanelTabEnum.TASKS && (
-          // TODO: Implement SidePanelTaskSection here
-          <></>
-        )}
+        {renderTabContent()}
       </div>
     </SidePanel>
   );

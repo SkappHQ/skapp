@@ -252,6 +252,26 @@ export interface CrmTaskCreatePayload {
   notes: string;
 }
 
+export interface ContactDetailTask {
+  id: number;
+  name: string;
+  type: string;
+  priority: CrmPriorityEnum;
+  isCompleted: boolean;
+  isOverdue: boolean;
+  dueAt: string | null;
+  owner: CrmOwner;
+}
+
+export interface ContactDetailDeal {
+  id: number;
+  name: string;
+  description: string | null;
+  amount: string;
+  owner: CrmOwner;
+  stage: CrmDealStageType;
+}
+
 export interface CrmContactDetailResponseType {
   id: number;
   name: string;
@@ -265,22 +285,6 @@ export interface CrmContactDetailResponseType {
   activeDealsCount: number;
   totalRevenue: string;
   pipelineRevenue: string;
-  tasks: Array<{
-    id: number;
-    name: string;
-    type: string;
-    priority: CrmPriorityEnum;
-    isCompleted: boolean;
-    isOverdue: boolean;
-    dueAt: string | null;
-    owner: CrmOwner;
-  }>;
-  deals: Array<{
-    id: number;
-    name: string;
-    description: string | null;
-    amount: string;
-    owner: CrmOwner;
-    stage: CrmDealStageType;
-  }>;
+  tasks: ContactDetailTask[];
+  deals: ContactDetailDeal[];
 }
