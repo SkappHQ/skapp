@@ -1,4 +1,4 @@
-package com.skapp.community.timeplanner.repository;
+package com.skapp.community.timeplanner.repository.impl;
 
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.type.Role;
@@ -21,6 +21,7 @@ import com.skapp.community.timeplanner.payload.projection.TimeRecordsByEmployees
 import com.skapp.community.timeplanner.payload.projection.impl.EmployeeWorkHoursImpl;
 import com.skapp.community.timeplanner.payload.request.AttendanceSummaryDto;
 import com.skapp.community.timeplanner.payload.response.TimeSheetSummaryData;
+import com.skapp.community.timeplanner.repository.TimeRecordRepository;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecord;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecordImpl;
 import jakarta.persistence.EntityManager;
@@ -37,7 +38,6 @@ import jakarta.persistence.criteria.Selection;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -47,9 +47,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -57,7 +60,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
-	@NonNull
 	private final EntityManager entityManager;
 
 	@Override
@@ -82,7 +84,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	}
 
 	@Override
-	public Optional<TimeRecord> findIncompleteClockoutTimeRecords(LocalDate lastClockInDate, Long employeeId) {
+	public Optional<TimeRecord> findIncompleteClockOutTimeRecords(LocalDate lastClockInDate, Long employeeId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<TimeRecord> criteriaQuery = criteriaBuilder.createQuery(TimeRecord.class);
 		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
@@ -170,10 +172,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		CriteriaQuery<TimeRecord> criteriaQuery = criteriaBuilder.createQuery(TimeRecord.class);
 		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
 
-		Subquery<Long> teamSubquery = criteriaQuery.subquery(Long.class);
-		Root<EmployeeTeam> employeeTeamRoot = teamSubquery.from(EmployeeTeam.class);
-		teamSubquery.select(employeeTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId))
-			.where(employeeTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId).in(teamsFilter));
+		Subquery<Long> teamSubquery = buildTeamEmployeeIdSubquery(criteriaQuery, teamsFilter);
 
 		criteriaQuery.select(root).where(root.get(TimeRecord_.employee).get(Employee_.employeeId).in(teamSubquery));
 
@@ -232,10 +231,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 					root.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeesSubquery)));
 		}
 		else {
-			Subquery<Long> teamSubquery = criteriaQuery.subquery(Long.class);
-			Root<EmployeeTeam> employeeTeamRoot = teamSubquery.from(EmployeeTeam.class);
-			teamSubquery.select(employeeTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId))
-				.where(employeeTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId).in(teamsFilter));
+			Subquery<Long> teamSubquery = buildTeamEmployeeIdSubquery(criteriaQuery, teamsFilter);
 
 			predicates.add(criteriaBuilder.or(isAdminPredicate,
 					root.get(TimeRecord_.employee).get(Employee_.employeeId).in(teamSubquery)));
@@ -353,7 +349,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	public List<EmployeeTimeRecord> findEmployeesTimeRecords(List<Long> employeeIds, LocalDate startDate,
 			LocalDate endDate, int limit, long offset) {
 
-		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
+		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).toList();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Employee> empQuery = cb.createQuery(Employee.class);
@@ -365,7 +361,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
 		Join<TimeRecord, TimeSlot> timeSlot = timeRecord.join(TimeRecord_.timeSlots, JoinType.LEFT);
 
-		query.multiselect(timeRecord.get(TimeRecord_.timeRecordId),
+		query.select(cb.tuple(timeRecord.get(TimeRecord_.timeRecordId),
 				timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId), timeRecord.get(TimeRecord_.date),
 				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), cb.literal(0.0f)),
 				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.breakHours), 2), cb.literal(0.0f)),
@@ -374,7 +370,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 						timeSlot.get(TimeSlot_.startTime), cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
 						cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType), cb.literal("isActiveRightNow"),
 						timeSlot.get(TimeSlot_.isActiveRightNow), cb.literal("isManualEntry"),
-						timeSlot.get(TimeSlot_.isManualEntry))));
+						timeSlot.get(TimeSlot_.isManualEntry)))));
 
 		query.where(timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds),
 				cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
@@ -402,14 +398,10 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 			}
 		}
 
-		allRecords.sort((a, b) -> {
-			int dateCompare = a.getDate().compareTo(b.getDate());
-			if (dateCompare != 0)
-				return dateCompare;
-			return a.getEmployeeId().compareTo(b.getEmployeeId());
-		});
+		allRecords
+			.sort(Comparator.comparing(EmployeeTimeRecord::getDate).thenComparing(EmployeeTimeRecord::getEmployeeId));
 
-		return allRecords.stream().skip(offset).limit(limit).collect(Collectors.toList());
+		return allRecords.stream().skip(offset).limit(limit).toList();
 	}
 
 	@Override
@@ -417,19 +409,21 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 			LocalDate startDate, LocalDate endDate, int limit, long offset) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
+		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).toList();
+
+		Set<Long> teamFilteredEmployeeIds = (teamIds != null && !teamIds.isEmpty())
+				? getEmployeesInTeams(employeeIds, teamIds) : null;
 
 		List<EmployeeTimeRecord> allResults = new ArrayList<>();
 
 		for (Long employeeId : employeeIds) {
-			if (teamIds != null && !teamIds.isEmpty() && !isEmployeeInTeams(employeeId, teamIds)) {
+			if (teamFilteredEmployeeIds != null && !teamFilteredEmployeeIds.contains(employeeId)) {
 				continue;
 			}
 
 			for (LocalDate currentDate : dateRange) {
 				CriteriaQuery<Tuple> query = cb.createTupleQuery();
 				Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
-				Join<TimeRecord, Employee> employee = timeRecord.join(TimeRecord_.employee, JoinType.LEFT);
 
 				List<Predicate> predicates = new ArrayList<>();
 				predicates.add(cb.equal(timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId), employeeId));
@@ -445,7 +439,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 				addLocationStatusSelections(cb, query, timeRecord, selections);
 
-				query.multiselect(selections);
+				query.select(cb.tuple(selections.toArray(new Selection<?>[0])));
 				query.where(predicates.toArray(new Predicate[0]));
 
 				List<Tuple> results = entityManager.createQuery(query).getResultList();
@@ -454,12 +448,12 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 					allResults.add(buildEmptyTimeRecord(employeeId, currentDate));
 				}
 				else {
-					allResults.add(buildTimeRecord(results.get(0)));
+					allResults.add(buildTimeRecord(results.getFirst()));
 				}
 			}
 		}
 
-		return allResults.stream().skip(offset).limit(limit).collect(Collectors.toList());
+		return allResults.stream().skip(offset).limit(limit).toList();
 	}
 
 	protected void addLocationStatusSelections(CriteriaBuilder cb, CriteriaQuery<Tuple> query,
@@ -477,16 +471,24 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		return new EmployeeTimeRecordImpl(null, employeeId, date, 0.0f, 0.0f, null);
 	}
 
-	private boolean isEmployeeInTeams(Long employeeId, List<Long> teamIds) {
+	private Subquery<Long> buildTeamEmployeeIdSubquery(CriteriaQuery<?> query, List<Long> teamIds) {
+		Subquery<Long> subquery = query.subquery(Long.class);
+		Root<EmployeeTeam> et = subquery.from(EmployeeTeam.class);
+		subquery.select(et.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+			.where(et.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+		return subquery;
+	}
+
+	private Set<Long> getEmployeesInTeams(List<Long> employeeIds, List<Long> teamIds) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> query = cb.createQuery(Long.class);
 		Root<EmployeeTeam> employeeTeam = query.from(EmployeeTeam.class);
 
-		query.select(cb.count(employeeTeam));
-		query.where(cb.equal(employeeTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId), employeeId),
+		query.select(employeeTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId)).distinct(true);
+		query.where(employeeTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId).in(employeeIds),
 				employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
 
-		return entityManager.createQuery(query).getSingleResult() > 0;
+		return new HashSet<>(entityManager.createQuery(query).getResultList());
 	}
 
 	@Override
@@ -507,69 +509,60 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		predicates.add(cb.or(cb.and(joinPredicates.toArray(new Predicate[0])),
 				cb.isNull(timeRecord.get(TimeRecord_.timeRecordId))));
 
-		query.multiselect(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)),
+		query.select(cb.tuple(cb.coalesce(timeRecord.get(TimeRecord_.timeRecordId), cb.nullLiteral(Long.class)),
 				timeRecord.get(TimeRecord_.date), employee.get(Employee_.employeeId),
-				cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0));
+				cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0)));
 
 		query.where(predicates.toArray(new Predicate[0]));
 		query.orderBy(cb.asc(timeRecord.get(TimeRecord_.date)));
 
 		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
 
-		return typedQuery.getResultList().stream().map(tuple -> new TimeRecordsByEmployeesDto() {
+		return typedQuery.getResultList()
+			.stream()
+			.<TimeRecordsByEmployeesDto>map(tuple -> new TimeRecordsByEmployeesDto() {
 
-			public Long getTimeRecordId() {
-				return tuple.get(0, Long.class);
-			}
+				public Long getTimeRecordId() {
+					return tuple.get(0, Long.class);
+				}
 
-			public LocalDate getDate() {
-				return tuple.get(1, LocalDate.class);
-			}
+				public LocalDate getDate() {
+					return tuple.get(1, LocalDate.class);
+				}
 
-			public Long getEmployeeId() {
-				return tuple.get(2, Long.class);
-			}
+				public Long getEmployeeId() {
+					return tuple.get(2, Long.class);
+				}
 
-			public float getWorkedHours() {
-				return tuple.get(3, Float.class);
-			}
-		}).collect(Collectors.toList());
+				public float getWorkedHours() {
+					return tuple.get(3, Float.class);
+				}
+			})
+			.toList();
 	}
 
 	@Override
 	public List<EmployeeWorkHours> getAllWorkHoursOfEmployee(Long employeeId, LocalDate startDate, LocalDate endDate) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
+		List<LocalDate> dateRange = startDate.datesUntil(endDate.plusDays(1)).toList();
 
-		List<EmployeeWorkHours> allResults = new ArrayList<>();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		Root<TimeRecord> root = query.from(TimeRecord.class);
 
-		for (LocalDate currentDate : dateRange) {
-			CriteriaQuery<Tuple> dateQuery = cb.createTupleQuery();
-			Root<TimeRecord> trRoot = dateQuery.from(TimeRecord.class);
+		query.select(cb.tuple(root.get(TimeRecord_.date), cb.coalesce(root.get(TimeRecord_.workedHours), 0.0f)));
+		query.where(cb.equal(root.get(TimeRecord_.employee).get(Employee_.employeeId), employeeId),
+				cb.between(root.get(TimeRecord_.date), startDate, endDate));
 
-			dateQuery.multiselect(cb.literal(currentDate).alias("date"),
-					cb.coalesce(trRoot.get(TimeRecord_.workedHours), 0.0).alias("workedHours"));
+		Map<LocalDate, Float> workedHoursByDate = entityManager.createQuery(query)
+			.getResultList()
+			.stream()
+			.collect(Collectors.toMap(t -> t.get(0, LocalDate.class), t -> t.get(1, Float.class), (a, b) -> a));
 
-			Predicate employeeFilter = cb.equal(trRoot.get(TimeRecord_.employee).get(Employee_.employeeId), employeeId);
-			Predicate dateFilter = cb.equal(trRoot.get(TimeRecord_.date), currentDate);
-
-			dateQuery.where(cb.and(employeeFilter, dateFilter));
-
-			List<Tuple> dateResults = entityManager.createQuery(dateQuery).getResultList();
-
-			if (dateResults.isEmpty()) {
-				allResults.add(new EmployeeWorkHoursImpl(currentDate, 0.0));
-			}
-			else {
-				for (Tuple tuple : dateResults) {
-					Float workedHours = tuple.get("workedHours", Float.class);
-					allResults.add(new EmployeeWorkHoursImpl(currentDate,
-							workedHours != null ? workedHours.doubleValue() : 0.0));
-				}
-			}
-		}
-		return allResults;
+		return dateRange.stream()
+			.map(date -> (EmployeeWorkHours) new EmployeeWorkHoursImpl(date,
+					workedHoursByDate.getOrDefault(date, 0.0f).doubleValue()))
+			.toList();
 	}
 
 	@Override
@@ -595,7 +588,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		dataPredicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
 		dataPredicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockInTime)));
 
-		dataQuery.multiselect(employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.clockInTime));
+		dataQuery.select(cb.tuple(employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.clockInTime)));
 		dataQuery.where(dataPredicates.toArray(new Predicate[0]));
 
 		List<Tuple> records = entityManager.createQuery(dataQuery).getResultList();
@@ -610,7 +603,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
 						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 			}))
-			.collect(java.util.stream.Collectors.toList());
+			.toList();
 
 		Map<String, Long> slotCounts = records.stream()
 			.map(record -> record.get(1, Long.class))
@@ -619,22 +612,23 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockInTimeMillis);
 				return instant.atZone(targetZone).toLocalTime();
 			})
-			.map(clockInLocalTime -> findTimeSlot(clockInLocalTime))
-			.filter(java.util.Objects::nonNull)
+			.map(this::findTimeSlot)
 			.collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(),
 					java.util.stream.Collectors.counting()));
 
-		List<TimeRecordTrendDto> result = timeSlots.stream().map(slotLabel -> new TimeRecordTrendDto() {
-			@Override
-			public String getSlot() {
-				return slotLabel;
-			}
+		List<TimeRecordTrendDto> result = timeSlots.stream()
+			.<TimeRecordTrendDto>map(slotLabel -> new TimeRecordTrendDto() {
+				@Override
+				public String getSlot() {
+					return slotLabel;
+				}
 
-			@Override
-			public int getCount() {
-				return slotCounts.getOrDefault(slotLabel, 0L).intValue();
-			}
-		}).collect(java.util.stream.Collectors.toList());
+				@Override
+				public int getCount() {
+					return slotCounts.getOrDefault(slotLabel, 0L).intValue();
+				}
+			})
+			.toList();
 
 		long totalCount = slotCounts.values().stream().mapToLong(Long::longValue).sum();
 		log.info("getEmployeeClockInTrend: Completed execution. Total clock-ins found: {} across all time slots",
@@ -666,7 +660,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		dataPredicates.add(cb.equal(timeRecord.get(TimeRecord_.date), date));
 		dataPredicates.add(cb.isNotNull(timeRecord.get(TimeRecord_.clockOutTime)));
 
-		dataQuery.multiselect(employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.clockOutTime));
+		dataQuery.select(cb.tuple(employee.get(Employee_.employeeId), timeRecord.get(TimeRecord_.clockOutTime)));
 		dataQuery.where(dataPredicates.toArray(new Predicate[0]));
 
 		List<Tuple> records = entityManager.createQuery(dataQuery).getResultList();
@@ -681,7 +675,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
 						+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 			}))
-			.collect(java.util.stream.Collectors.toList());
+			.toList();
 
 		Map<String, Long> slotCounts = records.stream()
 			.map(record -> record.get(1, Long.class))
@@ -690,22 +684,23 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				java.time.Instant instant = java.time.Instant.ofEpochMilli(clockOutTimeMillis);
 				return instant.atZone(targetZone).toLocalTime();
 			})
-			.map(clockOutLocalTime -> findTimeSlot(clockOutLocalTime))
-			.filter(java.util.Objects::nonNull)
+			.map(this::findTimeSlot)
 			.collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(),
 					java.util.stream.Collectors.counting()));
 
-		List<TimeRecordTrendDto> result = timeSlots.stream().map(slotLabel -> new TimeRecordTrendDto() {
-			@Override
-			public String getSlot() {
-				return slotLabel;
-			}
+		List<TimeRecordTrendDto> result = timeSlots.stream()
+			.<TimeRecordTrendDto>map(slotLabel -> new TimeRecordTrendDto() {
+				@Override
+				public String getSlot() {
+					return slotLabel;
+				}
 
-			@Override
-			public int getCount() {
-				return slotCounts.getOrDefault(slotLabel, 0L).intValue();
-			}
-		}).collect(java.util.stream.Collectors.toList());
+				@Override
+				public int getCount() {
+					return slotCounts.getOrDefault(slotLabel, 0L).intValue();
+				}
+			})
+			.toList();
 
 		long totalCount = slotCounts.values().stream().mapToLong(Long::longValue).sum();
 		log.info("getEmployeeClockOutTrend: Completed execution. Total clock-outs found: {} across all time slots",
@@ -715,21 +710,10 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	}
 
 	private String findTimeSlot(LocalTime time) {
-		return java.util.stream.IntStream.range(0, 24)
-			.boxed()
-			.flatMap(hour -> java.util.stream.IntStream.range(0, 2).mapToObj(halfHour -> {
-				LocalTime slotStart = LocalTime.of(hour, halfHour * 30);
-				LocalTime slotEnd = slotStart.plusMinutes(30);
-
-				if (!time.isBefore(slotStart) && time.isBefore(slotEnd)) {
-					return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
-							+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
-				}
-				return null;
-			}))
-			.filter(java.util.Objects::nonNull)
-			.findFirst()
-			.orElse(null);
+		LocalTime slotStart = LocalTime.of(time.getHour(), time.getMinute() < 30 ? 0 : 30);
+		LocalTime slotEnd = slotStart.plusMinutes(30);
+		return slotStart.format(DateTimeFormatter.ofPattern("HH:mm")) + " - "
+				+ slotEnd.format(DateTimeFormatter.ofPattern("HH:mm"));
 	}
 
 }

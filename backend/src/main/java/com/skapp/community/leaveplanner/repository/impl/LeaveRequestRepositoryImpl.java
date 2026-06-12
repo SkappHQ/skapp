@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.repository.impl;
 
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.OrganizationConfig_;
@@ -558,8 +559,19 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 	@Override
 	public List<LeaveRequest> findAllFutureLeaveRequestsForTheDay(DayOfWeek day) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		return findFutureLeaveRequestsForDays(List.of(day));
+	}
 
+	@Override
+	public List<LeaveRequest> findAllFutureLeaveRequestsForDays(List<DayOfWeek> days) {
+		if (days == null || days.isEmpty()) {
+			return Collections.emptyList();
+		}
+		return findFutureLeaveRequestsForDays(days);
+	}
+
+	private List<LeaveRequest> findFutureLeaveRequestsForDays(List<DayOfWeek> days) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
 		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
 
@@ -574,8 +586,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 		if (leaveCycleConfig == null) {
-			throw new IllegalArgumentException(
-					messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
 		}
 
 		int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
@@ -595,23 +606,23 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		LocalDate leaveCycleEndDate = DateTimeUtils.getUtcLocalDate(leaveCycleEndYear, endMonth, endDate);
 		LocalDate today = DateTimeUtils.getCurrentUtcDate();
 
-		List<LocalDate> allFutureLeaves = getAllDaysBetween(day, today, leaveCycleEndDate);
+		for (DayOfWeek day : days) {
+			for (LocalDate date : getAllDaysBetween(day, today, leaveCycleEndDate)) {
+				orPredicates
+					.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), date),
+							criteriaBuilder.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), date)));
+			}
+		}
 
-		for (LocalDate date : allFutureLeaves) {
-			orPredicates
-				.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), date),
-						criteriaBuilder.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), date)));
+		if (orPredicates.isEmpty()) {
+			return Collections.emptyList();
 		}
 
 		addPredicates.add(criteriaBuilder.or(orPredicates.toArray(new Predicate[0])));
+		criteriaQuery.where(addPredicates.toArray(new Predicate[0]));
+		criteriaQuery.select(root).distinct(true);
 
-		Predicate[] predArray = new Predicate[addPredicates.size()];
-		addPredicates.toArray(predArray);
-		criteriaQuery.where(predArray);
-
-		criteriaQuery.select(root);
-		TypedQuery<LeaveRequest> typedQuery = entityManager.createQuery(criteriaQuery);
-		return typedQuery.getResultList();
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	private void setDateRangeFiltration(LeaveRequestFilterDto leaveRequestFilterDto, CriteriaBuilder criteriaBuilder,
@@ -621,8 +632,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 				ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 				if (leaveCycleConfig == null) {
-					throw new IllegalArgumentException(
-							messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
+					throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
 				}
 
 				int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
@@ -662,8 +672,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			if (leaveRequestFilterDto.getStartDate() == null || leaveRequestFilterDto.getEndDate() == null) {
 				ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 				if (leaveCycleConfig == null) {
-					throw new IllegalArgumentException(
-							messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
+					throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
 				}
 
 				int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
