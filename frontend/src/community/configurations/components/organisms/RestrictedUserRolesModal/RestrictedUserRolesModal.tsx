@@ -70,7 +70,8 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
       module: moduleType,
       isAdmin: values.isAdmin,
       isManager:
-        moduleType === Modules.ESIGN ? values.isSender : values.isManager
+        moduleType === Modules.ESIGN ? values.isSender : values.isManager,
+      ...(moduleType === Modules.CRM && { isEmployee: values.isEmployee })
     };
 
     updateUserRoleRestrictions(payload);
@@ -85,7 +86,8 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
       isSender:
         initialData !== undefined && moduleType === Modules.ESIGN
           ? initialData?.isManager
-          : false
+          : false,
+      isEmployee: initialData !== undefined ? initialData?.isEmployee : false
     },
     enableReinitialize: true,
     onSubmit: handleSubmit
@@ -102,6 +104,8 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
       case Modules.INVOICE:
       case Modules.PM:
         return ["isAdmin"];
+      case Modules.CRM:
+        return ["isAdmin", "isManager", "isEmployee"];
       default:
         return [];
     }
@@ -129,7 +133,7 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
           <Stack sx={classes.fieldWrapper}>
             {restrictableRoles.includes("isAdmin") && (
               <Checkbox
-                label="Admin"
+                label={translateText(["adminRoleLabel"])}
                 name="isAdmin"
                 checked={values.isAdmin}
                 onChange={() => setFieldValue("isAdmin", !values.isAdmin)}
@@ -137,15 +141,27 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
             )}
             {restrictableRoles.includes("isManager") && (
               <Checkbox
-                label="Manager"
+                label={
+                  moduleType === Modules.CRM
+                    ? translateText(["salesManagerRoleLabel"])
+                    : translateText(["managerRoleLabel"])
+                }
                 name="isManager"
                 checked={values.isManager}
                 onChange={() => setFieldValue("isManager", !values.isManager)}
               />
             )}
+            {restrictableRoles.includes("isEmployee") && (
+              <Checkbox
+                label={translateText(["salesRepresentativeRoleLabel"])}
+                name="isEmployee"
+                checked={values.isEmployee}
+                onChange={() => setFieldValue("isEmployee", !values.isEmployee)}
+              />
+            )}
             {restrictableRoles.includes("isSender") && (
               <Checkbox
-                label="Sender"
+                label={translateText(["senderRoleLabel"])}
                 name="isSender"
                 checked={values.isSender}
                 onChange={() => setFieldValue("isSender", !values.isSender)}

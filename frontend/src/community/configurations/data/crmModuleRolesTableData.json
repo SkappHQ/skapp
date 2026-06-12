@@ -1,6 +1,39 @@
 [
   {
-    "permission": "viewContactsAndCompanies",
+    "permission": "viewDashboard",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "teamAndOwn"
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "own"
+    }
+  },
+  {
+    "permission": "createAndManageContacts",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "own"
+    }
+  },
+  {
+    "permission": "viewContacts",
     "admin": {
       "enabled": true,
       "viewOnly": false
@@ -15,7 +48,22 @@
     }
   },
   {
-    "permission": "manageContactsAndCompanies",
+    "permission": "viewCompanies",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageCompanies",
     "admin": {
       "enabled": true,
       "viewOnly": false
@@ -26,6 +74,21 @@
     },
     "employee": {
       "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "viewAndCreateDeals",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
       "viewOnly": false
     }
   },
@@ -40,38 +103,24 @@
       "viewOnly": false
     },
     "employee": {
-      "enabled": true,
-      "viewOnly": true
-    }
-  },
-  {
-    "permission": "manageTasks",
-    "admin": {
-      "enabled": true,
-      "viewOnly": false
-    },
-    "manager": {
-      "enabled": true,
-      "viewOnly": false
-    },
-    "employee": {
-      "enabled": true,
-      "viewOnly": true
-    }
-  },
-  {
-    "permission": "viewReports",
-    "admin": {
-      "enabled": true,
-      "viewOnly": false
-    },
-    "manager": {
-      "enabled": true,
-      "viewOnly": false
-    },
-    "employee": {
       "enabled": false,
       "viewOnly": false
+    }
+  },
+  {
+    "permission": "createAndManageTasks",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "own"
     }
   }
 ]

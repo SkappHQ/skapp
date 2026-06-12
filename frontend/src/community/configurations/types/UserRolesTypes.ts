@@ -27,6 +27,7 @@ export interface UserRoleRestrictionsType {
   module: Modules;
   isAdmin: boolean;
   isManager: boolean;
+  isEmployee?: boolean;
 }
 
 export interface GrantableRoleTypes {
