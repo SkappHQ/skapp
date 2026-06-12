@@ -67,7 +67,6 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_ID_REQUIRED("api.error.crm.deal.id-required"),
 	CRM_ERROR_DEAL_EDIT_DENIED("api.error.crm.deal.edit-denied"),
 	CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED("api.error.crm.deal.order-neighbours-required"),
-	CRM_ERROR_DEAL_ALREADY_DELETED("api.error.crm.deal.already-deleted"),
 	CRM_SUCCESS_DEAL_DELETED("api.success.crm.deal-deleted");
 
 	private final String messageKey;

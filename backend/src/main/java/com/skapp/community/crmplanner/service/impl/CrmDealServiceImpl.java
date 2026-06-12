@@ -287,12 +287,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto deleteDeal(Long id) {
 		log.info("deleteDeal: execution started for deal id={}", id);
 
-		CrmDeal deal = crmDealDao.findById(id)
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
-
-		if (Boolean.TRUE.equals(deal.getIsDeleted())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ALREADY_DELETED);
-		}
 
 		List<CrmTask> linkedTasks = crmTaskDao.findByDeal_IdAndIsDeletedFalse(id);
 		linkedTasks.forEach(task -> task.setIsDeleted(true));
