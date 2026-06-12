@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.service.CrmDealService;
@@ -50,6 +51,15 @@ public class CrmBoardController {
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> reorderDeal(@RequestBody CrmDealReorderRequestDto requestDto) {
 		ResponseEntityDto response = crmDealService.reorderDeal(requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Move deal to a different stage",
+			description = "Moves a deal to a different stage (swimlane) on the Kanban board. Provide previousDealId and/or nextDealId to position the deal between neighbours, otherwise it is appended to the end of the target stage.")
+	@PatchMapping("/deal-move-between-stages")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> moveDeal(@RequestBody CrmDealUpdateStageRequestDto requestDto) {
+		ResponseEntityDto response = crmDealService.updateDealStage(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
