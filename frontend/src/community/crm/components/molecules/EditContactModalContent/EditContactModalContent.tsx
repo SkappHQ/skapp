@@ -46,22 +46,6 @@ const EditContactModalContent = () => {
     "editContactModal"
   );
 
-  const [companySearch, setCompanySearch] = useState("");
-  const [selectedCompanyLabel, setSelectedCompanyLabel] = useState("");
-
-  const debouncedCompanySearch = useDebounce(
-    companySearch.trim(),
-    SEARCH_DEBOUNCE_DELAY
-  );
-
-  const [ownerSearchText, setOwnerSearchText] = useState("");
-  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
-
-  const debouncedOwnerSearch = useDebounce(
-    ownerSearchText.trim(),
-    SEARCH_DEBOUNCE_DELAY
-  );
-
   const { setIsAddContactModalOpen, selectedContact, setSelectedContact } =
     useCrmStore((store) => ({
       setIsAddContactModalOpen: store.setIsAddContactModalOpen,
@@ -69,11 +53,24 @@ const EditContactModalContent = () => {
       setSelectedContact: store.setSelectedContact
     }));
 
-  useEffect(() => {
-    if (!selectedContact) return;
-    setSelectedOwner(selectedContact.owner);
-    setSelectedCompanyLabel(selectedContact.company?.name ?? "");
-  }, [selectedContact]);
+  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(
+    selectedContact?.owner ?? null
+  );
+  const [selectedCompanyLabel, setSelectedCompanyLabel] = useState(
+    selectedContact?.company?.name ?? ""
+  );
+
+  const [companySearch, setCompanySearch] = useState("");
+  const [ownerSearchText, setOwnerSearchText] = useState("");
+
+  const debouncedCompanySearch = useDebounce(
+    companySearch.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const debouncedOwnerSearch = useDebounce(
+    ownerSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
 
   const { isCrmSalesManager } = useSessionData();
 
