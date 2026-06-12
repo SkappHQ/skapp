@@ -11,6 +11,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
+import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -19,9 +20,8 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseD
 import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
-import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
-import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
@@ -38,7 +38,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
-	private final CrmDealDao crmDealDao;
+	private final CrmContactDao crmContactDao;
 
 	private final CrmMapper crmCompanyMapper;
 
@@ -133,9 +133,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 
-		List<CrmDeal> deals = crmDealDao.findAllByCompanyIdAndIsDeletedFalse(id);
-		deals.forEach(deal -> deal.setIsDeleted(true));
-		crmDealDao.saveAll(deals);
+		List<CrmContact> contacts = crmContactDao.findAllByCompanyIdAndIsDeletedFalse(id);
+		contacts.forEach(contact -> contact.setCompany(null));
+		crmContactDao.saveAll(contacts);
 
 		company.setIsDeleted(true);
 		crmCompanyDao.save(company);
