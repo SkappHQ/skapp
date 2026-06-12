@@ -256,8 +256,16 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED)));
 
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+		TestTransaction.start();
+
 		CrmContact unlinkedContact = crmContactDao.findById(contactId).orElseThrow();
 		assertThat(unlinkedContact.getCompany()).isNull();
+
+		crmContactDao.deleteById(contactId);
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
 	}
 
 	@Test

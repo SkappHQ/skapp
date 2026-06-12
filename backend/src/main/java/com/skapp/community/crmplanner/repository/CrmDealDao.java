@@ -14,6 +14,4 @@ public interface CrmDealDao extends JpaRepository<CrmDeal, Long>, CrmDealReposit
 
 	List<CrmDeal> findByContact_IdAndIsDeletedFalse(Long contactId);
 
-	List<CrmDeal> findAllByCompanyIdAndIsDeletedFalse(Long companyId);
-
 }
