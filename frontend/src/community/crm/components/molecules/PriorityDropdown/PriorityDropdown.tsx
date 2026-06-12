@@ -1,16 +1,7 @@
-import {
-  Dropdown,
-  HighPriorityIcon,
-  Label,
-  LowPriorityIcon,
-  MediumPriorityIcon
-} from "@rootcodelabs/skapp-ui";
-import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/Dropdown/Dropdown";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { Dropdown } from "@rootcodelabs/skapp-ui";
+import { FC, useEffect, useRef, useState } from "react";
 
-import { CrmPriorityEnum } from "~community/crm/enums/common";
-
-import PriorityLabel from "../../atoms/PriorityLabel/PriorityLabel";
+import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 
 interface Props {
   label: string;
@@ -31,50 +22,7 @@ const PriorityDropdown: FC<Props> = ({
   const [isEditing, setIsEditing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const priorityOptions = useMemo<DropdownOption[]>(
-    () => [
-      {
-        id: "high",
-        value: CrmPriorityEnum.HIGH,
-        label: (
-          <Label
-            backgroundColor="bg-semantic-red-background"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium"
-          >
-            <HighPriorityIcon size={12} />
-            <span>High</span>
-          </Label>
-        )
-      },
-      {
-        id: "medium",
-        value: CrmPriorityEnum.MEDIUM,
-        label: (
-          <Label
-            backgroundColor="bg-semantic-amber-background"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium"
-          >
-            <MediumPriorityIcon size={12} />
-            <span>Medium</span>
-          </Label>
-        )
-      },
-      {
-        id: "low",
-        value: CrmPriorityEnum.LOW,
-        label: (
-          <Label
-            backgroundColor="bg-semantic-green-background"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium"
-          >
-            <LowPriorityIcon size={12} />
-            <span>Low</span>
-          </Label>
-        )
-      }
-    ],
-    []
-  );
+  const priorityOptions = useGetPriorityOptions();
 
   useEffect(() => {
     setLocalValue(value ?? "");
@@ -135,7 +83,7 @@ const PriorityDropdown: FC<Props> = ({
             onClick={() => setIsEditing(true)}
           >
             {localValue ? (
-              <PriorityLabel priority={localValue} />
+              priorityOptions.find((o) => o.value === localValue)?.label
             ) : (
               <span className="text-[13px] text-gray-400">{placeholder}</span>
             )}

@@ -8,7 +8,6 @@ import {
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { CONTACT_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/contactConstants";
 import {
   CrmCreateDealPayload,
   CrmDealFilterParams,
@@ -19,7 +18,6 @@ import {
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
 import { crmDealQueryKeys } from "./utils/QueryKeys";
-
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
