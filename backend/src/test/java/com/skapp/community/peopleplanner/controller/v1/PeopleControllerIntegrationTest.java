@@ -9,6 +9,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
+import com.skapp.community.peopleplanner.payload.request.ReactivateTerminatedUserRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeCommonDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
@@ -47,6 +48,7 @@ import java.util.List;
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
+import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -261,6 +263,74 @@ class PeopleControllerIntegrationTest {
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_FIRST_NAME_LENGTH,
 							new Object[] { PeopleConstants.MAX_NAME_LENGTH })));
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Reactivate Terminated User Tests")
+	class ReactivateTerminatedUserTests {
+
+		@Test
+		@DisplayName("Reactivate a terminated user - Returns Success")
+		void reactivateTerminatedUser_WithValidTerminatedUser_ReturnsSuccess() throws Exception {
+			// Terminate user2 first to set up the prerequisite state
+			performRequest(patch("/v1/people/user/terminate/2").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+
+			ReactivateTerminatedUserRequestDto requestDto = new ReactivateTerminatedUserRequestDto();
+			requestDto.setEmail("user2@gmail.com");
+
+			performRequest(patch("/v1/people/user/reactivate").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestDto))
+				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+		}
+
+		@Test
+		@DisplayName("Reactivate an active (non-terminated) user - Returns Bad Request")
+		void reactivateTerminatedUser_WithActiveUser_ReturnsBadRequest() throws Exception {
+			ReactivateTerminatedUserRequestDto requestDto = new ReactivateTerminatedUserRequestDto();
+			requestDto.setEmail("user2@gmail.com");
+
+			performRequest(patch("/v1/people/user/reactivate").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestDto))
+				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED)));
+		}
+
+		@Test
+		@DisplayName("Reactivate with non-existent email - Returns Not Found")
+		void reactivateTerminatedUser_WithNonExistentEmail_ReturnsNotFound() throws Exception {
+			ReactivateTerminatedUserRequestDto requestDto = new ReactivateTerminatedUserRequestDto();
+			requestDto.setEmail("nonexistent@gmail.com");
+
+			performRequest(patch("/v1/people/user/reactivate").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestDto))
+				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND)));
+		}
+
+		@Test
+		@DisplayName("Reactivate with invalid email format - Returns Bad Request")
+		void reactivateTerminatedUser_WithInvalidEmailFormat_ReturnsBadRequest() throws Exception {
+			ReactivateTerminatedUserRequestDto requestDto = new ReactivateTerminatedUserRequestDto();
+			requestDto.setEmail("not-a-valid-email");
+
+			performRequest(patch("/v1/people/user/reactivate").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestDto))
+				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMAIL)));
 		}
 
 	}

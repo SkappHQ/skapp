@@ -1,12 +1,21 @@
 @import "pdfjs-dist/web/pdf_viewer.css";
 @import "@rootcodelabs/skapp-ui";
 @import "tailwindcss";
+@source "../node_modules/@rootcodelabs/skapp-ui";
+
+:root {
+  --color-blue-dark: #013c84;
+  --color-blue-mid: #408ce4;
+  --color-blue-text: #2a61a0;
+  --color-blue-light: #dbeafe;
+}
 
 @theme {
   --color-primary: #93c5fd;
-  --color-primary-accent: #408ce4;
-  --color-primary-text: #2a61a0;
-  --color-primary-background: #dbeafe;
+  --color-primary-accent: var(--color-blue-mid);
+  --color-primary-text: var(--color-blue-text);
+  --color-primary-background: var(--color-blue-light);
+  --color-primary-background-dark: var(--color-blue-dark);
 
   --font-family-sans:
     var(--font-inter), ui-sans-serif, system-ui, sans-serif,
@@ -68,6 +77,14 @@
   --color-semantic-green-200: #62b774;
   --color-semantic-green-text: #016630;
   --color-semantic-green-accent: #62b774;
+
+  --color-chart-blue: #2b7fff;
+
+  --color-ai-gradient-start: var(--color-blue-dark);
+  --color-ai-gradient-end: var(--color-blue-mid);
+  --color-ai-text: var(--color-blue-text);
+  --color-ai-accent: var(--color-blue-mid);
+  --color-ai-background: var(--color-blue-light);
 }
 
 .h1 {

@@ -1,104 +1,93 @@
 package com.skapp.community.timeplanner.controller.v1;
 
-import com.skapp.community.common.security.AuthorityService;
-import com.skapp.community.common.service.JwtService;
-import com.skapp.community.common.util.DateTimeUtils;
-import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.timeplanner.constant.TimeMessageConstant;
-import com.skapp.community.peopleplanner.type.RequestStatus;
-import com.skapp.community.peopleplanner.type.RequestType;
-import com.skapp.community.timeplanner.payload.request.AddTimeRecordDto;
-import com.skapp.community.timeplanner.payload.request.ManualEntryRequestDto;
-import com.skapp.community.timeplanner.payload.request.TimeRequestManagerPatchDto;
-import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
-import com.skapp.support.MockUserFactory;
-import com.skapp.support.SecurityTestUtils;
 import com.skapp.TestSkappApplication;
-import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
+import com.skapp.community.peopleplanner.type.RequestStatus;
+import com.skapp.community.timeplanner.payload.request.AddTimeRecordDto;
+import com.skapp.community.timeplanner.payload.request.EditTimeRequestDto;
+import com.skapp.community.timeplanner.payload.request.GetTimeConfigDeleteAvailabilityRequestDto;
+import com.skapp.community.timeplanner.payload.request.ManualEntryRequestDto;
+import com.skapp.community.timeplanner.payload.request.TimeConfigDto;
+import com.skapp.community.timeplanner.payload.request.TimeRequestManagerPatchDto;
+import com.skapp.community.timeplanner.payload.request.UpdateIncompleteTimeRecordsRequestDto;
+import com.skapp.community.timeplanner.payload.request.UpdateTimeRequestsFilterDto;
+import com.skapp.community.timeplanner.service.TimeService;
+import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
-import static com.skapp.support.TestConstants.MESSAGE_PATH;
-import static com.skapp.support.TestConstants.RESULTS_0_PATH;
-import static com.skapp.support.TestConstants.RESULTS_PATH;
-import static com.skapp.support.TestConstants.STATUS_PATH;
-import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
-import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = TestSkappApplication.class)
 @AutoConfigureMockMvc
 @Transactional
-@RequiredArgsConstructor
 @DisplayName("Time Controller Integration Tests")
-class TimeControllerIntegrationTest {
+class TimeControllerIntegrationTest extends AbstractControllerIntegrationTest {
 
 	private static final String BASE_PATH = "/v1/time";
 
-	private final AuthorityService authorityService;
+	@MockitoBean
+	private TimeService timeService;
 
-	private final JsonMapper objectMapper;
-
-	private final JwtService jwtService;
-
-	private final UserDetailsService userDetailsService;
-
-	private final MockMvc mvc;
-
-	private final MessageUtil messageUtil;
-
-	private String authToken;
-
-	@BeforeEach
-	void setup() {
-		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createSuperAdminWithManager());
-		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
+	private ResultActions performPatchRequest() throws Exception {
+		return performRequest(patch("/v1/time/requests-update").accept(MediaType.APPLICATION_JSON));
 	}
 
-	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
-		return mvc.perform(request.with(SecurityTestUtils.bearerToken(authToken)));
-	}
-
-	private ResultActions performGetRequest() throws Exception {
-		return performRequest(get("/v1/time/active-slot").accept(MediaType.APPLICATION_JSON));
-	}
-
-	private ResultActions performGetRequestWithParams(MultiValueMap<String, String> params) throws Exception {
-		return performRequest(
-				get("/v1/time/team-time-record-summary").params(params).accept(MediaType.APPLICATION_JSON));
-	}
-
-	private <T> ResultActions performPostRequest(String path, T content) throws Exception {
-		return performRequest(post(path).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(content))
-			.accept(MediaType.APPLICATION_JSON));
-	}
-
-	private <T> ResultActions performPatchRequest(String path, T content) throws Exception {
+	private ResultActions performPatchRequest(String path, Object body) throws Exception {
 		return performRequest(patch(path).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(content))
+			.content(objectMapper.writeValueAsString(body))
 			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performPostRequest(String path, Object body) throws Exception {
+		return performRequest(post(path).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(body))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	@Nested
+	@DisplayName("Time Config Tests")
+	class TimeConfigTests {
+
+		@Test
+		@DisplayName("PATCH /config - returns OK")
+		void updateTimeConfig_ReturnsOk() throws Exception {
+			when(timeService.updateTimeConfigs(any())).thenReturn(response("updateTimeConfigs"));
+
+			assertOk(performPatchRequest(BASE_PATH + "/config", new TimeConfigDto()), "updateTimeConfigs");
+			verify(timeService).updateTimeConfigs(any(TimeConfigDto.class));
+		}
+
+		@Test
+		@DisplayName("GET /config - returns OK")
+		void getDefaultTimeConfig_ReturnsOk() throws Exception {
+			when(timeService.getDefaultTimeConfigurations()).thenReturn(response("getDefaultTimeConfigurations"));
+
+			assertOk(performGetRequest(BASE_PATH + "/config"), "getDefaultTimeConfigurations");
+			verify(timeService).getDefaultTimeConfigurations();
+		}
+
+		@Test
+		@DisplayName("GET /config/is-removable - returns OK")
+		void getTimeConfigDeleteAvailability_ReturnsOk() throws Exception {
+			when(timeService.getIfTimeConfigRemovable(any())).thenReturn(response("getIfTimeConfigRemovable"));
+
+			assertOk(performGetRequest(BASE_PATH + "/config/is-removable"), "getIfTimeConfigRemovable");
+			verify(timeService).getIfTimeConfigRemovable(any(GetTimeConfigDeleteAvailabilityRequestDto.class));
+		}
+
 	}
 
 	@Nested
@@ -106,186 +95,223 @@ class TimeControllerIntegrationTest {
 	class TimeSlotTests {
 
 		@Test
-		@DisplayName("Get active time slot when clocked out - Returns OK")
-		void getActiveTimeSlotWhenTimeRecordAvailable_ButClockedOut_ReturnsHttpStatusOk() throws Exception {
-			performGetRequest().andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + "['periodType']").value("END"));
-		}
-
-		@Test
-		@DisplayName("Get active time slot - Returns OK")
+		@DisplayName("GET /active-slot - returns OK")
 		void getActiveTimeSlot_ReturnsOk() throws Exception {
-			performGetRequest().andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_PATH).isNotEmpty());
+			when(timeService.getActiveTimeSlot()).thenReturn(response("getActiveTimeSlot"));
+
+			assertOk(performGetRequest(BASE_PATH + "/active-slot"), "getActiveTimeSlot");
+			verify(timeService).getActiveTimeSlot();
 		}
 
 	}
 
 	@Nested
-	@DisplayName("Time Record Tests")
-	class TimeRecordTests {
+	@DisplayName("Employee Time Tests")
+	class EmployeeTimeTests {
 
 		@Test
-		@DisplayName("Add time log for current day with CLOCK_IN - Returns OK")
-		void addTimeLog_ForTheCurrentDay_CLOCK_IN_ReturnsHttpStatusOk() throws Exception {
-			LocalDateTime startTime = DateTimeUtils.getCurrentUtcDateTime().minusDays(1L);
-			AddTimeRecordDto addTimeRecordDto = new AddTimeRecordDto();
-			addTimeRecordDto.setRecordActionType(TimeRecordActionTypes.START);
-			addTimeRecordDto.setTime(startTime);
+		@DisplayName("GET /work-summary - returns OK")
+		void getEmployeeAttendanceSummary_ReturnsOk() throws Exception {
+			when(timeService.getEmployeeAttendanceSummary(any())).thenReturn(response("getEmployeeAttendanceSummary"));
 
-			performPostRequest(BASE_PATH + "/record", addTimeRecordDto).andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH).value(messageUtil.getMessage(
-						TimeMessageConstant.TIME_SUCCESS_TIME_RECORD_ADDED, new Object[] { startTime, "START" })));
+			assertOk(performGetRequest(BASE_PATH + "/work-summary"), "getEmployeeAttendanceSummary");
+			verify(timeService).getEmployeeAttendanceSummary(any());
 		}
 
 		@Test
-		@DisplayName("Add time log when CLOCK_IN already exists - Returns Bad Request")
-		void addTimeLog_ForTheCurrentDay_When_CLOCK_IN_Exists_ReturnsBadRequest() throws Exception {
-			AddTimeRecordDto addTimeRecordDto = new AddTimeRecordDto();
-			addTimeRecordDto.setRecordActionType(TimeRecordActionTypes.START);
-			addTimeRecordDto.setTime(DateTimeUtils.getCurrentUtcDateTime());
+		@DisplayName("GET /daily-time-records - returns OK")
+		void getEmployeeDailyTimeRecords_ReturnsOk() throws Exception {
+			when(timeService.getEmployeeDailyTimeRecords(any())).thenReturn(response("getEmployeeDailyTimeRecords"));
 
-			performPostRequest(BASE_PATH + "/record", addTimeRecordDto).andDo(print())
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value(
-						messageUtil.getMessage(TimeMessageConstant.TIME_ERROR_TIME_CLOCK_IN_EXISTS_FOR_CURRENT_DATE)));
+			assertOk(performGetRequest(BASE_PATH + "/daily-time-records"), "getEmployeeDailyTimeRecords");
+			verify(timeService).getEmployeeDailyTimeRecords(any());
 		}
 
 		@Test
-		@DisplayName("Add time log with WORK when no CLOCK_IN exists - Returns Bad Request")
-		void addTimeLog_ForTheCurrentDay_WORK_Request_When_No_CLOCK_IN_Exists_ReturnsBadRequest() throws Exception {
-			AddTimeRecordDto addTimeRecordDto = new AddTimeRecordDto();
-			addTimeRecordDto.setRecordActionType(TimeRecordActionTypes.RESUME);
-			addTimeRecordDto.setTime(DateTimeUtils.getCurrentUtcDateTime().minusDays(2L));
+		@DisplayName("GET /daily-time-records/{id} - returns OK")
+		void getEmployeeDailyTimeRecordsByEmployeeId_ReturnsOk() throws Exception {
+			when(timeService.getEmployeeDailyTimeRecordsByEmployeeId(any(), anyLong()))
+				.thenReturn(response("getEmployeeDailyTimeRecordsByEmployeeId"));
 
-			performPostRequest(BASE_PATH + "/record", addTimeRecordDto).andDo(print())
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value(
-						messageUtil.getMessage(TimeMessageConstant.TIME_ERROR_CLOCK_IN_NOT_EXISTS_FOR_CURRENT_DATE)));
-		}
-
-	}
-
-	@Nested
-	@DisplayName("Manual Entry Tests")
-	class ManualEntryTests {
-
-		@Test
-		@DisplayName("Add manual entry with start time after end time - Returns Bad Request")
-		void addManualEntryRequest_InvalidStartEndDate_StartTimeAfterEndTime_ReturnsBadRequest() throws Exception {
-			LocalDateTime startTime = LocalDateTime.of(DateTimeUtils.getCurrentYear(), 1, 1, 8, 30, 0);
-			LocalDateTime endTime = LocalDateTime.of(DateTimeUtils.getCurrentYear(), 1, 1, 7, 30, 0);
-
-			ManualEntryRequestDto manualEntryRequestDto = new ManualEntryRequestDto();
-			manualEntryRequestDto.setRequestType(RequestType.MANUAL_ENTRY_REQUEST);
-			manualEntryRequestDto.setStartTime(startTime);
-			manualEntryRequestDto.setEndTime(endTime);
-			manualEntryRequestDto.setRecordId(1L);
-			manualEntryRequestDto.setZoneId(String.valueOf(ZoneId.systemDefault()));
-
-			performPostRequest(BASE_PATH + "/manual-entry", manualEntryRequestDto).andDo(print())
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value(messageUtil.getMessage(TimeMessageConstant.TIME_ERROR_END_TIME_BEFORE_START_TIME)));
+			assertOk(performGetRequest(BASE_PATH + "/daily-time-records/1"), "getEmployeeDailyTimeRecordsByEmployeeId");
+			verify(timeService).getEmployeeDailyTimeRecordsByEmployeeId(any(), anyLong());
 		}
 
 		@Test
-		@DisplayName("Add manual entry with different start and end dates - Returns Bad Request")
-		void addManualEntryRequest_InvalidStartEndDate_DifferentDate_ReturnsBadRequest() throws Exception {
-			LocalDateTime startTime = LocalDateTime.of(DateTimeUtils.getCurrentYear(), 1, 1, 23, 30, 0);
-			LocalDateTime endTime = LocalDateTime.of(DateTimeUtils.getCurrentYear(), 1, 2, 0, 30, 0);
+		@DisplayName("GET /requests - returns OK")
+		void getAllTimeRequestsByEmployeeId_ReturnsOk() throws Exception {
+			when(timeService.getAllRequestsOfEmployee(any())).thenReturn(response("getAllRequestsOfEmployee"));
 
-			ManualEntryRequestDto manualEntryRequestDto = new ManualEntryRequestDto();
-			manualEntryRequestDto.setRequestType(RequestType.MANUAL_ENTRY_REQUEST);
-			manualEntryRequestDto.setStartTime(startTime);
-			manualEntryRequestDto.setEndTime(endTime);
-			manualEntryRequestDto.setRecordId(1L);
-			manualEntryRequestDto.setZoneId(String.valueOf(ZoneId.systemDefault()));
-
-			performPostRequest(BASE_PATH + "/manual-entry", manualEntryRequestDto).andDo(print())
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value(messageUtil.getMessage(TimeMessageConstant.TIME_ERROR_START_END_TIME_DIFFERENT_DATES)));
+			assertOk(performGetRequest(BASE_PATH + "/requests"), "getAllRequestsOfEmployee");
+			verify(timeService).getAllRequestsOfEmployee(any());
 		}
 
 		@Test
-		@DisplayName("Add manual entry without request type - Returns Created")
-		void addManualEntryRequest_WithoutRequestType_ReturnsCreated() throws Exception {
-			LocalDateTime startTime = LocalDateTime.of(2025, 2, 27, 5, 30, 0);
-			LocalDateTime endTime = LocalDateTime.of(2025, 2, 27, 6, 30, 0);
+		@DisplayName("GET /request-period-availability - returns OK")
+		void getRequestedTimeAvailability_ReturnsOk() throws Exception {
+			when(timeService.getRequestedDateTimeAvailability(any()))
+				.thenReturn(response("getRequestedDateTimeAvailability"));
 
-			ManualEntryRequestDto manualEntryRequestDto = new ManualEntryRequestDto();
-			manualEntryRequestDto.setStartTime(startTime);
-			manualEntryRequestDto.setEndTime(endTime);
-			manualEntryRequestDto.setRecordId(3L);
-			manualEntryRequestDto.setZoneId(ZoneId.systemDefault().getId());
-
-			performPostRequest(BASE_PATH + "/manual-entry", manualEntryRequestDto).andDo(print())
-				.andExpect(status().isCreated())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + "['requestType']").value("MANUAL_ENTRY_REQUEST"));
-		}
-
-	}
-
-	@Nested
-	@DisplayName("Time Request Tests")
-	class TimeRequestTests {
-
-		@Test
-		@DisplayName("Update time request by manager - Returns OK")
-		void updateTimeRequestByManager_WithValidTimeRequestId_ReturnsOk() throws Exception {
-			TimeRequestManagerPatchDto timeRequestManagerPatchDto = new TimeRequestManagerPatchDto();
-			timeRequestManagerPatchDto.setStatus(RequestStatus.APPROVED);
-
-			performPatchRequest(BASE_PATH + "/time-request/1", timeRequestManagerPatchDto).andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + "['status']").value("APPROVED"));
+			assertOk(performGetRequest(BASE_PATH + "/request-period-availability"), "getRequestedDateTimeAvailability");
+			verify(timeService).getRequestedDateTimeAvailability(any());
 		}
 
 		@Test
-		@DisplayName("Update time request with invalid ID - Returns Bad Request")
-		void updateTimeRequestByManager_WithInvalidTimeRequestId_ReturnsBadRequest() throws Exception {
-			TimeRequestManagerPatchDto timeRequestManagerPatchDto = new TimeRequestManagerPatchDto();
-			timeRequestManagerPatchDto.setStatus(RequestStatus.APPROVED);
+		@DisplayName("GET /incomplete-clockouts - returns OK")
+		void getCurrentUserIncompleteTimeRecords_ReturnsOk() throws Exception {
+			when(timeService.getIncompleteClockOuts()).thenReturn(response("getIncompleteClockOuts"));
 
-			performPatchRequest(BASE_PATH + "/time-request/100", timeRequestManagerPatchDto).andDo(print())
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			assertOk(performGetRequest(BASE_PATH + "/incomplete-clockouts"), "getIncompleteClockOuts");
+			verify(timeService).getIncompleteClockOuts();
+		}
+
+		@Test
+		@DisplayName("POST /manual-entry - returns CREATED")
+		void addManualEntryRequest_ReturnsCreated() throws Exception {
+			when(timeService.addManualEntryRequest(any())).thenReturn(response("addManualEntryRequest"));
+
+			assertCreated(performPostRequest(BASE_PATH + "/manual-entry", new ManualEntryRequestDto()),
+					"addManualEntryRequest");
+			verify(timeService).addManualEntryRequest(any());
+		}
+
+		@Test
+		@DisplayName("PATCH /requests-update - returns OK")
+		void updateTimeRequests_ReturnsOk() throws Exception {
+			when(timeService.updateTimeRequests(any())).thenReturn(response("updateTimeRequests"));
+
+			assertOk(performPatchRequest(), "updateTimeRequests");
+			verify(timeService).updateTimeRequests(any(UpdateTimeRequestsFilterDto.class));
+		}
+
+		@Test
+		@DisplayName("PATCH /incomplete-clockouts/{id} - returns OK")
+		void updateCurrentUserIncompleteTimeRecords_ReturnsOk() throws Exception {
+			when(timeService.updateCurrentUserIncompleteTimeRecords(anyLong(), any()))
+				.thenReturn(response("updateCurrentUserIncompleteTimeRecords"));
+
+			UpdateIncompleteTimeRecordsRequestDto request = new UpdateIncompleteTimeRecordsRequestDto();
+			request.setClockOutTime(LocalDateTime.now());
+
+			assertOk(performPatchRequest(BASE_PATH + "/incomplete-clockouts/1", request),
+					"updateCurrentUserIncompleteTimeRecords");
+			verify(timeService).updateCurrentUserIncompleteTimeRecords(eq(1L), any());
+		}
+
+		@Test
+		@DisplayName("POST /record - returns CREATED")
+		void addTimeRecord_ReturnsCreated() throws Exception {
+			AddTimeRecordDto request = new AddTimeRecordDto();
+			request.setRecordActionType(TimeRecordActionTypes.START);
+			when(timeService.addTimeRecord(any())).thenReturn(response("addTimeRecord"));
+
+			assertCreated(performPostRequest(BASE_PATH + "/record", request), "addTimeRecord");
+			verify(timeService).addTimeRecord(any());
+		}
+
+		@Test
+		@DisplayName("PATCH /request - returns OK")
+		void editTimeRequest_ReturnsOk() throws Exception {
+			when(timeService.editTimeRequest(any())).thenReturn(response("editTimeRequest"));
+
+			assertOk(performPatchRequest(BASE_PATH + "/request", new EditTimeRequestDto()), "editTimeRequest");
+			verify(timeService).editTimeRequest(any());
 		}
 
 	}
 
 	@Nested
-	@DisplayName("Team Summary Tests")
-	class TeamSummaryTests {
+	@DisplayName("Manager Time Tests")
+	class ManagerTimeTests {
 
 		@Test
-		@DisplayName("Team time record with invalid date range - Returns Bad Request")
-		void managerTeamTimeRecordSummary_WithInvalidDateRange_ReturnsBadRequest() throws Exception {
-			MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-			queryParams.add("startDate",
-					String.valueOf(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 3, 30)));
-			queryParams.add("endDate",
-					String.valueOf(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 3, 29)));
-			queryParams.add("teamId", "1");
-			queryParams.add("filterTime", "DATE_RANGE");
+		@DisplayName("GET /attendance-summary - returns OK")
+		void managerAttendanceSummary_ReturnsOk() throws Exception {
+			when(timeService.getManagerAttendanceSummary(any())).thenReturn(response("getManagerAttendanceSummary"));
 
-			performGetRequestWithParams(queryParams).andDo(print())
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value(messageUtil.getMessage(TimeMessageConstant.TIME_ERROR_START_DATE_END_DATE_NOT_VALID)));
+			assertOk(performGetRequest(BASE_PATH + "/attendance-summary"), "getManagerAttendanceSummary");
+			verify(timeService).getManagerAttendanceSummary(any());
+		}
+
+		@Test
+		@DisplayName("PATCH /time-request/{id} - returns OK")
+		void updateTimeRequestByManager_ReturnsOk() throws Exception {
+			when(timeService.updateTimeRequestByManager(anyLong(), any()))
+				.thenReturn(response("updateTimeRequestByManager"));
+
+			TimeRequestManagerPatchDto request = new TimeRequestManagerPatchDto();
+			request.setStatus(RequestStatus.APPROVED);
+
+			assertOk(performPatchRequest(BASE_PATH + "/time-request/1", request), "updateTimeRequestByManager");
+			verify(timeService).updateTimeRequestByManager(eq(1L), any());
+		}
+
+		@Test
+		@DisplayName("GET /team-time-records - returns OK")
+		void managerAssignUsersTimeRecords_ReturnsOk() throws Exception {
+			when(timeService.managerAssignUsersTimeRecords(any()))
+				.thenReturn(response("managerAssignUsersTimeRecords"));
+
+			assertOk(performGetRequest(BASE_PATH + "/team-time-records"), "managerAssignUsersTimeRecords");
+			verify(timeService).managerAssignUsersTimeRecords(any());
+		}
+
+		@Test
+		@DisplayName("GET /time-requests - returns OK")
+		void getAllAssignEmployeesTimeRequests_ReturnsOk() throws Exception {
+			when(timeService.getAllAssignEmployeesTimeRequests(any()))
+				.thenReturn(response("getAllAssignEmployeesTimeRequests"));
+
+			assertOk(performGetRequest(BASE_PATH + "/time-requests"), "getAllAssignEmployeesTimeRequests");
+			verify(timeService).getAllAssignEmployeesTimeRequests(any());
+		}
+
+		@Test
+		@DisplayName("GET /team-time-record-summary - returns OK")
+		void managerTeamTimeRecordSummary_ReturnsOk() throws Exception {
+			when(timeService.managerTeamTimeRecordSummary(any())).thenReturn(response("managerTeamTimeRecordSummary"));
+
+			assertOk(performGetRequest(BASE_PATH + "/team-time-record-summary"), "managerTeamTimeRecordSummary");
+			verify(timeService).managerTeamTimeRecordSummary(any());
+		}
+
+		@Test
+		@DisplayName("GET /employee-daily-log - returns OK")
+		void getManagerEmployeeDailyLog_ReturnsOk() throws Exception {
+			when(timeService.getManagerEmployeeDailyLog(any())).thenReturn(response("getManagerEmployeeDailyLog"));
+
+			assertOk(performGetRequest(BASE_PATH + "/employee-daily-log"), "getManagerEmployeeDailyLog");
+			verify(timeService).getManagerEmployeeDailyLog(any());
+		}
+
+		@Test
+		@DisplayName("GET /work-hour-graph - returns OK")
+		void getIndividualWorkHoursBySupervisor_ReturnsOk() throws Exception {
+			when(timeService.getIndividualWorkHoursBySupervisor(any()))
+				.thenReturn(response("getIndividualWorkHoursBySupervisor"));
+
+			assertOk(performGetRequest(BASE_PATH + "/work-hour-graph"), "getIndividualWorkHoursBySupervisor");
+			verify(timeService).getIndividualWorkHoursBySupervisor(any());
+		}
+
+		@Test
+		@DisplayName("GET /individual-utilization/{id} - returns OK")
+		void individualWorkTimeUtilizationByManager_ReturnsOk() throws Exception {
+			when(timeService.getIndividualWorkUtilizationByManager(anyLong()))
+				.thenReturn(response("getIndividualWorkUtilizationByManager"));
+
+			assertOk(performGetRequest(BASE_PATH + "/individual-utilization/1"),
+					"getIndividualWorkUtilizationByManager");
+			verify(timeService).getIndividualWorkUtilizationByManager(1L);
+		}
+
+		@Test
+		@DisplayName("GET /pending-requests/count - returns OK")
+		void getPendingTimeRequestsCount_ReturnsOk() throws Exception {
+			when(timeService.getPendingTimeRequestsCount()).thenReturn(response("getPendingTimeRequestsCount"));
+
+			assertOk(performGetRequest(BASE_PATH + "/pending-requests/count"), "getPendingTimeRequestsCount");
+			verify(timeService).getPendingTimeRequestsCount();
 		}
 
 	}

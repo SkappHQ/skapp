@@ -20,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TimeSlotRepositoryImpl implements TimeSlotRepository {
 
-	@NonNull
 	private final EntityManager entityManager;
 
 	@Override

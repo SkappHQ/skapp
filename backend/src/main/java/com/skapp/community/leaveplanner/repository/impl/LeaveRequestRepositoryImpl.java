@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.repository.impl;
 
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.OrganizationConfig_;
@@ -558,8 +559,19 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 	@Override
 	public List<LeaveRequest> findAllFutureLeaveRequestsForTheDay(DayOfWeek day) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		return findFutureLeaveRequestsForDays(List.of(day));
+	}
 
+	@Override
+	public List<LeaveRequest> findAllFutureLeaveRequestsForDays(List<DayOfWeek> days) {
+		if (days == null || days.isEmpty()) {
+			return Collections.emptyList();
+		}
+		return findFutureLeaveRequestsForDays(days);
+	}
+
+	private List<LeaveRequest> findFutureLeaveRequestsForDays(List<DayOfWeek> days) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
 		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
 
@@ -574,8 +586,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 		ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 		if (leaveCycleConfig == null) {
-			throw new IllegalArgumentException(
-					messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
 		}
 
 		int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
@@ -595,23 +606,23 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		LocalDate leaveCycleEndDate = DateTimeUtils.getUtcLocalDate(leaveCycleEndYear, endMonth, endDate);
 		LocalDate today = DateTimeUtils.getCurrentUtcDate();
 
-		List<LocalDate> allFutureLeaves = getAllDaysBetween(day, today, leaveCycleEndDate);
+		for (DayOfWeek day : days) {
+			for (LocalDate date : getAllDaysBetween(day, today, leaveCycleEndDate)) {
+				orPredicates
+					.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), date),
+							criteriaBuilder.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), date)));
+			}
+		}
 
-		for (LocalDate date : allFutureLeaves) {
-			orPredicates
-				.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get(LeaveRequest_.startDate), date),
-						criteriaBuilder.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate), date)));
+		if (orPredicates.isEmpty()) {
+			return Collections.emptyList();
 		}
 
 		addPredicates.add(criteriaBuilder.or(orPredicates.toArray(new Predicate[0])));
+		criteriaQuery.where(addPredicates.toArray(new Predicate[0]));
+		criteriaQuery.select(root).distinct(true);
 
-		Predicate[] predArray = new Predicate[addPredicates.size()];
-		addPredicates.toArray(predArray);
-		criteriaQuery.where(predArray);
-
-		criteriaQuery.select(root);
-		TypedQuery<LeaveRequest> typedQuery = entityManager.createQuery(criteriaQuery);
-		return typedQuery.getResultList();
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	private void setDateRangeFiltration(LeaveRequestFilterDto leaveRequestFilterDto, CriteriaBuilder criteriaBuilder,
@@ -621,8 +632,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 				ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 				if (leaveCycleConfig == null) {
-					throw new IllegalArgumentException(
-							messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
+					throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
 				}
 
 				int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
@@ -662,8 +672,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			if (leaveRequestFilterDto.getStartDate() == null || leaveRequestFilterDto.getEndDate() == null) {
 				ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 				if (leaveCycleConfig == null) {
-					throw new IllegalArgumentException(
-							messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND));
+					throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
 				}
 
 				int startMonth = leaveCycleConfig.get(LeaveCycleConfigField.START.getField())
@@ -1044,6 +1053,9 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		Join<LeaveRequest, Employee> employeeJoin = leaveRequestRoot.join(LeaveRequest_.employee);
 		List<Predicate> predicates = new ArrayList<>();
 
+		predicates.add(criteriaBuilder.isTrue(employeeJoin.get(Employee_.user).get(User_.isActive)));
+		predicates.add(criteriaBuilder.equal(employeeJoin.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
+
 		if (teams == null || teams.isEmpty() || teams.contains(-1L)) {
 			if (isLeaveAdmin) {
 				Predicate leaveDatePredicate = criteriaBuilder.and(
@@ -1062,15 +1074,20 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 					.where(criteriaBuilder.equal(managerRoot.get(EmployeeManager_.manager).get(Employee_.employeeId),
 							currentUserId));
 
-				Subquery<Long> supervisedTeamsSubquery = criteriaQuery.subquery(Long.class);
-				Root<EmployeeTeam> teamRoot = supervisedTeamsSubquery.from(EmployeeTeam.class);
-				supervisedTeamsSubquery.select(teamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+				Subquery<Long> supervisedTeamIdsSubquery = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> supervisorTeamRoot = supervisedTeamIdsSubquery.from(EmployeeTeam.class);
+				supervisedTeamIdsSubquery.select(supervisorTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId))
 					.where(criteriaBuilder.and(criteriaBuilder
-						.equal(teamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), currentUserId),
-							criteriaBuilder.isTrue(teamRoot.get(EmployeeTeam_.isSupervisor))));
+						.equal(supervisorTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), currentUserId),
+							criteriaBuilder.isTrue(supervisorTeamRoot.get(EmployeeTeam_.isSupervisor))));
+
+				Subquery<Long> teamMembersSubquery = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> teamMemberRoot = teamMembersSubquery.from(EmployeeTeam.class);
+				teamMembersSubquery.select(teamMemberRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+					.where(teamMemberRoot.get(EmployeeTeam_.team).get(Team_.teamId).in(supervisedTeamIdsSubquery));
 
 				predicates.add(criteriaBuilder.or(employeeJoin.get(Employee_.employeeId).in(managedEmployeesSubquery),
-						employeeJoin.get(Employee_.employeeId).in(supervisedTeamsSubquery)));
+						employeeJoin.get(Employee_.employeeId).in(teamMembersSubquery)));
 			}
 
 		}

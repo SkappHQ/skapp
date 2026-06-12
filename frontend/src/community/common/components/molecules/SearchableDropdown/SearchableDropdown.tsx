@@ -51,6 +51,7 @@ export interface SearchableDropdownProps {
   emptyMessage?: React.ReactNode;
   onEmptyActivate?: () => void;
   state?: "default" | "error";
+  errorMessage?: string;
   variant?: "sm" | "md" | "lg";
   positionStrategy?: "absolute" | "fixed";
   onClose?: () => void;
@@ -69,6 +70,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   emptyMessage,
   onEmptyActivate,
   state = "default",
+  errorMessage,
   variant = "md",
   positionStrategy = "absolute",
   onClose
@@ -184,6 +186,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         onKeyDown={handleInputKeyDown}
         variant={variant}
         state={state}
+        errorMessage={errorMessage}
         styleOverrides={{
           labelContainer:
             "h-6 inline-flex self-stretch pr-3 justify-start items-center gap-2"

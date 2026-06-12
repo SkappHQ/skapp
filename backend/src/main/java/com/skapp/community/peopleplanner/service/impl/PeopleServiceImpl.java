@@ -60,6 +60,7 @@ import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPat
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
+import com.skapp.community.peopleplanner.payload.request.ReactivateTerminatedUserRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
@@ -218,6 +219,7 @@ public class PeopleServiceImpl implements PeopleService {
 		Optional<User> existingGuestUser = findGuestUserByEmail(requestDto);
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
+			user.setIsActive(true);
 			employee = user.getEmployee();
 			// Reset to PENDING so createUserEntity triggers credential setup and
 			// invitation email
@@ -264,6 +266,7 @@ public class PeopleServiceImpl implements PeopleService {
 		Optional<User> existingGuestUser = findGuestUserByEmail(createEmployeeRequestDto);
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
+			user.setIsActive(true);
 			employee = user.getEmployee();
 			// Reset to PENDING so createUserEntity triggers credential setup and
 			// invitation email
@@ -1250,6 +1253,9 @@ public class PeopleServiceImpl implements PeopleService {
 					.map(u -> u.getEmployee() != null && u.getEmployee().getEmployeeRole() != null
 							&& u.getEmployee().getEmployeeRole().getPmRole() == Role.PM_GUEST_EMPLOYEE)
 					.orElse(false));
+		employeeDataValidationResponseDto.setIsTerminatedUser(newUser
+			.map(u -> u.getEmployee() != null && u.getEmployee().getAccountStatus() == AccountStatus.TERMINATED)
+			.orElse(false));
 		String userDomain = workEmailCheck.substring(workEmailCheck.indexOf("@") + 1);
 		employeeDataValidationResponseDto.setIsGoogleDomain(Validation.ssoTypeMatches(userDomain));
 
@@ -1270,6 +1276,28 @@ public class PeopleServiceImpl implements PeopleService {
 
 		log.info("terminateUser: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_TERMINATED),
+				false);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto reactivateTerminatedUser(
+			ReactivateTerminatedUserRequestDto reactivateTerminatedUserRequestDto) {
+		log.info("reactivateTerminatedUser: execution started");
+
+		Validation.validateEmail(reactivateTerminatedUserRequestDto.getEmail());
+
+		User user = userDao.findByEmail(reactivateTerminatedUserRequestDto.getEmail())
+			.orElseThrow(() -> new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
+
+		if (user.getEmployee().getAccountStatus() != AccountStatus.TERMINATED) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED);
+		}
+
+		updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false);
+
+		log.info("reactivateTerminatedUser: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ACTIVATED),
 				false);
 	}
 
@@ -2303,6 +2331,11 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private void validateCareerProgressionInBulk(EmployeeProgressionsDto employeeProgressionsDto, List<String> errors) {
 		if (employeeProgressionsDto != null) {
+			if (employeeProgressionsDto.getEmploymentType() != null && (employeeProgressionsDto.getJobFamilyId() == null
+					|| employeeProgressionsDto.getJobTitleId() == null)) {
+				errors.add(messageUtil
+					.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYMENT_TYPE_REQUIRES_JOB_FAMILY_AND_TITLE));
+			}
 			if (employeeProgressionsDto.getJobFamilyId() != null) {
 				Optional<JobFamily> jobRole = jobFamilyDao
 					.findByJobFamilyIdAndIsActive(employeeProgressionsDto.getJobFamilyId(), true);
@@ -2522,6 +2555,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (status.equals(AccountStatus.ACTIVE) && Boolean.FALSE.equals(user.getIsActive())) {
 			employee.setAccountStatus(status);
+			employee.setTerminationDate(null);
 			user.setIsActive(true);
 
 			updateSubscriptionQuantity(1L, true, false);

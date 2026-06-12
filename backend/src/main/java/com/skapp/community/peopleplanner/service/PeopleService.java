@@ -8,6 +8,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
+import com.skapp.community.peopleplanner.payload.request.ReactivateTerminatedUserRequestDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
@@ -40,6 +41,8 @@ public interface PeopleService {
 	ResponseEntityDto getEmployeeByIdOrEmail(EmployeeDataValidationDto employeeDataValidationDto);
 
 	ResponseEntityDto terminateUser(Long userId);
+
+	ResponseEntityDto reactivateTerminatedUser(ReactivateTerminatedUserRequestDto reactivateTerminatedUserRequestDto);
 
 	ResponseEntityDto deleteUser(Long userId);
 
