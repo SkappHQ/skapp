@@ -22,6 +22,8 @@ const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
     "industryOptions"
   );
 
+  const ICON_FILL = "var(--color-secondary-icon)";
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between max-w-[80%]">
