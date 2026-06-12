@@ -4,3 +4,10 @@ export enum EditAllInfoErrorTypes {
   REALOCATE_INIDIVIDUAL_AND_TEAM_SUPERVISOR_ERROR = "Please assign a supervisor for the members and assign a new Team Lead for the Team in order to change the users permission",
   UPLOAD_PROFILE_PICTURE_ERROR = "Uploading failed"
 }
+
+export class NetworkOfflineError extends Error {
+  constructor() {
+    super("Network error: No internet connection");
+    this.name = "NetworkOfflineError";
+  }
+}

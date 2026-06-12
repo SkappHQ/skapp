@@ -145,7 +145,7 @@ export const useApplyLeave = (
       onSuccess(data);
     },
     onError: (error: ErrorResponse) => {
-      onError(error.response.data.results[0]?.messageKey || "");
+      onError(error.response?.data?.results?.[0]?.messageKey ?? "");
     }
   });
 };
