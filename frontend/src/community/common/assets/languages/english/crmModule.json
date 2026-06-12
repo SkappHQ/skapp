@@ -311,6 +311,33 @@
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
       "infiniteScrollLoadingMessage": "Loading more deals..."
+    },
+    "addDealSidePanel": {
+      "title": "Add Deal",
+      "closePanelAriaLabel": "Close add deal panel",
+      "dealNameLabel": "Deal Name",
+      "dealNamePlaceholder": "Enter deal name",
+      "stageLabel": "Stage",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Enter description",
+      "valueLabel": "Value",
+      "amountPlaceholder": "Enter amount",
+      "noneText": "None",
+      "priorityLabel": "Priority",
+      "ownedByLabel": "Owned by",
+      "ownerSearchPlaceholder": "Search employees",
+      "contactNameLabel": "Contact",
+      "companyNameLabel": "Company",
+      "addDealBtn": "Add Deal",
+      "dealNameRequired": "Deal name is required",
+      "stageRequired": "Stage is required",
+      "contactRequired": "Contact is required",
+      "ownerRequired": "Owner is required",
+      "amountInvalid": "Please enter a valid positive amount",
+      "addDealSuccessTitle": "Deal added successfully",
+      "addDealSuccessDescription": "The new deal has been created",
+      "addDealErrorTitle": "Failed to add deal",
+      "addDealErrorDescription": "Please try again or contact support"
     }
   },
   "tasks": {

@@ -8,6 +8,8 @@ import {
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
+import useDebounce from "~community/common/hooks/useDebounce";
+import { CONTACT_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/contactConstants";
 import {
   CrmCreateDealPayload,
   CrmDealFilterParams,
