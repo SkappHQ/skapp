@@ -1,6 +1,6 @@
 import {
-  DropdownWithSearchablePopup,
-  DropdownValue
+  DropdownValue,
+  DropdownWithSearchablePopup
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
 import { FC } from "react";
@@ -84,7 +84,9 @@ const PeoplePopupSearch: FC<Props> = ({
                 {user?.firstName?.[0]?.toUpperCase()}
               </div>
             )}
-            <span>{[user?.firstName, user?.lastName].filter(Boolean).join(" ")}</span>
+            <span>
+              {[user?.firstName, user?.lastName].filter(Boolean).join(" ")}
+            </span>
           </button>
         );
       }}

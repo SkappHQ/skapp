@@ -1,58 +1,17 @@
-import {
-  Dropdown,
-  HighPriorityIcon,
-  Label,
-  LowPriorityIcon,
-  MediumPriorityIcon
-} from "@rootcodelabs/skapp-ui";
-import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/Dropdown/Dropdown";
-import { FC, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Dropdown } from "@rootcodelabs/skapp-ui";
+import { FC, useEffect, useRef, useState } from "react";
 
-import { CrmPriorityEnum } from "~community/crm/enums/common";
+import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 
 import PriorityLabel from "../../atoms/PriorityLabel/PriorityLabel";
 
 interface Props {
-  label?: string;
+  label: string;
   value?: string;
   placeholder?: string;
   onChange?: (value: string) => void;
   onSave?: (value: string) => void;
 }
-
-interface PriorityStyle {
-  bg: string;
-  text: string;
-  icon: ReactNode;
-  label: string;
-}
-
-const PRIORITY_CONFIG: Record<CrmPriorityEnum, PriorityStyle> = {
-  [CrmPriorityEnum.HIGH]: {
-    bg: "bg-semantic-red-background",
-    text: "text-semantic-red-text",
-    icon: <HighPriorityIcon size={12} />,
-    label: "High"
-  },
-  [CrmPriorityEnum.MEDIUM]: {
-    bg: "bg-semantic-amber-background",
-    text: "text-semantic-amber-text",
-    icon: <MediumPriorityIcon size={12} />,
-    label: "Medium"
-  },
-  [CrmPriorityEnum.LOW]: {
-    bg: "bg-semantic-green-background",
-    text: "text-semantic-green-text",
-    icon: <LowPriorityIcon size={12} />,
-    label: "Low"
-  }
-};
-
-const PRIORITY_ORDER: CrmPriorityEnum[] = [
-  CrmPriorityEnum.HIGH,
-  CrmPriorityEnum.MEDIUM,
-  CrmPriorityEnum.LOW
-];
 
 const PriorityDropdown: FC<Props> = ({
   label,
@@ -64,6 +23,8 @@ const PriorityDropdown: FC<Props> = ({
   const [localValue, setLocalValue] = useState(value ?? "");
   const [isEditing, setIsEditing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const priorityOptions = useGetPriorityOptions();
 
   useEffect(() => {
     setLocalValue(value ?? "");
@@ -96,27 +57,6 @@ const PriorityDropdown: FC<Props> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isEditing, localValue, onChange, onSave]);
 
-  const priorityOptions = useMemo<DropdownOption[]>(
-    () =>
-      PRIORITY_ORDER.map((p) => {
-        const cfg = PRIORITY_CONFIG[p];
-        return {
-          id: p,
-          value: p,
-          label: (
-            <Label
-              backgroundColor={cfg.bg}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium"
-            >
-              {cfg.icon}
-              <span>{cfg.label}</span>
-            </Label>
-          )
-        };
-      }),
-    []
-  );
-
   const handleChange = (val: string) => {
     setLocalValue(val);
     setIsEditing(false);
@@ -125,10 +65,8 @@ const PriorityDropdown: FC<Props> = ({
   };
 
   return (
-    <div className="flex items-center min-h-8 w-full">
-      {label && (
-        <span className="shrink-0 w-28 text-[13px] text-gray-500">{label}</span>
-      )}
+    <div className="flex items-center min-h-8">
+      <span className="shrink-0 w-28 text-[13px] text-gray-500">{label}</span>
       <div className="flex-1" ref={containerRef}>
         {isEditing ? (
           <Dropdown
@@ -147,7 +85,7 @@ const PriorityDropdown: FC<Props> = ({
             onClick={() => setIsEditing(true)}
           >
             {localValue ? (
-              <PriorityLabel priority={localValue} />
+              priorityOptions.find((o) => o.value === localValue)?.label
             ) : (
               <span className="text-[13px] text-gray-400">{placeholder}</span>
             )}
