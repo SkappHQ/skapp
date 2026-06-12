@@ -9,8 +9,10 @@ import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
+import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
@@ -19,6 +21,9 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -41,21 +46,23 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		return buildFindTaskQuery(ownerId);
 	}
 
+	@Override
+	public Page<CrmTask> findCompletedTasks(Pageable pageable) {
+		return buildFindCompletedTasksQuery(null, pageable);
+	}
+
+	@Override
+	public Page<CrmTask> findCompletedTasksByOwnerId(Long ownerId, Pageable pageable) {
+		return buildFindCompletedTasksQuery(ownerId, pageable);
+	}
+
 	private List<CrmTask> buildFindTaskQuery(Long ownerId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
-		task.fetch(CrmTask_.type);
-		task.fetch(CrmTask_.owner);
-		task.fetch(CrmTask_.contact, JoinType.LEFT);
-		task.fetch(CrmTask_.deal, JoinType.LEFT);
-
-		Predicate predicate = cb.and(cb.isFalse(task.get(CrmTask_.isDeleted)),
-				cb.isFalse(task.get(CrmTask_.isCompleted)));
-		if (ownerId != null) {
-			predicate = cb.and(predicate, cb.equal(task.get(CrmTask_.owner).get(Employee_.employeeId), ownerId));
-		}
+		applyFetchGraph(task);
+		Predicate predicate = buildTaskPredicate(cb, task, ownerId, false);
 
 		query.select(task)
 			.where(predicate)
@@ -63,6 +70,36 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	private Page<CrmTask> buildFindCompletedTasksQuery(Long ownerId, Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		applyFetchGraph(task);
+
+		Predicate predicate = buildTaskPredicate(cb, task, ownerId, true);
+
+		query.select(task)
+			.where(predicate)
+			.orderBy(cb.desc(task.get(Auditable_.lastModifiedDate)), cb.desc(task.get(CrmTask_.id)));
+
+		TypedQuery<CrmTask> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+
+		List<CrmTask> content = typedQuery.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
+
+		Predicate countPredicate = buildTaskPredicate(cb, countRoot, ownerId, true);
+
+		countQuery.select(cb.count(countRoot)).where(countPredicate);
+		Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+		return new PageImpl<>(content, pageable, total);
 	}
 
 	@Override
@@ -137,6 +174,24 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		return entityManager.createQuery(query).getSingleResult();
+	}
+
+	private Predicate buildTaskPredicate(CriteriaBuilder cb, Root<CrmTask> root, Long ownerId, boolean checkCompleted) {
+		Predicate predicate = cb.and(cb.isFalse(root.get(CrmTask_.isDeleted)), checkCompleted
+				? cb.isTrue(root.get(CrmTask_.isCompleted)) : cb.isFalse(root.get(CrmTask_.isCompleted)));
+
+		if (ownerId != null) {
+			predicate = cb.and(predicate, cb.equal(root.get(CrmTask_.owner).get(Employee_.employeeId), ownerId));
+		}
+
+		return predicate;
+	}
+
+	private void applyFetchGraph(Root<CrmTask> root) {
+		root.fetch(CrmTask_.type);
+		root.fetch(CrmTask_.owner);
+		root.fetch(CrmTask_.contact, JoinType.LEFT);
+		root.fetch(CrmTask_.deal, JoinType.LEFT);
 	}
 
 }

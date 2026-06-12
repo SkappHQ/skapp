@@ -35,12 +35,6 @@ const AddCompanyModalContent: React.FC = () => {
     "addCompanyModal"
   );
 
-  const translateToasts = useTranslator(
-    "crmModule",
-    "companies",
-    "companyToastMessages"
-  );
-
   const industryOptions = useGetIndustryOptions();
 
   const { setIsCompanyModalOpen } = useCrmStore((store) => ({
@@ -61,7 +55,8 @@ const AddCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateToasts(["successTitle"])
+      title: translateText(["toastMessages", "successTitle"]),
+      description: translateText(["toastMessages", "successDescription"])
     });
   };
 
@@ -70,8 +65,8 @@ const AddCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateToasts(["errorTitle"]),
-      description: translateToasts(["errorDescription"])
+      title: translateText(["toastMessages", "errorTitle"]),
+      description: translateText(["toastMessages", "errorDescription"])
     });
   };
 
