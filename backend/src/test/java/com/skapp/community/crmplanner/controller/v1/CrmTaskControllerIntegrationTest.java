@@ -175,6 +175,47 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Active task"));
 	}
 
+	// --- GET completed tasks helpers and tests ---
+
+	private ResultActions performGetCompletedRequest(String token, String page, String size) throws Exception {
+		return mvc.perform(get(BASE_PATH + "/completed").param("page", page)
+			.param("size", size)
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(token)));
+	}
+
+	@Test
+	@DisplayName("Get completed tasks - Returns paginated completed tasks")
+	void getCompletedTasks_ReturnsPaginatedCompletedTasks_ReturnsOk() throws Exception {
+		savedTask("Active task", false, false);
+		savedTask("Completed task 1", false, true);
+		savedTask("Completed task 2", false, true);
+
+		performGetCompletedRequest(authToken, "0", "10").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get completed tasks with no completed tasks - Returns empty page")
+	void getCompletedTasks_WithNoCompletedTasks_ReturnsEmptyPage() throws Exception {
+		savedTask("Active task", false, false);
+
+		performGetCompletedRequest(authToken, "0", "10").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(0));
+	}
+
 	// --- CREATE task helpers and tests ---
 
 	private ResultActions performCreateRequest(CrmTaskCreateRequestDto dto) throws Exception {
