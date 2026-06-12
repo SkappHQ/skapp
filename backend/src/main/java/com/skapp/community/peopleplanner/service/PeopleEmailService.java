@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface PeopleEmailService {
 
-	void sendUserInvitationEmail(User user);
+	void sendUserInvitationEmail(User user, String tempPassword);
 
 	void sendUserTerminationEmail(User user);
 

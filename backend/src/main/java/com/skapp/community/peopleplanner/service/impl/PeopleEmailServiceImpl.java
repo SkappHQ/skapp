@@ -4,7 +4,6 @@ import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.EmailService;
-import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
@@ -41,16 +40,14 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 
 	private final EmployeeRoleDao employeeRoleDao;
 
-	private final EncryptionDecryptionService encryptionDecryptionService;
-
 	@Override
-	public void sendUserInvitationEmail(User user) {
+	public void sendUserInvitationEmail(User user, String tempPassword) {
 		PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
 		emailDynamicFields
 			.setEmployeeOrManagerName(user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
 		emailDynamicFields.setOrganizationName(getOrganizationName());
 		emailDynamicFields.setWorkEmail(user.getEmail());
-		emailDynamicFields.setTemporaryPassword(encryptionDecryptionService.decrypt(user.getTempPassword()));
+		emailDynamicFields.setTemporaryPassword(tempPassword);
 
 		if (user.getLoginMethod() == LoginMethod.GOOGLE) {
 			emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_USER_INVITATION_GOOGLE_SSO, emailDynamicFields,
