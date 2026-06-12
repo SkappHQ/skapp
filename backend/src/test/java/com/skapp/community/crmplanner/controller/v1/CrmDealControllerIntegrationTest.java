@@ -1,11 +1,15 @@
 package com.skapp.community.crmplanner.controller.v1;
 
-import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -13,7 +17,9 @@ import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.support.SecurityTestUtils;
+import com.skapp.TestSkappApplication;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +37,9 @@ import tools.jackson.databind.json.JsonMapper;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -64,6 +72,10 @@ class CrmDealControllerIntegrationTest {
 
 	private final EmployeeDao employeeDao;
 
+	private final EmployeeRoleDao employeeRoleDao;
+
+	private final MessageUtil messageUtil;
+
 	private String authToken;
 
 	@BeforeEach
@@ -79,6 +91,12 @@ class CrmDealControllerIntegrationTest {
 
 	private ResultActions performPostRequest(CrmDealCreateRequestDto dto) throws Exception {
 		return performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performPatchRequest(Long id, CrmDealEditRequestDto dto) throws Exception {
+		return performRequest(patch(BASE_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON));
 	}
@@ -105,6 +123,17 @@ class CrmDealControllerIntegrationTest {
 		contact.setCompany(company);
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		return crmContactDao.save(contact);
+	}
+
+	private CrmDeal savedDeal(CrmDealStage stage, CrmContact contact) {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Original Deal");
+		deal.setStage(stage);
+		deal.setContact(contact);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		return crmDealDao.save(deal);
 	}
 
 	private CrmDealCreateRequestDto validPayload(Long stageId, Long contactId) {
@@ -160,6 +189,75 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Edit deal - Happy Path - success")
+	void editDeal_ValidRequest_ReturnsSuccess() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = savedDeal(stage, contact);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setName("Updated Deal Name");
+		dto.setAmount("5000.50");
+		dto.setPriority(CrmDealPriority.HIGH);
+		dto.setContactName("Updated Contact Name");
+		dto.setCompanyName("New Created Company");
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].name").value("Updated Deal Name"))
+			.andExpect(jsonPath("$.results[0].amount").value("5000.50"))
+			.andExpect(jsonPath("$.results[0].contactName").value("Updated Contact Name"))
+			.andExpect(jsonPath("$.results[0].companyName").value("New Created Company"));
+	}
+
+	@Test
+	@DisplayName("Edit deal - clear name - returns bad request")
+	void editDeal_ClearName_ReturnsBadRequest() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = savedDeal(stage, contact);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setName("   ");
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].message")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NAME_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Edit deal - non-admin/non-manager representative edit owner - returns forbidden/bad request")
+	void editDeal_RepEditOwner_ReturnsBadRequest() throws Exception {
+		// Set CRM role for user2
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = savedDeal(stage, contact);
+
+		// user2@gmail.com has ROLE_CRM_SALES_REPRESENTATIVE role only
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		// Since user2 is not the owner of the deal, first we must make them the owner of
+		// the deal so they have edit permission at all
+		deal.setOwner(employeeDao.getReferenceById(2L)); // Employee ID 2 is user2
+		crmDealDao.save(deal);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setOwnerId(1L); // change owner back to user1
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].message")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_UPDATE_DENIED)));
 	}
 
 }

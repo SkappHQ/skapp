@@ -5,7 +5,9 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.FractionalIndexUtil;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
@@ -15,16 +17,17 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
@@ -68,6 +71,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final PageTransformer pageTransformer;
 
 	private final UserService userService;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional
@@ -226,9 +231,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
-		}
+		CrmValidations.validateDealEditAccess(currentUser, deal);
 
 		if (requestDto.getDealId() == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
@@ -272,6 +275,96 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
 		log.info("reorderDeal: deal reordered with id={}, new orderIndex={}", savedDeal.getId(), newOrderIndex);
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
+		log.info("editDeal: updating deal with id={}", id);
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		CrmValidations.validateDealEditAccess(currentUser, deal);
+
+		if (requestDto.getName() != null) {
+			CrmValidations.validateDealName(requestDto.getName());
+			deal.setName(requestDto.getName());
+		}
+
+		if (requestDto.getAmount() != null) {
+			CrmValidations.validateDealAmount(requestDto.getAmount());
+			deal.setAmount(requestDto.getAmount());
+		}
+
+		if (requestDto.getPriority() != null) {
+			CrmValidations.validateDealPriority(requestDto.getPriority());
+			deal.setPriority(requestDto.getPriority());
+		}
+
+		if (requestDto.getDescription() != null) {
+			CrmValidations.validateDealDescription(requestDto.getDescription());
+			deal.setDescription(requestDto.getDescription());
+		}
+
+		if (requestDto.getStageId() != null) {
+			CrmValidations.validateDealStageId(requestDto.getStageId());
+			CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+			deal.setStage(stage);
+		}
+
+		if (requestDto.getContactName() != null) {
+			CrmValidations.validateContactName(requestDto.getContactName());
+			CrmContact contact = deal.getContact();
+			contact.setName(requestDto.getContactName());
+			crmContactDao.save(contact);
+		}
+
+		if (requestDto.getCompanyName() != null) {
+			CrmValidations.validateCompanyName(requestDto.getCompanyName());
+			CrmCompany company = deal.getCompany();
+			if (company != null) {
+				company.setName(requestDto.getCompanyName());
+				crmCompanyDao.save(company);
+			}
+			else {
+				company = new CrmCompany();
+				company.setName(requestDto.getCompanyName());
+				company = crmCompanyDao.save(company);
+				deal.setCompany(company);
+
+				CrmContact contact = deal.getContact();
+				contact.setCompany(company);
+				crmContactDao.save(contact);
+			}
+		}
+
+		if (requestDto.getOwnerId() != null && !requestDto.getOwnerId().equals(deal.getOwner().getEmployeeId())) {
+			Role currentCrmRole = currentUser.getEmployee().getEmployeeRole().getCrmRole();
+			if (currentCrmRole != Role.CRM_ADMIN && currentCrmRole != Role.CRM_SALES_MANAGER) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_UPDATE_DENIED);
+			}
+
+			Employee newOwner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
+			if (newOwner == null) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
+			}
+
+			if (newOwner.getEmployeeRole() == null || newOwner.getEmployeeRole().getCrmRole() == null
+					|| !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(newOwner.getEmployeeRole().getCrmRole())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_INVALID_ROLE);
+			}
+
+			deal.setOwner(newOwner);
+		}
+
+		CrmDeal savedDeal = crmDealDao.save(deal);
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
+		log.info("editDeal: deal updated with id={}", savedDeal.getId());
 		return new ResponseEntityDto(false, responseDto);
 	}
 

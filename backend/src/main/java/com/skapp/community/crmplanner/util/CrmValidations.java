@@ -30,6 +30,12 @@ public class CrmValidations {
 				&& !currentUser.getEmployee().getEmployeeId().equals(ownerEmployeeId);
 	}
 
+	public static void validateDealEditAccess(User currentUser, CrmDeal deal) {
+		if (isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
+	}
+
 	public static void validateOwnerId(Long ownerId) {
 		if (ownerId == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_NOT_FOUND);
