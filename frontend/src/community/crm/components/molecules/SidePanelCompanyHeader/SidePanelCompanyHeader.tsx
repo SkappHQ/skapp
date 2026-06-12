@@ -22,8 +22,6 @@ const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
     "industryOptions"
   );
 
-  const ICON_FILL = "var(--color-secondary-icon)";
-
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between max-w-[80%]">
@@ -39,19 +37,19 @@ const SidePanelCompanyHeader: React.FC<Props> = ({ company }) => {
         )}
         {company.contactNumber && (
           <SidePanelHeaderInfoItem
-            icon={<PhoneIcon fill={ICON_FILL} width="20" height="20" />}
+            icon={<PhoneIcon width="20" height="20" />}
             value={company.contactNumber}
           />
         )}
         {company.address && (
           <SidePanelHeaderInfoItem
-            icon={<LocationIcon fill={ICON_FILL} width="20" height="20" />}
+            icon={<LocationIcon width="20" height="20" />}
             value={company.address}
           />
         )}
         {company.industry && (
           <SidePanelHeaderInfoItem
-            icon={<BuildingIcon fill={ICON_FILL} width="20" height="20" />}
+            icon={<BuildingIcon width="20" height="20" />}
             value={translateText([company.industry])}
           />
         )}
