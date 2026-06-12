@@ -1,5 +1,3 @@
-import { emailDomainPattern } from "~community/common/regex/regexPatterns";
-
 type NumericValue = string | number | null;
 
 export const formatMonetaryValue = (value: NumericValue) => {
@@ -8,6 +6,6 @@ export const formatMonetaryValue = (value: NumericValue) => {
 };
 
 export const extractDomainFromEmail = (email: string): string => {
-  const match = emailDomainPattern().exec(email.trim());
-  return match ? match[1].toLowerCase() : "";
+  const parts = email.trim().split('@');
+  return parts.length === 2 ? parts[1].toLowerCase() : "";
 };

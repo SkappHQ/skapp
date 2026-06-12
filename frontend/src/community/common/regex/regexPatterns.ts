@@ -6,7 +6,9 @@ export function isValidEmail(): RegExp {
 }
 
 export function isValidPhoneNumber(): RegExp {
-  return new RegExp(`^[0-9]{${characterLengths.PHONE_NUMBER_LENGTH_MIN},${characterLengths.PHONE_NUMBER_LENGTH_MAX}}$`);
+  return new RegExp(
+    `^[0-9]{${characterLengths.PHONE_NUMBER_LENGTH_MIN},${characterLengths.PHONE_NUMBER_LENGTH_MAX}}$`
+  );
 }
 
 export function numberPattern(): RegExp {
@@ -15,10 +17,6 @@ export function numberPattern(): RegExp {
 
 export function phoneNumberPattern(): RegExp {
   return /\d/;
-}
-
-export function emailDomainPattern(): RegExp {
-  return /^[^@]+@((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,})$/i;
 }
 
 export function isValidNameWithAccentsAndApostrophes(): RegExp {
