@@ -2,7 +2,7 @@ package com.skapp.enterprise.timeplanner.repository.impl;
 
 import com.skapp.community.timeplanner.model.TimeRecord;
 import com.skapp.community.timeplanner.model.TimeRecord_;
-import com.skapp.community.timeplanner.repository.TimeRecordRepositoryImpl;
+import com.skapp.community.timeplanner.repository.impl.TimeRecordRepositoryImpl;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecord;
 import com.skapp.enterprise.timeplanner.model.TimeRecordLocation;
 import com.skapp.enterprise.timeplanner.model.TimeRecordLocation_;
