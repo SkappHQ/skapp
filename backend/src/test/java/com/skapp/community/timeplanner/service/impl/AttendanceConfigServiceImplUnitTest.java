@@ -1,6 +1,7 @@
 package com.skapp.community.timeplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
@@ -17,8 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import com.skapp.community.common.service.UserService;
-
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
@@ -26,9 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
