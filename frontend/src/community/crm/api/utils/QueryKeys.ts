@@ -29,7 +29,8 @@ export const contactQueryKeys = {
     "crm-owners-lookup",
     searchKeyword,
     size
-  ]
+  ],
+  CONTACT_BY_ID: (id: number) => ["crm-contact-by-id", id]
 };
 
 export const companyQueryKeys = {

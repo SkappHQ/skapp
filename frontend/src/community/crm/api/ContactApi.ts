@@ -1,9 +1,9 @@
 import {
+  UseQueryResult,
   useInfiniteQuery,
   useMutation,
   useQuery,
-  useQueryClient,
-  UseQueryResult
+  useQueryClient
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
@@ -18,10 +18,11 @@ import {
 import {
   CrmCompaniesResponseType,
   CrmContactCreatePayload,
-  CrmContactMetricsResponseType,
-  CrmOwnersResponseType,
+  CrmContactDetailResponseType,
   CrmContactLookup,
-  CrmOwner
+  CrmContactMetricsResponseType,
+  CrmOwner,
+  CrmOwnersResponseType
 } from "~community/crm/types/CommonTypes";
 
 interface ContactMetricsSearchParams {
@@ -132,7 +133,11 @@ const fetchOwnerLookup = async (
   return response?.data?.results?.[0];
 };
 
-export const useGetOwnerLookup = (searchKeyword: string, size: number, enabled: boolean) => {
+export const useGetOwnerLookup = (
+  searchKeyword: string,
+  size: number,
+  enabled: boolean
+) => {
   return useQuery({
     queryKey: contactQueryKeys.OWNERS_LOOKUP(searchKeyword),
     queryFn: () => fetchOwnerLookup(searchKeyword, size),
@@ -170,6 +175,25 @@ export const useGetCrmOwners = (
       });
       return response?.data?.results?.[0];
     },
+    enabled
+  });
+};
+
+const fetchContactById = async (
+  id: number
+): Promise<CrmContactDetailResponseType> => {
+  const response = await authFetch.get(contactEndpoints.CONTACT_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetContactById = (
+  id: number,
+  enabled = true
+): UseQueryResult<CrmContactDetailResponseType> => {
+  return useQuery({
+    queryKey: contactQueryKeys.CONTACT_BY_ID(id),
+    queryFn: () => fetchContactById(id),
+    refetchOnWindowFocus: false,
     enabled
   });
 };
