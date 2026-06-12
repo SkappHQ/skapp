@@ -113,7 +113,7 @@ const UserRolesTable = (): JSX.Element => {
             isEnabled: false
           }
         }}
-        isRowDisabled={(rowId) => rowId === Modules.CRM.toLowerCase()} // remove this once CRM module is ready in role restrictions
+        isRowDisabled={(rowId: string) => rowId === Modules.CRM.toLowerCase()} // remove this once CRM module is ready in role restrictions
         tableBody={{
           onRowClick: (row) =>
             router.push(ROUTES.CONFIGURATIONS.USER_ROLES_MODULE(row.id))
