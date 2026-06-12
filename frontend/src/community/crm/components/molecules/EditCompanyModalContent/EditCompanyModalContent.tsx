@@ -35,20 +35,12 @@ const EditCompanyModalContent: React.FC = () => {
     "editCompanyModal"
   );
 
-  const translateToasts = useTranslator(
-    "crmModule",
-    "companies",
-    "editCompanyToastMessages"
-  );
-
   const industryOptions = useGetIndustryOptions();
 
-  const { setIsCompanyModalOpen, selectedCompany, setSelectedCompany } =
-    useCrmStore((store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      selectedCompany: store.selectedCompany,
-      setSelectedCompany: store.setSelectedCompany
-    }));
+  const { setIsCompanyModalOpen, selectedCompany } = useCrmStore((store) => ({
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+    selectedCompany: store.selectedCompany
+  }));
 
   const initialValues: CrmCompanyEditFormTypes = {
     name: selectedCompany?.name || "",
@@ -64,7 +56,8 @@ const EditCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateToasts(["successTitle"])
+      title: translateText(["toastMessages", "successTitle"]),
+      description: translateText(["toastMessages", "successDescription"])
     });
   };
 
@@ -73,14 +66,13 @@ const EditCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateToasts(["errorTitle"]),
-      description: translateToasts(["errorDescription"])
+      title: translateText(["toastMessages", "errorTitle"]),
+      description: translateText(["toastMessages", "errorDescription"])
     });
   };
 
   const handleCloseModal = (): void => {
     setIsCompanyModalOpen(false);
-    setSelectedCompany(null);
   };
 
   const { mutate: editCompany, isPending } = useEditCompany(

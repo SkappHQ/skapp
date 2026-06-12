@@ -7,6 +7,8 @@ import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
 import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
 import AddNewResourceModal from "~community/people/components/molecules/AddNewResourceModal/AddNewResourceModal";
 import AddResourceUnsavedChangesModal from "~community/people/components/molecules/AddResourceUnsavedChangesModal/AddResourceUnsavedChangesModal";
+import GuestToInternalUserConfirmationModal from "~community/people/components/molecules/GuestToInternalUserConfirmationModal/GuestToInternalUserConfirmationModal";
+import TerminatedToActiveUserConfirmationModal from "~community/people/components/molecules/TerminatedToActiveUserConfirmationModal/TerminatedToActiveUserConfirmationModal";
 import LoginCredentialsModal from "~community/people/components/molecules/LoginCredentialsModal/LoginCredentialsModal";
 import BulkUploadSummary from "~community/people/components/molecules/UserBulkUploadModals/BulkUploadSummary";
 import UserBulkCsvDownload from "~community/people/components/molecules/UserBulkUploadModals/UserBulkCsvDownload";
@@ -56,12 +58,32 @@ const DirectoryPopupController = () => {
         return translatedTexts(["shareCredentials"]);
       case DirectoryModalTypes.UNSAVED_CHANGES:
         return translatedTexts(["unsavedModalTitle"]);
+      case DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION:
+        return translatedTexts(["guestUserConfirmationModalTitle"]);
+      case DirectoryModalTypes.TERMINATED_TO_ACTIVE_USER_CONFIRMATION:
+        return translatedTexts(["terminatedUserConfirmationModalTitle"]);
       default:
         return "";
     }
   };
 
   const onClose = (): void => {
+    if (
+      directoryModalType ===
+      DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION
+    ) {
+      setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);
+      return;
+    }
+
+    if (
+      directoryModalType ===
+      DirectoryModalTypes.TERMINATED_TO_ACTIVE_USER_CONFIRMATION
+    ) {
+      setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);
+      return;
+    }
+
     if (
       directoryModalType === DirectoryModalTypes.ADD_NEW_RESOURCE &&
       pendingAddResourceData
@@ -109,6 +131,14 @@ const DirectoryPopupController = () => {
       )}
       {directoryModalType === DirectoryModalTypes.USER_CREDENTIALS && (
         <LoginCredentialsModal />
+      )}
+      {directoryModalType ===
+        DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION && (
+        <GuestToInternalUserConfirmationModal />
+      )}
+      {directoryModalType ===
+        DirectoryModalTypes.TERMINATED_TO_ACTIVE_USER_CONFIRMATION && (
+        <TerminatedToActiveUserConfirmationModal />
       )}
     </>
   );

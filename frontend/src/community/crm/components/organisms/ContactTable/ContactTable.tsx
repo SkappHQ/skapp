@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { useState } from "react";
+import { FC, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -24,6 +24,7 @@ import {
   DEFAULT_COMPANY_PAGE_SIZE,
   DEFAULT_PAGE_SIZE
 } from "~community/crm/constants/contactConstants";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 import {
@@ -31,7 +32,7 @@ import {
   formatTasks
 } from "~community/crm/utils/tableHelpers";
 
-export const ContactTable: React.FC = () => {
+export const ContactTable: FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,6 +50,13 @@ export const ContactTable: React.FC = () => {
   const { data: companies } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
 
   const contacts = data?.pages.flatMap((page) => page.items);
+
+  const { setSelectedContact, setIsCrmSidePanelOpen } = useCrmStore(
+    (store) => ({
+      setSelectedContact: store.setSelectedContact,
+      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    })
+  );
 
   const hasActiveFilters =
     debouncedSearch.trim() !== "" || selectedCompany !== undefined;
@@ -237,6 +245,10 @@ export const ContactTable: React.FC = () => {
             "emptySearchState",
             "description"
           ])
+        }}
+        onRowClick={(row) => {
+          setSelectedContact(row);
+          setIsCrmSidePanelOpen(true);
         }}
       />
     </div>

@@ -1,5 +1,11 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import { CrmDealSortEnum, CrmDealStageEnum, CrmPriorityEnum, CrmIndustryEnum} from "../enums/common";
+
+import {
+  CrmDealSortEnum,
+  CrmDealStageEnum,
+  CrmIndustryEnum,
+  CrmPriorityEnum
+} from "../enums/common";
 
 export interface CrmOwner {
   employeeId: number;
@@ -80,6 +86,7 @@ export interface CompanyLookup {
 export interface CrmContactLookup {
   id: number;
   name: string;
+  company?: CompanyLookup | null;
 }
 
 export interface CrmCompaniesResponseType {
@@ -87,6 +94,29 @@ export interface CrmCompaniesResponseType {
   totalItems: number;
   currentPage: number;
   totalPages: number;
+}
+
+export interface CrmOwnersResponseType {
+  items: CrmOwner[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface CrmContactAddFormTypes {
+  name: string;
+  email: string;
+  contactNumber: string;
+  companyId: number | null;
+  ownerId: number | null;
+}
+
+export interface CrmContactCreatePayload {
+  name: string;
+  email: string;
+  contactNumber?: string;
+  companyId?: number;
+  ownerId?: number;
 }
 
 export interface CrmContactMetricsType {
@@ -113,6 +143,7 @@ export interface CrmContactMetricsResponseType {
 export interface CrmDealType {
   id: number;
   name: string;
+  description: string | null;
   stage: CrmDealStageType;
   priority: CrmPriorityEnum | null;
   closingAt: string | null;
@@ -180,10 +211,43 @@ export interface CrmDealFilterParams {
   priority?: CrmPriorityEnum;
 }
 
+export interface CrmCreateDealPayload {
+  name: string;
+  stageId: number;
+  contactId: number;
+  ownerId: number;
+  priority: CrmPriorityEnum;
+  description?: string | null;
+  amount?: string | null;
+  closingAt?: string | null;
+}
+
 export interface CrmCompanyEditFormTypes {
   name: string;
   industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
   contactNumber: string | null;
+}
+
+export interface CrmTaskAddFormTypes {
+  name: string;
+  type: CrmTaskCategory | null;
+  dueDate: string | null;
+  priority: CrmPriorityEnum;
+  contactName: string;
+  deal: string;
+  owner: number | null;
+  notes: string;
+}
+
+export interface CrmTaskCreatePayload {
+  name: string;
+  type: CrmTaskCategory | null;
+  dueAt: string | null;
+  priority: CrmPriorityEnum;
+  contactName: string;
+  deal: string;
+  owner: number | null;
+  notes: string;
 }

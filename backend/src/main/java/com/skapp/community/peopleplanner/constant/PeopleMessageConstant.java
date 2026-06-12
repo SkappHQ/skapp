@@ -17,6 +17,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_SUCCESS_TEAM_DELETED("api.success.people.team-deleted"),
 	PEOPLE_SUCCESS_EMPLOYEE_ADDED("api.success.people.employee-added"),
 	PEOPLE_SUCCESS_EMPLOYEE_TERMINATED("api.success.people.employee-terminated"),
+	PEOPLE_SUCCESS_EMPLOYEE_ACTIVATED("api.success.people.employee-activated"),
 	PEOPLE_SUCCESS_EMPLOYEE_DELETED("api.success.people.employee-deleted"),
 	PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED(
 			"api.success.people.supervisors-reassigned-and-employee-terminated"),
@@ -99,6 +100,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_EMPLOYEE_FAMILY_DETAILS_NOT_FOUND("api.error.people.employee-family-details.not-found"),
 	PEOPLE_ERROR_MANAGER_NOT_FOUND("api.error.people.manager.not-found"),
 	PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL("api.error.people.employee-id-cannot-null"),
+	PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED("api.error.people.employee-not-terminated"),
 	PEOPLE_ERROR_EMPLOYEE_ACCESS_DENIED("api.error.people.employee.access-denied"),
 	PEOPLE_ERROR_MISSING_PREVIOUS_EMPLOYMENT_START_AND_END_DATES(
 			"api.error.people.missing-previous-employment-start-and-end-dates"),
@@ -110,6 +112,9 @@ public enum PeopleMessageConstant implements MessageConstant {
 			"api.error.people.invalid-value-for-employment-allocation-enum"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_STATUS_ENUM("api.error.people.invalid-value-for-employment-status-enum"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_TYPE_ENUM("api.error.people.invalid-value-for-employment-type-enum"),
+
+	PEOPLE_ERROR_EMPLOYMENT_TYPE_REQUIRES_JOB_FAMILY_AND_TITLE(
+			"api.error.people.employment-type-requires-job-family-and-title"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_ETHNICITY_ENUM("api.error.people.invalid-value-for-ethnicity-enum"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_MARITAL_STATUS_ENUM("api.error.people.invalid-value-for-marital-status-enum"),
 	PEOPLE_ERROR_LOGIN_PENDING_EMPLOYEES_NOT_FOUND("api.error.people.login-pending-employees-not-found"),
