@@ -4,8 +4,7 @@ import {
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { useEffect, useState } from "react";
-import { FC } from "react";
+import { useEffect, useState, FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
