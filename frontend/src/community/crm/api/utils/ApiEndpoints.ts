@@ -14,6 +14,10 @@ export const contactEndpoints = {
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
+export const taskEndpoints = {
+  GET_OPEN_TASKS: `${moduleAPIPath.CRM}/task`
+};
+
 export const companyEndpoints = {
   GET_COMPANY_METRICS: `${moduleAPIPath.CRM}/company/metrics`,
   GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`,

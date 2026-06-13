@@ -7,18 +7,15 @@ export const useGetTasksTabs = (): CrmTaskTab[] => {
   return [
     {
       id: "my-tasks",
-      label: translateText(["myTasks"]),
-      component: <></>
+      label: translateText(["myTasks"])
     },
     {
       id: "team-tasks",
-      label: translateText(["teamTasks"]),
-      component: <></>
+      label: translateText(["teamTasks"])
     },
     {
       id: "completed-tasks",
-      label: translateText(["completedTasks"]),
-      component: <></>
+      label: translateText(["completedTasks"])
     }
   ];
 };
