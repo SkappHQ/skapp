@@ -378,6 +378,11 @@
         "dueDate": "Please select a valid due date.",
         "dueDatePast": "Due date cannot be in the past.",
         "owner": "Please select a task owner."
+      },
+      "emptyStates": {
+        "noContacts": "No contacts found",
+        "noDeals": "No deals found",
+        "noOwners": "No task owners found"
       }
     },
     "tabs": {

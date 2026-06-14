@@ -23,3 +23,8 @@ export const companyEndpoints = {
   CHECK_COMPANY_NAME_EXISTS: (name: string) =>
     `${moduleAPIPath.CRM}/company/exists?name=${encodeURIComponent(name)}`
 };
+
+export const taskEndpoints = {
+  CREATE_TASK: `${moduleAPIPath.CRM}/task`,
+  GET_TASKS: `${moduleAPIPath.CRM}/task`
+};

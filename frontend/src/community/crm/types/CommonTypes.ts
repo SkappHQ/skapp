@@ -96,6 +96,13 @@ export interface CrmCompaniesResponseType {
   totalPages: number;
 }
 
+export interface CrmContactLookupResponseType {
+  items: CrmContactLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
 export interface CrmOwnersResponseType {
   items: CrmOwner[];
   totalItems: number;
@@ -235,19 +242,19 @@ export interface CrmTaskAddFormTypes {
   type: CrmTaskCategory | null;
   dueDate: string | null;
   priority: CrmPriorityEnum;
-  contactName: string;
-  deal: string;
+  contactId: number | null;
+  dealId: number | null;
   owner: number | null;
   notes: string;
 }
 
 export interface CrmTaskCreatePayload {
   name: string;
-  type: CrmTaskCategory | null;
+  typeId?: number;
   dueAt: string | null;
   priority: CrmPriorityEnum;
-  contactName: string;
-  deal: string;
-  owner: number | null;
+  contactId?: number;
+  dealId?: number;
+  ownerId?: number;
   notes: string;
 }

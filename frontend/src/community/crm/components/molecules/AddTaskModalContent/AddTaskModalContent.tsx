@@ -1,4 +1,5 @@
 import {
+  AvatarChip,
   ButtonV2,
   CalendarIcon,
   CloseIcon,
@@ -8,17 +9,29 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useDebounce from "~community/common/hooks/useDebounce";
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { concatStrings } from "~community/common/utils/commonUtil";
+import {
+  useGetCrmContacts,
+  useGetOwnerLookup
+} from "~community/crm/api/ContactApi";
 import { useCreateTask } from "~community/crm/api/TaskApi";
+import { useGetDealLookup } from "~community/crm/api/crmDealApi";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/commonConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
@@ -31,7 +44,7 @@ import {
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
-const AddTaskModalContent: React.FC = () => {
+const AddTaskModalContent: FC = () => { // TODO: Refactor to separate form and logic
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
@@ -45,8 +58,26 @@ const AddTaskModalContent: React.FC = () => {
   const { isCrmSalesManager } = useSessionData();
 
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
-
   const [ownerSearchText, setOwnerSearchText] = useState("");
+
+  const [contactSearchText, setContactSearchText] = useState("");
+  const [selectedContactLabel, setSelectedContactLabel] = useState("");
+
+  const [dealSearchText, setDealSearchText] = useState("");
+  const [selectedDealLabel, setSelectedDealLabel] = useState("");
+
+  const debouncedOwnerSearch = useDebounce(
+    ownerSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const debouncedContactSearch = useDebounce(
+    contactSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const debouncedDealSearch = useDebounce(
+    dealSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
 
   const priorityDropdownOptions = useGetPriorityOptions();
   const { options: taskTypeOptions, getCategoryById } = useGetTaskTypeOptions();
@@ -72,8 +103,8 @@ const AddTaskModalContent: React.FC = () => {
     type: null,
     dueDate: null,
     priority: CrmPriorityEnum.MEDIUM,
-    contactName: "",
-    deal: "",
+    contactId: null,
+    dealId: null,
     owner: defaultOwner?.employeeId ? Number(defaultOwner.employeeId) : null,
     notes: ""
   };
@@ -98,11 +129,59 @@ const AddTaskModalContent: React.FC = () => {
     resetForm
   } = formik;
 
+  const { data: ownerLookupData, isFetching: isOwnerFetching } =
+    useGetOwnerLookup(
+      debouncedOwnerSearch,
+      DEFAULT_LOOKUP_PAGE_SIZE,
+      Boolean(isCrmSalesManager)
+    );
+
+  const ownerDropdownItems: SearchableDropdownItem[] =
+    ownerLookupData?.items?.map((owner) => ({
+      id: String(owner.employeeId),
+      content: (
+        <AvatarChip
+          avatarProps={{
+            id: String(owner.employeeId),
+            firstName: owner.firstName,
+            lastName: owner.lastName ?? undefined,
+            src: useGetImageUrl(owner.authPic ?? "") ?? undefined, // TODO: Move this out
+            size: "sm"
+          }}
+          label={concatStrings([owner.firstName, owner.lastName ?? ""])}
+        />
+      )
+    })) ?? [];
+
+  const { data: contactLookupData, isFetching: isContactFetching } =
+    useGetCrmContacts(debouncedContactSearch, DEFAULT_LOOKUP_PAGE_SIZE);
+
+  const contactDropdownItems: SearchableDropdownItem[] =
+    contactLookupData?.items?.map((contact) => ({
+      id: String(contact.id),
+      content: contact.name
+    })) ?? [];
+
+  const { data: dealLookupData, isFetching: isDealFetching } = useGetDealLookup(
+    debouncedDealSearch,
+    DEFAULT_LOOKUP_PAGE_SIZE
+  );
+
+  const dealDropdownItems: SearchableDropdownItem[] =
+    dealLookupData?.map((deal) => ({
+      id: String(deal.id),
+      content: deal.name
+    })) ?? [];
+
   const handleCloseModal = (): void => {
     setIsTaskModalOpen(false);
     resetForm();
     setOwnerSearchText("");
     setSelectedOwner(defaultOwner);
+    setContactSearchText("");
+    setSelectedContactLabel("");
+    setDealSearchText("");
+    setSelectedDealLabel("");
   };
 
   const handleSuccess = () => {
@@ -125,11 +204,42 @@ const AddTaskModalContent: React.FC = () => {
     });
   };
 
-  const handleOwnerSelect = (owner: SearchableDropdownItem) => {
-    setFieldValue("owner", Number(owner.id));
+  const handleOwnerSelect = (item: SearchableDropdownItem) => {
+    const owner = ownerLookupData?.items?.find(
+      (o) => String(o.employeeId) === item.id
+    );
+    if (!owner) return;
+    setFieldValue("owner", owner.employeeId);
+    setSelectedOwner(owner);
     setOwnerSearchText("");
-    // TODO: Lookup owner from owner.id and construct CrmOwner to set
-    setSelectedOwner(null);
+  };
+
+  const handleContactSelect = (item: SearchableDropdownItem) => {
+    const contact = contactLookupData?.items?.find(
+      (c) => String(c.id) === item.id
+    );
+    setFieldValue("contactId", Number(item.id));
+    setSelectedContactLabel(contact?.name ?? String(item.content));
+    setContactSearchText("");
+  };
+
+  const handleClearContact = () => {
+    setFieldValue("contactId", null);
+    setSelectedContactLabel("");
+    setContactSearchText("");
+  };
+
+  const handleDealSelect = (item: SearchableDropdownItem) => {
+    const deal = dealLookupData?.find((d) => String(d.id) === item.id);
+    setFieldValue("dealId", Number(item.id));
+    setSelectedDealLabel(deal?.name ?? String(item.content));
+    setDealSearchText("");
+  };
+
+  const handleClearDeal = () => {
+    setFieldValue("dealId", null);
+    setSelectedDealLabel("");
+    setDealSearchText("");
   };
 
   const { mutate: createNewTask, isPending } = useCreateTask(
@@ -140,12 +250,12 @@ const AddTaskModalContent: React.FC = () => {
   const createTask = (formValues: CrmTaskAddFormTypes) => {
     const payload: CrmTaskCreatePayload = {
       name: formValues.name.trim(),
-      type: formValues.type,
+      typeId: formValues.type?.id ?? undefined,
       dueAt: formValues.dueDate,
       priority: formValues.priority,
-      contactName: formValues.contactName?.trim(),
-      deal: formValues.deal?.trim(),
-      owner: formValues.owner,
+      contactId: formValues.contactId ?? undefined,
+      dealId: formValues.dealId ?? undefined,
+      ownerId: formValues.owner ?? undefined,
       notes: formValues.notes?.trim()
     };
 
@@ -246,37 +356,101 @@ const AddTaskModalContent: React.FC = () => {
           ) : (
             <SearchableDropdown
               id="owner-search"
-              items={[]}
+              items={ownerDropdownItems}
               onSelect={handleOwnerSelect}
               label={translateText(["labels", "taskOwner"])}
               placeholder={translateText(["placeholders", "taskOwner"])}
               value={ownerSearchText}
               onChange={(e) => setOwnerSearchText(e.target.value)}
               state={errors.owner ? "error" : "default"}
+              errorMessage={errors.owner}
+              emptyMessage={
+                isOwnerFetching ? undefined : (
+                  <p className="px-4 py-2 body2">
+                    {translateText(["emptyStates", "noOwners"])}
+                  </p>
+                )
+              }
             />
           )}
         </div>
       </div>
 
-      <SearchableDropdown
-        id="contact-search"
-        label={translateText(["labels", "contactName"])}
-        placeholder={translateText(["placeholders", "contactName"])}
-        value={values.contactName ?? ""}
-        onChange={(e) => setFieldValue("contactName", e.target.value)}
-        items={[]}
-        onSelect={(item) => setFieldValue("contactName", item.id)}
-      />
+      {values.contactId == null ? (
+        <SearchableDropdown
+          id="contact-search"
+          label={translateText(["labels", "contactName"])}
+          placeholder={translateText(["placeholders", "contactName"])}
+          value={contactSearchText}
+          onChange={(e) => setContactSearchText(e.target.value)}
+          items={contactDropdownItems}
+          onSelect={handleContactSelect}
+          onClose={() => setContactSearchText("")}
+          emptyMessage={
+            isContactFetching ? undefined : (
+              <p className="px-4 py-2 body2">
+                {translateText(["emptyStates", "noContacts"])}
+              </p>
+            )
+          }
+        />
+      ) : (
+        <InputField
+          label={translateText(["labels", "contactName"])}
+          value={selectedContactLabel}
+          readOnly
+          fullWidth
+          variant="md"
+          aria-label={translateText(["ariaLabels", "contactName"])}
+          rightIcon={
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              onClick={handleClearContact}
+              aria-label={translateText(["ariaLabels", "clearContact"])}
+              icon={<CloseIcon />}
+            />
+          }
+        />
+      )}
 
-      <SearchableDropdown
-        id="deal-search"
-        label={translateText(["labels", "deal"])}
-        placeholder={translateText(["placeholders", "deal"])}
-        value={values.deal ?? ""}
-        onChange={(e) => setFieldValue("deal", e.target.value)}
-        items={[]}
-        onSelect={(item) => setFieldValue("deal", item.id)}
-      />
+      {values.dealId == null ? (
+        <SearchableDropdown
+          id="deal-search"
+          label={translateText(["labels", "deal"])}
+          placeholder={translateText(["placeholders", "deal"])}
+          value={dealSearchText}
+          onChange={(e) => setDealSearchText(e.target.value)}
+          items={dealDropdownItems}
+          onSelect={handleDealSelect}
+          onClose={() => setDealSearchText("")}
+          emptyMessage={
+            isDealFetching ? undefined : (
+              <p className="px-4 py-2 body2">
+                {translateText(["emptyStates", "noDeals"])}
+              </p>
+            )
+          }
+        />
+      ) : (
+        <InputField
+          label={translateText(["labels", "deal"])}
+          value={selectedDealLabel}
+          readOnly
+          fullWidth
+          variant="md"
+          aria-label={translateText(["ariaLabels", "deal"])}
+          rightIcon={
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              onClick={handleClearDeal}
+              aria-label={translateText(["ariaLabels", "clearDeal"])}
+              icon={<CloseIcon />}
+            />
+          }
+        />
+      )}
 
       <TextArea
         name="notes"

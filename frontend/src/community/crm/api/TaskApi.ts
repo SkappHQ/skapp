@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import authFetch from "~community/common/utils/axiosInterceptor";
 import { CrmTaskCreatePayload } from "../types/CommonTypes";
+import { taskEndpoints } from "./utils/ApiEndpoints";
 import { taskQueryKeys } from "./utils/QueryKeys";
 
 const createTask = async (taskDetails: CrmTaskCreatePayload): Promise<void> => {
-  // TODO: Replace with actual API call when backend is ready
-  throw new Error("createTask is not yet implemented");
+  await authFetch.post(taskEndpoints.CREATE_TASK, taskDetails);
 };
 
 export const useCreateTask = (onSuccess: () => void, onError: () => void) => {

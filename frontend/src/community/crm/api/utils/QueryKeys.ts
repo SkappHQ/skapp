@@ -3,7 +3,12 @@ import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
 export const crmDealQueryKeys = {
   ALL: ["crm-deals"],
   GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
-  DEAL_STAGES: ["crm-deal-stages"]
+  DEAL_STAGES: ["crm-deal-stages"],
+  DEAL_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-deal-lookup",
+    searchKeyword,
+    size
+  ]
 };
 
 export const contactQueryKeys = {
