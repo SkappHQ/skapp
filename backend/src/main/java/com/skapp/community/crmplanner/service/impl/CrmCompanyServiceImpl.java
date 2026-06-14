@@ -20,8 +20,12 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseD
 import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
@@ -39,6 +43,10 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmContactDao crmContactDao;
+
+	private final CrmDealDao crmDealDao;
+
+	private final CrmTaskDao crmTaskDao;
 
 	private final CrmMapper crmCompanyMapper;
 
@@ -136,6 +144,14 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		List<CrmContact> contacts = crmContactDao.findAllByCompanyIdAndIsDeletedFalse(id);
 		contacts.forEach(contact -> contact.setCompany(null));
 		crmContactDao.saveAll(contacts);
+
+		List<CrmDeal> deals = crmDealDao.findAllByCompanyIdAndIsDeletedFalse(id);
+		deals.forEach(deal -> deal.setCompany(null));
+		crmDealDao.saveAll(deals);
+
+		List<CrmTask> tasks = crmTaskDao.findByCompany_IdAndIsDeletedFalse(id);
+		tasks.forEach(task -> task.setCompany(null));
+		crmTaskDao.saveAll(tasks);
 
 		company.setIsDeleted(true);
 		crmCompanyDao.save(company);
