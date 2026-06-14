@@ -159,11 +159,10 @@ const fetchOwnerLookup = async (
   return response?.data?.results?.[0];
 };
 
-export const useGetOwnerLookup = (searchKeyword: string, size: number, enabled: boolean) => {
+export const useGetOwnerLookup = (searchKeyword: string, size: number) => {
   return useQuery({
     queryKey: contactQueryKeys.OWNERS_LOOKUP(searchKeyword),
-    queryFn: () => fetchOwnerLookup(searchKeyword, size),
-    enabled
+    queryFn: () => fetchOwnerLookup(searchKeyword, size)
   });
 };
 

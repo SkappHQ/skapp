@@ -1,9 +1,4 @@
-import {
-  AvatarChip,
-  ButtonV2,
-  CloseIcon,
-  InputField
-} from "@rootcodelabs/skapp-ui";
+import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useState } from "react";
 
@@ -12,14 +7,9 @@ import SearchableDropdown, {
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { concatStrings } from "~community/common/utils/commonUtil";
-import {
-  useGetCompanyLookup,
-  useGetOwnerLookup
-} from "~community/crm/api/ContactApi";
-import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
+import { useGetCompanyLookup } from "~community/crm/api/ContactApi";
+import ContactOwnerField from "~community/crm/components/molecules/ContactOwnerField/ContactOwnerField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
@@ -55,23 +45,10 @@ const ContactModalForm = ({
     initialCompany?.name ?? ""
   );
 
-  const [ownerSearchText, setOwnerSearchText] = useState<string>("");
-  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(
-    initialOwner
-  );
-
   const debouncedCompanySearch = useDebounce(
     companySearchText.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const debouncedOwnerSearch = useDebounce(
-    ownerSearchText.trim(),
-    SEARCH_DEBOUNCE_DELAY
-  );
-
-  const { isCrmSalesManager } = useSessionData();
-
-  const isOwnerReadonly = !isCrmSalesManager;
 
   const formik = useFormik<CrmContactFormValues>({
     initialValues,
@@ -107,44 +84,6 @@ const ContactModalForm = ({
     void setFieldValue("companyId", null);
     setSelectedCompanyName("");
     setCompanySearchText("");
-  };
-
-  const { data: ownerLookupData, isFetching: isOwnerFetching } =
-    useGetOwnerLookup(
-      debouncedOwnerSearch,
-      DEFAULT_LOOKUP_PAGE_SIZE,
-      !isOwnerReadonly
-    );
-
-  const ownerDropdownItems: SearchableDropdownItem[] =
-    ownerLookupData?.items?.map((owner) => ({
-      id: String(owner.employeeId),
-      content: (
-        <AvatarChip
-          avatarProps={{
-            id: String(owner.employeeId),
-            firstName: owner.firstName,
-            lastName: owner.lastName ?? undefined,
-            src: owner.authPic ?? undefined,
-            size: "sm"
-          }}
-          label={concatStrings([owner.firstName, owner.lastName ?? ""])}
-        />
-      )
-    })) ?? [];
-
-  const handleOwnerSelect = (item: SearchableDropdownItem) => {
-    const owner = ownerLookupData?.items?.find(
-      (lookupOwner) => String(lookupOwner.employeeId) === item.id
-    );
-    void setFieldValue("ownerId", owner?.employeeId);
-    setSelectedOwner(owner ?? null);
-    setOwnerSearchText("");
-  };
-
-  const handleClearOwner = () => {
-    setSelectedOwner(null);
-    void setFieldValue("ownerId", null);
   };
 
   return (
@@ -233,34 +172,14 @@ const ContactModalForm = ({
         fullWidth
       />
 
-      {selectedOwner ? (
-        <SelectedOwnerField
-          label={translateContactText(["labels", "owner"])}
-          owner={selectedOwner}
-          onRemove={handleClearOwner}
-          showRemoveButton={!isOwnerReadonly}
-          ariaLabel={translateContactText(["ariaLabels", "clearOwner"])}
-        />
-      ) : (
-        <SearchableDropdown
-          id="contact-owner-search"
-          items={ownerDropdownItems}
-          onSelect={handleOwnerSelect}
-          label={translateContactText(["labels", "owner"])}
-          placeholder={translateContactText(["placeholders", "owner"])}
-          value={ownerSearchText}
-          onChange={(event) => setOwnerSearchText(event.target.value)}
-          state={errors.ownerId ? "error" : "default"}
-          errorMessage={errors.ownerId}
-          emptyMessage={
-            isOwnerFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noOwners"])}
-              </p>
-            )
-          }
-        />
-      )}
+      <ContactOwnerField
+        owner={initialOwner}
+        errorMessage={errors.ownerId}
+        translateContactText={translateContactText}
+        onChange={(owner) =>
+          setFieldValue("ownerId", owner?.employeeId ?? null)
+        }
+      />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
