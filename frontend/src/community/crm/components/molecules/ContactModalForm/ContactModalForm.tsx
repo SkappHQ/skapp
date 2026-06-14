@@ -210,7 +210,7 @@ const ContactModalForm = ({
         <ButtonV2
           variant="primary"
           type="button"
-          onClick={() => void submitForm()}
+          onClick={submitForm}
           disabled={isPending}
           isLoading={isPending}
           aria-label={translateContactText(["ariaLabels", "save"])}
