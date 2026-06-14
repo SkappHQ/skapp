@@ -40,7 +40,8 @@ export const companyQueryKeys = {
     limit
   ],
   CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"],
-  CRM_COMPANIES: (size: number) => ["crm-companies", size]
+  CRM_COMPANIES: (size: number) => ["crm-companies", size],
+  SEARCH_COMPANIES_BY_DOMAIN: ["search-companies-by-domain"]
 };
 
 export const taskQueryKeys = {

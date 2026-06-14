@@ -19,7 +19,6 @@ interface CompanyMetricSearchParams {
   size: number;
   searchKeyword: string;
 }
-
 const fetchCompanyMetrics = async ({
   page,
   size,
@@ -77,10 +76,7 @@ export const useCreateNewCompany = (
   });
 };
 
-export const useCheckCompanyNameExists = (
-  name: string,
-  enabled: boolean = true
-) => {
+export const useCheckCompanyNameExists = (name: string, enabled: boolean) => {
   return useQuery({
     queryKey: [...companyQueryKeys.CHECK_COMPANY_NAME_EXISTS, name],
     queryFn: async () => {
@@ -134,5 +130,25 @@ export const useDeleteCompany = (
       onSuccess();
     },
     onError: onError
+  });
+};
+
+const fetchCompaniesByDomain = async (domain: string, limit: number) => {
+  const response = await authFetch.get(
+    companyEndpoints.SEARCH_COMPANIES_BY_DOMAIN(domain),
+    { params: { limit } }
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useSearchCompaniesByDomain = (
+  domain: string,
+  enabled: boolean,
+  limit: number
+) => {
+  return useQuery({
+    queryKey: [...companyQueryKeys.SEARCH_COMPANIES_BY_DOMAIN, domain],
+    queryFn: () => fetchCompaniesByDomain(domain, limit),
+    enabled
   });
 };

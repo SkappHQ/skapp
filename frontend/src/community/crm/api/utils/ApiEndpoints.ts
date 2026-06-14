@@ -21,5 +21,7 @@ export const companyEndpoints = {
   EDIT_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   DELETE_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   CHECK_COMPANY_NAME_EXISTS: (name: string) =>
-    `${moduleAPIPath.CRM}/company/exists?name=${encodeURIComponent(name)}`
+    `${moduleAPIPath.CRM}/company/exists?name=${encodeURIComponent(name)}`,
+  SEARCH_COMPANIES_BY_DOMAIN: (domain: string) =>
+    `${moduleAPIPath.CRM}/company/search-by-domain?domain=${encodeURIComponent(domain)}`
 };
