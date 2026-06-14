@@ -19,6 +19,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
@@ -69,6 +70,20 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final PageTransformer pageTransformer;
 
 	private final UserService userService;
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto checkDealNameExists(String name) {
+		log.info("checkDealNameExists: execution started");
+		CrmValidations.validateDealName(name);
+		boolean exists = crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
+
+		CrmDealNameExistsResponseDto responseDto = new CrmDealNameExistsResponseDto();
+		responseDto.setIsExists(exists);
+
+		log.info("checkDealNameExists: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
 
 	@Override
 	@Transactional
