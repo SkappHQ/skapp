@@ -1,8 +1,19 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
@@ -73,6 +84,14 @@ class CrmCompanyControllerIntegrationTest {
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmContactDao crmContactDao;
+
+	private final CrmDealDao crmDealDao;
+
+	private final CrmDealStageDao crmDealStageDao;
+
+	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final EmployeeDao employeeDao;
 
@@ -264,6 +283,95 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(unlinkedContact.getCompany()).isNull();
 
 		crmContactDao.deleteById(contactId);
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+	}
+
+	@Test
+	@DisplayName("Delete company with associated deals - Unlinks all linked deals")
+	void deleteCompany_WithAssociatedDeals_UnlinksDeals() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmContact contact = new CrmContact();
+		contact.setName("Deal Contact");
+		contact.setEmail("deal.contact@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		Long contactId = crmContactDao.save(contact).getId();
+
+		CrmDealStage stage = new CrmDealStage();
+		stage.setName("Open");
+		stage.setColor("#000000");
+		stage.setOrderIndex(1);
+		stage.setStageType(CrmDealStageType.OPEN);
+		stage = crmDealStageDao.save(stage);
+
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Test Deal");
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setStage(stage);
+		deal.setContact(crmContactDao.getReferenceById(contactId));
+		deal.setCompany(crmCompanyDao.getReferenceById(companyId));
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setOrderIndex("a0");
+		Long dealId = crmDealDao.save(deal).getId();
+
+		performDeleteRequest(companyId).andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+		TestTransaction.start();
+
+		CrmDeal unlinkedDeal = crmDealDao.findById(dealId).orElseThrow();
+		assertThat(unlinkedDeal.getCompany()).isNull();
+		assertThat(unlinkedDeal.getIsDeleted()).isFalse();
+
+		crmDealDao.deleteById(dealId);
+		crmContactDao.deleteById(contactId);
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+	}
+
+	@Test
+	@DisplayName("Delete company with associated tasks - Unlinks all linked tasks")
+	void deleteCompany_WithAssociatedTasks_UnlinksTasks() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmTaskType taskType = new CrmTaskType();
+		taskType.setName("Email");
+		taskType.setOrderIndex(1);
+		taskType = crmTaskTypeDao.save(taskType);
+
+		CrmTask task = new CrmTask();
+		task.setName("Test Task");
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setCompany(crmCompanyDao.getReferenceById(companyId));
+		Long taskId = crmTaskDao.save(task).getId();
+
+		performDeleteRequest(companyId).andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		TestTransaction.flagForCommit();
+		TestTransaction.end();
+		TestTransaction.start();
+
+		CrmTask unlinkedTask = crmTaskDao.findById(taskId).orElseThrow();
+		assertThat(unlinkedTask.getCompany()).isNull();
+		assertThat(unlinkedTask.getIsDeleted()).isFalse();
+
+		crmTaskDao.deleteById(taskId);
 		TestTransaction.flagForCommit();
 		TestTransaction.end();
 	}
