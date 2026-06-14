@@ -29,7 +29,8 @@ public class CrmTaskController {
 
 	private final CrmTaskService taskService;
 
-	@Operation(summary = "Get tasks", description = "Returns all open non-deleted CRM tasks with search and filter by owner and deal.")
+	@Operation(summary = "Get tasks",
+			description = "Returns all open non-deleted CRM tasks with search and filter by owner and deal.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getTasks(CrmTaskFilterDto filterDto) {
