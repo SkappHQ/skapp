@@ -2,8 +2,11 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
@@ -31,7 +34,9 @@ import tools.jackson.databind.json.JsonMapper;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -46,6 +51,8 @@ class CrmDealControllerIntegrationTest {
 
 	private static final String BASE_PATH = "/v1/crm/deal";
 
+	private static final String EXISTS_PATH = BASE_PATH + "/exists";
+
 	private final MockMvc mvc;
 
 	private final JwtService jwtService;
@@ -53,6 +60,8 @@ class CrmDealControllerIntegrationTest {
 	private final UserDetailsService userDetailsService;
 
 	private final JsonMapper objectMapper;
+
+	private final MessageUtil messageUtil;
 
 	private final CrmCompanyDao crmCompanyDao;
 
@@ -81,6 +90,10 @@ class CrmDealControllerIntegrationTest {
 		return performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performGetExistsRequest(String name) throws Exception {
+		return performRequest(get(EXISTS_PATH).param("name", name).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmDealStage savedStage() {
@@ -116,6 +129,93 @@ class CrmDealControllerIntegrationTest {
 		dto.setOwnerId(1L);
 		return dto;
 	}
+
+	// --- Check deal name exists tests ---
+
+	@Test
+	@DisplayName("Check deal name exists when not found - Returns OK with false")
+	void checkDealNameExists_NotFound_ReturnsOkWithFalse() throws Exception {
+		performGetExistsRequest("NonExistentDeal").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists when found - Returns OK with true")
+	void checkDealNameExists_Found_ReturnsOkWithTrue() throws Exception {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Existing Deal");
+		deal.setStage(savedStage());
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setContact(savedContact(null));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		crmDealDao.save(deal);
+
+		performGetExistsRequest("Existing Deal").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists is case-insensitive - Returns OK with true")
+	void checkDealNameExists_CaseInsensitive_ReturnsOkWithTrue() throws Exception {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Case Deal");
+		deal.setStage(savedStage());
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setContact(savedContact(null));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		crmDealDao.save(deal);
+
+		performGetExistsRequest("case deal").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists for soft-deleted deal - Returns OK with false")
+	void checkDealNameExists_SoftDeletedDeal_ReturnsOkWithFalse() throws Exception {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Deleted Deal");
+		deal.setStage(savedStage());
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setContact(savedContact(null));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		performGetExistsRequest("Deleted Deal").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists with blank name - Returns Bad Request")
+	void checkDealNameExists_BlankName_ReturnsBadRequest() throws Exception {
+		performGetExistsRequest("").andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NAME_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists with name exceeding max length - Returns Bad Request")
+	void checkDealNameExists_NameTooLong_ReturnsBadRequest() throws Exception {
+		String tooLongName = "A".repeat(256);
+		performGetExistsRequest(tooLongName).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	// --- Create deal tests ---
 
 	@Test
 	@DisplayName("Create deal with contact linked to active company - company is set on deal")
