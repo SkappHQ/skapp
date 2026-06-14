@@ -29,7 +29,7 @@ public class CrmTaskController {
 
 	private final CrmTaskService taskService;
 
-	@Operation(summary = "Get tasks", description = "Returns all open non-deleted CRM tasks.")
+	@Operation(summary = "Get tasks", description = "Returns all open non-deleted CRM tasks with search and filter by owner and deal.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getTasks(CrmTaskFilterDto filterDto) {
@@ -38,7 +38,7 @@ public class CrmTaskController {
 	}
 
 	@Operation(summary = "Get completed tasks",
-			description = "Returns a paginated list of completed non-deleted CRM tasks.")
+			description = "Returns a paginated list of completed non-deleted CRM tasks with search and filter by owner and deal.")
 	@GetMapping("/completed")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {

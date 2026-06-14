@@ -5,16 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CrmTaskCompletedFilterDto {
+public class CrmTaskCompletedFilterDto extends CrmTaskFilterDto {
 
 	private int page = 0;
 
 	private int size = 10;
-
-	private String searchKeyword;
-
-	private Long contactId;
-
-	private Long dealId;
 
 }
