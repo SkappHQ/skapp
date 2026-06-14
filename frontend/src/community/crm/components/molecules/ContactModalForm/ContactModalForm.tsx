@@ -79,13 +79,13 @@ const ContactModalForm = ({
       (lookupCompany) => String(lookupCompany.id) === item.id
     );
 
-    void setFieldValue("companyId", Number(item.id));
+    setFieldValue("companyId", Number(item.id));
     setSelectedCompanyName(company?.name ?? String(item.content));
     setCompanySearchText("");
   };
 
   const handleClearCompany = () => {
-    void setFieldValue("companyId", null);
+    setFieldValue("companyId", null);
     setSelectedCompanyName("");
     setCompanySearchText("");
   };
