@@ -36,7 +36,11 @@ const AddContactModalContent = () => {
       setToastMessage({
         open: true,
         toastType: ToastType.SUCCESS,
-        title: translateContactText(["contactToastMessages", "successTitle"])
+        title: translateContactText(["contactToastMessages", "successTitle"]),
+        description: translateContactText([
+          "contactToastMessages",
+          "successDescription"
+        ])
       });
     },
     () => {
