@@ -27,7 +27,7 @@
       },
       "buttons": {
         "save": "Save",
-        "cancelAddContact": "Cancel"
+        "cancel": "Cancel"
       },
       "ariaLabels": {
         "name": "Name",
@@ -38,7 +38,7 @@
         "clearCompany": "Clear selected company",
         "clearOwner": "Clear selected contact owner",
         "save": "Save",
-        "cancelAddContact": "Cancel Add Contact"
+        "cancel": "Cancel Add Contact"
       },
       "validations": {
         "name": "Name is required",
@@ -52,6 +52,7 @@
       },
       "contactToastMessages": {
         "successTitle": "Contact added successfully",
+        "successDescription": "You can view the contact details in the contact list.",
         "errorTitle": "Failed to add contact",
         "errorDescription": "Please try again or contact support"
       }
@@ -78,7 +79,7 @@
       },
       "buttons": {
         "save": "Save",
-        "cancelEditContact": "Cancel"
+        "cancel": "Cancel"
       },
       "ariaLabels": {
         "name": "Name",
@@ -89,7 +90,7 @@
         "clearCompany": "Clear selected company",
         "clearOwner": "Clear selected contact owner",
         "save": "Save",
-        "cancelEditContact": "Cancel Edit Contact"
+        "cancel": "Cancel Edit Contact"
       },
       "validations": {
         "name": "Name is required",
