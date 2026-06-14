@@ -16,6 +16,7 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
@@ -61,19 +62,13 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getTasks() {
+	public ResponseEntityDto getTasks(CrmTaskFilterDto filterDto) {
 		log.info("getTasks: execution started");
 
 		User currentUser = userService.getCurrentUser();
-		List<CrmTaskResponseDto> tasks;
-
-		if (CrmUtil.isCrmSalesRepresentative(currentUser)) {
-			Long employeeId = currentUser.getEmployee().getEmployeeId();
-			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwnerByOwnerId(employeeId));
-		}
-		else {
-			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwner());
-		}
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+		List<CrmTaskResponseDto> tasks = crmMapper
+			.crmTasksToCrmTaskResponseDtos(crmTaskDao.findTasks(ownerId, filterDto));
 
 		CrmGetTasksResponseDto response = new CrmGetTasksResponseDto();
 		response.setTasks(tasks);
@@ -90,15 +85,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 
 		User currentUser = userService.getCurrentUser();
-		Page<CrmTask> taskPage;
-
-		if (CrmUtil.isCrmSalesRepresentative(currentUser)) {
-			Long employeeId = currentUser.getEmployee().getEmployeeId();
-			taskPage = crmTaskDao.findCompletedTasksByOwnerId(employeeId, pageable);
-		}
-		else {
-			taskPage = crmTaskDao.findCompletedTasks(pageable);
-		}
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+		Page<CrmTask> taskPage = crmTaskDao.findCompletedTasks(ownerId, filterDto, pageable);
 
 		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(taskPage.getContent());
 

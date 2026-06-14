@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.service.CrmTaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,16 +29,17 @@ public class CrmTaskController {
 
 	private final CrmTaskService taskService;
 
-	@Operation(summary = "Get tasks", description = "Returns all open non-deleted CRM tasks.")
+	@Operation(summary = "Get tasks",
+			description = "Returns all open non-deleted CRM tasks with search and filter by owner and deal.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getTasks() {
-		ResponseEntityDto response = taskService.getTasks();
+	public ResponseEntity<ResponseEntityDto> getTasks(CrmTaskFilterDto filterDto) {
+		ResponseEntityDto response = taskService.getTasks(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Get completed tasks",
-			description = "Returns a paginated list of completed non-deleted CRM tasks.")
+			description = "Returns a paginated list of completed non-deleted CRM tasks with search and filter by owner and deal.")
 	@GetMapping("/completed")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {

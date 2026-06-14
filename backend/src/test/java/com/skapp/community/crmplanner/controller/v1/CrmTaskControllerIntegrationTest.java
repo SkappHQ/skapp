@@ -124,6 +124,21 @@ class CrmTaskControllerIntegrationTest {
 			.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(token)));
 	}
 
+	private ResultActions performGetRequest(String token, String searchKeyword, Long contactId, Long dealId)
+			throws Exception {
+		var request = get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(token));
+		if (searchKeyword != null) {
+			request = request.param("searchKeyword", searchKeyword);
+		}
+		if (contactId != null) {
+			request = request.param("contactId", contactId.toString());
+		}
+		if (dealId != null) {
+			request = request.param("dealId", dealId.toString());
+		}
+		return mvc.perform(request);
+	}
+
 	private CrmTask savedTask(String name, boolean isDeleted) {
 		return savedTask(name, isDeleted, false);
 	}
@@ -136,6 +151,38 @@ class CrmTaskControllerIntegrationTest {
 		task.setOwner(employeeDao.getReferenceById(1L));
 		task.setIsDeleted(isDeleted);
 		task.setIsCompleted(isCompleted);
+		return crmTaskDao.save(task);
+	}
+
+	private CrmTask savedTask(String name, boolean isDeleted, boolean isCompleted, Long linkedContactId) {
+		CrmTask task = new CrmTask();
+		task.setName(name);
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setIsDeleted(isDeleted);
+		task.setIsCompleted(isCompleted);
+		if (linkedContactId != null) {
+			task.setContact(crmContactDao.getReferenceById(linkedContactId));
+		}
+		return crmTaskDao.save(task);
+	}
+
+	private CrmTask savedTask(String name, boolean isDeleted, boolean isCompleted, Long linkedContactId,
+			CrmDeal linkedDeal) {
+		CrmTask task = new CrmTask();
+		task.setName(name);
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setIsDeleted(isDeleted);
+		task.setIsCompleted(isCompleted);
+		if (linkedContactId != null) {
+			task.setContact(crmContactDao.getReferenceById(linkedContactId));
+		}
+		if (linkedDeal != null) {
+			task.setDeal(linkedDeal);
+		}
 		return crmTaskDao.save(task);
 	}
 
@@ -175,6 +222,66 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Active task"));
 	}
 
+	@Test
+	@DisplayName("Get tasks with search keyword - Returns only matching tasks")
+	void getTasks_WithSearchKeyword_ReturnsMatchingTasks() throws Exception {
+		savedTask("Follow up call", false, false);
+		savedTask("Send proposal", false, false);
+
+		performGetRequest(authToken, "follow", null, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Follow up call"));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by contactId - Returns only tasks linked to that contact")
+	void getTasks_FilterByContactId_ReturnsMatchingTasks() throws Exception {
+		CrmContact other = new CrmContact();
+		other.setName("Other Contact");
+		other.setEmail("other@example.com");
+		other.setOwner(employeeDao.getReferenceById(1L));
+		Long otherContactId = crmContactDao.save(other).getId();
+
+		savedTask("Task for main contact", false, false, contactId);
+		savedTask("Task for other contact", false, false, otherContactId);
+
+		performGetRequest(authToken, null, contactId, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task for main contact"));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by dealId - Returns only tasks linked to that deal")
+	void getTasks_FilterByDealId_ReturnsMatchingTasks() throws Exception {
+		CrmDeal deal = savedDeal("Test Deal", crmContactDao.getReferenceById(contactId), null);
+
+		savedTask("Task with deal", false, false, contactId, deal);
+		savedTask("Task without deal", false, false, contactId, null);
+
+		performGetRequest(authToken, null, null, deal.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task with deal"));
+	}
+
+	@Test
+	@DisplayName("Get tasks with combined search and contactId filter - Returns intersection")
+	void getTasks_SearchAndContactIdFilter_ReturnsIntersection() throws Exception {
+		savedTask("Follow up with main", false, false, contactId);
+		savedTask("Follow up without contact", false, false);
+
+		performGetRequest(authToken, "follow", contactId, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Follow up with main"));
+	}
+
 	// --- GET completed tasks helpers and tests ---
 
 	private ResultActions performGetCompletedRequest(String token, String page, String size) throws Exception {
@@ -182,6 +289,24 @@ class CrmTaskControllerIntegrationTest {
 			.param("size", size)
 			.accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(token)));
+	}
+
+	private ResultActions performGetCompletedRequest(String token, String page, String size, String searchKeyword,
+			Long contactId, Long dealId) throws Exception {
+		var request = get(BASE_PATH + "/completed").param("page", page)
+			.param("size", size)
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(token));
+		if (searchKeyword != null) {
+			request = request.param("searchKeyword", searchKeyword);
+		}
+		if (contactId != null) {
+			request = request.param("contactId", contactId.toString());
+		}
+		if (dealId != null) {
+			request = request.param("dealId", dealId.toString());
+		}
+		return mvc.perform(request);
 	}
 
 	@Test
@@ -214,6 +339,56 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(0));
+	}
+
+	@Test
+	@DisplayName("Get completed tasks with search keyword - Returns only matching completed tasks")
+	void getCompletedTasks_WithSearchKeyword_ReturnsMatchingTasks() throws Exception {
+		savedTask("Completed call", false, true);
+		savedTask("Completed proposal", false, true);
+
+		performGetCompletedRequest(authToken, "0", "10", "call", null, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed call"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get completed tasks filtered by contactId - Returns only completed tasks for that contact")
+	void getCompletedTasks_FilterByContactId_ReturnsMatchingTasks() throws Exception {
+		CrmContact other = new CrmContact();
+		other.setName("Other Completed Contact");
+		other.setEmail("other.completed@example.com");
+		other.setOwner(employeeDao.getReferenceById(1L));
+		Long otherContactId = crmContactDao.save(other).getId();
+
+		savedTask("Completed for main", false, true, contactId);
+		savedTask("Completed for other", false, true, otherContactId);
+
+		performGetCompletedRequest(authToken, "0", "10", null, contactId, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed for main"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get completed tasks filtered by dealId - Returns only completed tasks for that deal")
+	void getCompletedTasks_FilterByDealId_ReturnsMatchingTasks() throws Exception {
+		CrmDeal deal = savedDeal("Completed Deal", crmContactDao.getReferenceById(contactId), null);
+
+		savedTask("Completed with deal", false, true, contactId, deal);
+		savedTask("Completed without deal", false, true, contactId, null);
+
+		performGetCompletedRequest(authToken, "0", "10", null, null, deal.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed with deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
 	}
 
 	// --- CREATE task helpers and tests ---
