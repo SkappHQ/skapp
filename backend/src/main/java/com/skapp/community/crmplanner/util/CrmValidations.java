@@ -10,6 +10,7 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
@@ -254,6 +255,37 @@ public class CrmValidations {
 		}
 		if (deal.getCompany() == null || !deal.getCompany().getId().equals(company.getId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH);
+		}
+	}
+
+	public static void validateDealStageName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_REQUIRED);
+		}
+		if (name.length() < CrmConstants.DEAL_STAGE_NAME_MIN_LENGTH
+				|| name.length() > CrmConstants.DEAL_STAGE_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_LENGTH);
+		}
+		if (!name.matches(CrmConstants.DEAL_STAGE_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealStageDescription(String description) {
+		if (description == null || description.isBlank()) {
+			return;
+		}
+		if (description.length() > CrmConstants.DEAL_STAGE_DESCRIPTION_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_TOO_LONG);
+		}
+		if (!description.matches(CrmConstants.DEAL_STAGE_DESCRIPTION_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealStageColor(CrmDealStageColors color) {
+		if (color == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_COLOR_REQUIRED);
 		}
 	}
 

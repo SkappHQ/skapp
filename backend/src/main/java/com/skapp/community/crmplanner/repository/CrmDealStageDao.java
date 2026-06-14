@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.repository;
 
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,5 +16,10 @@ public interface CrmDealStageDao extends JpaRepository<CrmDealStage, Long> {
 	Optional<CrmDealStage> findByIdAndIsDeletedFalse(Long id);
 
 	List<CrmDealStage> findAllByIdInAndIsDeletedFalse(List<Long> ids);
+
+	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
+
+	@Query("SELECT COALESCE(MAX(stage.orderIndex), 0) + 1 FROM CrmDealStage stage WHERE stage.isDeleted = false")
+	int findNextOrderIndex();
 
 }
