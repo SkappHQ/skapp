@@ -104,6 +104,7 @@
       },
       "contactToastMessages": {
         "successTitle": "Contact updated successfully",
+        "successDescription": "Changes to the contact have been saved.",
         "errorTitle": "Failed to update contact",
         "errorDescription": "Please try again or contact support"
       }
