@@ -1,97 +1,117 @@
-import { Dropdown } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from 'react';
+import { Dropdown } from '@rootcodelabs/skapp-ui';
+import PriorityLabel from '~community/crm/components/atoms/PriorityLabel/PriorityLabel';
+import { CrmPriorityEnum } from '~community/crm/enums/common';
+import useGetPriorityOptions from '~community/crm/hooks/useGetPriorityOptions';
 
-import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
-
-import PriorityLabel from "../../atoms/PriorityLabel/PriorityLabel";
-
-interface Props {
-  label: string;
-  value?: string;
-  placeholder?: string;
-  onChange?: (value: string) => void;
-  onSave?: (value: string) => void;
+interface PriorityDropdownProps {
+  value?: CrmPriorityEnum;
+  onChange?: (value: CrmPriorityEnum) => void;
+  onSave?: (value: CrmPriorityEnum) => void;
+  onCancel?: () => void;
 }
 
-const PriorityDropdown: FC<Props> = ({
-  label,
-  value,
-  placeholder = "None",
+const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
+  value = CrmPriorityEnum.MEDIUM,
   onChange,
-  onSave
+  onSave,
 }) => {
-  const [localValue, setLocalValue] = useState(value ?? "");
-  const [isEditing, setIsEditing] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const priorityOptions = useGetPriorityOptions();
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState<CrmPriorityEnum>(value);
+  const inputRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setLocalValue(value ?? "");
+    setInputValue(value || CrmPriorityEnum.MEDIUM);
   }, [value]);
 
   useEffect(() => {
-    if (!isEditing) return;
-    const timer = setTimeout(() => {
-      const trigger = containerRef.current?.querySelector<HTMLElement>(
-        "button, [role='button'], .dropdown-trigger"
-      );
-      trigger?.click();
-    }, 100);
-    return () => clearTimeout(timer);
+    if (isEditing && dropdownRef.current) {
+      const timeout = setTimeout(() => {
+        const trigger = dropdownRef.current?.querySelector(
+          'button, [role="button"], .dropdown-trigger',
+        );
+        if (trigger) {
+          (trigger as HTMLElement).click();
+        }
+      }, 100);
+
+      return () => clearTimeout(timeout);
+    }
   }, [isEditing]);
 
   useEffect(() => {
-    if (!isEditing) return;
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node) &&
+        isEditing
       ) {
         setIsEditing(false);
-        const save = onSave ?? onChange;
-        if (localValue) save?.(localValue);
+        if (inputValue) {
+          if (onSave) {
+            onSave(inputValue);
+          } else if (onChange) {
+            onChange(inputValue);
+          }
+        }
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isEditing, localValue, onChange, onSave]);
 
-  const handleChange = (val: string) => {
-    setLocalValue(val);
+    if (isEditing) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isEditing, inputValue, onSave, onChange]);
+
+  const handleClick = () => {
+    if (!isEditing) {
+      setIsEditing(true);
+      setInputValue(value);
+    }
+  };
+
+  const handleDropdownChange = (selectedValue: string) => {
+    const priority = selectedValue as CrmPriorityEnum;
+    setInputValue(priority);
     setIsEditing(false);
-    onChange?.(val);
-    onSave?.(val);
+    if (onChange) {
+      onChange(priority);
+    }
+    if (onSave) {
+      onSave(priority);
+    }
   };
 
   return (
-    <div className="flex items-center min-h-8">
-      <span className="shrink-0 w-28 text-[13px] text-gray-500">{label}</span>
-      <div className="flex-1" ref={containerRef}>
-        {isEditing ? (
-          <Dropdown
-            options={priorityOptions}
-            value={localValue}
-            onChange={handleChange}
-            variant="jsx-content"
-            width="100%"
-            placeholder={placeholder}
-            hideArrowIcon
-          />
-        ) : (
-          <button
-            type="button"
-            className="flex items-center min-h-8 px-2 rounded hover:bg-gray-50 cursor-pointer w-full text-left"
-            onClick={() => setIsEditing(true)}
-          >
-            {localValue ? (
-              priorityOptions.find((o) => o.value === localValue)?.label
-            ) : (
-              <span className="text-[13px] text-gray-400">{placeholder}</span>
-            )}
-          </button>
-        )}
-      </div>
+    <div className="flex items-center">
+      {isEditing ? (
+        <div ref={inputRef} className="w-full">
+          <div ref={dropdownRef}>
+            <Dropdown
+              value={inputValue}
+              onChange={handleDropdownChange}
+              className="bg-gray-50 rounded-lg"
+              options={priorityOptions}
+              variant="jsx-content"
+              width="100%"
+            />
+          </div>
+        </div>
+      ) : (
+        <div
+          className="min-h-[32px] rounded-lg inline-flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={handleClick}
+        >
+          <div className="flex items-center py-2 px-1 gap-2">
+            <PriorityLabel priority={inputValue} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -3,7 +3,7 @@ import {
   DropdownWithSearchablePopup
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
-import { FC } from "react";
+import { FC, RefObject } from "react";
 
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
 
@@ -62,6 +62,24 @@ const ContactPopupSearch: FC<Props> = ({
       clearable
       ariaInvalid={ariaInvalid}
       width="100%"
+      renderTrigger={(val, _isOpen, _disabled, { ref, ...triggerProps }) => {
+        const contact = val
+          ? contacts.find((c) => c.id === Number((val as { id: unknown }).id)) ?? selectedContact
+          : null;
+        return (
+          <div
+            ref={ref as RefObject<HTMLDivElement>}
+            {...triggerProps}
+            className="flex items-center w-full min-h-8 px-1 cursor-pointer"
+          >
+            {contact ? (
+              <span className="text-[14px]">{contact.name}</span>
+            ) : (
+              <span className="text-[14px] text-tertiary-text">{placeholder}</span>
+            )}
+          </div>
+        );
+      }}
       renderOption={(option, _index, onSelect) => {
         const opt = option as DropdownOption;
         return (

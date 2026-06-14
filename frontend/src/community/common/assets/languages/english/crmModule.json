@@ -314,30 +314,51 @@
     },
     "addDealSidePanel": {
       "title": "Add Deal",
-      "closePanelAriaLabel": "Close add deal panel",
-      "dealNameLabel": "Deal Name",
-      "dealNamePlaceholder": "Enter deal name",
-      "stageLabel": "Stage",
-      "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Enter description",
-      "valueLabel": "Value",
-      "amountPlaceholder": "Enter amount",
-      "noneText": "None",
-      "priorityLabel": "Priority",
-      "ownedByLabel": "Owned by",
-      "ownerSearchPlaceholder": "Search employees",
-      "contactNameLabel": "Contact",
-      "companyNameLabel": "Company",
-      "addDealBtn": "Add Deal",
-      "dealNameRequired": "Deal name is required",
-      "stageRequired": "Stage is required",
-      "contactRequired": "Contact is required",
-      "ownerRequired": "Owner is required",
-      "amountInvalid": "Please enter a valid positive amount",
-      "addDealSuccessTitle": "Deal added successfully",
-      "addDealSuccessDescription": "The new deal has been created",
-      "addDealErrorTitle": "Failed to add deal",
-      "addDealErrorDescription": "Please try again or contact support"
+      "labels": {
+        "dealName": "Deal Name",
+        "stage": "Stage",
+        "description": "Description",
+        "value": "Value",
+        "priority": "Priority",
+        "ownedBy": "Owned by",
+        "contactName": "Contact"
+      },
+      "placeholders": {
+        "dealName": "Enter deal name",
+        "description": "Enter description",
+        "amount": "Enter amount",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "none": "None"
+      },
+      "buttons": {
+        "addDeal": "Add Deal"
+      },
+      "ariaLabels": {
+        "closePanel": "Close add deal panel",
+        "addDeal": "Add Deal",
+        "dealName": "Deal Name",
+        "stage": "Stage",
+        "description": "Description",
+        "amount": "Amount",
+        "priority": "Priority",
+        "owner": "Deal Owner",
+        "contact": "Contact"
+      },
+      "validations": {
+        "dealNameRequired": "Deal name is required",
+        "stageRequired": "Stage is required",
+        "contactRequired": "Contact is required",
+        "ownerRequired": "Owner is required",
+        "priorityRequired": "Priority is required",
+        "amountInvalid": "Please enter a valid positive amount"
+      },
+      "toastMessages": {
+        "successTitle": "Deal added successfully",
+        "successDescription": "The new deal has been created",
+        "errorTitle": "Failed to add deal",
+        "errorDescription": "Please try again or contact support"
+      }
     }
   },
   "tasks": {

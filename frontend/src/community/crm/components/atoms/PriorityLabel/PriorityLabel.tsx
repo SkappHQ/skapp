@@ -1,56 +1,61 @@
+import React from 'react';
 import {
-  HighPriorityIcon,
   Label,
   LowPriorityIcon,
-  MediumPriorityIcon
-} from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode } from "react";
+  MediumPriorityIcon,
+  HighPriorityIcon,
+} from '@rootcodelabs/skapp-ui';
+import { CrmPriorityEnum } from '~community/crm/enums/common';
+import { useTranslator } from '~community/common/hooks/useTranslator';
 
-import { CrmPriorityEnum } from "~community/crm/enums/common";
-
-interface Props {
+interface PriorityLabelProps {
   priority: CrmPriorityEnum;
-  label: string;
+  label?: string;
 }
 
-interface PriorityLabelConfig {
-  bg: string;
-  text: string;
-  icon: ReactNode;
-}
+const PriorityLabel: React.FC<PriorityLabelProps> = ({ priority, label }) => {
+  const translateText = useTranslator('crmModule', 'tasks', 'addTaskModal');
 
-const PRIORITY_LABEL_CONFIG: Record<CrmPriorityEnum, PriorityLabelConfig> = {
-  [CrmPriorityEnum.HIGH]: {
-    bg: "bg-semantic-red-background",
-    text: "text-semantic-red-text",
-    icon: <HighPriorityIcon size={12} />
-  },
-  [CrmPriorityEnum.MEDIUM]: {
-    bg: "bg-semantic-amber-background",
-    text: "text-semantic-amber-text",
-    icon: <MediumPriorityIcon size={12} />
-  },
-  [CrmPriorityEnum.LOW]: {
-    bg: "bg-semantic-green-background",
-    text: "text-semantic-green-text",
-    icon: <LowPriorityIcon size={12} />
+  switch (priority?.toUpperCase()) {
+    case CrmPriorityEnum.LOW:
+      return (
+        <Label
+          backgroundColor="bg-semantic-green-background"
+          className="py-2 px-3"
+        >
+          <LowPriorityIcon />
+          <span className="body3 text-semantic-green-text">
+            {label ?? translateText(['priorityOptions', 'low'])}
+          </span>
+        </Label>
+      );
+    case CrmPriorityEnum.MEDIUM:
+      return (
+        <Label
+          backgroundColor="bg-semantic-amber-background"
+          className="py-2 px-3"
+        >
+          <MediumPriorityIcon />
+          <span className="body3 text-semantic-amber-text">
+            {label ?? translateText(['priorityOptions', 'medium'])}
+          </span>
+        </Label>
+      );
+    case CrmPriorityEnum.HIGH:
+      return (
+        <Label
+          backgroundColor="bg-semantic-red-background"
+          className="py-2 px-3"
+        >
+          <HighPriorityIcon />
+          <span className="body3 text-semantic-red-text">
+            {label ?? translateText(['priorityOptions', 'high'])}
+          </span>
+        </Label>
+      );
+    default:
+      return null;
   }
-};
-
-const PriorityLabel: FC<Props> = ({ priority, label }) => {
-  const config = PRIORITY_LABEL_CONFIG[priority];
-  if (!config) return null;
-
-  return (
-    <Label
-      backgroundColor={config.bg}
-      textColor={config.text}
-      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium"
-    >
-      {config.icon}
-      <span>{label}</span>
-    </Label>
-  );
 };
 
 export default PriorityLabel;

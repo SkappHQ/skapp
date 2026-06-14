@@ -1,9 +1,10 @@
 import {
+  AvatarChip,
   DropdownValue,
   DropdownWithSearchablePopup
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
-import { FC } from "react";
+import { FC, RefObject } from "react";
 
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 
@@ -64,6 +65,34 @@ const PeoplePopupSearch: FC<Props> = ({
       clearable
       ariaInvalid={ariaInvalid}
       width="100%"
+      renderTrigger={(val, _isOpen, _disabled, { ref, ...triggerProps }) => {
+        const user = val
+          ? users.find((u) => u.employeeId === Number((val as { id: unknown }).id)) ?? selectedUser
+          : null;
+        return (
+          <div
+            ref={ref as RefObject<HTMLDivElement>}
+            {...triggerProps}
+            className="flex items-center w-full min-h-8 px-1 cursor-pointer"
+          >
+            {user ? (
+              <AvatarChip
+                label={[user.firstName, user.lastName].filter(Boolean).join(" ")}
+                avatarProps={{
+                  id: String(user.employeeId),
+                  firstName: user.firstName,
+                  lastName: user.lastName ?? undefined,
+                  src: user.authPic ?? undefined,
+                  size: "sm"
+                }}
+                backgroundColor="bg-gray-100"
+              />
+            ) : (
+              <span className="text-[14px] text-tertiary-text">{placeholder}</span>
+            )}
+          </div>
+        );
+      }}
       renderOption={(option, _index, onSelect) => {
         const opt = option as DropdownOption;
         const user = users.find((u) => u.employeeId === Number(opt.id));

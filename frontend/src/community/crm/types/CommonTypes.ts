@@ -103,6 +103,13 @@ export interface CrmOwnersResponseType {
   totalPages: number;
 }
 
+export interface CrmContactLookupResponseType {
+  items: CrmContactLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
 export interface CrmContactAddFormTypes {
   name: string;
   email: string;
@@ -209,6 +216,16 @@ export interface CrmDealFilterParams {
   searchKeyword?: string;
   stageId?: number;
   priority?: CrmPriorityEnum;
+}
+
+export interface CrmDealAddFormTypes {
+  name: string;
+  stageId: string;
+  contactId: string;
+  ownerId: string;
+  priority: CrmPriorityEnum | string;
+  amount: string;
+  description: string;
 }
 
 export interface CrmCreateDealPayload {

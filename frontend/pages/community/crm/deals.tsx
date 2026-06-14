@@ -11,8 +11,8 @@ import { useCrmStore } from "~community/crm/store/store";
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
 
-  const { openSidePanel } = useCrmStore((store) => ({
-    openSidePanel: store.openSidePanel
+  const { setIsCrmSidePanelOpen } = useCrmStore((store) => ({
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
   }));
 
   return (
@@ -22,6 +22,7 @@ const Deals: NextPage = () => {
       primaryButtonText={translateText(["addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
+      onPrimaryButtonClick={() => setIsCrmSidePanelOpen(true)}
     >
       <>
         <AddDealSidePanel />

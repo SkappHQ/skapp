@@ -18,6 +18,7 @@ import {
 import {
   CrmCompaniesResponseType,
   CrmContactCreatePayload,
+  CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
   CrmOwnersResponseType,
   CrmContactLookup,
@@ -144,10 +145,10 @@ export const useGetCrmContacts = (
   searchKeyword: string,
   size: number,
   enabled: boolean = true
-): UseQueryResult<CrmContactLookup[]> => {
+): UseQueryResult<CrmContactLookupResponseType> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size),
-    queryFn: async (): Promise<CrmContactLookup[]> => {
+    queryFn: async (): Promise<CrmContactLookupResponseType> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
         params: { searchKeyword, size }
       });
