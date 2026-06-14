@@ -137,11 +137,8 @@ const ContactModalForm = ({
     const owner = ownerLookupData?.items?.find(
       (lookupOwner) => String(lookupOwner.employeeId) === item.id
     );
-
-    if (!owner) return;
-
-    void setFieldValue("ownerId", owner.employeeId);
-    setSelectedOwner(owner);
+    void setFieldValue("ownerId", owner?.employeeId);
+    setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
 
