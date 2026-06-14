@@ -7,10 +7,10 @@ import { FC, ReactElement } from "react";
 
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
-import { CrmContactType } from "~community/crm/types/CommonTypes";
+import { CrmContactDetailResponseType } from "~community/crm/types/CommonTypes";
 
 interface Props {
-  contact?: CrmContactType;
+  contact?: CrmContactDetailResponseType;
   onCompanyClick?: () => void;
 }
 

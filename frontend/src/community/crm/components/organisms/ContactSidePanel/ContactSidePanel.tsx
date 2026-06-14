@@ -4,7 +4,7 @@ import {
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { useEffect, useState, FC } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -94,8 +94,8 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       closeOnBackdropClick
       header={
         <SidePanelContactHeader
-          name={contact.name}
-          lastModifiedDate={contact.lastModifiedDate}
+          name={contact?.name}
+          lastModifiedDate={contact?.lastModifiedDate}
         />
       }
     >
