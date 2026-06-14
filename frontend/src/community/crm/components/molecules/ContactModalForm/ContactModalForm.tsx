@@ -7,9 +7,11 @@ import SearchableDropdown, {
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useGetCompanyLookup } from "~community/crm/api/ContactApi";
-import ContactOwnerField from "~community/crm/components/molecules/ContactOwnerField/ContactOwnerField";
+import EditableContactOwnerField from "~community/crm/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
+import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
@@ -40,6 +42,8 @@ const ContactModalForm = ({
   onSubmit,
   onCancel
 }: ContactFormProps) => {
+  const { isCrmSalesManager: canEditOwner } = useSessionData();
+
   const [companySearchText, setCompanySearchText] = useState<string>("");
   const [selectedCompanyName, setSelectedCompanyName] = useState<string>(
     initialCompany?.name ?? ""
@@ -172,14 +176,24 @@ const ContactModalForm = ({
         fullWidth
       />
 
-      <ContactOwnerField
-        owner={initialOwner}
-        errorMessage={errors.ownerId}
-        translateContactText={translateContactText}
-        onChange={(owner) =>
-          setFieldValue("ownerId", owner?.employeeId ?? null)
-        }
-      />
+      {canEditOwner ? (
+        <EditableContactOwnerField
+          initialOwner={initialOwner}
+          errorMessage={errors.ownerId}
+          translateContactText={translateContactText}
+          onChange={(owner) =>
+            setFieldValue("ownerId", owner?.employeeId ?? null)
+          }
+        />
+      ) : (
+        <SelectedOwnerField
+          label={translateContactText(["labels", "owner"])}
+          owner={initialOwner}
+          onRemove={() => undefined}
+          showRemoveButton={false}
+          ariaLabel={translateContactText(["ariaLabels", "clearOwner"])}
+        />
+      )}
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
