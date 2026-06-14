@@ -8,7 +8,6 @@ interface PriorityDropdownProps {
   value?: CrmPriorityEnum;
   onChange?: (value: CrmPriorityEnum) => void;
   onSave?: (value: CrmPriorityEnum) => void;
-  onCancel?: () => void;
 }
 
 const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
@@ -45,7 +44,7 @@ const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (
         inputRef.current &&
-        !inputRef.current.contains(event.target as Node) &&
+        !(event.target instanceof Node && inputRef.current.contains(event.target)) &&
         isEditing
       ) {
         setIsEditing(false);
@@ -103,14 +102,15 @@ const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
           </div>
         </div>
       ) : (
-        <div
-          className="min-h-[32px] rounded-lg inline-flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
+        <button
+          type="button"
+          className="min-h-8 rounded-lg inline-flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
           onClick={handleClick}
         >
           <div className="flex items-center py-2 px-1 gap-2">
             <PriorityLabel priority={inputValue} />
           </div>
-        </div>
+        </button>
       )}
     </div>
   );
