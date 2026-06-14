@@ -14,13 +14,19 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetCrmContacts, useGetOwnerLookup } from "~community/crm/api/ContactApi";
+import {
+  useGetCrmContacts,
+  useGetOwnerLookup
+} from "~community/crm/api/ContactApi";
 import { useCreateDeal, useGetDealStages } from "~community/crm/api/crmDealApi";
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import PeoplePopupSearch from "~community/crm/components/molecules/PeoplePopupSearch/PeoplePopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
-import { DEFAULT_LOOKUP_PAGE_SIZE, SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/commonConstants";
 import { CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -125,12 +131,12 @@ const AddDealSidePanel: FC = () => {
       stageId: "",
       contactId: "",
       ownerId: "",
-      priority: CrmPriorityEnum.MEDIUM,
+      priority: CrmPriorityEnum.LOW,
       amount: "",
       description: ""
     },
     validationSchema: addDealValidations(translateText),
-    validateOnChange: false,
+    validateOnChange: true,
     validateOnBlur: false,
     onSubmit: (values) => {
       createDeal({
@@ -148,6 +154,7 @@ const AddDealSidePanel: FC = () => {
   const {
     values,
     errors,
+    touched,
     handleChange,
     handleBlur,
     setFieldValue,
@@ -157,16 +164,15 @@ const AddDealSidePanel: FC = () => {
   } = formik;
 
   useEffect(() => {
-    if (stages.length > 0 && !values.stageId) {
-      const leadStage = stages.find(
-        (s) => s.stageType === CrmDealStageEnum.INITIAL
-      );
-      if (leadStage) {
-        setFieldValue("stageId", String(leadStage.id));
-      }
+    if (!isCrmSidePanelOpen || stages.length === 0) return;
+    const leadStage = stages.find(
+      (s) => s.stageType === CrmDealStageEnum.INITIAL
+    );
+    if (leadStage) {
+      setFieldValue("stageId", String(leadStage.id));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stages]);
+  }, [isCrmSidePanelOpen, stages]);
 
   useEffect(() => {
     if (!currentUser || isOwnerInitialized) return;
@@ -211,7 +217,10 @@ const AddDealSidePanel: FC = () => {
         width="xl"
         animation="slide"
         closeOnBackdropClick={
-          !values.name && !values.description && !values.amount && !values.contactId
+          !values.name &&
+          !values.description &&
+          !values.amount &&
+          !values.contactId
         }
         closeAriaLabel={translateText(["ariaLabels", "closePanel"])}
         footer={
@@ -242,8 +251,8 @@ const AddDealSidePanel: FC = () => {
                 value={values.name}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                state={errors.name ? "error" : "default"}
-                errorMessage={errors.name}
+                state={touched.name && errors.name ? "error" : "default"}
+                errorMessage={touched.name ? errors.name : undefined}
                 fullWidth
                 aria-label={translateText(["ariaLabels", "dealName"])}
               />
@@ -257,7 +266,7 @@ const AddDealSidePanel: FC = () => {
                 className="rounded-lg"
                 width="55%"
                 placeholder={translateText(["labels", "stage"])}
-                errorMessage={errors.stageId}
+                errorMessage={touched.stageId ? errors.stageId : undefined}
                 ariaLabel={translateText(["ariaLabels", "stage"])}
               />
             </div>
@@ -295,8 +304,12 @@ const AddDealSidePanel: FC = () => {
                         variant="sm"
                         fullWidth
                         autoFocus
-                        state={errors.amount ? "error" : "default"}
-                        errorMessage={errors.amount}
+                        state={
+                          touched.amount && errors.amount ? "error" : "default"
+                        }
+                        errorMessage={
+                          touched.amount ? errors.amount : undefined
+                        }
                         aria-label={translateText(["ariaLabels", "amount"])}
                       />
                     </div>
@@ -307,9 +320,10 @@ const AddDealSidePanel: FC = () => {
                         className={`text-[14px] text-left w-full pl-1 ${values.amount ? "text-black" : "text-tertiary-text"}`}
                         onClick={() => setEditingField("amount")}
                       >
-                        {values.amount || translateText(["placeholders", "none"])}
+                        {values.amount ||
+                          translateText(["placeholders", "none"])}
                       </button>
-                      {errors.amount && (
+                      {touched.amount && errors.amount && (
                         <p className="text-semantic-red-text text-[12px] mt-1">
                           {errors.amount}
                         </p>
@@ -343,9 +357,9 @@ const AddDealSidePanel: FC = () => {
                         "placeholders",
                         "ownerSearch"
                       ])}
-                      ariaInvalid={!!errors.ownerId}
+                      ariaInvalid={!!(touched.ownerId && errors.ownerId)}
                     />
-                    {errors.ownerId && (
+                    {touched.ownerId && errors.ownerId && (
                       <p className="text-semantic-red-text text-[12px] mt-1">
                         {errors.ownerId}
                       </p>
@@ -367,9 +381,9 @@ const AddDealSidePanel: FC = () => {
                         "placeholders",
                         "contactSearch"
                       ])}
-                      ariaInvalid={!!errors.contactId}
+                      ariaInvalid={!!(touched.contactId && errors.contactId)}
                     />
-                    {errors.contactId && (
+                    {touched.contactId && errors.contactId && (
                       <p className="text-semantic-red-text text-[12px] mt-1">
                         {errors.contactId}
                       </p>

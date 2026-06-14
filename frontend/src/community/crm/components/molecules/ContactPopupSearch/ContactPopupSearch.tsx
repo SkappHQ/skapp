@@ -64,7 +64,9 @@ const ContactPopupSearch: FC<Props> = ({
       width="100%"
       renderTrigger={(val, _isOpen, _disabled, { ref, ...triggerProps }) => {
         const contact = val
-          ? contacts.find((c) => c.id === Number((val as { id: unknown }).id)) ?? selectedContact
+          ? (contacts.find(
+              (c) => c.id === Number((val as { id: unknown }).id)
+            ) ?? selectedContact)
           : null;
         return (
           <div
@@ -75,7 +77,9 @@ const ContactPopupSearch: FC<Props> = ({
             {contact ? (
               <span className="text-[14px]">{contact.name}</span>
             ) : (
-              <span className="text-[14px] text-tertiary-text">{placeholder}</span>
+              <span className="text-[14px] text-tertiary-text">
+                {placeholder}
+              </span>
             )}
           </div>
         );

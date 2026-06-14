@@ -1,20 +1,20 @@
-import React from 'react';
 import {
+  HighPriorityIcon,
   Label,
   LowPriorityIcon,
-  MediumPriorityIcon,
-  HighPriorityIcon,
-} from '@rootcodelabs/skapp-ui';
-import { CrmPriorityEnum } from '~community/crm/enums/common';
-import { useTranslator } from '~community/common/hooks/useTranslator';
+  MediumPriorityIcon
+} from "@rootcodelabs/skapp-ui";
+import React from "react";
+
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 interface PriorityLabelProps {
   priority: CrmPriorityEnum;
-  label?: string;
 }
 
-const PriorityLabel: React.FC<PriorityLabelProps> = ({ priority, label }) => {
-  const translateText = useTranslator('crmModule', 'tasks', 'addTaskModal');
+const PriorityLabel: React.FC<PriorityLabelProps> = ({ priority }) => {
+  const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
   switch (priority?.toUpperCase()) {
     case CrmPriorityEnum.LOW:
@@ -25,7 +25,7 @@ const PriorityLabel: React.FC<PriorityLabelProps> = ({ priority, label }) => {
         >
           <LowPriorityIcon />
           <span className="body3 text-semantic-green-text">
-            {label ?? translateText(['priorityOptions', 'low'])}
+            {translateText(["priorityOptions", "low"])}
           </span>
         </Label>
       );
@@ -37,7 +37,7 @@ const PriorityLabel: React.FC<PriorityLabelProps> = ({ priority, label }) => {
         >
           <MediumPriorityIcon />
           <span className="body3 text-semantic-amber-text">
-            {label ?? translateText(['priorityOptions', 'medium'])}
+            {translateText(["priorityOptions", "medium"])}
           </span>
         </Label>
       );
@@ -49,7 +49,7 @@ const PriorityLabel: React.FC<PriorityLabelProps> = ({ priority, label }) => {
         >
           <HighPriorityIcon />
           <span className="body3 text-semantic-red-text">
-            {label ?? translateText(['priorityOptions', 'high'])}
+            {translateText(["priorityOptions", "high"])}
           </span>
         </Label>
       );

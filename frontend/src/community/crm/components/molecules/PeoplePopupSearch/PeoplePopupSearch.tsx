@@ -67,7 +67,9 @@ const PeoplePopupSearch: FC<Props> = ({
       width="100%"
       renderTrigger={(val, _isOpen, _disabled, { ref, ...triggerProps }) => {
         const user = val
-          ? users.find((u) => u.employeeId === Number((val as { id: unknown }).id)) ?? selectedUser
+          ? (users.find(
+              (u) => u.employeeId === Number((val as { id: unknown }).id)
+            ) ?? selectedUser)
           : null;
         return (
           <div
@@ -77,7 +79,9 @@ const PeoplePopupSearch: FC<Props> = ({
           >
             {user ? (
               <AvatarChip
-                label={[user.firstName, user.lastName].filter(Boolean).join(" ")}
+                label={[user.firstName, user.lastName]
+                  .filter(Boolean)
+                  .join(" ")}
                 avatarProps={{
                   id: String(user.employeeId),
                   firstName: user.firstName,
@@ -88,7 +92,9 @@ const PeoplePopupSearch: FC<Props> = ({
                 backgroundColor="bg-gray-100"
               />
             ) : (
-              <span className="text-[14px] text-tertiary-text">{placeholder}</span>
+              <span className="text-[14px] text-tertiary-text">
+                {placeholder}
+              </span>
             )}
           </div>
         );

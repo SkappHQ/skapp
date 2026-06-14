@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Dropdown } from '@rootcodelabs/skapp-ui';
-import PriorityLabel from '~community/crm/components/atoms/PriorityLabel/PriorityLabel';
-import { CrmPriorityEnum } from '~community/crm/enums/common';
-import useGetPriorityOptions from '~community/crm/hooks/useGetPriorityOptions';
+import { Dropdown } from "@rootcodelabs/skapp-ui";
+import React, { useEffect, useRef, useState } from "react";
+
+import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
+import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 
 interface PriorityDropdownProps {
   value?: CrmPriorityEnum;
@@ -13,7 +14,7 @@ interface PriorityDropdownProps {
 const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
   value = CrmPriorityEnum.MEDIUM,
   onChange,
-  onSave,
+  onSave
 }) => {
   const priorityOptions = useGetPriorityOptions();
   const [isEditing, setIsEditing] = useState(false);
@@ -29,7 +30,7 @@ const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
     if (isEditing && dropdownRef.current) {
       const timeout = setTimeout(() => {
         const trigger = dropdownRef.current?.querySelector(
-          'button, [role="button"], .dropdown-trigger',
+          'button, [role="button"], .dropdown-trigger'
         );
         if (trigger) {
           (trigger as HTMLElement).click();
@@ -44,7 +45,10 @@ const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (
         inputRef.current &&
-        !(event.target instanceof Node && inputRef.current.contains(event.target)) &&
+        !(
+          event.target instanceof Node &&
+          inputRef.current.contains(event.target)
+        ) &&
         isEditing
       ) {
         setIsEditing(false);
@@ -59,11 +63,11 @@ const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
     };
 
     if (isEditing) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isEditing, inputValue, onSave, onChange]);
 
