@@ -5,11 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CrmTaskCompletedFilterDto {
-
-	private int page = 0;
-
-	private int size = 10;
+public class CrmTaskFilterDto {
 
 	private String searchKeyword;
 
