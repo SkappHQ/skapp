@@ -10,6 +10,7 @@ import {
   useGetOwnerLookup
 } from "~community/crm/api/ContactApi";
 import { useGetDealLookup } from "~community/crm/api/crmDealApi";
+import OwnerDropdownItem from "~community/crm/components/atoms/OwnerDropdownItem/OwnerDropdownItem";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
@@ -39,12 +40,13 @@ export interface TaskFormLogicReturn {
   ) => void;
   submitForm: () => Promise<void>;
   isSubmitting: boolean;
+  setSubmitting: (isSubmitting: boolean) => void;
   resetForm: () => void;
 
   // Owner state & handlers
   selectedOwner: CrmOwner | null;
   ownerSearchText: string;
-  ownerLookupItems: CrmOwner[];
+  ownerDropdownItems: SearchableDropdownItem[];
   handleOwnerSelect: (item: SearchableDropdownItem) => void;
   handleOwnerSearchChange: (value: string) => void;
   handleOwnerRemove: () => void;
@@ -161,6 +163,7 @@ const useTaskFormLogic = ({
     errors,
     handleChange,
     isSubmitting,
+    setSubmitting,
     setFieldValue,
     submitForm,
     resetForm
@@ -175,8 +178,19 @@ const useTaskFormLogic = ({
 
   const ownerLookupItems: CrmOwner[] = ownerLookupData?.items ?? [];
 
+  const ownerDropdownItems: SearchableDropdownItem[] = ownerLookupItems.map(
+    (owner) => ({
+      id: String(owner.employeeId),
+      content: <OwnerDropdownItem owner={owner} />
+    })
+  );
+
   const { data: contactLookupData, isFetching: isContactFetching } =
-    useGetCrmContacts(debouncedContactSearch, DEFAULT_LOOKUP_PAGE_SIZE);
+    useGetCrmContacts(
+      debouncedContactSearch,
+      DEFAULT_LOOKUP_PAGE_SIZE,
+      debouncedContactSearch.length > 0
+    );
 
   const contactDropdownItems: SearchableDropdownItem[] =
     contactLookupData?.items?.map((contact) => ({
@@ -186,7 +200,8 @@ const useTaskFormLogic = ({
 
   const { data: dealLookupData, isFetching: isDealFetching } = useGetDealLookup(
     debouncedDealSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    debouncedDealSearch.length > 0
   );
 
   const dealDropdownItems: SearchableDropdownItem[] =
@@ -254,11 +269,12 @@ const useTaskFormLogic = ({
     setFieldValue,
     submitForm,
     isSubmitting,
+    setSubmitting,
     resetForm,
 
     selectedOwner,
     ownerSearchText,
-    ownerLookupItems,
+    ownerDropdownItems,
     handleOwnerSelect,
     handleOwnerSearchChange: setOwnerSearchText,
     handleOwnerRemove,

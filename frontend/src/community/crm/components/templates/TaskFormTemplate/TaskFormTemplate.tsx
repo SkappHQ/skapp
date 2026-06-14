@@ -7,18 +7,15 @@ import {
   InputField,
   TextArea
 } from "@rootcodelabs/skapp-ui";
+import { format } from "date-fns";
 import { FC } from "react";
 
-import SearchableDropdown, {
-  SearchableDropdownItem
-} from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
+import SearchableDropdown from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import SelectableSearchField from "~community/crm/components/atoms/SelectableSearchField/SelectableSearchField";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
-import { TaskFormContentProps } from "~community/crm/types/FormTypes";
+import { TaskFormTemplateProps } from "~community/crm/types/FormTypes";
 
-import OwnerDropdownItem from "../../atoms/OwnerDropdownItem/OwnerDropdownItem";
-
-const TaskFormContent: FC<TaskFormContentProps> = ({
+const TaskFormTemplate: FC<TaskFormTemplateProps> = ({
   values,
   errors,
   handleChange,
@@ -28,7 +25,7 @@ const TaskFormContent: FC<TaskFormContentProps> = ({
 
   selectedOwner,
   ownerSearchText,
-  ownerLookupItems,
+  ownerDropdownItems,
   onOwnerSelect,
   onOwnerSearchChange,
   onOwnerRemove,
@@ -59,13 +56,6 @@ const TaskFormContent: FC<TaskFormContentProps> = ({
 
   translateText
 }) => {
-  const ownerDropdownItems: SearchableDropdownItem[] = ownerLookupItems.map(
-    (owner) => ({
-      id: String(owner.employeeId),
-      content: <OwnerDropdownItem owner={owner} />
-    })
-  );
-
   return (
     <div className="flex flex-col w-full h-full justify-between gap-[0.625rem]">
       <InputField
@@ -123,7 +113,10 @@ const TaskFormContent: FC<TaskFormContentProps> = ({
             mode="single"
             selected={values.dueDate ? new Date(values.dueDate) : undefined}
             onSelect={(date: Date | undefined) =>
-              setFieldValue("dueDate", date ? date.toISOString() : null)
+              setFieldValue(
+                "dueDate",
+                date ? format(date, "yyyy-MM-dd'T'HH:mm:ss") : null
+              )
             }
             popperProps={{ position: "bottom-end" }}
           >
@@ -250,4 +243,4 @@ const TaskFormContent: FC<TaskFormContentProps> = ({
   );
 };
 
-export default TaskFormContent;
+export default TaskFormTemplate;

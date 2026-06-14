@@ -6,7 +6,7 @@ import type useGetPriorityOptions from "../hooks/useGetPriorityOptions";
 import type useGetTaskTypeOptions from "../hooks/useGetTaskTypeOptions";
 import { CrmTaskAddFormTypes, CrmOwner, CrmTaskCategory } from "./CommonTypes";
 
-export interface TaskFormContentProps {
+export interface TaskFormTemplateProps {
   // Formik values & methods
   values: CrmTaskAddFormTypes;
   errors: FormikErrors<CrmTaskAddFormTypes>;
@@ -24,7 +24,7 @@ export interface TaskFormContentProps {
   // Owner
   selectedOwner: CrmOwner | null;
   ownerSearchText: string;
-  ownerLookupItems: CrmOwner[];
+  ownerDropdownItems: SearchableDropdownItem[];
   onOwnerSelect: (item: SearchableDropdownItem) => void;
   onOwnerSearchChange: (value: string) => void;
   onOwnerRemove: () => void;

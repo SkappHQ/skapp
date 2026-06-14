@@ -4,7 +4,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateTask } from "~community/crm/api/TaskApi";
-import TaskFormContent from "~community/crm/components/templates/TaskFormTemplate/TaskFormTemplate";
+import TaskFormTemplate from "~community/crm/components/templates/TaskFormTemplate/TaskFormTemplate";
 import useTaskFormLogic from "~community/crm/hooks/useTaskFormLogic";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -37,6 +37,7 @@ const AddTaskModalContent: FC = () => {
   };
 
   const handleError = () => {
+    formLogic.setSubmitting(false);
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -54,9 +55,7 @@ const AddTaskModalContent: FC = () => {
     const payload: CrmTaskCreatePayload = {
       name: formValues.name.trim(),
       typeId: formValues.type?.id ?? undefined,
-      dueAt: formValues.dueDate
-        ? formValues.dueDate.split(".")[0]
-        : null,
+      dueAt: formValues.dueDate ?? null,
       priority: formValues.priority,
       contactId: formValues.contactId ?? undefined,
       dealId: formValues.dealId ?? undefined,
@@ -70,7 +69,7 @@ const AddTaskModalContent: FC = () => {
   const formLogic = useTaskFormLogic({ onSubmit: createTask });
 
   return (
-    <TaskFormContent
+    <TaskFormTemplate
       values={formLogic.values}
       errors={formLogic.errors}
       handleChange={formLogic.handleChange}
@@ -79,7 +78,7 @@ const AddTaskModalContent: FC = () => {
       isPending={isPending}
       selectedOwner={formLogic.selectedOwner}
       ownerSearchText={formLogic.ownerSearchText}
-      ownerLookupItems={formLogic.ownerLookupItems}
+      ownerDropdownItems={formLogic.ownerDropdownItems}
       onOwnerSelect={formLogic.handleOwnerSelect}
       onOwnerSearchChange={formLogic.handleOwnerSearchChange}
       onOwnerRemove={formLogic.handleOwnerRemove}
