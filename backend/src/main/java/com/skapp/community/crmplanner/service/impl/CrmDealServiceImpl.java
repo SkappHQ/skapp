@@ -16,6 +16,7 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
@@ -221,6 +222,36 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Transactional
 	public ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto) {
 		log.info("reorderDeal: reordering deal with id={}", requestDto.getDealId());
+		if (requestDto.getDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
+		}
+		if (requestDto.getPreviousDealId() == null && requestDto.getNextDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
+		}
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
+
+		String newOrderIndex = generateOrderIndex(deal.getId(), deal.getStage().getId(), requestDto.getPreviousDealId(),
+				requestDto.getNextDealId());
+		deal.setOrderIndex(newOrderIndex);
+
+		CrmDeal savedDeal = crmDealDao.save(deal);
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
+		log.info("reorderDeal: deal reordered with id={}, new orderIndex={}", savedDeal.getId(), newOrderIndex);
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto updateDealStage(CrmDealUpdateStageRequestDto requestDto) {
+		log.info("updateDealStage: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
@@ -234,30 +265,48 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
 		}
 
-		if (requestDto.getPreviousDealId() == null && requestDto.getNextDealId() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
+		if (requestDto.getNewStageId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_ID_REQUIRED);
 		}
 
-		if (requestDto.getDealId().equals(requestDto.getPreviousDealId())
-				|| requestDto.getDealId().equals(requestDto.getNextDealId())) {
+		CrmDealStage newStage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getNewStageId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+
+		if (deal.getStage().getId().equals(newStage.getId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ALREADY_IN_STAGE);
+		}
+
+		String newOrderIndex = generateOrderIndex(deal.getId(), newStage.getId(), requestDto.getPreviousDealId(),
+				requestDto.getNextDealId());
+
+		deal.setStage(newStage);
+		deal.setOrderIndex(newOrderIndex);
+
+		CrmDeal savedDeal = crmDealDao.save(deal);
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
+		log.info("updateDealStage: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
+		if (dealId.equals(previousDealId) || dealId.equals(nextDealId)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_INVALID_NEIGHBOUR);
 		}
 
-		Long stageId = deal.getStage().getId();
-
-		String prevOrderIndex = null;
-		if (requestDto.getPreviousDealId() != null) {
-			CrmDeal prevDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getPreviousDealId())
+		String previousOrderIndex = null;
+		if (previousDealId != null) {
+			CrmDeal previousDeal = crmDealDao.findByIdAndIsDeletedFalse(previousDealId)
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
-			if (!stageId.equals(prevDeal.getStage().getId())) {
+			if (!stageId.equals(previousDeal.getStage().getId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
 			}
-			prevOrderIndex = prevDeal.getOrderIndex();
+			previousOrderIndex = previousDeal.getOrderIndex();
 		}
 
 		String nextOrderIndex = null;
-		if (requestDto.getNextDealId() != null) {
-			CrmDeal nextDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getNextDealId())
+		if (nextDealId != null) {
+			CrmDeal nextDeal = crmDealDao.findByIdAndIsDeletedFalse(nextDealId)
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			if (!stageId.equals(nextDeal.getStage().getId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
@@ -265,14 +314,15 @@ public class CrmDealServiceImpl implements CrmDealService {
 			nextOrderIndex = nextDeal.getOrderIndex();
 		}
 
-		String newOrderIndex = FractionalIndexUtil.generateKeyBetween(prevOrderIndex, nextOrderIndex);
-		deal.setOrderIndex(newOrderIndex);
+		if (previousDealId == null && nextDealId == null) {
+			String existingOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stageId);
+			if (existingOrderIndex != null) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
+			}
+			return FractionalIndexUtil.generateKeyBetween(null, null);
+		}
 
-		CrmDeal savedDeal = crmDealDao.save(deal);
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
-
-		log.info("reorderDeal: deal reordered with id={}, new orderIndex={}", savedDeal.getId(), newOrderIndex);
-		return new ResponseEntityDto(false, responseDto);
+		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);
 	}
 
 }
