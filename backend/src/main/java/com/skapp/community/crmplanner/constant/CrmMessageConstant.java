@@ -67,7 +67,9 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH("api.error.crm.deal.neighbour-stage-mismatch"),
 	CRM_ERROR_DEAL_EDIT_DENIED("api.error.crm.deal.edit-denied"),
 	CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED("api.error.crm.deal.order-neighbours-required"),
-	CRM_ERROR_DEAL_ALREADY_IN_STAGE("api.error.crm.deal.already-in-stage");
+	CRM_ERROR_DEAL_ALREADY_IN_STAGE("api.error.crm.deal.already-in-stage"),
+	CRM_SUCCESS_TASK_DELETED("api.success.crm.task-deleted"),
+	CRM_ERROR_TASK_DELETE_DENIED("api.error.crm.task-delete-denied");
 
 	private final String messageKey;
 

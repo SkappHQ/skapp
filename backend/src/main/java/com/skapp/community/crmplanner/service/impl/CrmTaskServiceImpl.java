@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -58,6 +59,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	private final CrmOwnerResolverService crmOwnerResolver;
 
 	private final CrmMapper crmMapper;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -244,6 +247,26 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		log.info("editTask: execution ended successfully");
 		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(updatedTask));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteTask(Long id) {
+		log.info("deleteTask: execution started");
+
+		CrmTask task = crmTaskDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isEditRestricted(currentUser, task.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DELETE_DENIED);
+		}
+
+		task.setIsDeleted(true);
+		crmTaskDao.save(task);
+
+		log.info("deleteTask: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_TASK_DELETED), false);
 	}
 
 	private Employee resolveTaskOwner(Long ownerId, User currentUser) {
