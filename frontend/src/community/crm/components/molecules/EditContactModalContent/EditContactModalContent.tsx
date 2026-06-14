@@ -62,19 +62,17 @@ const EditContactModalContent = () => {
     }
   );
 
-  if (!selectedContact) return null;
-
   const initialValues: CrmContactFormValues = {
-    name: selectedContact.name,
-    email: selectedContact.email,
-    contactNumber: selectedContact.contactNumber ?? "",
-    companyId: selectedContact.company?.id ?? null,
-    ownerId: selectedContact.owner?.employeeId ?? null
+    name: selectedContact?.name,
+    email: selectedContact?.email,
+    contactNumber: selectedContact?.contactNumber ?? "",
+    companyId: selectedContact?.company?.id ?? null,
+    ownerId: selectedContact?.owner?.employeeId ?? null
   };
 
   const submitEditContact = (values: CrmContactFormValues) => {
     const payload: EditContactPayload = {
-      id: selectedContact.id,
+      id: selectedContact?.id,
       name: values.name.trim(),
       email: values.email.trim(),
       contactNumber: values.contactNumber.trim() || undefined,
@@ -89,8 +87,8 @@ const EditContactModalContent = () => {
     <ContactModalForm
       translateContactText={translateContactText}
       initialValues={initialValues}
-      initialCompany={selectedContact.company}
-      initialOwner={selectedContact.owner}
+      initialCompany={selectedContact?.company ?? null}
+      initialOwner={selectedContact?.owner ?? null}
       isPending={isPending}
       onSubmit={submitEditContact}
       onCancel={handleCloseModal}
