@@ -10,12 +10,7 @@ import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { TASK_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/taskConstants";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { useGetTasksTabs } from "~community/crm/hooks/useGetTasksTabs";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
-
-import TaskRow from "../../molecules/AddCompanyModalContent/TaskRow/TaskRow";
-import SidePanelTasksSection from "../../molecules/SidePanelTasksSection/SidePanelTasksSection";
 
 const TasksTable = () => {
   const translateText = useTranslator("crmModule", "tasks");
