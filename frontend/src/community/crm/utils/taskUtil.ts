@@ -16,7 +16,7 @@ export interface TaskDueDateInfo {
   colorClass: string;
 }
 
-export const formatDueDate = (
+export const getDueDateStatus = (
   dueAt: string | null,
   isCompleted: boolean
 ): TaskDueDateInfo | null => {
