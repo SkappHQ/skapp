@@ -68,7 +68,7 @@ public class CrmTaskController {
 
 	@Operation(summary = "Delete a CRM task", description = "Soft-deletes a task by ID.")
 	@DeleteMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> deleteTask(@PathVariable Long id) {
 		ResponseEntityDto response = taskService.deleteTask(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
