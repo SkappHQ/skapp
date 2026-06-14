@@ -128,7 +128,7 @@ export interface CrmContactEditFormTypes {
 }
 
 export interface EditContactPayload extends CrmContactCreatePayload {
-  id: number;
+  id?: number;
 }
 
 export interface CrmContactMetricsType {

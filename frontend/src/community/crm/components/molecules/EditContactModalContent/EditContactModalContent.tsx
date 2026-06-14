@@ -56,15 +56,15 @@ const EditContactModalContent = () => {
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(
     selectedContact?.owner ?? null
   );
-  const [selectedCompanyLabel, setSelectedCompanyLabel] = useState(
+  const [selectedCompanyName, setSelectedCompanyName] = useState<string>(
     selectedContact?.company?.name ?? ""
   );
 
-  const [companySearch, setCompanySearch] = useState("");
+  const [companySearchText, setCompanySearchText] = useState("");
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
   const debouncedCompanySearch = useDebounce(
-    companySearch.trim(),
+    companySearchText.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
   const debouncedOwnerSearch = useDebounce(
@@ -97,7 +97,11 @@ const EditContactModalContent = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateContactText(["contactToastMessages", "successTitle"])
+      title: translateContactText(["contactToastMessages", "successTitle"]),
+      description: translateContactText([
+        "contactToastMessages",
+        "successDescription"
+      ])
     });
   };
 
@@ -124,10 +128,8 @@ const EditContactModalContent = () => {
   );
 
   const submitEditContact = (values: CrmContactEditFormTypes) => {
-    if (!selectedContact) return;
-
     const payload: EditContactPayload = {
-      id: selectedContact.id,
+      id: selectedContact?.id,
       name: values.name.trim(),
       email: values.email.trim(),
       contactNumber: values.contactNumber?.trim() || undefined,
@@ -170,16 +172,16 @@ const EditContactModalContent = () => {
       (company) => String(company.id) === companyDropDownItem.id
     );
     setFieldValue("companyId", Number(companyDropDownItem.id));
-    setSelectedCompanyLabel(
+    setSelectedCompanyName(
       company?.name ?? String(companyDropDownItem.content)
     );
-    setCompanySearch("");
+    setCompanySearchText("");
   };
 
   const handleClearCompany = () => {
     setFieldValue("companyId", null);
-    setSelectedCompanyLabel("");
-    setCompanySearch("");
+    setSelectedCompanyName("");
+    setCompanySearchText("");
   };
 
   const { data: ownerLookupData, isFetching: isOwnerFetching } =
@@ -252,10 +254,10 @@ const EditContactModalContent = () => {
           label={translateContactText(["labels", "company"])}
           placeholder={translateContactText(["placeholders", "company"])}
           items={companyDropdownItems}
-          value={companySearch}
-          onChange={(e) => setCompanySearch(e.target.value)}
+          value={companySearchText}
+          onChange={(e) => setCompanySearchText(e.target.value)}
           onSelect={handleCompanySelect}
-          onClose={() => setCompanySearch("")}
+          onClose={() => setCompanySearchText("")}
           emptyMessage={
             isCompanyFetching ? undefined : (
               <p className="px-4 py-2 body2">
@@ -267,7 +269,7 @@ const EditContactModalContent = () => {
       ) : (
         <InputField
           label={translateContactText(["labels", "company"])}
-          value={selectedCompanyLabel}
+          value={selectedCompanyName}
           readOnly
           fullWidth
           variant="md"
