@@ -1,5 +1,6 @@
 import { AvatarChip } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwner } from "~community/crm/types/CommonTypes";

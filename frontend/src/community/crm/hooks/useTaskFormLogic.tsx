@@ -205,7 +205,7 @@ const useTaskFormLogic = ({
   );
 
   const dealDropdownItems: SearchableDropdownItem[] =
-    dealLookupData?.map((deal) => ({
+    dealLookupData?.items?.map((deal) => ({
       id: String(deal.id),
       content: deal.name
     })) ?? [];
@@ -241,7 +241,7 @@ const useTaskFormLogic = ({
   };
 
   const handleDealSelect = (item: SearchableDropdownItem) => {
-    const deal = dealLookupData?.find((d) => String(d.id) === item.id);
+    const deal = dealLookupData?.items?.find((d) => String(d.id) === item.id);
     setFieldValue("dealId", Number(item.id));
     setSelectedDealLabel(deal?.name ?? String(item.content));
     setDealSearchText("");
