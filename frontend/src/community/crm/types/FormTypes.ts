@@ -1,9 +1,9 @@
 import { FormikErrors } from "formik";
 import { ChangeEvent } from "react";
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
-import { useTranslator } from "~community/common/hooks/useTranslator";
-import useGetPriorityOptions from "../hooks/useGetPriorityOptions";
-import useGetTaskTypeOptions from "../hooks/useGetTaskTypeOptions";
+import type { useTranslator } from "~community/common/hooks/useTranslator";
+import type useGetPriorityOptions from "../hooks/useGetPriorityOptions";
+import type useGetTaskTypeOptions from "../hooks/useGetTaskTypeOptions";
 import { CrmTaskAddFormTypes, CrmOwner, CrmTaskCategory } from "./CommonTypes";
 
 export interface TaskFormContentProps {

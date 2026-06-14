@@ -54,7 +54,9 @@ const AddTaskModalContent: FC = () => {
     const payload: CrmTaskCreatePayload = {
       name: formValues.name.trim(),
       typeId: formValues.type?.id ?? undefined,
-      dueAt: formValues.dueDate,
+      dueAt: formValues.dueDate
+        ? formValues.dueDate.split(".")[0]
+        : null,
       priority: formValues.priority,
       contactId: formValues.contactId ?? undefined,
       dealId: formValues.dealId ?? undefined,
