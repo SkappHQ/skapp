@@ -4,8 +4,8 @@ interface CrmConfigurationsProps {}
 
 const CrmConfigurations: React.FC<CrmConfigurationsProps> = () => {
   return (
-    <div className="crm-configurations">
-      <h1>CRM Configurations</h1>
+    <div>
+      <h2>CRM Configurations</h2>
     </div>
   );
 };

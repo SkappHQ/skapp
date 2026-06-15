@@ -4,6 +4,7 @@ import { devtools } from "zustand/middleware";
 import { Modules } from "~community/common/enums/CommonEnums";
 
 import { ConfigurationStoreTypes } from "../types/zustand/StoreTypes";
+import { dealStageSlice } from "./slices/dealStageSlice";
 
 export const useConfigurationStore = create<
   ConfigurationStoreTypes,
@@ -22,7 +23,8 @@ export const useConfigurationStore = create<
         set((state: ConfigurationStoreTypes) => ({
           ...state,
           moduleType: moduleType
-        }))
+        })),
+      ...dealStageSlice(set)
     }),
     { name: "configurationStore" }
   )
