@@ -9,7 +9,7 @@ public class CrmTaskFilterParams {
 
 	private final Long ownerId;
 
-	private final boolean completed;
+	private final Boolean completed;
 
 	private final String searchKeyword;
 

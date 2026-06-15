@@ -181,8 +181,11 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
-		predicates.add(params.isCompleted() ? cb.isTrue(root.get(CrmTask_.isCompleted))
-				: cb.isFalse(root.get(CrmTask_.isCompleted)));
+		
+		if (params.getCompleted() != null) {
+			predicates.add(Boolean.TRUE.equals(params.getCompleted()) ? cb.isTrue(root.get(CrmTask_.isCompleted))
+					: cb.isFalse(root.get(CrmTask_.isCompleted)));
+		}
 
 		if (params.getOwnerId() != null) {
 			predicates.add(cb.equal(root.get(CrmTask_.owner).get(Employee_.employeeId), params.getOwnerId()));
@@ -190,7 +193,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		if (params.getSearchKeyword() != null && !params.getSearchKeyword().isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(params.getSearchKeyword().trim().toLowerCase());
-			predicates.add(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%", '\\'));
+			predicates.add(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"));
 		}
 
 		if (params.getContactId() != null) {
