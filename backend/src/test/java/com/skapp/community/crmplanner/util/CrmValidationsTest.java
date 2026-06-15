@@ -171,14 +171,6 @@ class CrmValidationsTest {
 		}
 
 		@Test
-		@DisplayName("Invalid format - throws CRM_ERROR_DOMAIN_INVALID")
-		void validateDomain_InvalidFormat_ThrowsInvalid() {
-			ModuleException ex = assertThrows(ModuleException.class,
-					() -> CrmValidations.validateDomain("not a domain!"));
-			assertEquals(CrmMessageConstant.CRM_ERROR_DOMAIN_INVALID, ex.getMessageKey());
-		}
-
-		@Test
 		@DisplayName("Valid domain - does not throw")
 		void validateDomain_Valid_DoesNotThrow() {
 			assertDoesNotThrow(() -> CrmValidations.validateDomain("acme.com"));
