@@ -103,6 +103,10 @@ export interface CrmOwnersResponseType {
   totalPages: number;
 }
 
+export interface CrmCompanyDomainSearchResponseType {
+  companies: CrmCompanyType[];
+}
+
 export interface CrmContactAddFormTypes {
   name: string;
   email: string;

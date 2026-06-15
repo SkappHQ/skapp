@@ -57,6 +57,8 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH("api.error.crm.task.contact-company-mismatch"),
 	CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH("api.error.crm.task.deal-contact-mismatch"),
 	CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH("api.error.crm.task.deal-company-mismatch"),
+	CRM_ERROR_DOMAIN_REQUIRED("api.error.crm.validation.domain-required"),
+	CRM_ERROR_DOMAIN_INVALID("api.error.crm.validation.domain-invalid"),
 	CRM_SUCCESS_CONTACT_CREATED("api.success.crm.contact-created"),
 	CRM_SUCCESS_CONTACT_DELETED("api.success.crm.contact-deleted"),
 	CRM_SUCCESS_CONTACT_UPDATED("api.success.crm.contact-updated"),
