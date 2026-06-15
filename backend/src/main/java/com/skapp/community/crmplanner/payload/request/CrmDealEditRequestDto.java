@@ -18,7 +18,7 @@ public class CrmDealEditRequestDto {
 
 	private String amount;
 
-	private String contactName;
+	private Long contactId;
 
 	private Long ownerId;
 
