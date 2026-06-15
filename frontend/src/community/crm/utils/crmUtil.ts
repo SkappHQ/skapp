@@ -13,8 +13,6 @@ export const prioritizeListIds = <T extends Identifiable>(
   items: T[],
   priorityIds: number[]
 ): { prioritized: T[]; others: T[] } => {
-  console.log("items",items);
-  console.log("ids",priorityIds);
   return items.reduce<{ prioritized: T[]; others: T[] }>(
     (groups, item) => {
       const key = priorityIds.includes(Number(item.id)) ? "prioritized" : "others";

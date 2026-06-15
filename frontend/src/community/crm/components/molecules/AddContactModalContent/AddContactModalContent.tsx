@@ -17,6 +17,7 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { emailPattern } from "~community/common/regex/regexPatterns";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
 import {
@@ -155,9 +156,12 @@ const AddContactModalContent: React.FC = () => {
 
   const debouncedDomain = useDebounce(extractedDomain, SEARCH_DEBOUNCE_DELAY);
 
+  const isDomainSearchEnabled =
+    debouncedDomain.length > 0 && emailPattern().test(values.email);
+
   const { data: domainSearchData } = useSearchCompaniesByDomain(
     debouncedDomain,
-    debouncedDomain.length > 0 && Yup.string().email().isValidSync(values.email)
+    isDomainSearchEnabled
   );
 
   const { data: companyLookupData, isFetching: isCompanyFetching } =
@@ -278,7 +282,7 @@ const AddContactModalContent: React.FC = () => {
               </p>
             )
           }
-          forceOpen={extractedDomain.length > 0}
+          forceOpen={isDomainSearchEnabled}
         />
       ) : (
         <InputField

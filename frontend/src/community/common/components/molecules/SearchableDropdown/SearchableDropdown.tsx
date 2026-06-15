@@ -90,6 +90,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   useEffect(() => {
     if (forceOpen) {
       setIsOpen(true);
+    } else {
+      setIsOpen(false);
     }
   }, [forceOpen]);
 
