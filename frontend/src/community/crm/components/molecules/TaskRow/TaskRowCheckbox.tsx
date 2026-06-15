@@ -34,7 +34,10 @@ const TaskRowCheckbox: FC<Props> = ({ task }) => {
   };
 
   return (
-    <div className="shrink-0 flex items-center justify-center pr-1">
+    <div
+      className="shrink-0 flex items-center justify-center pr-1"
+      onClick={(e) => e.stopPropagation()}
+    >
       <CheckTask
         checked={task.isCompleted}
         onChange={handleToggleChange}

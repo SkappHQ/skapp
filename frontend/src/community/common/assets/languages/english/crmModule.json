@@ -269,6 +269,7 @@
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task",
+    "openTaskDetails": "Open task details panel for {{name}}",
     "addTaskModal": {
       "title": "Add task",
       "labels": {

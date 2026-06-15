@@ -2,8 +2,9 @@ import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import TaskRow from "~community/crm/components/molecules/AddCompanyModalContent/TaskRow/TaskRow";
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
+
+import TaskRow from "../TaskRow/TaskRow";
 
 interface Props {
   tasks: CrmTaskType[];
