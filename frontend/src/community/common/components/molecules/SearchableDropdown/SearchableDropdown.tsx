@@ -92,6 +92,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       setIsOpen(true);
     } else {
       setIsOpen(false);
+      setActiveIndex(null);
     }
   }, [forceOpen]);
 
