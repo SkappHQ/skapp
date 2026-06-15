@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { CrmTaskType } from "~community/crm/types/CommonTypes";
 
-import SidePanelTasksEmpty from "./SidePanelTasksEmpty";
+import SidePanelTasksEmptyView from "./SidePanelTasksEmptyView";
 import SidePanelTasksList from "./SidePanelTasksList";
 
 interface Props {
@@ -31,7 +31,7 @@ const SidePanelTasksSection: FC<Props> = ({
       onAddTask={handleAddTask}
     />
   ) : (
-    <SidePanelTasksEmpty onAddTask={handleAddTask} />
+    <SidePanelTasksEmptyView onAddTask={handleAddTask} />
   );
 };
 

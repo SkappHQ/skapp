@@ -8,7 +8,7 @@ interface Props {
   onAddTask: () => void;
 }
 
-const SidePanelTasksEmpty: FC<Props> = ({ onAddTask }) => {
+const SidePanelTasksEmptyView: FC<Props> = ({ onAddTask }) => {
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -42,4 +42,4 @@ const SidePanelTasksEmpty: FC<Props> = ({ onAddTask }) => {
   );
 };
 
-export default SidePanelTasksEmpty;
+export default SidePanelTasksEmptyView;
