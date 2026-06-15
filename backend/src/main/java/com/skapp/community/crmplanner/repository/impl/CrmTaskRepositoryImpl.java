@@ -181,7 +181,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
-		
+
 		if (params.getCompleted() != null) {
 			predicates.add(Boolean.TRUE.equals(params.getCompleted()) ? cb.isTrue(root.get(CrmTask_.isCompleted))
 					: cb.isFalse(root.get(CrmTask_.isCompleted)));
