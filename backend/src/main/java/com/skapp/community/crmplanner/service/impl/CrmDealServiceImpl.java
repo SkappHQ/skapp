@@ -104,6 +104,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+		validateDealStageAccess(stage);
 
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
@@ -172,7 +173,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		List<Long> uniqueStageIds = new ArrayList<>(new LinkedHashSet<>(requestDto.getStageIds()));
 
-		List<CrmDealStage> stages = crmDealStageDao.findAllByIdInAndIsDeletedFalse(uniqueStageIds);
+		List<CrmDealStage> stages = filterVisibleDealStages(
+				crmDealStageDao.findAllByIdInAndIsDeletedFalse(uniqueStageIds));
 		if (stages.size() != uniqueStageIds.size()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
 		}
@@ -215,8 +217,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getBoardInitData() {
 		log.info("getBoardInitData: execution started");
 
-		List<CrmBoardStageResponseDto> stages = crmMapper
-			.crmDealStagesToCrmBoardStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmDealStage> visibleStages = filterVisibleDealStages(
+				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
 		List<CrmBoardContactResponseDto> contacts = crmMapper
 			.crmContactsToCrmBoardContactResponseDtos(crmContactDao.findAllContactsForBoardInit());
@@ -290,6 +293,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDealStage newStage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getNewStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+		validateDealStageAccess(newStage);
 
 		if (deal.getStage().getId().equals(newStage.getId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ALREADY_IN_STAGE);
@@ -342,6 +346,14 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);
+	}
+
+	protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {
+		return stages;
+	}
+
+	protected void validateDealStageAccess(CrmDealStage stage) {
+		// This method is a placeholder for enterprise deal stage access validation
 	}
 
 }
