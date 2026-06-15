@@ -79,7 +79,8 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
     setDeletionConfirmationModalOpen,
     setIsSupervisorReassignmentModalOpen,
     setSupervisorReassignmentActionType,
-    setSelectedEmployeeId
+    setSelectedEmployeeId,
+    setReactivationConfirmationModalOpen
   } = usePeopleStore((state) => state);
 
   const { data: teamData } = useGetAllTeams();
@@ -102,6 +103,11 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   const { refetch: refetchSupervisorRoles } = useGetSupervisedEmployeesAndTeams(
     Number(employeeId)
   );
+
+  const handleReactivation = () => {
+    setSelectedEmployeeId(Number(employeeId));
+    setReactivationConfirmationModalOpen(true);
+  };
 
   const { data: storageAvailableData } = useStorageAvailability();
   const hasTerminationAbility =
@@ -142,7 +148,22 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
     setDeletionConfirmationModalOpen(true);
   };
 
-  const kebabMenuOptions = [
+  const kebabMenuOptions =
+    employee?.common?.accountStatus === AccountStatusTypes.TERMINATED
+      ? [
+          {
+            id: employee?.common?.employeeId || "",
+            icon: (
+              <Icon
+                name={IconName.RESTORE_ICON}
+                fill={theme.palette.error.contrastText}
+              />
+            ),
+            text: translateTerminationText(["reactivateButtonText"]),
+            onClickHandler: () => handleReactivation()
+          }
+        ]
+      : [
     {
       id: employee?.common?.employeeId || "",
       icon: (
@@ -152,9 +173,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
         />
       ),
       text: translateTerminationText(["terminateButtonText"]),
-      onClickHandler: () => handleTermination(),
-      isDisabled:
-        employee?.common?.accountStatus === AccountStatusTypes.TERMINATED
+      onClickHandler: () => handleTermination()
     },
     {
       id: employee?.common?.employeeId || "",
@@ -166,9 +185,8 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
       ),
       text: translateTerminationText(["deleteButtonText"]),
       onClickHandler: () => handleDeletion()
-    }
-  ];
-
+        }
+      ];
   const cardData = useMemo(() => {
     return {
       employeeId:
@@ -518,9 +536,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
                 <Typography variant="caption">
                   {translateTerminationText(["status"])} :
                 </Typography>
-                {employmentStatus !==
-                  AccountStatusEnums.TERMINATED.toUpperCase() &&
-                  hasTerminationAbility && (
+                {hasTerminationAbility && (
                     <Box
                       sx={{
                         position: "absolute",
