@@ -13,9 +13,9 @@ interface Props {
 const SidePanelMetricCards: FC<Props> = ({ metrics }) => {
   return (
     <div className="flex gap-4 w-full">
-      {metrics.map((metric, index) => (
+      {metrics.map((metric) => (
         <Card
-          key={index}
+          key={metric.id}
           className="flex flex-col gap-1 flex-1 min-w-0 p-3 overflow-hidden border border-secondary-accent rounded-lg bg-white"
         >
           <p className="body2 text-secondary-text">{metric.title}</p>

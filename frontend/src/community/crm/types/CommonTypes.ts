@@ -56,6 +56,7 @@ export interface MetricChip {
 }
 
 export interface MetricItem {
+  id: string;
   title: string;
   amount: string;
   isCurrency?: boolean;
