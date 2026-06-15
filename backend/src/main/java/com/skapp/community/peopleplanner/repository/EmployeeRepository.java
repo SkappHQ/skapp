@@ -18,7 +18,6 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
-import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -60,9 +59,9 @@ public interface EmployeeRepository {
 
 	Long findAllActiveEmployeesCount();
 
-	List<Employee> findManagersByEmployeeIdAndLoggedInManagerId(@NonNull Long employeeId, Long managerId);
+	List<Employee> findManagersByEmployeeIdAndLoggedInManagerId(Long employeeId, Long managerId);
 
-	boolean existsManagerForEmployee(@NonNull Long employeeId, Long managerId);
+	boolean existsManagerForEmployee(Long employeeId, Long managerId);
 
 	List<EmployeeLeaveRequestDto> getEmployeesOnLeaveByTeam(EmployeesOnLeaveFilterDto filterDto, Long currentUserId);
 

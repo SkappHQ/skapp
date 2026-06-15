@@ -23,7 +23,6 @@ import com.skapp.community.leaveplanner.type.LeaveDuration;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,22 +38,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LeaveTypeServiceImpl implements LeaveTypeService {
 
-	@NonNull
 	private final LeaveTypeDao leaveTypeDao;
 
-	@NonNull
 	private final LeaveMapper leaveMapper;
 
-	@NonNull
 	private final UserService userService;
 
-	@NonNull
 	private final LeaveEntitlementDao leaveEntitlementDao;
 
-	@NonNull
 	private final EmployeeTeamDao employeeTeamDao;
 
-	@NonNull
 	private final EmployeeDao employeeDao;
 
 	@Override
@@ -105,7 +98,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 	}
 
 	@Override
-	public ResponseEntityDto getLeaveTypeById(@NonNull Long id) {
+	public ResponseEntityDto getLeaveTypeById(Long id) {
 		log.info("getLeaveTypeById: execution started");
 
 		Optional<LeaveType> optionalLeaveType = leaveTypeDao.findById(id);
@@ -121,7 +114,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateLeaveType(@NonNull Long id, LeaveTypePatchRequestDto leaveTypePatchRequestDto) {
+	public ResponseEntityDto updateLeaveType(Long id, LeaveTypePatchRequestDto leaveTypePatchRequestDto) {
 		log.info("updateLeaveType: execution started");
 
 		Optional<LeaveType> optionalLeaveType = leaveTypeDao.findById(id);
