@@ -15,20 +15,16 @@ import TimesheetStatCard from "../TimesheetStatCard/TimesheetStatCard";
 
 interface Props {
   recordData: TimeRecordDataResponseType;
-  exportRecordData: TimeRecordDataResponseType;
   workSummaryData?: Record<string, string>;
   isManager?: boolean;
   isRecordLoading?: boolean;
   isTeamSelectionAvailable?: boolean;
   selectedTeamName?: string;
-  isExportRecordDataLoading?: boolean;
 }
 
 const TimesheetAnalytics = ({
   recordData,
   workSummaryData,
-  isExportRecordDataLoading,
-  exportRecordData,
   isManager,
   isRecordLoading,
   isTeamSelectionAvailable,
@@ -86,8 +82,6 @@ const TimesheetAnalytics = ({
       )}
       <EmployeeTimeRecordsTable
         recordData={recordData}
-        exportRecordData={exportRecordData}
-        isExportRecordDataLoading={isExportRecordDataLoading}
         isRecordLoading={isRecordLoading}
         teamName={selectedTeamName || timesheetAnalyticsSelectedTeamName}
       />
