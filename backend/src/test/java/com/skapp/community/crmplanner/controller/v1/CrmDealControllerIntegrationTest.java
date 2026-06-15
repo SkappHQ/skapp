@@ -212,7 +212,9 @@ class CrmDealControllerIntegrationTest {
 		String tooLongName = "A".repeat(256);
 		performGetExistsRequest(tooLongName).andDo(print())
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NAME_TOO_LONG)));
 	}
 
 	// --- Create deal tests ---

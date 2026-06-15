@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CrmDealNameExistsResponseDto {
+public class CrmNameExistsResponseDto {
 
 	private Boolean isExists;
 

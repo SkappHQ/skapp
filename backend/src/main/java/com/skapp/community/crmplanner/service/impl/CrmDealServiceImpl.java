@@ -19,7 +19,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealNameExistsResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
@@ -78,7 +78,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealName(name);
 		boolean exists = crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
 
-		CrmDealNameExistsResponseDto responseDto = new CrmDealNameExistsResponseDto();
+		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
 		responseDto.setIsExists(exists);
 
 		log.info("checkDealNameExists: execution ended");
@@ -97,6 +97,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealStageId(requestDto.getStageId());
 		CrmValidations.validateDealContactId(requestDto.getContactId());
 		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
+
+		if (crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
+		}
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));

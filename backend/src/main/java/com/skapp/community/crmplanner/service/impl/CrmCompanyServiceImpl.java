@@ -16,7 +16,7 @@ import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -74,7 +74,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmValidations.validateCompanyName(name);
 		boolean exists = checkCompanyExists(name);
 
-		CrmCompanyNameExistsResponseDto responseDto = new CrmCompanyNameExistsResponseDto();
+		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
 		responseDto.setIsExists(exists);
 
 		log.info("checkCompanyNameExists: execution ended");
