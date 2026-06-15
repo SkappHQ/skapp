@@ -62,6 +62,8 @@ public interface EmployeeRepository {
 
 	List<Employee> findManagersByEmployeeIdAndLoggedInManagerId(@NonNull Long employeeId, Long managerId);
 
+	boolean existsManagerForEmployee(@NonNull Long employeeId, Long managerId);
+
 	List<EmployeeLeaveRequestDto> getEmployeesOnLeaveByTeam(EmployeesOnLeaveFilterDto filterDto, Long currentUserId);
 
 	List<Employee> findInformantManagersByEmployeeID(Long employeeId);

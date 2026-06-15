@@ -85,6 +85,14 @@ const MultiTeamSelector = ({
         ? selectedOptionIds.filter((teamId) => teamId !== id)
         : [...selectedOptionIds.filter((teamId) => teamId !== -1), id]; // Remove -1 if selecting other teams
 
+      // If all teams are deselected, reset to "All" label
+      if (updatedSelectedIds.length === 0) {
+        setSelectedOptionIds([-1]);
+        setSelectedOptionNames([translateTexts(["allLabel"])]);
+        setTeamIds([-1]);
+        return;
+      }
+
       const selectedTeams = updatedSelectedIds.map((teamId) =>
         teamsData?.find((team) => team.teamId === teamId)
       );

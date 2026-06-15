@@ -21,7 +21,6 @@ import com.skapp.community.leaveplanner.service.LeaveTypeService;
 import com.skapp.community.leaveplanner.type.CalculationType;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
-import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import lombok.NonNull;
@@ -287,9 +286,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 		if (!currentUser.getUserId().equals(targetEmployeeId)
 				&& !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
 			Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
-			List<Employee> employeeManagers = employeeDao.findManagersByEmployeeIdAndLoggedInManagerId(targetEmployeeId,
-					currentEmployeeId);
-			if (employeeManagers.isEmpty()
+			if (!employeeDao.existsManagerForEmployee(targetEmployeeId, currentEmployeeId)
 					&& !employeeTeamDao.existsEmployeeInSupervisedTeam(targetEmployeeId, currentEmployeeId)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
