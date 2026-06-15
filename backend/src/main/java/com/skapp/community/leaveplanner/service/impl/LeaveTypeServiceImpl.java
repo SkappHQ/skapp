@@ -21,8 +21,8 @@ import com.skapp.community.leaveplanner.service.LeaveTypeService;
 import com.skapp.community.leaveplanner.type.CalculationType;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,20 +38,17 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LeaveTypeServiceImpl implements LeaveTypeService {
 
-	@NonNull
 	private final LeaveTypeDao leaveTypeDao;
 
-	@NonNull
 	private final LeaveMapper leaveMapper;
 
-	@NonNull
 	private final UserService userService;
 
-	@NonNull
 	private final LeaveEntitlementDao leaveEntitlementDao;
 
-	@NonNull
 	private final EmployeeTeamDao employeeTeamDao;
+
+	private final EmployeeDao employeeDao;
 
 	@Override
 	public ResponseEntityDto addLeaveType(LeaveTypeRequestDto leaveTypeRequestDto) {
@@ -101,7 +98,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 	}
 
 	@Override
-	public ResponseEntityDto getLeaveTypeById(@NonNull Long id) {
+	public ResponseEntityDto getLeaveTypeById(Long id) {
 		log.info("getLeaveTypeById: execution started");
 
 		Optional<LeaveType> optionalLeaveType = leaveTypeDao.findById(id);
@@ -117,7 +114,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateLeaveType(@NonNull Long id, LeaveTypePatchRequestDto leaveTypePatchRequestDto) {
+	public ResponseEntityDto updateLeaveType(Long id, LeaveTypePatchRequestDto leaveTypePatchRequestDto) {
 		log.info("updateLeaveType: execution started");
 
 		Optional<LeaveType> optionalLeaveType = leaveTypeDao.findById(id);
@@ -282,7 +279,8 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 		if (!currentUser.getUserId().equals(targetEmployeeId)
 				&& !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
 			Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
-			if (!employeeTeamDao.existsEmployeeInSupervisedTeam(targetEmployeeId, currentEmployeeId)) {
+			if (!employeeDao.existsManagerForEmployee(targetEmployeeId, currentEmployeeId)
+					&& !employeeTeamDao.existsEmployeeInSupervisedTeam(targetEmployeeId, currentEmployeeId)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
 			}
 		}

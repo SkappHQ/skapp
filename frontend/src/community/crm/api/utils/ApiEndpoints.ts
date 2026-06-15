@@ -11,7 +11,8 @@ export const contactEndpoints = {
   GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`,
   CREATE_CONTACT: `${moduleAPIPath.CRM}/contact`,
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
-  OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
+  OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`,
+  CONTACT_BY_ID: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`
 };
 
 export const companyEndpoints = {
@@ -21,5 +22,6 @@ export const companyEndpoints = {
   EDIT_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   DELETE_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   CHECK_COMPANY_NAME_EXISTS: (name: string) =>
-    `${moduleAPIPath.CRM}/company/exists?name=${encodeURIComponent(name)}`
+    `${moduleAPIPath.CRM}/company/exists?name=${encodeURIComponent(name)}`,
+  SEARCH_COMPANIES_BY_DOMAIN: `${moduleAPIPath.CRM}/company/search-by-domain`
 };

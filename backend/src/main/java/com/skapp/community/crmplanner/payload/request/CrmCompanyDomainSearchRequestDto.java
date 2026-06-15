@@ -5,10 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CrmTaskCompletedFilterDto extends CrmTaskFilterDto {
+public class CrmCompanyDomainSearchRequestDto {
 
-	private int page = 0;
+	private String domain;
 
-	private int size = 10;
+	private int limit;
 
 }

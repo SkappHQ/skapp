@@ -1,6 +1,8 @@
 package com.skapp.community.crmplanner.repository;
 
 import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import org.springframework.data.domain.Page;
@@ -12,16 +14,12 @@ public interface CrmTaskRepository {
 
 	List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds);
 
-	List<CrmTask> findAllWithTypeAndOwner();
-
-	List<CrmTask> findAllWithTypeAndOwnerByOwnerId(Long ownerId);
+	List<CrmTask> findTasks(Long ownerId, CrmTaskFilterDto filterDto);
 
 	List<CrmTask> findByContactIdWithAssociations(Long contactId);
 
 	CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId);
 
-	Page<CrmTask> findCompletedTasks(Pageable pageable);
-
-	Page<CrmTask> findCompletedTasksByOwnerId(Long ownerId, Pageable pageable);
+	Page<CrmTask> findCompletedTasks(Long ownerId, CrmTaskCompletedFilterDto filterDto, Pageable pageable);
 
 }
