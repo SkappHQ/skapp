@@ -1,13 +1,13 @@
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { getChangedFields } from "~community/common/utils/objectUtils";
 import { useEditContact } from "~community/crm/api/ContactApi";
 import ContactModalForm from "~community/crm/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactFormValues,
-  CrmContactMetricsType,
-  EditContactPayload
+  CrmContactMetricsType
 } from "~community/crm/types/CommonTypes";
 
 const EditContactModalContent = () => {
@@ -71,16 +71,28 @@ const EditContactModalContent = () => {
   };
 
   const submitEditContact = (values: CrmContactFormValues) => {
-    const payload: EditContactPayload = {
-      id: selectedContact?.id,
+    const normalizedValues: CrmContactFormValues = {
       name: values.name.trim(),
       email: values.email.trim(),
-      contactNumber: values.contactNumber.trim() || undefined,
-      companyId: values.companyId ?? undefined,
-      ownerId: values.ownerId ?? undefined
+      contactNumber: values.contactNumber.trim(),
+      companyId: values.companyId,
+      ownerId: values.ownerId
     };
+    const originalValues: CrmContactFormValues = {
+      name: selectedContact?.name.trim() ?? "",
+      email: selectedContact?.email.trim() ?? "",
+      contactNumber: selectedContact?.contactNumber?.trim() ?? "",
+      companyId: selectedContact?.company?.id ?? null,
+      ownerId: selectedContact?.owner?.employeeId ?? null
+    };
+    const changedFields = getChangedFields(normalizedValues, originalValues);
 
-    editContact(payload);
+    if (Object.keys(changedFields).length === 0) return;
+
+    editContact({
+      id: selectedContact?.id,
+      ...changedFields
+    });
   };
 
   return (

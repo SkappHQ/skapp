@@ -123,8 +123,13 @@ export interface CrmContactCreatePayload {
   ownerId?: number;
 }
 
-export interface EditContactPayload extends CrmContactCreatePayload {
-  id: number;
+export interface EditContactPayload {
+  id?: number;
+  name?: string;
+  email?: string;
+  contactNumber?: string;
+  companyId?: number | null;
+  ownerId?: number | null;
 }
 
 export interface CrmContactMetricsType {
