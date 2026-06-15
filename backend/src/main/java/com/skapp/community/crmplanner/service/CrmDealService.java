@@ -11,6 +11,8 @@ public interface CrmDealService {
 
 	ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto);
 
+	ResponseEntityDto checkDealNameExists(String name);
+
 	ResponseEntityDto getDeals(CrmDealFilterDto filterDto);
 
 	ResponseEntityDto getDealsByStages(CrmDealsByStagesRequestDto requestDto);
