@@ -6,7 +6,6 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
-import * as Yup from "yup";
 
 import SearchableDropdown, {
   SearchableDropdownItem
