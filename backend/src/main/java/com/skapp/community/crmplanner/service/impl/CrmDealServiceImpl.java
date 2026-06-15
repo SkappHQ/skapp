@@ -275,7 +275,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
-		log.info("editDeal: updating deal with id={}", id);
+		log.info("editDeal: execusion started", id);
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
@@ -315,14 +315,12 @@ public class CrmDealServiceImpl implements CrmDealService {
 			CrmContact contact = deal.getContact();
 			contact.setName(requestDto.getContactName());
 			crmContactDao.save(contact);
-		}
 
-		if (requestDto.getCompanyName() != null) {
-			CrmValidations.validateCompanyName(requestDto.getCompanyName());
-			CrmCompany company = deal.getCompany();
-			CrmValidations.validateCompanyId(company == null ? null : company.getId());
-			company.setName(requestDto.getCompanyName());
-			crmCompanyDao.save(company);
+			CrmCompany company = null;
+			if (contact.getCompany() != null) {
+				company = crmCompanyDao.findByIdAndIsDeletedFalse(contact.getCompany().getId()).orElse(null);
+			}
+			deal.setCompany(company);
 		}
 
 		if (requestDto.getOwnerId() != null && !requestDto.getOwnerId().equals(deal.getOwner().getEmployeeId())) {
@@ -339,7 +337,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmDeal savedDeal = crmDealDao.save(deal);
 		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
-		log.info("editDeal: deal updated with id={}", savedDeal.getId());
+		log.info("editDeal: execusion ended", savedDeal.getId());
 		return new ResponseEntityDto(false, responseDto);
 	}
 

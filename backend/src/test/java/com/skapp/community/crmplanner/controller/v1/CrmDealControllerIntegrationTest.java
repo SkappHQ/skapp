@@ -206,7 +206,6 @@ class CrmDealControllerIntegrationTest {
 		dto.setAmount("5000.50");
 		dto.setPriority(CrmDealPriority.HIGH);
 		dto.setContactName("Updated Contact Name");
-		dto.setCompanyName("Updated Company Name");
 
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
@@ -214,7 +213,121 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath("$.results[0].name").value("Updated Deal Name"))
 			.andExpect(jsonPath("$.results[0].amount").value("5000.50"))
 			.andExpect(jsonPath("$.results[0].contactName").value("Updated Contact Name"))
-			.andExpect(jsonPath("$.results[0].companyName").value("Updated Company Name"));
+			.andExpect(jsonPath("$.results[0].companyName").value("Original Company"));
+	}
+
+	@Test
+	@DisplayName("Edit deal - update contact name - company auto-resolved from contact's company")
+	void editDeal_UpdateContactName_CompanyAutoResolved() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Auto Corp");
+		CrmContact contact = savedContact(company);
+		CrmDeal deal = savedDeal(stage, contact);
+		deal.setCompany(company);
+		deal = crmDealDao.save(deal);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setContactName("Renamed Contact");
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].contactName").value("Renamed Contact"))
+			.andExpect(jsonPath("$.results[0].companyName").value("Auto Corp"));
+	}
+
+	@Test
+	@DisplayName("Edit deal - update contact name - contact has no company - company set to null")
+	void editDeal_UpdateContactName_NoCompany_CompanyNull() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = savedDeal(stage, contact);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setContactName("Renamed Contact");
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].contactName").value("Renamed Contact"))
+			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Edit deal - update contact name - contact's company is soft-deleted - company set to null")
+	void editDeal_UpdateContactName_DeletedCompany_CompanyNull() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Deleted Corp");
+		CrmContact contact = savedContact(company);
+		CrmDeal deal = savedDeal(stage, contact);
+		deal.setCompany(company);
+		deal = crmDealDao.save(deal);
+
+		// soft-delete the company after creating the deal
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setContactName("Renamed Contact");
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].contactName").value("Renamed Contact"))
+			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Edit deal - deal not found - returns bad request")
+	void editDeal_DealNotFound_ReturnsBadRequest() throws Exception {
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setName("Updated Name");
+
+		performPatchRequest(9999L, dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].message")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Edit deal - update stage - returns success")
+	void editDeal_UpdateStage_ReturnsSuccess() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = savedDeal(stage, contact);
+
+		CrmDealStage newStage = new CrmDealStage();
+		newStage.setName("New Stage");
+		newStage.setColor("#112233");
+		newStage.setOrderIndex(2);
+		newStage.setStageType(CrmDealStageType.OPEN);
+		newStage = crmDealStageDao.save(newStage);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setStageId(newStage.getId());
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].stageId").value(newStage.getId()));
+	}
+
+	@Test
+	@DisplayName("Edit deal - invalid stage ID - returns bad request")
+	void editDeal_InvalidStageId_ReturnsBadRequest() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = savedDeal(stage, contact);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setStageId(9999L);
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].message")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND)));
 	}
 
 	@Test

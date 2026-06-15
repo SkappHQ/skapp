@@ -20,8 +20,6 @@ public class CrmDealEditRequestDto {
 
 	private String contactName;
 
-	private String companyName;
-
 	private Long ownerId;
 
 }
