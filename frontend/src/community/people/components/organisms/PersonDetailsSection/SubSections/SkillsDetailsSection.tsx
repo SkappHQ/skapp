@@ -1,13 +1,14 @@
+import { SearchIcon } from "@rootcodelabs/skapp-ui";
 import { forwardRef, useImperativeHandle } from "react";
 
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { SKILL_OPTIONS } from "~community/people/constants/skillConstants";
+import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
+import { SkillType } from "~community/people/types/PeopleTypes";
 
-import { SearchIcon } from "@rootcodelabs/skapp-ui";
-
-import { SKILL_OPTIONS } from "~community/people/constants/skillConstants";
 import ChipAutocomplete from "../../../molecules/ChipAutocomplete/ChipAutocomplete";
 
 interface Props {
@@ -25,7 +26,7 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
 
   const { employee, setPersonalDetails } = usePeopleStore((state) => state);
 
-  const skills = employee?.personal?.skills?.skills ?? [];
+  const skills: SkillType[] = employee?.personal?.skills ?? [];
 
   useImperativeHandle(ref, () => ({
     validateForm: async () => {
@@ -35,10 +36,42 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
     resetForm: () => {}
   }));
 
-  const handleSkillsChange = (newSkills: string[]) => {
+  const getSkillDisplayNames = (skills: SkillType[]): string[] => {
+    return skills.map((skill) => {
+      if (skill.skillType === SkillTypes.DEFAULT) {
+        const found = SKILL_OPTIONS.find((opt) => opt.id === skill.skillId);
+        return found?.label ?? skill.name ?? "";
+      }
+      return skill.name ?? "";
+    });
+  };
+
+  const findExistingSkill = (name: string): SkillType | undefined => {
+    return skills.find((s) => {
+      if (s.skillType === SkillTypes.DEFAULT) {
+        const found = SKILL_OPTIONS.find((opt) => opt.id === s.skillId);
+        return found?.label === name;
+      }
+      return s.name === name;
+    });
+  };
+
+  const handleSkillsChange = (newSkillNames: string[]) => {
+    const updatedSkills: SkillType[] = newSkillNames.map((name) => {
+      const existingSkill = findExistingSkill(name);
+      if (existingSkill) return existingSkill;
+
+      const defaultOption = SKILL_OPTIONS.find((opt) => opt.label === name);
+      if (defaultOption) {
+        return { skillId: defaultOption.id, skillType: SkillTypes.DEFAULT };
+      }
+
+      return { skillType: SkillTypes.CUSTOM, name };
+    });
+
     setPersonalDetails({
       ...employee?.personal,
-      skills: { skills: newSkills }
+      skills: updatedSkills
     });
   };
 
@@ -59,7 +92,7 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
         id="skills"
         label={translateText(["skills"])}
         placeholder={translateText(["searchSkills"])}
-        value={skills}
+        value={getSkillDisplayNames(skills)}
         onChange={handleSkillsChange}
         options={SKILL_OPTIONS.map((s) => s.label)}
         isDisabled={isInputsDisabled}

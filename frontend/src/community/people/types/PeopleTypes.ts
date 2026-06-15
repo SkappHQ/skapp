@@ -12,6 +12,7 @@ import {
   NationalityEnum,
   RelationshipTypes,
   Role,
+  SkillTypes,
   TitleEnum
 } from "../enums/PeopleEnums";
 import { EmploymentStatusTypes } from "./EmployeeTypes";
@@ -126,9 +127,13 @@ export interface L3HealthAndOtherDetailsType {
   tShirtSize?: string;
 }
 
-export interface L3SkillsDetailsType {
-  skills?: string[];
+export interface SkillType {
+  skillId?: number;
+  skillType: SkillTypes;
+  name?: string;
 }
+
+export type L3SkillsDetailsType = SkillType[];
 
 export interface L3EmergencyContactType {
   name?: string;

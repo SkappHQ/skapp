@@ -174,13 +174,13 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                 key={item}
                 label={item}
                 size="sm"
-                isSelected
                 disabled={isDisabled}
                 onDelete={
                   !readOnly && !isDisabled
                     ? () => handleDelete(item)
                     : undefined
                 }
+                className="bg-white"
               />
             ))}
             {!readOnly && (
