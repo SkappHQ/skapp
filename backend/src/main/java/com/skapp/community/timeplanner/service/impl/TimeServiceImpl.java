@@ -953,8 +953,8 @@ public class TimeServiceImpl implements TimeService {
 			pageSize = Integer.MAX_VALUE;
 		}
 
-		Pageable pageable = PageRequest.of(managerTimeRecordFilterDto.getPage(), pageSize, managerTimeRecordFilterDto.getSortOrder(),
-				managerTimeRecordFilterDto.getSortKey().toString());
+		Pageable pageable = PageRequest.of(managerTimeRecordFilterDto.getPage(), pageSize,
+				managerTimeRecordFilterDto.getSortOrder(), managerTimeRecordFilterDto.getSortKey().toString());
 
 		Page<Employee> employees = teamDao.findEmployeesInManagerLeadingTeams(teamIdsToFilter, pageable, currentUser);
 
@@ -1071,8 +1071,8 @@ public class TimeServiceImpl implements TimeService {
 			pageSize = Math.toIntExact(totalItemCount);
 		}
 
-		Pageable pageable = PageRequest.of(managerEmployeeLogFilterDto.getPage(), pageSize, Sort.by(managerEmployeeLogFilterDto.getSortOrder(),
-				managerEmployeeLogFilterDto.getSortKey().toString()));
+		Pageable pageable = PageRequest.of(managerEmployeeLogFilterDto.getPage(), pageSize, Sort
+			.by(managerEmployeeLogFilterDto.getSortOrder(), managerEmployeeLogFilterDto.getSortKey().toString()));
 
 		List<EmployeeTimeRecord> timeRecords = timeRecordDao.findEmployeesTimeRecords(employees, startDate, endDate,
 				pageable.getPageSize(), pageable.getOffset());
