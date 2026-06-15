@@ -285,6 +285,9 @@ public class CrmValidations {
 	public static void validateDealStageColor(CrmDealStageColors color) {
 		if (color == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_COLOR_REQUIRED);
+		}
+	}
+
 	public static void validateDomain(String domain) {
 		if (domain == null || domain.isBlank()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_REQUIRED);
