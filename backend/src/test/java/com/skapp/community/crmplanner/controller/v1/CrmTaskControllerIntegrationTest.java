@@ -48,6 +48,7 @@ import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -173,6 +174,47 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Active task"));
+	}
+
+	// --- GET completed tasks helpers and tests ---
+
+	private ResultActions performGetCompletedRequest(String token, String page, String size) throws Exception {
+		return mvc.perform(get(BASE_PATH + "/completed").param("page", page)
+			.param("size", size)
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(token)));
+	}
+
+	@Test
+	@DisplayName("Get completed tasks - Returns paginated completed tasks")
+	void getCompletedTasks_ReturnsPaginatedCompletedTasks_ReturnsOk() throws Exception {
+		savedTask("Active task", false, false);
+		savedTask("Completed task 1", false, true);
+		savedTask("Completed task 2", false, true);
+
+		performGetCompletedRequest(authToken, "0", "10").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get completed tasks with no completed tasks - Returns empty page")
+	void getCompletedTasks_WithNoCompletedTasks_ReturnsEmptyPage() throws Exception {
+		savedTask("Active task", false, false);
+
+		performGetCompletedRequest(authToken, "0", "10").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(0));
 	}
 
 	// --- CREATE task helpers and tests ---
@@ -853,6 +895,72 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
+	}
+
+	// --- deleteTask helper and tests ---
+
+	private ResultActions performDeleteRequest(Long id, String token) throws Exception {
+		return mvc.perform(
+				delete(BY_ID_PATH, id).with(SecurityTestUtils.bearerToken(token)).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private String managerToken() {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_MANAGER);
+		employeeRoleDao.flush();
+		return jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+	}
+
+	@Test
+	@DisplayName("Delete task - Returns OK, sets isDeleted flag and returns success message")
+	void deleteTask_HappyPath_ReturnsOk() throws Exception {
+		CrmTask task = savedTask();
+		String manager = managerToken();
+
+		performDeleteRequest(task.getId(), manager).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_TASK_DELETED)));
+
+		assertEquals(true, crmTaskDao.findById(task.getId()).orElseThrow().getIsDeleted());
+	}
+
+	@Test
+	@DisplayName("Delete task with non-existent id - Returns Bad Request")
+	void deleteTask_NotFound_ReturnsBadRequest() throws Exception {
+		String manager = managerToken();
+
+		performDeleteRequest(999999L, manager).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Delete task without any CRM role - Returns Forbidden")
+	void deleteTask_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmTask task = savedTask();
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		performDeleteRequest(task.getId(), noRoleToken).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Sales rep deleting another owner's task - Returns Bad Request with delete-denied error")
+	void deleteTask_RepDeletingOtherOwnersTask_ReturnsBadRequest() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		CrmTask task = savedTask();
+
+		performDeleteRequest(task.getId(), repToken).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_DELETE_DENIED)));
 	}
 
 }
