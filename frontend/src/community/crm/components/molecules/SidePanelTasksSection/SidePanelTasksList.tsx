@@ -41,17 +41,18 @@ const SidePanelTasksList: FC<Props> = ({
           />
         ))}
       </div>
-      <ButtonV2
-        type="button"
-        variant="line"
-        size="sm"
-        icon={<PlusIcon />}
-        iconPosition="end"
-        className="mt-2"
-        onClick={onAddTask}
-      >
-        {translateText(["addTaskButtonEmptyView"])}
-      </ButtonV2>
+      <div className=" flex">
+        <ButtonV2
+          type="button"
+          variant="line"
+          size="sm"
+          icon={<PlusIcon />}
+          iconPosition="end"
+          onClick={onAddTask}
+        >
+          {translateText(["addTaskButtonEmptyView"])}
+        </ButtonV2>
+      </div>
     </>
   );
 };
