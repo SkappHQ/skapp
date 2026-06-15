@@ -605,14 +605,14 @@ export const useTerminateUser = (
 
 export const useReactivateTerminatedUser = (
   onSuccess: () => void,
-  employeeId?: number,
+  employeeId: number,
   onError?: () => void
 ) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => {
-      return authFetch.patch(peoplesEndpoints.REACTIVATE_EMPLOYEE(employeeId as number));
+      return authFetch.patch(peoplesEndpoints.REACTIVATE_EMPLOYEE(employeeId));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(employeeId) });
