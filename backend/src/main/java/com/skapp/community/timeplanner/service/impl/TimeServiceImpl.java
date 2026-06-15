@@ -351,14 +351,12 @@ public class TimeServiceImpl implements TimeService {
 		Long totalItemCount = timeRecordDao.getTotalEmployeesTimeRecordCount(employees, startDate, endDate);
 
 		int pageSize = timeRecordFilterDto.getSize();
-		int pageNumber = timeRecordFilterDto.getPage();
 		boolean isExport = timeRecordFilterDto.getIsExport();
 		if (isExport) {
 			pageSize = Math.toIntExact(totalItemCount);
-			pageNumber = 0;
 		}
 
-		Pageable pageable = PageRequest.of(pageNumber, pageSize, timeRecordFilterDto.getSortOrder(),
+		Pageable pageable = PageRequest.of(timeRecordFilterDto.getPage(), pageSize, timeRecordFilterDto.getSortOrder(),
 				timeRecordFilterDto.getSortKey().toString());
 
 		List<EmployeeTimeRecord> timeRecords = timeRecordDao.findEmployeesTimeRecords(employees, startDate, endDate,
@@ -950,14 +948,12 @@ public class TimeServiceImpl implements TimeService {
 		}
 
 		int pageSize = managerTimeRecordFilterDto.getSize();
-		int pageNumber = managerTimeRecordFilterDto.getPage();
 		boolean isExport = managerTimeRecordFilterDto.getIsExport();
 		if (isExport) {
 			pageSize = Integer.MAX_VALUE;
-			pageNumber = 0;
 		}
 
-		Pageable pageable = PageRequest.of(pageNumber, pageSize, managerTimeRecordFilterDto.getSortOrder(),
+		Pageable pageable = PageRequest.of(managerTimeRecordFilterDto.getPage(), pageSize, managerTimeRecordFilterDto.getSortOrder(),
 				managerTimeRecordFilterDto.getSortKey().toString());
 
 		Page<Employee> employees = teamDao.findEmployeesInManagerLeadingTeams(teamIdsToFilter, pageable, currentUser);
@@ -1054,7 +1050,6 @@ public class TimeServiceImpl implements TimeService {
 		LocalDate endDate = managerEmployeeLogFilterDto.getEndDate();
 
 		int pageSize = managerEmployeeLogFilterDto.getSize();
-		int pageNumber = managerEmployeeLogFilterDto.getPage();
 		boolean isExport = managerEmployeeLogFilterDto.getIsExport();
 
 		Optional<Employee> employeeOptional = employeeDao
@@ -1074,10 +1069,9 @@ public class TimeServiceImpl implements TimeService {
 
 		if (isExport) {
 			pageSize = Math.toIntExact(totalItemCount);
-			pageNumber = 0;
 		}
 
-		Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(managerEmployeeLogFilterDto.getSortOrder(),
+		Pageable pageable = PageRequest.of(managerEmployeeLogFilterDto.getPage(), pageSize, Sort.by(managerEmployeeLogFilterDto.getSortOrder(),
 				managerEmployeeLogFilterDto.getSortKey().toString()));
 
 		List<EmployeeTimeRecord> timeRecords = timeRecordDao.findEmployeesTimeRecords(employees, startDate, endDate,
