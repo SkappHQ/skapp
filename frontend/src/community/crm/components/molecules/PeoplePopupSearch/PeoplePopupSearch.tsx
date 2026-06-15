@@ -40,8 +40,8 @@ const TriggerContent: FC<TriggerContentProps> = ({
           avatarProps={{
             id: String(user.employeeId),
             firstName: user.firstName,
-            lastName: user.lastName ?? undefined,
-            src: finalSrc ?? undefined,
+            lastName: user.lastName ?? "",
+            src: finalSrc ?? "",
             size: "sm"
           }}
           backgroundColor={chipBackgroundColor}

@@ -31,7 +31,7 @@ import {
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
-const AddTaskModalContent: React.FC = () => {
+const AddTaskModalContent = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
@@ -48,12 +48,9 @@ const AddTaskModalContent: React.FC = () => {
 
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
-  const priorityDropdownOptions = useGetPriorityOptions(
-    "crmModule",
-    "tasks",
-    "addTaskModal"
-  );
-  const { options: taskTypeOptions, getCategoryById } = useGetTaskTypeOptions();
+  const priorityDropdownOptions = useGetPriorityOptions(translateText);
+  const { options: taskTypeOptions, getCategoryById } =
+    useGetTaskTypeOptions(translateText);
 
   const defaultOwner = useMemo((): CrmOwner | null => {
     if (!currentUser?.employeeId) return null;

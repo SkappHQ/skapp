@@ -129,6 +129,10 @@ export function containsUnicode(): RegExp {
   return /\p{Emoji}/u;
 }
 
+export function isPositiveNumber(): RegExp {
+  return /^\d+(\.\d+)?$/;
+}
+
 export function hasAlphaNumericWithSpecialCharacterPattern(): RegExp {
   return /[^a-zA-Z0-9-_!~#.]/gi;
 }

@@ -1,12 +1,14 @@
 import { useMemo } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 import { priorityOptions } from "~community/crm/constants/taskConstants";
 
-const useGetPriorityOptions = (initial: string, ...keys: string[]) => {
-  const translateText = useTranslator(initial, ...keys);
+type TranslateText = (
+  suffixes: string[],
+  interpolationValues?: Record<string, any>
+) => string;
 
+const useGetPriorityOptions = (translateText: TranslateText) => {
   return useMemo(
     () =>
       priorityOptions.map((option) => ({

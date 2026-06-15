@@ -1,5 +1,6 @@
 import * as Yup from "yup";
 
+import { isPositiveNumber } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
@@ -24,6 +25,6 @@ export const addDealValidations = (translator: TranslatorFunctionType) =>
       "is-valid-amount",
       translator(["validations", "amountInvalid"]),
       (value) =>
-        !value || (/^\d+(\.\d+)?$/.test(value) && Number(value) > 0)
+        !value || (isPositiveNumber().test(value) && Number(value) > 0)
     )
   });

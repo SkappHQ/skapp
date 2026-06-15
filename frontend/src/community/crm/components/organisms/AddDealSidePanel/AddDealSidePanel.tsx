@@ -7,7 +7,14 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/Dropdown/Dropdown";
 import { useFormik } from "formik";
-import { ChangeEvent, FC, FocusEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FC,
+  FocusEvent,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
@@ -38,12 +45,6 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
-
-const handleAmountKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-  if (["e", "E", "+", "-"].includes(e.key)) {
-    e.preventDefault();
-  }
-};
 
 interface AmountFieldProps {
   isEditing: boolean;
@@ -80,7 +81,6 @@ const AmountField: FC<AmountFieldProps> = ({
           onBlur={onBlur}
           placeholder={placeholder}
           type="text"
-          onKeyDown={handleAmountKeyDown}
           variant="sm"
           fullWidth
           autoFocus
@@ -249,7 +249,6 @@ const AddDealSidePanel: FC = () => {
     if (leadStage) {
       setFieldValue("stageId", String(leadStage.id));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCrmSidePanelOpen, stages]);
 
   useEffect(() => {
@@ -290,7 +289,10 @@ const AddDealSidePanel: FC = () => {
       : "primary";
 
   const hasFormData = !!(
-    values.name || values.description || values.amount || values.contactId
+    values.name ||
+    values.description ||
+    values.amount ||
+    values.contactId
   );
 
   return (
