@@ -281,7 +281,7 @@ const AddContactModalContent: React.FC = () => {
               </p>
             )
           }
-          forceOpen={isDomainSearchEnabled}
+          openOnFocus={isDomainSearchEnabled}
         />
       ) : (
         <InputField

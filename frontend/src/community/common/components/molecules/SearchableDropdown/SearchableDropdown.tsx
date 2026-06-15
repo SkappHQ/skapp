@@ -55,7 +55,7 @@ export interface SearchableDropdownProps {
   variant?: "sm" | "md" | "lg";
   positionStrategy?: "absolute" | "fixed";
   onClose?: () => void;
-  forceOpen?: boolean;
+  openOnFocus?: boolean;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -75,7 +75,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   variant = "md",
   positionStrategy = "absolute",
   onClose,
-  forceOpen = false
+  openOnFocus = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -86,15 +86,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       setActiveIndex(items.length > 0 ? 0 : null);
     }
   }, [items.length, activeIndex]);
-
-  useEffect(() => {
-    if (forceOpen) {
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
-      setActiveIndex(null);
-    }
-  }, [forceOpen]);
 
   const isDropdownOpen = isOpen && (items.length > 0 || !!emptyMessage);
 
@@ -179,7 +170,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       className="w-full relative input-plain-text"
       ref={inputWrapperRef}
       onFocus={() => {
-        if (value.trim().length > 0) {
+        if (value.trim().length > 0 || (openOnFocus && items.length > 0)) {
           setIsOpen(true);
         }
       }}
