@@ -13,6 +13,8 @@ public interface CrmTaskService {
 
 	ResponseEntityDto editTask(Long id, CrmTaskEditRequestDto requestDto);
 
+	ResponseEntityDto deleteTask(Long id);
+
 	ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto);
 
 }
