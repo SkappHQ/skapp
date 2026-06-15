@@ -149,7 +149,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
   };
 
   const kebabMenuOptions =
-    employee?.common?.accountStatus === AccountStatusTypes.TERMINATED
+    initialEmployee?.common?.accountStatus === AccountStatusTypes.TERMINATED
       ? [
           {
             id: employee?.common?.employeeId || "",

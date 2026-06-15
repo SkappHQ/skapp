@@ -46,8 +46,8 @@ const ReactivateConfirmationModal: React.FC<
 
   const { mutate: reactivateEmployee } = useReactivateTerminatedUser(
     onSuccess,
-    employeeId,
-    onError
+    onError,
+    employeeId
   );
 
   const onClick = () => {
