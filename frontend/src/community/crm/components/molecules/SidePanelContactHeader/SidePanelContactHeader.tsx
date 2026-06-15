@@ -1,59 +1,26 @@
-import {
-  BuildingIcon,
-  EmailOutlineIcon,
-  PhoneIcon
-} from "@rootcodelabs/skapp-ui";
-import { FC, ReactElement } from "react";
+import { FC } from "react";
 
-import { IconName } from "~community/common/types/IconTypes";
-import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
-import { CrmContactType } from "~community/crm/types/CommonTypes";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { formatISODateWithSuffix } from "~community/common/utils/dateTimeUtils";
 
 interface Props {
-  contact?: CrmContactType;
-  onCompanyClick?: () => void;
+  name: string;
+  lastModifiedDate: string;
 }
 
-interface InfoItem {
-  icon: ReactElement;
-  value: string;
-  onClick?: () => void;
-  endIcon?: IconName;
-}
-
-const SidePanelContactHeader: FC<Props> = ({ contact, onCompanyClick }) => {
-  if (!contact) return null;
-
-  const company = contact.company;
-
-  const iconColor = { color: "var(--color-secondary-icon)" };
-
-  const infoItems: InfoItem[] = [
-    {
-      icon: <EmailOutlineIcon style={iconColor} />,
-      value: contact.email
-    },
-    {
-      icon: <PhoneIcon style={iconColor} />,
-      value: contact.contactNumber ?? "—"
-    },
-    ...(company
-      ? [
-          {
-            icon: <BuildingIcon style={iconColor} />,
-            value: company.name,
-            onClick: onCompanyClick,
-            endIcon: IconName.POP_OUT_ICON
-          }
-        ]
-      : [])
-  ];
+const SidePanelContactHeader: FC<Props> = ({ name, lastModifiedDate }) => {
+  const translateText = useTranslator(
+    "crmModule",
+    "contacts",
+    "contactDetailsPanel"
+  );
 
   return (
-    <div className="flex items-center justify-between max-w-[629px] w-full">
-      {infoItems.map(({ ...item }) => (
-        <SidePanelHeaderInfoItem {...item} />
-      ))}
+    <div className="flex flex-col gap-2 pl-2">
+      <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">{name}</h2>
+      <p className="body2 leading-[24px] text-secondary-text">
+        {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffix(lastModifiedDate)}`}
+      </p>
     </div>
   );
 };
