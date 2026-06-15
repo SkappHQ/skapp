@@ -605,7 +605,8 @@ export const useTerminateUser = (
 
 export const useReactivateTerminatedUser = (
   onSuccess: () => void,
-  employeeId?: number
+  employeeId?: number,
+  onError?: () => void
 ) => {
   const queryClient = useQueryClient();
 
@@ -617,6 +618,7 @@ export const useReactivateTerminatedUser = (
       queryClient.invalidateQueries({ queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(employeeId) });
       onSuccess();
     },
+    onError
   });
 };
 

@@ -9,7 +9,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { useReactivateTerminatedUser } from "~community/people/api/PeopleApi";
-import { usePeopleStore } from "~community/people/store/store";
 
 interface ReactivateConfirmationModalProps {
   isOpen: boolean;
@@ -47,7 +46,8 @@ const ReactivateConfirmationModal: React.FC<
 
   const { mutate: reactivateEmployee } = useReactivateTerminatedUser(
     onSuccess,
-    employeeId
+    employeeId,
+    onError
   );
 
   const onClick = () => {
