@@ -223,7 +223,7 @@ export interface CrmDealAddFormTypes {
   stageId: string;
   contactId: string;
   ownerId: string;
-  priority: CrmPriorityEnum | string;
+  priority: CrmPriorityEnum;
   amount: string;
   description: string;
 }

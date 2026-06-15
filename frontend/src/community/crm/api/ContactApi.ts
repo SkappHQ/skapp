@@ -21,7 +21,6 @@ import {
   CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
   CrmOwnersResponseType,
-  CrmContactLookup,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 

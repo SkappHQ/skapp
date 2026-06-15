@@ -325,14 +325,21 @@
       },
       "placeholders": {
         "dealName": "Enter deal name",
+        "stage": "Select stage",
         "description": "Enter description",
         "amount": "Enter amount",
         "ownerSearch": "Search employees",
         "contactSearch": "Search contacts",
-        "none": "None"
+        "none": "None",
+        "noResults": "No results"
       },
       "buttons": {
         "addDeal": "Add Deal"
+      },
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
       },
       "ariaLabels": {
         "closePanel": "Close add deal panel",
@@ -348,6 +355,7 @@
       "validations": {
         "dealNameRequired": "Deal name is required",
         "stageRequired": "Stage is required",
+        "stageLoadError": "Failed to load stages. Please try again.",
         "contactRequired": "Contact is required",
         "ownerRequired": "Owner is required",
         "priorityRequired": "Priority is required",

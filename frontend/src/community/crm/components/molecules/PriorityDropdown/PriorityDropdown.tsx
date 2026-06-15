@@ -1,7 +1,6 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 
@@ -16,107 +15,38 @@ const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
   onChange,
   onSave
 }) => {
-  const priorityOptions = useGetPriorityOptions();
-  const [isEditing, setIsEditing] = useState(false);
+  const dropdownOptions = useGetPriorityOptions(
+    "crmModule",
+    "deals",
+    "addDealSidePanel"
+  );
   const [inputValue, setInputValue] = useState<CrmPriorityEnum>(value);
-  const inputRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setInputValue(value || CrmPriorityEnum.MEDIUM);
   }, [value]);
 
-  useEffect(() => {
-    if (isEditing && dropdownRef.current) {
-      const timeout = setTimeout(() => {
-        const trigger = dropdownRef.current?.querySelector(
-          'button, [role="button"], .dropdown-trigger'
-        );
-        if (trigger) {
-          (trigger as HTMLElement).click();
-        }
-      }, 100);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [isEditing]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        inputRef.current &&
-        !(
-          event.target instanceof Node &&
-          inputRef.current.contains(event.target)
-        ) &&
-        isEditing
-      ) {
-        setIsEditing(false);
-        if (inputValue) {
-          if (onSave) {
-            onSave(inputValue);
-          } else if (onChange) {
-            onChange(inputValue);
-          }
-        }
-      }
-    };
-
-    if (isEditing) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isEditing, inputValue, onSave, onChange]);
-
-  const handleClick = () => {
-    if (!isEditing) {
-      setIsEditing(true);
-      setInputValue(value);
-    }
-  };
-
   const handleDropdownChange = (selectedValue: string) => {
     const priority = selectedValue as CrmPriorityEnum;
     setInputValue(priority);
-    setIsEditing(false);
-    if (onChange) {
-      onChange(priority);
-    }
-    if (onSave) {
-      onSave(priority);
-    }
+    onChange?.(priority);
+    onSave?.(priority);
   };
 
   return (
-    <div className="flex items-center">
-      {isEditing ? (
-        <div ref={inputRef} className="w-full">
-          <div ref={dropdownRef}>
-            <Dropdown
-              value={inputValue}
-              onChange={handleDropdownChange}
-              className="bg-gray-50 rounded-lg"
-              options={priorityOptions}
-              variant="jsx-content"
-              width="100%"
-            />
-          </div>
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="min-h-8 rounded-lg inline-flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
-          onClick={handleClick}
-        >
-          <div className="flex items-center py-2 px-1 gap-2">
-            <PriorityLabel priority={inputValue} />
-          </div>
-        </button>
-      )}
-    </div>
+    <Dropdown
+      value={inputValue}
+      onChange={handleDropdownChange}
+      options={dropdownOptions}
+      variant="jsx-content"
+      width="auto"
+      menuWidth="content"
+      usePortal={false}
+      height="min-h-8"
+      hideArrowIcon={true}
+      padding="py-2 px-1"
+      className="bg-transparent! border-0! rounded-lg hover:bg-gray-50! transition-colors"
+    />
   );
 };
 

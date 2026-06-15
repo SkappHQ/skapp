@@ -48,7 +48,11 @@ const AddTaskModalContent: React.FC = () => {
 
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
-  const priorityDropdownOptions = useGetPriorityOptions();
+  const priorityDropdownOptions = useGetPriorityOptions(
+    "crmModule",
+    "tasks",
+    "addTaskModal"
+  );
   const { options: taskTypeOptions, getCategoryById } = useGetTaskTypeOptions();
 
   const defaultOwner = useMemo((): CrmOwner | null => {

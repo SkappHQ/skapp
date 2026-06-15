@@ -42,13 +42,16 @@ export const useGetDealsInfinite = (
   });
 };
 
-export const useGetDealStages = (): UseQueryResult<CrmDealStageType[]> => {
+export const useGetDealStages = (
+  enabled: boolean = true
+): UseQueryResult<CrmDealStageType[]> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_STAGES,
     queryFn: async (): Promise<CrmDealStageType[]> => {
       const response = await authFetch.get(crmDealEndpoints.DEAL_STAGES);
       return response?.data?.results;
-    }
+    },
+    enabled
   });
 };
 

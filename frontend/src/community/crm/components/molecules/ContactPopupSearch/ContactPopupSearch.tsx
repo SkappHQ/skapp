@@ -1,10 +1,10 @@
-import {
-  DropdownValue,
-  DropdownWithSearchablePopup
-} from "@rootcodelabs/skapp-ui";
-import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
+import type {
+  DropdownOption,
+  TriggerProps
+} from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
 import { FC, RefObject } from "react";
 
+import EntityPopupSearch from "~community/crm/components/molecules/EntityPopupSearch/EntityPopupSearch";
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
 
 interface Props {
@@ -14,8 +14,12 @@ interface Props {
   onSearch: (term: string) => void;
   placeholder: string;
   searchPlaceholder: string;
+  noResultsText: string;
   ariaInvalid?: boolean;
 }
+
+const getContactId = (c: CrmContactLookup) => c.id;
+const getContactLabel = (c: CrmContactLookup) => c.name;
 
 const ContactPopupSearch: FC<Props> = ({
   contacts,
@@ -24,83 +28,44 @@ const ContactPopupSearch: FC<Props> = ({
   onSearch,
   placeholder,
   searchPlaceholder,
+  noResultsText,
   ariaInvalid
-}) => {
-  const options: DropdownOption[] = contacts.map((c) => ({
-    id: c.id,
-    value: c.id,
-    label: c.name
-  }));
-
-  const selectedValue: DropdownOption | null = selectedContact
-    ? {
-        id: selectedContact.id,
-        value: selectedContact.id,
-        label: selectedContact.name
-      }
-    : null;
-
-  const handleChange = (val: DropdownValue | null) => {
-    if (!val) {
-      onChange(null);
-      return;
-    }
-    const id = typeof val === "object" ? Number(val.id) : Number(val);
-    const contact = contacts.find((c) => c.id === id) ?? null;
-    onChange(contact);
-  };
-
-  return (
-    <DropdownWithSearchablePopup
-      options={options}
-      value={selectedValue}
-      onChange={handleChange}
-      onSearch={onSearch}
-      placeholder={placeholder}
-      searchPlaceholder={searchPlaceholder}
-      searchable
-      clearable
-      ariaInvalid={ariaInvalid}
-      width="100%"
-      renderTrigger={(val, _isOpen, _disabled, { ref, ...triggerProps }) => {
-        const contact = val
-          ? (contacts.find(
-              (c) => c.id === Number((val as { id: unknown }).id)
-            ) ?? selectedContact)
-          : null;
-        return (
-          <div
-            ref={ref as RefObject<HTMLDivElement>}
-            {...triggerProps}
-            className="flex items-center w-full min-h-8 px-1 cursor-pointer"
-          >
-            {contact ? (
-              <span className="text-[14px]">{contact.name}</span>
-            ) : (
-              <span className="text-[14px] text-tertiary-text">
-                {placeholder}
-              </span>
-            )}
-          </div>
-        );
-      }}
-      renderOption={(option, _index, onSelect) => {
-        const opt = option as DropdownOption;
-        return (
-          <button
-            type="button"
-            className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer w-full text-left"
-            onClick={() => onSelect(option)}
-          >
-            {typeof opt.label === "string" ? opt.label : ""}
-          </button>
-        );
-      }}
-      renderNoResults={() => (
-        <div className="px-4 py-2 text-sm text-gray-400">No results</div>
-      )}
-    />
-  );
-};
+}) => (
+  <EntityPopupSearch
+    items={contacts}
+    selectedItem={selectedContact}
+    getItemId={getContactId}
+    getItemLabel={getContactLabel}
+    onChange={onChange}
+    onSearch={onSearch}
+    placeholder={placeholder}
+    searchPlaceholder={searchPlaceholder}
+    noResultsText={noResultsText}
+    ariaInvalid={ariaInvalid}
+    renderTrigger={(contact: CrmContactLookup | null, { ref, ...triggerProps }: TriggerProps) => (
+      <div
+        ref={ref as RefObject<HTMLDivElement>}
+        {...triggerProps}
+        className="flex items-center w-full min-h-8 px-1 cursor-pointer"
+      >
+        {contact ? (
+          <span className="body2">{contact.name}</span>
+        ) : (
+          <span className="body2 text-tertiary-text">{placeholder}</span>
+        )}
+      </div>
+    )}
+    renderOption={(contact: CrmContactLookup, option: DropdownOption, onSelect) => (
+      <button
+        key={option.id}
+        type="button"
+        className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer w-full text-left"
+        onClick={() => onSelect(option)}
+      >
+        {contact.name}
+      </button>
+    )}
+  />
+);
 
 export default ContactPopupSearch;
