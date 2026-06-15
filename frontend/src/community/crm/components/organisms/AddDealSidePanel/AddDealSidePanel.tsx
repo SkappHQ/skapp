@@ -7,7 +7,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/Dropdown/Dropdown";
 import { useFormik } from "formik";
-import { FC, KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, FocusEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
@@ -43,6 +43,71 @@ const handleAmountKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
   if (["e", "E", "+", "-"].includes(e.key)) {
     e.preventDefault();
   }
+};
+
+interface AmountFieldProps {
+  isEditing: boolean;
+  value: string;
+  isTouched: boolean | undefined;
+  error: string | undefined;
+  placeholder: string;
+  nonePlaceholder: string;
+  ariaLabel: string;
+  onEdit: () => void;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onBlur: (e: FocusEvent<HTMLInputElement>) => void;
+}
+
+const AmountField: FC<AmountFieldProps> = ({
+  isEditing,
+  value,
+  isTouched,
+  error,
+  placeholder,
+  nonePlaceholder,
+  ariaLabel,
+  onEdit,
+  onChange,
+  onBlur
+}) => {
+  if (isEditing) {
+    return (
+      <div className="flex-1 min-w-0">
+        <InputField
+          name="amount"
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          type="text"
+          onKeyDown={handleAmountKeyDown}
+          variant="sm"
+          fullWidth
+          autoFocus
+          state={isTouched && error ? "error" : "default"}
+          errorMessage={isTouched ? error : undefined}
+          aria-label={ariaLabel}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col w-full">
+      <button
+        type="button"
+        className={`body2 text-left w-full pl-1 ${
+          value ? "text-black" : "text-tertiary-text"
+        }`}
+        onClick={onEdit}
+      >
+        {value || nonePlaceholder}
+      </button>
+      {isTouched && error && (
+        <p className="text-semantic-red-text body3 mt-1">{error}</p>
+      )}
+    </div>
+  );
 };
 
 const AddDealSidePanel: FC = () => {
@@ -224,6 +289,10 @@ const AddDealSidePanel: FC = () => {
       ? "primary-error"
       : "primary";
 
+  const hasFormData = !!(
+    values.name || values.description || values.amount || values.contactId
+  );
+
   return (
     <div className="crm-deal-side-panel">
       <SidePanel
@@ -236,12 +305,7 @@ const AddDealSidePanel: FC = () => {
         }
         width="xl"
         animation="slide"
-        closeOnBackdropClick={
-          !values.name &&
-          !values.description &&
-          !values.amount &&
-          !values.contactId
-        }
+        closeOnBackdropClick={!hasFormData}
         closeAriaLabel={translateText(["ariaLabels", "closePanel"])}
         footer={
           <div className="flex justify-end px-6 py-3">
@@ -313,48 +377,21 @@ const AddDealSidePanel: FC = () => {
             <div className="flex-[1_0_0] min-w-0 flex flex-col gap-4">
               <div className="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 w-full">
                 <PropertyRow label={translateText(["labels", "value"])}>
-                  {editingField === "amount" ? (
-                    <div className="flex-1 min-w-0">
-                      <InputField
-                        name="amount"
-                        value={values.amount}
-                        onChange={handleChange}
-                        onBlur={(e) => {
-                          handleBlur(e);
-                          setEditingField(null);
-                        }}
-                        placeholder={translateText(["placeholders", "amount"])}
-                        type="text"
-                        onKeyDown={handleAmountKeyDown}
-                        variant="sm"
-                        fullWidth
-                        autoFocus
-                        state={
-                          touched.amount && errors.amount ? "error" : "default"
-                        }
-                        errorMessage={
-                          touched.amount ? errors.amount : undefined
-                        }
-                        aria-label={translateText(["ariaLabels", "amount"])}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex flex-col w-full">
-                      <button
-                        type="button"
-                        className={`body2 text-left w-full pl-1 ${values.amount ? "text-black" : "text-tertiary-text"}`}
-                        onClick={() => setEditingField("amount")}
-                      >
-                        {values.amount ||
-                          translateText(["placeholders", "none"])}
-                      </button>
-                      {touched.amount && errors.amount && (
-                        <p className="text-semantic-red-text body3 mt-1">
-                          {errors.amount}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  <AmountField
+                    isEditing={editingField === "amount"}
+                    value={values.amount}
+                    isTouched={touched.amount}
+                    error={errors.amount}
+                    placeholder={translateText(["placeholders", "amount"])}
+                    nonePlaceholder={translateText(["placeholders", "none"])}
+                    ariaLabel={translateText(["ariaLabels", "amount"])}
+                    onEdit={() => setEditingField("amount")}
+                    onChange={handleChange}
+                    onBlur={(e) => {
+                      handleBlur(e);
+                      setEditingField(null);
+                    }}
+                  />
                 </PropertyRow>
 
                 <PropertyRow label={translateText(["labels", "priority"])}>
