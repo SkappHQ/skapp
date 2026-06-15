@@ -5,7 +5,8 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import * as Yup from "yup";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -17,6 +18,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { concatStrings } from "~community/common/utils/commonUtil";
+import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
 import {
   useCreateNewContact,
   useGetCompanyLookup,
@@ -32,7 +34,9 @@ import {
   CrmContactCreatePayload,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { extractDomainFromEmail } from "~community/crm/utils/commonHelpers";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
+import { prioritizeListIds } from "~community/crm/utils/crmUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 import SelectedOwnerField from "../SelectedOwnerField/SelectedOwnerField";
@@ -147,14 +151,32 @@ const AddContactModalContent: React.FC = () => {
     submitForm
   } = formik;
 
+  const extractedDomain = extractDomainFromEmail(values.email);
+
+  const debouncedDomain = useDebounce(extractedDomain, SEARCH_DEBOUNCE_DELAY);
+
+  const { data: domainSearchData } = useSearchCompaniesByDomain(
+    debouncedDomain,
+    debouncedDomain.length > 0 && Yup.string().email().isValidSync(values.email)
+  );
+
   const { data: companyLookupData, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
 
-  const companyDropdownItems: SearchableDropdownItem[] =
-    companyLookupData?.items?.map((company) => ({
-      id: String(company.id),
-      content: company.name
-    })) ?? [];
+  const companyDropdownItems: SearchableDropdownItem[] = useMemo(() => {
+    const items =
+      companyLookupData?.items?.map((company) => ({
+        id: String(company.id),
+        content: company.name
+      })) ?? [];
+
+    const domainCompanyIds =
+      domainSearchData?.companies?.map((company) => company.id) ?? [];
+
+    const { prioritized, others } = prioritizeListIds(items, domainCompanyIds);
+
+    return [...prioritized, ...others];
+  }, [companyLookupData?.items, domainSearchData?.companies]);
 
   const handleCompanySelect = (companyDropDownItem: SearchableDropdownItem) => {
     const company = companyLookupData?.items?.find(
@@ -256,6 +278,7 @@ const AddContactModalContent: React.FC = () => {
               </p>
             )
           }
+          forceOpen={extractedDomain.length > 0}
         />
       ) : (
         <InputField
