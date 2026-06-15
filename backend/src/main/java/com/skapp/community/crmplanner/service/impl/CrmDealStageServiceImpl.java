@@ -73,7 +73,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	}
 
 	protected void validateDealStageCreation() {
-		// This methid is a placeholder for enterprise deal stage creation logic
+		// This method is a placeholder for enterprise deal stage creation logic
 	}
 
 }

@@ -165,6 +165,19 @@ class CrmDealStageControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
+	@Test
+	@DisplayName("Create deal stage without color - Returns Bad Request")
+	void createDealStage_NullColor_ReturnsBadRequest() throws Exception {
+		CrmDealStageCreateRequestDto dto = validPayload();
+		dto.setColor(null);
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_COLOR_REQUIRED)));
+	}
+
 	// POST — name validation
 
 	@Test
