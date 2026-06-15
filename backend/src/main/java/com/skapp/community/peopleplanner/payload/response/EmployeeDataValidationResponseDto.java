@@ -17,4 +17,6 @@ public class EmployeeDataValidationResponseDto {
 
 	private Boolean isGuestUser;
 
+	private Boolean isTerminatedUser;
+
 }

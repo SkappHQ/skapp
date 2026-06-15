@@ -2,10 +2,10 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +21,7 @@ public class CrmOwnerResolverServiceImpl implements CrmOwnerResolverService {
 	public Employee resolveOwner(Long ownerId, User currentUser) {
 		Employee currentEmployee = currentUser.getEmployee();
 
-		Role currentCrmRole = currentEmployee.getEmployeeRole().getCrmRole();
-
-		if (currentCrmRole == Role.CRM_SALES_REPRESENTATIVE) {
+		if (CrmUtil.isCrmSalesRepresentative(currentUser)) {
 			return currentEmployee;
 		}
 

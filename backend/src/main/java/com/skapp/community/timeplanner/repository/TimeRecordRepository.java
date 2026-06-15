@@ -17,7 +17,7 @@ public interface TimeRecordRepository {
 
 	AttendanceSummaryDto getEmployeeAttendanceSummary(List<Long> employeeIds, LocalDate startDate, LocalDate endDate);
 
-	Optional<TimeRecord> findIncompleteClockoutTimeRecords(LocalDate lastClockInDate, Long employeeId);
+	Optional<TimeRecord> findIncompleteClockOutTimeRecords(LocalDate lastClockInDate, Long employeeId);
 
 	AttendanceSummaryDto findManagerAssignUsersAttendanceSummary(Long managerId, List<Long> teamIds,
 			LocalDate startDate, LocalDate endDate, List<Long> employeeIds);

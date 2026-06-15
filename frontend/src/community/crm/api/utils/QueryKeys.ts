@@ -1,16 +1,39 @@
 import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
 
 export const crmDealQueryKeys = {
-  GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params]
+  ALL: ["crm-deals"],
+  GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
+  DEAL_STAGES: ["crm-deal-stages"]
 };
 
 export const contactQueryKeys = {
+  GET_CONTACT_DATA: ["crm-contacts"],
+  ALL: ["crm-contacts"],
   GET_CONTACT_DATA_BY_SEARCH: (searchKeyword: string, companyId?: number) => [
     "crm-contacts",
     searchKeyword,
     companyId
   ],
-  CRM_COMPANIES: ["crm-companies"]
+  CRM_COMPANIES: ["crm-companies"],
+  COMPANY_LOOKUP: (searchKeyword: string) => [
+    "crm-company-lookup",
+    searchKeyword
+  ],
+  OWNERS_LOOKUP: (searchKeyword: string) => [
+    "crm-owners-lookup",
+    searchKeyword
+  ],
+  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-contacts-lookup",
+    searchKeyword,
+    size
+  ],
+  OWNER_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-owners-lookup",
+    searchKeyword,
+    size
+  ],
+  CONTACT_BY_ID: (id: number) => ["crm-contact-by-id", id]
 };
 
 export const companyQueryKeys = {
@@ -20,7 +43,12 @@ export const companyQueryKeys = {
     searchKeyword,
     limit
   ],
-  CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"]
+  CHECK_COMPANY_NAME_EXISTS: ["check-company-name-exists"],
+  CRM_COMPANIES: (size: number) => ["crm-companies", size],
+  SEARCH_COMPANIES_BY_DOMAIN: (domain: string) => [
+    "search-companies-by-domain",
+    domain
+  ]
 };
 
 export const taskQueryKeys = {

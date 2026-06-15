@@ -4,6 +4,7 @@ import {
   AdminTypes,
   EmployeeTypes,
   ManagerTypes,
+  RepresentativeTypes,
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
@@ -11,7 +12,12 @@ import routes from "~community/common/utils/data/routes";
 import getEnterpriseDrawerRoutes from "~community/common/utils/getEnterpriseDrawerRoutes";
 import { TierEnum } from "~enterprise/common/enums/Common";
 
-type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
+type Role =
+  | AdminTypes
+  | ManagerTypes
+  | EmployeeTypes
+  | SuperAdminType
+  | RepresentativeTypes;
 
 type RouteWithBadge = { badge?: string };
 
@@ -231,6 +237,16 @@ const getDrawerRoutes = ({
         );
 
         if (!isInvoiceManager) {
+          return null;
+        }
+      }
+
+      if (route?.name === "CRM") {
+        const hasCRMAccess = userRoles?.includes(
+          RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+        );
+
+        if (!hasCRMAccess) {
           return null;
         }
       }

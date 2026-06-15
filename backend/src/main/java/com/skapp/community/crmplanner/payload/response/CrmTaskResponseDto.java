@@ -4,6 +4,8 @@ import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 public class CrmTaskResponseDto {
@@ -18,8 +20,20 @@ public class CrmTaskResponseDto {
 
 	private CrmTaskPriority priority;
 
+	private Boolean isCompleted;
+
+	private LocalDateTime dueAt;
+
+	private String notes;
+
 	private Long contactId;
 
 	private String ownerName;
+
+	private CrmOwnerResponseDto owner;
+
+	private CrmContactLookupResponseDto contact;
+
+	private CrmDealLookupResponseDto deal;
 
 }

@@ -1,25 +1,37 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.common.model.Auditable_;
+import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
+import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
+import com.skapp.community.crmplanner.type.CrmTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
+import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,6 +40,68 @@ import java.util.List;
 public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 	private final EntityManager entityManager;
+
+	@Override
+	public List<CrmTask> findTasks(Long ownerId, CrmTaskFilterDto filterDto) {
+		return buildFindTaskQuery(ownerId, filterDto);
+	}
+
+	@Override
+	public Page<CrmTask> findCompletedTasks(Long ownerId, CrmTaskCompletedFilterDto filterDto, Pageable pageable) {
+		return buildFindCompletedTasksQuery(ownerId, filterDto, pageable);
+	}
+
+	private List<CrmTask> buildFindTaskQuery(Long ownerId, CrmTaskFilterDto filterDto) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		applyFetchGraph(task);
+
+		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, false, filterDto.getSearchKeyword(),
+				filterDto.getContactId(), filterDto.getDealId());
+		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
+
+		query.select(task)
+			.where(predicates.toArray(new Predicate[0]))
+			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
+					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	private Page<CrmTask> buildFindCompletedTasksQuery(Long ownerId, CrmTaskCompletedFilterDto filterDto,
+			Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		applyFetchGraph(task);
+
+		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, true, filterDto.getSearchKeyword(),
+				filterDto.getContactId(), filterDto.getDealId());
+		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
+
+		query.select(task)
+			.where(predicates.toArray(new Predicate[0]))
+			.orderBy(cb.desc(task.get(Auditable_.lastModifiedDate)), cb.desc(task.get(CrmTask_.id)));
+
+		TypedQuery<CrmTask> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+
+		List<CrmTask> content = typedQuery.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
+
+		List<Predicate> countPredicates = buildTaskPredicates(cb, countRoot, params);
+
+		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+		Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+		return new PageImpl<>(content, pageable, total);
+	}
 
 	@Override
 	public List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds) {
@@ -101,6 +175,43 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		return entityManager.createQuery(query).getSingleResult();
+	}
+
+	private List<Predicate> buildTaskPredicates(CriteriaBuilder cb, Root<CrmTask> root, CrmTaskFilterParams params) {
+		List<Predicate> predicates = new ArrayList<>();
+
+		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
+
+		if (params.getCompleted() != null) {
+			predicates.add(Boolean.TRUE.equals(params.getCompleted()) ? cb.isTrue(root.get(CrmTask_.isCompleted))
+					: cb.isFalse(root.get(CrmTask_.isCompleted)));
+		}
+
+		if (params.getOwnerId() != null) {
+			predicates.add(cb.equal(root.get(CrmTask_.owner).get(Employee_.employeeId), params.getOwnerId()));
+		}
+
+		if (params.getSearchKeyword() != null && !params.getSearchKeyword().isBlank()) {
+			String escaped = StringUtils.escapeLikePattern(params.getSearchKeyword().trim().toLowerCase());
+			predicates.add(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"));
+		}
+
+		if (params.getContactId() != null) {
+			predicates.add(cb.equal(root.get(CrmTask_.contact).get(CrmContact_.id), params.getContactId()));
+		}
+
+		if (params.getDealId() != null) {
+			predicates.add(cb.equal(root.get(CrmTask_.deal).get(CrmDeal_.id), params.getDealId()));
+		}
+
+		return predicates;
+	}
+
+	private void applyFetchGraph(Root<CrmTask> root) {
+		root.fetch(CrmTask_.type);
+		root.fetch(CrmTask_.owner);
+		root.fetch(CrmTask_.contact, JoinType.LEFT);
+		root.fetch(CrmTask_.deal, JoinType.LEFT);
 	}
 
 }
