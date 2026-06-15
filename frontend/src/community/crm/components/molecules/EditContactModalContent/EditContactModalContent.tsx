@@ -1,7 +1,7 @@
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { getChangedFields } from "~community/common/utils/objectUtils";
+import { getChangedFields } from "~community/common/utils/commonUtil";
 import { useEditContact } from "~community/crm/api/ContactApi";
 import ContactModalForm from "~community/crm/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStore } from "~community/crm/store/store";
