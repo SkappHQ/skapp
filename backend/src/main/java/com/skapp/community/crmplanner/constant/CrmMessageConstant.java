@@ -57,6 +57,8 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH("api.error.crm.task.contact-company-mismatch"),
 	CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH("api.error.crm.task.deal-contact-mismatch"),
 	CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH("api.error.crm.task.deal-company-mismatch"),
+	CRM_ERROR_DOMAIN_REQUIRED("api.error.crm.validation.domain-required"),
+	CRM_ERROR_DOMAIN_INVALID("api.error.crm.validation.domain-invalid"),
 	CRM_SUCCESS_CONTACT_CREATED("api.success.crm.contact-created"),
 	CRM_SUCCESS_CONTACT_DELETED("api.success.crm.contact-deleted"),
 	CRM_SUCCESS_CONTACT_UPDATED("api.success.crm.contact-updated"),
@@ -67,7 +69,9 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH("api.error.crm.deal.neighbour-stage-mismatch"),
 	CRM_ERROR_DEAL_EDIT_DENIED("api.error.crm.deal.edit-denied"),
 	CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED("api.error.crm.deal.order-neighbours-required"),
-	CRM_ERROR_DEAL_ALREADY_IN_STAGE("api.error.crm.deal.already-in-stage");
+	CRM_ERROR_DEAL_ALREADY_IN_STAGE("api.error.crm.deal.already-in-stage"),
+	CRM_SUCCESS_TASK_DELETED("api.success.crm.task-deleted"),
+	CRM_ERROR_TASK_DELETE_DENIED("api.error.crm.task-delete-denied");
 
 	private final String messageKey;
 
