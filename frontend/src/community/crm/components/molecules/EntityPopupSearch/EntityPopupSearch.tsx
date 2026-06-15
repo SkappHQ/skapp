@@ -104,7 +104,9 @@ function EntityPopupSearch<T>({
         const id = Number(opt.id);
         const item =
           items.find((i) => getItemId(i) === id) ??
-          (selectedItem && getItemId(selectedItem) === id ? selectedItem : null);
+          (selectedItem && getItemId(selectedItem) === id
+            ? selectedItem
+            : null);
         if (!item) return null;
         return renderOption(item, opt, onSelect);
       }}
