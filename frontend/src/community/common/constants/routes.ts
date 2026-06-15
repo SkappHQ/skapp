@@ -129,6 +129,7 @@ const ROUTES = {
     CONTACTS: "/crm/contacts",
     COMPANIES: "/crm/companies",
     DEALS: "/crm/deals",
+    DEALS_KANBAN: "/crm/deals-kanban",
     TASKS: "/crm/tasks"
   },
   PROJECTS: {

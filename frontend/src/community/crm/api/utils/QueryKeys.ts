@@ -46,3 +46,12 @@ export const companyQueryKeys = {
 export const taskQueryKeys = {
   GET_TASK_DATA: ["get-task-data"]
 };
+
+export const boardQueryKeys = {
+  INIT_DATA: ["crm-board-init"],
+  DEALS_GROUPED: (stageIds: number[], searchKeyword: string) => [
+    "crm-board-deals",
+    stageIds,
+    searchKeyword,
+  ],
+};

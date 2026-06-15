@@ -23,3 +23,10 @@ export const companyEndpoints = {
   CHECK_COMPANY_NAME_EXISTS: (name: string) =>
     `${moduleAPIPath.CRM}/company/exists?name=${encodeURIComponent(name)}`
 };
+
+export const boardEndpoints = {
+  INIT_DATA: `${moduleAPIPath.CRM}/board/init-data`,
+  DEALS_GROUPED: `${moduleAPIPath.CRM}/board/deals-grouped-by-stages`,
+  REORDER_WITHIN_STAGE: `${moduleAPIPath.CRM}/board/deal-reorder-within-stage`,
+  MOVE_BETWEEN_STAGES: `${moduleAPIPath.CRM}/board/deal-move-between-stages`,
+};

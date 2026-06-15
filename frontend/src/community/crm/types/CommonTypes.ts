@@ -251,3 +251,51 @@ export interface CrmTaskCreatePayload {
   owner: number | null;
   notes: string;
 }
+
+export interface BoardInitDataResponse {
+  stages: CrmDealStageType[];
+  contacts: CrmContactLookup[];
+  owners: CrmOwner[];
+}
+
+export interface BoardDealItem {
+  id: number;
+  name: string;
+  contactName: string | null;
+  companyName: string | null;
+  ownerFirstName: string | null;
+  ownerLastName: string | null;
+  ownerAuthPic: string | null;
+  ownerId: number | null;
+  amount: string | null;
+  currencyCode: string | null;
+  priority: CrmPriorityEnum | null;
+  taskCount: number;
+  orderIndex: number;
+}
+
+export interface BoardStageDeals {
+  stageId: number;
+  deals: BoardDealItem[];
+  totalCount: number;
+}
+
+export interface BoardDealsGroupedRequest {
+  stageIds: number[];
+  searchKeyword?: string;
+  page?: number | null;
+  limit: number;
+}
+
+export interface BoardReorderWithinStagePayload {
+  dealId: number;
+  previousDealId: number | null;
+  nextDealId: number | null;
+}
+
+export interface BoardMoveBetweenStagesPayload {
+  dealId: number;
+  newStageId: number;
+  previousDealId: number | null;
+  nextDealId: number | null;
+}
