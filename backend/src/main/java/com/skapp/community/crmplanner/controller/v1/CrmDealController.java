@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,6 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class CrmDealController {
 
 	private final CrmDealService crmDealService;
+
+	@Operation(summary = "Check if a deal name exists",
+			description = "Check if a deal with the given name already exists")
+	@GetMapping("/exists")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> checkDealNameExists(@RequestParam String name) {
+		ResponseEntityDto responseDto = crmDealService.checkDealNameExists(name);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
 
 	@Operation(summary = "Create a new deal",
 			description = "This endpoint creates a new CRM deal with the provided details.")

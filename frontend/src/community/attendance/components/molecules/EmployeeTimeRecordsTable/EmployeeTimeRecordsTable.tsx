@@ -2,6 +2,7 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, JSX, useMemo } from "react";
 
+import { useGetManagerTimeRecords } from "~community/attendance/api/attendanceManagerApi";
 import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
@@ -29,20 +30,16 @@ import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 interface Props {
   recordData: TimeRecordDataResponseType;
-  exportRecordData: TimeRecordDataResponseType;
   orgName?: string;
   teamName?: string;
   isRecordLoading?: boolean;
-  isExportRecordDataLoading?: boolean;
 }
 
 const EmployeeTimeRecordsTable = ({
   recordData,
-  exportRecordData,
   orgName,
   teamName,
-  isRecordLoading,
-  isExportRecordDataLoading
+  isRecordLoading
 }: Props): JSX.Element => {
   const translateText = useTranslator("attendanceModule", "timesheet");
 
@@ -50,6 +47,9 @@ const EmployeeTimeRecordsTable = ({
 
   const { timesheetAnalyticsParams, setTimesheetAnalyticsPagination } =
     useAttendanceStore((state) => state);
+
+  const { isFetching: isExportRecordDataLoading, refetch: refetchExportData } =
+    useGetManagerTimeRecords(true);
 
   const { data: timeConfigData } = useDefaultCapacity();
 
@@ -276,14 +276,18 @@ const EmployeeTimeRecordsTable = ({
           isVisible: true,
           disabled: false,
           label: translateText(["exportToCsvBtnTxt"]),
-          onClick: () =>
-            downloadManagerTimesheetCsv(
-              exportRecordData,
-              timesheetAnalyticsParams?.startDate,
-              timesheetAnalyticsParams?.endDate,
-              teamName,
-              orgName
-            )
+          onClick: async () => {
+            const { data: exportRecordData } = await refetchExportData();
+            if (exportRecordData) {
+              downloadManagerTimesheetCsv(
+                exportRecordData,
+                timesheetAnalyticsParams?.startDate,
+                timesheetAnalyticsParams?.endDate,
+                teamName,
+                orgName
+              );
+            }
+          }
         }
       }}
     />

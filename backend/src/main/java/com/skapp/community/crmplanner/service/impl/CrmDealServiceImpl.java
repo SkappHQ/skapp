@@ -19,6 +19,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
+import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
@@ -71,6 +72,20 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final UserService userService;
 
 	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto checkDealNameExists(String name) {
+		log.info("checkDealNameExists: execution started");
+		CrmValidations.validateDealName(name);
+		boolean exists = crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
+
+		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
+		responseDto.setIsExists(exists);
+
+		log.info("checkDealNameExists: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
 	@Transactional
 	public ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto) {
 		log.info("createDeal: creating deal with name={}", requestDto.getName());
@@ -82,6 +97,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealStageId(requestDto.getStageId());
 		CrmValidations.validateDealContactId(requestDto.getContactId());
 		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
+
+		if (crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
+		}
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
