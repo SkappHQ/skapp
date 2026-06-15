@@ -1,5 +1,6 @@
 import React from "react";
 
+import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmDealType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
@@ -11,7 +12,9 @@ const DealAccordionItemHeader: React.FC<Props> = ({ deal }) => (
   <div className="flex flex-col gap-[2px]">
     <span className="body2">{deal.name}</span>
     <div className="flex items-center gap-2 text-secondary-text">
-      <span className="body3">{deal.contact.name}</span>
+      <span className="body3">
+        {concatStrings([deal.owner.firstName, deal.owner.lastName ?? ""])}
+      </span>
       {deal.amount && (
         <>
           <span className="inline-block h-1 w-1 rounded-full bg-secondary-icon" />

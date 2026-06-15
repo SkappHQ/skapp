@@ -3,16 +3,28 @@ import {
   EditIcon,
   KebabMenu,
   SidePanel,
-  SidePanelProps
+  SidePanelProps,
+  TabItem,
+  Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import {
+  CompanySidePanelTabEnum,
+  ContactSidePanelTabEnum
+} from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
+import SidePanelDealSection from "../../molecules/SidePanelDealSection/SidePanelDealSection";
+
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
+
+  const [activeTab, setActiveTab] = useState<CompanySidePanelTabEnum>(
+    CompanySidePanelTabEnum.TASKS
+  );
 
   const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(
     (store) => ({
@@ -50,6 +62,36 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     }
   ];
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case CompanySidePanelTabEnum.DEALS:
+        return <SidePanelDealSection deals={[]} />;
+      case CompanySidePanelTabEnum.TASKS:
+        // Implement SidePanelTaskSection here
+        return null;
+      case CompanySidePanelTabEnum.CONTACTS:
+        // Implement SidePanelContactSection here
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  const tabs: TabItem[] = [
+    {
+      id: CompanySidePanelTabEnum.TASKS,
+      label: translateText(["tabs", "tasks"])
+    },
+    {
+      id: CompanySidePanelTabEnum.DEALS,
+      label: translateText(["tabs", "deals"])
+    },
+    {
+      id: CompanySidePanelTabEnum.CONTACTS,
+      label: translateText(["tabs", "contacts"])
+    }
+  ];
+
   return (
     <SidePanel
       isOpen={isOpen}
@@ -67,7 +109,22 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           }}
         />
       }
-    />
+    >
+      <div className="flex flex-col pb-4 gap-[16px]">
+        {/*Add company infor section here, similar to ContactSidePanel*/}
+        <div className="flex flex-col pt-2 w-full">
+          <Tabs
+            tabs={tabs}
+            activeTabId={activeTab}
+            onTabChange={(tabId) =>
+              setActiveTab(tabId as CompanySidePanelTabEnum)
+            }
+          />
+        </div>
+        <hr className="border-secondary-accent" />
+        {renderTabContent()}
+      </div>
+    </SidePanel>
   );
 };
 

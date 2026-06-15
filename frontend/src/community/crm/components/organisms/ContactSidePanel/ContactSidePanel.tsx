@@ -116,6 +116,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             }
           />
         </div>
+        <hr className="border-secondary-accent" />
         {renderTabContent()}
       </div>
     </SidePanel>

@@ -35,9 +35,7 @@ const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
   }));
 
   return (
-    <div className="flex flex-col gap-4 mt-6">
-      <h2 className="h2">{translateText(["title"])}</h2>
-      <hr className="border-secondary-accent" />
+    <div className="flex flex-col gap-4">
       {hasDeals ? (
         <div className="flex flex-col w-full">
           <AdvancedAccordion
