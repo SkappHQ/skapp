@@ -87,10 +87,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
 
 		CrmCompany company = null;
 		if (contact.getCompany() != null) {
@@ -167,7 +167,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount);
 			List<CrmDealByStageItemResponseDto> deals = crmMapper
-					.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
+				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
 
 			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
 			stageResult.setStageId(stageId);
@@ -192,17 +192,16 @@ public class CrmDealServiceImpl implements CrmDealService {
 		log.info("getBoardInitData: execution started");
 
 		List<CrmBoardStageResponseDto> stages = crmMapper
-				.crmDealStagesToCrmBoardStageResponseDtos(
-						crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+			.crmDealStagesToCrmBoardStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 
 		List<CrmBoardContactResponseDto> contacts = crmMapper
-				.crmContactsToCrmBoardContactResponseDtos(crmContactDao.findAllContactsForBoardInit());
+			.crmContactsToCrmBoardContactResponseDtos(crmContactDao.findAllContactsForBoardInit());
 
 		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners()
-				.stream()
-				.map(o -> new CrmBoardOwnerResponseDto(o.getEmployeeId(), o.getFirstName(), o.getLastName(),
-						o.getAuthPic()))
-				.toList();
+			.stream()
+			.map(o -> new CrmBoardOwnerResponseDto(o.getEmployeeId(), o.getFirstName(), o.getLastName(),
+					o.getAuthPic()))
+			.toList();
 
 		CrmBoardInitDataResponseDto responseDto = new CrmBoardInitDataResponseDto();
 		responseDto.setStages(stages);
@@ -220,7 +219,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		log.info("reorderDeal: reordering deal with id={}", requestDto.getDealId());
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
 		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
@@ -245,7 +244,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		String prevOrderIndex = null;
 		if (requestDto.getPreviousDealId() != null) {
 			CrmDeal prevDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getPreviousDealId())
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			if (!stageId.equals(prevDeal.getStage().getId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
 			}
@@ -255,7 +254,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		String nextOrderIndex = null;
 		if (requestDto.getNextDealId() != null) {
 			CrmDeal nextDeal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getNextDealId())
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			if (!stageId.equals(nextDeal.getStage().getId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH);
 			}
@@ -278,7 +277,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		log.info("editDeal: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
 		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
@@ -308,7 +307,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		if (requestDto.getStageId() != null) {
 			CrmValidations.validateDealStageId(requestDto.getStageId());
 			CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 			deal.setStage(stage);
 
 			String lastOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stage.getId());
@@ -318,7 +317,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		if (requestDto.getContactId() != null) {
 			CrmValidations.validateDealContactId(requestDto.getContactId());
 			CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
 			deal.setContact(contact);
 
 			CrmCompany company = null;
