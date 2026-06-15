@@ -1,6 +1,6 @@
 import { SetType } from "~community/common/types/storeTypes";
-import { CrmModalTypes } from "~community/configurations/types/CrmTypes";
 import { DealStageSliceTypes } from "~community/configurations/types/zustand/SliceTypes";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const DealStageSlice = (set: SetType<DealStageSliceTypes>) => ({
   isDealStageModalOpen: false,

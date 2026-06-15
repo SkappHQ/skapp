@@ -3,23 +3,19 @@ import { ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import AddDealStageModalContent from "~community/configurations/components/molecules/AddDealStageModalContent/AddDealStageModalContent";
+import EditDealStageModalContent from "~community/configurations/components/molecules/EditDealStageModalContent/EditDealStageModalContent";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
-import { CrmModalTypes } from "~community/configurations/types/CrmTypes";
-
-import EditDealStageModalContent from "../../molecules/EditDealStageModalContent/EditDealStageModalContent";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const DealStageModalController = () => {
   const translateText = useTranslator("configurations", "crm");
 
-  const {
-    isDealStageModalOpen,
-    dealStageModalType,
-    setIsDealStageModalOpen
-  } = useConfigurationStore((store) => ({
-    isDealStageModalOpen: store.isDealStageModalOpen,
-    dealStageModalType: store.dealStageModalType,
-    setIsDealStageModalOpen: store.setIsDealStageModalOpen
-  }));
+  const { isDealStageModalOpen, dealStageModalType, setIsDealStageModalOpen } =
+    useConfigurationStore((store) => ({
+      isDealStageModalOpen: store.isDealStageModalOpen,
+      dealStageModalType: store.dealStageModalType,
+      setIsDealStageModalOpen: store.setIsDealStageModalOpen
+    }));
 
   const handleCloseModal = (): void => {
     setIsDealStageModalOpen(false);

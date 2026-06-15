@@ -1,6 +1,6 @@
 import { Modules } from "~community/common/enums/CommonEnums";
 
-import { CrmModalTypes } from "../CrmTypes";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 interface actionTypes {
   setIsUserRoleModalOpen: (status: boolean) => void;
