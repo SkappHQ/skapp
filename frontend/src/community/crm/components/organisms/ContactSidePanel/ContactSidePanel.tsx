@@ -47,7 +47,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   };
 
   const { data: contact, isError } = useGetContactById(
-    selectedContact!.id,
+    selectedContact?.id,
     isOpen && !!selectedContact?.id
   );
 
