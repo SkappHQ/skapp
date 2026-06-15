@@ -46,7 +46,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   };
 
   const { data: contact, isError } = useGetContactById(
-    selectedContact?.id,
+    selectedContact?.id ?? 0,
     isOpen && !!selectedContact?.id
   );
 
@@ -98,7 +98,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         />
       }
     >
-      <div className="flex flex-col pb-4 gap-[16px]">
+      <div className="flex flex-col pb-4 gap-4">
         {contact && (
           <SidePanelContactInfo
             contact={contact}
