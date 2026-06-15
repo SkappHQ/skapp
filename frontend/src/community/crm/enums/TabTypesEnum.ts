@@ -1,9 +1,4 @@
-export enum ContactSidePanelTabEnum {
-  TASKS = "TASKS",
-  DEALS = "DEALS"
-}
-
-export enum CompanySidePanelTabEnum {
+export enum SidePanelTabEnum {
   TASKS = "TASKS",
   DEALS = "DEALS",
   CONTACTS = "CONTACTS"

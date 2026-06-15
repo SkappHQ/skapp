@@ -11,10 +11,9 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetContactById } from "~community/crm/api/ContactApi";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
-import { ContactSidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
+import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
-
-import SidePanelDealSection from "../../molecules/SidePanelDealSection/SidePanelDealSection";
 
 const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator(
@@ -24,8 +23,8 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   );
   const { setToastMessage } = useToast();
 
-  const [activeTab, setActiveTab] = useState<ContactSidePanelTabEnum>(
-    ContactSidePanelTabEnum.TASKS
+  const [activeTab, setActiveTab] = useState<SidePanelTabEnum>(
+    SidePanelTabEnum.TASKS
   );
 
   const { setIsCrmSidePanelOpen, setSelectedContact, selectedContact } =
@@ -66,9 +65,9 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case ContactSidePanelTabEnum.DEALS:
+      case SidePanelTabEnum.DEALS:
         return <SidePanelDealSection deals={contact?.deals ?? []} />;
-      case ContactSidePanelTabEnum.TASKS:
+      case SidePanelTabEnum.TASKS:
         // TODO: Implement SidePanelTaskSection here
         return null;
       default:
@@ -78,11 +77,11 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   const tabs: TabItem[] = [
     {
-      id: ContactSidePanelTabEnum.TASKS,
+      id: SidePanelTabEnum.TASKS,
       label: translateText(["tabs", "tasks"])
     },
     {
-      id: ContactSidePanelTabEnum.DEALS,
+      id: SidePanelTabEnum.DEALS,
       label: translateText(["tabs", "deals"])
     }
   ];
@@ -111,9 +110,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           <Tabs
             tabs={tabs}
             activeTabId={activeTab}
-            onTabChange={(tabId) =>
-              setActiveTab(tabId as ContactSidePanelTabEnum)
-            }
+            onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
           />
         </div>
         <hr className="border-secondary-accent" />
