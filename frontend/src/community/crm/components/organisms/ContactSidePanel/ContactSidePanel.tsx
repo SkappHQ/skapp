@@ -100,10 +100,12 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       }
     >
       <div className="flex flex-col pb-4 gap-[16px]">
-        <SidePanelContactInfo
-          contact={contact}
-          onCompanyClick={handleCompanyClick}
-        />
+        {contact && (
+          <SidePanelContactInfo
+            contact={contact}
+            onCompanyClick={handleCompanyClick}
+          />
+        )}
 
         <div className="flex flex-col pt-2 w-full">
           <Tabs
