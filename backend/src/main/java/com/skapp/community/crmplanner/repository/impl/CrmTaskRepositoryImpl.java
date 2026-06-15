@@ -33,7 +33,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 @Repository
 @RequiredArgsConstructor
@@ -189,7 +188,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		}
 
 		if (params.searchKeyword() != null && !params.searchKeyword().isBlank()) {
-			String escaped = StringUtils.escapeLikePattern(params.searchKeyword().trim().toLowerCase(Locale.ROOT));
+			String escaped = StringUtils.escapeLikePattern(params.searchKeyword().trim().toLowerCase());
 			predicates.add(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%", '\\'));
 		}
 
