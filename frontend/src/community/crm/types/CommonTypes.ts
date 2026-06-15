@@ -36,8 +36,8 @@ export interface CrmCompanyMetricsType {
   address: string | null;
   tasks: number;
   overdue: number;
-  openValue: number;
-  accountValue: number;
+  openValue: string;
+  accountValue: string;
   closedDeals: number;
   openDeals: number;
 }
