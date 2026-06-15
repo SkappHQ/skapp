@@ -12,25 +12,25 @@ const DealStageModalController = () => {
   const translateText = useTranslator("configurations", "crm");
 
   const {
-    isAddDealStageModalOpen,
+    isDealStageModalOpen,
     dealStageModalType,
-    setIsAddDealStageModalOpen
+    setIsDealStageModalOpen
   } = useConfigurationStore((store) => ({
-    isAddDealStageModalOpen: store.isAddDealStageModalOpen,
+    isDealStageModalOpen: store.isDealStageModalOpen,
     dealStageModalType: store.dealStageModalType,
-    setIsAddDealStageModalOpen: store.setIsAddDealStageModalOpen
+    setIsDealStageModalOpen: store.setIsDealStageModalOpen
   }));
 
   const handleCloseModal = (): void => {
-    setIsAddDealStageModalOpen(false);
+    setIsDealStageModalOpen(false);
   };
 
   const getModalTitle = (modalType: CrmModalTypes) => {
     switch (modalType) {
       case CrmModalTypes.ADD_DEAL_STAGE_MODAL:
-        return translateText(["addDealStagesModal", "title"]);
+        return translateText(["addDealStageModal", "title"]);
       case CrmModalTypes.EDIT_DEAL_STAGE_MODAL:
-        return translateText(["editDealStagesModal", "title"]);
+        return translateText(["editDealStageModal", "title"]);
       default:
         return "";
     }
@@ -49,7 +49,7 @@ const DealStageModalController = () => {
 
   return (
     <SmallModal
-      isOpen={isAddDealStageModalOpen}
+      isOpen={isDealStageModalOpen}
       onClose={handleCloseModal}
       modalHeader={getModalTitle(dealStageModalType)}
       content={getModalContent()}

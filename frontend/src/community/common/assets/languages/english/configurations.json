@@ -234,7 +234,7 @@
   "crm": {
     "pageHead": "CRM Configurations | Skapp",
     "title": "CRM Configurations",
-    "buttons":{
+    "buttons": {
       "cancel": "Cancel",
       "save": "Save changes"
     },
@@ -242,7 +242,7 @@
       "currencyPreferencesTitle": "Currency preferences",
       "currencyPreferencesDescription": "Select the currency for your organization. All deal values, revenue figures, and pipeline tools will be displayed on the selected currency",
       "currencyInfoNote": "Changing the currency updates all CRM values for all users; existing deals aren't converted, only the display currency changes.",
-      "lables":{
+      "labels": {
         "selectCurrency": "Select currency"
       },
       "ariaLabel": {
@@ -262,7 +262,7 @@
         "saveChanges": "Save changes"
       }
     },
-    "addDealStagesModal": {
+    "addDealStageModal": {
       "title": "Add Deal Stage",
       "labels": {
         "stageName": "Name",
@@ -301,7 +301,7 @@
         "errorDescription": "Failed to add the deal stage. Please try again"
       }
     },
-    "editDealStagesModal": {
+    "editDealStageModal": {
       "title": "Edit Deal Stage",
       "labels": {
         "stageName": "Name",
