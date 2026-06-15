@@ -35,14 +35,17 @@ const updateTaskStatus = async ({
   });
 };
 
-export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
+export const useUpdateTaskCompletion = (
+  onSuccess: () => void,
+  onError: (error: Error) => void
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateTaskStatus,
-    onError,
-    onSettled: () => {
-      // TODO: invalidate contact/company/deals detailed view queries once those API layers are implemented
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
-    }
+      onSuccess();
+    },
+    onError
   });
 };

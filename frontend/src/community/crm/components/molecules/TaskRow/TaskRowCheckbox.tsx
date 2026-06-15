@@ -20,14 +20,17 @@ const TaskRowCheckbox: FC<Props> = ({ task }) => {
   );
 
   const { setToastMessage } = useToast();
-  const { mutate: updateCompletion } = useUpdateTaskCompletion(() => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText(["toggleErrorTitle"]),
-      description: translateText(["toggleErrorDescription"])
-    });
-  });
+  const { mutate: updateCompletion } = useUpdateTaskCompletion(
+    () => {},
+    () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["toggleErrorTitle"]),
+        description: translateText(["toggleErrorDescription"])
+      });
+    }
+  );
 
   const handleToggleChange = (checked: boolean) => {
     updateCompletion({ id: task.id, isCompleted: checked });
