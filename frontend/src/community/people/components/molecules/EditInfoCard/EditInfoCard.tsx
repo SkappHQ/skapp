@@ -152,7 +152,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
     initialEmployee?.common?.accountStatus === AccountStatusTypes.TERMINATED
       ? [
           {
-            id: employee?.common?.employeeId || "",
+            id: "reactivate-employee",
             icon: (
               <Icon
                 name={IconName.RESTORE_ICON}
@@ -165,7 +165,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
         ]
       : [
     {
-      id: employee?.common?.employeeId || "",
+      id: "terminate-employee",
       icon: (
         <Icon
           name={IconName.MINUS_ICON}
@@ -176,7 +176,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
       onClickHandler: () => handleTermination()
     },
     {
-      id: employee?.common?.employeeId || "",
+      id: "delete-employee",
       icon: (
         <Icon
           name={IconName.BIN_ICON}
