@@ -56,7 +56,7 @@ export interface SearchableDropdownProps {
   variant?: "sm" | "md" | "lg";
   positionStrategy?: "absolute" | "fixed";
   onClose?: () => void;
-  openOnFocus?: boolean;
+  isOpenOnFocus?: boolean;
 }
 
 const SearchableDropdown: FC<SearchableDropdownProps> = ({
@@ -76,7 +76,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
   variant = "md",
   positionStrategy = "absolute",
   onClose,
-  openOnFocus = false
+  isOpenOnFocus = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -171,7 +171,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
       className="w-full relative input-plain-text"
       ref={inputWrapperRef}
       onFocus={() => {
-        if (value.trim().length > 0 || (openOnFocus && items.length > 0)) {
+        if (value.trim().length > 0 || (isOpenOnFocus && items.length > 0)) {
           setIsOpen(true);
         }
       }}
