@@ -6,6 +6,7 @@ describe("useUserBulkValidation", () => {
   const { isArrayOfUsersValid, isCsvValid } = useUserBulkValidation();
 
   const validUser: BulkUploadUser = {
+    title: "Mr",
     firstName: "John",
     middleName: "A",
     lastName: "Doe",
@@ -17,14 +18,20 @@ describe("useUserBulkValidation", () => {
     personalEmail: "john.doe@example.com",
     phoneDialCode: "+1",
     phone: "1234567890",
-    address: "123 Main St",
+    addressLine1: "123 Main St",
+    addressLine2: null,
     city: "New York",
     country: "USA",
     state: "NY",
+    postalCode: "10001",
     linkedIn: "https://linkedin.com/in/johndoe",
     facebook: "https://facebook.com/johndoe",
     instagram: "https://instagram.com/johndoe",
     x: "https://x.com/johndoe",
+    bloodGroup: null,
+    allergies: null,
+    dietaryRestrictions: null,
+    tshirtSize: null,
     name: "Jane Doe",
     emergencyRelationship: "Spouse",
     contactNoDialCode: "+1",
@@ -33,15 +40,23 @@ describe("useUserBulkValidation", () => {
     workEmail: "john.doe@work.com",
     employmentAllocation: "Full-Time",
     joinedDate: "2022-01-01",
+    teams: [],
     primaryManager: "manager@example.com",
-    secondaryManager: "secondary@example.com",
     probationStartDate: "2022-01-01",
     probationEndDate: "2023-01-01",
-    passportNo: "A1234567",
-    careerProgressionStartDate: "2022-01-01",
+    timeZone: null,
+    workLocation: null,
     employeeType: "PERMANENT",
     jobFamily: "Engineering",
-    jobTitle: "Software Engineer"
+    jobTitle: "Software Engineer",
+    careerProgressionStartDate: "2022-01-01",
+    ssn: null,
+    ethnicity: null,
+    eeo: null,
+    permission: null,
+    contractState: null,
+    employmentStatus: null,
+    passportNo: "A1234567"
   };
 
   const invalidUser: BulkUploadUser = {

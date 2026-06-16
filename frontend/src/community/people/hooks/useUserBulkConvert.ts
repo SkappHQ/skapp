@@ -41,7 +41,7 @@ const useUserBulkConvert = () => {
           workEmail: user?.workEmail,
           gender: user?.gender?.toUpperCase(),
           phone:
-            user?.contactNoDialCode?.split("+")[1] && user?.contactNo
+            user?.phoneDialCode?.split("+")[1] && user?.phone
               ? `${user?.phoneDialCode?.split("+")[1]} ${user?.phone}`
               : null,
           identificationNo: user?.identificationNo,

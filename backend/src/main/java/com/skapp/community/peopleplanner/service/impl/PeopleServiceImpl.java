@@ -2356,7 +2356,8 @@ public class PeopleServiceImpl implements PeopleService {
 				missingFields.add("Job Title");
 			if (!hasStartDate)
 				missingFields.add("Start Date");
-			errors.add("Career Progression fields are empty: " + String.join(", ", missingFields));
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_CAREER_PROGRESSION_FIELDS_EMPTY,
+					new Object[] { String.join(", ", missingFields) }));
 			return;
 		}
 
@@ -2380,7 +2381,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		EmployeeProgressionsDto employeeProgressionsDto = employeeBulkDto.getEmployeeProgression();
 		if (employeeProgressionsDto != null && employeeProgressionsDto.getStartDate() != null
-				&& employeeProgressionsDto.getEndDate() != null && DateTimeUtils
+				&& employeeProgressionsDto.getEndDate() != null && !DateTimeUtils
 					.isValidDateRange(employeeProgressionsDto.getStartDate(), employeeProgressionsDto.getEndDate())) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_INVALID_START_END_DATE));
 		}

@@ -36,7 +36,7 @@ const useUserBulkValidation = () => {
       user?.phone &&
       user?.phone?.length <= characterLengths.PHONE_NUMBER_LENGTH_MAX &&
       user?.phone?.length >= characterLengths.PHONE_NUMBER_LENGTH_MIN &&
-      user?.address &&
+      user?.addressLine1 &&
       user?.city &&
       user?.city?.length <= characterLengths.STATE_LENGTH &&
       user?.country &&
@@ -64,6 +64,8 @@ const useUserBulkValidation = () => {
       (!user?.primaryManager || isEmailInputValid(user?.primaryManager)) &&
       (!user?.probationStartDate || dateValidation(user?.probationStartDate)) &&
       (!user?.probationEndDate || dateValidation(user?.probationEndDate)) &&
+      (!user?.careerProgressionStartDate ||
+        dateValidation(user?.careerProgressionStartDate)) &&
       user?.passportNo
     );
   };
