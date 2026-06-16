@@ -2348,10 +2348,9 @@ public class PeopleServiceImpl implements PeopleService {
 			return;
 		}
 
-		if (Arrays.stream(EmploymentType.values())
-			.noneMatch(e -> e.name().equals(employeeBulkDto.getEmployeeType()))) {
-			errors.add(
-					messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_TYPE_ENUM));
+		if (Arrays.stream(EmploymentType.values()).noneMatch(e -> e.name().equals(employeeBulkDto.getEmployeeType()))) {
+			errors
+				.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_TYPE_ENUM));
 		}
 
 		JobFamily jobFamily = jobFamilyDao.getJobFamilyByName(employeeBulkDto.getJobFamily());
@@ -2368,7 +2367,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		EmployeeProgressionsDto employeeProgressionsDto = employeeBulkDto.getEmployeeProgression();
 		if (employeeProgressionsDto.getEndDate() != null && !DateTimeUtils
-				.isValidDateRange(employeeProgressionsDto.getStartDate(), employeeProgressionsDto.getEndDate())) {
+			.isValidDateRange(employeeProgressionsDto.getStartDate(), employeeProgressionsDto.getEndDate())) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_INVALID_START_END_DATE));
 		}
 	}

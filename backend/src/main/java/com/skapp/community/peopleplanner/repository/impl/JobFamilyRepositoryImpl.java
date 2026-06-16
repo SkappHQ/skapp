@@ -167,8 +167,8 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 		Root<JobFamily> root = criteriaQuery.from(JobFamily.class);
 
 		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(criteriaBuilder.equal(criteriaBuilder.lower(root.get(JobFamily_.name)),
-				jobFamilyName.toLowerCase()));
+		predicates
+			.add(criteriaBuilder.equal(criteriaBuilder.lower(root.get(JobFamily_.name)), jobFamilyName.toLowerCase()));
 		predicates.add(criteriaBuilder.equal(root.get(JobFamily_.isActive), true));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
@@ -198,8 +198,8 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 		Root<JobTitle> root = criteriaQuery.from(JobTitle.class);
 
 		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(criteriaBuilder.equal(criteriaBuilder.lower(root.get(JobTitle_.name)),
-				jobTitleName.toLowerCase()));
+		predicates
+			.add(criteriaBuilder.equal(criteriaBuilder.lower(root.get(JobTitle_.name)), jobTitleName.toLowerCase()));
 		predicates.add(criteriaBuilder.equal(root.get(JobTitle_.isActive), true));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
@@ -219,8 +219,8 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 		predicates.add(criteriaBuilder.equal(criteriaBuilder.lower(jobTitleJoin.get(JobTitle_.name)),
 				jobTitleName.toLowerCase()));
 		predicates.add(criteriaBuilder.equal(jobTitleJoin.get(JobTitle_.isActive), true));
-		predicates.add(criteriaBuilder.equal(root.get(JobFamilyTitle_.jobFamily).get(JobFamily_.jobFamilyId),
-				jobFamilyId));
+		predicates
+			.add(criteriaBuilder.equal(root.get(JobFamilyTitle_.jobFamily).get(JobFamily_.jobFamilyId), jobFamilyId));
 
 		criteriaQuery.select(jobTitleJoin);
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
