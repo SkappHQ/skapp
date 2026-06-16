@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
@@ -52,6 +53,8 @@ class CrmDealControllerIntegrationTest {
 	private static final String BASE_PATH = "/v1/crm/deal";
 
 	private static final String EXISTS_PATH = BASE_PATH + "/exists";
+
+	private static final String BY_ID_PATH = BASE_PATH + "/{id}";
 
 	private final MockMvc mvc;
 
@@ -75,15 +78,26 @@ class CrmDealControllerIntegrationTest {
 
 	private String authToken;
 
+	private String noRoleToken;
+
 	@BeforeEach
 	void setup() {
 		// user1 has CRM_ADMIN role (which grants access to CRM_SALES_REPRESENTATIVE
 		// endpoints via role hierarchy) and is a valid deal owner
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
+		noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 	}
 
 	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
 		return mvc.perform(request.with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private ResultActions performRequest(MockHttpServletRequestBuilder request, String token) throws Exception {
+		return mvc.perform(request.with(SecurityTestUtils.bearerToken(token)));
+	}
+
+	private ResultActions performGetByIdRequest(Long id) throws Exception {
+		return performRequest(get(BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performPostRequest(CrmDealCreateRequestDto dto) throws Exception {
@@ -262,6 +276,81 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+	}
+
+	// --- Get deal by ID tests ---
+
+	private CrmDeal savedDeal(CrmDealStage stage, CrmContact contact, CrmCompany company) {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Detail Deal");
+		deal.setPriority(CrmDealPriority.HIGH);
+		deal.setDescription("A test deal description");
+		deal.setAmount("15000.00");
+		deal.setStage(stage);
+		deal.setContact(contact);
+		deal.setCompany(company);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setOrderIndex("a0");
+		return crmDealDao.save(deal);
+	}
+
+	@Test
+	@DisplayName("Get deal by ID - Returns full deal details")
+	void getDealById_HappyPath_ReturnsDealDetail() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Detail Corp");
+		CrmContact contact = savedContact(company);
+		CrmDeal deal = savedDeal(stage, contact, company);
+
+		performGetByIdRequest(deal.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(deal.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Detail Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['amount']").value("15000.00"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['description']").value("A test deal description"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("HIGH"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['name']").value("Test Stage"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactName']").value("Deal Test Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Detail Corp"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get deal by ID that does not exist - Returns Bad Request")
+	void getDealById_NotFound_ReturnsBadRequest() throws Exception {
+		performGetByIdRequest(999999L).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get soft-deleted deal by ID - Returns Bad Request")
+	void getDealById_SoftDeleted_ReturnsBadRequest() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = savedDeal(stage, contact, null);
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		performGetByIdRequest(deal.getId()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get deal by ID without CRM role - Returns Forbidden")
+	void getDealById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = savedDeal(stage, contact, null);
+
+		performRequest(get(BY_ID_PATH, deal.getId()).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+			.andExpect(status().isForbidden());
 	}
 
 }

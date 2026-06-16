@@ -344,4 +344,19 @@ public class CrmDealServiceImpl implements CrmDealService {
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getDealById(Long id) {
+		log.info("getDealById: execution started");
+
+		CrmDeal deal = crmDealDao.findByIdWithAssociations(id);
+
+		if (deal == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
+
+		log.info("getDealById: execution ended");
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealDetailResponseDto(deal));
+	}
+
 }
