@@ -428,7 +428,7 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].stageId").value(newStage.getId()));
+			.andExpect(jsonPath("$.results[0].stageName").value(newStage.getName()));
 	}
 
 	@Test
