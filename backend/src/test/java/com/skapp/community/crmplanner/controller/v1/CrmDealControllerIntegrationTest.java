@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -39,6 +40,7 @@ import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -77,8 +79,6 @@ class CrmDealControllerIntegrationTest {
 
 	private final EmployeeRoleDao employeeRoleDao;
 
-	private final MessageUtil messageUtil;
-
 	private String authToken;
 
 	@BeforeEach
@@ -94,6 +94,12 @@ class CrmDealControllerIntegrationTest {
 
 	private ResultActions performPostRequest(CrmDealCreateRequestDto dto) throws Exception {
 		return performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performPatchRequest(Long id, CrmDealEditRequestDto dto) throws Exception {
+		return performRequest(patch(BASE_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON));
 	}
