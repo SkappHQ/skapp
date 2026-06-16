@@ -26,7 +26,7 @@ const TriggerContent: FC<TriggerContentProps> = ({
 
   return (
     <div
-      ref={ref as unknown as RefObject<HTMLDivElement>}
+      ref={ref as RefObject<HTMLDivElement>}
       {...rest}
       className={`flex items-center w-full min-h-8 cursor-pointer rounded-lg ${backgroundColor}`}
     >

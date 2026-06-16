@@ -1,7 +1,6 @@
 import {
   ButtonV2,
   Dropdown,
-  DropdownOption,
   InputField,
   SidePanel,
   TextArea
@@ -29,7 +28,7 @@ import {
 } from "~community/crm/api/ContactApi";
 import { useCreateDeal, useGetDealStages } from "~community/crm/api/crmDealApi";
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
-import PeoplePopupSearch from "~community/crm/components/molecules/PeoplePopupSearch/PeoplePopupSearch";
+import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import {
@@ -160,7 +159,7 @@ const AddDealSidePanel: FC = () => {
 
   const { data: currentUser } = useGetUserPersonalDetails();
 
-  const stageOptions = useMemo<DropdownOption[]>(
+  const stageOptions = useMemo(
     () =>
       stages.map((s) => ({
         id: String(s.id),
@@ -409,7 +408,7 @@ const AddDealSidePanel: FC = () => {
                       isOwnerReadonly ? " pointer-events-none" : ""
                     }`}
                   >
-                    <PeoplePopupSearch
+                    <OwnerPopupSearch
                       users={owners}
                       selectedUser={selectedOwner}
                       onSearch={setOwnerSearchTerm}

@@ -1,39 +1,33 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 
 interface PriorityDropdownProps {
-  value?: CrmPriorityEnum;
+  value: CrmPriorityEnum;
   onChange?: (value: CrmPriorityEnum) => void;
   onSave?: (value: CrmPriorityEnum) => void;
 }
 
 const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
-  value = CrmPriorityEnum.MEDIUM,
+  value,
   onChange,
   onSave
 }) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const dropdownOptions = useGetPriorityOptions(translateText);
-  const [inputValue, setInputValue] = useState<CrmPriorityEnum>(value);
-
-  useEffect(() => {
-    setInputValue(value || CrmPriorityEnum.MEDIUM);
-  }, [value]);
 
   const handleDropdownChange = (selectedValue: string) => {
     const priority = selectedValue as CrmPriorityEnum;
-    setInputValue(priority);
     onChange?.(priority);
     onSave?.(priority);
   };
 
   return (
     <Dropdown
-      value={inputValue}
+      value={value}
       onChange={handleDropdownChange}
       options={dropdownOptions}
       variant="jsx-content"
