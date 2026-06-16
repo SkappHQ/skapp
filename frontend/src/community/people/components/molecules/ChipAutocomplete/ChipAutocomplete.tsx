@@ -15,6 +15,7 @@ interface ChipAutocompleteProps {
   id?: string;
   label?: string;
   placeholder?: string;
+  helperText?: string;
   value: string[];
   onChange: (items: string[]) => void;
   options?: string[];
@@ -27,6 +28,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   id = "chip-autocomplete",
   label,
   placeholder,
+  helperText,
   value = [],
   onChange,
   options = [],
@@ -59,7 +61,8 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
     const node = inputBoxRef.current;
     if (!node) return;
 
-    const updateWidth = () => setAnchorWidth(node.getBoundingClientRect().width);
+    const updateWidth = () =>
+      setAnchorWidth(node.getBoundingClientRect().width);
     updateWidth();
 
     const observer = new ResizeObserver(updateWidth);
@@ -114,8 +117,20 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   const handleEnter = useCallback(() => {
     if (activeIndex !== null && filteredOptions[activeIndex]) {
       handleSelect(filteredOptions[activeIndex]);
+    } else if (inputValue.trim() && !value.includes(inputValue.trim())) {
+      onChange([...value, inputValue.trim()]);
+      setInputValue("");
+      handleClose();
     }
-  }, [activeIndex, filteredOptions, handleSelect]);
+  }, [
+    activeIndex,
+    filteredOptions,
+    handleSelect,
+    inputValue,
+    value,
+    onChange,
+    handleClose
+  ]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
@@ -188,6 +203,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                 ref={inputRef}
                 value={inputValue}
                 onChange={handleInputChange}
+                onFocus={() => setIsOpen(true)}
                 onKeyDown={handleKeyDown}
                 disabled={isDisabled}
                 placeholder={value.length === 0 ? placeholder : ""}
@@ -203,7 +219,10 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
         id={`${id}-popper`}
         anchorEl={inputBoxRef.current}
         anchorElWidth={anchorWidth}
-        open={isOpen}
+        open={
+          isOpen &&
+          ((helperText && inputValue === "") || filteredOptions.length > 0)
+        }
         position="bottom-start"
         handleClose={handleClose}
         ariaRole="presentation"
@@ -217,23 +236,29 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
           id={`${id}-list`}
           aria-label={label || placeholder}
         >
-          {filteredOptions.map((option, index) => (
-            <li
-              key={option}
-              id={`${id}-option-${index}`}
-              role="option"
-              aria-selected={activeIndex === index}
-              onClick={() => handleSelect(option)}
-              onMouseEnter={() => setActiveIndex(index)}
-              className={`px-4 py-2 cursor-pointer outline-none transition-all duration-150 truncate ${
-                index === activeIndex
-                  ? "bg-tertiary-background rounded"
-                  : "hover:bg-tertiary-background"
-              }`}
-            >
-              {option}
+          {helperText && inputValue === "" ? (
+            <li className="px-4 py-2 body2 text-secondary-text select-none cursor-default">
+              {helperText}
             </li>
-          ))}
+          ) : (
+            filteredOptions.map((option, index) => (
+              <li
+                key={option}
+                id={`${id}-option-${index}`}
+                role="option"
+                aria-selected={activeIndex === index}
+                onClick={() => handleSelect(option)}
+                onMouseEnter={() => setActiveIndex(index)}
+                className={`px-4 py-2 cursor-pointer outline-none transition-all duration-150 truncate ${
+                  index === activeIndex
+                    ? "bg-tertiary-background rounded"
+                    : "hover:bg-tertiary-background"
+                }`}
+              >
+                {option}
+              </li>
+            ))
+          )}
         </ul>
       </Popper>
     </div>

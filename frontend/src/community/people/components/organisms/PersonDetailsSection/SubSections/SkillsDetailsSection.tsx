@@ -104,6 +104,7 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
         id="skills"
         label={translateText(["skills"])}
         placeholder={translateText(["searchSkills"])}
+        helperText={translateText(["helperText"])}
         value={getSkillDisplayNames(skills)}
         onChange={handleSkillsChange}
         options={allOptions}
