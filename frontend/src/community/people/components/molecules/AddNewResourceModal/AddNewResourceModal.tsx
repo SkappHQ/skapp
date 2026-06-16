@@ -144,11 +144,6 @@ const AddNewResourceModal = () => {
 
   const validateWorkEmail = () => {
     const updatedData = checkEmailAndIdentificationNo;
-    if (updatedData?.isWorkEmailExists && updatedData?.isTerminatedUser) {
-      setDirectoryModalType(DirectoryModalTypes.TERMINATED_TO_ACTIVE_USER_CONFIRMATION);
-      return false;
-    }
-
     if (updatedData?.isWorkEmailExists && !updatedData?.isGuestUser) {
       setFieldError("email", translateText(["uniqueEmailError"]));
       return false;
