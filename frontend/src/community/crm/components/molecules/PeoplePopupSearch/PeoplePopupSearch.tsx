@@ -1,4 +1,8 @@
-import { AvatarChip, DropdownOption, TriggerProps } from "@rootcodelabs/skapp-ui";
+import {
+  AvatarChip,
+  DropdownOption,
+  TriggerProps
+} from "@rootcodelabs/skapp-ui";
 import { FC, RefObject } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
@@ -131,7 +135,12 @@ const OwnerPopupSearch: FC<Props> = ({
       />
     )}
     renderOption={(user: CrmOwner, option: DropdownOption, onSelect) => (
-      <OptionItem key={option.id} user={user} option={option} onSelect={onSelect} />
+      <OptionItem
+        key={option.id}
+        user={user}
+        option={option}
+        onSelect={onSelect}
+      />
     )}
   />
 );

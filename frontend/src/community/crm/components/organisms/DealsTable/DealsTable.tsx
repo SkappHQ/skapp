@@ -26,7 +26,6 @@ interface OwnerCellProps {
 const OwnerCell: FC<OwnerCellProps> = ({ owner }) => {
   const fullName = concatStrings([owner.firstName, owner.lastName ?? ""]);
   const imageUrl = useGetImageUrl(owner.authPic ?? "");
-  const finalImageUrl = owner.authPic ? imageUrl : null;
 
   return (
     <AvatarChip
@@ -34,7 +33,7 @@ const OwnerCell: FC<OwnerCellProps> = ({ owner }) => {
         id: String(owner.employeeId),
         firstName: owner.firstName,
         lastName: owner.lastName ?? "",
-        src: finalImageUrl ?? "",
+        src: imageUrl ?? "",
         size: "sm"
       }}
       label={fullName}
