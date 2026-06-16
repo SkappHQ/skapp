@@ -240,7 +240,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 		attendanceEmailDynamicFields.setEmployeeName(
 				leaveRequest.getEmployee().getFirstName() + " " + leaveRequest.getEmployee().getLastName());
 		attendanceEmailDynamicFields.setLeaveStartDate(leaveRequest.getStartDate().toString());
-		attendanceEmailDynamicFields.setLeaveEndDate(leaveRequest.getStartDate().toString());
+		attendanceEmailDynamicFields.setLeaveEndDate(leaveRequest.getEndDate().toString());
 		attendanceEmailDynamicFields.setLeaveDuration(leaveRequest.getLeaveState().toString());
 		attendanceEmailDynamicFields.setLeaveType(leaveRequest.getLeaveType().getName());
 

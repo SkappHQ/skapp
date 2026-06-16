@@ -1,5 +1,6 @@
-package com.skapp.community.timeplanner.repository;
+package com.skapp.community.timeplanner.repository.impl;
 
+import com.skapp.community.timeplanner.repository.AttendanceConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

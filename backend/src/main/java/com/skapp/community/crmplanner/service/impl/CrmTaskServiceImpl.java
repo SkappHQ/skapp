@@ -2,8 +2,10 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -12,8 +14,10 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
@@ -28,6 +32,9 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,26 +61,45 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	private final CrmMapper crmMapper;
 
+	private final MessageUtil messageUtil;
+
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getTasks() {
+	public ResponseEntityDto getTasks(CrmTaskFilterDto filterDto) {
 		log.info("getTasks: execution started");
 
 		User currentUser = userService.getCurrentUser();
-		List<CrmTaskResponseDto> tasks;
-
-		if (CrmUtil.isCrmSalesRepresentative(currentUser)) {
-			Long employeeId = currentUser.getEmployee().getEmployeeId();
-			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwnerByOwnerId(employeeId));
-		}
-		else {
-			tasks = crmMapper.crmTasksToCrmTaskResponseDtos(crmTaskDao.findAllWithTypeAndOwner());
-		}
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+		List<CrmTaskResponseDto> tasks = crmMapper
+			.crmTasksToCrmTaskResponseDtos(crmTaskDao.findTasks(ownerId, filterDto));
 
 		CrmGetTasksResponseDto response = new CrmGetTasksResponseDto();
 		response.setTasks(tasks);
 
 		log.info("getTasks: execution ended");
+
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
+		log.info("getCompletedTasks: execution started");
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+
+		User currentUser = userService.getCurrentUser();
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+		Page<CrmTask> taskPage = crmTaskDao.findCompletedTasks(ownerId, filterDto, pageable);
+
+		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(taskPage.getContent());
+
+		PageDto response = new PageDto();
+		response.setItems(tasks);
+		response.setCurrentPage(taskPage.getNumber());
+		response.setTotalItems(taskPage.getTotalElements());
+		response.setTotalPages(taskPage.getTotalPages());
+
+		log.info("getCompletedTasks: execution ended");
 
 		return new ResponseEntityDto(false, response);
 	}
@@ -209,6 +235,26 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		log.info("editTask: execution ended successfully");
 		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(updatedTask));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteTask(Long id) {
+		log.info("deleteTask: execution started");
+
+		CrmTask task = crmTaskDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isEditRestricted(currentUser, task.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DELETE_DENIED);
+		}
+
+		task.setIsDeleted(true);
+		crmTaskDao.save(task);
+
+		log.info("deleteTask: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_TASK_DELETED), false);
 	}
 
 	private Employee resolveTaskOwner(Long ownerId, User currentUser) {

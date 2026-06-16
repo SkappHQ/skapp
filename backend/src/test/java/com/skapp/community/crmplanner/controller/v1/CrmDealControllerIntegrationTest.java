@@ -47,6 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -60,6 +61,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CrmDealControllerIntegrationTest {
 
 	private static final String BASE_PATH = "/v1/crm/deal";
+
+	private static final String EXISTS_PATH = BASE_PATH + "/exists";
 
 	private final MockMvc mvc;
 
@@ -108,6 +111,10 @@ class CrmDealControllerIntegrationTest {
 		return performRequest(delete(BASE_PATH + "/{id}", id).accept(MediaType.APPLICATION_JSON));
 	}
 
+	private ResultActions performGetExistsRequest(String name) throws Exception {
+		return performRequest(get(EXISTS_PATH).param("name", name).accept(MediaType.APPLICATION_JSON));
+	}
+
 	private CrmDealStage savedStage() {
 		CrmDealStage stage = new CrmDealStage();
 		stage.setName("Test Stage");
@@ -141,6 +148,95 @@ class CrmDealControllerIntegrationTest {
 		dto.setOwnerId(1L);
 		return dto;
 	}
+
+	// --- Check deal name exists tests ---
+
+	@Test
+	@DisplayName("Check deal name exists when not found - Returns OK with false")
+	void checkDealNameExists_NotFound_ReturnsOkWithFalse() throws Exception {
+		performGetExistsRequest("NonExistentDeal").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists when found - Returns OK with true")
+	void checkDealNameExists_Found_ReturnsOkWithTrue() throws Exception {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Existing Deal");
+		deal.setStage(savedStage());
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setContact(savedContact(null));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		crmDealDao.save(deal);
+
+		performGetExistsRequest("Existing Deal").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists is case-insensitive - Returns OK with true")
+	void checkDealNameExists_CaseInsensitive_ReturnsOkWithTrue() throws Exception {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Case Deal");
+		deal.setStage(savedStage());
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setContact(savedContact(null));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		crmDealDao.save(deal);
+
+		performGetExistsRequest("case deal").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists for soft-deleted deal - Returns OK with false")
+	void checkDealNameExists_SoftDeletedDeal_ReturnsOkWithFalse() throws Exception {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Deleted Deal");
+		deal.setStage(savedStage());
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setContact(savedContact(null));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		performGetExistsRequest("Deleted Deal").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists with blank name - Returns Bad Request")
+	void checkDealNameExists_BlankName_ReturnsBadRequest() throws Exception {
+		performGetExistsRequest("").andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NAME_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Check deal name exists with name exceeding max length - Returns Bad Request")
+	void checkDealNameExists_NameTooLong_ReturnsBadRequest() throws Exception {
+		String tooLongName = "A".repeat(256);
+		performGetExistsRequest(tooLongName).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NAME_TOO_LONG)));
+	}
+
+	// --- Create deal tests ---
 
 	@Test
 	@DisplayName("Create deal with contact linked to active company - company is set on deal")
