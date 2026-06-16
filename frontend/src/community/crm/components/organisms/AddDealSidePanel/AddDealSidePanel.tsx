@@ -1,11 +1,11 @@
 import {
   ButtonV2,
   Dropdown,
+  DropdownOption,
   InputField,
   SidePanel,
   TextArea
 } from "@rootcodelabs/skapp-ui";
-import type { DropdownOption } from "@rootcodelabs/skapp-ui/dist/types/components/molecules/Dropdown/Dropdown";
 import { useFormik } from "formik";
 import {
   ChangeEvent,

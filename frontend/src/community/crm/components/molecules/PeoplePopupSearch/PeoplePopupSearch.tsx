@@ -1,8 +1,4 @@
-import { AvatarChip } from "@rootcodelabs/skapp-ui";
-import type {
-  DropdownOption,
-  TriggerProps
-} from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
+import { AvatarChip, DropdownOption, TriggerProps } from "@rootcodelabs/skapp-ui";
 import { FC, RefObject } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";

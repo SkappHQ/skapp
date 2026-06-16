@@ -1,7 +1,4 @@
-import type {
-  DropdownOption,
-  TriggerProps
-} from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
+import { DropdownOption, TriggerProps } from "@rootcodelabs/skapp-ui";
 import { FC, RefObject } from "react";
 
 import EntityPopupSearch from "~community/crm/components/molecules/EntityPopupSearch/EntityPopupSearch";
