@@ -168,12 +168,11 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
             while (pageToken != null);
 
             log.info("Sync complete. Synced: {}, Failed: {}", totalSynced, totalFailed);
-            sendSummaryEmail(callerEmail, totalSynced, totalFailed, failures, null);
-
+            sendSummaryEmail(mailSender, callerEmail, totalSynced, totalFailed, failures, null);
         }
         catch (Exception e) {
             log.error("Sync failed: {}", e.getMessage(), e);
-            sendSummaryEmail(callerEmail, totalSynced, totalFailed, failures, e.getMessage());
+            sendSummaryEmail(mailSender, callerEmail, totalSynced, totalFailed, failures, null);
         }
     }
 
@@ -223,45 +222,6 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
             SecretVersionName versionName = SecretVersionName.of(projectId, secretName, "latest");
             AccessSecretVersionResponse response = client.accessSecretVersion(versionName);
             return response.getPayload().getData().toStringUtf8();
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // sendSummaryEmail() — notify caller after sync completes
-    // -------------------------------------------------------------------------
-    private void sendSummaryEmail(String toEmail, int synced, int failed, List<String> failures,
-                                  String fatalError) {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(toEmail);
-            message.setSubject("Google Workspace Sync - Completed");
-
-            StringBuilder body = new StringBuilder();
-            body.append("Hello,\n\n");
-            body.append("Your Google Workspace bulk person sync has completed.\n\n");
-            body.append("=== SYNC SUMMARY ===\n");
-            body.append("Persons synced : ").append(synced).append("\n");
-            body.append("Failures       : ").append(failed).append("\n");
-
-            if (fatalError != null) {
-                body.append("\nSync ended early due to an error:\n").append(fatalError).append("\n");
-            }
-
-            if (!failures.isEmpty()) {
-                body.append("\n--- Failed Records ---\n");
-                for (String f : failures) {
-                    body.append("  - ").append(f).append("\n");
-                }
-            }
-
-            body.append("\nRegards,\nSkapp Integration Service");
-
-            message.setText(body.toString());
-            mailSender.send(message);
-            log.info("Summary email sent to {}", toEmail);
-        }
-        catch (Exception e) {
-            log.error("Failed to send summary email to {}: {}", toEmail, e.getMessage());
         }
     }
 
