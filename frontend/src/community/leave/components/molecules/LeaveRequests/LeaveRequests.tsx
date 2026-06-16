@@ -249,6 +249,7 @@ const LeaveRequests: FC = () => {
                   : [...prev.type, id]
               }));
             }}
+            className="max-h-full"
           />
         </section>
       </div>

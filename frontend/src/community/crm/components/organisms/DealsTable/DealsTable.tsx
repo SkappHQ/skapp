@@ -134,7 +134,7 @@ const DealsTable: FC<Props> = ({
           dealName: (
             <div className="flex items-center gap-2">
               <div
-                className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink"
+                className="flex items-center justify-center size-6 rounded-full shrink-0 bg-teal-500"
               >
                 <HandshakeIcon width="14" height="14" fill="var(--color-white)" />
               </div>
