@@ -1,17 +1,15 @@
-import { AvatarChip } from "@rootcodelabs/skapp-ui";
+import { AvatarChip, CloseIcon } from "@rootcodelabs/skapp-ui";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 
 interface Props {
-  label?: string;
+  label: string;
   owner: CrmOwner;
   onRemove: () => void;
   showRemoveButton: boolean;
   ariaLabel: string;
-  backgroundColor?: string;
-  chipBackgroundColor?: string;
 }
 
 const SelectedOwnerField: React.FC<Props> = ({
@@ -19,27 +17,16 @@ const SelectedOwnerField: React.FC<Props> = ({
   owner,
   onRemove,
   showRemoveButton,
-  ariaLabel,
-  backgroundColor = "bg-tertiary-background",
-  chipBackgroundColor
+  ariaLabel
 }) => {
   const imageUrl = useGetImageUrl(owner.authPic ?? "");
 
   return (
     <div className="flex w-full flex-col gap-2">
-      {label && (
-        <span className="subtitle1 leading-normal inline-flex h-6 items-center">
-          {label}
-        </span>
-      )}
-      <button
-        type="button"
-        onClick={showRemoveButton ? onRemove : undefined}
-        className={`flex h-[3.125rem] items-center rounded-lg px-3 w-full border-none outline-none text-left ${
-          showRemoveButton ? "cursor-pointer" : "cursor-default"
-        } ${backgroundColor}`}
-        aria-label={ariaLabel}
-      >
+      <span className="subtitle1 leading-normal inline-flex h-6 items-center">
+        {label}
+      </span>
+      <div className="flex h-[3.125rem] items-center rounded-lg bg-tertiary-background px-3">
         <AvatarChip
           label={concatStrings([owner.firstName, owner.lastName ?? ""])}
           avatarProps={{
@@ -49,11 +36,12 @@ const SelectedOwnerField: React.FC<Props> = ({
             src: imageUrl ?? "",
             size: "sm"
           }}
-          backgroundColor={chipBackgroundColor}
-          showActionButton={false}
+          actionIcon={<CloseIcon />}
+          onActionClick={onRemove}
+          showActionButton={showRemoveButton}
           aria-label={ariaLabel}
         />
-      </button>
+      </div>
     </div>
   );
 };
