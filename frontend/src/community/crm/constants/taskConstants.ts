@@ -6,11 +6,9 @@ export const TASK_TAB_IDS = {
   MY_TASKS: "my-tasks",
   TEAM_TASKS: "team-tasks",
   COMPLETED_TASKS: "completed-tasks"
-}
+};
 
-export const SALES_REP_RESTRICTED_TASK_TABS = [
-  TASK_TAB_IDS.TEAM_TASKS
-];
+export const SALES_REP_RESTRICTED_TASK_TABS = [TASK_TAB_IDS.TEAM_TASKS];
 
 export const PRIORITY_OPTIONS = [
   {
