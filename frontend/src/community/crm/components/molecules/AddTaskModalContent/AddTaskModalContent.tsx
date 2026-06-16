@@ -39,8 +39,8 @@ import {
   CrmTaskAddFormTypes,
   CrmTaskCreatePayload
 } from "~community/crm/types/CommonTypes";
+import { toUtcDateTimeString } from "~community/crm/utils/crmUtil";
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
-import { toLocalDateTimeString } from "~community/crm/utils/crmUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 const AddTaskModalContent: React.FC = () => {
@@ -166,7 +166,7 @@ const AddTaskModalContent: React.FC = () => {
     const payload: CrmTaskCreatePayload = {
       name: formValues.name.trim(),
       typeId: formValues.type?.id ?? undefined,
-      dueAt: toLocalDateTimeString(formValues.dueDate),
+      dueAt: toUtcDateTimeString(formValues.dueDate),
       priority: formValues.priority,
       contactId: formValues.contactId ?? undefined,
       dealId: formValues.dealId ?? undefined,
@@ -186,11 +186,13 @@ const AddTaskModalContent: React.FC = () => {
 
   const ownerLookupItems: CrmOwner[] = ownerLookupData?.items ?? [];
 
-  const ownerDropdownItems: SearchableDropdownItem[] = ownerLookupItems.map(
-    (owner) => ({
-      id: String(owner.employeeId),
-      content: <OwnerDropdownItem owner={owner} />
-    })
+  const ownerDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      ownerLookupItems.map((owner) => ({
+        id: String(owner.employeeId),
+        content: <OwnerDropdownItem owner={owner} />
+      })),
+    [ownerLookupItems]
   );
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
@@ -210,11 +212,14 @@ const AddTaskModalContent: React.FC = () => {
     debouncedContactSearch.length > 0
   );
 
-  const contactDropdownItems: SearchableDropdownItem[] =
-    contactLookupData?.items?.map((contact) => ({
-      id: String(contact.id),
-      content: contact.name
-    })) ?? [];
+  const contactDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      contactLookupData?.items?.map((contact) => ({
+        id: String(contact.id),
+        content: contact.name
+      })) ?? [],
+    [contactLookupData]
+  );
 
   const handleContactSelect = (item: SearchableDropdownItem) => {
     const contact = contactLookupData?.items?.find(
@@ -231,13 +236,6 @@ const AddTaskModalContent: React.FC = () => {
     setContactSearchText("");
   };
 
-  const handleContactInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setContactSearchText(e.target.value);
-    if (selectedContactLabel) {
-      handleClearContact();
-    }
-  };
-
   // Deal lookup
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearch,
@@ -245,11 +243,14 @@ const AddTaskModalContent: React.FC = () => {
     debouncedDealSearch.length > 0
   );
 
-  const dealDropdownItems: SearchableDropdownItem[] =
-    dealLookupData?.items?.map((deal) => ({
-      id: String(deal.id),
-      content: deal.name
-    })) ?? [];
+  const dealDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      dealLookupData?.items?.map((deal) => ({
+        id: String(deal.id),
+        content: deal.name
+      })) ?? [],
+    [dealLookupData]
+  );
 
   const handleDealSelect = (item: SearchableDropdownItem) => {
     const deal = dealLookupData?.items?.find((d) => String(d.id) === item.id);
@@ -262,13 +263,6 @@ const AddTaskModalContent: React.FC = () => {
     setFieldValue("dealId", null);
     setSelectedDealLabel("");
     setDealSearchText("");
-  };
-
-  const handleDealInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDealSearchText(e.target.value);
-    if (selectedDealLabel) {
-      handleClearDeal();
-    }
   };
 
   return (
@@ -383,35 +377,79 @@ const AddTaskModalContent: React.FC = () => {
         </div>
       </div>
 
-      <SearchableDropdown
-        id="contact-search"
-        label={translateText(["labels", "contactName"])}
-        placeholder={translateText(["placeholders", "contactName"])}
-        value={selectedContactLabel || contactSearchText}
-        onChange={handleContactInputChange}
-        items={contactDropdownItems}
-        onSelect={handleContactSelect}
-        emptyMessage={
-          <p className="px-4 py-2 body2">
-            {translateText(["emptyStates", "noContacts"])}
-          </p>
-        }
-      />
+      {selectedContactLabel ? (
+        <InputField
+          label={translateText(["labels", "contactName"])}
+          value={selectedContactLabel}
+          readOnly
+          fullWidth
+          variant="md"
+          aria-label={translateText(["ariaLabels", "contactName"])}
+          rightIcon={
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              onClick={handleClearContact}
+              aria-label={translateText(["ariaLabels", "clearContact"])}
+              icon={<CloseIcon />}
+            />
+          }
+        />
+      ) : (
+        <SearchableDropdown
+          id="contact-search"
+          label={translateText(["labels", "contactName"])}
+          placeholder={translateText(["placeholders", "contactName"])}
+          value={contactSearchText}
+          onChange={(e) => setContactSearchText(e.target.value)}
+          items={contactDropdownItems}
+          onSelect={handleContactSelect}
+          emptyMessage={
+            contactSearchText.length > 0 ? (
+              <p className="px-4 py-2 body2">
+                {translateText(["emptyStates", "noContacts"])}
+              </p>
+            ) : undefined
+          }
+        />
+      )}
 
-      <SearchableDropdown
-        id="deal-search"
-        label={translateText(["labels", "deal"])}
-        placeholder={translateText(["placeholders", "deal"])}
-        value={selectedDealLabel || dealSearchText}
-        onChange={handleDealInputChange}
-        items={dealDropdownItems}
-        onSelect={handleDealSelect}
-        emptyMessage={
-          <p className="px-4 py-2 body2">
-            {translateText(["emptyStates", "noDeals"])}
-          </p>
-        }
-      />
+      {selectedDealLabel ? (
+        <InputField
+          label={translateText(["labels", "deal"])}
+          value={selectedDealLabel}
+          readOnly
+          fullWidth
+          variant="md"
+          aria-label={translateText(["ariaLabels", "deal"])}
+          rightIcon={
+            <ButtonV2
+              variant="tertiary"
+              type="button"
+              onClick={handleClearDeal}
+              aria-label={translateText(["ariaLabels", "clearDeal"])}
+              icon={<CloseIcon />}
+            />
+          }
+        />
+      ) : (
+        <SearchableDropdown
+          id="deal-search"
+          label={translateText(["labels", "deal"])}
+          placeholder={translateText(["placeholders", "deal"])}
+          value={dealSearchText}
+          onChange={(e) => setDealSearchText(e.target.value)}
+          items={dealDropdownItems}
+          onSelect={handleDealSelect}
+          emptyMessage={
+            dealSearchText.length > 0 ? (
+              <p className="px-4 py-2 body2">
+                {translateText(["emptyStates", "noDeals"])}
+              </p>
+            ) : undefined
+          }
+        />
+      )}
 
       <TextArea
         name="notes"
