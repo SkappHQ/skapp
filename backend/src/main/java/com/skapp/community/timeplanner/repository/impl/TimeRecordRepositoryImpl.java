@@ -121,8 +121,8 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 		Tuple avgResult = entityManager.createQuery(avgQuery).getSingleResult();
 
-		return new TimeSheetSummaryData((double) mergedSummary.getTotalWorkHours(),
-				avgResult.get(0, Double.class), avgResult.get(1, Double.class));
+		return new TimeSheetSummaryData((double) mergedSummary.getTotalWorkHours(), avgResult.get(0, Double.class),
+				avgResult.get(1, Double.class));
 	}
 
 	@Override
@@ -330,8 +330,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 						cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType), cb.literal("isActiveRightNow"),
 						timeSlot.get(TimeSlot_.isActiveRightNow), cb.literal("isManualEntry"),
 						timeSlot.get(TimeSlot_.isManualEntry))),
-				timeRecord.get(TimeRecord_.isManual),
-				timeRecord.get(TimeRecord_.clockInTime),
+				timeRecord.get(TimeRecord_.isManual), timeRecord.get(TimeRecord_.clockInTime),
 				timeRecord.get(TimeRecord_.clockOutTime)));
 
 		query.where(timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds),
@@ -343,8 +342,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		List<Tuple> timeRecords = entityManager.createQuery(query).getResultList();
 
 		Map<String, List<Tuple>> groupedRecords = timeRecords.stream()
-			.collect(Collectors.groupingBy(
-					tuple -> tuple.get(2, LocalDate.class) + "_" + tuple.get(1, Long.class)));
+			.collect(Collectors.groupingBy(tuple -> tuple.get(2, LocalDate.class) + "_" + tuple.get(1, Long.class)));
 
 		Map<String, EmployeeTimeRecord> existingRecords = new java.util.HashMap<>();
 		for (Map.Entry<String, List<Tuple>> entry : groupedRecords.entrySet()) {
@@ -371,22 +369,23 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 						clockInRecord.get(8, Long.class), latestManualRecord.get(3, Float.class),
 						latestManualRecord.get(4, Float.class), latestManualRecord.get(7, Long.class),
 						latestManualRecord.get(8, Long.class));
-				existingRecords.put(entry.getKey(), new EmployeeTimeRecordImpl(
-						clockInRecord.get(0, Long.class), clockInRecord.get(1, Long.class),
-						clockInRecord.get(2, LocalDate.class), merged[0], merged[1],
-						clockInRecord.get(5, String.class)));
+				existingRecords.put(entry.getKey(),
+						new EmployeeTimeRecordImpl(clockInRecord.get(0, Long.class), clockInRecord.get(1, Long.class),
+								clockInRecord.get(2, LocalDate.class), merged[0], merged[1],
+								clockInRecord.get(5, String.class)));
 			}
 			else if (clockInRecord != null) {
-				existingRecords.put(entry.getKey(), new EmployeeTimeRecordImpl(
-						clockInRecord.get(0, Long.class), clockInRecord.get(1, Long.class),
-						clockInRecord.get(2, LocalDate.class), clockInRecord.get(3, Float.class),
-						clockInRecord.get(4, Float.class), clockInRecord.get(5, String.class)));
+				existingRecords.put(entry.getKey(),
+						new EmployeeTimeRecordImpl(clockInRecord.get(0, Long.class), clockInRecord.get(1, Long.class),
+								clockInRecord.get(2, LocalDate.class), clockInRecord.get(3, Float.class),
+								clockInRecord.get(4, Float.class), clockInRecord.get(5, String.class)));
 			}
 			else if (latestManualRecord != null) {
-				existingRecords.put(entry.getKey(), new EmployeeTimeRecordImpl(
-						latestManualRecord.get(0, Long.class), latestManualRecord.get(1, Long.class),
-						latestManualRecord.get(2, LocalDate.class), latestManualRecord.get(3, Float.class),
-						latestManualRecord.get(4, Float.class), latestManualRecord.get(5, String.class)));
+				existingRecords.put(entry.getKey(),
+						new EmployeeTimeRecordImpl(latestManualRecord.get(0, Long.class),
+								latestManualRecord.get(1, Long.class), latestManualRecord.get(2, LocalDate.class),
+								latestManualRecord.get(3, Float.class), latestManualRecord.get(4, Float.class),
+								latestManualRecord.get(5, String.class)));
 			}
 		}
 
@@ -488,18 +487,17 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		}
 		predicates.add(cb.between(root.get(TimeRecord_.date), startDate, endDate));
 
-		query.select(cb.tuple(root.get(TimeRecord_.timeRecordId),
-				root.get(TimeRecord_.employee).get(Employee_.employeeId), root.get(TimeRecord_.date),
-				cb.coalesce(root.get(TimeRecord_.workedHours), 0.0f),
-				cb.coalesce(root.get(TimeRecord_.breakHours), 0.0f), root.get(TimeRecord_.isManual),
-				root.get(TimeRecord_.clockInTime), root.get(TimeRecord_.clockOutTime)));
+		query.select(
+				cb.tuple(root.get(TimeRecord_.timeRecordId), root.get(TimeRecord_.employee).get(Employee_.employeeId),
+						root.get(TimeRecord_.date), cb.coalesce(root.get(TimeRecord_.workedHours), 0.0f),
+						cb.coalesce(root.get(TimeRecord_.breakHours), 0.0f), root.get(TimeRecord_.isManual),
+						root.get(TimeRecord_.clockInTime), root.get(TimeRecord_.clockOutTime)));
 		query.where(predicates.toArray(new Predicate[0]));
 
 		List<Tuple> records = entityManager.createQuery(query).getResultList();
 
 		Map<String, List<Tuple>> grouped = records.stream()
-			.collect(Collectors.groupingBy(
-					t -> t.get(1, Long.class) + "_" + t.get(2, LocalDate.class)));
+			.collect(Collectors.groupingBy(t -> t.get(1, Long.class) + "_" + t.get(2, LocalDate.class)));
 
 		float totalWork = 0f;
 		float totalBreak = 0f;
@@ -521,10 +519,10 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 			}
 
 			if (clockIn != null && latestManual != null) {
-				float[] merged = computeMergedHoursWithOverlap(clockIn.get(3, Float.class),
-						clockIn.get(4, Float.class), clockIn.get(6, Long.class), clockIn.get(7, Long.class),
-						latestManual.get(3, Float.class), latestManual.get(4, Float.class),
-						latestManual.get(6, Long.class), latestManual.get(7, Long.class));
+				float[] merged = computeMergedHoursWithOverlap(clockIn.get(3, Float.class), clockIn.get(4, Float.class),
+						clockIn.get(6, Long.class), clockIn.get(7, Long.class), latestManual.get(3, Float.class),
+						latestManual.get(4, Float.class), latestManual.get(6, Long.class),
+						latestManual.get(7, Long.class));
 				totalWork += merged[0];
 				totalBreak += merged[1];
 			}
