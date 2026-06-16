@@ -35,8 +35,8 @@ import {
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 import { extractDomainFromEmail } from "~community/crm/utils/commonHelpers";
+import { mergeAndPrioritizeCompanyDropdownItems } from "~community/crm/utils/contactUtil";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
-import { prioritizeListIds } from "~community/crm/utils/crmUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 import SelectedOwnerField from "../SelectedOwnerField/SelectedOwnerField";
@@ -169,35 +169,14 @@ const AddContactModalContent: React.FC = () => {
   const { data: companyLookupData, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
 
-  const companyDropdownItems: SearchableDropdownItem[] = useMemo(() => {
-    const toDropdownItem = (company: {
-      id: number;
-      name: string;
-    }): SearchableDropdownItem => ({
-      id: String(company.id),
-      content: company.name
-    });
-
-    const lookupItems = companyLookupData?.items?.map(toDropdownItem) ?? [];
-    const domainItems = domainSearchData?.companies?.map(toDropdownItem) ?? [];
-
-    const lookupIds = new Set(lookupItems.map((item) => item.id));
-
-    const domainCompanyIds =
-      domainSearchData?.companies?.map((company) => company.id) ?? [];
-
-    const allItems = [
-      ...lookupItems,
-      ...domainItems.filter((item) => !lookupIds.has(item.id))
-    ];
-
-    const { prioritized, others } = prioritizeListIds(
-      allItems,
-      domainCompanyIds
-    );
-
-    return [...prioritized, ...others];
-  }, [companyLookupData?.items, domainSearchData?.companies]);
+  const companyDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      mergeAndPrioritizeCompanyDropdownItems(
+        companyLookupData?.items,
+        domainSearchData?.companies
+      ),
+    [companyLookupData?.items, domainSearchData?.companies]
+  );
 
   const handleCompanySelect = (companyDropDownItem: SearchableDropdownItem) => {
     const company = companyLookupData?.items?.find(
