@@ -333,7 +333,7 @@ const DealsKanbanBoard: React.FC = () => {
   const isInitialLoad = isInitLoading || (stageIds.length > 0 && isDealsLoading);
 
   return (
-    <main className="flex h-screen flex-col bg-white p-4">
+    <div className="flex flex-col">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -342,7 +342,7 @@ const DealsKanbanBoard: React.FC = () => {
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto overflow-y-hidden py-2">
+        <div className="flex gap-4 overflow-x-auto py-2 h-160 items-stretch">
           {stages.map((stage) => {
             const state = stageMap[stage.id];
             const deals = state?.deals ?? [];
@@ -369,6 +369,7 @@ const DealsKanbanBoard: React.FC = () => {
                 isLoadingMore={state?.isLoadingMore ?? false}
                 isOver={overStageId === stage.id}
                 onDealClick={() => {}}
+                onAddDeal={() => {}}
                 onLoadMore={handleLoadMore}
               />
             );
@@ -403,7 +404,7 @@ const DealsKanbanBoard: React.FC = () => {
           )}
         </DragOverlay>
       </DndContext>
-    </main>
+    </div>
   );
 };
 

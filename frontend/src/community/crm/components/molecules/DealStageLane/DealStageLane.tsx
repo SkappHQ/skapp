@@ -152,7 +152,9 @@ const DealStageLane: React.FC<DealStageLaneProps> = ({
           <p className="body3 mt-0.5 text-zinc-500">{stage.formattedTotal}</p>
         </div>
         <span className="rounded-full bg-secondary-accent px-3 py-1 text-xs font-semibold text-zinc-600">
-          {isLoading ? "…" : (stage.totalCount ?? deals.length)}
+          {isLoading
+            ? "…"
+            : String(stage.totalCount ?? deals.length).padStart(2, "0")}
         </span>
       </div>
 
@@ -198,9 +200,9 @@ const DealStageLane: React.FC<DealStageLaneProps> = ({
               <button
                 type="button"
                 onClick={() => onAddDeal(stage.id)}
-                className="body3 mt-1 rounded-lg px-4 py-2 font-medium text-zinc-600 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="body3 mt-1 w-full rounded-lg px-4 py-2 text-center font-medium text-zinc-500 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                + Add deal
+                Add deal +
               </button>
             )}
           </>

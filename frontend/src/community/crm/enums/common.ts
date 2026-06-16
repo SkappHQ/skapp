@@ -48,3 +48,8 @@ export enum CrmDealSortEnum {
   STAGE_TYPE = "STAGE_TYPE",
   STAGE_ORDER = "STAGE_ORDER"
 }
+
+export enum DealViewEnum {
+  LIST = "list",
+  KANBAN = "kanban"
+}
