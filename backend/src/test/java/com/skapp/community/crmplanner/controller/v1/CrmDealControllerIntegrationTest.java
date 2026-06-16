@@ -201,79 +201,101 @@ class CrmDealControllerIntegrationTest {
 		deal.setCompany(company);
 		deal = crmDealDao.save(deal);
 
+		CrmCompany newCompany = savedCompany("New Company");
+		CrmContact newContact = savedContact(newCompany);
+		newContact.setName("New Contact");
+		newContact = crmContactDao.save(newContact);
+
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
 		dto.setName("Updated Deal Name");
 		dto.setAmount("5000.50");
 		dto.setPriority(CrmDealPriority.HIGH);
-		dto.setContactName("Updated Contact Name");
+		dto.setContactId(newContact.getId());
 
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("$.results[0].name").value("Updated Deal Name"))
 			.andExpect(jsonPath("$.results[0].amount").value("5000.50"))
-			.andExpect(jsonPath("$.results[0].contactName").value("Updated Contact Name"))
-			.andExpect(jsonPath("$.results[0].companyName").value("Original Company"));
+			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
+			.andExpect(jsonPath("$.results[0].companyName").value("New Company"));
 	}
 
 	@Test
-	@DisplayName("Edit deal - update contact name - company auto-resolved from contact's company")
-	void editDeal_UpdateContactName_CompanyAutoResolved() throws Exception {
+	@DisplayName("Edit deal - update contact - company auto-resolved from new contact's company")
+	void editDeal_UpdateContact_CompanyAutoResolved() throws Exception {
 		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Auto Corp");
+		CrmCompany company = savedCompany("Original Corp");
 		CrmContact contact = savedContact(company);
 		CrmDeal deal = savedDeal(stage, contact);
 		deal.setCompany(company);
 		deal = crmDealDao.save(deal);
 
+		CrmCompany newCompany = savedCompany("New Corp");
+		CrmContact newContact = savedContact(newCompany);
+		newContact.setName("New Contact");
+		newContact = crmContactDao.save(newContact);
+
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setContactName("Renamed Contact");
+		dto.setContactId(newContact.getId());
 
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("Renamed Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value("Auto Corp"));
+			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
+			.andExpect(jsonPath("$.results[0].companyName").value("New Corp"));
 	}
 
 	@Test
-	@DisplayName("Edit deal - update contact name - contact has no company - company set to null")
-	void editDeal_UpdateContactName_NoCompany_CompanyNull() throws Exception {
+	@DisplayName("Edit deal - update contact - new contact has no company - company set to null")
+	void editDeal_UpdateContact_NoCompany_CompanyNull() throws Exception {
 		CrmDealStage stage = savedStage();
-		CrmContact contact = savedContact(null);
+		CrmCompany company = savedCompany("Original Corp");
+		CrmContact contact = savedContact(company);
 		CrmDeal deal = savedDeal(stage, contact);
+		deal.setCompany(company);
+		deal = crmDealDao.save(deal);
+
+		CrmContact newContact = savedContact(null);
+		newContact.setName("No Company Contact");
+		newContact = crmContactDao.save(newContact);
 
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setContactName("Renamed Contact");
+		dto.setContactId(newContact.getId());
 
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("Renamed Contact"))
+			.andExpect(jsonPath("$.results[0].contactName").value("No Company Contact"))
 			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
 	}
 
 	@Test
-	@DisplayName("Edit deal - update contact name - contact's company is soft-deleted - company set to null")
-	void editDeal_UpdateContactName_DeletedCompany_CompanyNull() throws Exception {
+	@DisplayName("Edit deal - update contact - new contact's company is soft-deleted - company set to null")
+	void editDeal_UpdateContact_DeletedCompany_CompanyNull() throws Exception {
 		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Deleted Corp");
-		CrmContact contact = savedContact(company);
+		CrmCompany originalCompany = savedCompany("Original Corp");
+		CrmContact contact = savedContact(originalCompany);
 		CrmDeal deal = savedDeal(stage, contact);
-		deal.setCompany(company);
+		deal.setCompany(originalCompany);
 		deal = crmDealDao.save(deal);
 
-		// soft-delete the company after creating the deal
-		company.setIsDeleted(true);
-		crmCompanyDao.save(company);
+		CrmCompany deletedCompany = savedCompany("Deleted Corp");
+		CrmContact newContact = savedContact(deletedCompany);
+		newContact.setName("Deleted Company Contact");
+		newContact = crmContactDao.save(newContact);
+
+		// soft-delete the new contact's company
+		deletedCompany.setIsDeleted(true);
+		crmCompanyDao.save(deletedCompany);
 
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setContactName("Renamed Contact");
+		dto.setContactId(newContact.getId());
 
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("Renamed Contact"))
+			.andExpect(jsonPath("$.results[0].contactName").value("Deleted Company Contact"))
 			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
 	}
 
@@ -348,8 +370,8 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Edit deal - non-admin/non-manager representative edit owner - returns forbidden/bad request")
-	void editDeal_RepEditOwner_ReturnsBadRequest() throws Exception {
+	@DisplayName("Edit deal - non-admin/non-manager representative edit owner - silently assigns self")
+	void editDeal_RepEditOwner_SilentlyAssignsSelf() throws Exception {
 		// Set CRM role for user2
 		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
 		employeeRoleDao.flush();
@@ -367,13 +389,13 @@ class CrmDealControllerIntegrationTest {
 		crmDealDao.save(deal);
 
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setOwnerId(1L); // change owner back to user1
+		dto.setOwnerId(1L); // attempt to change owner to user1
 
+		// Sales rep cannot reassign - resolveOwner silently assigns self
 		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].message")
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_UPDATE_DENIED)));
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].owner.employeeId").value(2L));
 	}
 
 	@Test
