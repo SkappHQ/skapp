@@ -4,3 +4,5 @@ export enum characterLengths {
 }
 
 export const EMAIL_MAX_LENGTH = 100;
+
+export const EMPLOYEE_ID_LOOKUP_DEBOUNCE_MS = 500;

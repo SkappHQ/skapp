@@ -11,7 +11,9 @@ import React, {
 } from "react";
 
 import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
+import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
+import { EMPLOYEE_ID_LOOKUP_DEBOUNCE_MS } from "~community/people/constants/stringConstants";
 import { allowsAlphaNumericWithHyphenAndUnderscore } from "~community/common/regex/regexPatterns";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import { filterByValue } from "~community/common/utils/commonUtil";
@@ -113,13 +115,16 @@ const useEmployeeDetailsFormHandler = ({
     }
   );
 
+  const debouncedEmail = useDebounce(values.email as string, EMPLOYEE_ID_LOOKUP_DEBOUNCE_MS);
+  const debouncedEmployeeNumber = useDebounce(values.employeeNumber ?? "", EMPLOYEE_ID_LOOKUP_DEBOUNCE_MS);
+
   const {
     data: checkEmailAndIdentificationNo,
     refetch,
     isSuccess
   } = useCheckEmailAndIdentificationNo(
-    values.email as string,
-    values.employeeNumber ?? ""
+    debouncedEmail,
+    debouncedEmployeeNumber
   );
 
   useEffect(() => {
@@ -440,7 +445,7 @@ const useEmployeeDetailsFormHandler = ({
     if (!isManager && !isProfileView) {
       void refetch();
     }
-  }, [values.email, values.employeeNumber]);
+  }, [debouncedEmail, debouncedEmployeeNumber]);
 
   useEffect(() => {
     if (values.joinedDate) {
