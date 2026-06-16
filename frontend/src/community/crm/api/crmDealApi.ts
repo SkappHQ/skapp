@@ -80,7 +80,7 @@ export const useGetDealLookup = (
   enabled: boolean = true
 ): UseQueryResult<CrmDealPaginatedResponse> => {
   return useQuery({
-    queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword, size),
+    queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword),
     queryFn: async (): Promise<CrmDealPaginatedResponse> => {
       const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
         params: {
