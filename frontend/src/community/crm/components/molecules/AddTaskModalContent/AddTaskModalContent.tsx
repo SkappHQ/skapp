@@ -40,6 +40,7 @@ import {
   CrmTaskCreatePayload
 } from "~community/crm/types/CommonTypes";
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
+import { toLocalDateTimeString } from "~community/crm/utils/crmUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 const AddTaskModalContent: React.FC = () => {
@@ -165,7 +166,7 @@ const AddTaskModalContent: React.FC = () => {
     const payload: CrmTaskCreatePayload = {
       name: formValues.name.trim(),
       typeId: formValues.type?.id ?? undefined,
-      dueAt: formValues.dueDate ?? null,
+      dueAt: toLocalDateTimeString(formValues.dueDate),
       priority: formValues.priority,
       contactId: formValues.contactId ?? undefined,
       dealId: formValues.dealId ?? undefined,
