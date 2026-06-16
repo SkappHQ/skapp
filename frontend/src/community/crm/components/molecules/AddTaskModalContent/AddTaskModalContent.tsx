@@ -177,12 +177,11 @@ const AddTaskModalContent: React.FC = () => {
   };
 
   // Owner lookup
-  const { data: ownerLookupData } =
-    useGetOwnerLookup(
-      debouncedOwnerSearch,
-      DEFAULT_LOOKUP_PAGE_SIZE,
-      Boolean(isCrmSalesManager)
-    );
+  const { data: ownerLookupData } = useGetOwnerLookup(
+    debouncedOwnerSearch,
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    Boolean(isCrmSalesManager)
+  );
 
   const ownerLookupItems: CrmOwner[] = ownerLookupData?.items ?? [];
 
@@ -204,12 +203,11 @@ const AddTaskModalContent: React.FC = () => {
   };
 
   // Contact lookup
-  const { data: contactLookupData } =
-    useGetCrmContacts(
-      debouncedContactSearch,
-      DEFAULT_LOOKUP_PAGE_SIZE,
-      debouncedContactSearch.length > 0
-    );
+  const { data: contactLookupData } = useGetCrmContacts(
+    debouncedContactSearch,
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    debouncedContactSearch.length > 0
+  );
 
   const contactDropdownItems: SearchableDropdownItem[] =
     contactLookupData?.items?.map((contact) => ({
@@ -230,6 +228,13 @@ const AddTaskModalContent: React.FC = () => {
     setFieldValue("contactId", null);
     setSelectedContactLabel("");
     setContactSearchText("");
+  };
+
+  const handleContactInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setContactSearchText(e.target.value);
+    if (selectedContactLabel) {
+      handleClearContact();
+    }
   };
 
   // Deal lookup
@@ -256,6 +261,13 @@ const AddTaskModalContent: React.FC = () => {
     setFieldValue("dealId", null);
     setSelectedDealLabel("");
     setDealSearchText("");
+  };
+
+  const handleDealInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDealSearchText(e.target.value);
+    if (selectedDealLabel) {
+      handleClearDeal();
+    }
   };
 
   return (
@@ -369,12 +381,7 @@ const AddTaskModalContent: React.FC = () => {
         label={translateText(["labels", "contactName"])}
         placeholder={translateText(["placeholders", "contactName"])}
         value={selectedContactLabel || contactSearchText}
-        onChange={(e) => {
-          setContactSearchText(e.target.value);
-          if (selectedContactLabel) {
-            handleClearContact();
-          }
-        }}
+        onChange={handleContactInputChange}
         items={contactDropdownItems}
         onSelect={handleContactSelect}
       />
@@ -384,12 +391,7 @@ const AddTaskModalContent: React.FC = () => {
         label={translateText(["labels", "deal"])}
         placeholder={translateText(["placeholders", "deal"])}
         value={selectedDealLabel || dealSearchText}
-        onChange={(e) => {
-          setDealSearchText(e.target.value);
-          if (selectedDealLabel) {
-            handleClearDeal();
-          }
-        }}
+        onChange={handleDealInputChange}
         items={dealDropdownItems}
         onSelect={handleDealSelect}
       />
