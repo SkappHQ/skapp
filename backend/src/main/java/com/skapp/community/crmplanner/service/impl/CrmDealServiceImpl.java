@@ -6,7 +6,6 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.FractionalIndexUtil;
-import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
@@ -355,6 +354,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		if (requestDto.getName() != null) {
 			CrmValidations.validateDealName(requestDto.getName());
+			if (!requestDto.getName().equalsIgnoreCase(deal.getName())
+					&& crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
+			}
 			deal.setName(requestDto.getName());
 		}
 
@@ -402,10 +405,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
 		log.info("editDeal: execution ended");
-		return new ResponseEntityDto(false, responseDto);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
 	}
 
 }

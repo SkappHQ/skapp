@@ -19,7 +19,6 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_CONTACT_NOT_FOUND("api.error.crm.deal.contact-not-found"),
 	CRM_ERROR_DEAL_OWNER_NOT_FOUND("api.error.crm.deal.owner-not-found"),
 	CRM_ERROR_DEAL_OWNER_INVALID_ROLE("api.error.crm.deal.owner-invalid-role"),
-	CRM_ERROR_DEAL_OWNER_UPDATE_DENIED("api.error.crm.deal.owner-update-denied"),
 	CRM_ERROR_CONTACT_NAME_REQUIRED("api.error.crm.contact-name-required"),
 	CRM_ERROR_CONTACT_NAME_TOO_LONG("api.error.crm.contact-name-too-long"),
 	CRM_ERROR_CONTACT_NAME_INVALID("api.error.crm.contact-name-invalid"),
