@@ -127,6 +127,11 @@ class CrmTaskControllerIntegrationTest {
 
 	private ResultActions performGetRequest(String token, String searchKeyword, Long contactId, Long dealId)
 			throws Exception {
+		return performGetRequest(token, searchKeyword, contactId, dealId, null);
+	}
+
+	private ResultActions performGetRequest(String token, String searchKeyword, Long contactId, Long dealId,
+			Long companyId) throws Exception {
 		var request = get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(token));
 		if (searchKeyword != null) {
 			request = request.param("searchKeyword", searchKeyword);
@@ -136,6 +141,9 @@ class CrmTaskControllerIntegrationTest {
 		}
 		if (dealId != null) {
 			request = request.param("dealId", dealId.toString());
+		}
+		if (companyId != null) {
+			request = request.param("companyId", companyId.toString());
 		}
 		return mvc.perform(request);
 	}
@@ -171,6 +179,11 @@ class CrmTaskControllerIntegrationTest {
 
 	private CrmTask savedTask(String name, boolean isDeleted, boolean isCompleted, Long linkedContactId,
 			CrmDeal linkedDeal) {
+		return savedTask(name, isDeleted, isCompleted, linkedContactId, linkedDeal, null);
+	}
+
+	private CrmTask savedTask(String name, boolean isDeleted, boolean isCompleted, Long linkedContactId,
+			CrmDeal linkedDeal, CrmCompany linkedCompany) {
 		CrmTask task = new CrmTask();
 		task.setName(name);
 		task.setType(taskType);
@@ -183,6 +196,9 @@ class CrmTaskControllerIntegrationTest {
 		}
 		if (linkedDeal != null) {
 			task.setDeal(linkedDeal);
+		}
+		if (linkedCompany != null) {
+			task.setCompany(linkedCompany);
 		}
 		return crmTaskDao.save(task);
 	}
@@ -268,6 +284,22 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task with deal"));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by companyId - Returns only tasks linked to that company")
+	void getTasks_FilterByCompanyId_ReturnsMatchingTasks() throws Exception {
+		CrmCompany company = savedCompany("Task Filter Company");
+		CrmCompany otherCompany = savedCompany("Other Task Filter Company");
+
+		savedTask("Task for company", false, false, null, null, company);
+		savedTask("Task for other company", false, false, null, null, otherCompany);
+
+		performGetRequest(authToken, null, null, null, company.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task for company"));
 	}
 
 	@Test
