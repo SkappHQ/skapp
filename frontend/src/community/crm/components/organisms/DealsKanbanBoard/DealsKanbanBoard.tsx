@@ -1,545 +1,396 @@
-'use client';
-
-import React, { useMemo, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   DragOverlay,
   DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   closestCorners,
-  useDroppable,
   useSensor,
   useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  arrayMove,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+} from "@dnd-kit/core";
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
+import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
+import type { DealStageLaneDeal } from "~community/crm/components/molecules/DealStageLane";
+import { CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
+import type {
+  BoardDealItem,
+  BoardDealsGroupedRequest,
+  BoardMoveBetweenStagesPayload,
+  BoardReorderWithinStagePayload,
+  BoardStageDeals,
+  CrmDealStageType,
+} from "~community/crm/types/CommonTypes";
 
-import { Task, TaskCard } from '@rootcodelabs/skapp-ui';
+// --- Mock stages (replace with useGetBoardInitData in feat/crm-kanban-api) ---
 
-type DealStage = {
-  id: string;
-  name: string;
-  color: string;
-};
-
-type Deal = {
-  id: string;
-  title: string;
-  company: string;
-  owner: string;
-  value: number;
-  stageId: string;
-  probability: number;
-  expectedCloseDate: string;
-  tags: string[];
-};
-
-const initialDealStages: DealStage[] = [
-  { id: 'new', name: 'New', color: '#60a5fa' },
-  { id: 'qualified', name: 'Qualified', color: '#14b8a6' },
-  { id: 'proposal', name: 'Proposal', color: '#f59e0b' },
-  { id: 'negotiation', name: 'Negotiation', color: '#9366fd' },
-  { id: 'won', name: 'Won', color: '#62b774' },
-  { id: 'lost', name: 'Lost', color: '#dc2626' },
+const MOCK_STAGES: CrmDealStageType[] = [
+  { id: 1, name: "New", color: "blue", orderIndex: 0, stageType: CrmDealStageEnum.OPEN },
+  { id: 2, name: "Qualified", color: "orange", orderIndex: 1, stageType: CrmDealStageEnum.OPEN },
+  { id: 3, name: "Proposal", color: "purple", orderIndex: 2, stageType: CrmDealStageEnum.OPEN },
+  { id: 4, name: "Won", color: "green", orderIndex: 3, stageType: CrmDealStageEnum.WON },
 ];
 
-const initialDeals: Deal[] = [
-  {
-    id: 'deal-1001',
-    title: 'Enterprise workspace rollout',
-    company: 'Acme Finance',
-    owner: 'Anusha',
-    value: 82000,
-    stageId: 'new',
-    probability: 15,
-    expectedCloseDate: '2026-07-12',
-    tags: ['Enterprise', 'Finance'],
-  },
-  {
-    id: 'deal-1002',
-    title: 'Support automation package',
-    company: 'Northstar Health',
-    owner: 'Maya',
-    value: 36000,
-    stageId: 'qualified',
-    probability: 35,
-    expectedCloseDate: '2026-07-24',
-    tags: ['Healthcare'],
-  },
-  {
-    id: 'deal-1003',
-    title: 'CRM migration and training',
-    company: 'Harbor Retail',
-    owner: 'Kavindu',
-    value: 54000,
-    stageId: 'proposal',
-    probability: 55,
-    expectedCloseDate: '2026-08-03',
-    tags: ['Retail', 'Migration'],
-  },
-  {
-    id: 'deal-1004',
-    title: 'Annual analytics renewal',
-    company: 'BluePeak Logistics',
-    owner: 'Anusha',
-    value: 128000,
-    stageId: 'negotiation',
-    probability: 75,
-    expectedCloseDate: '2026-06-28',
-    tags: ['Renewal'],
-  },
-  {
-    id: 'deal-1005',
-    title: 'Regional sales enablement',
-    company: 'Sierra Foods',
-    owner: 'Nimal',
-    value: 41000,
-    stageId: 'won',
-    probability: 100,
-    expectedCloseDate: '2026-06-10',
-    tags: ['Expansion'],
-  },
-  {
-    id: 'deal-1006',
-    title: 'Procurement platform pilot',
-    company: 'Lanka Supply Co.',
-    owner: 'Maya',
-    value: 23000,
-    stageId: 'lost',
-    probability: 0,
-    expectedCloseDate: '2026-06-06',
-    tags: ['Pilot'],
-  },
-];
+// --- Constants ---
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+const PAGE_LIMIT = 10;
+
+const STAGE_COLOR_MAP: Record<string, string> = {
+  blue: "bg-blue-400",
+  orange: "bg-orange-400",
+  amber: "bg-amber-400",
+  purple: "bg-purple-500",
+  teal: "bg-teal-500",
+  green: "bg-green-500",
+  red: "bg-red-500",
+  yellow: "bg-yellow-400",
+  pink: "bg-pink-400",
+  indigo: "bg-indigo-400",
+};
+
+// --- Helpers ---
+
+const formatCurrency = (value: number | string | null | undefined): string => {
+  const num = typeof value === "string" ? Number.parseFloat(value) : (value ?? 0);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     maximumFractionDigits: 0,
-  }).format(value);
-
-const getStageDealIds = (deals: Deal[], stageId: string) =>
-  deals.filter((deal) => deal.stageId === stageId).map((deal) => deal.id);
-
-const findStageForDeal = (deals: Deal[], dealId: string) =>
-  deals.find((deal) => deal.id === dealId)?.stageId;
-
-interface DealCardProps {
-  deal: Deal;
-  onClick: (deal: Deal) => void;
-}
-
-const DealCard: React.FC<DealCardProps> = ({ deal, onClick }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: deal.id,
-    data: { type: 'deal', deal },
-  });
-
-  return (
-    <button
-      ref={setNodeRef}
-      type="button"
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.35 : 1,
-      }}
-      {...attributes}
-      {...listeners}
-      onClick={() => onClick(deal)}
-      className="w-full cursor-grab rounded-lg bg-white p-3 text-left shadow-sm outline outline-1 outline-zinc-200 transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 active:cursor-grabbing"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="body3 font-medium text-zinc-500">{deal.id}</p>
-          <h3 className="subtitle3 mt-1 line-clamp-2 text-zinc-950">
-            {deal.title}
-          </h3>
-        </div>
-        <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-700">
-          {deal.probability}%
-        </span>
-      </div>
-
-      <p className="body3 mt-3 truncate text-zinc-600">{deal.company}</p>
-
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <span className="subtitle4 text-zinc-950">
-          {formatCurrency(deal.value)}
-        </span>
-        <span className="body3 truncate text-zinc-500">{deal.owner}</span>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-1">
-        {deal.tags.map((tag) => (
-          <span
-            key={tag}
-            className="rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-    </button>
-  );
+  }).format(Number.isNaN(num) ? 0 : num);
 };
 
-interface DealStageLaneProps {
-  stage: DealStage;
-  deals: Deal[];
-  activeStageId: string | null;
-  onDealClick: (deal: Deal) => void;
-  onAddDeal: (stageId: string, title: string) => void;
+const getAccentClass = (color: string): string =>
+  STAGE_COLOR_MAP[color?.toLowerCase()] ?? "bg-zinc-400";
+
+const toDealPriority = (p: CrmPriorityEnum | null): CrmPriorityEnum =>
+  p ?? CrmPriorityEnum.LOW;
+
+const toStageLaneDeal = (deal: BoardDealItem): DealStageLaneDeal => ({
+  id: String(deal.id),
+  title: deal.name,
+  contactName: deal.contactName ?? undefined,
+  company: deal.companyName ?? '',
+  assignee: deal.ownerId
+    ? {
+        id: String(deal.ownerId),
+        firstName: deal.ownerFirstName ?? undefined,
+        lastName: deal.ownerLastName ?? undefined,
+        src: deal.ownerAuthPic ?? undefined,
+      }
+    : undefined,
+  formattedValue: formatCurrency(deal.amount),
+  priority: toDealPriority(deal.priority),
+  taskCount: deal.taskCount,
+  taskCountTooltip: `${deal.taskCount} task${deal.taskCount === 1 ? '' : 's'}`,
+  ariaLabel: `Deal: ${deal.name}`,
+});
+
+// --- Per-stage state ---
+
+interface StageState {
+  deals: BoardDealItem[];
+  totalCount: number;
+  page: number;
+  isLoadingMore: boolean;
 }
 
-const DealStageLane: React.FC<DealStageLaneProps> = ({
-  stage,
-  deals,
-  activeStageId,
-  onDealClick,
-  onAddDeal,
-}) => {
-  const [isCreating, setIsCreating] = useState(false);
-  const [title, setTitle] = useState('');
-  const { setNodeRef } = useDroppable({
-    id: `stage-${stage.id}`,
-    data: { type: 'stage', stageId: stage.id, accepts: ['deal'] },
-  });
-  const totalValue = deals.reduce((sum, deal) => sum + deal.value, 0);
-
-  const submitDeal = () => {
-    if (!title.trim()) return;
-    onAddDeal(stage.id, title.trim());
-    setTitle('');
-    setIsCreating(false);
-  };
-
-  return (
-    <section
-      ref={setNodeRef}
-      className={`flex h-full w-[350px] shrink-0 flex-col rounded-lg bg-[var(--color-tertiary-background)] p-2 outline outline-1 outline-[var(--color-secondary-accent)] transition ${
-        activeStageId === stage.id ? 'ring-2 ring-blue-300' : ''
-      }`}
-      aria-labelledby={`crm-stage-${stage.id}`}
-    >
-      <div
-        className="h-[7px] rounded-[3px]"
-        style={{ backgroundColor: stage.color }}
-      />
-
-      <div className="mt-3 flex items-start justify-between gap-3 px-2">
-        <div className="min-w-0">
-          <h2
-            id={`crm-stage-${stage.id}`}
-            className="subtitle1 truncate capitalize text-zinc-950"
-          >
-            {stage.name}
-          </h2>
-          <p className="body3 mt-1 text-zinc-500">
-            {formatCurrency(totalValue)}
-          </p>
-        </div>
-        <span className="rounded-full bg-[var(--color-secondary-accent)] px-3 py-2 text-xs font-semibold text-zinc-600">
-          {deals.length}
-        </span>
-      </div>
-
-      <div className="custom-scroll mt-4 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-visible px-1 pb-2">
-        <SortableContext
-          items={deals.map((deal) => deal.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {deals.map((deal) => (
-            <DealCard key={deal.id} deal={deal} onClick={onDealClick} />
-          ))}
-        </SortableContext>
-
-        {!isCreating ? (
-          <button
-            type="button"
-            onClick={() => setIsCreating(true)}
-            className="body3 rounded-lg px-4 py-2 font-medium text-zinc-600 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            + Add deal
-          </button>
-        ) : (
-          <div className="rounded-lg bg-white p-3 shadow-sm outline outline-1 outline-zinc-200">
-            <textarea
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              rows={3}
-              autoFocus
-              placeholder="Deal title"
-              className="body2 w-full resize-none rounded-md border border-zinc-200 p-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
-            <div className="mt-3 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setTitle('');
-                  setIsCreating(false);
-                }}
-                className="body3 rounded-md px-3 py-2 font-medium text-zinc-500 hover:bg-zinc-100"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={submitDeal}
-                className="body3 rounded-md bg-blue-600 px-3 py-2 font-semibold text-white hover:bg-blue-700 disabled:bg-blue-300"
-                disabled={!title.trim()}
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
+const buildInitialStageState = (
+  data: BoardStageDeals[]
+): Record<number, StageState> =>
+  Object.fromEntries(
+    data.map((s) => [
+      s.stageId,
+      { deals: s.deals, totalCount: s.totalCount, page: 0, isLoadingMore: false },
+    ])
   );
-};
+
+// --- Main component ---
 
 const DealsKanbanBoard: React.FC = () => {
-  const [dealStages] = useState<DealStage[]>(initialDealStages);
-  const [deals, setDeals] = useState<Deal[]>(initialDeals);
-  const [activeDeal, setActiveDeal] = useState<Deal | null>(null);
-  const [activeStageId, setActiveStageId] = useState<string | null>(null);
-  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const searchKeyword = '';
+
+  // TODO (feat/crm-kanban-api): Replace mock data with useGetBoardInitData() and useGetDealsGrouped()
+  const stages: CrmDealStageType[] = MOCK_STAGES;
+  const stageIds = stages.map((s) => s.id);
+  const isInitLoading = false;
+  const isDealsLoading = false;
+
+  // Per-stage optimistic state
+  const [stageMap, setStageMap] = useState<Record<number, StageState>>({});
+
+  useEffect(() => {
+    const emptyData: BoardStageDeals[] = MOCK_STAGES.map((s) => ({
+      stageId: s.id,
+      deals: [],
+      totalCount: 0,
+    }));
+    setStageMap(buildInitialStageState(emptyData));
+  }, []);
+
+  const stageMapRef = useRef(stageMap);
+  stageMapRef.current = stageMap;
+
+  // DnD state
+  const [activeDeal, setActiveDeal] = useState<BoardDealItem | null>(null);
+  const [activeStageId, setActiveStageId] = useState<number | null>(null);
+  const [overStageId, setOverStageId] = useState<number | null>(null);
+  // Track the stage the drag started from — never mutated during the drag
+  const originalStageIdRef = useRef<number | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const filteredDeals = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) return deals;
+  // Optimistic rollback snapshot
+  const snapshotRef = useRef<Record<number, StageState> | null>(null);
 
-    return deals.filter((deal) =>
-      [deal.title, deal.company, deal.owner, deal.id, ...deal.tags]
-        .join(' ')
-        .toLowerCase()
-        .includes(query),
-    );
-  }, [deals, searchQuery]);
+  // TODO (feat/crm-kanban-api): Replace stubs with useReorderWithinStage / useMoveBetweenStages / useLoadMoreDeals
+  const reorderWithinStage = (_payload: BoardReorderWithinStagePayload) => {};
+  const moveBetweenStages = (_payload: BoardMoveBetweenStagesPayload) => {};
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const loadMore = (_payload: BoardDealsGroupedRequest) => {};
 
-  const pipelineValue = filteredDeals.reduce(
-    (sum, deal) => sum + deal.value,
-    0,
-  );
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const deal = deals.find((item) => item.id === event.active.id);
-    setActiveDeal(deal || null);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveDeal(null);
-    setActiveStageId(null);
-
-    if (!over) return;
-
-    const activeDealId = String(active.id);
-    const overId = String(over.id);
-    const sourceStageId = findStageForDeal(deals, activeDealId);
-
-    if (!sourceStageId) return;
-
-    const targetStageId = overId.startsWith('stage-')
-      ? overId.replace('stage-', '')
-      : findStageForDeal(deals, overId);
-
-    if (!targetStageId) return;
-
-    setDeals((currentDeals) => {
-      const activeIndex = currentDeals.findIndex(
-        (deal) => deal.id === activeDealId,
-      );
-
-      if (activeIndex === -1) return currentDeals;
-
-      const updatedDeals = currentDeals.map((deal) =>
-        deal.id === activeDealId ? { ...deal, stageId: targetStageId } : deal,
-      );
-
-      if (sourceStageId === targetStageId && !overId.startsWith('stage-')) {
-        const stageDeals = getStageDealIds(updatedDeals, sourceStageId);
-        const oldStageIndex = stageDeals.indexOf(activeDealId);
-        const newStageIndex = stageDeals.indexOf(overId);
-
-        if (oldStageIndex === -1 || newStageIndex === -1) return updatedDeals;
-
-        const reorderedStageIds = arrayMove(
-          stageDeals,
-          oldStageIndex,
-          newStageIndex,
-        );
-        const reorderedSet = new Set(reorderedStageIds);
-        let cursor = 0;
-
-        return updatedDeals.map((deal) => {
-          if (deal.stageId !== sourceStageId || !reorderedSet.has(deal.id)) {
-            return deal;
-          }
-
-          const nextId = reorderedStageIds[cursor];
-          cursor += 1;
-          return updatedDeals.find((item) => item.id === nextId) || deal;
-        });
-      }
-
-      const movingDeal = updatedDeals.find((deal) => deal.id === activeDealId);
-      if (!movingDeal) return updatedDeals;
-
-      const withoutMovingDeal = updatedDeals.filter(
-        (deal) => deal.id !== activeDealId,
-      );
-
-      let insertIndex = withoutMovingDeal.length;
-      if (!overId.startsWith('stage-')) {
-        const overIndex = withoutMovingDeal.findIndex(
-          (deal) => deal.id === overId,
-        );
-        if (overIndex !== -1) {
-          insertIndex = overIndex;
-        }
-      }
-
-      const nextDeals = [...withoutMovingDeal];
-      nextDeals.splice(insertIndex, 0, movingDeal);
-      return nextDeals;
+  const handleLoadMore = (stageIdStr: string) => {
+    const stageId = Number(stageIdStr);
+    const s = stageMapRef.current[stageId];
+    if (!s || s.isLoadingMore) return;
+    setStageMap((prev) => ({
+      ...prev,
+      [stageId]: { ...prev[stageId], isLoadingMore: true },
+    }));
+    loadMore({
+      stageIds: [stageId],
+      searchKeyword: searchKeyword || undefined,
+      page: s.page + 1,
+      limit: PAGE_LIMIT,
     });
   };
 
-  const handleDragOver = (event: DragEndEvent) => {
-    const overId = event.over?.id ? String(event.over.id) : null;
-    if (!overId) {
-      setActiveStageId(null);
+  // Drag handlers
+  const handleDragStart = ({ active }: DragStartEvent) => {
+    const dealId = Number(active.id);
+    for (const [sid, state] of Object.entries(stageMapRef.current)) {
+      const found = state.deals.find((d) => d.id === dealId);
+      if (found) {
+        setActiveDeal(found);
+        setActiveStageId(Number(sid));
+        originalStageIdRef.current = Number(sid); // lock in source stage
+        break;
+      }
+    }
+  };
+
+  const handleDragOver = ({ active, over }: DragOverEvent) => {
+    if (!over) {
+      setOverStageId(null);
       return;
     }
 
-    const stageId = overId.startsWith('stage-')
-      ? overId.replace('stage-', '')
-      : findStageForDeal(deals, overId);
-    setActiveStageId(stageId || null);
+    const overId = String(over.id);
+    const targetStageId = overId.startsWith("stage::")
+      ? Number(overId.replace("stage::", ''))
+      : (() => {
+          const overDealId = Number(overId);
+          for (const [sid, state] of Object.entries(stageMapRef.current)) {
+            if (state.deals.some((d) => d.id === overDealId)) return Number(sid);
+          }
+          return null;
+        })();
+
+    setOverStageId(targetStageId);
+
+    const activeDealId = Number(active.id);
+    if (!targetStageId || !activeStageId || activeStageId === targetStageId) return;
+
+    // Optimistic cross-column move — insert at the hovered position
+    setStageMap((prev) => {
+      const srcState = prev[activeStageId];
+      const tgtState = prev[targetStageId];
+      if (!srcState || !tgtState) return prev;
+
+      const deal = srcState.deals.find((d) => d.id === activeDealId);
+      if (!deal) return prev;
+
+      // Remove from source (or re-remove if already moved on a previous DragOver)
+      const srcDeals = srcState.deals.filter((d) => d.id !== activeDealId);
+
+      // Determine insertion index in the target column
+      let tgtDeals = tgtState.deals.filter((d) => d.id !== activeDealId); // remove if already there
+      if (overId.startsWith("stage::")) {
+        // Dropped on empty-column drop zone — append to end
+        tgtDeals = [...tgtDeals, deal];
+      } else {
+        const overDealId = Number(overId);
+        const overIndex = tgtDeals.findIndex((d) => d.id === overDealId);
+        if (overIndex === -1) {
+          tgtDeals = [...tgtDeals, deal];
+        } else {
+          tgtDeals = [
+            ...tgtDeals.slice(0, overIndex),
+            deal,
+            ...tgtDeals.slice(overIndex),
+          ];
+        }
+      }
+
+      return {
+        ...prev,
+        [activeStageId]: {
+          ...srcState,
+          deals: srcDeals,
+          totalCount: Math.max(0, srcState.totalCount - 1),
+        },
+        [targetStageId]: {
+          ...tgtState,
+          deals: tgtDeals,
+          totalCount: tgtState.totalCount + (tgtState.deals.some((d) => d.id === activeDealId) ? 0 : 1),
+        },
+      };
+    });
+    setActiveStageId(targetStageId);
   };
 
-  const handleAddDeal = (stageId: string, title: string) => {
-    const newDeal: Deal = {
-      id: `deal-${Date.now().toString().slice(-6)}`,
-      title,
-      company: 'New account',
-      owner: 'Unassigned',
-      value: 0,
-      stageId,
-      probability: 10,
-      expectedCloseDate: new Date().toISOString().slice(0, 10),
-      tags: ['New'],
-    };
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    const activeDealId = Number(active.id);
+    const finalStageId = activeStageId;       // current (possibly new) stage
+    const sourceStageId = originalStageIdRef.current; // where the drag started
 
-    setDeals((currentDeals) => [...currentDeals, newDeal]);
-    setSelectedDeal(newDeal);
+    setActiveDeal(null);
+    setActiveStageId(null);
+    setOverStageId(null);
+    originalStageIdRef.current = null;
+
+    if (!over || !finalStageId || !sourceStageId) return;
+
+    snapshotRef.current = { ...stageMapRef.current };
+
+    const isCrossStage = sourceStageId !== finalStageId;
+    const targetDeals = stageMapRef.current[finalStageId]?.deals ?? [];
+    const activeIndex = targetDeals.findIndex((d) => d.id === activeDealId);
+    if (activeIndex === -1) return;
+
+    if (isCrossStage) {
+      // handleDragOver already inserted the deal at the correct position in
+      // the target column (live preview). targetDeals reflects the final order,
+      // so neighbours are simply the adjacent items around activeIndex.
+      moveBetweenStages({
+        dealId: activeDealId,
+        newStageId: finalStageId,
+        previousDealId: targetDeals[activeIndex - 1]?.id ?? null,
+        nextDealId: targetDeals[activeIndex + 1]?.id ?? null,
+      });
+      return;
+    }
+
+    // Same-stage reorder
+    const overId = String(over.id);
+    if (overId.startsWith("stage::")) return; // dropped back on same column header — no change
+
+    const overDealId = Number(overId);
+    const overIndex = targetDeals.findIndex((d) => d.id === overDealId);
+    if (overIndex === -1 || activeIndex === overIndex) return;
+
+    const reordered = arrayMove(targetDeals, activeIndex, overIndex);
+    setStageMap((prev) => ({
+      ...prev,
+      [finalStageId]: { ...prev[finalStageId], deals: reordered },
+    }));
+
+    reorderWithinStage({
+      dealId: activeDealId,
+      previousDealId: reordered[overIndex - 1]?.id ?? null,
+      nextDealId: reordered[overIndex + 1]?.id ?? null,
+    });
   };
+
+  const handleDragCancel = () => {
+    setActiveDeal(null);
+    setActiveStageId(null);
+    setOverStageId(null);
+    originalStageIdRef.current = null;
+  };
+
+  const isInitialLoad = isInitLoading || (stageIds.length > 0 && isDealsLoading);
 
   return (
-    <main className="flex h-screen flex-col bg-white p-4">
-
+    <div className="flex flex-col">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
       >
-        <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto overflow-y-hidden py-4">
-          {dealStages.map((stage) => (
-            <DealStageLane
-              key={stage.id}
-              stage={stage}
-              deals={filteredDeals.filter((deal) => deal.stageId === stage.id)}
-              activeStageId={activeStageId}
-              onDealClick={setSelectedDeal}
-              onAddDeal={handleAddDeal}
-            />
-          ))}
+        <div className="flex gap-4 overflow-x-auto py-2 h-160 items-stretch">
+          {stages.map((stage) => {
+            const state = stageMap[stage.id];
+            const deals = state?.deals ?? [];
+            const totalCount = state?.totalCount ?? 0;
+            const totalValue = deals.reduce(
+              (sum, d) => sum + (Number.parseFloat(String(d.amount ?? "0")) || 0),
+              0
+            );
+            const hasMore = deals.length < totalCount;
+
+            return (
+              <DealStageLane
+                key={stage.id}
+                stage={{
+                  id: String(stage.id),
+                  name: stage.name,
+                  accentClass: getAccentClass(stage.color),
+                  formattedTotal: formatCurrency(totalValue),
+                  totalCount,
+                }}
+                deals={deals.map(toStageLaneDeal)}
+                isLoading={isInitialLoad}
+                hasMore={hasMore}
+                isLoadingMore={state?.isLoadingMore ?? false}
+                isOver={overStageId === stage.id}
+                onDealClick={() => {}}
+                onAddDeal={() => {}}
+                onLoadMore={handleLoadMore}
+              />
+            );
+          })}
         </div>
 
-        <DragOverlay>
+        <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
           {activeDeal && (
-            <div className="w-[330px] rotate-1">
-                
-              <DealCard deal={activeDeal} onClick={() => undefined} />
+            <div className="w-74 rotate-1 opacity-95 shadow-2xl">
+              <DealCard
+                id={String(activeDeal.id)}
+                title={activeDeal.name}
+                contactName={activeDeal.contactName ?? undefined}
+                company={activeDeal.companyName ?? ''}
+                assignee={
+                  activeDeal.ownerId
+                    ? {
+                        id: String(activeDeal.ownerId),
+                        firstName: activeDeal.ownerFirstName ?? undefined,
+                        lastName: activeDeal.ownerLastName ?? undefined,
+                        src: activeDeal.ownerAuthPic ?? undefined,
+                      }
+                    : undefined
+                }
+                formattedValue={formatCurrency(activeDeal.amount)}
+                priority={toDealPriority(activeDeal.priority)}
+                taskCount={activeDeal.taskCount}
+                isInteractive={false}
+                ariaLabel={activeDeal.name}
+              />
             </div>
           )}
         </DragOverlay>
       </DndContext>
-
-      {selectedDeal && (
-        <aside className="fixed bottom-4 right-4 top-4 z-50 w-[360px] rounded-lg border border-zinc-200 bg-white p-5 shadow-xl">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="body3 font-medium text-zinc-500">
-                {selectedDeal.id}
-              </p>
-              <h2 className="h3 mt-1 text-zinc-950">{selectedDeal.title}</h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSelectedDeal(null)}
-              className="rounded-md px-2 py-1 text-xl leading-none text-zinc-500 hover:bg-zinc-100"
-              aria-label="Close deal details"
-            >
-              ×
-            </button>
-          </div>
-
-          <dl className="mt-6 space-y-4">
-            <div>
-              <dt className="body3 text-zinc-500">Company</dt>
-              <dd className="subtitle3 mt-1 text-zinc-950">
-                {selectedDeal.company}
-              </dd>
-            </div>
-            <div>
-              <dt className="body3 text-zinc-500">Owner</dt>
-              <dd className="subtitle3 mt-1 text-zinc-950">
-                {selectedDeal.owner}
-              </dd>
-            </div>
-            <div>
-              <dt className="body3 text-zinc-500">Value</dt>
-              <dd className="subtitle3 mt-1 text-zinc-950">
-                {formatCurrency(selectedDeal.value)}
-              </dd>
-            </div>
-            <div>
-              <dt className="body3 text-zinc-500">Expected close</dt>
-              <dd className="subtitle3 mt-1 text-zinc-950">
-                {selectedDeal.expectedCloseDate}
-              </dd>
-            </div>
-          </dl>
-        </aside>
-      )}
-    </main>
+    </div>
   );
 };
 
 export default DealsKanbanBoard;
+

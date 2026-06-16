@@ -196,6 +196,22 @@ const nextConfig = {
         destination: "/community/configurations/user-roles/esignature"
       },
       {
+        source: "/configurations/user-roles/invoice",
+        destination: "/community/configurations/user-roles/invoice"
+      },
+      {
+        source: "/configurations/user-roles/projectmanagement",
+        destination: "/community/configurations/user-roles/projectmanagement"
+      },
+      {
+        source: "/configurations/work-location/create",
+        destination: "/community/configurations/work-location/create"
+      },
+      {
+        source: "/configurations/work-location/:id",
+        destination: "/community/configurations/work-location/:id"
+      },
+      {
         source: "/leave/analytics/:id",
         destination: "/community/leave/analytics/:id"
       },
@@ -344,6 +360,10 @@ const nextConfig = {
         destination: "/enterprise/projects/guests"
       },
       {
+        source: "/projects/guest-requests",
+        destination: "/enterprise/projects/guest-requests"
+      },
+      {
         source: "/invoice",
         destination: "/enterprise/invoice"
       },
@@ -379,6 +399,30 @@ const nextConfig = {
       {
         source: "/app-link",
         destination: "/enterprise/app-link"
+      },
+      {
+        source: "/crm",
+        destination: "/community/crm/contacts"
+      },
+      {
+        source: "/crm/contacts",
+        destination: "/community/crm/contacts"
+      },
+      {
+        source: "/crm/companies",
+        destination: "/community/crm/companies"
+      },
+      {
+        source: "/crm/deals",
+        destination: "/community/crm/deals"
+      },
+      {
+        source: "/crm/deals-kanban",
+        destination: "/community/crm/deals-kanban"
+      },
+      {
+        source: "/crm/tasks",
+        destination: "/community/crm/tasks"
       }
     ];
   },
