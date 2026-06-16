@@ -5,23 +5,18 @@ export const formatValue = (value: NumericValue): string => {
   return `$${Number.parseFloat(value).toFixed(2)}`;
 };
 
-interface Identifiable {
+interface Identified {
   id: number | string;
 }
 
-export const prioritizeListIds = <T extends Identifiable>(
+export const prioritizeListIds = <T extends Identified>(
   items: T[],
   priorityIds: number[]
 ): { prioritized: T[]; others: T[] } => {
-  return items.reduce<{ prioritized: T[]; others: T[] }>(
-    (groups, item) => {
-      const key = priorityIds.includes(Number(item.id))
-        ? "prioritized"
-        : "others";
+  const prioritySet = new Set(priorityIds.map(String));
 
-      groups[key].push(item);
-      return groups;
-    },
-    { prioritized: [], others: [] }
-  );
+  const prioritized = items.filter((item) => prioritySet.has(String(item.id)));
+  const others = items.filter((item) => !prioritySet.has(String(item.id)));
+
+  return { prioritized, others };
 };

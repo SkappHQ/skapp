@@ -16,7 +16,7 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { emailPattern } from "~community/common/regex/regexPatterns";
+import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
 import {
@@ -151,15 +151,18 @@ const AddContactModalContent: React.FC = () => {
     submitForm
   } = formik;
 
-  const extractedDomain = extractDomainFromEmail(values.email);
+  const debouncedEmail = useDebounce(
+    values.email.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
 
-  const debouncedDomain = useDebounce(extractedDomain, SEARCH_DEBOUNCE_DELAY);
+  const extractedDomain = extractDomainFromEmail(debouncedEmail);
 
   const isDomainSearchEnabled =
-    debouncedDomain.length > 0 && emailPattern().test(values.email);
+    extractedDomain.length > 0 && isValidEmail().test(debouncedEmail);
 
   const { data: domainSearchData } = useSearchCompaniesByDomain(
-    debouncedDomain,
+    extractedDomain,
     isDomainSearchEnabled
   );
 
@@ -167,16 +170,31 @@ const AddContactModalContent: React.FC = () => {
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
 
   const companyDropdownItems: SearchableDropdownItem[] = useMemo(() => {
-    const items =
-      companyLookupData?.items?.map((company) => ({
-        id: String(company.id),
-        content: company.name
-      })) ?? [];
+    const toDropdownItem = (company: {
+      id: number;
+      name: string;
+    }): SearchableDropdownItem => ({
+      id: String(company.id),
+      content: company.name
+    });
+
+    const lookupItems = companyLookupData?.items?.map(toDropdownItem) ?? [];
+    const domainItems = domainSearchData?.companies?.map(toDropdownItem) ?? [];
+
+    const lookupIds = new Set(lookupItems.map((item) => item.id));
 
     const domainCompanyIds =
       domainSearchData?.companies?.map((company) => company.id) ?? [];
 
-    const { prioritized, others } = prioritizeListIds(items, domainCompanyIds);
+    const allItems = [
+      ...lookupItems,
+      ...domainItems.filter((item) => !lookupIds.has(item.id))
+    ];
+
+    const { prioritized, others } = prioritizeListIds(
+      allItems,
+      domainCompanyIds
+    );
 
     return [...prioritized, ...others];
   }, [companyLookupData?.items, domainSearchData?.companies]);
@@ -281,7 +299,10 @@ const AddContactModalContent: React.FC = () => {
               </p>
             )
           }
-          openOnFocus={isDomainSearchEnabled}
+          openOnFocus={
+            isDomainSearchEnabled &&
+            (domainSearchData?.companies?.length ?? 0) > 0
+          }
         />
       ) : (
         <InputField
