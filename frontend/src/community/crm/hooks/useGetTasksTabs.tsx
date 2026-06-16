@@ -26,7 +26,7 @@ export const useGetTasksTabs = (): CrmTaskTab[] => {
     }
   ];
 
-  if (!isCrmSalesManager) {
+  if (!(isCrmSalesManager ?? false)) {
     return allTabs.filter(
       (tab) => !SALES_REP_RESTRICTED_TASK_TABS.includes(tab.id)
     );

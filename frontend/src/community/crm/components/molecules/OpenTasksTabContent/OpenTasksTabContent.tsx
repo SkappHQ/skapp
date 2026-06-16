@@ -1,5 +1,10 @@
-import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useState } from "react";
+import {
+  EmptyDataView,
+  InputField,
+  ProjectTableSkeletonLoader,
+  SearchIcon
+} from "@rootcodelabs/skapp-ui";
+import { ChangeEvent, FC, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -27,34 +32,36 @@ const OpenTasksTabContent: FC<OpenTasksTabContentProps> = ({
     setSearchTerm(event.target.value);
   };
 
-  const { data: taskData } = useGetOpenTasks();
+  const { data: taskData, isLoading, isError } = useGetOpenTasks();
 
-  const allTasks = taskData?.tasks || [];
-  const tasks = isMyTasks
-    ? allTasks.filter((task) => task.owner.employeeId === userId)
-    : allTasks;
-
-  const { overdue, dueToday, dueTomorrow, upcoming } =
-    groupTasksByDueDate(tasks);
+  const { overdue, dueToday, dueTomorrow, upcoming } = useMemo(() => {
+    const allTasks = taskData?.tasks ?? [];
+    const tasks = isMyTasks
+      ? allTasks.filter((task) => task.owner.employeeId === userId)
+      : allTasks;
+    return groupTasksByDueDate(tasks);
+  }, [taskData, isMyTasks, userId]);
 
   const emptyStateType =
     debouncedSearch.trim() === ""
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
-  if (tasks.length === 0) {
+  const isEmpty =
+    overdue.length === 0 &&
+    dueToday.length === 0 &&
+    dueTomorrow.length === 0 &&
+    upcoming.length === 0;
+
+  if (isLoading) {
+    return <ProjectTableSkeletonLoader rowCount={10} />;
+  }
+
+  if (isError) {
     return (
       <EmptyDataView
-        title={
-          emptyStateType === EmptyStateTypeEnum.NO_DATA
-            ? translateText(["table", "emptyDataState", "title"])
-            : translateText(["table", "emptySearchState", "title"])
-        }
-        description={
-          emptyStateType === EmptyStateTypeEnum.NO_DATA
-            ? translateText(["table", "emptyDataState", "description"])
-            : translateText(["table", "emptySearchState", "description"])
-        }
+        title={translateText(["table", "errorState", "title"])}
+        description={translateText(["table", "errorState", "description"])}
         icon={<SearchIcon />}
       />
     );
@@ -70,25 +77,43 @@ const OpenTasksTabContent: FC<OpenTasksTabContentProps> = ({
         value={searchTerm}
         onChange={handleSearchChange}
         customStyles={{ borderRadius: "rounded-[1.5rem]" }}
+        type="search"
+        state="default"
       />
-      <div className="flex flex-col w-full grow h-[65vh] px-2 gap-4 overflow-auto">
-        <TaskGroup
-          label={translateText(["table", "groupLabels", "overdue"])}
-          tasks={overdue}
+      {isEmpty ? (
+        <EmptyDataView
+          title={
+            emptyStateType === EmptyStateTypeEnum.NO_DATA
+              ? translateText(["table", "emptyDataState", "title"])
+              : translateText(["table", "emptySearchState", "title"])
+          }
+          description={
+            emptyStateType === EmptyStateTypeEnum.NO_DATA
+              ? translateText(["table", "emptyDataState", "description"])
+              : translateText(["table", "emptySearchState", "description"])
+          }
+          icon={<SearchIcon />}
         />
-        <TaskGroup
-          label={translateText(["table", "groupLabels", "dueToday"])}
-          tasks={dueToday}
-        />
-        <TaskGroup
-          label={translateText(["table", "groupLabels", "dueTomorrow"])}
-          tasks={dueTomorrow}
-        />
-        <TaskGroup
-          label={translateText(["table", "groupLabels", "upcoming"])}
-          tasks={upcoming}
-        />
-      </div>
+      ) : (
+        <div className="flex flex-col w-full grow h-[65vh] px-2 gap-4 overflow-auto">
+          <TaskGroup
+            label={translateText(["table", "groupLabels", "overdue"])}
+            tasks={overdue}
+          />
+          <TaskGroup
+            label={translateText(["table", "groupLabels", "dueToday"])}
+            tasks={dueToday}
+          />
+          <TaskGroup
+            label={translateText(["table", "groupLabels", "dueTomorrow"])}
+            tasks={dueTomorrow}
+          />
+          <TaskGroup
+            label={translateText(["table", "groupLabels", "upcoming"])}
+            tasks={upcoming}
+          />
+        </div>
+      )}
     </div>
   );
 };

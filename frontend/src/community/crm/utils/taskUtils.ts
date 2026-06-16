@@ -2,7 +2,14 @@ import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 
 import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
 
-export const groupTasksByDueDate = (tasks: CrmTaskDetailType[]) => {
+export interface GroupedTasks {
+  overdue: CrmTaskDetailType[];
+  dueToday: CrmTaskDetailType[];
+  dueTomorrow: CrmTaskDetailType[];
+  upcoming: CrmTaskDetailType[];
+}
+
+export const groupTasksByDueDate = (tasks: CrmTaskDetailType[]): GroupedTasks => {
   const overdue: CrmTaskDetailType[] = [];
   const dueToday: CrmTaskDetailType[] = [];
   const dueTomorrow: CrmTaskDetailType[] = [];
