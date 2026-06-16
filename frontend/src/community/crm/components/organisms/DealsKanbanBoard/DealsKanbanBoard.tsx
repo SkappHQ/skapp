@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -12,27 +12,22 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import {
+  useGetBoardInitData,
+  useGetDealsGrouped,
+  useLoadMoreDeals,
+  useMoveBetweenStages,
+  useReorderWithinStage,
+} from "~community/crm/api/BoardApi";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import type { DealStageLaneDeal } from "~community/crm/components/molecules/DealStageLane";
 import { CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
 import type {
   BoardDealItem,
-  BoardDealsGroupedRequest,
-  BoardMoveBetweenStagesPayload,
-  BoardReorderWithinStagePayload,
   BoardStageDeals,
   CrmDealStageType,
 } from "~community/crm/types/CommonTypes";
-
-// --- Mock stages (replace with useGetBoardInitData in feat/crm-kanban-api) ---
-
-const MOCK_STAGES: CrmDealStageType[] = [
-  { id: 1, name: "New", color: "blue", orderIndex: 0, stageType: CrmDealStageEnum.OPEN },
-  { id: 2, name: "Qualified", color: "orange", orderIndex: 1, stageType: CrmDealStageEnum.OPEN },
-  { id: 3, name: "Proposal", color: "purple", orderIndex: 2, stageType: CrmDealStageEnum.OPEN },
-  { id: 4, name: "Won", color: "green", orderIndex: 3, stageType: CrmDealStageEnum.WON },
-];
 
 // --- Constants ---
 
@@ -112,23 +107,26 @@ const buildInitialStageState = (
 const DealsKanbanBoard: React.FC = () => {
   const searchKeyword = '';
 
-  // TODO (feat/crm-kanban-api): Replace mock data with useGetBoardInitData() and useGetDealsGrouped()
-  const stages: CrmDealStageType[] = MOCK_STAGES;
+  // Init data
+  const { data: initData, isLoading: isInitLoading } = useGetBoardInitData();
+  const stages: CrmDealStageType[] = initData?.stages ?? [];
   const stageIds = stages.map((s) => s.id);
-  const isInitLoading = false;
-  const isDealsLoading = false;
+
+  // Grouped deals query
+  const { data: groupedData, isLoading: isDealsLoading } = useGetDealsGrouped(
+    stageIds,
+    searchKeyword,
+    stageIds.length > 0
+  );
 
   // Per-stage optimistic state
   const [stageMap, setStageMap] = useState<Record<number, StageState>>({});
 
   useEffect(() => {
-    const emptyData: BoardStageDeals[] = MOCK_STAGES.map((s) => ({
-      stageId: s.id,
-      deals: [],
-      totalCount: 0,
-    }));
-    setStageMap(buildInitialStageState(emptyData));
-  }, []);
+    if (groupedData) {
+      setStageMap(buildInitialStageState(groupedData));
+    }
+  }, [groupedData]);
 
   const stageMapRef = useRef(stageMap);
   stageMapRef.current = stageMap;
@@ -147,12 +145,30 @@ const DealsKanbanBoard: React.FC = () => {
 
   // Optimistic rollback snapshot
   const snapshotRef = useRef<Record<number, StageState> | null>(null);
+  const revertToSnapshot = useCallback(() => {
+    if (snapshotRef.current) setStageMap(snapshotRef.current);
+  }, []);
 
-  // TODO (feat/crm-kanban-api): Replace stubs with useReorderWithinStage / useMoveBetweenStages / useLoadMoreDeals
-  const reorderWithinStage = (_payload: BoardReorderWithinStagePayload) => {};
-  const moveBetweenStages = (_payload: BoardMoveBetweenStagesPayload) => {};
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const loadMore = (_payload: BoardDealsGroupedRequest) => {};
+  const { mutate: reorderWithinStage } = useReorderWithinStage(revertToSnapshot);
+  const { mutate: moveBetweenStages } = useMoveBetweenStages(revertToSnapshot);
+
+  // Load more
+  const { mutate: loadMore } = useLoadMoreDeals((data) => {
+    setStageMap((prev) => {
+      const existing = prev[data.stageId];
+      if (!existing) return prev;
+      return {
+        ...prev,
+        [data.stageId]: {
+          ...existing,
+          deals: [...existing.deals, ...data.deals],
+          totalCount: data.totalCount,
+          page: existing.page + 1,
+          isLoadingMore: false,
+        },
+      };
+    });
+  });
 
   const handleLoadMore = (stageIdStr: string) => {
     const stageId = Number(stageIdStr);
