@@ -1,6 +1,7 @@
 import { InputField, Popper, SearchIcon } from "@rootcodelabs/skapp-ui";
 import React, {
   ChangeEvent,
+  FC,
   KeyboardEvent,
   useCallback,
   useEffect,
@@ -58,7 +59,7 @@ export interface SearchableDropdownProps {
   openOnFocus?: boolean;
 }
 
-const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
+const SearchableDropdown: FC<SearchableDropdownProps> = ({
   id,
   items,
   onSelect,

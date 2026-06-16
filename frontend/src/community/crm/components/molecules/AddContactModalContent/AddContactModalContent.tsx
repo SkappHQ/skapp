@@ -300,8 +300,7 @@ const AddContactModalContent: React.FC = () => {
             )
           }
           openOnFocus={
-            isDomainSearchEnabled &&
-            (domainSearchData?.companies?.length ?? 0) > 0
+            isDomainSearchEnabled && !!domainSearchData?.companies?.length
           }
         />
       ) : (
