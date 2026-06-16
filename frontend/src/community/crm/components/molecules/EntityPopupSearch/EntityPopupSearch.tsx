@@ -2,10 +2,7 @@ import {
   DropdownValue,
   DropdownWithSearchablePopup
 } from "@rootcodelabs/skapp-ui";
-import type {
-  DropdownOption,
-  TriggerProps
-} from "@rootcodelabs/skapp-ui/dist/types/components/molecules/DropdownWithSearchablePopup/DropdownWithSearchablePopup";
+import type { DropdownOption, TriggerProps } from "@rootcodelabs/skapp-ui";
 import { ReactNode, useMemo } from "react";
 
 export interface EntityPopupSearchProps<T> {

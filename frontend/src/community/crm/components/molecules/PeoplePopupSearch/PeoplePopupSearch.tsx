@@ -6,6 +6,7 @@ import type {
 import { FC, RefObject } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import EntityPopupSearch from "~community/crm/components/molecules/EntityPopupSearch/EntityPopupSearch";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 
@@ -26,22 +27,21 @@ const TriggerContent: FC<TriggerContentProps> = ({
 }) => {
   const { ref, ...rest } = triggerProps;
   const resolvedSrc = useGetImageUrl(user?.authPic ?? "");
-  const finalSrc = user?.authPic ? resolvedSrc : "";
 
   return (
     <div
       ref={ref as unknown as RefObject<HTMLDivElement>}
       {...rest}
-      className={`flex items-center w-full min-h-8 px-1 cursor-pointer rounded-lg ${backgroundColor}`}
+      className={`flex items-center w-full min-h-8 cursor-pointer rounded-lg ${backgroundColor}`}
     >
       {user ? (
         <AvatarChip
-          label={[user.firstName, user.lastName].filter(Boolean).join(" ")}
+          label={concatStrings([user.firstName, user.lastName ?? ""])}
           avatarProps={{
             id: String(user.employeeId),
             firstName: user.firstName,
             lastName: user.lastName ?? "",
-            src: finalSrc ?? "",
+            src: resolvedSrc ?? "",
             size: "sm"
           }}
           backgroundColor={chipBackgroundColor}
@@ -62,7 +62,6 @@ interface OptionItemProps {
 
 const OptionItem: FC<OptionItemProps> = ({ user, option, onSelect }) => {
   const resolvedSrc = useGetImageUrl(user.authPic ?? "");
-  const finalSrc = user.authPic ? resolvedSrc : "";
 
   return (
     <button
@@ -70,9 +69,9 @@ const OptionItem: FC<OptionItemProps> = ({ user, option, onSelect }) => {
       className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer w-full text-left"
       onClick={() => onSelect(option)}
     >
-      {finalSrc ? (
+      {resolvedSrc ? (
         <img
-          src={finalSrc}
+          src={resolvedSrc ?? ""}
           alt=""
           className="size-6 rounded-full object-cover shrink-0"
         />
@@ -81,14 +80,14 @@ const OptionItem: FC<OptionItemProps> = ({ user, option, onSelect }) => {
           {user.firstName?.[0]?.toUpperCase()}
         </div>
       )}
-      <span>{[user.firstName, user.lastName].filter(Boolean).join(" ")}</span>
+      <span>{concatStrings([user.firstName, user.lastName ?? ""])}</span>
     </button>
   );
 };
 
 const getUserId = (u: CrmOwner) => u.employeeId;
 const getUserLabel = (u: CrmOwner) =>
-  [u.firstName, u.lastName].filter(Boolean).join(" ");
+  concatStrings([u.firstName, u.lastName ?? ""]);
 
 interface Props {
   users: CrmOwner[];

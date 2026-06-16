@@ -43,7 +43,7 @@ const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
       height="min-h-8"
       hideArrowIcon={true}
       padding="py-2 px-1"
-      className="bg-transparent! border-0! rounded-lg hover:bg-gray-50! transition-colors"
+      className="bg-transparent border-0 rounded-lg hover:bg-gray-50 transition-colors"
     />
   );
 };

@@ -46,7 +46,7 @@ const ContactPopupSearch: FC<Props> = ({
       <div
         ref={ref as RefObject<HTMLDivElement>}
         {...triggerProps}
-        className="flex items-center w-full min-h-8 px-1 cursor-pointer"
+        className="flex items-center w-full min-h-8 cursor-pointer"
       >
         {contact ? (
           <span className="body2">{contact.name}</span>
