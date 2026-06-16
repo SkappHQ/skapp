@@ -21,7 +21,7 @@ const DealStageModalController = () => {
     setIsDealStageModalOpen(false);
   };
 
-  const getModalTitle = (modalType: CrmModalTypes) => {
+  const getModalTitle = (modalType: CrmModalTypes): string => {
     switch (modalType) {
       case CrmModalTypes.ADD_DEAL_STAGE_MODAL:
         return translateText(["addDealStageModal", "title"]);
