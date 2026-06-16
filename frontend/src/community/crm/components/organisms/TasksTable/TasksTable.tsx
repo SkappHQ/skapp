@@ -15,7 +15,7 @@ const TasksTable: FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full grow min-h-0">
+    <div className="flex flex-col gap-4 w-full">
       <div className="flex flex-col pb-1">
         <Tabs
           tabs={tabs}
@@ -24,9 +24,7 @@ const TasksTable: FC = () => {
         />
         <hr className="border-secondary-accent" />
       </div>
-      {activeTab === TASK_TAB_IDS.MY_TASKS && (
-        <OpenTasksTabContent isMyTasks />
-      )}
+      {activeTab === TASK_TAB_IDS.MY_TASKS && <OpenTasksTabContent isMyTasks />}
       {activeTab === TASK_TAB_IDS.TEAM_TASKS && <OpenTasksTabContent />}
     </div>
   );
