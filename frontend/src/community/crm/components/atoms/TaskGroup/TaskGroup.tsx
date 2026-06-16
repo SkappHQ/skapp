@@ -2,7 +2,12 @@ import { FC } from "react";
 
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 
-import TaskRow from "../TaskRow/TaskRow";
+// import TaskRow from "../TaskRow/TaskRow";
+
+// TODO: Replace with the real TaskRow component once implemented
+const TaskRow: FC<{ task: CrmTaskDetailType }> = ({ task }) => (
+  <div>{task.id}</div>
+);
 
 interface TaskGroupProps {
   label: string;
@@ -14,13 +19,10 @@ const TaskGroup: FC<TaskGroupProps> = ({ label, tasks }) => {
 
   return (
     <div className="flex flex-col">
-      <div className="subtitle2 mb-2">{label}</div>
-      <div>
+      <div className="subtitle2 mb-2 sticky top-0 bg-white">{label}</div>
+      <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
         {tasks.map((task) => (
-          <div
-            key={task.id}
-            className="border border-secondary-accent -mt-px first:mt-0 first:rounded-t-lg last:rounded-b-lg overflow-hidden"
-          >
+          <div key={task.id}>
             <TaskRow task={task} />
           </div>
         ))}

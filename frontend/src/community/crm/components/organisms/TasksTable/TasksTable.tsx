@@ -1,25 +1,17 @@
-import { InputField, SearchIcon, Tabs } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useState } from "react";
+import { Tabs } from "@rootcodelabs/skapp-ui";
+import { FC, useState } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
+import { TASK_TAB_IDS } from "~community/crm/constants/taskConstants";
 import { useGetTasksTabs } from "~community/crm/hooks/useGetTasksTabs";
 
-import MyTasksTabContent from "../../molecules/MyTasksTabContent/MyTasksTabContent";
+import OpenTasksTabContent from "../../molecules/OpenTasksTabContent/OpenTasksTabContent";
 
 const TasksTable: FC = () => {
-  const translateText = useTranslator("crmModule", "tasks");
-
   const tabs = useGetTasksTabs();
   const [activeTab, setActiveTab] = useState(tabs[0]?.id);
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);
-  };
-
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
   };
 
   return (
@@ -32,23 +24,10 @@ const TasksTable: FC = () => {
         />
         <hr className="border-secondary-accent" />
       </div>
-      <div className="flex flex-col w-full grow min-h-0 overflow-y-auto gap-6">
-        <InputField
-          ariaLabelClearButton={translateText([
-            "table",
-            "clearButtonAriaLabel"
-          ])}
-          className="w-[25.75rem] h-[3rem]"
-          placeholder={translateText(["table", "search"])}
-          rightIcon={<SearchIcon />}
-          value={searchTerm}
-          onChange={handleSearchChange}
-          customStyles={{ borderRadius: "rounded-[1.5rem]" }}
-        />
-        {activeTab === "my-tasks" && (
-          <MyTasksTabContent searchTerm={searchTerm} />
-        )}
-      </div>
+      {activeTab === TASK_TAB_IDS.MY_TASKS && (
+        <OpenTasksTabContent isMyTasks />
+      )}
+      {activeTab === TASK_TAB_IDS.TEAM_TASKS && <OpenTasksTabContent />}
     </div>
   );
 };
