@@ -29,5 +29,5 @@ export const workLocationEndpoints = {
 };
 
 export const crmConfigurationEndpoints = {
-  GET_DEAL_STAGE: `${moduleAPIPath.CRM}/deal-stage`
+  GET_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`
 };
