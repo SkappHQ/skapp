@@ -63,14 +63,8 @@ const MultiTeamSelector = ({
       user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
       (moduleAdminType && user?.roles?.includes(moduleAdminType))
     ) {
-      setTeamIds([-1]);
       setTeamsData(allTeamsData);
     } else {
-      const managerTeamIds = managerAllTeamsData?.managerTeams?.length
-        ? managerAllTeamsData.managerTeams.map((team) => team.teamId)
-        : [-1];
-
-      setTeamIds(managerTeamIds);
       setTeamsData(managerAllTeamsData?.managerTeams);
     }
   };
@@ -90,6 +84,14 @@ const MultiTeamSelector = ({
       const updatedSelectedIds = isSelected
         ? selectedOptionIds.filter((teamId) => teamId !== id)
         : [...selectedOptionIds.filter((teamId) => teamId !== -1), id]; // Remove -1 if selecting other teams
+
+      // If all teams are deselected, reset to "All" label
+      if (updatedSelectedIds.length === 0) {
+        setSelectedOptionIds([-1]);
+        setSelectedOptionNames([translateTexts(["allLabel"])]);
+        setTeamIds([-1]);
+        return;
+      }
 
       const selectedTeams = updatedSelectedIds.map((teamId) =>
         teamsData?.find((team) => team.teamId === teamId)
@@ -194,7 +196,7 @@ const MultiTeamSelector = ({
         <Box sx={{ backgroundColor: "common.white" }}>
           <SortRow
             text={translateTexts(["allLabel"])}
-            selected={selectedOptionIds.length === 0}
+            selected={selectedOptionIds.includes(-1)}
             onClick={() => toggleSelectOption(0)}
           />
           {teamsData?.map((item) => (

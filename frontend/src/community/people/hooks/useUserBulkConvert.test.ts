@@ -75,11 +75,11 @@ describe("useUserBulkConvert", () => {
             linkedIn: undefined,
             instagram: undefined
           },
+          bloodGroup: null,
           extraInfo: {
             allergies: undefined,
             dietaryRestrictions: undefined,
-            tshirtSize: undefined,
-            bloodGroup: null
+            tShirtSize: undefined
           },
           passportNo: undefined
         },
@@ -94,7 +94,7 @@ describe("useUserBulkConvert", () => {
           isPrimary: true
         },
         employeeProgression: {
-          employeeType: "FULL_TIME",
+          employmentType: "FULL_TIME",
           jobFamilyId: "1",
           jobTitleId: "101",
           startDate: "2023-01-01",
@@ -156,11 +156,11 @@ describe("useUserBulkConvert", () => {
             linkedIn: undefined,
             instagram: undefined
           },
+          bloodGroup: null,
           extraInfo: {
             allergies: undefined,
             dietaryRestrictions: undefined,
-            tshirtSize: undefined,
-            bloodGroup: null
+            tShirtSize: undefined
           },
           passportNo: undefined
         },
@@ -175,7 +175,7 @@ describe("useUserBulkConvert", () => {
           isPrimary: true
         },
         employeeProgression: {
-          employeeType: null,
+          employmentType: null,
           jobFamilyId: "2",
           jobTitleId: "201",
           startDate: "2023-02-01",
@@ -242,11 +242,11 @@ describe("useUserBulkConvert", () => {
             linkedIn: undefined,
             instagram: undefined
           },
+          bloodGroup: null,
           extraInfo: {
             allergies: undefined,
             dietaryRestrictions: undefined,
-            tshirtSize: undefined,
-            bloodGroup: null
+            tShirtSize: undefined
           },
           passportNo: undefined
         },
@@ -261,7 +261,7 @@ describe("useUserBulkConvert", () => {
           isPrimary: true
         },
         employeeProgression: {
-          employeeType: null,
+          employmentType: null,
           jobFamilyId: null,
           jobTitleId: null,
           startDate: "2023-03-01",

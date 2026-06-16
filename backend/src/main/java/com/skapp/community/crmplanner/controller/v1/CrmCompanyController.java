@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyDomainSearchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
@@ -67,6 +68,15 @@ public class CrmCompanyController {
 	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {
 		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
 		ResponseEntityDto responseDto = companyService.getCompanyMetrics(requestDto.getSearchKeyword(), pageable);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Search companies by domain",
+			description = "Returns companies whose website field contains the given domain")
+	@GetMapping("/search-by-domain")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> searchCompaniesByDomain(CrmCompanyDomainSearchRequestDto requestDto) {
+		ResponseEntityDto responseDto = companyService.searchCompaniesByDomain(requestDto);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 

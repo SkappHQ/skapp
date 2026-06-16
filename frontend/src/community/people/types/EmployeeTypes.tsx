@@ -162,7 +162,7 @@ export interface BulkEmployeeDetails {
   workEmail: string | null;
   employeePersonalInfo: EmployeePersonalInfoResponseType;
   employeeProgression: {
-    employeeType: EmploymentTypes | null;
+    employmentType: EmploymentTypes | null;
     jobFamilyId: string | number | null;
     jobTitleId: string | number | null;
     startDate: string | null;
@@ -194,11 +194,11 @@ export interface EmployeePersonalInfoResponseType {
     instagram: string | null | undefined;
     x: string | null | undefined;
   };
+  bloodGroup?: string | null;
   extraInfo: {
-    bloodGroup?: string | null;
     allergies: string | null | undefined;
     dietaryRestrictions: string | null | undefined;
-    tshirtSize: string | null | undefined;
+    tShirtSize: string | null | undefined;
   };
 }
 
@@ -445,6 +445,7 @@ export interface EmployeeDataExists {
   isWorkEmailExists: boolean;
   isGoogleDomain: boolean;
   isGuestUser: boolean;
+  isTerminatedUser: boolean;
 }
 
 export interface QuickAddEmployeePayload {

@@ -603,7 +603,23 @@ export const useTerminateUser = (
   });
 };
 
-export const useCheckIfUserHasManagers = (): UseQueryResult<boolean> => {
+export const useReactivateTerminatedUser = (
+  onSuccess: () => void,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (email: string) => {
+      return authFetch.patch(peoplesEndpoints.REACTIVATE_EMPLOYEE, { email });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: peopleQueryKeys.EMPLOYEE_DATA_TABLE() });
+      onSuccess();
+    },
+  });
+};
+
+export const useCheckIfUserHasManagers = (): UseQueryResult<boolean> => {  
   return useQuery({
     queryKey: peopleQueryKeys.CHECK_IF_CURRENT_USER_HAS_MANAGERS,
     queryFn: async () => {

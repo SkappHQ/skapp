@@ -9,6 +9,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeIsAvailableDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
+import com.skapp.community.peopleplanner.payload.request.ReactivateTerminatedUserRequestDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
@@ -177,6 +178,15 @@ public class PeopleController {
 	@PatchMapping("/user/terminate/{userId}")
 	public ResponseEntity<ResponseEntityDto> terminateUser(@PathVariable Long userId) {
 		ResponseEntityDto response = peopleService.terminateUser(userId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Reactivate a terminated user", description = "Reactivate a terminated user account")
+	@PreAuthorize("hasAnyRole('PEOPLE_ADMIN')")
+	@PatchMapping("/user/reactivate")
+	public ResponseEntity<ResponseEntityDto> reactivateTerminatedUser(
+			@RequestBody ReactivateTerminatedUserRequestDto reactivateTerminatedUserRequestDto) {
+		ResponseEntityDto response = peopleService.reactivateTerminatedUser(reactivateTerminatedUserRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
