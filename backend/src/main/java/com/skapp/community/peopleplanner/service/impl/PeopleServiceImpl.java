@@ -60,7 +60,6 @@ import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPat
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
-import com.skapp.community.peopleplanner.payload.request.ReactivateTerminatedUserRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
@@ -1281,20 +1280,17 @@ public class PeopleServiceImpl implements PeopleService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto reactivateTerminatedUser(
-			ReactivateTerminatedUserRequestDto reactivateTerminatedUserRequestDto) {
+	public ResponseEntityDto reactivateTerminatedUser(Long userId) {
 		log.info("reactivateTerminatedUser: execution started");
 
-		Validation.validateEmail(reactivateTerminatedUserRequestDto.getEmail());
+		Employee employee = employeeDao.findById(userId)
+			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
 
-		User user = userDao.findByEmail(reactivateTerminatedUserRequestDto.getEmail())
-			.orElseThrow(() -> new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
-
-		if (user.getEmployee().getAccountStatus() != AccountStatus.TERMINATED) {
+		if (employee.getAccountStatus() != AccountStatus.TERMINATED) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED);
 		}
 
-		updateUserStatus(user.getUserId(), AccountStatus.ACTIVE, false);
+		updateUserStatus(userId, AccountStatus.ACTIVE, false);
 
 		log.info("reactivateTerminatedUser: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ACTIVATED),
