@@ -39,7 +39,7 @@ public class DefaultSkillLoader {
 						.collect(Collectors.toList());
 				}
 			}
-			log.info("Loaded {} default skills from skills.yml", defaultSkills.size());
+			log.info("Loaded default skills from skills.yml");
 		}
 		catch (Exception e) {
 			log.error("Failed to load default skills from skills.yml", e);

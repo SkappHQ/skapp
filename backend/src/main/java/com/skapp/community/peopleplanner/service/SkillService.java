@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service;
 
+import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeSkill;
 import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
@@ -12,5 +13,7 @@ public interface SkillService {
 	List<EmployeeSkill> saveEmployeeSkills(Employee employee, List<EmployeeSkillDto> skills);
 
 	List<SkillResponseDto> getEmployeeSkillResponses(Long employeeId);
+
+	ResponseEntityDto getAllSkills();
 
 }

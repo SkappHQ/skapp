@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.component.DefaultSkillLoader;
 import com.skapp.community.peopleplanner.model.CustomSkill;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -95,6 +96,17 @@ public class SkillServiceImpl implements SkillService {
 		CustomSkill customSkill = new CustomSkill();
 		customSkill.setName(name);
 		return customSkillDao.save(customSkill);
+	}
+
+	@Override
+	public ResponseEntityDto getAllSkills() {
+		List<SkillResponseDto> customSkills = customSkillDao.findAll()
+			.stream()
+			.map(s -> new SkillResponseDto(s.getId(), s.getName(), SkillType.CUSTOM))
+			.sorted(Comparator.comparing(SkillResponseDto::getName, String.CASE_INSENSITIVE_ORDER))
+			.toList();
+
+		return new ResponseEntityDto(false, (Object) customSkills);
 	}
 
 }
