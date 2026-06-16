@@ -243,6 +243,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
                   handleLeaveTypeFilter(leaveType);
                 }
               }}
+              className="max-h-full"
             />
           </FilterButton>
         </Box>
