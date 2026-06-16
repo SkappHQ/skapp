@@ -28,6 +28,7 @@ describe("useUserBulkConvert", () => {
     expect(result).toEqual([
       {
         teams: null,
+        title: null,
         firstName: "John",
         middleName: undefined,
         lastName: "Doe",
@@ -37,12 +38,12 @@ describe("useUserBulkConvert", () => {
         personalEmail: undefined,
         workEmail: undefined,
         gender: undefined,
-        phone: "undefined undefined",
+        phone: null,
         identificationNo: undefined,
         permission: SystemPermissionTypes.EMPLOYEES,
         timeZone: "undefined",
+        workLocation: null,
         primaryManager: undefined,
-        secondaryManager: null,
         joinedDate: "2023-01-01",
         accountStatus: AccountStatus.PENDING,
         employmentAllocation: null,
@@ -110,6 +111,7 @@ describe("useUserBulkConvert", () => {
     expect(result).toEqual([
       {
         teams: null,
+        title: null,
         firstName: "Jane",
         middleName: undefined,
         lastName: "Smith",
@@ -123,8 +125,8 @@ describe("useUserBulkConvert", () => {
         identificationNo: undefined,
         permission: SystemPermissionTypes.EMPLOYEES,
         timeZone: "undefined",
+        workLocation: null,
         primaryManager: undefined,
-        secondaryManager: null,
         joinedDate: "2023-02-01",
         accountStatus: AccountStatus.PENDING,
         employmentAllocation: null,
@@ -197,6 +199,7 @@ describe("useUserBulkConvert", () => {
     expect(result).toEqual([
       {
         teams: null,
+        title: null,
         firstName: "Invalid",
         middleName: undefined,
         lastName: "User",
@@ -210,8 +213,8 @@ describe("useUserBulkConvert", () => {
         identificationNo: undefined,
         permission: SystemPermissionTypes.EMPLOYEES,
         timeZone: "undefined",
+        workLocation: null,
         primaryManager: undefined,
-        secondaryManager: null,
         joinedDate: "2023-03-01",
         accountStatus: AccountStatus.PENDING,
         employmentAllocation: null,

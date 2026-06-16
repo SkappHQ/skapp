@@ -1713,25 +1713,9 @@ public class PeopleServiceImpl implements PeopleService {
 
 	public void setBulkEmployeeProgression(EmployeeBulkDto employeeBulkDto, Employee employee) {
 		if (employeeBulkDto.getEmployeeProgression() != null) {
-			EmployeeProgression employeeProgression = peopleMapper
-				.employeeProgressionDtoToEmployeeProgression(employeeBulkDto.getEmployeeProgression());
 			if (employeeBulkDto.getEmployeeProgression().getEmploymentType() != null) {
 				employee.setEmploymentType(employeeBulkDto.getEmployeeProgression().getEmploymentType());
 			}
-
-			if (employeeBulkDto.getEmployeeProgression().getJobFamilyId() != null) {
-				employeeProgression.setJobFamilyId(employeeBulkDto.getEmployeeProgression().getJobFamilyId());
-			}
-
-			if (employeeBulkDto.getEmployeeProgression().getJobTitleId() != null) {
-				employeeProgression.setJobTitleId(employeeBulkDto.getEmployeeProgression().getJobTitleId());
-			}
-
-			employeeProgression.setEmployee(employee);
-
-			if (employeeBulkDto.getEmployeeProgression().getJobTitleId() != null
-					&& employeeBulkDto.getEmployeeProgression().getJobFamilyId() != null)
-				employee.setEmployeeProgressions(List.of(employeeProgression));
 		}
 	}
 
@@ -2147,17 +2131,20 @@ public class PeopleServiceImpl implements PeopleService {
 			List<EmployeeProgression> employeeProgressions = new ArrayList<>();
 			EmployeeProgression employeeProgression = new EmployeeProgression();
 
+			JobFamily resolvedJobFamily = null;
 			if (employeeBulkDto.getJobFamily() != null && !employeeBulkDto.getJobFamily().isEmpty()) {
-				JobFamily jobFamily = jobFamilyDao.getJobFamilyByName(employeeBulkDto.getJobFamily());
+				resolvedJobFamily = jobFamilyDao.getJobFamilyByName(employeeBulkDto.getJobFamily());
 
-				if (jobFamily != null) {
-					employee.setJobFamily(jobFamily);
-					employeeProgression.setJobFamilyId(jobFamily.getJobFamilyId());
+				if (resolvedJobFamily != null) {
+					employee.setJobFamily(resolvedJobFamily);
+					employeeProgression.setJobFamilyId(resolvedJobFamily.getJobFamilyId());
 				}
 			}
 
-			if (employeeBulkDto.getJobTitle() != null && !employeeBulkDto.getJobTitle().isEmpty()) {
-				JobTitle jobTitle = jobTitleDao.getJobTitleByName(employeeBulkDto.getJobTitle());
+			if (employeeBulkDto.getJobTitle() != null && !employeeBulkDto.getJobTitle().isEmpty()
+					&& resolvedJobFamily != null) {
+				JobTitle jobTitle = jobFamilyDao.getJobTitleByNameAndJobFamily(employeeBulkDto.getJobTitle(),
+						resolvedJobFamily.getJobFamilyId());
 
 				if (jobTitle != null) {
 					employee.setJobTitle(jobTitle);
@@ -2355,7 +2342,7 @@ public class PeopleServiceImpl implements PeopleService {
 			if (!hasJobTitle)
 				missingFields.add("Job Title");
 			if (!hasStartDate)
-				missingFields.add("Start Date");
+				missingFields.add("Current Employment Start Date");
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_CAREER_PROGRESSION_FIELDS_EMPTY,
 					new Object[] { String.join(", ", missingFields) }));
 			return;
@@ -2365,24 +2352,27 @@ public class PeopleServiceImpl implements PeopleService {
 			return;
 		}
 
-		if (hasJobFamily) {
-			JobFamily jobFamily = jobFamilyDao.getJobFamilyByName(employeeBulkDto.getJobFamily());
-			if (jobFamily == null) {
-				errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_FAMILY_NOT_FOUND));
-			}
+		if (Arrays.stream(EmploymentType.values())
+			.noneMatch(e -> e.name().equals(employeeBulkDto.getEmployeeType()))) {
+			errors.add(
+					messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_TYPE_ENUM));
 		}
 
-		if (hasJobTitle) {
-			JobTitle jobTitle = jobTitleDao.getJobTitleByName(employeeBulkDto.getJobTitle());
+		JobFamily jobFamily = jobFamilyDao.getJobFamilyByName(employeeBulkDto.getJobFamily());
+		if (jobFamily == null) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_FAMILY_NOT_FOUND));
+		}
+		else {
+			JobTitle jobTitle = jobFamilyDao.getJobTitleByNameAndJobFamily(employeeBulkDto.getJobTitle(),
+					jobFamily.getJobFamilyId());
 			if (jobTitle == null) {
 				errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_TITLE_NOT_FOUND));
 			}
 		}
 
 		EmployeeProgressionsDto employeeProgressionsDto = employeeBulkDto.getEmployeeProgression();
-		if (employeeProgressionsDto != null && employeeProgressionsDto.getStartDate() != null
-				&& employeeProgressionsDto.getEndDate() != null && !DateTimeUtils
-					.isValidDateRange(employeeProgressionsDto.getStartDate(), employeeProgressionsDto.getEndDate())) {
+		if (employeeProgressionsDto.getEndDate() != null && !DateTimeUtils
+				.isValidDateRange(employeeProgressionsDto.getStartDate(), employeeProgressionsDto.getEndDate())) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_INVALID_START_END_DATE));
 		}
 	}

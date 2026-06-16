@@ -66,8 +66,21 @@ const useUserBulkValidation = () => {
       (!user?.probationEndDate || dateValidation(user?.probationEndDate)) &&
       (!user?.careerProgressionStartDate ||
         dateValidation(user?.careerProgressionStartDate)) &&
+      validateCareerProgressionFields(user) &&
       user?.passportNo
     );
+  };
+
+  const validateCareerProgressionFields = (user: BulkUploadUser) => {
+    const hasEmployeeType = !!user?.employeeType;
+    const hasJobFamily = !!user?.jobFamily;
+    const hasJobTitle = !!user?.jobTitle;
+    const hasStartDate = !!user?.careerProgressionStartDate;
+    const anyProvided =
+      hasEmployeeType || hasJobFamily || hasJobTitle || hasStartDate;
+    const allProvided =
+      hasEmployeeType && hasJobFamily && hasJobTitle && hasStartDate;
+    return !anyProvided || allProvided;
   };
 
   const isArrayOfUsersValid = (userArray: BulkUploadUser[]) => {
