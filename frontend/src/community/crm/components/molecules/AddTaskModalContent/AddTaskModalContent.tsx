@@ -285,7 +285,7 @@ const AddTaskModalContent: React.FC = () => {
         required
       />
 
-      <div className="flex flex-row gap-[0.625rem]">
+      <div className="flex flex-row items-start gap-[0.625rem]">
         <div className="flex-1">
           <Dropdown
             label={translateText(["labels", "type"])}
@@ -318,7 +318,7 @@ const AddTaskModalContent: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-row gap-[0.625rem]">
+      <div className="flex flex-row items-start gap-[0.625rem]">
         <div className="flex-1">
           <DatePicker
             mode="single"
@@ -371,6 +371,12 @@ const AddTaskModalContent: React.FC = () => {
               value={ownerSearchText}
               onChange={(e) => setOwnerSearchText(e.target.value)}
               state={errors.owner ? "error" : "default"}
+              errorMessage={errors.owner}
+              emptyMessage={
+                <p className="px-4 py-2 body2">
+                  {translateText(["emptyStates", "noOwners"])}
+                </p>
+              }
             />
           )}
         </div>
@@ -384,6 +390,11 @@ const AddTaskModalContent: React.FC = () => {
         onChange={handleContactInputChange}
         items={contactDropdownItems}
         onSelect={handleContactSelect}
+        emptyMessage={
+          <p className="px-4 py-2 body2">
+            {translateText(["emptyStates", "noContacts"])}
+          </p>
+        }
       />
 
       <SearchableDropdown
@@ -394,6 +405,11 @@ const AddTaskModalContent: React.FC = () => {
         onChange={handleDealInputChange}
         items={dealDropdownItems}
         onSelect={handleDealSelect}
+        emptyMessage={
+          <p className="px-4 py-2 body2">
+            {translateText(["emptyStates", "noDeals"])}
+          </p>
+        }
       />
 
       <TextArea
