@@ -248,7 +248,9 @@ const AddTaskModalContent: React.FC = () => {
   );
 
   const handleDealSelect = (item: SearchableDropdownItem) => {
-    const deal = dealLookupData?.items?.find((dealLookupItem) => String(dealLookupItem.id) === item.id);
+    const deal = dealLookupData?.items?.find(
+      (dealLookupItem) => String(dealLookupItem.id) === item.id
+    );
     setFieldValue("dealId", Number(item.id));
     setSelectedDealName(deal?.name ?? String(item.content));
     setDealSearchText("");
