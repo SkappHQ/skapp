@@ -4,7 +4,6 @@ import { useState } from "react";
 import { BulkSummaryFlows } from "~community/common/constants/stringConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
-import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
 import AddNewResourceModal from "~community/people/components/molecules/AddNewResourceModal/AddNewResourceModal";
 import AddResourceUnsavedChangesModal from "~community/people/components/molecules/AddResourceUnsavedChangesModal/AddResourceUnsavedChangesModal";
 import GuestToInternalUserConfirmationModal from "~community/people/components/molecules/GuestToInternalUserConfirmationModal/GuestToInternalUserConfirmationModal";
@@ -39,7 +38,6 @@ const DirectoryPopupController = () => {
     stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
   }));
 
-  const { data: jobFamilies } = useGetAllJobFamilies();
   const [bulkUploadData, setBulkUploadData] = useState<BulkUploadResponse>();
 
   const getModalTitle = (): string => {
@@ -109,7 +107,6 @@ const DirectoryPopupController = () => {
       )}
       {directoryModalType === DirectoryModalTypes.UPLOAD_CSV && (
         <UserBulkCsvUpload
-          jobRoleList={jobFamilies}
           setBulkUploadData={setBulkUploadData}
           setPopupType={setDirectoryModalType}
         />

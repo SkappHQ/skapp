@@ -7,7 +7,6 @@ import {
 } from "~community/people/types/EmployeeTypes";
 import { BulkUploadUser } from "~community/people/types/UserBulkUploadTypes";
 
-import { AllJobFamilyType } from "../types/JobFamilyTypes";
 import {
   AllocationSelector,
   BloodGroupSelector,
@@ -18,42 +17,24 @@ import {
 } from "../utils/userBulkUploadUtils";
 
 const useUserBulkConvert = () => {
-  const convertUsers = (
-    userArray: BulkUploadUser[],
-    jobRoleList: AllJobFamilyType[]
-  ) => {
+  const convertUsers = (userArray: BulkUploadUser[]) => {
     const newUserArray: BulkEmployeeDetails[] = userArray?.reduce(
       (acc: BulkEmployeeDetails[], user) => {
-        const teamIds = user?.teams
+        const teamNames = user?.teams
           ? (user?.teams as string)
               ?.split(",")
               ?.map((team: string) => team?.trim())
           : null;
 
-        const jobFamilyObject = jobRoleList?.find((jobFamilyItem) => {
-          return (
-            jobFamilyItem?.name?.toLowerCase() ===
-            (user?.jobFamilyId as string)?.toLowerCase()
-          );
-        });
-
-        const jobTitleObject = jobFamilyObject
-          ? jobFamilyObject?.jobTitles?.find(
-              (jobLevelItem: { name: string }) =>
-                jobLevelItem?.name?.toLocaleLowerCase() ===
-                (user?.jobTitleId as string)?.toLowerCase()
-            )
-          : undefined;
-
         const newUser: BulkEmployeeDetails = {
-          teams: teamIds,
+          teams: teamNames,
           title: user?.title
             ? (TitleSelector[user?.title] ?? user?.title)
             : null,
           firstName: user?.firstName,
           middleName: user?.middleName,
           lastName: user?.lastName,
-          address: user?.address,
+          addressLine1: user?.addressLine1,
           addressLine2: user?.addressLine2,
           country: user?.country,
           personalEmail: user?.personalEmail,
@@ -105,8 +86,8 @@ const useUserBulkConvert = () => {
             passportNo: user?.passportNo
           },
           employeePeriod: {
-            startDate: user?.startDate,
-            endDate: user?.endDate
+            startDate: user?.probationStartDate,
+            endDate: user?.probationEndDate
           },
           employeeEmergency: {
             name: user?.name,
@@ -119,13 +100,16 @@ const useUserBulkConvert = () => {
                 : null,
             isPrimary: true
           },
+          employeeType: user?.employeeType
+            ? user?.employeeType?.toUpperCase()
+            : null,
+          jobFamily: user?.jobFamily,
+          jobTitle: user?.jobTitle,
           employeeProgression: {
             employmentType: user?.employeeType
               ? (user?.employeeType?.toUpperCase() as EmploymentTypes)
               : null,
-            jobFamilyId: jobFamilyObject ? jobFamilyObject?.jobFamilyId : null,
-            jobTitleId: jobTitleObject ? jobTitleObject?.jobTitleId : null,
-            startDate: user?.joinedDate,
+            startDate: user?.careerProgressionStartDate ?? null,
             endDate: null,
             isCurrent: true
           }

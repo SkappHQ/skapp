@@ -35,9 +35,13 @@ describe("useUserBulkValidation", () => {
     joinedDate: "2022-01-01",
     primaryManager: "manager@example.com",
     secondaryManager: "secondary@example.com",
-    startDate: "2022-01-01",
-    endDate: "2023-01-01",
-    passportNo: "A1234567"
+    probationStartDate: "2022-01-01",
+    probationEndDate: "2023-01-01",
+    passportNo: "A1234567",
+    careerProgressionStartDate: "2022-01-01",
+    employeeType: "PERMANENT",
+    jobFamily: "Engineering",
+    jobTitle: "Software Engineer"
   };
 
   const invalidUser: BulkUploadUser = {

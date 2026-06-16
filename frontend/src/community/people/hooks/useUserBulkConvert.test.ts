@@ -7,35 +7,23 @@ import useUserBulkConvert from "./useUserBulkConvert";
 describe("useUserBulkConvert", () => {
   const { convertUsers } = useUserBulkConvert();
 
-  const mockJobRoleList = [
-    {
-      name: "Engineering",
-      jobFamilyId: "1",
-      jobTitles: [{ name: "Software Engineer", jobTitleId: "101" }]
-    },
-    {
-      name: "HR",
-      jobFamilyId: "2",
-      jobTitles: [{ name: "HR Manager", jobTitleId: "201" }]
-    }
-  ];
-
   it("should convert users correctly with valid data", () => {
     const mockUsers = [
       {
         firstName: "John",
         lastName: "Doe",
-        jobFamilyId: "Engineering",
-        jobTitleId: "Software Engineer",
+        jobFamily: "Engineering",
+        jobTitle: "Software Engineer",
         contactNoDialCode: "+1",
         contactNo: "1234567890",
         emergencyRelationship: "Spouse",
         employeeType: "FULL_TIME",
-        joinedDate: "2023-01-01"
+        joinedDate: "2023-01-01",
+        careerProgressionStartDate: "2023-01-15"
       }
     ];
 
-    const result = convertUsers(mockUsers, mockJobRoleList);
+    const result = convertUsers(mockUsers);
 
     expect(result).toEqual([
       {
@@ -43,7 +31,7 @@ describe("useUserBulkConvert", () => {
         firstName: "John",
         middleName: undefined,
         lastName: "Doe",
-        address: undefined,
+        addressLine1: undefined,
         addressLine2: undefined,
         country: undefined,
         personalEmail: undefined,
@@ -93,11 +81,12 @@ describe("useUserBulkConvert", () => {
           contactNo: "1 1234567890",
           isPrimary: true
         },
+        employeeType: "FULL_TIME",
+        jobFamily: "Engineering",
+        jobTitle: "Software Engineer",
         employeeProgression: {
           employmentType: "FULL_TIME",
-          jobFamilyId: "1",
-          jobTitleId: "101",
-          startDate: "2023-01-01",
+          startDate: "2023-01-15",
           endDate: null,
           isCurrent: true
         }
@@ -110,13 +99,13 @@ describe("useUserBulkConvert", () => {
       {
         firstName: "Jane",
         lastName: "Smith",
-        jobFamilyId: "HR",
-        jobTitleId: "HR Manager",
+        jobFamily: "HR",
+        jobTitle: "HR Manager",
         joinedDate: "2023-02-01"
       }
     ];
 
-    const result = convertUsers(mockUsers, mockJobRoleList);
+    const result = convertUsers(mockUsers);
 
     expect(result).toEqual([
       {
@@ -124,7 +113,7 @@ describe("useUserBulkConvert", () => {
         firstName: "Jane",
         middleName: undefined,
         lastName: "Smith",
-        address: undefined,
+        addressLine1: undefined,
         addressLine2: undefined,
         country: undefined,
         personalEmail: undefined,
@@ -174,11 +163,12 @@ describe("useUserBulkConvert", () => {
           contactNo: null,
           isPrimary: true
         },
+        employeeType: null,
+        jobFamily: "HR",
+        jobTitle: "HR Manager",
         employeeProgression: {
           employmentType: null,
-          jobFamilyId: "2",
-          jobTitleId: "201",
-          startDate: "2023-02-01",
+          startDate: null,
           endDate: null,
           isCurrent: true
         }
@@ -187,7 +177,7 @@ describe("useUserBulkConvert", () => {
   });
 
   it("should return an empty array when no users are provided", () => {
-    const result = convertUsers([], mockJobRoleList);
+    const result = convertUsers([]);
     expect(result).toEqual([]);
   });
 
@@ -196,13 +186,13 @@ describe("useUserBulkConvert", () => {
       {
         firstName: "Invalid",
         lastName: "User",
-        jobFamilyId: "NonExistent",
-        jobTitleId: "NonExistent",
+        jobFamily: "NonExistent",
+        jobTitle: "NonExistent",
         joinedDate: "2023-03-01"
       }
     ];
 
-    const result = convertUsers(mockUsers, mockJobRoleList);
+    const result = convertUsers(mockUsers);
 
     expect(result).toEqual([
       {
@@ -210,7 +200,7 @@ describe("useUserBulkConvert", () => {
         firstName: "Invalid",
         middleName: undefined,
         lastName: "User",
-        address: undefined,
+        addressLine1: undefined,
         addressLine2: undefined,
         country: undefined,
         personalEmail: undefined,
@@ -260,11 +250,12 @@ describe("useUserBulkConvert", () => {
           contactNo: null,
           isPrimary: true
         },
+        employeeType: null,
+        jobFamily: "NonExistent",
+        jobTitle: "NonExistent",
         employeeProgression: {
           employmentType: null,
-          jobFamilyId: null,
-          jobTitleId: null,
-          startDate: "2023-03-01",
+          startDate: null,
           endDate: null,
           isCurrent: true
         }
