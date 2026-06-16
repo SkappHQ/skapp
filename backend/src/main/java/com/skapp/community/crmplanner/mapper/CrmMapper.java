@@ -103,6 +103,7 @@ public interface CrmMapper {
 
 	CrmContactDetailResponseDto crmContactToCrmContactDetailResponseDto(CrmContact contact);
 
+	@Mapping(target = "contactName", source = "contact.name")
 	CrmDealDetailResponseDto crmDealToCrmDealDetailResponseDto(CrmDeal deal);
 
 	@Mapping(target = "type", source = "type.name")
