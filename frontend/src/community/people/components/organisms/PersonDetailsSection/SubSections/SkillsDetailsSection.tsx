@@ -14,10 +14,11 @@ import ChipAutocomplete from "../../../molecules/ChipAutocomplete/ChipAutocomple
 interface Props {
   isInputsDisabled?: boolean;
   isReadOnly?: boolean;
+  customSkills?: SkillType[];
 }
 
 const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
-  const { isInputsDisabled, isReadOnly = false } = props;
+  const { isInputsDisabled, isReadOnly = false, customSkills = [] } = props;
   const translateText = useTranslator(
     "peopleModule",
     "addResource",
@@ -27,6 +28,14 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
   const { employee, setPersonalDetails } = usePeopleStore((state) => state);
 
   const skills: SkillType[] = employee?.personal?.skills ?? [];
+
+  const allOptions = [
+    ...SKILL_OPTIONS.map((s) => s.label),
+    ...customSkills
+      .filter((s) => !SKILL_OPTIONS.some((opt) => opt.label === s.name))
+      .map((s) => s.name ?? "")
+      .filter(Boolean)
+  ];
 
   useImperativeHandle(ref, () => ({
     validateForm: async () => {
@@ -66,6 +75,9 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
         return { skillId: defaultOption.id, skillType: SkillTypes.DEFAULT };
       }
 
+      const existingCustomSkill = customSkills.find((s) => s.name === name);
+      if (existingCustomSkill) return existingCustomSkill;
+
       return { skillType: SkillTypes.CUSTOM, name };
     });
 
@@ -94,7 +106,7 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
         placeholder={translateText(["searchSkills"])}
         value={getSkillDisplayNames(skills)}
         onChange={handleSkillsChange}
-        options={SKILL_OPTIONS.map((s) => s.label)}
+        options={allOptions}
         isDisabled={isInputsDisabled}
         readOnly={isReadOnly}
         endIcon={<SearchIcon className="size-6 text-secondary-text shrink-0" />}

@@ -209,7 +209,6 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
         ariaRole="presentation"
         isFlip
         disableAutoFocus
-        positionStrategy="fixed"
         containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
       >
         <ul

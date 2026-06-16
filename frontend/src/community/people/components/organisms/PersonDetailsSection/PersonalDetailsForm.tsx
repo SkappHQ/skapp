@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 
 import { theme } from "~community/common/theme/theme";
 import { scrollToFirstError } from "~community/common/utils/commonUtil";
+import { useGetSkills } from "~community/people/api/PeopleApi";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useStepper from "~community/people/hooks/useStepper";
 import { usePeopleStore } from "~community/people/store/store";
@@ -57,6 +58,8 @@ const PersonalDetailsForm = ({
   const { handleMutate } = useHandlePeopleEdit();
 
   const { handleNext } = useStepper();
+
+  const { data: customSkills = [] } = useGetSkills();
 
   const isTerminatedEmployee =
     employee?.common?.accountStatus === AccountStatusTypes.TERMINATED;
@@ -175,6 +178,7 @@ const PersonalDetailsForm = ({
         ref={skillsDetailsRef}
         isInputsDisabled={isTerminatedEmployee}
         isReadOnly={isReadOnly}
+        customSkills={customSkills}
       />
 
       {!isTerminatedEmployee &&

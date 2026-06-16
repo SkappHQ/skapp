@@ -35,7 +35,8 @@ export const peoplesEndpoints = {
   GET_SUPERVISOR_ROLES: (userId: number) =>
     `${moduleAPIPath.PEOPLE}/user/${userId}/supervised-employees-teams`,
   REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE: (userId: number) =>
-    `${moduleAPIPath.PEOPLE}/user/${userId}/reassign-supervisors-and-terminate-or-delete`
+    `${moduleAPIPath.PEOPLE}/user/${userId}/reassign-supervisors-and-terminate-or-delete`,
+  GET_SKILLS: `${moduleAPIPath.PEOPLE}/skills`
 };
 
 export const authEndpoints = {

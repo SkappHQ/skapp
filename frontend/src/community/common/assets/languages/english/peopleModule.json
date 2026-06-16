@@ -729,7 +729,9 @@
       "skills": "Skills",
       "searchSkills": "Search or add skills",
       "helperText": "Add a custom skill by typing the name and pressing Enter",
-      "head": "Directory | Skapp"
+      "head": "Directory | Skapp",
+      "getSkillsErrorTitle": "Failed to Load Skills",
+      "getSkillsErrorDescription": "An error occurred while fetching skills. Please try again."
     },
     "emergencyDetails": {
       "title": "Emergency Details",

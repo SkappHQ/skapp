@@ -54,10 +54,12 @@ import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
+import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import {
   AllEmployeeDataResponse,
   L1EmployeeType,
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload,
+  SkillType,
   SupervisorRolesData
 } from "../types/PeopleTypes";
 
@@ -74,6 +76,36 @@ export const useGetBannerData = (): UseQueryResult<number> => {
   return useQuery({
     queryKey: peopleQueryKeys.PENDING_EMPLOYEE_COUNT,
     queryFn: getBannerData
+  });
+};
+
+export const useGetSkills = (): UseQueryResult<SkillType[]> => {
+  const { setToastMessage } = useToast();
+  const translateText = useTranslator(
+    "peopleModule",
+    "addResource",
+    "skillsDetails"
+  );
+
+  return useQuery({
+    queryKey: peopleQueryKeys.GET_SKILLS,
+    queryFn: async () => authFetch.get(peoplesEndpoints.GET_SKILLS),
+    select: (response) =>
+      (response?.data?.results ?? []).map(
+        (skill: { id: number; name: string; skillType: string }) => ({
+          skillId: skill.id,
+          name: skill.name,
+          skillType: skill.skillType as SkillTypes
+        })
+      ),
+    onError: () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["getSkillsErrorTitle"]),
+        description: translateText(["getSkillsErrorDescription"])
+      });
+    }
   });
 };
 
