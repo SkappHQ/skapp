@@ -1,11 +1,11 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
-import CompanySidePanelController from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanelController";
+import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
@@ -13,12 +13,24 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
 
-  const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(
-    (store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      setCompanyModalType: store.setCompanyModalType
-    })
-  );
+  const {
+    setIsCompanyModalOpen,
+    setCompanyModalType,
+    isCrmSidePanelOpen,
+    setIsCrmSidePanelOpen,
+    setSelectedCompany
+  } = useCrmStore((store) => ({
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+    setCompanyModalType: store.setCompanyModalType,
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    setSelectedCompany: store.setSelectedCompany
+  }));
+
+  const handleCloseSidePanel = () => {
+    setIsCrmSidePanelOpen(false);
+    setSelectedCompany(null);
+  };
 
   const onPrimaryButtonClick = () => {
     setIsCompanyModalOpen(true);
@@ -35,7 +47,10 @@ const Companies: NextPage = () => {
       containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
-        <CompanySidePanelController />
+        <CompanySidePanel
+          isOpen={isCrmSidePanelOpen}
+          onClose={handleCloseSidePanel}
+        />
         <CompanyModalController />
         <CompanyTable />
       </>
