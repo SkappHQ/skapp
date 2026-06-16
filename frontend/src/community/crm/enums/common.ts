@@ -48,3 +48,18 @@ export enum CrmDealSortEnum {
   STAGE_TYPE = "STAGE_TYPE",
   STAGE_ORDER = "STAGE_ORDER"
 }
+
+export enum CrmDealStageColorsEnum {
+  SKY = "SKY",
+  PINK = "PINK",
+  APRICOT = "APRICOT",
+  SUNSHINE = "SUNSHINE",
+  TEAL = "TEAL",
+  LAVENDER = "LAVENDER",
+  GOLD = "GOLD",
+  CORAL = "CORAL",
+  SLATE = "SLATE",
+  LIME = "LIME",
+  ROSEWOOD = "ROSEWOOD",
+  INDIGO = "INDIGO"
+}
