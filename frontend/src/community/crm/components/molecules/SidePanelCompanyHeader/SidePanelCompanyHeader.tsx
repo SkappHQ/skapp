@@ -1,6 +1,6 @@
 import {
   BrowserIcon,
-  BuildingIcon,
+  OfficeIcon,
   LocationIcon,
   PhoneIcon
 } from "@rootcodelabs/skapp-ui";
@@ -48,7 +48,7 @@ const SidePanelCompanyHeader: FC<Props> = ({ company }) => {
         )}
         {company.industry && (
           <SidePanelHeaderInfoItem
-            icon={<BuildingIcon width="20" height="20" />}
+            icon={<OfficeIcon width="20" height="20" />}
             value={translateText([company.industry])}
           />
         )}
