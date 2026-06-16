@@ -174,7 +174,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
         {label && <label className="subtitle1">{label}</label>}
         <div
           ref={inputBoxRef}
-          className={`flex items-center gap-2 min-h-12 w-full rounded-lg bg-tertiary-background px-3 ${
+          className={`flex items-center gap-2 min-h-12 w-full rounded-lg bg-tertiary-background px-3 py-1 ${
             isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-text"
           }`}
           onClick={() => {
@@ -189,13 +189,14 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                 key={item}
                 label={item}
                 size="sm"
+                isSelected
                 disabled={isDisabled}
                 onDelete={
                   !readOnly && !isDisabled
                     ? () => handleDelete(item)
                     : undefined
                 }
-                className="bg-white"
+                className="bg-white border border-none text-secondary-text"
               />
             ))}
             {!readOnly && (
