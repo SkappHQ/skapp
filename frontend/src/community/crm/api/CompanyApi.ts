@@ -7,8 +7,10 @@ import {
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 
+import { DOMAIN_SEARCH_LIMIT } from "../constants/commonConstants";
 import {
   CrmCompanyCreatePayload,
+  CrmCompanyDomainSearchResponseType,
   EditCompanyPayload
 } from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
@@ -19,7 +21,6 @@ interface CompanyMetricSearchParams {
   size: number;
   searchKeyword: string;
 }
-
 const fetchCompanyMetrics = async ({
   page,
   size,
@@ -77,10 +78,7 @@ export const useCreateNewCompany = (
   });
 };
 
-export const useCheckCompanyNameExists = (
-  name: string,
-  enabled: boolean = true
-) => {
+export const useCheckCompanyNameExists = (name: string, enabled: boolean) => {
   return useQuery({
     queryKey: [...companyQueryKeys.CHECK_COMPANY_NAME_EXISTS, name],
     queryFn: async () => {
@@ -134,5 +132,26 @@ export const useDeleteCompany = (
       onSuccess();
     },
     onError: onError
+  });
+};
+
+const fetchCompaniesByDomain = async (
+  domain: string
+): Promise<CrmCompanyDomainSearchResponseType> => {
+  const response = await authFetch.get(
+    companyEndpoints.SEARCH_COMPANIES_BY_DOMAIN,
+    { params: { domain, limit: DOMAIN_SEARCH_LIMIT } }
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useSearchCompaniesByDomain = (
+  domain: string,
+  enabled: boolean
+) => {
+  return useQuery({
+    queryKey: companyQueryKeys.SEARCH_COMPANIES_BY_DOMAIN(domain),
+    queryFn: () => fetchCompaniesByDomain(domain),
+    enabled
   });
 };

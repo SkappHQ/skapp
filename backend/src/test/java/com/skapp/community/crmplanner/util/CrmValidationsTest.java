@@ -157,6 +157,27 @@ class CrmValidationsTest {
 
 	}
 
+	// --- validateDomain ---
+
+	@Nested
+	@DisplayName("validateDomain")
+	class ValidateDomain {
+
+		@Test
+		@DisplayName("Blank domain - throws CRM_ERROR_DOMAIN_REQUIRED")
+		void validateDomain_Blank_ThrowsRequired() {
+			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateDomain("   "));
+			assertEquals(CrmMessageConstant.CRM_ERROR_DOMAIN_REQUIRED, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Valid domain - does not throw")
+		void validateDomain_Valid_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateDomain("acme.com"));
+		}
+
+	}
+
 	// --- validateIndustry ---
 
 	@Nested
