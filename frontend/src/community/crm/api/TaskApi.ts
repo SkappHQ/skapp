@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
-import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+import { CrmTaskResponseType } from "~community/crm/types/CommonTypes";
 import { CrmTaskCreatePayload } from "../types/CommonTypes";
 import { taskQueryKeys } from "./utils/QueryKeys";
 
@@ -25,9 +25,9 @@ export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
   });
 };
 
-const fetchOpenTasks = async (): Promise<CrmTaskDetailType[]> => {
+const fetchOpenTasks = async (): Promise<CrmTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS);
-  return response?.data?.results?.[0]?.tasks ?? [];
+  return response?.data?.results?.[0];
 };
 
 export const useGetOpenTasks = () => {

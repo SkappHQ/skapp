@@ -1,11 +1,19 @@
+import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
+import useDebounce from "~community/common/hooks/useDebounce";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useGetOpenTasks } from "~community/crm/api/TaskApi";
+import { TASK_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/taskConstants";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 import {
   isDueToday,
   isDueTomorrow,
   isOverdue
 } from "~community/crm/utils/taskValidations";
+
+import TaskGroup from "../../atoms/TaskGroup/TaskGroup";
 
 const groupTasksByDueDate = (tasks: CrmTaskDetailType[]) => {
   const overdue: CrmTaskDetailType[] = [];
@@ -30,40 +38,62 @@ const groupTasksByDueDate = (tasks: CrmTaskDetailType[]) => {
   return { overdue, dueToday, dueTomorrow, upcoming };
 };
 
-const TaskRow: FC<{ task: CrmTaskDetailType }> = ({ task }) => { // TODO: Replace with actual task row component
-  return <div className="py-2">{task.name}</div>;
-};
+interface MyTasksTabContentProps {
+  searchTerm: string;
+}
 
-const MyTasksTabContent: FC<{ tasks: CrmTaskDetailType[] }> = ({ tasks }) => {
+const MyTasksTabContent: FC<MyTasksTabContentProps> = ({ searchTerm }) => {
+  const translateText = useTranslator("crmModule", "tasks");
+  const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
+
+  const { data: taskData } = useGetOpenTasks();
+
+  const tasks = taskData?.tasks || [];
+
   const { overdue, dueToday, dueTomorrow, upcoming } =
     groupTasksByDueDate(tasks);
 
+  const emptyStateType =
+    debouncedSearch.trim() === ""
+      ? EmptyStateTypeEnum.NO_DATA
+      : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
+
+  if (tasks.length === 0) {
+    return (
+      <EmptyDataView
+        title={
+          emptyStateType === EmptyStateTypeEnum.NO_DATA
+            ? translateText(["table", "emptyDataState", "title"])
+            : translateText(["table", "emptySearchState", "title"])
+        }
+        description={
+          emptyStateType === EmptyStateTypeEnum.NO_DATA
+            ? translateText(["table", "emptyDataState", "description"])
+            : translateText(["table", "emptySearchState", "description"])
+        }
+        icon={<SearchIcon />}
+      />
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="text-secondary-text">Overdue</div>
-      <div>
-        {overdue.map((task) => (
-          <TaskRow key={task.id} task={task} />
-        ))}
-      </div>
-      <div className="text-secondary-text">Due today</div>
-      <div>
-        {dueToday.map((task) => (
-          <TaskRow key={task.id} task={task} />
-        ))}
-      </div>
-      <div className="text-secondary-text">Due tomorrow</div>
-      <div>
-        {dueTomorrow.map((task) => (
-          <TaskRow key={task.id} task={task} />
-        ))}
-      </div>
-      <div className="text-secondary-text">Upcoming</div>
-      <div>
-        {upcoming.map((task) => (
-          <TaskRow key={task.id} task={task} />
-        ))}
-      </div>
+    <div className="flex flex-col w-full gap-4">
+      <TaskGroup
+        label={translateText(["table", "groupLabels", "overdue"])}
+        tasks={overdue}
+      />
+      <TaskGroup
+        label={translateText(["table", "groupLabels", "dueToday"])}
+        tasks={dueToday}
+      />
+      <TaskGroup
+        label={translateText(["table", "groupLabels", "dueTomorrow"])}
+        tasks={dueTomorrow}
+      />
+      <TaskGroup
+        label={translateText(["table", "groupLabels", "upcoming"])}
+        tasks={upcoming}
+      />
     </div>
   );
 };

@@ -404,6 +404,12 @@
       "emptySearchState": {
         "title": "No results found.",
         "description": "We couldn't find any matches for your search. Please try using a different term."
+      },
+      "groupLabels": {
+        "overdue": "Overdue",
+        "dueToday": "Due today",
+        "dueTomorrow": "Due tomorrow",
+        "upcoming": "Upcoming"
       }
     }
   }

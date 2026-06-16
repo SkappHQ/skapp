@@ -187,6 +187,10 @@ export interface CrmDealLookup {
   name: string;
 }
 
+export interface CrmTaskResponseType {
+  tasks: CrmTaskDetailType[];
+}
+
 export interface CrmTaskDetailType {
   id: number;
   name: string;
