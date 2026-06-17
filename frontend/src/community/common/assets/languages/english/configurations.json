@@ -238,12 +238,6 @@
     "aria": {
       "editStage": "Edit stage {{stageName}}",
       "deleteStage": "Delete stage {{stageName}}"
-    },
-    "toasts": {
-      "fetchError": {
-        "title": "Oops! Something went wrong",
-        "description": "Failed to load deal stages."
-      }
     }
   }
 }
