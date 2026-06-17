@@ -47,7 +47,7 @@ export const useGetDealStages = (): UseQueryResult<CrmDealStageType[]> => {
     queryKey: crmDealQueryKeys.DEAL_STAGES,
     queryFn: async (): Promise<CrmDealStageType[]> => {
       const response = await authFetch.get(crmDealEndpoints.DEAL_STAGES);
-      return response?.data?.results ?? [];
+      return response?.data?.results;
     }
   });
 };
