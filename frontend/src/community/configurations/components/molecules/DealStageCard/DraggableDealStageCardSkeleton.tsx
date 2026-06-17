@@ -10,9 +10,9 @@ const DraggableDealStageCardSkeletonItem = () => {
 const DraggableDealStageCardSkeleton = () => {
   return (
     <div className="animate-pulse flex flex-col gap-[18px] w-full">
-      {Array.from({ length: 3 }).map((_, idx) => (
-        <DraggableDealStageCardSkeletonItem key={idx} />
-      ))}
+      <DraggableDealStageCardSkeletonItem/>
+      <DraggableDealStageCardSkeletonItem/>
+      <DraggableDealStageCardSkeletonItem/>
     </div>
   );
 };
