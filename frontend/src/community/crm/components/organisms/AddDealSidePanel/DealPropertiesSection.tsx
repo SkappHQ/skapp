@@ -1,5 +1,5 @@
-import { FormikErrors, FormikTouched } from "formik";
-import { FC, FocusEvent } from "react";
+import { FormikProps } from "formik";
+import { FC } from "react";
 
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
@@ -15,15 +15,7 @@ import AmountField from "./AmountField";
 
 interface DealPropertiesSectionProps {
   translateText: (keys: string[]) => string;
-  values: Pick<
-    CrmDealAddFormTypes,
-    "amount" | "priority" | "ownerId" | "contactId"
-  >;
-  errors: FormikErrors<CrmDealAddFormTypes>;
-  touched: FormikTouched<CrmDealAddFormTypes>;
-  handleChange: React.ChangeEventHandler<HTMLInputElement>;
-  handleBlur: (e: FocusEvent) => void;
-  setFieldValue: (field: string, value: unknown) => void;
+  formik: FormikProps<CrmDealAddFormTypes>;
   editingField: string | null;
   setEditingField: (field: string | null) => void;
   isOwnerReadonly: boolean;
@@ -39,12 +31,7 @@ interface DealPropertiesSectionProps {
 
 const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
   translateText,
-  values,
-  errors,
-  touched,
-  handleChange,
-  handleBlur,
-  setFieldValue,
+  formik,
   editingField,
   setEditingField,
   isOwnerReadonly,
@@ -57,6 +44,9 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
   setSelectedContact,
   setContactSearchTerm
 }) => {
+  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
+    formik;
+
   return (
     <div className="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 w-full">
       <PropertyRow label={translateText(["labels", "value"])}>

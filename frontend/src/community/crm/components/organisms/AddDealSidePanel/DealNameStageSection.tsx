@@ -1,5 +1,5 @@
 import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
-import { FormikErrors, FormikTouched } from "formik";
+import { FormikProps } from "formik";
 import { FC } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
@@ -7,12 +7,7 @@ import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
 
 interface DealNameStageSectionProps {
   translateText: (keys: string[]) => string;
-  values: Pick<CrmDealAddFormTypes, "name" | "stageId">;
-  errors: FormikErrors<CrmDealAddFormTypes>;
-  touched: FormikTouched<CrmDealAddFormTypes>;
-  handleChange: React.ChangeEventHandler<HTMLInputElement>;
-  handleBlur: React.FocusEventHandler<HTMLInputElement>;
-  setFieldValue: (field: string, value: string) => void;
+  formik: FormikProps<CrmDealAddFormTypes>;
   isStagesLoading: boolean;
   stageOptions: { id: string; value: string; label: React.ReactNode }[];
   stageErrorMessage: string | undefined;
@@ -21,17 +16,15 @@ interface DealNameStageSectionProps {
 
 const DealNameStageSection: FC<DealNameStageSectionProps> = ({
   translateText,
-  values,
-  errors,
-  touched,
-  handleChange,
-  handleBlur,
-  setFieldValue,
+  formik,
   isStagesLoading,
   stageOptions,
   stageErrorMessage,
   stageDropdownVariant
 }) => {
+  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
+    formik;
+
   return (
     <div className="flex gap-6 items-start">
       <div className="w-2/3">

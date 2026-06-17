@@ -159,8 +159,6 @@ const AddDealSidePanel: FC = () => {
     values,
     errors,
     touched,
-    handleChange,
-    handleBlur,
     setFieldValue,
     resetForm,
     isSubmitting,
@@ -254,12 +252,7 @@ const AddDealSidePanel: FC = () => {
         <div className="flex flex-col gap-6 h-full">
           <DealNameStageSection
             translateText={translateText}
-            values={values}
-            errors={errors}
-            touched={touched}
-            handleChange={handleChange}
-            handleBlur={handleBlur}
-            setFieldValue={setFieldValue}
+            formik={formik}
             isStagesLoading={isStagesLoading}
             stageOptions={stageOptions}
             stageErrorMessage={stageErrorMessage}
@@ -273,7 +266,7 @@ const AddDealSidePanel: FC = () => {
                 placeholder={translateText(["placeholders", "description"])}
                 value={values.description}
                 onChange={(e) => setFieldValue("description", e.target.value)}
-                onBlur={handleBlur}
+                onBlur={formik.handleBlur}
                 className="w-full h-30.25"
                 aria-label={translateText(["ariaLabels", "description"])}
               />
@@ -282,12 +275,7 @@ const AddDealSidePanel: FC = () => {
             <div className="w-1/3 flex flex-col gap-4">
               <DealPropertiesSection
                 translateText={translateText}
-                values={values}
-                errors={errors}
-                touched={touched}
-                handleChange={handleChange}
-                handleBlur={handleBlur}
-                setFieldValue={setFieldValue}
+                formik={formik}
                 editingField={editingField}
                 setEditingField={setEditingField}
                 isOwnerReadonly={isOwnerReadonly}
