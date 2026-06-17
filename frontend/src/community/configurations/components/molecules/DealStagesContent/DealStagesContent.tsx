@@ -7,7 +7,6 @@ import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 
 interface DealStagesContentProps {
   onEdit: (stage: CrmDealStageType) => void;
-
   onDelete: (stage: CrmDealStageType) => void;
 }
 
