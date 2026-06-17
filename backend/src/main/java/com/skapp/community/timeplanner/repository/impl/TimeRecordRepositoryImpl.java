@@ -69,9 +69,15 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		CriteriaQuery<AttendanceSummaryDto> criteriaQuery = criteriaBuilder.createQuery(AttendanceSummaryDto.class);
 		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
 
+		Subquery<Long> latestIds = criteriaQuery.subquery(Long.class);
+		Root<TimeRecord> subRoot = latestIds.from(TimeRecord.class);
+		latestIds.select(criteriaBuilder.max(subRoot.get(TimeRecord_.timeRecordId)));
+		latestIds.where(subRoot.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds),
+				criteriaBuilder.between(subRoot.get(TimeRecord_.date), startDate, endDate));
+		latestIds.groupBy(subRoot.get(TimeRecord_.employee).get(Employee_.employeeId), subRoot.get(TimeRecord_.date));
+
 		List<Predicate> predicates = new ArrayList<>();
-		predicates.add((root.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds)));
-		predicates.add(criteriaBuilder.between(root.get(TimeRecord_.date), startDate, endDate));
+		predicates.add(root.get(TimeRecord_.timeRecordId).in(latestIds));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
@@ -361,6 +367,14 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
 		Join<TimeRecord, TimeSlot> timeSlot = timeRecord.join(TimeRecord_.timeSlots, JoinType.LEFT);
 
+		Subquery<Long> latestIds = query.subquery(Long.class);
+		Root<TimeRecord> latestRoot = latestIds.from(TimeRecord.class);
+		latestIds.select(cb.max(latestRoot.get(TimeRecord_.timeRecordId)));
+		latestIds.where(latestRoot.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds),
+				cb.between(latestRoot.get(TimeRecord_.date), startDate, endDate));
+		latestIds.groupBy(latestRoot.get(TimeRecord_.employee).get(Employee_.employeeId),
+				latestRoot.get(TimeRecord_.date));
+
 		query.select(cb.tuple(timeRecord.get(TimeRecord_.timeRecordId),
 				timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId), timeRecord.get(TimeRecord_.date),
 				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), cb.literal(0.0f)),
@@ -372,8 +386,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 						timeSlot.get(TimeSlot_.isActiveRightNow), cb.literal("isManualEntry"),
 						timeSlot.get(TimeSlot_.isManualEntry)))));
 
-		query.where(timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds),
-				cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
+		query.where(timeRecord.get(TimeRecord_.timeRecordId).in(latestIds));
 
 		query.groupBy(timeRecord.get(TimeRecord_.date), timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId),
 				timeRecord.get(TimeRecord_.timeRecordId));
@@ -384,10 +397,10 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 					tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
 							tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
 							tuple.get(5, String.class)),
-					(existing, replacement) -> new EmployeeTimeRecordImpl(existing.getTimeRecordId(),
-							existing.getEmployeeId(), existing.getDate(),
-							existing.getWorkedHours() + replacement.getWorkedHours(),
-							existing.getBreakHours() + replacement.getBreakHours(), existing.getTimeSlots())));
+					(existing,
+							replacement) -> existing.getTimeRecordId() != null && replacement.getTimeRecordId() != null
+									&& replacement.getTimeRecordId() > existing.getTimeRecordId() ? replacement
+											: existing));
 
 		List<EmployeeTimeRecord> allRecords = new ArrayList<>();
 		for (LocalDate date : dateRange) {
@@ -711,6 +724,31 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				totalCount);
 
 		return result;
+	}
+
+	@Override
+	public Optional<TimeRecord> findByEmployeeAndDate(Employee employee, LocalDate currentDate) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<TimeRecord> query = cb.createQuery(TimeRecord.class);
+		Root<TimeRecord> root = query.from(TimeRecord.class);
+
+		query.where(cb.equal(root.get(TimeRecord_.employee), employee),
+				cb.equal(root.get(TimeRecord_.date), currentDate));
+		query.orderBy(cb.desc(root.get(TimeRecord_.timeRecordId)));
+
+		return entityManager.createQuery(query).setMaxResults(1).getResultStream().findFirst();
+	}
+
+	@Override
+	public TimeRecord findByDateAndEmployee(LocalDate date, Employee employee) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<TimeRecord> query = cb.createQuery(TimeRecord.class);
+		Root<TimeRecord> root = query.from(TimeRecord.class);
+
+		query.where(cb.equal(root.get(TimeRecord_.date), date), cb.equal(root.get(TimeRecord_.employee), employee));
+		query.orderBy(cb.desc(root.get(TimeRecord_.timeRecordId)));
+
+		return entityManager.createQuery(query).setMaxResults(1).getResultStream().findFirst().orElse(null);
 	}
 
 	private String findTimeSlot(LocalTime time) {
