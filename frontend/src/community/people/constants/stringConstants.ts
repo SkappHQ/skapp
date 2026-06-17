@@ -4,4 +4,3 @@ export enum characterLengths {
 }
 
 export const EMAIL_MAX_LENGTH = 100;
-
