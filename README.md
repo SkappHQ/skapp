@@ -64,8 +64,8 @@ For detailed setup instructions including prerequisites and configuration option
 | Layer | Technology |
 |-------|------------|
 | Frontend | React, TypeScript, Tailwind CSS |
-| Backend | Node.js, NestJS |
-| Database | PostgreSQL |
+| Backend | Java, Spring Boot |
+| Database | MySQL |
 | Cache | Redis |
 | Search | Elasticsearch |
 | Infrastructure | Docker, Kubernetes |
