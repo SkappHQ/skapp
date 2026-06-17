@@ -2332,13 +2332,13 @@ public class PeopleServiceImpl implements PeopleService {
 		if (anyProvided && !allProvided) {
 			List<String> missingFields = new ArrayList<>();
 			if (!hasEmploymentType)
-				missingFields.add("Employment Type");
+				missingFields.add(PeopleConstants.FIELD_EMPLOYMENT_TYPE);
 			if (!hasJobFamily)
-				missingFields.add("Job Family");
+				missingFields.add(PeopleConstants.FIELD_JOB_FAMILY);
 			if (!hasJobTitle)
-				missingFields.add("Job Title");
+				missingFields.add(PeopleConstants.FIELD_JOB_TITLE);
 			if (!hasStartDate)
-				missingFields.add("Current Employment Start Date");
+				missingFields.add(PeopleConstants.FIELD_CURRENT_EMPLOYMENT_START_DATE);
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_CAREER_PROGRESSION_FIELDS_EMPTY,
 					new Object[] { String.join(", ", missingFields) }));
 			return;
