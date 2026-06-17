@@ -3,6 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { DragIcon, StatusCard } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
@@ -28,6 +29,7 @@ const DraggableDealStageCard = ({
     transition,
     isDragging
   } = useSortable({ id: stage.id, disabled: isTerminalStage });
+  const translateText = useTranslator("configurations", "crm");
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -69,14 +71,18 @@ const DraggableDealStageCard = ({
           edit: {
             icon: <Icon name={IconName.EDIT_ICON} />,
             onClick: () => onEdit(stage),
-            "aria-label": `Edit stage "${stage.name}"`
+            "aria-label": translateText(["aria", "editStage"], {
+              stageName: stage.name
+            })
           },
           ...(!isTerminalStage &&
             onDelete && {
               delete: {
                 icon: <Icon name={IconName.DELETE_BUTTON_ICON} />,
                 onClick: () => onDelete(stage),
-                "aria-label": `Delete stage "${stage.name}"`
+                "aria-label": translateText(["aria", "deleteStage"], {
+                  stageName: stage.name
+                })
               }
             })
         }}

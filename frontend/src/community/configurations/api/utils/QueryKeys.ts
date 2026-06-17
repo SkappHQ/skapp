@@ -36,7 +36,3 @@ export const workLocationQueryKeys = {
     name
   ]
 };
-
-export const crmConfigurationQueryKeys = {
-  DEAL_STAGES: ["crm-deal-stages"]
-};

@@ -27,7 +27,3 @@ export const workLocationEndpoints = {
   DELETE_WORK_LOCATION: (id: number) =>
     `${moduleAPIPath.COMMON}/work-location/${id}`
 };
-
-export const crmConfigurationEndpoints = {
-  GET_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`
-};

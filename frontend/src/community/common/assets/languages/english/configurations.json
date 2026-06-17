@@ -229,5 +229,21 @@
       "confirmButton": "Delete",
       "cancelButton": "Cancel"
     }
+  },
+  "crm": {
+    "dealsSection": {
+      "dealCompleteStateNote": "Won and lost stages stay fixed at the end of the list.",
+      "fetchError": "Deal stages could not be loaded."
+    },
+    "aria": {
+      "editStage": "Edit stage {{stageName}}",
+      "deleteStage": "Delete stage {{stageName}}"
+    },
+    "toasts": {
+      "fetchError": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to load deal stages."
+      }
+    }
   }
 }
