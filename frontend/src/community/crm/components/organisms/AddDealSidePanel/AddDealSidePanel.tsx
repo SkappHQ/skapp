@@ -208,8 +208,8 @@ const AddDealSidePanel: FC = () => {
 
   const stageDropdownVariant =
     (touched.stageId && errors.stageId) || isStagesError
-      ? ("primary-error" as const)
-      : ("primary" as const);
+      ? "primary-error"
+      : "primary";
 
   const hasFormData = !!(
     values.name ||
