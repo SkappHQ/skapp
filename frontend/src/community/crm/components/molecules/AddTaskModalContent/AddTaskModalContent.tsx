@@ -26,6 +26,7 @@ import { useCreateTask } from "~community/crm/api/TaskApi";
 import { useGetDealLookup } from "~community/crm/api/crmDealApi";
 import OwnerDropdownItem from "~community/crm/components/atoms/OwnerDropdownItem/OwnerDropdownItem";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
+import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
@@ -371,67 +372,35 @@ const AddTaskModalContent: FC = () => {
         </div>
       </div>
 
-      {selectedContactName ? (
-        <InputField
-          label={translateText(["labels", "contactName"])}
-          value={selectedContactName}
-          readOnly
-          fullWidth
-          variant="md"
-          aria-label={translateText(["ariaLabels", "contactName"])}
-          rightIcon={
-            <ButtonV2
-              variant="tertiary"
-              type="button"
-              onClick={handleClearContact}
-              aria-label={translateText(["ariaLabels", "clearContact"])}
-              icon={<CloseIcon />}
-            />
-          }
-        />
-      ) : (
-        <SearchableDropdown
-          id="contact-search"
-          label={translateText(["labels", "contactName"])}
-          placeholder={translateText(["placeholders", "contactName"])}
-          value={contactSearchText}
-          onChange={(e) => setContactSearchText(e.target.value)}
-          items={contactDropdownItems}
-          onSelect={handleContactSelect}
-          emptyMessage={translateText(["emptyStates", "noContacts"])}
-        />
-      )}
+      <SelectableSearchField
+        id="contact-search"
+        label={translateText(["labels", "contactName"])}
+        placeholder={translateText(["placeholders", "contactName"])}
+        selectedValue={selectedContactName}
+        onClear={handleClearContact}
+        clearAriaLabel={translateText(["ariaLabels", "clearContact"])}
+        fieldAriaLabel={translateText(["ariaLabels", "contactName"])}
+        searchValue={contactSearchText}
+        onSearchChange={(e) => setContactSearchText(e.target.value)}
+        items={contactDropdownItems}
+        onSelect={handleContactSelect}
+        emptyMessage={translateText(["emptyStates", "noContacts"])}
+      />
 
-      {selectedDealName ? (
-        <InputField
-          label={translateText(["labels", "deal"])}
-          value={selectedDealName}
-          readOnly
-          fullWidth
-          variant="md"
-          aria-label={translateText(["ariaLabels", "deal"])}
-          rightIcon={
-            <ButtonV2
-              variant="tertiary"
-              type="button"
-              onClick={handleClearDeal}
-              aria-label={translateText(["ariaLabels", "clearDeal"])}
-              icon={<CloseIcon />}
-            />
-          }
-        />
-      ) : (
-        <SearchableDropdown
-          id="deal-search"
-          label={translateText(["labels", "deal"])}
-          placeholder={translateText(["placeholders", "deal"])}
-          value={dealSearchText}
-          onChange={(e) => setDealSearchText(e.target.value)}
-          items={dealDropdownItems}
-          onSelect={handleDealSelect}
-          emptyMessage={translateText(["emptyStates", "noDeals"])}
-        />
-      )}
+      <SelectableSearchField
+        id="deal-search"
+        label={translateText(["labels", "deal"])}
+        placeholder={translateText(["placeholders", "deal"])}
+        selectedValue={selectedDealName}
+        onClear={handleClearDeal}
+        clearAriaLabel={translateText(["ariaLabels", "clearDeal"])}
+        fieldAriaLabel={translateText(["ariaLabels", "deal"])}
+        searchValue={dealSearchText}
+        onSearchChange={(e) => setDealSearchText(e.target.value)}
+        items={dealDropdownItems}
+        onSelect={handleDealSelect}
+        emptyMessage={translateText(["emptyStates", "noDeals"])}
+      />
 
       <TextArea
         name="notes"
