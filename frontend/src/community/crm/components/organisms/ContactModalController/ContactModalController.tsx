@@ -6,6 +6,7 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import AddContactModalContent from "../../molecules/AddContactModalContent/AddContactModalContent";
+import DeleteContactModalContent from "../../molecules/DeleteContactModalContent/DeleteContactModalContent";
 
 const ContactModalController = () => {
   const translateText = useTranslator("crmModule", "contacts");
@@ -26,6 +27,8 @@ const ContactModalController = () => {
     switch (modalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
         return translateText(["addContactModal", "title"]);
+      case CrmModalTypes.DELETE_CONTACT_MODAL:
+        return translateText(["deleteContactModal", "title"]);
       default:
         return "";
     }
@@ -36,6 +39,8 @@ const ContactModalController = () => {
     switch (contactModalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
         return <AddContactModalContent />;
+      case CrmModalTypes.DELETE_CONTACT_MODAL:
+        return <DeleteContactModalContent />;
       default:
         return null;
     }

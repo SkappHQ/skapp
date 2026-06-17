@@ -143,7 +143,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       }
       headerActions={
         <KebabMenu
-          id={"company-actions"}
+          id={"contact-actions"}
           menuItems={menuItems}
           anchorButton={{
             "aria-label": translateText(["kebabMenuAriaLabel"])
