@@ -22,7 +22,7 @@ export const getDueDateStatus = (
 ): TaskDueDateInfo | null => {
   if (!dueAt) return null;
 
-  const due = startOfDay(parseISO(dueAt));
+  const due = parseISO(`${dueAt}Z`);
 
   if (!isCompleted && isBefore(due, startOfDay(new Date()))) {
     return { textKey: "dueDateOverdue", colorClass: "text-semantic-red-text" };
