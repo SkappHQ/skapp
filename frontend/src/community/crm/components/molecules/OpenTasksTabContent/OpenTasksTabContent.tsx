@@ -68,52 +68,59 @@ const OpenTasksTabContent: FC<OpenTasksTabContentProps> = ({
   }
 
   return (
-    <div className="flex flex-col w-full gap-4">
-      <InputField
-        ariaLabelClearButton={translateText(["table", "clearButtonAriaLabel"])}
-        className="w-[25.75rem] h-[3rem]"
-        placeholder={translateText(["table", "search"])}
-        rightIcon={<SearchIcon />}
-        value={searchTerm}
-        onChange={handleSearchChange}
-        customStyles={{ borderRadius: "rounded-[1.5rem]" }}
-        type="search"
-        state="default"
-      />
-      {isEmpty ? (
-        <EmptyDataView
-          title={
-            emptyStateType === EmptyStateTypeEnum.NO_DATA
-              ? translateText(["table", "emptyDataState", "title"])
-              : translateText(["table", "emptySearchState", "title"])
-          }
-          description={
-            emptyStateType === EmptyStateTypeEnum.NO_DATA
-              ? translateText(["table", "emptyDataState", "description"])
-              : translateText(["table", "emptySearchState", "description"])
-          }
-          icon={<SearchIcon />}
+    <div className="flex flex-col h-full gap-4 overflow-hidden">
+      <div className="shrink-0">
+        <InputField
+          ariaLabelClearButton={translateText([
+            "table",
+            "clearButtonAriaLabel"
+          ])}
+          className="w-[25.75rem] h-[3rem]"
+          placeholder={translateText(["table", "search"])}
+          rightIcon={<SearchIcon />}
+          value={searchTerm}
+          onChange={handleSearchChange}
+          customStyles={{ borderRadius: "rounded-[1.5rem]" }}
+          type="search"
+          state="default"
         />
-      ) : (
-        <div className="flex flex-col w-full h-[34.5rem] px-2 gap-4 overflow-y-auto">
-          <TaskGroup
-            label={translateText(["table", "groupLabels", "overdue"])}
-            tasks={overdue}
+      </div>
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {isEmpty ? (
+          <EmptyDataView
+            title={
+              emptyStateType === EmptyStateTypeEnum.NO_DATA
+                ? translateText(["table", "emptyDataState", "title"])
+                : translateText(["table", "emptySearchState", "title"])
+            }
+            description={
+              emptyStateType === EmptyStateTypeEnum.NO_DATA
+                ? translateText(["table", "emptyDataState", "description"])
+                : translateText(["table", "emptySearchState", "description"])
+            }
+            icon={<SearchIcon />}
           />
-          <TaskGroup
-            label={translateText(["table", "groupLabels", "dueToday"])}
-            tasks={dueToday}
-          />
-          <TaskGroup
-            label={translateText(["table", "groupLabels", "dueTomorrow"])}
-            tasks={dueTomorrow}
-          />
-          <TaskGroup
-            label={translateText(["table", "groupLabels", "upcoming"])}
-            tasks={upcoming}
-          />
-        </div>
-      )}
+        ) : (
+          <div className="flex flex-col h-full px-2 gap-4 overflow-y-auto">
+            <TaskGroup
+              label={translateText(["table", "groupLabels", "overdue"])}
+              tasks={overdue}
+            />
+            <TaskGroup
+              label={translateText(["table", "groupLabels", "dueToday"])}
+              tasks={dueToday}
+            />
+            <TaskGroup
+              label={translateText(["table", "groupLabels", "dueTomorrow"])}
+              tasks={dueTomorrow}
+            />
+            <TaskGroup
+              label={translateText(["table", "groupLabels", "upcoming"])}
+              tasks={upcoming}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -15,8 +15,8 @@ const TasksTable: FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <div className="flex flex-col pb-1">
+    <div className="flex flex-col gap-4 h-full overflow-hidden">
+      <div className="shrink-0">
         <Tabs
           tabs={tabs}
           activeTabId={activeTab}
@@ -24,8 +24,12 @@ const TasksTable: FC = () => {
         />
         <hr className="border-secondary-accent" />
       </div>
-      {activeTab === TASK_TAB_IDS.MY_TASKS && <OpenTasksTabContent isMyTasks />}
-      {activeTab === TASK_TAB_IDS.TEAM_TASKS && <OpenTasksTabContent />}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {activeTab === TASK_TAB_IDS.MY_TASKS && (
+          <OpenTasksTabContent isMyTasks />
+        )}
+        {activeTab === TASK_TAB_IDS.TEAM_TASKS && <OpenTasksTabContent />}
+      </div>
     </div>
   );
 };
