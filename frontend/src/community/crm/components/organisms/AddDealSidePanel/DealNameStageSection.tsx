@@ -1,6 +1,6 @@
 import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
@@ -9,7 +9,7 @@ interface DealNameStageSectionProps {
   translateText: (keys: string[]) => string;
   formik: FormikProps<CrmDealAddFormTypes>;
   isStagesLoading: boolean;
-  stageOptions: { id: string; value: string; label: React.ReactNode }[];
+  stageOptions: { id: string; value: string; label: ReactNode }[];
   stageErrorMessage: string | undefined;
   stageDropdownVariant: "primary" | "primary-error";
 }

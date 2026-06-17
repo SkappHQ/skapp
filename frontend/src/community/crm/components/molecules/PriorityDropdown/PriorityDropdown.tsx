@@ -1,5 +1,5 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
-import React from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
@@ -11,7 +11,7 @@ interface PriorityDropdownProps {
   onSave?: (value: CrmPriorityEnum) => void;
 }
 
-const PriorityDropdown: React.FC<PriorityDropdownProps> = ({
+const PriorityDropdown: FC<PriorityDropdownProps> = ({
   value,
   onChange,
   onSave
