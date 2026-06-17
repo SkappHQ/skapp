@@ -280,6 +280,7 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
               : [...prev.type, typeId]
           }));
         }}
+        className="max-h-full"
       />
     </FilterButton>
   );

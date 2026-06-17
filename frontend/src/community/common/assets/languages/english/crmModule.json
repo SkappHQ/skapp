@@ -339,7 +339,12 @@
     "sidePanel": {
       "editCompany": "Edit company",
       "deleteCompany": "Delete company",
-      "kebabMenuAriaLabel": "Company actions"
+      "kebabMenuAriaLabel": "Company actions",
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals",
+        "contacts": "Contacts"
+      }
     }
   },
   "deals": {
@@ -349,7 +354,6 @@
     "detailsPageHead": "Deal Details | Skapp",
     "detailsTitle": "Deal Details",
     "sidePanel": {
-      "title": "Deals",
       "addDealBtn": "Add deal",
       "emptyTitle": "No deals",
       "emptyDescription": "No deals associated with this company",

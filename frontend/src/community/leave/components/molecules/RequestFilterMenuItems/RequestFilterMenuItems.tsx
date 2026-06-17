@@ -213,6 +213,7 @@ const RequestFilterMenuItems = ({
             handleFilters(button, menuItemsData[1].type);
           }
         }}
+        className="max-h-full"
       />
     </BasicFilterStructure>
   );

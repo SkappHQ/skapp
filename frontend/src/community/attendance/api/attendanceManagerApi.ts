@@ -72,7 +72,7 @@ export const useGetManagerTimeRecords = (isExport: boolean = false) => {
         params: {
           startDate: startDate || startDateOfYear,
           endDate: endDate || endDateOfYear,
-          page: page,
+          page: isExport ? 0 : page,
           size: size,
           sortOrder: SortOrderTypes.ASC,
           sortKey: SortKeyTypes.NAME,
@@ -81,6 +81,7 @@ export const useGetManagerTimeRecords = (isExport: boolean = false) => {
         }
       });
     },
+    enabled: !isExport,
     select(response) {
       return timeRecordPreProcessor(response?.data.results?.[0]);
     }
