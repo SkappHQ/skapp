@@ -297,10 +297,33 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['description']").value("Test deal description"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("HIGH"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactName']").value("Deal Test Contact"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Deal Company"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value("Deal Company"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['name']").value("Test Stage"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']").exists())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['closingAt']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Get deal by ID - Deal with no company returns null companyName")
+	void getDealById_NoCompany_ReturnsNullCompanyName() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = new CrmDeal();
+		deal.setName("No Company Deal");
+		deal.setAmount("4000");
+		deal.setPriority(CrmDealPriority.LOW);
+		deal.setStage(stage);
+		deal.setContact(contact);
+		deal.setCompany(null);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setOrderIndex("a0");
+		CrmDeal savedDeal = crmDealDao.save(deal);
+
+		performRequest(get(BASE_PATH + "/" + savedDeal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("No Company Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
 	}
 
 	@Test

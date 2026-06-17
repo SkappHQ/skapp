@@ -24,6 +24,6 @@ public class CrmDealDetailResponseDto {
 
 	private String contactName;
 
-	private CrmCompanyLookupResponseDto company;
+	private String companyName;
 
 }
