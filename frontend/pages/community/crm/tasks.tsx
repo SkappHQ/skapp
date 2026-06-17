@@ -28,9 +28,7 @@ const Tasks: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      containerStyles={{
-        zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT
-      }}
+      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <div className="flex flex-col w-full h-[calc(100vh-10.1rem)] gap-4">
