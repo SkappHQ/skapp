@@ -36,19 +36,19 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsCrmSidePanelOpen,
     setSelectedContact,
     selectedContact,
-    setIsAddContactModalOpen,
+    setIsContactModalOpen,
     setContactModalType
   } = useCrmStore((store) => ({
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedContact: store.setSelectedContact,
     selectedContact: store.selectedContact,
-    setIsAddContactModalOpen: store.setIsAddContactModalOpen,
+    setIsContactModalOpen: store.setIsContactModalOpen,
     setContactModalType: store.setContactModalType
   }));
 
   const openContactModal = (type: CrmModalTypes): void => {
     setContactModalType(type);
-    setIsAddContactModalOpen(true);
+    setIsContactModalOpen(true);
   };
 
   const menuItems: MenuItemProps[] = [
