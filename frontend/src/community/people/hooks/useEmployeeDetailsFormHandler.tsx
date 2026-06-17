@@ -13,7 +13,6 @@ import React, {
 import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
-import { EMPLOYEE_ID_LOOKUP_DEBOUNCE_MS } from "~community/people/constants/stringConstants";
 import { allowsAlphaNumericWithHyphenAndUnderscore } from "~community/common/regex/regexPatterns";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import { filterByValue } from "~community/common/utils/commonUtil";
@@ -115,8 +114,8 @@ const useEmployeeDetailsFormHandler = ({
     }
   );
 
-  const debouncedEmail = useDebounce(values.email as string, EMPLOYEE_ID_LOOKUP_DEBOUNCE_MS);
-  const debouncedEmployeeNumber = useDebounce(values.employeeNumber ?? "", EMPLOYEE_ID_LOOKUP_DEBOUNCE_MS);
+  const debouncedEmail = useDebounce(values.email as string);
+  const debouncedEmployeeNumber = useDebounce(values.employeeNumber ?? "");
 
   const {
     data: checkEmailAndIdentificationNo,
