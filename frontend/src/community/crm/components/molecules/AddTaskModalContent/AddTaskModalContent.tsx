@@ -317,8 +317,8 @@ const AddTaskModalContent: FC = () => {
           <DatePicker
             mode="single"
             selected={values.dueDate ? new Date(values.dueDate) : undefined}
-            onSelect={(date: Date | undefined) =>
-              setFieldValue("dueDate", date ? date.toISOString() : null)
+            onSelect={(date) =>
+              setFieldValue("dueDate", date?.toISOString() ?? null)
             }
             popperProps={{ position: "bottom-end" }}
           >
@@ -365,11 +365,7 @@ const AddTaskModalContent: FC = () => {
               onChange={(e) => setOwnerSearchText(e.target.value)}
               state={errors.owner ? "error" : "default"}
               errorMessage={errors.owner}
-              emptyMessage={
-                <p className="px-4 py-2 body2">
-                  {translateText(["emptyStates", "noOwners"])}
-                </p>
-              }
+              emptyMessage={translateText(["emptyStates", "noOwners"])}
             />
           )}
         </div>
@@ -402,13 +398,7 @@ const AddTaskModalContent: FC = () => {
           onChange={(e) => setContactSearchText(e.target.value)}
           items={contactDropdownItems}
           onSelect={handleContactSelect}
-          emptyMessage={
-            contactSearchText.length > 0 ? (
-              <p className="px-4 py-2 body2">
-                {translateText(["emptyStates", "noContacts"])}
-              </p>
-            ) : undefined
-          }
+          emptyMessage={translateText(["emptyStates", "noContacts"])}
         />
       )}
 
@@ -439,13 +429,7 @@ const AddTaskModalContent: FC = () => {
           onChange={(e) => setDealSearchText(e.target.value)}
           items={dealDropdownItems}
           onSelect={handleDealSelect}
-          emptyMessage={
-            dealSearchText.length > 0 ? (
-              <p className="px-4 py-2 body2">
-                {translateText(["emptyStates", "noDeals"])}
-              </p>
-            ) : undefined
-          }
+          emptyMessage={translateText(["emptyStates", "noDeals"])}
         />
       )}
 

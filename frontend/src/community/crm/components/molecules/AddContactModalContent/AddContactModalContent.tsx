@@ -250,11 +250,9 @@ const AddContactModalContent: React.FC = () => {
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearch("")}
           emptyMessage={
-            isCompanyFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noCompanies"])}
-              </p>
-            )
+            isCompanyFetching
+              ? undefined
+              : translateContactText(["emptyStates", "noCompanies"])
           }
         />
       ) : (
@@ -318,11 +316,9 @@ const AddContactModalContent: React.FC = () => {
           state={errors.ownerId ? "error" : "default"}
           errorMessage={errors.ownerId}
           emptyMessage={
-            isOwnerFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noOwners"])}
-              </p>
-            )
+            isOwnerFetching
+              ? undefined
+              : translateContactText(["emptyStates", "noOwners"])
           }
         />
       )}

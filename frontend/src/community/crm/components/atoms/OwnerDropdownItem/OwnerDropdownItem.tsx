@@ -16,7 +16,7 @@ const OwnerDropdownItem: FC<{ owner: CrmOwner }> = ({ owner }) => {
         src: imageUrl ?? undefined,
         size: "sm"
       }}
-      label={concatStrings([owner.firstName, owner.lastName ?? ""])}
+      label={concatStrings([owner.firstName, owner.lastName ?? ""]).trim()}
     />
   );
 };
