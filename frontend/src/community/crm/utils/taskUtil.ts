@@ -4,7 +4,7 @@ import {
   MeetingFilledIcon,
   PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
-import { format, isBefore, isToday, parseISO, startOfDay } from "date-fns";
+import { isBefore, isToday, parseISO, startOfDay } from "date-fns";
 import React, { ComponentType, ReactElement, createElement } from "react";
 
 import {
