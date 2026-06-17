@@ -28,10 +28,13 @@ const Tasks: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
+      containerStyles={{
+        zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT,
+        padding: { xs: "1.375rem 2rem 0", lg: "1.375rem 3rem 0" }
+      }}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
-      <div className="flex flex-col w-full h-[calc(100vh-10.1rem)] gap-4">
+      <div className="flex flex-col w-full h-[calc(100vh-10rem)] gap-4">
         <TaskModalController />
         <TasksTable />
       </div>
