@@ -1,22 +1,8 @@
-import {
-  ButtonV2,
-  Dropdown,
-  InputField,
-  SidePanel,
-  TextArea
-} from "@rootcodelabs/skapp-ui";
+import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import {
-  ChangeEvent,
-  FC,
-  FocusEvent,
-  useEffect,
-  useMemo,
-  useState
-} from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
-import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -27,10 +13,6 @@ import {
   useGetOwnerLookup
 } from "~community/crm/api/ContactApi";
 import { useCreateDeal, useGetDealStages } from "~community/crm/api/crmDealApi";
-import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
-import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
-import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
-import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
@@ -45,74 +27,14 @@ import {
 import { addDealValidations } from "~community/crm/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
-interface AmountFieldProps {
-  isEditing: boolean;
-  value: string;
-  isTouched: boolean | undefined;
-  error: string | undefined;
-  placeholder: string;
-  nonePlaceholder: string;
-  ariaLabel: string;
-  onEdit: () => void;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onBlur: (e: FocusEvent<HTMLInputElement>) => void;
-}
-
-const AmountField: FC<AmountFieldProps> = ({
-  isEditing,
-  value,
-  isTouched,
-  error,
-  placeholder,
-  nonePlaceholder,
-  ariaLabel,
-  onEdit,
-  onChange,
-  onBlur
-}) => {
-  if (isEditing) {
-    return (
-      <div className="flex-1 min-w-0">
-        <InputField
-          name="amount"
-          value={value}
-          onChange={onChange}
-          onBlur={onBlur}
-          placeholder={placeholder}
-          type="text"
-          variant="sm"
-          fullWidth
-          autoFocus
-          state={isTouched && error ? "error" : "default"}
-          errorMessage={isTouched ? error : undefined}
-          aria-label={ariaLabel}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col w-full">
-      <button
-        type="button"
-        className={`body2 text-left w-full pl-1 ${
-          value ? "text-black" : "text-tertiary-text"
-        }`}
-        onClick={onEdit}
-      >
-        {value || nonePlaceholder}
-      </button>
-      {isTouched && error && (
-        <p className="text-semantic-red-text body3 mt-1">{error}</p>
-      )}
-    </div>
-  );
-};
+import DealNameStageSection from "./DealNameStageSection";
+import DealPropertiesSection from "./DealPropertiesSection";
 
 const AddDealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const { setToastMessage } = useToast();
   const { isCrmSalesManager } = useSessionData();
+
   const [editingField, setEditingField] = useState<string | null>(null);
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
   const [selectedContact, setSelectedContact] =
@@ -131,6 +53,7 @@ const AddDealSidePanel: FC = () => {
     isLoading: isStagesLoading,
     isError: isStagesError
   } = useGetDealStages(isCrmSidePanelOpen);
+
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearch = useDebounce(
     contactSearchTerm.trim(),
@@ -177,29 +100,33 @@ const AddDealSidePanel: FC = () => {
     [stages]
   );
 
+  const handleCreateDealSuccess = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["toastMessages", "successTitle"]),
+      description: translateText(["toastMessages", "successDescription"])
+    });
+    formik.resetForm();
+    setEditingField(null);
+    setSelectedOwner(null);
+    setSelectedContact(null);
+    setIsOwnerInitialized(false);
+    setIsCrmSidePanelOpen(false);
+  };
+
+  const handleCreateDealError = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toastMessages", "errorTitle"]),
+      description: translateText(["toastMessages", "errorDescription"])
+    });
+  };
+
   const { mutate: createDeal, isPending } = useCreateDeal(
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["toastMessages", "successTitle"]),
-        description: translateText(["toastMessages", "successDescription"])
-      });
-      formik.resetForm();
-      setEditingField(null);
-      setSelectedOwner(null);
-      setSelectedContact(null);
-      setIsOwnerInitialized(false);
-      setIsCrmSidePanelOpen(false);
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["toastMessages", "errorTitle"]),
-        description: translateText(["toastMessages", "errorDescription"])
-      });
-    }
+    handleCreateDealSuccess,
+    handleCreateDealError
   );
 
   const formik = useFormik<CrmDealAddFormTypes>({
@@ -275,7 +202,6 @@ const AddDealSidePanel: FC = () => {
   };
 
   let stageErrorMessage: string | undefined;
-
   if (isStagesError) {
     stageErrorMessage = translateText(["validations", "stageLoadError"]);
   } else if (touched.stageId) {
@@ -284,8 +210,8 @@ const AddDealSidePanel: FC = () => {
 
   const stageDropdownVariant =
     (touched.stageId && errors.stageId) || isStagesError
-      ? "primary-error"
-      : "primary";
+      ? ("primary-error" as const)
+      : ("primary" as const);
 
   const hasFormData = !!(
     values.name ||
@@ -326,44 +252,22 @@ const AddDealSidePanel: FC = () => {
         }
       >
         <div className="flex flex-col gap-6 h-full">
-          <div className="flex gap-6 items-start">
-            <div className="flex-[2_1_0] min-w-0">
-              <InputField
-                label={translateText(["labels", "dealName"])}
-                placeholder={translateText(["placeholders", "dealName"])}
-                required
-                name="name"
-                value={values.name}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                state={touched.name && errors.name ? "error" : "default"}
-                errorMessage={touched.name ? errors.name : undefined}
-                fullWidth
-                aria-label={translateText(["ariaLabels", "dealName"])}
-              />
-            </div>
-            <div className="flex-[1_0_0] min-w-0 pt-6.5">
-              {isStagesLoading ? (
-                <MultipleSkeletons numOfSkeletons={1} height={38} />
-              ) : (
-                <Dropdown
-                  options={stageOptions}
-                  value={values.stageId}
-                  onChange={(v) => setFieldValue("stageId", v)}
-                  variant={stageDropdownVariant}
-                  className="rounded-lg"
-                  width="55%"
-                  placeholder={translateText(["placeholders", "stage"])}
-                  required
-                  errorMessage={stageErrorMessage}
-                  ariaLabel={translateText(["ariaLabels", "stage"])}
-                />
-              )}
-            </div>
-          </div>
+          <DealNameStageSection
+            translateText={translateText}
+            values={values}
+            errors={errors}
+            touched={touched}
+            handleChange={handleChange}
+            handleBlur={handleBlur}
+            setFieldValue={setFieldValue}
+            isStagesLoading={isStagesLoading}
+            stageOptions={stageOptions}
+            stageErrorMessage={stageErrorMessage}
+            stageDropdownVariant={stageDropdownVariant}
+          />
 
           <div className="flex gap-6 items-start flex-1">
-            <div className="flex-[2_1_0] min-w-0">
+            <div className="w-2/3">
               <TextArea
                 label={translateText(["labels", "description"])}
                 placeholder={translateText(["placeholders", "description"])}
@@ -375,99 +279,27 @@ const AddDealSidePanel: FC = () => {
               />
             </div>
 
-            <div className="flex-[1_0_0] min-w-0 flex flex-col gap-4">
-              <div className="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 w-full">
-                <PropertyRow label={translateText(["labels", "value"])}>
-                  <AmountField
-                    isEditing={editingField === "amount"}
-                    value={values.amount}
-                    isTouched={touched.amount}
-                    error={errors.amount}
-                    placeholder={translateText(["placeholders", "amount"])}
-                    nonePlaceholder={translateText(["placeholders", "none"])}
-                    ariaLabel={translateText(["ariaLabels", "amount"])}
-                    onEdit={() => setEditingField("amount")}
-                    onChange={handleChange}
-                    onBlur={(e) => {
-                      handleBlur(e);
-                      setEditingField(null);
-                    }}
-                  />
-                </PropertyRow>
-
-                <PropertyRow label={translateText(["labels", "priority"])}>
-                  <PriorityDropdown
-                    value={values.priority}
-                    onChange={(v) => setFieldValue("priority", v)}
-                  />
-                </PropertyRow>
-
-                <PropertyRow label={translateText(["labels", "ownedBy"])}>
-                  <div
-                    className={`flex flex-col w-full${
-                      isOwnerReadonly ? " pointer-events-none" : ""
-                    }`}
-                  >
-                    <OwnerPopupSearch
-                      users={owners}
-                      selectedUser={selectedOwner}
-                      onSearch={setOwnerSearchTerm}
-                      onChange={(user: CrmOwner | null) => {
-                        setSelectedOwner(user);
-                        setFieldValue(
-                          "ownerId",
-                          user ? String(user.employeeId) : ""
-                        );
-                      }}
-                      placeholder={translateText(["placeholders", "none"])}
-                      searchPlaceholder={translateText([
-                        "placeholders",
-                        "ownerSearch"
-                      ])}
-                      noResultsText={translateText([
-                        "placeholders",
-                        "noResults"
-                      ])}
-                      ariaInvalid={!!(touched.ownerId && errors.ownerId)}
-                      chipBackgroundColor="bg-gray-100"
-                    />
-                    {touched.ownerId && errors.ownerId && (
-                      <p className="text-semantic-red-text body3 mt-1">
-                        {errors.ownerId}
-                      </p>
-                    )}
-                  </div>
-                </PropertyRow>
-
-                <PropertyRow label={translateText(["labels", "contactName"])}>
-                  <div className="flex flex-col w-full">
-                    <ContactPopupSearch
-                      contacts={contacts}
-                      selectedContact={selectedContact}
-                      onChange={(c: CrmContactLookup | null) => {
-                        setSelectedContact(c);
-                        setFieldValue("contactId", c ? String(c.id) : "");
-                      }}
-                      onSearch={setContactSearchTerm}
-                      placeholder={translateText(["placeholders", "none"])}
-                      searchPlaceholder={translateText([
-                        "placeholders",
-                        "contactSearch"
-                      ])}
-                      noResultsText={translateText([
-                        "placeholders",
-                        "noResults"
-                      ])}
-                      ariaInvalid={!!(touched.contactId && errors.contactId)}
-                    />
-                    {touched.contactId && errors.contactId && (
-                      <p className="text-semantic-red-text body3 mt-1">
-                        {errors.contactId}
-                      </p>
-                    )}
-                  </div>
-                </PropertyRow>
-              </div>
+            <div className="w-1/3 flex flex-col gap-4">
+              <DealPropertiesSection
+                translateText={translateText}
+                values={values}
+                errors={errors}
+                touched={touched}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+                setFieldValue={setFieldValue}
+                editingField={editingField}
+                setEditingField={setEditingField}
+                isOwnerReadonly={isOwnerReadonly}
+                owners={owners}
+                selectedOwner={selectedOwner}
+                setSelectedOwner={setSelectedOwner}
+                setOwnerSearchTerm={setOwnerSearchTerm}
+                contacts={contacts}
+                selectedContact={selectedContact}
+                setSelectedContact={setSelectedContact}
+                setContactSearchTerm={setContactSearchTerm}
+              />
             </div>
           </div>
         </div>
