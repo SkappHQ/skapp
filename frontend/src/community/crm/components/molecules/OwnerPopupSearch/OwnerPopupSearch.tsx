@@ -1,88 +1,12 @@
-import {
-  AvatarChip,
-  DropdownOption,
-  TriggerProps
-} from "@rootcodelabs/skapp-ui";
-import { FC, RefObject } from "react";
+import { DropdownOption, TriggerProps } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
-import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import EntityPopupSearch from "~community/crm/components/molecules/EntityPopupSearch/EntityPopupSearch";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 
-interface TriggerContentProps {
-  user: CrmOwner | null;
-  placeholder: string;
-  triggerProps: TriggerProps;
-  backgroundColor: string;
-  chipBackgroundColor?: string;
-}
-
-const TriggerContent: FC<TriggerContentProps> = ({
-  user,
-  placeholder,
-  triggerProps,
-  backgroundColor,
-  chipBackgroundColor
-}) => {
-  const { ref, ...rest } = triggerProps;
-  const resolvedSrc = useGetImageUrl(user?.authPic ?? "");
-
-  return (
-    <div
-      ref={ref as RefObject<HTMLDivElement>}
-      {...rest}
-      className={`flex items-center w-full min-h-8 cursor-pointer rounded-lg ${backgroundColor}`}
-    >
-      {user ? (
-        <AvatarChip
-          label={concatStrings([user.firstName, user.lastName ?? ""])}
-          avatarProps={{
-            id: String(user.employeeId),
-            firstName: user.firstName,
-            lastName: user.lastName ?? "",
-            src: resolvedSrc ?? "",
-            size: "sm"
-          }}
-          backgroundColor={chipBackgroundColor}
-          showActionButton={false}
-        />
-      ) : (
-        <span className="body2 text-tertiary-text">{placeholder}</span>
-      )}
-    </div>
-  );
-};
-
-interface OptionItemProps {
-  user: CrmOwner;
-  option: DropdownOption;
-  onSelect: (opt: DropdownOption) => void;
-}
-
-const OptionItem: FC<OptionItemProps> = ({ user, option, onSelect }) => {
-  const resolvedSrc = useGetImageUrl(user.authPic ?? "");
-
-  return (
-    <button
-      type="button"
-      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-tertiary-background cursor-pointer w-full text-left"
-      onClick={() => onSelect(option)}
-    >
-      <AvatarChip
-        label={concatStrings([user.firstName, user.lastName ?? ""])}
-        avatarProps={{
-          id: String(user.employeeId),
-          firstName: user.firstName,
-          lastName: user.lastName ?? "",
-          src: resolvedSrc ?? "",
-          size: "sm"
-        }}
-        showActionButton={false}
-      />
-    </button>
-  );
-};
+import OwnerOptionItem from "./OwnerOptionItem";
+import OwnerTriggerContent from "./OwnerTriggerContent";
 
 interface Props {
   users: CrmOwner[];
@@ -123,7 +47,7 @@ const OwnerPopupSearch: FC<Props> = ({
     noResultsText={noResultsText}
     ariaInvalid={ariaInvalid}
     renderTrigger={(user: CrmOwner | null, triggerProps: TriggerProps) => (
-      <TriggerContent
+      <OwnerTriggerContent
         user={user}
         placeholder={placeholder}
         triggerProps={triggerProps}
@@ -132,7 +56,7 @@ const OwnerPopupSearch: FC<Props> = ({
       />
     )}
     renderOption={(user: CrmOwner, option: DropdownOption, onSelect) => (
-      <OptionItem
+      <OwnerOptionItem
         key={option.id}
         user={user}
         option={option}

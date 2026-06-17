@@ -15,7 +15,10 @@ import AmountField from "./AmountField";
 
 interface DealPropertiesSectionProps {
   translateText: (keys: string[]) => string;
-  values: Pick<CrmDealAddFormTypes, "amount" | "priority" | "ownerId" | "contactId">;
+  values: Pick<
+    CrmDealAddFormTypes,
+    "amount" | "priority" | "ownerId" | "contactId"
+  >;
   errors: FormikErrors<CrmDealAddFormTypes>;
   touched: FormikTouched<CrmDealAddFormTypes>;
   handleChange: React.ChangeEventHandler<HTMLInputElement>;
