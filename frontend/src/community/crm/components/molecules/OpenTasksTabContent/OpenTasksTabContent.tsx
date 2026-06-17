@@ -95,7 +95,7 @@ const OpenTasksTabContent: FC<OpenTasksTabContentProps> = ({
           icon={<SearchIcon />}
         />
       ) : (
-        <div className="flex flex-col w-full grow h-[65vh] px-2 gap-4 overflow-auto">
+        <div className="flex flex-col w-full h-[34.5rem] px-2 gap-4 overflow-y-auto">
           <TaskGroup
             label={translateText(["table", "groupLabels", "overdue"])}
             tasks={overdue}
