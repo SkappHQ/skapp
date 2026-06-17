@@ -177,8 +177,7 @@ export const CompanyTable: FC = () => {
         data={companies ?? []}
         emptyStateType={emptyStateType}
         isLoading={
-          (isLoading || (isFetching && !isFetchingNextPage)) &&
-          (companies?.length ?? 0) === 0
+          isFetching && !isFetchingNextPage && (companies?.length ?? 0) === 0
         }
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="34.5rem"
