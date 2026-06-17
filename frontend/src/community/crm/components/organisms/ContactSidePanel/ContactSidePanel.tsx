@@ -51,12 +51,18 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsContactModalOpen(true);
   };
 
+  // Once EditContactModalContent and DeleteContactModalContent are implemented,
+  // remove the disabled styles (labelTextColor, activeBehavior, empty onClick) from each item
+  // and uncomment the real onClick handlers below.
   const menuItems: MenuItemProps[] = [
     {
       id: "edit",
       label: translateText(["editContact"]),
       icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: () => openContactModal(CrmModalTypes.EDIT_CONTACT_MODAL)
+      // onClick: () => openContactModal(CrmModalTypes.EDIT_CONTACT_MODAL),
+      labelTextColor: "text-secondary-text",
+      activeBehavior: "cursor-not-allowed",
+      onClick: () => {}
     },
     {
       id: "delete",
@@ -66,12 +72,16 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           <DeleteButtonIcon
             width="12px"
             height="14px"
-            fill="var(--color-semantic-red-text)"
+            // fill: "var(--color-semantic-red-text)"
+            fill="var(--color-secondary-text)"
           />
         )
       },
-      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: () => openContactModal(CrmModalTypes.DELETE_CONTACT_MODAL)
+      // onClick: () => openContactModal(CrmModalTypes.DELETE_CONTACT_MODAL),
+      // activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
+      labelTextColor: "text-secondary-text",
+      activeBehavior: "cursor-not-allowed",
+      onClick: () => {}
     }
   ];
 
