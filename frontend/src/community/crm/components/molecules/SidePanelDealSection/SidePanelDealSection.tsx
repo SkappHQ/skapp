@@ -9,14 +9,14 @@ import {
 import React from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmDealType } from "~community/crm/types/CommonTypes";
+import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
 
 import DealAccordionItemBadge from "./DealAccordionItemBadge";
 import DealAccordionItemContent from "./DealAccordionItemContent";
 import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
-  deals: CrmDealType[];
+  deals: DetailPanelDealResponseType[];
 }
 
 const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
@@ -35,9 +35,7 @@ const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
   }));
 
   return (
-    <div className="flex flex-col gap-4 mt-6">
-      <h2 className="h2">{translateText(["title"])}</h2>
-      <hr className="border-secondary-accent" />
+    <div className="flex flex-col gap-4">
       {hasDeals ? (
         <div className="flex flex-col w-full">
           <AdvancedAccordion
