@@ -58,6 +58,9 @@
     },
     "contactDetailsPanel": {
       "lastUpdated": "Last updated",
+      "editContact": "Edit contact",
+      "deleteContact": "Delete contact",
+      "kebabMenuAriaLabel": "Contact actions",
       "errors": {
         "contactNotFoundTitle": "Contact not found",
         "contactNotFoundDescription": "This contact is no longer available."
