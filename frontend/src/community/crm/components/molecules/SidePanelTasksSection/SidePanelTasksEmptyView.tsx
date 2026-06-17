@@ -24,7 +24,7 @@ const SidePanelTasksEmptyView: FC<Props> = ({ onAddTask }) => {
         description={translateText(["emptyDescription"])}
         className={{
           wrapper: "h-auto",
-          title: "leading-[24px] tracking-[-0.4395px] text-black",
+          title: "leading-[24px] text-black",
           description: "text-black"
         }}
       />
