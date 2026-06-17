@@ -65,8 +65,22 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	@Override
 	public AttendanceSummaryDto getEmployeeAttendanceSummary(List<Long> employeeIds, LocalDate startDate,
 			LocalDate endDate) {
-		List<Predicate> additionalPredicates = new ArrayList<>();
-		return computeMergedAttendanceSummary(employeeIds, startDate, endDate, additionalPredicates);
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<AttendanceSummaryDto> criteriaQuery = criteriaBuilder.createQuery(AttendanceSummaryDto.class);
+		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add((root.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds)));
+		predicates.add(criteriaBuilder.between(root.get(TimeRecord_.date), startDate, endDate));
+
+		Predicate[] predArray = new Predicate[predicates.size()];
+		predicates.toArray(predArray);
+		criteriaQuery.where(predArray);
+		criteriaQuery.select(criteriaBuilder.construct(AttendanceSummaryDto.class,
+				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.workedHours)), 0.0),
+				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.breakHours)), 0.0)));
+		TypedQuery<AttendanceSummaryDto> typedQuery = entityManager.createQuery(criteriaQuery);
+		return typedQuery.getSingleResult();
 	}
 
 	@Override
@@ -94,39 +108,62 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	@Override
 	public AttendanceSummaryDto findManagerAssignUsersAttendanceSummary(Long managerId, List<Long> teamIds,
 			LocalDate startDate, LocalDate endDate, List<Long> employeeIds) {
-		if (employeeIds == null || employeeIds.isEmpty()) {
-			return new AttendanceSummaryDto(0.0f, 0.0f);
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<AttendanceSummaryDto> criteriaQuery = criteriaBuilder.createQuery(AttendanceSummaryDto.class);
+		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
+
+		// Predicates for the main query
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.between(root.get(TimeRecord_.date), startDate, endDate));
+		if (!employeeIds.isEmpty()) {
+
+			CriteriaBuilder.In<Long> inClause = criteriaBuilder
+				.in(root.get(TimeRecord_.employee).get(Employee_.employeeId));
+			for (Long employeeID : employeeIds) {
+				inClause.value(employeeID);
+			}
+			predicates.add(inClause);
 		}
-		return computeMergedAttendanceSummary(employeeIds, startDate, endDate, new ArrayList<>());
+
+		criteriaQuery.select(criteriaBuilder.construct(AttendanceSummaryDto.class,
+				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.workedHours)), 0.0),
+				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.breakHours)), 0.0)));
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+
+		TypedQuery<AttendanceSummaryDto> typedQuery = entityManager.createQuery(criteriaQuery);
+		try {
+			return typedQuery.getSingleResult();
+		}
+		catch (NoResultException e) {
+			return new AttendanceSummaryDto(0.0F, 0.0F);
+		}
 	}
 
 	@Override
 	public TimeSheetSummaryData findTimeSheetSummaryData(LocalDate startDate, LocalDate endDate,
 			List<Long> employeeIds) {
-		if (employeeIds == null || employeeIds.isEmpty()) {
-			return new TimeSheetSummaryData(0.0, 0.0, 0.0);
-		}
-		AttendanceSummaryDto mergedSummary = computeMergedAttendanceSummary(employeeIds, startDate, endDate,
-				new ArrayList<>());
-
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> avgQuery = criteriaBuilder.createTupleQuery();
-		Root<TimeRecord> root = avgQuery.from(TimeRecord.class);
+		CriteriaQuery<TimeSheetSummaryData> criteriaQuery = criteriaBuilder.createQuery(TimeSheetSummaryData.class);
+		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(root.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds));
 		predicates.add(criteriaBuilder.between(root.get(TimeRecord_.date), startDate, endDate));
-		predicates.add(criteriaBuilder.isFalse(root.get(TimeRecord_.isManual)));
 
-		avgQuery.select(criteriaBuilder.tuple(
-				criteriaBuilder.coalesce(criteriaBuilder.avg(root.get(TimeRecord_.clockInTime)), 0.0),
-				criteriaBuilder.coalesce(criteriaBuilder.avg(root.get(TimeRecord_.clockOutTime)), 0.0)));
-		avgQuery.where(predicates.toArray(new Predicate[0]));
+		Predicate[] predArray = new Predicate[predicates.size()];
+		predicates.toArray(predArray);
+		criteriaQuery.where(predArray);
 
-		Tuple avgResult = entityManager.createQuery(avgQuery).getSingleResult();
+		criteriaQuery
+			.select(criteriaBuilder.construct(TimeSheetSummaryData.class,
+					criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.workedHours)).as(Double.class),
+							0.0),
+					criteriaBuilder.coalesce(criteriaBuilder.avg(root.get(TimeRecord_.clockInTime)), 0.0),
+					criteriaBuilder.coalesce(criteriaBuilder.avg(root.get(TimeRecord_.clockOutTime)), 0.0)));
 
-		return new TimeSheetSummaryData((double) mergedSummary.getTotalWorkHours(), avgResult.get(0, Double.class),
-				avgResult.get(1, Double.class));
+		TypedQuery<TimeSheetSummaryData> typedQuery = entityManager.createQuery(criteriaQuery);
+		return typedQuery.getSingleResult();
 	}
 
 	@Override
@@ -333,9 +370,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 						timeSlot.get(TimeSlot_.startTime), cb.literal("endTime"), timeSlot.get(TimeSlot_.endTime),
 						cb.literal("slotType"), timeSlot.get(TimeSlot_.slotType), cb.literal("isActiveRightNow"),
 						timeSlot.get(TimeSlot_.isActiveRightNow), cb.literal("isManualEntry"),
-						timeSlot.get(TimeSlot_.isManualEntry))),
-				timeRecord.get(TimeRecord_.isManual), timeRecord.get(TimeRecord_.clockInTime),
-				timeRecord.get(TimeRecord_.clockOutTime)));
+						timeSlot.get(TimeSlot_.isManualEntry)))));
 
 		query.where(timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds),
 				cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
@@ -344,54 +379,16 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				timeRecord.get(TimeRecord_.timeRecordId));
 
 		List<Tuple> timeRecords = entityManager.createQuery(query).getResultList();
-
-		Map<String, List<Tuple>> groupedRecords = timeRecords.stream()
-			.collect(Collectors.groupingBy(tuple -> tuple.get(2, LocalDate.class) + "_" + tuple.get(1, Long.class)));
-
-		Map<String, EmployeeTimeRecord> existingRecords = new java.util.HashMap<>();
-		for (Map.Entry<String, List<Tuple>> entry : groupedRecords.entrySet()) {
-			List<Tuple> tuples = entry.getValue();
-			Tuple clockInRecord = null;
-			Tuple latestManualRecord = null;
-
-			for (Tuple tuple : tuples) {
-				Boolean isManual = tuple.get(6, Boolean.class);
-				if (Boolean.TRUE.equals(isManual)) {
-					if (latestManualRecord == null
-							|| tuple.get(0, Long.class) > latestManualRecord.get(0, Long.class)) {
-						latestManualRecord = tuple;
-					}
-				}
-				else {
-					clockInRecord = tuple;
-				}
-			}
-
-			if (clockInRecord != null && latestManualRecord != null) {
-				float[] merged = computeMergedHoursWithOverlap(clockInRecord.get(3, Float.class),
-						clockInRecord.get(4, Float.class), clockInRecord.get(7, Long.class),
-						clockInRecord.get(8, Long.class), latestManualRecord.get(3, Float.class),
-						latestManualRecord.get(4, Float.class), latestManualRecord.get(7, Long.class),
-						latestManualRecord.get(8, Long.class));
-				existingRecords.put(entry.getKey(),
-						new EmployeeTimeRecordImpl(clockInRecord.get(0, Long.class), clockInRecord.get(1, Long.class),
-								clockInRecord.get(2, LocalDate.class), merged[0], merged[1],
-								clockInRecord.get(5, String.class)));
-			}
-			else if (clockInRecord != null) {
-				existingRecords.put(entry.getKey(),
-						new EmployeeTimeRecordImpl(clockInRecord.get(0, Long.class), clockInRecord.get(1, Long.class),
-								clockInRecord.get(2, LocalDate.class), clockInRecord.get(3, Float.class),
-								clockInRecord.get(4, Float.class), clockInRecord.get(5, String.class)));
-			}
-			else if (latestManualRecord != null) {
-				existingRecords.put(entry.getKey(),
-						new EmployeeTimeRecordImpl(latestManualRecord.get(0, Long.class),
-								latestManualRecord.get(1, Long.class), latestManualRecord.get(2, LocalDate.class),
-								latestManualRecord.get(3, Float.class), latestManualRecord.get(4, Float.class),
-								latestManualRecord.get(5, String.class)));
-			}
-		}
+		Map<String, EmployeeTimeRecord> existingRecords = timeRecords.stream()
+			.collect(Collectors.toMap(tuple -> tuple.get(2, LocalDate.class) + "_" + tuple.get(1, Long.class),
+					tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
+							tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
+							tuple.get(5, String.class)),
+					(existing, replacement) -> new EmployeeTimeRecordImpl(existing.getTimeRecordId(),
+							existing.getEmployeeId(), existing.getDate(),
+							existing.getWorkedHours() + replacement.getWorkedHours(),
+							existing.getBreakHours() + replacement.getBreakHours(),
+							existing.getTimeSlots())));
 
 		List<EmployeeTimeRecord> allRecords = new ArrayList<>();
 		for (LocalDate date : dateRange) {
@@ -477,90 +474,6 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 	protected EmployeeTimeRecord buildEmptyTimeRecord(Long employeeId, LocalDate date) {
 		return new EmployeeTimeRecordImpl(null, employeeId, date, 0.0f, 0.0f, null);
-	}
-
-	private AttendanceSummaryDto computeMergedAttendanceSummary(List<Long> employeeIds, LocalDate startDate,
-			LocalDate endDate, List<Predicate> additionalPredicates) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> query = cb.createTupleQuery();
-		Root<TimeRecord> root = query.from(TimeRecord.class);
-
-		List<Predicate> predicates = new ArrayList<>(additionalPredicates);
-		if (employeeIds != null && !employeeIds.isEmpty()) {
-			predicates.add(root.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds));
-		}
-		predicates.add(cb.between(root.get(TimeRecord_.date), startDate, endDate));
-
-		query.select(
-				cb.tuple(root.get(TimeRecord_.timeRecordId), root.get(TimeRecord_.employee).get(Employee_.employeeId),
-						root.get(TimeRecord_.date), cb.coalesce(root.get(TimeRecord_.workedHours), 0.0f),
-						cb.coalesce(root.get(TimeRecord_.breakHours), 0.0f), root.get(TimeRecord_.isManual),
-						root.get(TimeRecord_.clockInTime), root.get(TimeRecord_.clockOutTime)));
-		query.where(predicates.toArray(new Predicate[0]));
-
-		List<Tuple> records = entityManager.createQuery(query).getResultList();
-
-		Map<String, List<Tuple>> grouped = records.stream()
-			.collect(Collectors.groupingBy(t -> t.get(1, Long.class) + "_" + t.get(2, LocalDate.class)));
-
-		float totalWork = 0f;
-		float totalBreak = 0f;
-
-		for (List<Tuple> group : grouped.values()) {
-			Tuple clockIn = null;
-			Tuple latestManual = null;
-
-			for (Tuple t : group) {
-				boolean isManual = Boolean.TRUE.equals(t.get(5, Boolean.class));
-				if (isManual) {
-					if (latestManual == null || t.get(0, Long.class) > latestManual.get(0, Long.class)) {
-						latestManual = t;
-					}
-				}
-				else {
-					clockIn = t;
-				}
-			}
-
-			if (clockIn != null && latestManual != null) {
-				float[] merged = computeMergedHoursWithOverlap(clockIn.get(3, Float.class), clockIn.get(4, Float.class),
-						clockIn.get(6, Long.class), clockIn.get(7, Long.class), latestManual.get(3, Float.class),
-						latestManual.get(4, Float.class), latestManual.get(6, Long.class),
-						latestManual.get(7, Long.class));
-				totalWork += merged[0];
-				totalBreak += merged[1];
-			}
-			else if (clockIn != null) {
-				totalWork += clockIn.get(3, Float.class);
-				totalBreak += clockIn.get(4, Float.class);
-			}
-			else if (latestManual != null) {
-				totalWork += latestManual.get(3, Float.class);
-				totalBreak += latestManual.get(4, Float.class);
-			}
-		}
-
-		return new AttendanceSummaryDto(totalWork, totalBreak);
-	}
-
-	private float[] computeMergedHoursWithOverlap(float ciWork, float ciBreak, Long ciIn, Long ciOut, float manWork,
-			float manBreak, Long manIn, Long manOut) {
-		float overlapWorkDeduction = 0f;
-		float overlapBreakDeduction = 0f;
-
-		if (ciIn != null && ciOut != null && manIn != null && manOut != null && ciOut > manIn && ciIn < manOut) {
-			long overlapStart = Math.max(ciIn, manIn);
-			long overlapEnd = Math.min(ciOut, manOut);
-			float overlapHours = (overlapEnd - overlapStart) / 3600000f;
-
-			float ciDuration = (ciOut - ciIn) / 3600000f;
-			if (ciDuration > 0) {
-				overlapWorkDeduction = overlapHours * (ciWork / ciDuration);
-				overlapBreakDeduction = overlapHours * (ciBreak / ciDuration);
-			}
-		}
-
-		return new float[] { ciWork + manWork - overlapWorkDeduction, ciBreak + manBreak - overlapBreakDeduction };
 	}
 
 	private Subquery<Long> buildTeamEmployeeIdSubquery(CriteriaQuery<?> query, List<Long> teamIds) {
