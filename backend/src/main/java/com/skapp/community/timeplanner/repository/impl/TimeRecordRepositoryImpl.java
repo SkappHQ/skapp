@@ -94,14 +94,18 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	@Override
 	public AttendanceSummaryDto findManagerAssignUsersAttendanceSummary(Long managerId, List<Long> teamIds,
 			LocalDate startDate, LocalDate endDate, List<Long> employeeIds) {
-		List<Long> filterEmployeeIds = employeeIds.isEmpty() ? null : employeeIds;
-		List<Predicate> additionalPredicates = new ArrayList<>();
-		return computeMergedAttendanceSummary(filterEmployeeIds, startDate, endDate, additionalPredicates);
+		if (employeeIds == null || employeeIds.isEmpty()) {
+			return new AttendanceSummaryDto(0.0f, 0.0f);
+		}
+		return computeMergedAttendanceSummary(employeeIds, startDate, endDate, new ArrayList<>());
 	}
 
 	@Override
 	public TimeSheetSummaryData findTimeSheetSummaryData(LocalDate startDate, LocalDate endDate,
 			List<Long> employeeIds) {
+		if (employeeIds == null || employeeIds.isEmpty()) {
+			return new TimeSheetSummaryData(0.0, 0.0, 0.0);
+		}
 		AttendanceSummaryDto mergedSummary = computeMergedAttendanceSummary(employeeIds, startDate, endDate,
 				new ArrayList<>());
 
