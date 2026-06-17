@@ -41,7 +41,6 @@ export const CompanyTable: FC = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading,
     isFetching
   } = useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
