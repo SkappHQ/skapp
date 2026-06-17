@@ -18,13 +18,15 @@ const Contacts: NextPage = () => {
     setIsCrmSidePanelOpen,
     setSelectedContact,
     setIsAddContactModalOpen,
-    setContactModalType
+    setContactModalType,
+    selectedContact
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedContact: store.setSelectedContact,
     setIsAddContactModalOpen: store.setIsAddContactModalOpen,
-    setContactModalType: store.setContactModalType
+    setContactModalType: store.setContactModalType,
+    selectedContact: store.selectedContact
   }));
 
   const handleCloseSidePanel = () => {
@@ -47,10 +49,12 @@ const Contacts: NextPage = () => {
       containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
-        <ContactSidePanel
-          isOpen={isCrmSidePanelOpen}
-          onClose={handleCloseSidePanel}
-        />
+        {selectedContact && (
+          <ContactSidePanel
+            isOpen={isCrmSidePanelOpen}
+            onClose={handleCloseSidePanel}
+          />
+        )}
         <ContactModalController />
         <ContactTable />
       </>

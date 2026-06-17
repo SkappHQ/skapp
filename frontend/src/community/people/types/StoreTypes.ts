@@ -240,6 +240,7 @@ interface actionsTypes {
 
   //terminationConfirmationModalSlice
   setTerminationConfirmationModalOpen: (value: boolean) => void;
+  setReactivationConfirmationModalOpen: (value: boolean) => void;
   setSelectedEmployeeId: (value: string | number) => void;
   setAlertMessage: (value: string) => void;
 
@@ -389,6 +390,7 @@ export interface Store extends actionsTypes {
 
   //terminationConfirmationModalSlice
   isTerminationConfirmationModalOpen: boolean;
+  isReactivationConfirmationModalOpen: boolean;
   selectedEmployeeId: string | number;
   alertMessage: string;
 
