@@ -86,7 +86,7 @@ const AvatarGroup: FC<Props> = ({
         ref={anchorElement}
         data-cy="avatar-group"
         role={onClick ? "button" : "group"}
-        aria-label={ariaLabel || undefined}
+        aria-label={ariaLabel}
         renderSurplus={
           title
             ? (surplus) => (
