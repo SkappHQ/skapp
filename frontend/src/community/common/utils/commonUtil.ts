@@ -1,6 +1,7 @@
 import { SxProps, Theme } from "@mui/material";
 import { NextRequest, NextResponse } from "next/server";
 
+import { characterLengths } from "~community/common/constants/stringConstants";
 import { HOURS_PER_DAY } from "~community/common/constants/timeConstants";
 import {
   alphaNumericNamePatternWithSpecialCharacters,
@@ -8,6 +9,7 @@ import {
   matchInvalidEmailCharactersSearchPattern,
   removeNonAlphaNumericCharactersPattern
 } from "~community/common/regex/regexPatterns";
+import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
   DropdownListType,
   FileUploadType
@@ -19,11 +21,8 @@ import {
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtils";
 
-import { AdminTypes } from "~community/common/types/AuthTypes";
-
 import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
-import { characterLengths } from "~community/common/constants/stringConstants";
 
 export const getBlinkClass = (shouldBlink: boolean): string =>
   shouldBlink ? "animate-pulse" : "";
@@ -578,7 +577,7 @@ export const replaceTabQueryParam = (path: string, tabId: string): void => {
 
 export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
   return characterLengths.PHONE_NUMBER_LENGTH_MAX - countryCodeValue.length;
-}
+};
 
 export const concatStrings = (args: string[], separator: string = " ") =>
   args.join(separator);
