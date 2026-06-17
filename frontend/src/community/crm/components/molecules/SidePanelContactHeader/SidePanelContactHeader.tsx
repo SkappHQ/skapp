@@ -19,7 +19,8 @@ const SidePanelContactHeader: FC<Props> = ({ name, lastModifiedDate }) => {
     <div className="flex flex-col gap-2 pl-2">
       <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">{name}</h2>
       <p className="body2 leading-[24px] text-secondary-text">
-        {`${translateText(["lastUpdated"])} : ${formatISODateWithSuffix(lastModifiedDate ?? "")}`}
+        {lastModifiedDate &&
+          `${translateText(["lastUpdated"])} : ${formatISODateWithSuffix(lastModifiedDate)}`}
       </p>
     </div>
   );
