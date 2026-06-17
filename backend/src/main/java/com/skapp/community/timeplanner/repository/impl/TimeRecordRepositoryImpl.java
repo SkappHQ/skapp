@@ -387,8 +387,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 					(existing, replacement) -> new EmployeeTimeRecordImpl(existing.getTimeRecordId(),
 							existing.getEmployeeId(), existing.getDate(),
 							existing.getWorkedHours() + replacement.getWorkedHours(),
-							existing.getBreakHours() + replacement.getBreakHours(),
-							existing.getTimeSlots())));
+							existing.getBreakHours() + replacement.getBreakHours(), existing.getTimeSlots())));
 
 		List<EmployeeTimeRecord> allRecords = new ArrayList<>();
 		for (LocalDate date : dateRange) {
