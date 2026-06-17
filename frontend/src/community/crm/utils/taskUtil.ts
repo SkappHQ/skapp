@@ -7,6 +7,10 @@ import {
 import { format, isBefore, isToday, parseISO, startOfDay } from "date-fns";
 import React, { ComponentType, ReactElement, createElement } from "react";
 
+import {
+  convertDateToUTC,
+  formatISODateWithSuffix
+} from "~community/common/utils/dateTimeUtils";
 import { priorityOptions } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
@@ -22,7 +26,7 @@ export const getDueDateStatus = (
 ): TaskDueDateInfo | null => {
   if (!dueAt) return null;
 
-  const due = parseISO(`${dueAt}Z`);
+  const due = startOfDay(parseISO(convertDateToUTC(dueAt)));
 
   if (!isCompleted && isBefore(due, startOfDay(new Date()))) {
     return { textKey: "dueDateOverdue", colorClass: "text-semantic-red-text" };
@@ -34,7 +38,7 @@ export const getDueDateStatus = (
 
   return {
     textKey: "dueDateDueOn",
-    dateValue: format(due, "do LLL"),
+    dateValue: formatISODateWithSuffix(dueAt),
     colorClass: "text-secondary-text"
   };
 };
