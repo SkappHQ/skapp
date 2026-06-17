@@ -36,8 +36,8 @@ import org.springframework.stereotype.Component;
  * </p>
  *
  * <p>
- * See {@link EncryptionDecryptionConverter}, the generic encrypt-at-rest converter, retained
- * for fields that genuinely require field-level encryption.
+ * See {@link EncryptionDecryptionConverter}, the generic encrypt-at-rest converter,
+ * retained for fields that genuinely require field-level encryption.
  * </p>
  */
 @Converter
