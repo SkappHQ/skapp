@@ -25,8 +25,8 @@ import {
 import { useCreateTask } from "~community/crm/api/TaskApi";
 import { useGetDealLookup } from "~community/crm/api/crmDealApi";
 import OwnerDropdownItem from "~community/crm/components/atoms/OwnerDropdownItem/OwnerDropdownItem";
-import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
+import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
@@ -166,7 +166,7 @@ const AddTaskModalContent: FC = () => {
     const payload: CrmTaskCreatePayload = {
       name: formValues.name.trim(),
       typeId: formValues.type?.id ?? undefined,
-      dueAt: formValues.dueDate?? null,
+      dueAt: formValues.dueDate ?? null,
       priority: formValues.priority,
       contactId: formValues.contactId ?? undefined,
       dealId: formValues.dealId ?? undefined,
