@@ -35,8 +35,10 @@ import org.springframework.stereotype.Component;
  * revert migration in skapp-migrations.
  * </p>
  *
- * @see EncryptionDecryptionConverter the generic encrypt-at-rest converter, retained for
- * fields that genuinely require field-level encryption
+ * <p>
+ * See {@link EncryptionDecryptionConverter}, the generic encrypt-at-rest converter, retained
+ * for fields that genuinely require field-level encryption.
+ * </p>
  */
 @Converter
 @Component
