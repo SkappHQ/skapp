@@ -72,7 +72,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           <DeleteButtonIcon
             width="12px"
             height="14px"
-            // fill: "var(--color-semantic-red-text)"
+            // fill="var(--color-semantic-red-text)"
             fill="var(--color-secondary-text)"
           />
         )
