@@ -1,6 +1,7 @@
 import { Popper } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   MenuTypes,
   PopperAndTooltipPositionTypes
@@ -36,6 +37,7 @@ const EmployeeDataMenu = ({
   teams,
   jobFamilies
 }: Props): JSX.Element => {
+  const translateAria = useTranslator("peopleAria", "directory");
   return (
     <Popper
       anchorEl={anchorEl}
@@ -43,6 +45,11 @@ const EmployeeDataMenu = ({
       position={position}
       id={id}
       handleClose={handleClose}
+      ariaLabel={
+        menuType === MenuTypes.SORT
+          ? translateAria(["sortDialog"])
+          : translateAria(["filterDialog"])
+      }
       containerClassName={`rounded-4 shadow-lg ${menuType === MenuTypes.SORT ? "w-[248px]" : "max-w-[832px] w-[calc(100vw-2rem)]"}`}
     >
       {menuType === MenuTypes.SORT ? (
