@@ -116,8 +116,8 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             activeTabId={activeTab}
             onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
           />
+          <hr className="border-secondary-accent" />
         </div>
-        <hr className="border-secondary-accent" />
         {renderTabContent()}
       </div>
     </SidePanel>

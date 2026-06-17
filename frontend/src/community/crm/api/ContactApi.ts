@@ -197,3 +197,25 @@ export const useGetContactById = (
     enabled
   });
 };
+
+const deleteContact = async (id: number) => {
+  const response = await authFetch.delete(contactEndpoints.DELETE_CONTACT(id));
+  return response?.data?.results?.[0];
+};
+
+export const useDeleteContact = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteContact,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      onSuccess();
+    },
+    onError
+  });
+};

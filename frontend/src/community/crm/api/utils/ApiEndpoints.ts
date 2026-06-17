@@ -12,7 +12,8 @@ export const contactEndpoints = {
   CREATE_CONTACT: `${moduleAPIPath.CRM}/contact`,
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`,
-  CONTACT_BY_ID: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`
+  CONTACT_BY_ID: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
+  DELETE_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`
 };
 
 export const companyEndpoints = {
