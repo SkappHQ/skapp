@@ -1,4 +1,4 @@
-import { DropdownOption, TriggerProps } from "@rootcodelabs/skapp-ui";
+import { TriggerProps } from "@rootcodelabs/skapp-ui";
 import { FC, RefObject } from "react";
 
 import EntityPopupSearch from "~community/crm/components/molecules/EntityPopupSearch/EntityPopupSearch";
@@ -15,9 +15,6 @@ interface Props {
   ariaInvalid?: boolean;
 }
 
-const getContactId = (c: CrmContactLookup) => c.id;
-const getContactLabel = (c: CrmContactLookup) => c.name;
-
 const ContactPopupSearch: FC<Props> = ({
   contacts,
   selectedContact,
@@ -31,15 +28,18 @@ const ContactPopupSearch: FC<Props> = ({
   <EntityPopupSearch
     items={contacts}
     selectedItem={selectedContact}
-    getItemId={getContactId}
-    getItemLabel={getContactLabel}
+    getItemId={(c: CrmContactLookup) => c.id}
+    getItemLabel={(c: CrmContactLookup) => c.name}
     onChange={onChange}
     onSearch={onSearch}
     placeholder={placeholder}
     searchPlaceholder={searchPlaceholder}
     noResultsText={noResultsText}
     ariaInvalid={ariaInvalid}
-    renderTrigger={(contact: CrmContactLookup | null, { ref, ...triggerProps }: TriggerProps) => (
+    renderTrigger={(
+      contact: CrmContactLookup | null,
+      { ref, ...triggerProps }: TriggerProps
+    ) => (
       <div
         ref={ref as RefObject<HTMLDivElement>}
         {...triggerProps}
@@ -51,16 +51,6 @@ const ContactPopupSearch: FC<Props> = ({
           <span className="body2 text-tertiary-text">{placeholder}</span>
         )}
       </div>
-    )}
-    renderOption={(contact: CrmContactLookup, option: DropdownOption, onSelect) => (
-      <button
-        key={option.id}
-        type="button"
-        className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer w-full text-left"
-        onClick={() => onSelect(option)}
-      >
-        {contact.name}
-      </button>
     )}
   />
 );

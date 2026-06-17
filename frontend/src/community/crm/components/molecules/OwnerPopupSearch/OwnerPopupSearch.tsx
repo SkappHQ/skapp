@@ -1,4 +1,8 @@
-import { AvatarChip, DropdownOption, TriggerProps } from "@rootcodelabs/skapp-ui";
+import {
+  AvatarChip,
+  DropdownOption,
+  TriggerProps
+} from "@rootcodelabs/skapp-ui";
 import { FC, RefObject } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
@@ -62,28 +66,23 @@ const OptionItem: FC<OptionItemProps> = ({ user, option, onSelect }) => {
   return (
     <button
       type="button"
-      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer w-full text-left"
+      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-tertiary-background cursor-pointer w-full text-left"
       onClick={() => onSelect(option)}
     >
-      {resolvedSrc ? (
-        <img
-          src={resolvedSrc ?? ""}
-          alt=""
-          className="size-6 rounded-full object-cover shrink-0"
-        />
-      ) : (
-        <div className="size-6 rounded-full bg-gray-200 shrink-0 flex items-center justify-center text-[10px] text-gray-500">
-          {user.firstName?.[0]?.toUpperCase()}
-        </div>
-      )}
-      <span>{concatStrings([user.firstName, user.lastName ?? ""])}</span>
+      <AvatarChip
+        label={concatStrings([user.firstName, user.lastName ?? ""])}
+        avatarProps={{
+          id: String(user.employeeId),
+          firstName: user.firstName,
+          lastName: user.lastName ?? "",
+          src: resolvedSrc ?? "",
+          size: "sm"
+        }}
+        showActionButton={false}
+      />
     </button>
   );
 };
-
-const getUserId = (u: CrmOwner) => u.employeeId;
-const getUserLabel = (u: CrmOwner) =>
-  concatStrings([u.firstName, u.lastName ?? ""]);
 
 interface Props {
   users: CrmOwner[];
@@ -113,8 +112,10 @@ const OwnerPopupSearch: FC<Props> = ({
   <EntityPopupSearch
     items={users}
     selectedItem={selectedUser}
-    getItemId={getUserId}
-    getItemLabel={getUserLabel}
+    getItemId={(u: CrmOwner) => u.employeeId}
+    getItemLabel={(u: CrmOwner) =>
+      concatStrings([u.firstName, u.lastName ?? ""])
+    }
     onChange={onChange}
     onSearch={onSearch}
     placeholder={placeholder}
@@ -131,7 +132,12 @@ const OwnerPopupSearch: FC<Props> = ({
       />
     )}
     renderOption={(user: CrmOwner, option: DropdownOption, onSelect) => (
-      <OptionItem key={option.id} user={user} option={option} onSelect={onSelect} />
+      <OptionItem
+        key={option.id}
+        user={user}
+        option={option}
+        onSelect={onSelect}
+      />
     )}
   />
 );

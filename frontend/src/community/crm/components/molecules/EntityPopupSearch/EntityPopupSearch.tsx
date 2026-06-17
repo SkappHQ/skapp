@@ -17,7 +17,7 @@ export interface EntityPopupSearchProps<T> {
   noResultsText: string;
   ariaInvalid?: boolean;
   renderTrigger: (item: T | null, triggerProps: TriggerProps) => ReactNode;
-  renderOption: (
+  renderOption?: (
     item: T,
     option: DropdownOption,
     onSelect: (opt: DropdownOption) => void
@@ -37,9 +37,9 @@ function EntityPopupSearch<T>({
   ariaInvalid,
   renderTrigger,
   renderOption
-}: EntityPopupSearchProps<T>) {
+}: Readonly<EntityPopupSearchProps<T>>) {
   const options: DropdownOption[] = useMemo(() => {
-    const searchResults = items.map((item) => ({
+    const searchResults = items?.map((item) => ({
       id: getItemId(item),
       value: getItemId(item),
       label: getItemLabel(item)
@@ -74,9 +74,9 @@ function EntityPopupSearch<T>({
       onChange(null);
       return;
     }
-    const id = typeof val === "object" ? Number(val.id) : Number(val);
+    const { id } = val as DropdownOption;
     const item =
-      items.find((i) => getItemId(i) === id) ??
+      items?.find((i) => getItemId(i) === id) ??
       (selectedItem && getItemId(selectedItem) === id ? selectedItem : null);
     onChange(item);
   };
@@ -105,10 +105,23 @@ function EntityPopupSearch<T>({
             ? selectedItem
             : null);
         if (!item) return null;
-        return renderOption(item, opt, onSelect);
+        if (renderOption) {
+          return renderOption(item, opt, onSelect);
+        }
+        return (
+          <button
+            type="button"
+            className="px-4 py-2 text-sm hover:bg-tertiary-background cursor-pointer w-full text-left"
+            onClick={() => onSelect(opt)}
+          >
+            {opt.label}
+          </button>
+        );
       }}
       renderNoResults={() => (
-        <div className="px-4 py-2 text-sm text-gray-400">{noResultsText}</div>
+        <div className="px-4 py-2 text-sm text-tertiary-text">
+          {noResultsText}
+        </div>
       )}
     />
   );
