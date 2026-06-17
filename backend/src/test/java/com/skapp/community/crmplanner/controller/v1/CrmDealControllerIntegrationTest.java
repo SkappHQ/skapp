@@ -296,16 +296,17 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['amount']").value("5000"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['description']").value("Test deal description"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("HIGH"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactName']").value("Deal Test Contact"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value("Deal Company"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(deal.getContact().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['name']").value("Deal Test Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['name']").value("Deal Company"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['name']").value("Test Stage"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']").exists())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['closingAt']").doesNotExist());
 	}
 
 	@Test
-	@DisplayName("Get deal by ID - Deal with no company returns null companyName")
-	void getDealById_NoCompany_ReturnsNullCompanyName() throws Exception {
+	@DisplayName("Get deal by ID - Deal with no company returns null company")
+	void getDealById_NoCompany_ReturnsNullCompany() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmContact contact = savedContact(null);
 		CrmDeal deal = new CrmDeal();
@@ -323,7 +324,7 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("No Company Deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']").value(nullValue()));
 	}
 
 	@Test

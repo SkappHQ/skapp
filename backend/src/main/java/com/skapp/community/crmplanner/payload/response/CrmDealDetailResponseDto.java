@@ -22,8 +22,6 @@ public class CrmDealDetailResponseDto {
 
 	private CrmDealPriority priority;
 
-	private String contactName;
-
-	private String companyName;
+	private CrmContactLookupResponseDto contact;
 
 }
