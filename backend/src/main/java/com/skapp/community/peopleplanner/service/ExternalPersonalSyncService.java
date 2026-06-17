@@ -1,10 +1,8 @@
 package com.skapp.community.peopleplanner.service;
 
-import com.google.api.services.directory.Directory;
+import com.skapp.community.common.service.AsyncEmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.List;
 
@@ -12,16 +10,13 @@ public interface ExternalPersonalSyncService {
     Logger log = LoggerFactory.getLogger(ExternalPersonalSyncService.class);
     void authenticate() throws Exception;
     void bulkSync(String callerEmail);
-    default void sendSummaryEmail(JavaMailSender mailSender, String toEmail,
+    default void sendSummaryEmail(AsyncEmailSender asyncEmailSender, String toEmail,
                                   int synced, int failed, List<String> failures, String fatalError) {
 
         log.info("sendSummaryEmail: sending summary to {}", toEmail);
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(toEmail);
-            message.setSubject("Google Workspace Sync - Completed");
-            message.setText(buildEmailBody(synced, failed, failures, fatalError));
-            mailSender.send(message);
+            asyncEmailSender.sendMail(toEmail, "Google Workspace Sync - Completed",
+                    buildEmailBody(synced, failed, failures, fatalError), null);
             log.info("sendSummaryEmail: summary email sent to {}", toEmail);
         }
         catch (Exception e) {

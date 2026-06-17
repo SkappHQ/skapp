@@ -4,7 +4,6 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.directory.Directory;
 import com.google.api.services.directory.DirectoryScopes;
-import com.google.api.services.directory.model.User;
 import com.google.api.services.directory.model.Users;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -12,20 +11,25 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.SecretVersionName;
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.service.AsyncEmailSender;
+import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.service.ExternalPersonalSyncService;
+import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,20 +54,32 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
     @Value("${google.max-backoff-attempts:5}")
     private int maxBackoffAttempts;
 
-    private final EmployeeDao employeeDao;
+    @Value("${google.credentials-path:}")
+    private String credentialsPath;
 
-    private final JavaMailSender mailSender;
+    private final UserDao userDao;
+
+    private final AsyncEmailSender asyncEmailSender;
 
     private Directory directoryService;
 
+    private PeopleEmailService peopleEmailService;
+
+    private final EmployeeDao employeeDao;
+
     // -------------------------------------------------------------------------
-    // authenticate() — Secret Manager → credentials → Directory service
+    // authenticate() — local file (dev) or Secret Manager (prod) → Directory
     // -------------------------------------------------------------------------
     @Override
     public void authenticate() throws Exception {
-        log.info("Authenticating with Google Workspace via Secret Manager...");
-
-        String secretJson = getSecret(projectId, secretName);
+        String secretJson;
+        if (credentialsPath != null && !credentialsPath.isBlank()) {
+            log.info("Authenticating with Google Workspace via local credentials file: {}", credentialsPath);
+            secretJson = Files.readString(Paths.get(credentialsPath));
+        } else {
+            log.info("Authenticating with Google Workspace via Secret Manager...");
+            secretJson = getSecret(projectId, secretName);
+        }
 
         GoogleCredentials credentials = ServiceAccountCredentials
                 .fromStream(new ByteArrayInputStream(secretJson.getBytes(StandardCharsets.UTF_8)))
@@ -97,13 +113,13 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
 
             do {
                 Users result = fetchPageWithBackoff(pageToken, 0);
-                List<User> users = result.getUsers();
+                List<com.google.api.services.directory.model.User> users = result.getUsers();
 
                 if (users == null || users.isEmpty()) {
                     break;
                 }
 
-                for (User wsUser : users) {
+                for (com.google.api.services.directory.model.User wsUser : users) {
                     try {
                         String googleId = wsUser.getId();
                         String email = wsUser.getPrimaryEmail();
@@ -135,22 +151,33 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
                             continue;
                         }
 
-                        // Map suspended → AccountStatus
-                        AccountStatus status = Boolean.TRUE.equals(suspended) ? AccountStatus.DEACTIVATED
-                                : AccountStatus.ACTIVE;
+                        User user = userDao.findByEmail(email).orElseGet(User::new);
+                        user.setEmail(email);
+                        user.setIsActive(!Boolean.TRUE.equals(suspended));
+                        user.setLoginMethod(LoginMethod.GOOGLE);
 
                         // Save or update Employee using EmployeeDao (has JpaRepository.save())
                         Employee employee = employeeDao.findEmployeeByEmail(email);
                         if (employee == null) {
                             employee = new Employee();
                         }
+
+                        // Map suspended → AccountStatus
+                        AccountStatus status = Boolean.TRUE.equals(suspended) ? AccountStatus.DEACTIVATED
+                                : AccountStatus.ACTIVE;
+
+                        employee.setUser(user);
                         employee.setFirstName(firstName);
                         employee.setLastName(lastName);
                         employee.setAccountStatus(status);
-                        employeeDao.save(employee);
+
+                        User savedUser = userDao.save(user);
+
+                        peopleEmailService.sendUserInvitationEmail(savedUser);
+
 
                         totalSynced++;
-                        log.debug("Saved: {} {} <{}>", firstName, lastName, email);
+                        log.debug("Saved user: <{}>", email);
 
                     }
                     catch (Exception e) {
@@ -168,11 +195,11 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
             while (pageToken != null);
 
             log.info("Sync complete. Synced: {}, Failed: {}", totalSynced, totalFailed);
-            sendSummaryEmail(mailSender, callerEmail, totalSynced, totalFailed, failures, null);
+            sendSummaryEmail(asyncEmailSender, callerEmail, totalSynced, totalFailed, failures, null);
         }
         catch (Exception e) {
             log.error("Sync failed: {}", e.getMessage(), e);
-            sendSummaryEmail(mailSender, callerEmail, totalSynced, totalFailed, failures, null);
+            sendSummaryEmail(asyncEmailSender, callerEmail, totalSynced, totalFailed, failures, e.getMessage());
         }
     }
 
