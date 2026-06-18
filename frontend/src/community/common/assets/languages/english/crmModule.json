@@ -391,6 +391,7 @@
         "dealNameRequired": "Deal name is required",
         "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
         "dealNameMaxLength": "Deal name must be 255 characters or less",
+        "descriptionMaxLength": "Description must be 2000 characters or less",
         "stageRequired": "Stage is required",
         "stageLoadError": "Failed to load stages. Please try again.",
         "contactRequired": "Contact is required",

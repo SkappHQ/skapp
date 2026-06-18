@@ -149,12 +149,15 @@ const AddDealSidePanel: FC = () => {
           <div className="flex gap-6 items-start flex-1">
             <div className="w-2/3">
               <TextArea
+                name="description"
                 label={translateText(["labels", "description"])}
                 placeholder={translateText(["placeholders", "description"])}
                 value={values.description}
                 onChange={(e) => setFieldValue("description", e.target.value)}
                 onBlur={formik.handleBlur}
                 className="w-full h-30.25"
+                state={formik.touched.description && formik.errors.description ? "error" : "default"}
+                errorMessage={formik.touched.description ? formik.errors.description : undefined}
                 aria-label={translateText(["ariaLabels", "description"])}
               />
             </div>
