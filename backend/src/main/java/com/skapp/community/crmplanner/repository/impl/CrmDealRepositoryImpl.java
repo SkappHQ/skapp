@@ -20,10 +20,10 @@ import jakarta.persistence.TypedQuery;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
@@ -136,7 +136,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Root<CrmDeal> dealRoot = idQuery.from(CrmDeal.class);
 		idQuery.select(dealRoot.get(CrmDeal_.id));
 		idQuery.where(buildStagePredicates(cb, dealRoot, stageId, requestDto).toArray(new Predicate[0]));
-		idQuery.orderBy(cb.desc(dealRoot.get(Auditable_.createdDate)), cb.desc(dealRoot.get(CrmDeal_.id)));
+		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.orderIndex)));
 
 		TypedQuery<Long> idTypedQuery = entityManager.createQuery(idQuery);
 		idTypedQuery.setFirstResult((int) pageable.getOffset());
@@ -161,7 +161,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		deal.fetch(CrmDeal_.owner, JoinType.LEFT);
 
 		fetchQuery.select(deal).where(deal.get(CrmDeal_.id).in(dealIds));
-		fetchQuery.orderBy(cb.desc(deal.get(Auditable_.createdDate)), cb.desc(deal.get(CrmDeal_.id)));
+		fetchQuery.orderBy(cb.asc(deal.get(CrmDeal_.orderIndex)));
 
 		List<CrmDeal> deals = entityManager.createQuery(fetchQuery).getResultList();
 
@@ -205,7 +205,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Root<CrmDeal> dealRoot = idQuery.from(CrmDeal.class);
 		idQuery.select(dealRoot.get(CrmDeal_.id));
 		idQuery.where(buildStagePredicates(cb, dealRoot, stageId, requestDto).toArray(new Predicate[0]));
-		idQuery.orderBy(cb.desc(dealRoot.get(Auditable_.createdDate)), cb.desc(dealRoot.get(CrmDeal_.id)));
+		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.orderIndex)));
 
 		TypedQuery<Long> idTypedQuery = entityManager.createQuery(idQuery);
 		idTypedQuery.setFirstResult((int) pageable.getOffset());
@@ -225,7 +225,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		deal.fetch(CrmDeal_.owner, JoinType.LEFT);
 
 		fetchQuery.select(deal).where(deal.get(CrmDeal_.id).in(dealIds));
-		fetchQuery.orderBy(cb.desc(deal.get(Auditable_.createdDate)), cb.desc(deal.get(CrmDeal_.id)));
+		fetchQuery.orderBy(cb.asc(deal.get(CrmDeal_.orderIndex)));
 
 		List<CrmDeal> deals = entityManager.createQuery(fetchQuery).getResultList();
 		return new PageImpl<>(deals, pageable, preComputedTotal);

@@ -49,7 +49,8 @@ export const useGetCompanyMetrics = (searchKeyword: string, limit: number) => {
     getNextPageParam: (lastPage) => {
       if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
       return lastPage.currentPage + 1;
-    }
+    },
+    refetchOnWindowFocus: false
   });
 };
 

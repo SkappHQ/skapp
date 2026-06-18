@@ -399,27 +399,27 @@ const nextConfig = {
       {
         source: "/app-link",
         destination: "/enterprise/app-link"
-      },
-      {
-        source: "/crm",
-        destination: "/community/crm/contacts"
-      },
-      {
-        source: "/crm/contacts",
-        destination: "/community/crm/contacts"
-      },
-      {
-        source: "/crm/companies",
-        destination: "/community/crm/companies"
-      },
-      {
-        source: "/crm/deals",
-        destination: "/community/crm/deals"
-      },
-      {
-        source: "/crm/tasks",
-        destination: "/community/crm/tasks"
       }
+      // {
+      //   source: "/crm",
+      //   destination: "/community/crm/contacts"
+      // },
+      // {
+      //   source: "/crm/contacts",
+      //   destination: "/community/crm/contacts"
+      // },
+      // {
+      //   source: "/crm/companies",
+      //   destination: "/community/crm/companies"
+      // },
+      // {
+      //   source: "/crm/deals",
+      //   destination: "/community/crm/deals"
+      // },
+      // {
+      //   source: "/crm/tasks",
+      //   destination: "/community/crm/tasks"
+      // }
     ];
   },
   eslint: {
