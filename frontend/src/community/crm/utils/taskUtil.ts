@@ -4,13 +4,13 @@ import {
   MeetingFilledIcon,
   PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
-import { isBefore, isToday, parseISO, startOfDay } from "date-fns";
-import { DateTime } from "luxon";
 import React, { ComponentType, ReactElement, createElement } from "react";
 
 import {
-  convertDateToUTC,
-  formatDateTimeWithOrdinalIndicatorWithoutYear
+  convertUTCStringToLocalDateTime,
+  formatDateTimeWithOrdinalIndicatorWithoutYear,
+  getCurrentDateAtMidnight,
+  isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
 import { priorityOptions } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
@@ -27,21 +27,20 @@ export const getDueDateStatus = (
 ): TaskDueDateInfo | null => {
   if (!dueAt) return null;
 
-  const due = parseISO(convertDateToUTC(dueAt));
+  const due = convertUTCStringToLocalDateTime(dueAt);
+  const today = getCurrentDateAtMidnight();
 
-  if (!isCompleted && isBefore(due, startOfDay(new Date()))) {
+  if (!isCompleted && due < today) {
     return { textKey: "dueDateOverdue", colorClass: "text-semantic-red-text" };
   }
 
-  if (!isCompleted && isToday(due)) {
+  if (!isCompleted && isDateTimeSimilar(due, today)) {
     return { textKey: "dueDateToday", colorClass: "text-semantic-amber-text" };
   }
 
   return {
     textKey: "dueDateDueOn",
-    dateValue: formatDateTimeWithOrdinalIndicatorWithoutYear(
-      DateTime.fromJSDate(due)
-    ),
+    dateValue: formatDateTimeWithOrdinalIndicatorWithoutYear(due),
     colorClass: "text-secondary-text"
   };
 };
