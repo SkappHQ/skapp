@@ -1,8 +1,8 @@
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { getChangedFields } from "~community/common/utils/commonUtil";
 import { useEditContact } from "~community/crm/api/ContactApi";
+import { getChangedContactFields } from "~community/crm/utils/crmUtil";
 import ContactModalForm from "~community/crm/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -85,7 +85,7 @@ const EditContactModalContent = () => {
       companyId: selectedContact?.company?.id ?? null,
       ownerId: selectedContact?.owner?.employeeId ?? null
     };
-    const changedFields = getChangedFields(normalizedValues, originalValues);
+    const changedFields = getChangedContactFields(normalizedValues, originalValues);
 
     if (Object.keys(changedFields).length === 0) return;
 
