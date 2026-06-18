@@ -1,80 +1,134 @@
 import {
   DropdownOption,
   DropdownValue,
-  DropdownWithSearchablePopup
+  DropdownWithSearchablePopup,
+  TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useMemo, useState } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
+import useDebounce from "~community/common/hooks/useDebounce";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { concatStrings } from "~community/common/utils/commonUtil";
+import { useGetOwnerLookup } from "~community/crm/api/ContactApi";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/commonConstants";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
+import { buildOwnerOptions } from "~community/crm/utils/dealUtil";
 
 import OwnerOptionItem from "./OwnerOptionItem";
 import OwnerTriggerContent from "./OwnerTriggerContent";
 
-const toOption = (u: CrmOwner): DropdownOption => ({
-  id: u.employeeId,
-  value: u.employeeId,
-  label: concatStrings([u.firstName, u.lastName ?? ""])
-});
-
-interface OwnerPopupSearchProps {
-  users: CrmOwner[];
+interface Props {
   selectedUser: CrmOwner | null;
-  onSearch: (term: string) => void;
   onChange: (user: CrmOwner | null) => void;
+  placeholder: string;
+  searchPlaceholder: string;
+  noResultsText: string;
   ariaInvalid?: boolean;
 }
 
-const OwnerPopupSearch: FC<OwnerPopupSearchProps> = ({
-  users,
+const OwnerPopupSearch: FC<Props> = ({
   selectedUser,
-  onSearch,
   onChange,
+  placeholder,
+  searchPlaceholder,
+  noResultsText,
   ariaInvalid
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "common",
-    "ownerPopupSearch"
+  const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
+  const { isCrmSalesManager } = useSessionData();
+  const debouncedOwnerSearch = useDebounce(
+    ownerSearchTerm.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const { data: ownerLookupData } = useGetOwnerLookup(
+    debouncedOwnerSearch,
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    isCrmSalesManager ?? false
+  );
+  const users = ownerLookupData?.items ?? [];
+  const getLabel = (u: CrmOwner) =>
+    concatStrings([u.firstName, u.lastName ?? ""]);
+
+  const options: DropdownOption[] = useMemo(
+    () => buildOwnerOptions(users, selectedUser, getLabel),
+    [users, selectedUser]
   );
 
+  const selectedValue: DropdownOption | null = selectedUser
+    ? {
+        id: selectedUser.employeeId,
+        value: selectedUser.employeeId,
+        label: getLabel(selectedUser)
+      }
+    : null;
+
   const handleChange = (val: DropdownValue | null) => {
-    if (!val) return onChange(null);
+    if (!val) {
+      onChange(null);
+      return;
+    }
     const { id } = val as DropdownOption;
-    onChange(users.find((u) => u.employeeId === Number(id)) ?? null);
+    const user =
+      users.find((u) => u.employeeId === Number(id)) ??
+      (selectedUser?.employeeId === id ? selectedUser : null);
+    onChange(user);
+  };
+
+  const handleRenderTrigger = (
+    option: DropdownOption,
+    triggerProps: TriggerProps
+  ) => {
+    const user = users.find((u) => u.employeeId === Number(option?.id));
+    return user ? (
+      <OwnerTriggerContent
+        key={option.id}
+        user={user}
+        onSelect={() => {
+          triggerProps.onClick();
+        }}
+      />
+    ) : null;
+  };
+
+  const handleRenderOption = (
+    option: DropdownOption,
+    onSelect: (value: DropdownValue) => void
+  ) => {
+    const user = users.find((u) => u.employeeId === Number(option.id));
+    return user ? (
+      <OwnerOptionItem
+        key={option.id}
+        user={user}
+        option={option}
+        onSelect={onSelect}
+      />
+    ) : null;
   };
 
   return (
     <DropdownWithSearchablePopup
-      options={users.map(toOption)}
-      value={selectedUser ? toOption(selectedUser) : null}
+      options={options}
+      value={selectedValue}
       onChange={handleChange}
-      onSearch={onSearch}
-      placeholder={translateText(["placeholder"])}
-      searchPlaceholder={translateText(["searchPlaceholder"])}
+      onSearch={setOwnerSearchTerm}
+      placeholder={placeholder}
+      searchPlaceholder={searchPlaceholder}
       searchable
       clearable
       ariaInvalid={ariaInvalid}
       width="100%"
-      renderTrigger={(_val, _isOpen, _disabled, triggerProps) => (
-        <OwnerTriggerContent user={selectedUser} triggerProps={triggerProps} />
-      )}
-      renderOption={(option, _index, onSelect) => {
-        const opt = option as DropdownOption;
-        const user = users.find((u) => u.employeeId === Number(opt.id));
-        if (!user) return null;
-        return (
-          <OwnerOptionItem
-            key={opt.id}
-            user={user}
-            onSelect={() => onSelect(opt)}
-          />
-        );
-      }}
+      renderTrigger={(option, _a, _b, triggerProps) =>
+        handleRenderTrigger(option as DropdownOption, triggerProps)
+      }
+      renderOption={(option, _index, onSelect) =>
+        handleRenderOption(option as DropdownOption, onSelect)
+      }
       renderNoResults={() => (
         <div className="px-4 py-2 text-sm text-tertiary-text">
-          {translateText(["noResults"])}
+          {noResultsText}
         </div>
       )}
     />

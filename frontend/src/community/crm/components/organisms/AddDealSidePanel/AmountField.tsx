@@ -1,33 +1,37 @@
 import { InputField } from "@rootcodelabs/skapp-ui";
-import { FormikProps } from "formik";
-import { FC } from "react";
+import { ChangeEvent, FC } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
-
-interface AmountFieldProps {
-  formik: FormikProps<CrmDealAddFormTypes>;
+export interface AmountFieldProps {
+  value: string;
+  error: string | undefined;
+  nonePlaceholder: string;
+  ariaLabel: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const AmountField: FC<AmountFieldProps> = ({ formik }) => {
-  const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
-  const { values, errors, touched, handleChange, handleBlur } = formik;
-
+const AmountField: FC<AmountFieldProps> = ({
+  value,
+  error,
+  nonePlaceholder,
+  ariaLabel,
+  onChange
+}) => {
   return (
-    <InputField
-      name="amount"
-      value={values.amount}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      placeholder={translateText(["placeholders", "none"])}
-      type="text"
-      variant="sm"
-      fullWidth
-      state={touched.amount && errors.amount ? "error" : "default"}
-      errorMessage={touched.amount ? errors.amount : undefined}
-      aria-label={translateText(["ariaLabels", "amount"])}
-      customStyles={{ background: "bg-white", border: "border-0" }}
-    />
+    <div className="flex-1 min-w-0">
+      <InputField
+        name="amount"
+        value={value}
+        onChange={onChange}
+        placeholder={nonePlaceholder}
+        type="text"
+        variant="sm"
+        fullWidth
+        state={error ? "error" : "default"}
+        errorMessage={error}
+        aria-label={ariaLabel}
+        customStyles={{ background: "bg-white", border: "bg-white" }}
+      />
+    </div>
   );
 };
 

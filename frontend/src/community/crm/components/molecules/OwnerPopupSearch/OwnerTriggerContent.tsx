@@ -1,29 +1,38 @@
-import { TriggerProps } from "@rootcodelabs/skapp-ui";
-import { FC, Ref } from "react";
+import { AvatarChip } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 
-import OwnerAvatarChip from "./OwnerAvatarChip";
-
-interface OwnerTriggerContentProps {
-  user: CrmOwner | null;
-  triggerProps: TriggerProps;
+export interface OwnerTriggerContentProps {
+  user: CrmOwner;
+  onSelect?: () => void;
 }
 
 const OwnerTriggerContent: FC<OwnerTriggerContentProps> = ({
   user,
-  triggerProps
+  onSelect
 }) => {
-  const { ref, ...rest } = triggerProps;
+  const resolvedSrc = useGetImageUrl(user?.authPic ?? "");
 
   return (
     <button
-      type="button"
-      ref={ref as Ref<HTMLButtonElement>}
-      {...rest}
-      className="flex items-center w-full min-h-8 cursor-pointer rounded-lg"
+      className={`flex items-center w-full min-h-8 cursor-pointer rounded-lg`}
+      onClick={onSelect}
     >
-      {user && <OwnerAvatarChip user={user} backgroundColor="bg-gray-100" />}
+      <AvatarChip
+        label={concatStrings([user.firstName, user.lastName ?? ""])}
+        avatarProps={{
+          id: String(user.employeeId),
+          firstName: user.firstName,
+          lastName: user.lastName ?? "",
+          src: resolvedSrc ?? "",
+          size: "sm"
+        }}
+        backgroundColor="bg-secondary-background"
+        showActionButton={false}
+      />
     </button>
   );
 };

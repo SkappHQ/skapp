@@ -4,14 +4,13 @@ import {
   DropdownWithSearchablePopup,
   TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { FC, RefObject } from "react";
+import { FC, RefObject, useMemo } from "react";
 
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
-import {
-  findById,
-  toDropdownOptions,
-  toSelectedDropdownOption
-} from "~community/crm/utils/crmUtil";
+import { buildContactOptions } from "~community/crm/utils/dealUtil";
+
+import ContactOptionItem from "./ContactOptionItem";
+import ContactTriggerContent from "./ContactTriggerContent";
 
 interface Props {
   contacts: CrmContactLookup[];
@@ -34,11 +33,18 @@ const ContactPopupSearch: FC<Props> = ({
   noResultsText,
   ariaInvalid
 }) => {
-  const getId = (c: CrmContactLookup) => c.id;
-  const getLabel = (c: CrmContactLookup) => c.name;
+  const options: DropdownOption[] = useMemo(
+    () => buildContactOptions(contacts, selectedContact),
+    [contacts, selectedContact]
+  );
 
-  const options = toDropdownOptions(contacts, getId, getLabel);
-  const selectedValue = toSelectedDropdownOption(selectedContact, getId, getLabel);
+  const selectedValue: DropdownOption | null = selectedContact
+    ? {
+        id: selectedContact.id,
+        value: selectedContact.id,
+        label: selectedContact.name
+      }
+    : null;
 
   const handleChange = (val: DropdownValue | null) => {
     if (!val) {
@@ -46,7 +52,59 @@ const ContactPopupSearch: FC<Props> = ({
       return;
     }
     const { id } = val as DropdownOption;
-    onChange(findById(contacts, id, getId));
+    const contact =
+      contacts.find((c) => c.id === id) ??
+      (selectedContact?.id === id ? selectedContact : null);
+    onChange(contact);
+  };
+
+  const handleRenderTrigger = (
+    option: DropdownOption | null,
+    triggerProps: TriggerProps
+  ) => {
+    const contact =
+      contacts.find((c) => c.id === Number(option?.id)) ??
+      (selectedContact?.id === option?.id ? selectedContact : null);
+
+    if (contact && option) {
+      return (
+        <ContactTriggerContent
+          key={option.id}
+          contact={contact}
+          onSelect={() => {
+            triggerProps.onClick();
+          }}
+        />
+      );
+    }
+
+    const { ref, ...restTriggerProps } = triggerProps;
+
+    return (
+      <ContactTriggerContent
+        triggerRef={ref as RefObject<HTMLButtonElement>}
+        placeholder={placeholder}
+        triggerProps={restTriggerProps}
+      />
+    );
+  };
+
+  const handleRenderOption = (
+    option: DropdownOption,
+    onSelect: (value: DropdownValue) => void
+  ) => {
+    const contact =
+      contacts.find((c) => c.id === Number(option.id)) ??
+      (selectedContact?.id === option.id ? selectedContact : null);
+
+    return contact ? (
+      <ContactOptionItem
+        key={option.id}
+        contact={contact}
+        option={option}
+        onSelect={onSelect}
+      />
+    ) : null;
   };
 
   return (
@@ -61,24 +119,12 @@ const ContactPopupSearch: FC<Props> = ({
       clearable
       ariaInvalid={ariaInvalid}
       width="100%"
-      renderTrigger={(
-        _val: DropdownValue | null,
-        _isOpen: boolean,
-        _disabled: boolean,
-        { ref, ...triggerProps }: TriggerProps
-      ) => (
-        <div
-          ref={ref as RefObject<HTMLDivElement>}
-          {...triggerProps}
-          className="flex items-center w-full min-h-8 cursor-pointer"
-        >
-          {selectedContact ? (
-            <span className="body2">{selectedContact.name}</span>
-          ) : (
-            <span className="body2 text-tertiary-text">{placeholder}</span>
-          )}
-        </div>
-      )}
+      renderTrigger={(option, _a, _b, triggerProps) =>
+        handleRenderTrigger(option as DropdownOption | null, triggerProps)
+      }
+      renderOption={(option, _index, onSelect) =>
+        handleRenderOption(option as DropdownOption, onSelect)
+      }
       renderNoResults={() => (
         <div className="px-4 py-2 text-sm text-tertiary-text">
           {noResultsText}
