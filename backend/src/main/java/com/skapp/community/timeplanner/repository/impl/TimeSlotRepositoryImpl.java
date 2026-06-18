@@ -24,6 +24,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -136,6 +137,19 @@ public class TimeSlotRepositoryImpl implements TimeSlotRepository {
 
 		TypedQuery<TimeSlot> query = entityManager.createQuery(criteriaQuery);
 		return query.getResultList();
+	}
+
+	@Override
+	public Optional<TimeSlot> findByTimeRecordAndIsActiveRightNow(TimeRecord timeRecord, boolean isActive) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<TimeSlot> query = cb.createQuery(TimeSlot.class);
+		Root<TimeSlot> root = query.from(TimeSlot.class);
+
+		query.where(cb.equal(root.get(TimeSlot_.TIME_RECORD), timeRecord),
+				cb.equal(root.get(TimeSlot_.IS_ACTIVE_RIGHT_NOW), isActive));
+		query.orderBy(cb.desc(root.get(TimeSlot_.TIME_SLOT_ID)));
+
+		return entityManager.createQuery(query).setMaxResults(1).getResultStream().findFirst();
 	}
 
 }
