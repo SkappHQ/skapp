@@ -1,6 +1,7 @@
 import { InputField, Popper, SearchIcon } from "@rootcodelabs/skapp-ui";
 import React, {
   ChangeEvent,
+  FC,
   KeyboardEvent,
   useCallback,
   useEffect,
@@ -55,9 +56,10 @@ export interface SearchableDropdownProps {
   variant?: "sm" | "md" | "lg";
   positionStrategy?: "absolute" | "fixed";
   onClose?: () => void;
+  isOpenOnFocus?: boolean;
 }
 
-const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
+const SearchableDropdown: FC<SearchableDropdownProps> = ({
   id,
   items,
   onSelect,
@@ -73,7 +75,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   errorMessage,
   variant = "md",
   positionStrategy = "absolute",
-  onClose
+  onClose,
+  isOpenOnFocus = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -168,7 +171,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       className="w-full relative input-plain-text"
       ref={inputWrapperRef}
       onFocus={() => {
-        if (value.trim().length > 0) {
+        if (value.trim().length > 0 || (isOpenOnFocus && items.length > 0)) {
           setIsOpen(true);
         }
       }}

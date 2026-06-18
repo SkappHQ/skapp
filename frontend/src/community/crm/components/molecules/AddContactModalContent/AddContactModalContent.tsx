@@ -5,7 +5,7 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -16,7 +16,9 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { concatStrings } from "~community/common/utils/commonUtil";
+import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
 import {
   useCreateNewContact,
   useGetCompanyLookup,
@@ -32,6 +34,8 @@ import {
   CrmContactCreatePayload,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { extractDomainFromEmail } from "~community/crm/utils/commonHelpers";
+import { mergeAndPrioritizeCompanyDropdownItems } from "~community/crm/utils/contactUtil";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
@@ -147,14 +151,32 @@ const AddContactModalContent: React.FC = () => {
     submitForm
   } = formik;
 
+  const debouncedEmail = useDebounce(
+    values.email.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+
+  const extractedDomain = extractDomainFromEmail(debouncedEmail);
+
+  const isDomainSearchEnabled =
+    extractedDomain.length > 0 && isValidEmail().test(debouncedEmail);
+
+  const { data: domainSearchData } = useSearchCompaniesByDomain(
+    extractedDomain,
+    isDomainSearchEnabled
+  );
+
   const { data: companyLookupData, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
 
-  const companyDropdownItems: SearchableDropdownItem[] =
-    companyLookupData?.items?.map((company) => ({
-      id: String(company.id),
-      content: company.name
-    })) ?? [];
+  const companyDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      mergeAndPrioritizeCompanyDropdownItems(
+        companyLookupData?.items,
+        domainSearchData?.companies
+      ),
+    [companyLookupData?.items, domainSearchData?.companies]
+  );
 
   const handleCompanySelect = (companyDropDownItem: SearchableDropdownItem) => {
     const company = companyLookupData?.items?.find(
@@ -253,6 +275,9 @@ const AddContactModalContent: React.FC = () => {
             isCompanyFetching
               ? undefined
               : translateContactText(["emptyStates", "noCompanies"])
+          }
+          isOpenOnFocus={
+            isDomainSearchEnabled && !!domainSearchData?.companies?.length
           }
         />
       ) : (
