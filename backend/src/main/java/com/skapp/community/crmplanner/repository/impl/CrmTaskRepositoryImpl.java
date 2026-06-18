@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -59,7 +60,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		applyFetchGraph(task);
 
 		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, false, filterDto.getSearchKeyword(),
-				filterDto.getContactId(), filterDto.getDealId());
+				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
 		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
 
 		query.select(task)
@@ -79,7 +80,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		applyFetchGraph(task);
 
 		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, true, filterDto.getSearchKeyword(),
-				filterDto.getContactId(), filterDto.getDealId());
+				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
 		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
 
 		query.select(task)
@@ -202,6 +203,10 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		if (params.getDealId() != null) {
 			predicates.add(cb.equal(root.get(CrmTask_.deal).get(CrmDeal_.id), params.getDealId()));
+		}
+
+		if (params.getCompanyId() != null) {
+			predicates.add(cb.equal(root.get(CrmTask_.company).get(CrmCompany_.id), params.getCompanyId()));
 		}
 
 		return predicates;

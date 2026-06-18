@@ -12,7 +12,8 @@ import {
   CrmTaskResponseType
 } from "~community/crm/types/CommonTypes";
 
-import { CrmTaskCreatePayload } from "../types/CommonTypes";
+import { CrmTaskCreatePayload, UpdateTaskStatusPayload } from "../types/CommonTypes";
+import { taskEndpoints } from "./utils/ApiEndpoints";
 import { taskQueryKeys } from "./utils/QueryKeys";
 
 const createTask = async (taskDetails: CrmTaskCreatePayload): Promise<void> => {
@@ -28,6 +29,30 @@ export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_TASK_DATA
       });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const updateTaskStatus = async ({
+  id,
+  isCompleted
+}: UpdateTaskStatusPayload) => {
+  await authFetch.patch(taskEndpoints.UPDATE_TASK(id), {
+    isCompleted
+  });
+};
+
+export const useUpdateTaskCompletion = (
+  onSuccess: () => void,
+  onError: (error: Error) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateTaskStatus,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
       onSuccess();
     },
     onError
