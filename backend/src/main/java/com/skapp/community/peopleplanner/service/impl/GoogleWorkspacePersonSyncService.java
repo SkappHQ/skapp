@@ -12,12 +12,17 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.SecretVersionName;
+import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.AsyncEmailSender;
+import com.skapp.community.common.service.PushNotificationService;
 import com.skapp.community.common.type.LoginMethod;
+import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.service.ExternalPersonSyncService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
@@ -92,6 +97,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private final AsyncEmailSender asyncEmailSender;
     private final PeopleEmailService peopleEmailService;
     private final RolesService rolesService;
+    private final OrganizationConfigDao organizationConfigDao;
+    private final PushNotificationService pushNotificationService;
+    private final EmployeeRoleDao employeeRoleDao;
 
     private Directory directoryService;
     private volatile Long channelExpiration;
@@ -205,13 +213,23 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             return;
         }
 
+        String callerEmail = "sudam.manudith@rootcode.io";
+
         log.info("Watch notification ({}) received for {} — resyncing all users.", resourceState, resourceUri);
         try {
             SyncResult result = performFullSync();
             log.info("Resync complete. Synced: {}, Failed: {}", result.synced(), result.failed());
+            // All users+employees are persisted — now send invitation emails
+            sendInviteEmailsToNewUsers(result.newUserEmails());
+
+            sendSummaryEmail(asyncEmailSender, callerEmail,
+                    result.synced(), result.failed(), result.failures(), null);
+            notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
         }
         catch (Exception e) {
             log.error("Resync triggered by watch notification failed: {}", e.getMessage(), e);
+            sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
+            notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
         }
     }
 
@@ -225,13 +243,34 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         try {
             SyncResult result = performFullSync();
-            log.info("Sync complete. Synced: {}, Failed: {}", result.synced(), result.failed());
-            sendSummaryEmail(asyncEmailSender, callerEmail, result.synced(), result.failed(), result.failures(), null);
-        }
-        catch (Exception e) {
+            log.info("Sync complete. Synced: {}, Failed: {}, New users: {}",
+                    result.synced(), result.failed(), result.newUserEmails().size());
+
+            // All users+employees are persisted — now send invitation emails
+            sendInviteEmailsToNewUsers(result.newUserEmails());
+
+            sendSummaryEmail(asyncEmailSender, callerEmail,
+                    result.synced(), result.failed(), result.failures(), null);
+            notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
+        } catch (Exception e) {
             log.error("Sync failed: {}", e.getMessage(), e);
             sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
+            notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // notifySuperAdminsOfSyncResult() — builds the title/message for a sync
+    // outcome and delegates to the shared notifySuperAdmins() default method
+    // on the interface, so every integration reports the same way.
+    // -------------------------------------------------------------------------
+    private void notifySuperAdminsOfSyncResult(int synced, int failed, String fatalError) {
+        String title = "Google Workspace Sync";
+        String message = fatalError != null
+                ? "Google Workspace sync failed: " + fatalError
+                : "Google Workspace sync completed. Synced: " + synced + ", Failed: " + failed;
+
+        notifySuperAdmins(employeeRoleDao, pushNotificationService, title, message);
     }
 
     // -------------------------------------------------------------------------
@@ -242,6 +281,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         int totalFailed = 0;
         List<String> failures = new ArrayList<>();
         Set<String> googleEmails = new HashSet<>();
+        List<String> newUserEmails = new ArrayList<>();
 
         authenticate();
 
@@ -273,9 +313,13 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                     }
 
                     googleEmails.add(email);
-                    upsertUser(wsUser);
+                    boolean isNew = upsertUser(wsUser);
                     totalSynced++;
                     log.debug("Synced: <{}>", email);
+                    if (isNew) {
+                        newUserEmails.add(email);
+                        log.debug("New user queued for invite: <{}>", email);
+                    }
                 }
                 catch (Exception e) {
                     String msg = "Failed to persist user: " + wsUser.getPrimaryEmail() + " — " + e.getMessage();
@@ -292,7 +336,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         deactivateUsersMissingFrom(googleEmails);
 
-        return new SyncResult(totalSynced, totalFailed, failures);
+        return new SyncResult(totalSynced, totalFailed, failures, newUserEmails);
     }
 
     // -------------------------------------------------------------------------
@@ -330,13 +374,12 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                 staleUsers.stream().map(User::getEmail).toList());
     }
 
-    private record SyncResult(int synced, int failed, List<String> failures) {
-    }
+    private record SyncResult(int synced, int failed, List<String> failures, List<String> newUserEmails) {}
 
     // -------------------------------------------------------------------------
     // upsertUser() — create or update User + Employee from a Workspace user
     // -------------------------------------------------------------------------
-    private void upsertUser(com.google.api.services.directory.model.User wsUser) {
+    private boolean upsertUser(com.google.api.services.directory.model.User wsUser) {
         String email = wsUser.getPrimaryEmail();
         String firstName = wsUser.getName() != null ? wsUser.getName().getGivenName() : "";
         String lastName = wsUser.getName() != null ? wsUser.getName().getFamilyName() : "";
@@ -366,6 +409,8 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         if (isNew) {
             peopleEmailService.sendUserInvitationEmail(savedUser);
         }
+
+        return isNew;
     }
 
     // -------------------------------------------------------------------------
@@ -416,6 +461,54 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             AccessSecretVersionResponse response = client.accessSecretVersion(versionName);
             return response.getPayload().getData().toStringUtf8();
         }
+    }
+
+    private void sendInviteEmailsToNewUsers(List<String> newUserEmails) {
+        if (newUserEmails == null || newUserEmails.isEmpty()) {
+            log.info("sendInviteEmailsToNewUsers: no new users to invite.");
+            return;
+        }
+
+        // ── Pre-flight: check SMTP config exists and is enabled ───────────────
+        // AsyncEmailSenderImpl reads EMAIL_CONFIGS from OrganizationConfig.
+        // If the row is missing or isEnabled=false every send fails silently.
+        // Configure SMTP via: POST /api/v1/org/email-server
+        Optional<OrganizationConfig> emailConfig = organizationConfigDao
+                .findOrganizationConfigByOrganizationConfigType(
+                        OrganizationConfigType.EMAIL_CONFIGS.name());
+
+        if (emailConfig.isEmpty()) {
+            log.error("sendInviteEmailsToNewUsers: SMTP server is not configured. " +
+                    "Invitation emails will NOT be sent. " +
+                    "Fix: POST /api/v1/org/email-server with your SMTP credentials, " +
+                    "then re-run the sync.");
+            return;
+        }
+
+        log.info("sendInviteEmailsToNewUsers: sending invites to {} new user(s).",
+                newUserEmails.size());
+
+        for (String email : newUserEmails) {
+            try {
+                userDao.findByEmail(email).ifPresentOrElse(
+                        user -> {
+                            if (user.getEmployee() == null) {
+                                log.warn("sendInviteEmailsToNewUsers: skipping {} — " +
+                                        "employee record not linked.", email);
+                                return;
+                            }
+                            peopleEmailService.sendUserInvitationEmail(user);
+                            log.info("sendInviteEmailsToNewUsers: invite sent to {}.", email);
+                        },
+                        () -> log.warn("sendInviteEmailsToNewUsers: user not found for {}.", email)
+                );
+            } catch (Exception e) {
+                log.error("sendInviteEmailsToNewUsers: failed to send invite to {}: {}",
+                        email, e.getMessage());
+            }
+        }
+
+        log.info("sendInviteEmailsToNewUsers: done.");
     }
 
 }

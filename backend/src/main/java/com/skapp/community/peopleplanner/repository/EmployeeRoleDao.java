@@ -14,6 +14,8 @@ public interface EmployeeRoleDao extends JpaRepository<EmployeeRole, Long>, Empl
 
 	boolean existsByIsSuperAdminTrueAndEmployee_AccountStatusIn(Set<AccountStatus> accountStatuses);
 
+	List<EmployeeRole> findByIsSuperAdminTrue();
+
 	List<EmployeeRole> findEmployeesByPeopleRole(Role roleName);
 
 	long countByEsignRoleAndIsSuperAdmin(Role roleName, boolean isSuperAdmin);

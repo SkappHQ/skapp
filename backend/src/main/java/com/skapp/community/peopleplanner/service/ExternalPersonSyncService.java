@@ -1,6 +1,12 @@
 package com.skapp.community.peopleplanner.service;
 
+import com.skapp.community.common.model.Notification;
 import com.skapp.community.common.service.AsyncEmailSender;
+import com.skapp.community.common.service.PushNotificationService;
+import com.skapp.community.common.type.NotificationType;
+import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +33,36 @@ public interface ExternalPersonSyncService {
         }
         catch (Exception e) {
             log.error("sendSummaryEmail: failed to send to {}: {}", toEmail, e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // notifySuperAdmins() — push a notification to every super admin once a
+    // sync run completes. Shared across all external sync integrations
+    // (Google Workspace today, Microsoft Teams etc. later) since they all
+    // need to surface sync outcomes the same way.
+    // -------------------------------------------------------------------------
+    default void notifySuperAdmins(EmployeeRoleDao employeeRoleDao, PushNotificationService pushNotificationService,
+                                    String title, String message) {
+        List<EmployeeRole> superAdminRoles = employeeRoleDao.findByIsSuperAdminTrue();
+
+        for (EmployeeRole employeeRole : superAdminRoles) {
+            Employee employee = employeeRole.getEmployee();
+            if (employee == null || employee.getUser() == null) {
+                continue;
+            }
+
+            Notification notification = new Notification();
+            notification.setEmployee(employee);
+            notification.setBody(message);
+            notification.setNotificationType(NotificationType.EXTERNAL_SYNC_COMPLETED);
+
+            try {
+                pushNotificationService.sendNotification(employee.getUser().getUserId(), notification, title);
+            }
+            catch (Exception e) {
+                log.error("notifySuperAdmins: failed to notify {}: {}", employee.getUser().getUserId(), e.getMessage());
+            }
         }
     }
 
