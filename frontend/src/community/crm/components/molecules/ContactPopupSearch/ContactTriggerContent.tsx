@@ -19,7 +19,9 @@ const ContactTriggerContent: FC<ContactTriggerContentProps> = ({
       className="flex flex-col items-start justify-center w-full min-h-8 cursor-pointer rounded-lg"
       onClick={onSelect}
     >
-      <span className="body2">{contact?.name ?? placeholder}</span>
+      <span className={`body2 ${contact?.name ? "" : "text-secondary-text"}`}>
+        {contact?.name ?? placeholder}
+      </span>
       {contact?.company?.name && (
         <span className="subtitle4 text-secondary-text">
           {contact.company.name}
