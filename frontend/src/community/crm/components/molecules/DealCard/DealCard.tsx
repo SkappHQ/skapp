@@ -1,11 +1,11 @@
 ﻿import {
   Avatar,
-  CheckTaskIcon,
+  ClipboardCheckIcon,
+  DealValueIcon,
   HandshakeIcon,
   HighPriorityIcon,
   LowPriorityIcon,
-  MediumPriorityIcon,
-  SubTaskIcon
+  MediumPriorityIcon
 } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
@@ -151,7 +151,7 @@ const DealCard: React.FC<DealCardProps> = ({
 
       <div className="flex items-center gap-1.5">
         <span className="shrink-0 text-zinc-500">
-          <CheckTaskIcon className="h-4 w-4" />
+          <DealValueIcon className="h-4 w-4" />
         </span>
         <span
           className="text-zinc-950"
@@ -173,7 +173,7 @@ const DealCard: React.FC<DealCardProps> = ({
             title={taskCountTooltip ?? `${taskCount} tasks`}
             className="flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1 text-zinc-600"
           >
-            <SubTaskIcon stroke="#52525b" />
+            <ClipboardCheckIcon stroke="#52525b" />
             <span
               style={{
                 fontFamily: "Inter, sans-serif",
