@@ -409,7 +409,24 @@
     "sidePanel": {
       "editTask": "Edit task",
       "deleteTask": "Delete task",
-      "kebabMenuAriaLabel": "Task actions"
+      "kebabMenuAriaLabel": "Task actions",
+      "notes": "Notes",
+      "noNotes": "No notes",
+      "dealsTitle": "Deals",
+      "noDeal": "No deal linked",
+      "relatedTasksTitle": "Related tasks",
+      "noRelatedTasks": "No related tasks",
+      "statusDone": "Done",
+      "statusPending": "Pending",
+      "assignedTo": "Assigned to",
+      "priority": "Priority",
+      "closingDate": "Closing date",
+      "contactName": "Contact name",
+      "noClosingDate": "Not set",
+      "noContact": "No contact",
+      "descriptionLabel": "Description",
+      "overdue": "Overdue",
+      "dueOn": "Due on {{date}}"
     }
   }
 }
