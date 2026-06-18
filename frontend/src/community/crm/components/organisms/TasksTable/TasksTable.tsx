@@ -5,6 +5,7 @@ import { CrmTaskTabEnum } from "~community/crm/enums/common";
 import { useGetTasksTabs } from "~community/crm/hooks/useGetTasksTabs";
 
 import OpenTasksTabContent from "../../molecules/OpenTasksTabContent/OpenTasksTabContent";
+import CompletedTasksTabContent from "../../molecules/CompletedTasksTabContent/CompletedTasksTabContent";
 
 const TasksTable: FC = () => {
   const tabs = useGetTasksTabs();
@@ -16,6 +17,8 @@ const TasksTable: FC = () => {
         return <OpenTasksTabContent tab={CrmTaskTabEnum.MY_TASKS} />;
       case CrmTaskTabEnum.TEAM_TASKS:
         return <OpenTasksTabContent tab={CrmTaskTabEnum.TEAM_TASKS} />;
+      case CrmTaskTabEnum.COMPLETED_TASKS:
+        return <CompletedTasksTabContent />;
       default:
         return <></>;
     }
