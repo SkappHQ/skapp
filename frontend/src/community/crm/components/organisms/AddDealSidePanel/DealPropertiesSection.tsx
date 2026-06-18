@@ -1,6 +1,7 @@
 import { FormikProps } from "formik";
 import { FC, useEffect, useMemo, useState } from "react";
 
+import { InputField } from "@rootcodelabs/skapp-ui";
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
@@ -12,7 +13,7 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
-import AmountField from "./AmountField";
+
 
 interface DealPropertiesSectionProps {
   translateText: (keys: string[]) => string;
@@ -71,13 +72,21 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
   return (
     <div className="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 w-full">
       <PropertyRow label={translateText(["labels", "value"])}>
-        <AmountField
-          value={values.amount}
-          error={errors.amount}
-          nonePlaceholder={translateText(["placeholders", "none"])}
-          ariaLabel={translateText(["ariaLabels", "amount"])}
-          onChange={handleChange}
-        />
+        <div className="flex-1 min-w-0">
+          <InputField
+            name="amount"
+            value={values.amount}
+            onChange={handleChange}
+            placeholder={translateText(["placeholders", "none"])}
+            type="text"
+            variant="sm"
+            fullWidth
+            state={errors.amount ? "error" : "default"}
+            errorMessage={errors.amount}
+            aria-label={translateText(["ariaLabels", "amount"])}
+            customStyles={{ background: "bg-white", border: "bg-white" }}
+          />
+        </div>
       </PropertyRow>
 
       <PropertyRow label={translateText(["labels", "priority"])}>
