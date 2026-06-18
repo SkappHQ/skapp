@@ -1,6 +1,6 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -35,11 +35,10 @@ const AddDealSidePanel: FC = () => {
   const { setToastMessage } = useToast();
   const { isCrmSalesManager } = useSessionData();
 
-  const [editingField, setEditingField] = useState<string | null>(null);
+  const ownerInitializedRef = useRef(false);
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
-  const [isOwnerInitialized, setIsOwnerInitialized] = useState(false);
 
   const { isCrmSidePanelOpen, setIsCrmSidePanelOpen } = useCrmStore(
     (store) => ({
@@ -82,23 +81,26 @@ const AddDealSidePanel: FC = () => {
 
   const { data: currentUser } = useGetUserPersonalDetails();
 
-  const stageOptions = useMemo(
-    () =>
-      stages.map((s) => ({
-        id: String(s.id),
-        value: String(s.id),
-        label: (
-          <div className="inline-flex items-center gap-2.5">
-            <div
-              className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: s.color }}
-            />
-            <span className="body2">{s.name}</span>
-          </div>
-        )
-      })),
-    [stages]
-  );
+  const stageOptions = stages.map((s) => ({
+    id: String(s.id),
+    value: String(s.id),
+    label: (
+      <div className="inline-flex items-center gap-2.5">
+        <div
+          className="size-2 rounded-full shrink-0"
+          style={{ backgroundColor: s.color }}
+        />
+        <span className="body2">{s.name}</span>
+      </div>
+    )
+  }));
+
+  const resetFormState = () => {
+    resetForm();
+    setSelectedOwner(null);
+    setSelectedContact(null);
+    ownerInitializedRef.current = false;
+  };
 
   const handleCreateDealSuccess = () => {
     setToastMessage({
@@ -107,11 +109,7 @@ const AddDealSidePanel: FC = () => {
       title: translateText(["toastMessages", "successTitle"]),
       description: translateText(["toastMessages", "successDescription"])
     });
-    formik.resetForm();
-    setEditingField(null);
-    setSelectedOwner(null);
-    setSelectedContact(null);
-    setIsOwnerInitialized(false);
+    resetFormState();
     setIsCrmSidePanelOpen(false);
   };
 
@@ -155,15 +153,7 @@ const AddDealSidePanel: FC = () => {
     }
   });
 
-  const {
-    values,
-    errors,
-    touched,
-    setFieldValue,
-    resetForm,
-    isSubmitting,
-    submitForm
-  } = formik;
+  const { values, setFieldValue, resetForm, isSubmitting, submitForm } = formik;
 
   useEffect(() => {
     if (!isCrmSidePanelOpen || stages.length === 0) return;
@@ -176,7 +166,7 @@ const AddDealSidePanel: FC = () => {
   }, [isCrmSidePanelOpen, stages]);
 
   useEffect(() => {
-    if (!currentUser || isOwnerInitialized) return;
+    if (!isCrmSidePanelOpen || !currentUser || ownerInitializedRef.current) return;
     if (!currentUser.employeeId) return;
     const owner: CrmOwner = {
       employeeId: Number(currentUser.employeeId),
@@ -187,29 +177,13 @@ const AddDealSidePanel: FC = () => {
     };
     setSelectedOwner(owner);
     setFieldValue("ownerId", String(owner.employeeId));
-    setIsOwnerInitialized(true);
-  }, [currentUser, isOwnerInitialized]);
+    ownerInitializedRef.current = true;
+  }, [isCrmSidePanelOpen, currentUser]);
 
   const handleClose = () => {
-    resetForm();
-    setEditingField(null);
-    setSelectedOwner(null);
-    setSelectedContact(null);
-    setIsOwnerInitialized(false);
+    resetFormState();
     setIsCrmSidePanelOpen(false);
   };
-
-  let stageErrorMessage: string | undefined;
-  if (isStagesError) {
-    stageErrorMessage = translateText(["validations", "stageLoadError"]);
-  } else if (touched.stageId) {
-    stageErrorMessage = errors.stageId;
-  }
-
-  const stageDropdownVariant =
-    (touched.stageId && errors.stageId) || isStagesError
-      ? "primary-error"
-      : "primary";
 
   const hasFormData = !!(
     values.name ||
@@ -251,12 +225,10 @@ const AddDealSidePanel: FC = () => {
       >
         <div className="flex flex-col gap-6 h-full">
           <DealNameStageSection
-            translateText={translateText}
             formik={formik}
             isStagesLoading={isStagesLoading}
+            isStagesError={isStagesError}
             stageOptions={stageOptions}
-            stageErrorMessage={stageErrorMessage}
-            stageDropdownVariant={stageDropdownVariant}
           />
 
           <div className="flex gap-6 items-start flex-1">
@@ -274,19 +246,20 @@ const AddDealSidePanel: FC = () => {
 
             <div className="w-1/3 flex flex-col gap-4">
               <DealPropertiesSection
-                translateText={translateText}
                 formik={formik}
-                editingField={editingField}
-                setEditingField={setEditingField}
-                isOwnerReadonly={isOwnerReadonly}
-                owners={owners}
-                selectedOwner={selectedOwner}
-                setSelectedOwner={setSelectedOwner}
-                setOwnerSearchTerm={setOwnerSearchTerm}
-                contacts={contacts}
-                selectedContact={selectedContact}
-                setSelectedContact={setSelectedContact}
-                setContactSearchTerm={setContactSearchTerm}
+                owner={{
+                  users: owners,
+                  selected: selectedOwner,
+                  onSelect: setSelectedOwner,
+                  onSearch: setOwnerSearchTerm,
+                  isReadonly: isOwnerReadonly
+                }}
+                contact={{
+                  contacts,
+                  selected: selectedContact,
+                  onSelect: setSelectedContact,
+                  onSearch: setContactSearchTerm
+                }}
               />
             </div>
           </div>

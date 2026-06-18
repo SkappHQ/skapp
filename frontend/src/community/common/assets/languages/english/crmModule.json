@@ -1,4 +1,11 @@
 {
+  "common": {
+    "ownerPopupSearch": {
+      "placeholder": "None",
+      "searchPlaceholder": "Search Owner",
+      "noResults": "No results"
+    }
+  },
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",

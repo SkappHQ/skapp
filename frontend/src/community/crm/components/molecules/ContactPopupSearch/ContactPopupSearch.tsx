@@ -4,9 +4,14 @@ import {
   DropdownWithSearchablePopup,
   TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { FC, RefObject, useMemo } from "react";
+import { FC, RefObject } from "react";
 
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
+import {
+  findById,
+  toDropdownOptions,
+  toSelectedDropdownOption
+} from "~community/crm/utils/crmUtil";
 
 interface Props {
   contacts: CrmContactLookup[];
@@ -29,32 +34,11 @@ const ContactPopupSearch: FC<Props> = ({
   noResultsText,
   ariaInvalid
 }) => {
-  const options: DropdownOption[] = useMemo(() => {
-    const mapped = contacts.map((c) => ({
-      id: c.id,
-      value: c.id,
-      label: c.name
-    }));
-    if (selectedContact && !contacts.some((c) => c.id === selectedContact.id)) {
-      return [
-        {
-          id: selectedContact.id,
-          value: selectedContact.id,
-          label: selectedContact.name
-        },
-        ...mapped
-      ];
-    }
-    return mapped;
-  }, [contacts, selectedContact]);
+  const getId = (c: CrmContactLookup) => c.id;
+  const getLabel = (c: CrmContactLookup) => c.name;
 
-  const selectedValue: DropdownOption | null = selectedContact
-    ? {
-        id: selectedContact.id,
-        value: selectedContact.id,
-        label: selectedContact.name
-      }
-    : null;
+  const options = toDropdownOptions(contacts, getId, getLabel);
+  const selectedValue = toSelectedDropdownOption(selectedContact, getId, getLabel);
 
   const handleChange = (val: DropdownValue | null) => {
     if (!val) {
@@ -62,10 +46,7 @@ const ContactPopupSearch: FC<Props> = ({
       return;
     }
     const { id } = val as DropdownOption;
-    const contact =
-      contacts.find((c) => c.id === id) ??
-      (selectedContact?.id === id ? selectedContact : null);
-    onChange(contact);
+    onChange(findById(contacts, id, getId));
   };
 
   return (

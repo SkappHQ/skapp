@@ -3,27 +3,32 @@ import { FormikProps } from "formik";
 import { FC, ReactNode } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
 
 interface DealNameStageSectionProps {
-  translateText: (keys: string[]) => string;
   formik: FormikProps<CrmDealAddFormTypes>;
   isStagesLoading: boolean;
+  isStagesError: boolean;
   stageOptions: { id: string; value: string; label: ReactNode }[];
-  stageErrorMessage: string | undefined;
-  stageDropdownVariant: "primary" | "primary-error";
 }
 
 const DealNameStageSection: FC<DealNameStageSectionProps> = ({
-  translateText,
   formik,
   isStagesLoading,
-  stageOptions,
-  stageErrorMessage,
-  stageDropdownVariant
+  isStagesError,
+  stageOptions
 }) => {
+  const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
     formik;
+
+  const hasStageError = isStagesError || (touched.stageId && errors.stageId);
+  const stageErrorMessage = isStagesError
+    ? translateText(["validations", "stageLoadError"])
+    : touched.stageId
+      ? errors.stageId
+      : undefined;
 
   return (
     <div className="flex gap-6 items-start">
@@ -50,7 +55,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
             options={stageOptions}
             value={values.stageId}
             onChange={(v) => setFieldValue("stageId", v)}
-            variant={stageDropdownVariant}
+            variant={hasStageError ? "primary-error" : "primary"}
             className="rounded-lg"
             width="55%"
             placeholder={translateText(["placeholders", "stage"])}

@@ -1,6 +1,7 @@
 import { FormikProps } from "formik";
 import { FC } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
@@ -13,58 +14,39 @@ import {
 
 import AmountField from "./AmountField";
 
-interface DealPropertiesSectionProps {
-  translateText: (keys: string[]) => string;
-  formik: FormikProps<CrmDealAddFormTypes>;
-  editingField: string | null;
-  setEditingField: (field: string | null) => void;
-  isOwnerReadonly: boolean;
-  owners: CrmOwner[];
-  selectedOwner: CrmOwner | null;
-  setSelectedOwner: (user: CrmOwner | null) => void;
-  setOwnerSearchTerm: (term: string) => void;
+interface OwnerFieldProps {
+  users: CrmOwner[];
+  selected: CrmOwner | null;
+  onSelect: (user: CrmOwner | null) => void;
+  onSearch: (term: string) => void;
+  isReadonly: boolean;
+}
+
+interface ContactFieldProps {
   contacts: CrmContactLookup[];
-  selectedContact: CrmContactLookup | null;
-  setSelectedContact: (c: CrmContactLookup | null) => void;
-  setContactSearchTerm: (term: string) => void;
+  selected: CrmContactLookup | null;
+  onSelect: (c: CrmContactLookup | null) => void;
+  onSearch: (term: string) => void;
+}
+
+interface DealPropertiesSectionProps {
+  formik: FormikProps<CrmDealAddFormTypes>;
+  owner: OwnerFieldProps;
+  contact: ContactFieldProps;
 }
 
 const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
-  translateText,
   formik,
-  editingField,
-  setEditingField,
-  isOwnerReadonly,
-  owners,
-  selectedOwner,
-  setSelectedOwner,
-  setOwnerSearchTerm,
-  contacts,
-  selectedContact,
-  setSelectedContact,
-  setContactSearchTerm
+  owner,
+  contact
 }) => {
-  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
-    formik;
+  const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
+  const { values, errors, touched, setFieldValue } = formik;
 
   return (
     <div className="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 w-full">
       <PropertyRow label={translateText(["labels", "value"])}>
-        <AmountField
-          isEditing={editingField === "amount"}
-          value={values.amount}
-          isTouched={touched.amount}
-          error={errors.amount}
-          placeholder={translateText(["placeholders", "amount"])}
-          nonePlaceholder={translateText(["placeholders", "none"])}
-          ariaLabel={translateText(["ariaLabels", "amount"])}
-          onEdit={() => setEditingField("amount")}
-          onChange={handleChange}
-          onBlur={(e) => {
-            handleBlur(e);
-            setEditingField(null);
-          }}
-        />
+        <AmountField formik={formik} />
       </PropertyRow>
 
       <PropertyRow label={translateText(["labels", "priority"])}>
@@ -77,22 +59,18 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
       <PropertyRow label={translateText(["labels", "ownedBy"])}>
         <div
           className={`flex flex-col w-full${
-            isOwnerReadonly ? " pointer-events-none" : ""
+            owner.isReadonly ? " pointer-events-none" : ""
           }`}
         >
           <OwnerPopupSearch
-            users={owners}
-            selectedUser={selectedOwner}
-            onSearch={setOwnerSearchTerm}
+            users={owner.users}
+            selectedUser={owner.selected}
+            onSearch={owner.onSearch}
             onChange={(user: CrmOwner | null) => {
-              setSelectedOwner(user);
+              owner.onSelect(user);
               setFieldValue("ownerId", user ? String(user.employeeId) : "");
             }}
-            placeholder={translateText(["placeholders", "none"])}
-            searchPlaceholder={translateText(["placeholders", "ownerSearch"])}
-            noResultsText={translateText(["placeholders", "noResults"])}
             ariaInvalid={!!(touched.ownerId && errors.ownerId)}
-            chipBackgroundColor="bg-gray-100"
           />
           {touched.ownerId && errors.ownerId && (
             <p className="text-semantic-red-text body3 mt-1">
@@ -105,13 +83,13 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
       <PropertyRow label={translateText(["labels", "contactName"])}>
         <div className="flex flex-col w-full">
           <ContactPopupSearch
-            contacts={contacts}
-            selectedContact={selectedContact}
+            contacts={contact.contacts}
+            selectedContact={contact.selected}
             onChange={(c: CrmContactLookup | null) => {
-              setSelectedContact(c);
+              contact.onSelect(c);
               setFieldValue("contactId", c ? String(c.id) : "");
             }}
-            onSearch={setContactSearchTerm}
+            onSearch={contact.onSearch}
             placeholder={translateText(["placeholders", "none"])}
             searchPlaceholder={translateText(["placeholders", "contactSearch"])}
             noResultsText={translateText(["placeholders", "noResults"])}

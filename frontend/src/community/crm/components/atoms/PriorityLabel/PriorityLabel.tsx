@@ -1,6 +1,5 @@
 import {
   HighPriorityIcon,
-  Label,
   LowPriorityIcon,
   MediumPriorityIcon
 } from "@rootcodelabs/skapp-ui";
@@ -8,42 +7,41 @@ import React, { FC } from "react";
 
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
+import PriorityLabelItem from "./PriorityLabelItem";
+
 interface PriorityLabelProps {
   priority: CrmPriorityEnum;
   label: string;
 }
 
 const PriorityLabel: FC<PriorityLabelProps> = ({ priority, label }) => {
-  switch (priority?.toUpperCase()) {
+  switch (priority) {
     case CrmPriorityEnum.LOW:
       return (
-        <Label
+        <PriorityLabelItem
           backgroundColor="bg-semantic-green-background"
-          className="py-2 px-3"
-        >
-          <LowPriorityIcon />
-          <span className="body3 text-semantic-green-text">{label}</span>
-        </Label>
+          icon={<LowPriorityIcon />}
+          textClassName="text-semantic-green-text"
+          label={label}
+        />
       );
     case CrmPriorityEnum.MEDIUM:
       return (
-        <Label
+        <PriorityLabelItem
           backgroundColor="bg-semantic-amber-background"
-          className="py-2 px-3"
-        >
-          <MediumPriorityIcon />
-          <span className="body3 text-semantic-amber-text">{label}</span>
-        </Label>
+          icon={<MediumPriorityIcon />}
+          textClassName="text-semantic-amber-text"
+          label={label}
+        />
       );
     case CrmPriorityEnum.HIGH:
       return (
-        <Label
+        <PriorityLabelItem
           backgroundColor="bg-semantic-red-background"
-          className="py-2 px-3"
-        >
-          <HighPriorityIcon />
-          <span className="body3 text-semantic-red-text">{label}</span>
-        </Label>
+          icon={<HighPriorityIcon />}
+          textClassName="text-semantic-red-text"
+          label={label}
+        />
       );
     default:
       return null;
