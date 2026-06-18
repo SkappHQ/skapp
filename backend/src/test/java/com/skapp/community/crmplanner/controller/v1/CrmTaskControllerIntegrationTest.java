@@ -440,6 +440,20 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get completed tasks with search keyword matching task name - Returns matching tasks")
+	void getCompletedTasks_WithSearchKeywordMatchingTaskName_ReturnsMatchingTasks() throws Exception {
+		savedTask("Unique Task Name To Search", false, true);
+		savedTask("Other Completed Task", false, true);
+
+		performGetCompletedRequest(authToken, "0", "10", "unique", null, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Unique Task Name To Search"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
 	@DisplayName("Get completed tasks filtered by contactId - Returns only completed tasks for that contact")
 	void getCompletedTasks_FilterByContactId_ReturnsMatchingTasks() throws Exception {
 		CrmContact other = new CrmContact();
