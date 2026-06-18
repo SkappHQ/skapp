@@ -10,6 +10,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmCompanyType } from "~community/crm/types/CommonTypes";
+import { openInNewTab } from "~community/common/utils/commonUtil";
 
 interface Props {
   company: CrmCompanyType;
@@ -29,9 +30,7 @@ const SidePanelCompanyHeader: FC<Props> = ({ company }) => {
             icon={<BrowserIcon width="20" height="20" />}
             value={company.website}
             endIcon={IconName.POP_OUT_ICON}
-            onClick={() =>
-              window.open(company.website, "_blank", "noopener,noreferrer")
-            }
+            onClick={() => openInNewTab(company.website)}
           />
         )}
         {company.contactNumber && (
