@@ -272,7 +272,7 @@ export interface CrmTaskCreatePayload {
   notes: string;
 }
 
-export interface ContactDetailTask {
+export interface DetailPanelTaskResponseType {
   id: number;
   name: string;
   type: string;
@@ -283,7 +283,7 @@ export interface ContactDetailTask {
   owner: CrmOwner;
 }
 
-export interface ContactDetailDeal {
+export interface DetailPanelDealResponseType {
   id: number;
   name: string;
   description: string | null;
@@ -305,6 +305,6 @@ export interface CrmContactDetailResponseType {
   activeDealsCount: number;
   totalRevenue: string;
   pipelineRevenue: string;
-  tasks: ContactDetailTask[];
-  deals: ContactDetailDeal[];
+  tasks: DetailPanelTaskResponseType[];
+  deals: DetailPanelDealResponseType[];
 }

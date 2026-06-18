@@ -286,7 +286,12 @@
     "sidePanel": {
       "editCompany": "Edit company",
       "deleteCompany": "Delete company",
-      "kebabMenuAriaLabel": "Company actions"
+      "kebabMenuAriaLabel": "Company actions",
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals",
+        "contacts": "Contacts"
+      }
     }
   },
   "deals": {
@@ -296,7 +301,6 @@
     "detailsPageHead": "Deal Details | Skapp",
     "detailsTitle": "Deal Details",
     "sidePanel": {
-      "title": "Deals",
       "addDealBtn": "Add deal",
       "emptyTitle": "No deals",
       "emptyDescription": "No deals associated with this company",
@@ -319,6 +323,22 @@
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
       "infiniteScrollLoadingMessage": "Loading more deals..."
+    },
+    "deleteDealModal": {
+      "areYouSureModalTitle": "Are you sure?",
+      "description": "Are you sure you want to delete '{{dealName}}'? This will remove all tasks linked to this deal. This action cannot be undone.",
+      "buttons": {
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "ariaLabels": {
+        "cancel": "Cancel delete deal",
+        "confirm": "Confirm delete deal"
+      }
+    },
+    "sidePanel": {
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions"
     },
     "addDealSidePanel": {
       "title": "Add Deal",

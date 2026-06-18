@@ -1,10 +1,10 @@
 import { Chip } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
-import { CrmDealType } from "~community/crm/types/CommonTypes";
+import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
 
 interface Props {
-  deal: CrmDealType;
+  deal: DetailPanelDealResponseType;
 }
 
 const DealAccordionItemBadge: React.FC<Props> = ({ deal }) => (

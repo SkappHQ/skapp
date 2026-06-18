@@ -4,12 +4,15 @@ import SupervisorReassignmentModal from "~community/people/components/organisms/
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeRemoveAction } from "~community/people/types/PeopleTypes";
 
+import ReactivateConfirmationModal from "../ReactivateConfirmationModal/ReactivateConfirmationModal";
 import TerminateConfirmationModal from "../TerminateConfirmationModal/TerminateConfirmationModal";
 
 const TerminationModalController: FC = () => {
   const {
     isTerminationConfirmationModalOpen,
     setTerminationConfirmationModalOpen,
+    isReactivationConfirmationModalOpen,
+    setReactivationConfirmationModalOpen,
     selectedEmployeeId,
     isSupervisorReassignmentModalOpen,
     supervisorReassignmentActionType,
@@ -31,6 +34,11 @@ const TerminationModalController: FC = () => {
       <TerminateConfirmationModal
         isOpen={isTerminationConfirmationModalOpen}
         onClose={() => setTerminationConfirmationModalOpen(false)}
+        employeeId={Number(selectedEmployeeId)}
+      />
+      <ReactivateConfirmationModal
+        isOpen={isReactivationConfirmationModalOpen}
+        onClose={() => setReactivationConfirmationModalOpen(false)}
         employeeId={Number(selectedEmployeeId)}
       />
     </>
