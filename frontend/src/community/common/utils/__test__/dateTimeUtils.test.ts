@@ -8,6 +8,7 @@ import {
   convertDateToUTC,
   convertToYYYYMMDDFromDate,
   convertToYYYYMMDDFromDateTime,
+  convertUTCStringToLocalDateTime,
   formatDateTimeWithOrdinalIndicator,
   formatDateTimeWithOrdinalIndicatorWithoutYear,
   formatDateToISOString,
@@ -224,6 +225,31 @@ describe("dateTimeUtils", () => {
     const dateTime = parseStringWithCurrentYearAndConvertToDateTime(dateString);
     const currentYear = new Date().getFullYear();
     expect(dateTime.toISO()).toMatch(`${currentYear}-10-10T00:00:00.000+05:30`);
+  });
+});
+
+describe("convertUTCStringToLocalDateTime", () => {
+  it("should treat the string as UTC even without a Z suffix", () => {
+    const result = convertUTCStringToLocalDateTime("2026-06-18T00:00:00");
+    expect(result.isValid).toBe(true);
+    expect(result.zoneName).toBe(DateTime.local().zoneName);
+  });
+
+  it("should produce the same instant as a string with Z suffix", () => {
+    const withoutZ = convertUTCStringToLocalDateTime("2026-06-18T18:30:00");
+    const withZ = convertUTCStringToLocalDateTime("2026-06-18T18:30:00Z");
+    expect(withoutZ.toMillis()).toBe(withZ.toMillis());
+  });
+
+  it("should return the correct local date for a UTC time that crosses midnight", () => {
+    // e.g. UTC 18:30 on the 17th = local midnight on the 18th in UTC+5:30
+    const result = convertUTCStringToLocalDateTime("2026-06-17T18:30:00");
+    const expectedDate = DateTime.fromISO("2026-06-17T18:30:00", {
+      zone: "UTC"
+    }).setZone("local");
+    expect(result.day).toBe(expectedDate.day);
+    expect(result.month).toBe(expectedDate.month);
+    expect(result.year).toBe(expectedDate.year);
   });
 });
 
