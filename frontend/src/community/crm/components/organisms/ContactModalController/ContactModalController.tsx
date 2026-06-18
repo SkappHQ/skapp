@@ -10,15 +10,15 @@ import AddContactModalContent from "../../molecules/AddContactModalContent/AddCo
 const ContactModalController = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
-  const { isAddContactModalOpen, contactModalType, setIsAddContactModalOpen } =
+  const { isContactModalOpen, contactModalType, setIsContactModalOpen } =
     useCrmStore((store) => ({
-      isAddContactModalOpen: store.isAddContactModalOpen,
+      isContactModalOpen: store.isContactModalOpen,
       contactModalType: store.contactModalType,
-      setIsAddContactModalOpen: store.setIsAddContactModalOpen
+      setIsContactModalOpen: store.setIsContactModalOpen
     }));
 
   const handleCloseModal = (): void => {
-    setIsAddContactModalOpen(false);
+    setIsContactModalOpen(false);
   };
 
   const getModalTitle = (modalType: CrmModalTypes) => {
@@ -43,7 +43,7 @@ const ContactModalController = () => {
 
   return (
     <SmallModal
-      isOpen={isAddContactModalOpen}
+      isOpen={isContactModalOpen}
       onClose={handleCloseModal}
       modalHeader={getModalTitle(contactModalType)}
       content={getModalContent()}

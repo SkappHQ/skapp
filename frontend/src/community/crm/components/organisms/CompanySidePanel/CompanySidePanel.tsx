@@ -2,6 +2,7 @@ import {
   DeleteButtonIcon,
   EditIcon,
   KebabMenu,
+  MenuItemProps,
   SidePanel,
   SidePanelProps,
   TabItem,
@@ -34,7 +35,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsCompanyModalOpen(true);
   };
 
-  const menuItems = [
+  const menuItems: MenuItemProps[] = [
     {
       id: "edit",
       label: translateText(["editCompany"]),
@@ -116,8 +117,9 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             activeTabId={activeTab}
             onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
           />
+          <hr className="border-secondary-accent" />
         </div>
-        <hr className="border-secondary-accent" />
+
         {renderTabContent()}
       </div>
     </SidePanel>

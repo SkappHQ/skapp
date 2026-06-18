@@ -17,14 +17,14 @@ const Contacts: NextPage = () => {
     isCrmSidePanelOpen,
     setIsCrmSidePanelOpen,
     setSelectedContact,
-    setIsAddContactModalOpen,
+    setIsContactModalOpen,
     setContactModalType,
     selectedContact
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedContact: store.setSelectedContact,
-    setIsAddContactModalOpen: store.setIsAddContactModalOpen,
+    setIsContactModalOpen: store.setIsContactModalOpen,
     setContactModalType: store.setContactModalType,
     selectedContact: store.selectedContact
   }));
@@ -35,7 +35,7 @@ const Contacts: NextPage = () => {
   };
 
   const onPrimaryButtonClick = () => {
-    setIsAddContactModalOpen(true);
+    setIsContactModalOpen(true);
     setContactModalType(CrmModalTypes.ADD_CONTACT_MODAL);
   };
 

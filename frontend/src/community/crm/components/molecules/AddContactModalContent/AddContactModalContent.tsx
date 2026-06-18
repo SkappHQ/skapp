@@ -77,8 +77,8 @@ const AddContactModalContent: React.FC = () => {
     });
   }, [currentUser]);
 
-  const { setIsAddContactModalOpen } = useCrmStore((store) => ({
-    setIsAddContactModalOpen: store.setIsAddContactModalOpen
+  const { setIsContactModalOpen } = useCrmStore((store) => ({
+    setIsContactModalOpen: store.setIsContactModalOpen
   }));
 
   const initialValues: CrmContactAddFormTypes = {
@@ -113,7 +113,7 @@ const AddContactModalContent: React.FC = () => {
   };
 
   const handleCloseModal = (): void => {
-    setIsAddContactModalOpen(false);
+    setIsContactModalOpen(false);
   };
 
   const { mutate: createNewContact, isPending } = useCreateNewContact(

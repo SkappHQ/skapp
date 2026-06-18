@@ -4,11 +4,11 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmContactSliceTypes } from "~community/crm/types/SliceTypes";
 
 const CrmContactSlice = (set: SetType<CrmContactSliceTypes>) => ({
-  isAddContactModalOpen: false,
+  isContactModalOpen: false,
   contactModalType: CrmModalTypes.ADD_CONTACT_MODAL,
   selectedContact: null,
-  setIsAddContactModalOpen: (isAddContactModalOpen: boolean) =>
-    set({ isAddContactModalOpen: isAddContactModalOpen }),
+  setIsContactModalOpen: (isContactModalOpen: boolean) =>
+    set({ isContactModalOpen }),
   setContactModalType: (contactModalType: CrmModalTypes) =>
     set({ contactModalType: contactModalType }),
   setSelectedContact: (selectedContact: CrmContactMetricsType | null) =>
