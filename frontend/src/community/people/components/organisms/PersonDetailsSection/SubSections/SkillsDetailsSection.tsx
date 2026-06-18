@@ -9,7 +9,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
 import { SkillType } from "~community/people/types/PeopleTypes";
 
-import ChipAutocomplete from "../../../molecules/ChipAutocomplete/ChipAutocomplete";
+import ChipAutocomplete from "~community/common/components/molecules/ChipAutocomplete/ChipAutocomplete";
 
 interface Props {
   isInputsDisabled?: boolean;

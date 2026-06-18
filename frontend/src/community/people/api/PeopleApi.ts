@@ -35,6 +35,7 @@ import {
   peoplesEndpoints
 } from "~community/people/api/utils/ApiEndpoints";
 import { peopleQueryKeys } from "~community/people/api/utils/QueryKeys";
+import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
 import { EntitlementInfo } from "~community/people/types/EmployeeBulkUpload";
@@ -54,7 +55,6 @@ import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
-import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import {
   AllEmployeeDataResponse,
   L1EmployeeType,
@@ -80,14 +80,7 @@ export const useGetBannerData = (): UseQueryResult<number> => {
 };
 
 export const useGetSkills = (): UseQueryResult<SkillType[]> => {
-  const { setToastMessage } = useToast();
-  const translateText = useTranslator(
-    "peopleModule",
-    "addResource",
-    "skillsDetails"
-  );
-
-  return useQuery({
+  return useQuery<AxiosResponse, Error, SkillType[]>({
     queryKey: peopleQueryKeys.GET_SKILLS,
     queryFn: async () => authFetch.get(peoplesEndpoints.GET_SKILLS),
     select: (response) =>
@@ -97,15 +90,7 @@ export const useGetSkills = (): UseQueryResult<SkillType[]> => {
           name: skill.name,
           skillType: skill.skillType as SkillTypes
         })
-      ),
-    onError: () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["getSkillsErrorTitle"]),
-        description: translateText(["getSkillsErrorDescription"])
-      });
-    }
+      )
   });
 };
 

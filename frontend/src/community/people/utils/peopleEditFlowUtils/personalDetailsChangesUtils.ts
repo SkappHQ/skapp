@@ -367,14 +367,12 @@ export const getSkillsDetailsChanges = (
 ): boolean => {
   if (newSkills.length !== previousSkills.length) return true;
 
-  return newSkills.some((skill, index) => {
-    const prev = previousSkills[index];
-    return (
-      skill.skillId !== prev.skillId ||
-      skill.skillType !== prev.skillType ||
-      skill.name !== prev.name
-    );
-  });
+  const skillKey = (skill: L3SkillsDetailsType[number]): string =>
+    `${skill.skillType}::${skill.skillId ?? skill.name}`;
+
+  const previousKeys = new Set(previousSkills.map(skillKey));
+
+  return newSkills.some((skill) => !previousKeys.has(skillKey(skill)));
 };
 
 export const getPersonalDetailsChanges = (

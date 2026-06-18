@@ -209,6 +209,15 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                 disabled={isDisabled}
                 placeholder={value.length === 0 ? placeholder : ""}
                 className="outline-none body1"
+                role="combobox"
+                aria-expanded={isOpen && filteredOptions.length > 0}
+                aria-controls={`${id}-list`}
+                aria-activedescendant={
+                  activeIndex !== null
+                    ? `${id}-option-${activeIndex}`
+                    : undefined
+                }
+                aria-autocomplete="list"
               />
             )}
           </div>
@@ -249,6 +258,12 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                 role="option"
                 aria-selected={activeIndex === index}
                 onClick={() => handleSelect(option)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleSelect(option);
+                  }
+                }}
                 onMouseEnter={() => setActiveIndex(index)}
                 className={`px-4 py-2 cursor-pointer outline-none transition-all duration-150 truncate ${
                   index === activeIndex
