@@ -107,6 +107,15 @@ public class GlobalExceptionHandler {
 				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
 	}
 
+	@ExceptionHandler(InternalServerException.class)
+	public ResponseEntity<ResponseEntityDto> handleInternalServerException(InternalServerException e) {
+		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+		handleException(e, e.getMessageKey().name(), status);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
+	}
+
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<ResponseEntityDto> handleEntityNotFoundExceptions(EntityNotFoundException e) {
 		HttpStatus status = HttpStatus.NOT_FOUND;
@@ -157,6 +166,15 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(DataAccessException.class)
 	public ResponseEntity<ResponseEntityDto> handleDataAccessException(DataAccessException e) {
+		// A field-encryption (or other server-side) fault thrown inside a JPA flush/load
+		// is
+		// rewrapped by Hibernate as a DataAccessException — unwrap it so the original,
+		// coded error surfaces instead of a generic database error.
+		InternalServerException internalServerException = findInternalServerException(e);
+		if (internalServerException != null) {
+			return handleInternalServerException(internalServerException);
+		}
+
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		handleException(e, CommonMessageConstant.COMMON_ERROR_DATABASE_ERROR.name(), status);
 
@@ -168,6 +186,14 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ResponseEntityDto> handleExceptions(Exception e) {
+		// Same unwrap for any other wrapper (e.g. a raw PersistenceException) that buries
+		// an
+		// InternalServerException in its cause chain.
+		InternalServerException internalServerException = findInternalServerException(e);
+		if (internalServerException != null) {
+			return handleInternalServerException(internalServerException);
+		}
+
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		handleException(e, CommonMessageConstant.COMMON_ERROR_MODULE_EXCEPTION.name(), status);
 
@@ -175,6 +201,20 @@ public class GlobalExceptionHandler {
 				new ResponseEntityDto(true,
 						new ErrorResponse(status, e.getMessage(), CommonMessageConstant.COMMON_ERROR_MODULE_EXCEPTION)),
 				status);
+	}
+
+	/**
+	 * Walks the cause chain looking for an {@link InternalServerException}. Hibernate and
+	 * Spring wrap exceptions thrown during flush/load, so the original is rarely the
+	 * top-level type seen by these handlers.
+	 */
+	private InternalServerException findInternalServerException(Throwable throwable) {
+		for (Throwable current = throwable; current != null; current = current.getCause()) {
+			if (current instanceof InternalServerException internalServerException) {
+				return internalServerException;
+			}
+		}
+		return null;
 	}
 
 	@ExceptionHandler(ServletException.class)
