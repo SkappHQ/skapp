@@ -3,7 +3,7 @@ import { JSX, useEffect, useState } from "react";
 import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import EmployeeCancelLeaveStatusPopup from "~community/leave/components/molecules/EmployeeLeaveStatusPopups/EmployeeCancelLeaveStatusPopup/EmployeeCancelLeaveStatusPopup";
-import EmployeeConfirmCancelLeavePopup from "~community/leave/components/molecules/EmployeeLeaveStatusPopups/EmployeeConfirmCancelLeavePopup.tsx/EmployeeConfirmCancelLeavePopup";
+import EmployeeConfirmCancelLeavePopup from "~community/leave/components/molecules/EmployeeLeaveStatusPopups/EmployeeConfirmCancelLeavePopup/EmployeeConfirmCancelLeavePopup";
 import EmployeeLeaveApprovedStatusPopup from "~community/leave/components/molecules/EmployeeLeaveStatusPopups/EmployeeLeaveApprovedStatusPopup/EmployeeLeaveApprovedStatusPopup";
 import EmployeeLeaveRequestCancelledPopup from "~community/leave/components/molecules/EmployeeLeaveStatusPopups/EmployeeLeaveRequestCancelledPopup/EmployeeLeaveRequestCancelledPopup";
 import EmployeeNudgeSupervisorPopup from "~community/leave/components/molecules/EmployeeLeaveStatusPopups/EmployeeNudgeSupervisorPopup/EmployeeNudgeSupervisorPopup";

@@ -61,11 +61,11 @@ const EducationalDetailsSection = (props: Props): JSX.Element => {
   } = useEducationalDetailsFormHandlers();
 
   const tableHeaders = [
-    translateText(["college"]),
-    translateText(["degree"]),
-    translateText(["major"]),
-    translateText(["startDate"]),
-    translateText(["endDate"])
+    { label: translateText(["college"]) },
+    { label: translateText(["degree"]) },
+    { label: translateText(["major"]) },
+    { label: translateText(["startDate"]) },
+    { label: translateText(["endDate"]) }
   ];
 
   return (
@@ -212,9 +212,15 @@ const EducationalDetailsSection = (props: Props): JSX.Element => {
               type={"submit"}
               icon={
                 rowEdited > -1 ? (
-                  <Icon name={IconName.SAVE_ICON} />
+                  <Icon
+                    name={IconName.SAVE_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 ) : (
-                  <Icon name={IconName.ADD_ICON} />
+                  <Icon
+                    name={IconName.ADD_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 )
               }
               iconPosition="end"

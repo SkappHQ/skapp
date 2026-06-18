@@ -17,7 +17,14 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_SUCCESS_TEAM_DELETED("api.success.people.team-deleted"),
 	PEOPLE_SUCCESS_EMPLOYEE_ADDED("api.success.people.employee-added"),
 	PEOPLE_SUCCESS_EMPLOYEE_TERMINATED("api.success.people.employee-terminated"),
+	PEOPLE_SUCCESS_EMPLOYEE_ACTIVATED("api.success.people.employee-activated"),
 	PEOPLE_SUCCESS_EMPLOYEE_DELETED("api.success.people.employee-deleted"),
+	PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED(
+			"api.success.people.supervisors-reassigned-and-employee-terminated"),
+	PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_DELETED(
+			"api.success.people.supervisors-reassigned-and-employee-deleted"),
+	PEOPLE_SUCCESS_DELETE_HOLIDAYS("api.success.people.delete-holidays"),
+	PEOPLE_SUCCESS_DELETE_SELECTED_HOLIDAYS("api.success.people.delete-selected-holidays"),
 
 	// Error messages
 	PEOPLE_ERROR_TEAM_SUPERVISOR_IDS_NOT_VALID("api.error.people.notnull.team.supervisors.invalid"),
@@ -80,6 +87,8 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_HOLIDAY_TODAY_NOT_ALLOWED("api.error.people.holiday.today-not-allowed"),
 	PEOPLE_ERROR_HOLIDAY_PAST_DATE_NOT_ALLOWED("api.error.people.holiday.past-date-not-allowed"),
 	PEOPLE_ERROR_HOLIDAY_NAME_REQUIRED("api.error.people.holiday.name-required"),
+	PEOPLE_ERROR_HOLIDAY_REQUIRED_WORK_LOCATION("api.error.people.holiday.required-work-location"),
+	PEOPLE_ERROR_HOLIDAY_WORK_LOCATION_NOT_FOUND("api.error.people.holiday.work-location-not-found"),
 	PEOPLE_ERROR_HOLIDAY_NAME_CHAR_LIMIT("api.error.people.holiday.name-char-limit"),
 	PEOPLE_ERROR_HOLIDAY_NAME_SPECIAL_CHAR("api.error.people.holiday.name-special-char"),
 	PEOPLE_ERROR_HOLIDAY_DURATION_INVALID("api.error.people.holiday.duration-invalid"),
@@ -91,6 +100,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_EMPLOYEE_FAMILY_DETAILS_NOT_FOUND("api.error.people.employee-family-details.not-found"),
 	PEOPLE_ERROR_MANAGER_NOT_FOUND("api.error.people.manager.not-found"),
 	PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL("api.error.people.employee-id-cannot-null"),
+	PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED("api.error.people.employee-not-terminated"),
 	PEOPLE_ERROR_EMPLOYEE_ACCESS_DENIED("api.error.people.employee.access-denied"),
 	PEOPLE_ERROR_MISSING_PREVIOUS_EMPLOYMENT_START_AND_END_DATES(
 			"api.error.people.missing-previous-employment-start-and-end-dates"),
@@ -102,6 +112,9 @@ public enum PeopleMessageConstant implements MessageConstant {
 			"api.error.people.invalid-value-for-employment-allocation-enum"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_STATUS_ENUM("api.error.people.invalid-value-for-employment-status-enum"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_TYPE_ENUM("api.error.people.invalid-value-for-employment-type-enum"),
+
+	PEOPLE_ERROR_EMPLOYMENT_TYPE_REQUIRES_JOB_FAMILY_AND_TITLE(
+			"api.error.people.employment-type-requires-job-family-and-title"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_ETHNICITY_ENUM("api.error.people.invalid-value-for-ethnicity-enum"),
 	PEOPLE_ERROR_INVALID_VALUE_FOR_MARITAL_STATUS_ENUM("api.error.people.invalid-value-for-marital-status-enum"),
 	PEOPLE_ERROR_LOGIN_PENDING_EMPLOYEES_NOT_FOUND("api.error.people.login-pending-employees-not-found"),
@@ -123,11 +136,13 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_INVALID_ATTENDANCE_ROLE("api.error.people.invalid-attendance-role"),
 	PEOPLE_ERROR_INVALID_LEAVE_ROLE("api.error.people.invalid-leave-role"),
 	PEOPLE_ERROR_INVALID_INVOICE_ROLE("api.error.people.invalid-invoice-role"),
+	PEOPLE_ERROR_INVALID_CRM_ROLE("api.error.people.invalid-crm-role"),
 	PEOPLE_ERROR_INVALID_MODULE_NAME("api.error.people.invalid-module-name"),
 	PEOPLE_ERROR_ATTENDANCE_RESTRICTED_ROLE_ACCESS("api.error.people.attendance-restricted-role-access"),
 	PEOPLE_ERROR_PEOPLE_RESTRICTED_ROLE_ACCESS("api.error.people.people-restricted-role-access"),
 	PEOPLE_ERROR_LEAVE_RESTRICTED_ROLE_ACCESS("api.error.people.leave-restricted-role-access"),
 	PEOPLE_ERROR_INVOICE_RESTRICTED_ROLE_ACCESS("api.error.people.invoice-restricted-role-access"),
+	PEOPLE_ERROR_CRM_RESTRICTED_ROLE_ACCESS("api.error.people.crm-restricted-role-access"),
 	PEOPLE_ERROR_FAMILY_DOB_FUTURE_DATE("api.error.people.family-dob-future-date"),
 	PEOPLE_ERROR_DOB_FUTURE_DATE("api.error.people.dob-future-date"),
 	PEOPLE_ERROR_EDUCATION_START_END_DATE("api.error.people.education-start-end-date"),
@@ -203,7 +218,16 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_VALIDATION_ONLY_ONE_CURRENT_EMPLOYMENT_ALLOWED(
 			"api.error.people.validation-only-one-current-employment-allowed"),
 	PEOPLE_ERROR_VALIDATION_CANNOT_ADD_OTHER_SUPERVISORS_WITHOUT_PRIMARY_SUPERVISOR(
-			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),;
+			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),
+	PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND("api.error.people.transfer-supervisors.new-supervisor-not-found"),
+	PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN("api.error.people.transfer-supervisors.self-assign"),
+	PEOPLE_ERROR_TRANSFER_PRIMARY_SUPERVISOR_RECORD_NOT_FOUND(
+			"api.error.people.transfer-supervisors.primary-record-not-found"),
+	PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND(
+			"api.error.people.transfer-supervisors.team-record-not-found"),
+	PEOPLE_ERROR_EMPLOYEE_TERMINATION_OR_DELETION_ACTION_REQUIRED(
+			"api.error.people.employee-termination-or-deletion-action-required"),
+	PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND("api.error.people.validation-work-location-not-found");
 
 	private final String messageKey;
 

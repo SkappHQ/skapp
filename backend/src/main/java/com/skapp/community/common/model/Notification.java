@@ -39,6 +39,9 @@ public class Notification extends Auditable<String> {
 	@Column(name = "is_viewed")
 	private Boolean isViewed = false;
 
+	@Column(name = "is_type_viewed")
+	private Boolean isTypeViewed = false;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "notification_type", columnDefinition = "varchar(255)")
 	private NotificationType notificationType;

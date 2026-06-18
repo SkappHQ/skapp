@@ -10,7 +10,9 @@ export enum moduleAPIPath {
   JOB = "/job",
   TIME = "/time",
   ORGANIZATION = "/organization",
-  ROLES = "/roles"
+  ROLES = "/roles",
+  COMMON = "/com",
+  CRM = "/crm"
 }
 
 export enum nextAuthOptions {

@@ -8,6 +8,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
+import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -40,6 +41,8 @@ public interface PeopleService {
 
 	ResponseEntityDto terminateUser(Long userId);
 
+	ResponseEntityDto reactivateTerminatedUser(Long userId);
+
 	ResponseEntityDto deleteUser(Long userId);
 
 	List<EmployeeManagerResponseDto> getCurrentEmployeeManagers();
@@ -60,5 +63,10 @@ public interface PeopleService {
 	void modifySubscriptionQuantity(long quantity, boolean isIncrement, boolean isFromEmployeeBulk);
 
 	void updateUserStatus(Long userId, AccountStatus status, boolean isDelete);
+
+	ResponseEntityDto getSupervisedEmployeesAndTeams(Long userId);
+
+	ResponseEntityDto reassignSupervisorsAndTerminateOrDeleteEmployee(Long userId,
+			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto);
 
 }

@@ -9,10 +9,22 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import attendanceModuleRolesTableData from "~community/configurations/data/attendanceModuleRolesTableData.json";
 import esignatureModuleRolesTableData from "~community/configurations/data/esignatureModuleRolesTableData.json";
+import invoiceModuleRolesTableData from "~community/configurations/data/invoiceModuleRolesTableData.json";
 import leaveModuleRolesTableData from "~community/configurations/data/leaveModuleRolesTableData.json";
 import peopleModuleRolesTableData from "~community/configurations/data/peopleModuleRolesTableData.json";
+import projectManagementModuleRolesTableData from "~community/configurations/data/projectManagementModuleRolesTableData.json";
 
 import styles from "./styles";
+
+interface ModuleColumn {
+  id: string;
+  label: string;
+}
+
+interface RoleStatus {
+  viewOnly: boolean;
+  label?: string;
+}
 
 interface Props {
   module: Modules;
@@ -31,8 +43,12 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
         return leaveModuleRolesTableData;
       case Modules.PEOPLE:
         return peopleModuleRolesTableData;
-      case Modules.ESIGNATURE:
+      case Modules.ESIGN:
         return esignatureModuleRolesTableData;
+      case Modules.INVOICE:
+        return invoiceModuleRolesTableData;
+      case Modules.PM:
+        return projectManagementModuleRolesTableData;
       default:
         return [];
     }
@@ -46,6 +62,12 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
     );
   };
 
+  const getRoleLabel = (role: RoleStatus) => {
+    if (role.label) return translateText([role.label]);
+    if (role.viewOnly) return translateText(["viewOnly"]);
+    return "";
+  };
+
   const transformToTableRows = () => {
     return (
       getTableData()?.map((data, index) => ({
@@ -54,36 +76,56 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
         admin: (
           <>
             {getIcon(data.admin.enabled)}
-            {data.admin.viewOnly ? translateText(["viewOnly"]) : ""}
+            {getRoleLabel(data.admin)}
           </>
         ),
-        manager: (
-          <>
-            {getIcon(data.manager.enabled)}
-            {data.manager.viewOnly ? translateText(["viewOnly"]) : ""}
-          </>
-        ),
-        employee: (
-          <>
-            {getIcon(data.employee.enabled)}
-            {data.employee.viewOnly ? translateText(["viewOnly"]) : ""}
-          </>
-        )
+        ...("manager" in data && {
+          manager: (
+            <>
+              {getIcon(data.manager.enabled)}
+              {getRoleLabel(data.manager)}
+            </>
+          )
+        }),
+        ...("employee" in data && {
+          employee: (
+            <>
+              {getIcon(data.employee.enabled)}
+              {getRoleLabel(data.employee)}
+            </>
+          )
+        })
       })) || []
     );
+  };
+
+  const moduleColumns: Record<string, ModuleColumn[]> = {
+    [Modules.ATTENDANCE]: [
+      { id: "manager", label: translateText(["managerHeader"]) },
+      { id: "employee", label: translateText(["employeeHeader"]) }
+    ],
+    [Modules.LEAVE]: [
+      { id: "manager", label: translateText(["managerHeader"]) },
+      { id: "employee", label: translateText(["employeeHeader"]) }
+    ],
+    [Modules.PEOPLE]: [
+      { id: "manager", label: translateText(["managerHeader"]) },
+      { id: "employee", label: translateText(["employeeHeader"]) }
+    ],
+    [Modules.ESIGN]: [
+      { id: "manager", label: translateText(["senderHeader"]) },
+      { id: "employee", label: translateText(["employeeHeader"]) }
+    ],
+    [Modules.INVOICE]: [
+      { id: "manager", label: translateText(["managerHeader"]) }
+    ],
+    [Modules.PM]: [{ id: "employee", label: translateText(["employeeHeader"]) }]
   };
 
   const headers = [
     { id: "permission", label: "" },
     { id: "admin", label: translateText(["adminHeader"]) },
-    {
-      id: "manager",
-      label:
-        module === Modules.ESIGNATURE
-          ? translateText(["senderHeader"])
-          : translateText(["managerHeader"])
-    },
-    { id: "employee", label: translateText(["employeeHeader"]) }
+    ...(moduleColumns[module] ?? [])
   ];
 
   return (

@@ -1,6 +1,9 @@
 import { type Theme, useTheme } from "@mui/material/styles";
+import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, JSX, useMemo } from "react";
 
+import { useGetManagerTimeRecords } from "~community/attendance/api/attendanceManagerApi";
+import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeRecordDataResponseType,
@@ -27,20 +30,16 @@ import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 interface Props {
   recordData: TimeRecordDataResponseType;
-  exportRecordData: TimeRecordDataResponseType;
   orgName?: string;
   teamName?: string;
   isRecordLoading?: boolean;
-  isExportRecordDataLoading?: boolean;
 }
 
 const EmployeeTimeRecordsTable = ({
   recordData,
-  exportRecordData,
   orgName,
   teamName,
-  isRecordLoading,
-  isExportRecordDataLoading
+  isRecordLoading
 }: Props): JSX.Element => {
   const translateText = useTranslator("attendanceModule", "timesheet");
 
@@ -48,6 +47,9 @@ const EmployeeTimeRecordsTable = ({
 
   const { timesheetAnalyticsParams, setTimesheetAnalyticsPagination } =
     useAttendanceStore((state) => state);
+
+  const { isFetching: isExportRecordDataLoading, refetch: refetchExportData } =
+    useGetManagerTimeRecords(true);
 
   const { data: timeConfigData } = useDefaultCapacity();
 
@@ -60,6 +62,16 @@ const EmployeeTimeRecordsTable = ({
       getHolidaysArrayByDate
     });
   }, [recordData, getHolidaysArrayByDate, translateText]);
+
+  const getLocationMessage = (
+    status: RecordLocationStatus | undefined
+  ): string => {
+    if (status === RecordLocationStatus.INSIDE)
+      return translateText(["locationInsideWorkLocation"]);
+    if (status === RecordLocationStatus.OUTSIDE)
+      return translateText(["locationOutsideWorkLocation"]);
+    return translateText(["locationUnavailable"]);
+  };
 
   const rows = useMemo(() => {
     if (
@@ -94,6 +106,16 @@ const EmployeeTimeRecordsTable = ({
               getHolidaysArrayByDate(dateAsISOString).length > 0;
 
             const holidayDuration = getHolidayDurationType(holidays);
+
+            const showLocationPin =
+              timeSheetRecord.clockInLocationStatus ===
+                RecordLocationStatus.OUTSIDE ||
+              timeSheetRecord.clockOutLocationStatus ===
+                RecordLocationStatus.OUTSIDE ||
+              timeSheetRecord.clockInLocationStatus ===
+                RecordLocationStatus.UNAVAILABLE ||
+              timeSheetRecord.clockOutLocationStatus ===
+                RecordLocationStatus.UNAVAILABLE;
 
             const workedHours =
               formatDuration(timeSheetRecord?.workedHours) ?? "";
@@ -167,7 +189,34 @@ const EmployeeTimeRecordsTable = ({
               );
             }
 
-            acc[timeSheetRecord.date] = data;
+            let finalCellData = data;
+            if (showLocationPin) {
+              const locationTooltipTitle = translateText(
+                ["locationPinTooltip"],
+                {
+                  clockIn: getLocationMessage(
+                    timeSheetRecord.clockInLocationStatus
+                  ),
+                  clockOut: getLocationMessage(
+                    timeSheetRecord.clockOutLocationStatus
+                  )
+                }
+              );
+
+              finalCellData = (
+                <div className="flex flex-row items-center justify-center gap-1">
+                  {data}
+                  <Tooltip content={locationTooltipTitle}>
+                    <LocationPinIcon
+                      role="img"
+                      aria-label={locationTooltipTitle}
+                    />
+                  </Tooltip>
+                </div>
+              );
+            }
+
+            acc[timeSheetRecord.date] = finalCellData;
             return acc;
           },
           {}
@@ -227,14 +276,18 @@ const EmployeeTimeRecordsTable = ({
           isVisible: true,
           disabled: false,
           label: translateText(["exportToCsvBtnTxt"]),
-          onClick: () =>
-            downloadManagerTimesheetCsv(
-              exportRecordData,
-              timesheetAnalyticsParams?.startDate,
-              timesheetAnalyticsParams?.endDate,
-              teamName,
-              orgName
-            )
+          onClick: async () => {
+            const { data: exportRecordData } = await refetchExportData();
+            if (exportRecordData) {
+              downloadManagerTimesheetCsv(
+                exportRecordData,
+                timesheetAnalyticsParams?.startDate,
+                timesheetAnalyticsParams?.endDate,
+                teamName,
+                orgName
+              );
+            }
+          }
         }
       }}
     />

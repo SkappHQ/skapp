@@ -15,4 +15,8 @@ public class EmployeeDataValidationResponseDto {
 
 	private Boolean isGoogleDomain;
 
+	private Boolean isGuestUser;
+
+	private Boolean isTerminatedUser;
+
 }

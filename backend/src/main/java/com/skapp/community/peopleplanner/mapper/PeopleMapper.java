@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.mapper;
 
+import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.request.SuperAdminSignUpRequestDto;
 import com.skapp.community.common.payload.response.EmployeeSignInResponseDto;
 import com.skapp.community.leaveplanner.payload.EmployeeLeaveEntitlementsDto;
@@ -52,6 +53,7 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeRoleResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
+import com.skapp.community.peopleplanner.payload.response.HolidayWorkLocationResponseDto;
 import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDetailDto;
 import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDto;
 import com.skapp.community.peopleplanner.payload.response.JobTitleResponseDetailDto;
@@ -64,6 +66,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface PeopleMapper {
@@ -78,11 +81,17 @@ public interface PeopleMapper {
 
 	List<TeamResponseDto> teamListToTeamResponseDtoList(List<Team> teams);
 
+	@Mapping(target = "workLocations", ignore = true)
 	Holiday holidayDtoToHoliday(HolidayRequestDto holidayRequestDto);
 
 	HolidayResponseDto holidayToHolidayResponseDto(Holiday holiday);
 
 	List<HolidayResponseDto> holidaysToHolidayResponseDtoList(List<Holiday> holidays);
+
+	HolidayWorkLocationResponseDto workLocationToHolidayWorkLocationResponseDto(WorkLocation workLocation);
+
+	List<HolidayWorkLocationResponseDto> workLocationsToHolidayWorkLocationResponseDtoList(
+			Set<WorkLocation> workLocations);
 
 	List<JobFamilyResponseDetailDto> jobFamilyListToJobFamilyResponseDetailDtoList(List<JobFamily> jobFamilies);
 
@@ -150,6 +159,7 @@ public interface PeopleMapper {
 	@Mapping(target = "joinDate", source = "employeeBulkDto.joinedDate")
 	@Mapping(target = "jobFamily", ignore = true)
 	@Mapping(target = "jobTitle", ignore = true)
+	@Mapping(target = "workLocation", ignore = true)
 	Employee employeeBulkDtoToEmployee(EmployeeBulkDto employeeBulkDto);
 
 	@Mapping(target = "primaryManager", ignore = true)

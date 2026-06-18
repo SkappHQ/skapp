@@ -4,12 +4,8 @@ spring:
   profiles:
     active: test
   datasource:
-    master:
-      write:
-        url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
-      read:
-        url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
-    driverClassName: org.h2.Driver
+    url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
     username: sa
     password:
 
@@ -24,7 +20,7 @@ spring:
     console:
       enabled: true
   messages:
-    basename: community/messages/common-messages, community/messages/leave-messages, community/messages/people-messages, community/messages/time-messages
+    basename: community/messages/common-messages, community/messages/leave-messages, community/messages/people-messages, community/messages/time-messages, community/messages/crm-messages
 
   liquibase:
     enabled: false
@@ -64,3 +60,10 @@ encryptDecryptAlgorithm:
 
 app:
   version: 1.0
+
+domain:
+  base: localhost
+
+internal:
+  api:
+    key: test-internal-api-key

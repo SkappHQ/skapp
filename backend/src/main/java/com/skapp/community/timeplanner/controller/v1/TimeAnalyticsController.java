@@ -9,7 +9,6 @@ import com.skapp.community.timeplanner.payload.request.LateArrivalTrendFilterDto
 import com.skapp.community.timeplanner.service.TimeAnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Time Analytics Controller", description = "Operations related to time analytics")
 public class TimeAnalyticsController {
 
-	@NonNull
 	private final TimeAnalyticsService timeAnalyticsService;
 
 	@Operation(summary = "Get Clock In and Clock Out Trend",
 			description = "Fetches clock-in and clock-out trends based on the provided filters.")
-	@PreAuthorize("hasAnyRole('ROLE_ATTENDANCE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_MANAGER')")
 	@GetMapping("/clockin-clockout-trend")
 	public ResponseEntity<ResponseEntityDto> getClockInClockOutTrend(
 			ClockInClockOutTrendFilterDto clockInClockOutTrendFilterDto) {
@@ -40,7 +38,7 @@ public class TimeAnalyticsController {
 
 	@Operation(summary = "Get Late Arrival Trend",
 			description = "Fetches late arrival trends based on the provided filters.")
-	@PreAuthorize("hasAnyRole('ROLE_ATTENDANCE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_MANAGER')")
 	@GetMapping("/late-arrival-trend")
 	public ResponseEntity<ResponseEntityDto> lateArrivalTrend(LateArrivalTrendFilterDto lateArrivalTrendFilterDto) {
 		ResponseEntityDto response = timeAnalyticsService.lateArrivalTrend(lateArrivalTrendFilterDto);
@@ -49,7 +47,7 @@ public class TimeAnalyticsController {
 
 	@Operation(summary = "Get Average Hours Worked Trend",
 			description = "Fetches average hours worked trend based on the provided filters.")
-	@PreAuthorize("hasAnyRole('ROLE_ATTENDANCE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_MANAGER')")
 	@GetMapping("/average-hours-worked-trend")
 	public ResponseEntity<ResponseEntityDto> averageHoursWorkedTrend(
 			AverageHoursWorkedTrendFilterDto averageHoursWorkedTrendFilterDto) {
@@ -59,7 +57,7 @@ public class TimeAnalyticsController {
 
 	@Operation(summary = "Get Attendance Dashboard Summary",
 			description = "Fetches the summary for the attendance dashboard based on the provided filters.")
-	@PreAuthorize("hasAnyRole('ROLE_ATTENDANCE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_MANAGER')")
 	@GetMapping("/dashboard-summary")
 	public ResponseEntity<ResponseEntityDto> attendanceDashboardSummary(
 			AttendanceDashboardSummaryFilterDto attendanceDashboardSummaryFilterDto) {
@@ -70,14 +68,17 @@ public class TimeAnalyticsController {
 
 	@Operation(summary = "Get Clock In Summary",
 			description = "Fetches the summary of clock-in based on the provided filters.")
-	@PreAuthorize("hasAnyRole('ROLE_ATTENDANCE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_MANAGER')")
 	@GetMapping(value = "/clockin-summary")
 	public ResponseEntity<ResponseEntityDto> clockInSummary(ClockInSummaryFilterDto clockInSummaryFilterDto) {
-		return new ResponseEntity<>(timeAnalyticsService.clockInSummary(clockInSummaryFilterDto), HttpStatus.OK);
+		ResponseEntityDto response = timeAnalyticsService.clockInSummary(clockInSummaryFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ATTENDANCE_MANAGER')")
-	@GetMapping(value = "/individual-utilization/{id}", produces = "application/json")
+	@Operation(summary = "Get individual work time utilization",
+			description = "Returns work time utilization for a specific employee")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_MANAGER')")
+	@GetMapping(value = "/individual-utilization/{id}")
 	public ResponseEntity<ResponseEntityDto> individualWorkTimeUtilization(@PathVariable Long id) {
 		ResponseEntityDto response = timeAnalyticsService.getIndividualWorkUtilization(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -85,7 +86,7 @@ public class TimeAnalyticsController {
 
 	@Operation(summary = "Get Average Hours Worked Trend for employee",
 			description = "Fetches average hours worked trend based on the provided filters.")
-	@PreAuthorize("hasAnyRole('ROLE_ATTENDANCE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_MANAGER')")
 	@GetMapping("/average-employee-hours-worked-trend/{id}")
 	public ResponseEntity<ResponseEntityDto> averageHoursWorkedTrendForEmployee(
 			AverageHoursWorkedTrendFilterDto averageHoursWorkedTrendFilterDto, @PathVariable Long id) {

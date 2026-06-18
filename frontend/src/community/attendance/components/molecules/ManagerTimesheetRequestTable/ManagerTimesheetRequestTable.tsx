@@ -29,9 +29,11 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
+import { 
+  pascalCaseFormatter,
+  concatStrings
+} from "~community/common/utils/commonUtil";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
-import { concatStrings } from "~community/people/utils/jobFamilyUtils/commonUtils";
 
 import TimesheetRequestsFilters from "../TimesheetRequestsFilters/TimesheetRequestsFilters";
 import styles from "./styles";
@@ -364,17 +366,19 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
         isLoading={isRequestLoading}
       />
       {!hasFullList && (
-        <ButtonV2
-          variant={"tertiary"}
-          onClick={async () => {
-            resetTimesheetRequestParams();
-            await router.push(ROUTES.TIMESHEET.TIMESHEET_REQUESTS);
-          }}
-          icon={<RightArrowIcon />}
-          iconPosition="end"
-        >
-          {translateText(["viewFullBtnTxt"])}
-        </ButtonV2>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+          <ButtonV2
+            variant={"tertiary"}
+            onClick={async () => {
+              resetTimesheetRequestParams();
+              await router.push(ROUTES.TIMESHEET.TIMESHEET_REQUESTS);
+            }}
+            icon={<RightArrowIcon />}
+            iconPosition="end"
+          >
+            {translateText(["viewFullBtnTxt"])}
+          </ButtonV2>
+        </Box>
       )}
     </>
   );

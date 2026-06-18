@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { forwardRef, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -131,7 +131,7 @@ const LeaveTypeCard = forwardRef<HTMLDivElement, Props>(
               disabled={!balanceInDays}
               variant={"primary"}
               size={"md"}
-              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              icon={<ArrowRightIcon />}
               iconPosition="end"
             >
               {translateText(["applyBtn"])}

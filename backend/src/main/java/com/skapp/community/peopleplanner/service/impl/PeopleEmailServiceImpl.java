@@ -3,12 +3,12 @@ package com.skapp.community.peopleplanner.service.impl;
 import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.OrganizationDao;
-import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -18,7 +18,9 @@ import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,8 +36,6 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 	private final EmailService emailService;
 
 	private final OrganizationDao organizationDao;
-
-	private final UserDao userDao;
 
 	private final EmployeeManagerDao employeeManagerDao;
 
@@ -81,21 +81,25 @@ public class PeopleEmailServiceImpl implements PeopleEmailService {
 				emailDynamicFields.getWorkEmail());
 	}
 
+	@Async
+	@Transactional(readOnly = true)
 	@Override
-	public void sendNewHolidayDeclarationEmail(Holiday holiday) {
-		PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
-		emailDynamicFields.setOrganizationName(getOrganizationName());
-		emailDynamicFields.setHolidayDate(holiday.getDate().toString());
-		emailDynamicFields.setHolidayName(holiday.getName());
+	public void sendNewHolidayDeclarationEmail(Holiday holiday, List<Employee> employees) {
+		try {
+			PeopleEmailDynamicFields emailDynamicFields = new PeopleEmailDynamicFields();
+			emailDynamicFields.setOrganizationName(getOrganizationName());
+			emailDynamicFields.setHolidayDate(holiday.getDate().toString());
+			emailDynamicFields.setHolidayName(holiday.getName());
 
-		List<User> users = userDao.findAllByIsActiveTrue();
-		users.forEach(user -> {
-			emailDynamicFields
-				.setEmployeeOrManagerName(user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
-			emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED, emailDynamicFields,
-					user.getEmail());
-		});
-
+			employees.forEach(employee -> {
+				emailDynamicFields.setEmployeeOrManagerName(employee.getFirstName() + " " + employee.getLastName());
+				emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_NEW_HOLIDAY_DECLARED, emailDynamicFields,
+						employee.getUser().getEmail());
+			});
+		}
+		catch (Exception e) {
+			log.error("Error sending new holiday declaration email for holiday: {}", holiday.getName(), e);
+		}
 	}
 
 	@Override

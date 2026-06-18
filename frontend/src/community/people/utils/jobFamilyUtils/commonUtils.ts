@@ -59,6 +59,3 @@ export const getJobTitlesWithJobFamilyId = (
 
 export const toPascalCase = (str: string) =>
   str?.charAt(0).toUpperCase() + str?.slice(1).toLowerCase();
-
-export const concatStrings = (args: string[], separator: string = " ") =>
-  args.join(separator);

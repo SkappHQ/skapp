@@ -71,13 +71,13 @@ const CareerProgressDetailsSection = ({
   };
 
   const tableHeaders = [
-    "",
-    translateText(["employmentType"]),
-    translateText(["jobFamily"]),
-    translateText(["jobTitle"]),
-    translateText(["startDate"]),
-    translateText(["endDate"]),
-    translateText(["tenure"])
+    { label: "", ariaLabel: translateAria(["currentPositionColumn"]) },
+    { label: translateText(["employmentType"]) },
+    { label: translateText(["jobFamily"]) },
+    { label: translateText(["jobTitle"]) },
+    { label: translateText(["startDate"]) },
+    { label: translateText(["endDate"]) },
+    { label: translateText(["tenure"]) }
   ];
 
   const onSubmit = (values: L3CareerProgressionDetailsType) => {
@@ -379,9 +379,15 @@ const CareerProgressDetailsSection = ({
                     disabled={isInputsDisabled}
                     icon={
                       rowEdited > -1 ? (
-                        <Icon name={IconName.TICK_ICON} />
+                        <Icon
+                          name={IconName.TICK_ICON}
+                          fill="var(--color-primary-text)"
+                        />
                       ) : (
-                        <Icon name={IconName.ADD_ICON} />
+                        <Icon
+                          name={IconName.ADD_ICON}
+                          fill="var(--color-primary-text)"
+                        />
                       )
                     }
                     iconPosition="end"

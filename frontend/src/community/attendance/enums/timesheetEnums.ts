@@ -47,3 +47,9 @@ export enum TimeSheetSearchBarCategories {
   INDIVIDUALS = "Individuals",
   TEAMS = "Teams"
 }
+
+export enum RecordLocationStatus {
+  INSIDE = "INSIDE",
+  OUTSIDE = "OUTSIDE",
+  UNAVAILABLE = "UNAVAILABLE"
+}

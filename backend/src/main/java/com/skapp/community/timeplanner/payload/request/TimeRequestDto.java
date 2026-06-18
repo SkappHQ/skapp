@@ -2,7 +2,6 @@ package com.skapp.community.timeplanner.payload.request;
 
 import com.skapp.community.peopleplanner.type.RequestType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +23,6 @@ public class TimeRequestDto {
 	@Schema(description = "Time request record id")
 	private Long recordId;
 
-	@NotNull
 	@Schema(description = "Time zone id")
 	private String zoneId;
 

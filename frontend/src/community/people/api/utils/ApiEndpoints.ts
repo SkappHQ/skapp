@@ -20,6 +20,8 @@ export const peoplesEndpoints = {
   USER_BULK_UPLOAD: `${moduleAPIPath.PEOPLE}/bulk/employees`,
   TERMINATE_EMPLOYEE: (employeeId: string | number) =>
     `${moduleAPIPath.PEOPLE}/user/terminate/${employeeId}`,
+  REACTIVATE_EMPLOYEE: (userId: string | number) =>
+    `${moduleAPIPath.PEOPLE}/user/reactivate/${userId}`,
   SEARCH_EMPLOYEE_TEAM_ADMIN: `${moduleAPIPath.PEOPLE}/search/employee-team`,
   CHECK_IF_CURRENT_USER_HAS_MANAGERS_AVAILABILITY: `${moduleAPIPath.PEOPLE}/me/managers/availability`,
   MY_MANAGERS: `${moduleAPIPath.PEOPLE}/me/managers`,
@@ -30,7 +32,11 @@ export const peoplesEndpoints = {
     `${moduleAPIPath.PEOPLE}/user/delete/${employeeId}`,
   HAS_SUPERVISOR_ROLES: (employeeId: number) =>
     `${moduleAPIPath.PEOPLE}/${employeeId}/has-supervisory-roles`,
-  EXPORT_PEOPLE_DIRECTORY: `/people/employees/export`
+  EXPORT_PEOPLE_DIRECTORY: `/people/employees/export`,
+  GET_SUPERVISOR_ROLES: (userId: number) =>
+    `${moduleAPIPath.PEOPLE}/user/${userId}/supervised-employees-teams`,
+  REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE: (userId: number) =>
+    `${moduleAPIPath.PEOPLE}/user/${userId}/reassign-supervisors-and-terminate-or-delete`
 };
 
 export const authEndpoints = {

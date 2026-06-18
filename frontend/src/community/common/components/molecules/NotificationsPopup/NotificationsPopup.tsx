@@ -1,5 +1,4 @@
-import { Box, MenuItem } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, EmptyDataView } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
 import { JSX, Key } from "react";
 
@@ -8,6 +7,7 @@ import ROUTES from "~community/common/constants/routes";
 import { useScreenSizeRange } from "~community/common/hooks/useScreenSizeRange";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { IconName } from "~community/common/types/IconTypes";
 import {
   NotificationDataTypes,
@@ -18,7 +18,6 @@ import { handleNotifyRow } from "~community/common/utils/notificationUtils";
 
 import Icon from "../../atoms/Icon/Icon";
 import NotificationContent from "../NotificationContent/NotificationContent";
-import TableEmptyScreen from "../TableEmptyScreen/TableEmptyScreen";
 
 interface Props {
   handleCloseMenu: () => void;
@@ -28,13 +27,18 @@ interface Props {
 
 const NotificationsPopup = ({
   handleCloseMenu,
+  filterButton,
   notifications
 }: Props): JSX.Element => {
   const { isSmallPhoneScreen } = useScreenSizeRange();
   const translateText = useTranslator("notifications");
   const router = useRouter();
+  const { setNotifyData } = useCommonStore((state) => state);
 
   const handelAllNotification = (): void => {
+    setNotifyData({
+      notificationFilterType: NotifyFilterButtonTypes.ALL
+    });
     router.push(ROUTES.NOTIFICATIONS);
     handleCloseMenu();
   };
@@ -49,43 +53,36 @@ const NotificationsPopup = ({
   } = useSessionData();
 
   return (
-    <>
-      <Box
-        sx={{
-          maxHeight: isSmallPhoneScreen ? "44vh" : "calc(100vh - 30rem)",
-          overflowY: "auto",
-          "&::-webkit-scrollbar": {
-            width: "0.25rem"
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#ccc",
-            borderRadius: "0.25rem"
-          }
-        }}
+    <div className="flex flex-col gap-6">
+      <div
+        className={`${
+          isSmallPhoneScreen ? "max-h-[44vh]" : "max-h-[calc(100vh-30rem)]"
+        } overflow-y-auto mt-6`}
       >
         {notifications?.length === 0 ? (
-          <TableEmptyScreen
-            title={translateText(["emptyScreenTitle"])}
-            description={translateText(["emptyScreenDescription"])}
-            customStyles={{
-              wrapper: { height: "100%", py: "3rem" }
-            }}
+          <EmptyDataView
+            icon={
+              filterButton === NotifyFilterButtonTypes.UNREAD ? (
+                <Icon name={IconName.CHECK_CIRCLE_OUTLINED_ICON} />
+              ) : undefined
+            }
+            title={
+              filterButton === NotifyFilterButtonTypes.ALL
+                ? translateText(["emptyScreenTitle"])
+                : translateText(["emptyScreenTitleUnread"])
+            }
+            description={
+              filterButton === NotifyFilterButtonTypes.ALL
+                ? translateText(["emptyScreenDescription"])
+                : translateText(["emptyScreenDescriptionUnread"])
+            }
           />
         ) : (
           <>
             {notifications?.map(
               (item: NotificationDataTypes, index: Key | null | undefined) => (
-                <MenuItem
+                <div
                   key={index}
-                  sx={{
-                    pt: "1.75rem",
-                    pb: "1rem",
-                    cursor: item.isViewed ? "default" : "pointer",
-                    "&:hover": { background: "transparent" }
-                  }}
-                  divider
-                  disableGutters
-                  disableRipple
                   onClick={() => {
                     handleNotifyRow({
                       id: item.id,
@@ -101,6 +98,7 @@ const NotificationsPopup = ({
                     });
                   }}
                   tabIndex={0}
+                  role="menuitem"
                 >
                   <NotificationContent
                     isLeaveModuleDisabled={
@@ -114,22 +112,24 @@ const NotificationsPopup = ({
                     }
                     item={item}
                   />
-                </MenuItem>
+                </div>
               )
             )}
           </>
         )}
-      </Box>
-      <ButtonV2
-        variant={"tertiary"}
-        onClick={handelAllNotification}
-        disabled={notifications?.length === 0}
-        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["viewAllNotificationsButtonText"])}
-      </ButtonV2>
-    </>
+      </div>
+      {notifications?.length > 0 && (
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={handelAllNotification}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+          isFullWidth
+        >
+          {translateText(["viewAllNotificationsButtonText"])}
+        </ButtonV2>
+      )}
+    </div>
   );
 };
 

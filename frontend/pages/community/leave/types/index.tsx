@@ -12,7 +12,7 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const LeaveTypes: NextPage = () => {
-  const translateText = useTranslator("leaveModule", "leaveTypes");
+  const translateText = useTranslator("leaveModule");
 
   const router = useRouter();
 
@@ -30,9 +30,17 @@ const LeaveTypes: NextPage = () => {
   return (
     <>
       <ContentLayout
-        title={translateText(["title"])}
-        pageHead={translateText(["pageHead"])}
-        primaryButtonText={translateText(["addLeaveBtnTxt"])}
+        breadcrumbs={[
+          {
+            label: translateText(["analytics.stepLeave"])
+          },
+          {
+            label: translateText(["leaveTypes.title"])
+          }
+        ]}
+        title={translateText(["leaveTypes.title"])}
+        pageHead={translateText(["leaveTypes.pageHead"])}
+        primaryButtonText={translateText(["leaveTypes.addLeaveBtnTxt"])}
         onPrimaryButtonClick={() => {
           router.push(
             ROUTES.LEAVE.ADD_EDIT_LEAVE_TYPES(LeaveTypeFormTypes.ADD)

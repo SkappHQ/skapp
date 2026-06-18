@@ -6,8 +6,7 @@ import {
   Theme,
   useTheme
 } from "@mui/material";
-import { SelectableItemList } from "@rootcodelabs/skapp-ui";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import TableHeaderFill from "~community/attendance/components/molecules/TimesheetTableHeader/TableHeaderFill";
@@ -87,7 +86,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
     reportsParams.size,
     reportsParams.sortKey,
     reportsParams.sortOrder,
-    isProTier
+    isProTier && !!reportsParams.teamId
   );
 
   const reportData = useMemo(() => {
@@ -100,7 +99,7 @@ const LeaveEntitlementsReportsTable: FC = () => {
     reportsParams.teamId,
     headerLabels,
     [],
-    isProTier
+    isProTier && !!reportsParams.teamId
   );
 
   const CSVdata = useMemo(() => {
@@ -170,28 +169,6 @@ const LeaveEntitlementsReportsTable: FC = () => {
     setReportsFilterOrderIds(updatedTypeIds);
   };
 
-  const handleRemoveFilters = (leaveType: { id: string; text: string }) => {
-    const updatedTypes = selectedLeaveTypes.includes(leaveType.text)
-      ? selectedLeaveTypes.filter((type) => type !== leaveType.text)
-      : [...selectedLeaveTypes, leaveType.text];
-
-    setSelectedLeaveTypes(updatedTypes);
-
-    const updatedTypeIds = leaveTypeButtons
-      .filter((button) => updatedTypes.includes(button.text))
-      .map((button) => button.id);
-
-    setReportsFilter("leaveType", updatedTypeIds);
-    setReportsFilterOrder(updatedTypes);
-    setReportsFilterOrderIds(updatedTypeIds);
-
-    if (updatedTypes.length !== 0) {
-      setReportsParams("leaveTypeId", updatedTypeIds);
-    } else {
-      setReportsParams("leaveTypeId", "-1");
-    }
-  };
-
   const handleApplyFilters = () => {
     if (selectedLeaveTypes.length === 1) {
       const selectedTypeId = leaveTypeButtons.find(
@@ -240,42 +217,34 @@ const LeaveEntitlementsReportsTable: FC = () => {
             options={years}
           />
         </Box>
-        <Box>
-          <FilterButton
-            handleApplyBtnClick={handleApplyFilters}
-            handleResetBtnClick={handleResetFilters}
-            selectedFilters={selectedLeaveTypes.map((type) => ({
-              filter: [type],
-              handleFilterDelete: () => {
-                handleRemoveFilters({
-                  id:
-                    leaveTypeButtons.find((btn) => btn.text === type)?.id || "",
-                  text: type
-                });
-              }
+        <FilterButton
+          handleApplyBtnClick={handleApplyFilters}
+          handleResetBtnClick={handleResetFilters}
+          selectedFilters={selectedLeaveTypes.map((type) => ({
+            filter: [type]
+          }))}
+          position={"bottom-end"}
+          id={"filter-types"}
+          isResetBtnDisabled={selectedLeaveTypes.length === 0}
+        >
+          <SelectableItemList
+            title={translateText(["filterPopperLeaveTypeTitle"])}
+            items={leaveTypeButtons.map((leaveType) => ({
+              label: leaveType.text,
+              value: leaveType.text
             }))}
-            position={"bottom-end"}
-            id={"filter-types"}
-            isResetBtnDisabled={selectedLeaveTypes.length === 0}
-          >
-            <SelectableItemList
-              title={translateText(["filterPopperLeaveTypeTitle"])}
-              items={leaveTypeButtons.map((leaveType) => ({
-                label: leaveType.text,
-                value: leaveType.text
-              }))}
-              selectedValues={selectedLeaveTypes}
-              onChipClick={(leaveTypeText) => {
-                const leaveType = leaveTypeButtons.find(
-                  (btn) => btn.text === leaveTypeText
-                );
-                if (leaveType) {
-                  handleLeaveTypeFilter(leaveType);
-                }
-              }}
-            />
-          </FilterButton>
-        </Box>
+            selectedValues={selectedLeaveTypes}
+            onChipClick={(leaveTypeText) => {
+              const leaveType = leaveTypeButtons.find(
+                (btn) => btn.text === leaveTypeText
+              );
+              if (leaveType) {
+                handleLeaveTypeFilter(leaveType);
+              }
+            }}
+            className="max-h-full"
+          />
+        </FilterButton>
       </Stack>
       <Stack sx={classes.stackContainer}>
         {reportData?.items?.length === 0 ? (

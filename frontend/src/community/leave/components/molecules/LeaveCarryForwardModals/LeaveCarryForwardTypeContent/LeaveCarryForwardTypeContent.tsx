@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { JSX, useEffect, useState } from "react";
@@ -36,10 +36,10 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
     setCarryForwardLeaveTypes
   } = useLeaveStore((state) => state);
 
-  const { data: carryForwardLeaveTypes, isLoading } = useGetLeaveTypes(
-    false,
-    true
-  );
+  const { data: carryForwardLeaveTypes, isLoading } = useGetLeaveTypes({
+    filterByInUse: false,
+    isCarryForward: true
+  });
 
   const translateTexts = useTranslator("leaveModule", "leaveCarryForward");
   const router = useRouter();
@@ -192,7 +192,7 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
           onClick={() => formik.handleSubmit()}
           isLoading={loading}
           disabled={checkedList.length === 0}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          icon={<ArrowRightIcon />}
           iconPosition="end"
         >
           {translateTexts(["leaveCarryForwardModalConfirmBtn"])}

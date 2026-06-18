@@ -112,12 +112,20 @@ export const leaveTypeQueryKeys = {
   ALL: ["all-leave-types"],
   LEAVE_TYPES: function ({
     filterByInUse,
-    isCarryForward
+    isCarryForward,
+    employeeId
   }: {
     filterByInUse?: boolean;
     isCarryForward?: boolean;
+    employeeId?: number;
   }) {
-    return [...(this?.ALL || []), "leave-types", filterByInUse, isCarryForward];
+    return [
+      ...(this?.ALL || []),
+      "leave-types",
+      filterByInUse,
+      isCarryForward,
+      employeeId
+    ];
   },
   leaveCycle: ["leaveCycle"],
 

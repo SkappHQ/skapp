@@ -1,5 +1,6 @@
 package com.skapp.community.common.util;
 
+import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -332,6 +333,11 @@ public class CommonModuleUtils {
 			}
 		}
 		return mapper.treeToValue(node, valueType);
+	}
+
+	public static boolean isGuestEmployee(Employee employee) {
+		return employee != null && employee.getEmployeeRole() != null
+				&& Role.PM_GUEST_EMPLOYEE == employee.getEmployeeRole().getPmRole();
 	}
 
 }

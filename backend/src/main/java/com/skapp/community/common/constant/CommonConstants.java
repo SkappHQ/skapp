@@ -27,4 +27,6 @@ public class CommonConstants {
 
 	public static final String NOTIFICATION_MESSAGE = "message";
 
+	public static final long WORK_LOCATION_NAME_MAX_LENGTH = 50;
+
 }

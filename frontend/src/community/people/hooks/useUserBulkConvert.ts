@@ -13,6 +13,7 @@ import {
   BloodGroupSelector,
   EeoSelector,
   EthnicitySelector,
+  TitleSelector,
   replaceEmptyStringsWithNull
 } from "../utils/userBulkUploadUtils";
 
@@ -46,6 +47,9 @@ const useUserBulkConvert = () => {
 
         const newUser: BulkEmployeeDetails = {
           teams: teamIds,
+          title: user?.title
+            ? (TitleSelector[user?.title] ?? user?.title)
+            : null,
           firstName: user?.firstName,
           middleName: user?.middleName,
           lastName: user?.lastName,
@@ -62,6 +66,7 @@ const useUserBulkConvert = () => {
           identificationNo: user?.identificationNo,
           permission: SystemPermissionTypes.EMPLOYEES,
           timeZone: String(user?.timeZone?.split("-")[0])?.trim(),
+          workLocation: user?.workLocation ?? null,
           primaryManager: user?.primaryManager,
           joinedDate: user?.joinedDate,
           accountStatus: AccountStatus.PENDING,
@@ -89,13 +94,13 @@ const useUserBulkConvert = () => {
               linkedIn: user?.linkedIn,
               instagram: user?.instagram
             },
+            bloodGroup: user?.bloodGroup
+              ? BloodGroupSelector[user?.bloodGroup]
+              : null,
             extraInfo: {
               allergies: user?.allergies,
               dietaryRestrictions: user?.dietaryRestrictions,
-              tshirtSize: user?.tshirtSize,
-              bloodGroup: user?.bloodGroup
-                ? BloodGroupSelector[user?.bloodGroup]
-                : null
+              tShirtSize: user?.tshirtSize
             },
             passportNo: user?.passportNo
           },
@@ -115,7 +120,7 @@ const useUserBulkConvert = () => {
             isPrimary: true
           },
           employeeProgression: {
-            employeeType: user?.employeeType
+            employmentType: user?.employeeType
               ? (user?.employeeType?.toUpperCase() as EmploymentTypes)
               : null,
             jobFamilyId: jobFamilyObject ? jobFamilyObject?.jobFamilyId : null,

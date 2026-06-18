@@ -16,8 +16,13 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { capitalizeFirstLetter } from "~community/common/utils/commonUtil";
 
+interface TableHeading {
+  label: string;
+  ariaLabel?: string;
+}
+
 interface Props {
-  headings: string[];
+  headings: TableHeading[];
   data: any[];
   onEdit?: (index: number) => void;
   onDelete?: (index: number) => void;
@@ -104,7 +109,7 @@ const PeopleFormTable: FC<Props> = ({
         }}
       >
         <TableRow>
-          {headings?.map((heading, index) => (
+          {headings?.map(({ label, ariaLabel }, index) => (
             <TableCell
               key={index}
               sx={{
@@ -144,24 +149,28 @@ const PeopleFormTable: FC<Props> = ({
                 ...tableHeaderCellStyles
               }}
             >
-              <Typography
-                sx={{
-                  color: theme.palette.text.secondary,
-                  fontWeight: 400,
-                  letterSpacing: "0.03em",
-                  fontSize: 14,
-                  ...(isResponsive && {
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    maxWidth: "100%"
-                  }),
-                  [theme.breakpoints.down("lg")]: { fontSize: 12 },
-                  ...tableHeaderTextStyles
-                }}
-              >
-                {heading?.toUpperCase()}
-              </Typography>
+              {label ? (
+                <Typography
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontWeight: 400,
+                    letterSpacing: "0.03em",
+                    fontSize: 14,
+                    ...(isResponsive && {
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      maxWidth: "100%"
+                    }),
+                    [theme.breakpoints.down("lg")]: { fontSize: 12 },
+                    ...tableHeaderTextStyles
+                  }}
+                >
+                  {label.toUpperCase()}
+                </Typography>
+              ) : (
+                ariaLabel && <span className="sr-only">{ariaLabel}</span>
+              )}
             </TableCell>
           ))}
           {actionsNeeded && (
@@ -173,11 +182,9 @@ const PeopleFormTable: FC<Props> = ({
                 ...tableHeaderCellStyles
               }}
             >
-              <Typography
-                sx={{
-                  ...tableHeaderTextStyles
-                }}
-              ></Typography>
+              <Typography className="sr-only" sx={{ ...tableHeaderTextStyles }}>
+                {translateText(["actionColumn", "header"])}
+              </Typography>
             </TableCell>
           )}
         </TableRow>

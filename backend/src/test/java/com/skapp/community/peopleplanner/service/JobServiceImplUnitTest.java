@@ -13,19 +13,17 @@ import com.skapp.community.peopleplanner.service.impl.JobServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 class JobServiceImplUnitTest {
 
 	JobServiceImpl jobService;
@@ -58,7 +56,7 @@ class JobServiceImplUnitTest {
 	void updateTeam_returnsHttpOk() {
 		JobFamily jobFamily = getJobFamily();
 
-		when(jobFamilyDao.findById(1L)).thenReturn(Optional.of(jobFamily));
+		when(jobFamilyDao.getJobFamilyByIdWithJobTitles(1L)).thenReturn(jobFamily);
 
 		ResponseEntityDto response = jobService.getJobFamilyById(1L);
 		Assertions.assertEquals("successful", response.getStatus());

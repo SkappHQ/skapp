@@ -77,11 +77,11 @@ const EntitlementsDetailsSection = (): JSX.Element => {
   ];
 
   const tableHeadings = [
-    translateText(["tableHeadings", "year"]),
-    translateText(["tableHeadings", "leaveType"]),
-    translateText(["tableHeadings", "numberOfDays"]),
-    translateText(["tableHeadings", "effectiveFrom"]),
-    translateText(["tableHeadings", "expirationDate"])
+    { label: translateText(["tableHeadings", "year"]) },
+    { label: translateText(["tableHeadings", "leaveType"]) },
+    { label: translateText(["tableHeadings", "numberOfDays"]) },
+    { label: translateText(["tableHeadings", "effectiveFrom"]) },
+    { label: translateText(["tableHeadings", "expirationDate"]) }
   ];
 
   const initialValues: EmployeeEntitlementsDetailType = {

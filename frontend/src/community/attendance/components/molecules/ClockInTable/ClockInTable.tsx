@@ -329,7 +329,6 @@ const ClockInTable: FC<Props> = ({
                   filterTypes={filterData}
                   onApplyFilters={handleApplyFilters}
                   onResetFilters={handleResetFilters}
-                  setSelectedFilters={setSelectedFilters}
                   selectedFilters={selectedFilters}
                 />
               )

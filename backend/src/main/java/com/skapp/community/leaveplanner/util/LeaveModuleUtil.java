@@ -163,7 +163,7 @@ public class LeaveModuleUtil {
 
 	public static boolean isUserSuperAdminOrLeaveAdmin(User user) {
 		EmployeeRole role = user.getEmployee().getEmployeeRole();
-		return role.getIsSuperAdmin() || Role.LEAVE_ADMIN.equals(role.getAttendanceRole());
+		return role.getIsSuperAdmin() || Role.LEAVE_ADMIN.equals(role.getLeaveRole());
 	}
 
 }

@@ -13,6 +13,7 @@ import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.BulkItemStatus;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -207,6 +208,10 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		Optional<Employee> optionalEmployee = employeeDao.findById(leaveEntitlementsDto.getEmployeeId());
 		if (optionalEmployee.isEmpty()) {
 			throw new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		if (CommonModuleUtils.isGuestEmployee(optionalEmployee.get())) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED);
 		}
 
 		List<Long> leaveTypeIds = leaveEntitlementsDto.getEntitlementList()
@@ -514,6 +519,10 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		Optional<Employee> employeeOpt = employeeDao.findById(customLeaveEntitlementDto.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			throw new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		if (CommonModuleUtils.isGuestEmployee(employeeOpt.get())) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED);
 		}
 
 		Optional<LeaveType> leaveTypeOpt = leaveTypeDao.findById(customLeaveEntitlementDto.getTypeId());
@@ -842,6 +851,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public ResponseEntityDto getLeaveEntitlementByDate(
 			CustomLeaveEntitlementsFilterDto customLeaveEntitlementsFilterDto) {
@@ -856,15 +866,15 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 				leaveCycleDetail.getStartMonth(), leaveCycleDetail.getStartDate());
 		LocalDate validTo = DateTimeUtils.calculateEndDateAfterYears(validFrom, 1);
 
+		Sort sort = Sort.by(customLeaveEntitlementsFilterDto.getSortOrder(),
+				customLeaveEntitlementsFilterDto.getSortKey().getSortField());
 		Pageable pageable;
 		if (Boolean.TRUE.equals(customLeaveEntitlementsFilterDto.getIsExport())) {
-			pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(customLeaveEntitlementsFilterDto.getSortOrder(),
-					customLeaveEntitlementsFilterDto.getSortKey().getSortField()));
+			pageable = Pageable.unpaged(sort);
 		}
 		else {
 			pageable = PageRequest.of(customLeaveEntitlementsFilterDto.getPage(),
-					customLeaveEntitlementsFilterDto.getSize(), Sort.by(customLeaveEntitlementsFilterDto.getSortOrder(),
-							customLeaveEntitlementsFilterDto.getSortKey().getSortField()));
+					customLeaveEntitlementsFilterDto.getSize(), sort);
 		}
 
 		Page<Employee> employees = leaveEntitlementDao.findEmployeesWithEntitlements(validFrom, validTo,
@@ -874,8 +884,9 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 		Map<Long, List<LeaveEntitlement>> entitlementsByEmployee = new HashMap<>();
 		if (!employeeIds.isEmpty()) {
-			List<LeaveEntitlement> allEntitlements = leaveEntitlementDao.findByEmployee_EmployeeIdIn(employeeIds);
-			for (LeaveEntitlement entitlement : allEntitlements) {
+			List<LeaveEntitlement> filteredEntitlements = leaveEntitlementDao
+				.findFilteredEntitlementsByEmployeeIds(employeeIds, validFrom, validTo);
+			for (LeaveEntitlement entitlement : filteredEntitlements) {
 				entitlementsByEmployee
 					.computeIfAbsent(entitlement.getEmployee().getEmployeeId(), k -> new ArrayList<>())
 					.add(entitlement);
@@ -883,7 +894,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		}
 
 		List<EntitlementBasicDetailsDto> responseDtos = employees.stream()
-			.map(employee -> mapToEntitlementBasicDetailsDto(employee, validFrom, validTo,
+			.map(employee -> mapToEntitlementBasicDetailsDto(employee,
 					entitlementsByEmployee.getOrDefault(employee.getEmployeeId(), Collections.emptyList())))
 			.toList();
 
@@ -898,8 +909,8 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
-	private EntitlementBasicDetailsDto mapToEntitlementBasicDetailsDto(Employee employee, LocalDate validFrom,
-			LocalDate validTo, List<LeaveEntitlement> entitlements) {
+	private EntitlementBasicDetailsDto mapToEntitlementBasicDetailsDto(Employee employee,
+			List<LeaveEntitlement> entitlements) {
 		EntitlementBasicDetailsDto dto = new EntitlementBasicDetailsDto();
 		dto.setFirstName(employee.getFirstName());
 		dto.setLastName(employee.getLastName());
@@ -908,8 +919,6 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		dto.setEmail(employee.getUser().getEmail());
 
 		List<CustomEntitlementDto> entitlementDtos = entitlements.stream()
-			.filter(entitlement -> entitlement.isActive() && !entitlement.isManual()
-					&& isDateInRange(entitlement.getValidFrom(), entitlement.getValidTo(), validFrom, validTo))
 			.collect(Collectors.toMap(entitlement -> entitlement.getLeaveType().getTypeId(), entitlement -> {
 				CustomEntitlementDto customEntitlementDto = new CustomEntitlementDto();
 				customEntitlementDto.setLeaveTypeId(entitlement.getLeaveType().getTypeId());
@@ -920,7 +929,6 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 						? String.valueOf(entitlement.getTotalDaysAllocated()) : "0.0");
 				return customEntitlementDto;
 			}, (existingEntitlement, incomingEntitlement) -> {
-				// Merge duplicate leave types by summing allocated days
 				float merged = Float.parseFloat(existingEntitlement.getTotalDaysAllocated())
 						+ Float.parseFloat(incomingEntitlement.getTotalDaysAllocated());
 				existingEntitlement.setTotalDaysAllocated(String.valueOf(merged));
@@ -933,12 +941,6 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 		dto.setEntitlements(entitlementDtos);
 		return dto;
-	}
-
-	private boolean isDateInRange(LocalDate entitlementValidFrom, LocalDate entitlementValidTo, LocalDate validFrom,
-			LocalDate validTo) {
-		return ((entitlementValidFrom.isBefore(validTo) || entitlementValidFrom.isEqual(validTo))
-				&& (entitlementValidTo.isAfter(validFrom) || entitlementValidTo.isEqual(validFrom)));
 	}
 
 	@Override
@@ -1006,6 +1008,10 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		if (userByEmailOpt.isEmpty()) {
 			errors.add(messageUtil.getMessage(LeaveMessageConstant.USER_IN_BULK_NOT_FOUND,
 					new String[] { entitlementDetailsDto.getEmail() }));
+		}
+
+		else if (CommonModuleUtils.isGuestEmployee(userByEmailOpt.get().getEmployee())) {
+			errors.add(messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_GUEST_USER_NOT_ALLOWED));
 		}
 
 		if (!errors.isEmpty()) {

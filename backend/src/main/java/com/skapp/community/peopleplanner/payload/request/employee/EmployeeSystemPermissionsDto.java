@@ -24,4 +24,6 @@ public class EmployeeSystemPermissionsDto {
 
 	private Role invoiceRole;
 
+	private Role crmRole;
+
 }

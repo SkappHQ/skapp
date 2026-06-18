@@ -67,6 +67,7 @@ const useGetEmployee = ({ id }: GetEmployeeParams) => {
   const setSelectedEmployeeGeneralDetails = (employee: EmployeeDetails) => {
     setEmployeeGeneralDetails("authPic", employee?.authPic);
     setEmployeeGeneralDetails("thumbnail", "");
+    setEmployeeGeneralDetails("title", employee?.title);
     setEmployeeGeneralDetails("firstName", employee?.firstName);
     setEmployeeGeneralDetails("middleName", employee?.middleName);
     setEmployeeGeneralDetails("lastName", employee?.lastName);

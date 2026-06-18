@@ -3,6 +3,7 @@ import {
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
 import { MenuitemsDataTypes } from "~community/common/types/filterTypes";
+import { ReportsParams } from "~community/leave/types/LeaveReportTypes";
 
 const reportsFiltersSlice = (set: any): any => ({
   reportsFilter: {
@@ -83,19 +84,19 @@ const reportsFiltersSlice = (set: any): any => ({
   },
 
   resetReportsParams: () => {
-    set({
+    set((state: { reportsParams: ReportsParams }) => ({
       reportsParams: {
         year: new Date().getFullYear().toString(),
         leaveTypeId: "-1",
         jobRoleId: "",
-        teamId: "",
+        teamId: state.reportsParams?.teamId ?? "",
         page: 0,
         size: 5,
         sortKey: SortKeyTypes.NAME,
         sortOrder: SortOrderTypes.ASC,
         leaveStatus: ""
       }
-    });
+    }));
   },
 
   resetReportsFilter: () => {

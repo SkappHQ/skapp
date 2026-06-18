@@ -50,7 +50,9 @@ export const notificationsEndpoints = {
   MARK_NOTIFICATION_AS_READ: (notificationId: number) =>
     `/notification/${notificationId}`,
   MARK_ALL_NOTIFICATION_AS_READ: `/notification`,
-  GET_NOTIFICATIONS_COUNT: `/notification/unread-count`
+  GET_NOTIFICATIONS_COUNT: `/notification/unread-count`,
+  GET_NOTIFICATION_SUMMARY: `/notification/summary`,
+  MARK_NOTIFICATION_SUMMARY_AS_READ: `/notification/summary`
 };
 
 export const applicationVersionEndpoints = {
@@ -60,4 +62,8 @@ export const applicationVersionEndpoints = {
 
 export const storageAvailabilityEndpoints = {
   GET_STORAGE_AVAILABILITY: `/file/storage/availability`
+};
+
+export const workLocationEndpoints = {
+  ALL_WORK_LOCATIONS: `${moduleAPIPath.COMMON}/work-location/all`
 };

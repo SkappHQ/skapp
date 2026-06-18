@@ -1,0 +1,77 @@
+[
+  {
+    "permission": "viewContactsAndCompanies",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageContactsAndCompanies",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageDeals",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": true
+    }
+  },
+  {
+    "permission": "manageTasks",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": true
+    }
+  },
+  {
+    "permission": "viewReports",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  }
+]

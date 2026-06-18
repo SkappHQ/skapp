@@ -31,4 +31,6 @@ public class EmployeeEmploymentBasicDetailsDto {
 
 	private String workTimeZone;
 
+	private Long workLocationId;
+
 }

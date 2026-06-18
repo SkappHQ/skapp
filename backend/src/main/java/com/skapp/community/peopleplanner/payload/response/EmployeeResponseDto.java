@@ -13,6 +13,7 @@ import com.skapp.community.peopleplanner.type.EEO;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.Ethnicity;
 import com.skapp.community.peopleplanner.type.Gender;
+import com.skapp.community.peopleplanner.type.Title;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -57,6 +58,8 @@ public class EmployeeResponseDto {
 	private String personalEmail;
 
 	private String phone;
+
+	private Title title;
 
 	private Gender gender;
 

@@ -52,6 +52,7 @@ import {
 import { DirectoryModalTypes } from "./ModalTypes";
 import { EditPeopleFormTypes } from "./PeopleEditTypes";
 import {
+  EmployeeRemoveAction,
   EntitlementDetailType,
   L1EmployeeType,
   L2CommonDetailsType,
@@ -99,6 +100,7 @@ interface actionsTypes {
   setIndividualDeleteId: (value: number) => void;
   setSelectedDeleteIds: (value: number[]) => void;
   setSelectedYear: (value: string) => void;
+  setSelectedWorkLocationId: (value: number) => void;
 
   //holidaySlice
   setIsBulkUpload: (value: boolean) => void;
@@ -238,6 +240,7 @@ interface actionsTypes {
 
   //terminationConfirmationModalSlice
   setTerminationConfirmationModalOpen: (value: boolean) => void;
+  setReactivationConfirmationModalOpen: (value: boolean) => void;
   setSelectedEmployeeId: (value: string | number) => void;
   setAlertMessage: (value: string) => void;
 
@@ -248,6 +251,10 @@ interface actionsTypes {
   setDeletionConfirmationModalOpen: (value: boolean) => void;
   setDeletionAlertMessage: (value: string) => void;
   setDeletionAlertOpen: (value: boolean) => void;
+
+  //supervisorReassignmentSlice
+  setIsSupervisorReassignmentModalOpen: (value: boolean) => void;
+  setSupervisorReassignmentActionType: (value: EmployeeRemoveAction) => void;
 
   //people slice
   setEmployee: (employee: L1EmployeeType) => void;
@@ -302,6 +309,7 @@ export interface Store extends actionsTypes {
     colors?: string | string[];
     holidayDurations?: string;
   };
+  selectedWorkLocationId: number;
   individualDeleteId: number;
   selectedDeleteIds: number[];
   selectedYear: string;
@@ -315,6 +323,7 @@ export interface Store extends actionsTypes {
     halfDayState: HolidayHalfDayState;
     holidayId: number;
     holidayColor: string;
+    workLocations: number[];
   };
   failedCount: number;
   successCount: number;
@@ -381,6 +390,7 @@ export interface Store extends actionsTypes {
 
   //terminationConfirmationModalSlice
   isTerminationConfirmationModalOpen: boolean;
+  isReactivationConfirmationModalOpen: boolean;
   selectedEmployeeId: string | number;
   alertMessage: string;
 
@@ -391,6 +401,10 @@ export interface Store extends actionsTypes {
   isDeletionConfirmationModalOpen: boolean;
   deletionAlertMessage: string;
   isDeletionAlertOpen: boolean;
+
+  //supervisorReassignmentSlice
+  isSupervisorReassignmentModalOpen: boolean;
+  supervisorReassignmentActionType: EmployeeRemoveAction;
 
   //people slice
   employee: L1EmployeeType;

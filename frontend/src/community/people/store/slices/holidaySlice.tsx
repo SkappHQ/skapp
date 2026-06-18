@@ -14,7 +14,8 @@ const newHolidayDetails = {
   halfDayState: HolidayHalfDayState.NONE,
   holidayId: 0,
   holidayName: "",
-  holidayColor: ""
+  holidayColor: "",
+  workLocations: [] as number[]
 };
 
 const initialFailedCount = 0;
@@ -35,7 +36,8 @@ const holidaySlice = (set: SetType<HolidaySliceTypes>): HolidaySliceTypes => ({
       duration = HolidayDurationType.FULLDAY,
       halfDayState = HolidayHalfDayState.EVENING,
       holidayId = 0,
-      holidayColor = ""
+      holidayColor = "",
+      workLocations = []
     } = data;
     set((state: HolidaySliceTypes) => ({
       ...state,
@@ -47,7 +49,8 @@ const holidaySlice = (set: SetType<HolidaySliceTypes>): HolidaySliceTypes => ({
         duration: duration as HolidayDurationType,
         halfDayState: halfDayState as HolidayHalfDayState,
         holidayId,
-        holidayColor
+        holidayColor,
+        workLocations: (workLocations ?? []).map(Number)
       }
     }));
   },

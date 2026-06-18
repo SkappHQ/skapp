@@ -161,6 +161,7 @@ const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
           titleForOne={translateText(["bannerTitleForOne"])}
           prompt={translateText(["bannerPrompt"])}
           onClick={handleBannerClick}
+          styles={{ mt: "1.5rem" }}
         />
       ) : (
         <Box sx={{ height: "1.5rem" }} />

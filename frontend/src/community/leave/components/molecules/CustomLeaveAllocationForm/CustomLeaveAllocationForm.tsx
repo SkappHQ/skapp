@@ -35,7 +35,13 @@ interface Props {
   errors: FormikErrors<CustomLeaveAllocationType>;
   setFieldValue: (
     field: string,
-    value: CustomLeaveAllocationType | number | Date | EmployeeType | string
+    value:
+      | CustomLeaveAllocationType
+      | number
+      | Date
+      | EmployeeType
+      | string
+      | undefined
   ) => void;
   setFieldError: (field: string, message: string | undefined) => void;
   translateText: (keys: string[]) => string;
@@ -123,7 +129,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
   }, [leaveTypesData]);
 
   useEffect(() => {
-    if (values.employeeId && suggestions) {
+    if (values.employeeId && values.assignedTo && suggestions) {
       const selectedUser = suggestions.find(
         (user) => user.employeeId === values.employeeId
       );
@@ -131,7 +137,7 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
         setSearchTerm(`${selectedUser.firstName} ${selectedUser.lastName}`);
       }
     }
-  }, [values.employeeId, suggestions]);
+  }, [values.employeeId, values.assignedTo, suggestions]);
 
   const onSelectUser = async (user: EmployeeType): Promise<void> => {
     if (user) {
@@ -317,7 +323,13 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
         options={(suggestions ?? []) as EmployeeType[]}
         value={values.assignedTo}
         inputValue={searchTerm}
-        onInputChange={(value) => setSearchTerm(value)}
+        onInputChange={(value, reason) => {
+          if (reason === "reset") return;
+          setSearchTerm(value);
+          if (values.assignedTo !== undefined) {
+            setFieldValue("assignedTo", undefined);
+          }
+        }}
         onChange={(value) => onSelectUser(value)}
         error={errors.employeeId}
         isDisabled={

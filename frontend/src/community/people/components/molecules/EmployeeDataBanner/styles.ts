@@ -5,13 +5,13 @@ const bannerStyles = (theme: Theme) => ({
   bannerContainerStyles: (
     styles?: Record<string, string> | SxProps
   ): SxProps<Theme> => ({
-    mt: "1.5rem",
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     background: theme.palette.secondary.main,
     padding: "0.5rem 1rem",
+    borderRadius: "0.75rem 0.75rem 0 0",
     ...styles
   }),
   bannerTextStyles: {

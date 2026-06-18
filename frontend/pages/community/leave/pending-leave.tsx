@@ -11,6 +11,7 @@ import PendingLeaveRequestTable from "~community/leave/components/molecules/Pend
 
 const PendingLeave: NextPage = () => {
   const translateText = useTranslator("leaveModule", "pendingRequests");
+  const translateBreadcrumbText = useTranslator("leaveModule");
 
   const [searchTerm, setSearchTerm] = useState<string | undefined>(undefined);
 
@@ -18,6 +19,14 @@ const PendingLeave: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateBreadcrumbText(["analytics.stepLeave"])
+        },
+        {
+          label: translateBreadcrumbText(["leaveRequests.title"])
+        }
+      ]}
       pageHead={translateText(["pageHead"])}
       title={translateText(["title"])}
       isDividerVisible={true}

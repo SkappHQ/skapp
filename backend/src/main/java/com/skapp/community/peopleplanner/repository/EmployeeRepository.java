@@ -3,6 +3,8 @@ package com.skapp.community.peopleplanner.repository;
 import com.skapp.community.leaveplanner.payload.AdminOnLeaveDto;
 import com.skapp.community.leaveplanner.payload.EmployeeLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.EmployeesOnLeaveFilterDto;
+import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.request.EmployeeExportFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
@@ -16,12 +18,12 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
-import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -57,7 +59,9 @@ public interface EmployeeRepository {
 
 	Long findAllActiveEmployeesCount();
 
-	List<Employee> findManagersByEmployeeIdAndLoggedInManagerId(@NonNull Long employeeId, Long managerId);
+	List<Employee> findManagersByEmployeeIdAndLoggedInManagerId(Long employeeId, Long managerId);
+
+	boolean existsManagerForEmployee(Long employeeId, Long managerId);
 
 	List<EmployeeLeaveRequestDto> getEmployeesOnLeaveByTeam(EmployeesOnLeaveFilterDto filterDto, Long currentUserId);
 
@@ -87,13 +91,21 @@ public interface EmployeeRepository {
 
 	List<Employee> findEmployeeByName(String keyword);
 
-	PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Employee employee,
-			Employee currentEmployee);
+	PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Long employeeId,
+			Long currentEmployeeId);
 
-	PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Employee employee);
+	PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Long employeeId);
 
 	Long findAllActiveAndPendingEmployeesCount();
 
 	Page<Employee> findEmployeesV2(EmployeeFilterDtoV2 employeeFilterDto, Pageable pageable);
+
+	Map<Long, Long> countByWorkLocationIds(List<Long> workLocationIds);
+
+	List<Employee> findActiveEmployeesExcludingGuests(Long workLocationId);
+
+	Long countActiveEmployeesExcludingGuests();
+
+	List<Employee> findAllActiveEmployeesExcludingRole(Role excludedRole, Set<WorkLocation> workLocations);
 
 }

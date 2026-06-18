@@ -311,9 +311,15 @@ const EducationalDetailsSection = (props: Props): JSX.Element => {
               type={"submit"}
               icon={
                 rowEdited > -1 ? (
-                  <Icon name={IconName.SAVE_ICON} />
+                  <Icon
+                    name={IconName.SAVE_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 ) : (
-                  <Icon name={IconName.ADD_ICON} />
+                  <Icon
+                    name={IconName.ADD_ICON}
+                    fill="var(--color-primary-text)"
+                  />
                 )
               }
               iconPosition="end"

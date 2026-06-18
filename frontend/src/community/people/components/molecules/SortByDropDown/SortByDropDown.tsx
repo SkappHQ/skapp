@@ -1,6 +1,7 @@
 import { SelectChangeEvent, Stack, Typography } from "@mui/material";
-import { MutableRefObject, useEffect } from "react";
+import { MutableRefObject, useEffect, useMemo } from "react";
 
+import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
@@ -10,6 +11,7 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { usePeopleStore } from "~community/people/store/store";
 import { holiday } from "~community/people/types/HolidayTypes";
+import { buildWorkLocationOptions } from "~community/people/utils/holidayUtils/commonUtils";
 
 import { styles } from "./styles";
 
@@ -27,13 +29,34 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
   );
   const classes = styles();
 
-  const { selectedYear, setSelectedYear, holidayDataSort } = usePeopleStore(
-    (state) => ({
-      selectedYear: state.selectedYear,
-      setSelectedYear: state.setSelectedYear,
-      holidayDataSort: state.holidayDataParams.sortOrder
-    })
+  const {
+    selectedYear,
+    setSelectedYear,
+    holidayDataSort,
+    selectedWorkLocationId,
+    setSelectedWorkLocationId
+  } = usePeopleStore((state) => ({
+    selectedYear: state.selectedYear,
+    setSelectedYear: state.setSelectedYear,
+    holidayDataSort: state.holidayDataParams.sortOrder,
+    selectedWorkLocationId: state.selectedWorkLocationId,
+    setSelectedWorkLocationId: state.setSelectedWorkLocationId
+  }));
+
+  const { data: workLocations } = useGetAllWorkLocations();
+
+  const workLocationOptions = useMemo(
+    () =>
+      buildWorkLocationOptions(workLocations, translateText(["allLocations"])),
+    [workLocations, translateText]
   );
+
+  const selectedWorkLocationLabel = useMemo(() => {
+    const found = workLocationOptions.find(
+      (opt) => opt.value === String(selectedWorkLocationId)
+    );
+    return found?.label ?? translateText(["allLocations"]);
+  }, [workLocationOptions, selectedWorkLocationId, translateText]);
 
   useEffect(() => {
     setSelectedYear(currentYear.toString());
@@ -64,7 +87,7 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
 
   const handleItemClick = (event: SelectChangeEvent) => {
     handleHolidayDataSort("sortOrder", event.target.value);
-    scrollToTop && scrollToTop();
+    scrollToTop();
   };
 
   const selectedItem = dropdownItems.find(
@@ -115,6 +138,40 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
         }}
         accessibility={{
           label: translateAria(["yearSelector"])
+        }}
+      />
+      <RoundedSelect
+        id="holiday-work-location-sort"
+        value={String(selectedWorkLocationId)}
+        options={workLocationOptions}
+        onChange={(event) => {
+          setSelectedWorkLocationId(Number(event.target.value));
+          scrollToTop();
+        }}
+        renderValue={() => {
+          return (
+            <Typography
+              aria-label={`${translateAria(["currentSelection"])} ${selectedWorkLocationLabel}`}
+            >
+              {selectedWorkLocationLabel}
+            </Typography>
+          );
+        }}
+        accessibility={{
+          label: translateAria(["workLocationSelector"])
+        }}
+        customStyles={{
+          menuProps: {
+            paperProps: {
+              sx: {
+                sx: {
+                  borderRadius: "0.75rem",
+                  maxHeight: "12rem",
+                  overflowY: "auto"
+                }
+              }
+            }
+          }
         }}
       />
     </Stack>

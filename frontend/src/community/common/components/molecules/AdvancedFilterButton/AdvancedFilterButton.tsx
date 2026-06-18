@@ -1,17 +1,13 @@
-import { Box, Chip, Stack, useTheme } from "@mui/material";
 import {
   AdvancedFilterStructure,
-  ButtonV2,
   Popper,
   SelectableItemList,
   SelectableList,
   SelectedFiltersDisplay
 } from "@rootcodelabs/skapp-ui";
 import {
-  Dispatch,
   JSX,
   MouseEvent,
-  SetStateAction,
   useEffect,
   useMemo,
   useRef,
@@ -22,17 +18,9 @@ import {
   ClockInSummaryFilterTypes,
   ClockInSummaryTypes
 } from "~community/attendance/enums/dashboardEnums";
-import CloseIcon from "~community/common/assets/Icons/CloseIcon";
-import FilterIcon from "~community/common/assets/Icons/FilterIcon";
-import styles from "~community/common/components/molecules/FilterButton/styles";
-import {
-  ButtonSizes,
-  ButtonStyle
-} from "~community/common/enums/ComponentEnums";
+import FilterIconButton from "~community/common/components/atoms/FilterIconButton/FilterIconButton";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { PopperAndTooltipPositionTypes } from "~community/common/types/MoleculeTypes";
-
-import BasicChip from "../../atoms/Chips/BasicChip/BasicChip";
 
 interface FilterPanelProps {
   filterTypes: {
@@ -50,9 +38,6 @@ interface FilterPanelProps {
   id?: string;
   position?: PopperAndTooltipPositionTypes;
   selectedFilters: { [key: string]: (string | number)[] };
-  setSelectedFilters: Dispatch<
-    SetStateAction<{ [key: string]: (string | number)[] }>
-  >;
 }
 
 const FilterButton = ({
@@ -61,12 +46,8 @@ const FilterButton = ({
   filterTypes,
   onApplyFilters,
   onResetFilters,
-  selectedFilters,
-  setSelectedFilters
+  selectedFilters
 }: FilterPanelProps): JSX.Element => {
-  const theme = useTheme();
-  const classes = styles(theme);
-
   const firstColumnItems = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const secondColumnItems = useRef<{ [key: string]: HTMLDivElement | null }>(
     {}
@@ -83,8 +64,6 @@ const FilterButton = ({
   const [appliedFilters, setAppliedFilters] = useState<{
     [key: string]: (string | number)[];
   }>(selectedFilters);
-
-  const visibleFilterCount = 2;
 
   const filterTypeOptions = useMemo(
     () =>
@@ -106,13 +85,6 @@ const FilterButton = ({
         ? values.filter((v) => v !== value)
         : [...values, value];
       return { ...prev, [filterType]: newValues };
-    });
-  };
-
-  const handleRemoveSelected = (filterType: string, value: string | number) => {
-    setSelectedFilters((prev) => {
-      const values = prev[filterType].filter((v) => v !== value);
-      return { ...prev, [filterType]: values };
     });
   };
 
@@ -158,63 +130,26 @@ const FilterButton = ({
     [appliedFilters]
   );
 
-  return (
-    <Stack sx={classes.wrapper}>
-      <Stack sx={classes.container}>
-        {Object.entries(selectedFilters)
-          ?.flatMap(([filterType, values]) =>
-            values?.map((value) => {
-              const label = filterTypes[filterType]?.find(
-                (item) => item.value === value
-              )?.label;
-              return { filterType, value, label };
-            })
-          )
-          ?.slice(0, visibleFilterCount)
-          ?.map(({ filterType, value, label }) => (
-            <Chip
-              key={value}
-              label={label}
-              sx={classes.filterItem}
-              onDelete={() => handleRemoveSelected(filterType, value)}
-              deleteIcon={
-                <Box>
-                  <CloseIcon fill={theme.palette.text.blackText} />
-                </Box>
-              }
-            />
-          ))}
+  const selectedFilterCount = useMemo(
+    () =>
+      Object.values(selectedFilters).reduce(
+        (total, array) => total + array.length,
+        0
+      ),
+    [selectedFilters]
+  );
 
-        {Object.values(selectedFilters).reduce(
-          (total, array) => total + array.length,
-          0
-        ) > visibleFilterCount && (
-          <BasicChip
-            label={`+${String(Object.values(selectedFilters).reduce((total, array) => total + array.length, 0) - visibleFilterCount)}`}
-            chipStyles={{
-              backgroundColor: theme.palette.grey[100],
-              border: "0.0625rem solid",
-              borderColor: "grey.500",
-              textTransform: "capitalize",
-              color: "common.black",
-              px: "1rem",
-              py: "0.4375rem",
-              lineHeight: "1.0625rem"
-            }}
-          />
-        )}
-        <ButtonV2
-          variant={"tertiary"}
-          size={"md"}
+  return (
+    <div className="flex flex-row">
+      <div className="flex flex-row gap-1 items-center">
+        <FilterIconButton
+          filterCount={selectedFilterCount}
+          aria-label={translateText(["placeholder"])}
           onClick={(event: MouseEvent<HTMLElement>) =>
             handleFilterBtnClick(event)
           }
-          icon={<FilterIcon />}
-          iconPosition="end"
-        >
-          {translateText(["placeholder"])}
-        </ButtonV2>
-      </Stack>
+        />
+      </div>
 
       <Popper
         anchorEl={anchorElement}
@@ -270,7 +205,7 @@ const FilterButton = ({
           }}
         />
       </Popper>
-    </Stack>
+    </div>
   );
 };
 

@@ -10,6 +10,7 @@ export interface HolidayDataType {
   halfDayState?: string | HolidayDurationType;
   holidayReason?: string;
   holidayId?: number;
+  workLocations?: string[];
 }
 
 export interface holiday {
@@ -109,10 +110,18 @@ export type addedHolidays = {
   holidayType?: string;
 };
 
+export type HolidayCSVRowType = {
+  date: string;
+  name: string;
+  holidayDuration: HolidayDurationType;
+  workLocation?: string;
+};
+
 export type HolidayType = {
   date: string;
   name: string;
   holidayDuration: HolidayDurationType;
+  workLocations?: string[];
 };
 
 export interface bulkStatusSummary {
@@ -134,6 +143,7 @@ export interface holidayBulkUploadResponse {
 export type Holiday = {
   id: number;
   date: string;
+  workLocations?: string[];
   name: string;
   holidayDuration:
     | HolidayDurationType.FULLDAY

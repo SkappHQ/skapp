@@ -3,6 +3,7 @@ import {
   AdminTypes,
   EmployeeTypes,
   ManagerTypes,
+  RepresentativeTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 
@@ -10,7 +11,12 @@ import { GlobalLoginMethod } from "../enums/CommonEnums";
 import { IconName } from "../types/IconTypes";
 import routes from "./data/routes";
 
-type Role = AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType;
+type Role =
+  | AdminTypes
+  | ManagerTypes
+  | EmployeeTypes
+  | SuperAdminType
+  | RepresentativeTypes;
 
 interface Props {
   userRoles: Role[] | undefined;
@@ -18,19 +24,13 @@ interface Props {
   tenantID?: string;
   organizationCalendarGoogleStatus?: boolean;
   organizationCalendarMicrosoftStatus?: boolean;
-  pendingLeaveCount?: number;
-  pendingTimesheetCount?: number;
-  pendingSignCount?: number;
 }
 
 const getEnterpriseDrawerRoutes = ({
   userRoles,
   globalLoginMethod,
   organizationCalendarGoogleStatus,
-  organizationCalendarMicrosoftStatus,
-  pendingLeaveCount,
-  pendingTimesheetCount,
-  pendingSignCount
+  organizationCalendarMicrosoftStatus
 }: Props) => {
   const userSpecificRoutes = routes.map((route) => {
     const isSuperAdmin = userRoles?.includes(AdminTypes.SUPER_ADMIN);
@@ -74,7 +74,7 @@ const getEnterpriseDrawerRoutes = ({
       }
 
       return {
-        id: "8",
+        id: "9",
         name: "Settings",
         url: ROUTES.SETTINGS.BASE,
         icon: IconName.SETTINGS_ICON,

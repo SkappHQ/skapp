@@ -1,9 +1,12 @@
 package com.skapp.community.peopleplanner.payload.request;
 
 import com.skapp.community.common.type.ModuleType;
+import com.skapp.community.common.type.RoleLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,5 +23,9 @@ public class ModuleRoleRestrictionRequestDto {
 	@Schema(description = "Flag indicating whether the Manager role is restricted for the specified module.",
 			example = "false")
 	private Boolean isManager;
+
+	@Schema(description = "List of restricted role levels for the specified module.",
+			example = "[\"ADMIN\", \"MANAGER\"]")
+	private List<RoleLevel> restrictions;
 
 }

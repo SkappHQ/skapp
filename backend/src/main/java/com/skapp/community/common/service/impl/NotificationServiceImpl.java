@@ -7,6 +7,7 @@ import com.skapp.community.common.model.Notification;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.request.NotificationsFilterDto;
 import com.skapp.community.common.payload.response.NotificationResponseDto;
+import com.skapp.community.common.payload.response.NotificationTypeCountResponseDto;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.NotificationDao;
@@ -20,7 +21,7 @@ import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -39,12 +40,15 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -53,6 +57,12 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
 
 	private static final String NOTIFICATION_LANGUAGE = "en";
+
+	private static final Set<NotificationType> ESIGN_TYPES = EnumSet.of(NotificationType.ESIGN_DOCUMENT_SIGN_REQUEST,
+			NotificationType.ESIGN_DOCUMENT_COMPLETED, NotificationType.ESIGN_DOCUMENT_DECLINED,
+			NotificationType.ESIGN_DOCUMENT_VOIDED, NotificationType.ESIGN_DOCUMENT_REMINDER,
+			NotificationType.ESIGN_DOCUMENT_EXPIRED, NotificationType.ESIGN_DOCUMENT_COMPLETED_OWNER,
+			NotificationType.ESIGN_DOCUMENT_DECLINED_OWNER);
 
 	private final PushNotificationService pushNotificationService;
 
@@ -285,6 +295,46 @@ public class NotificationServiceImpl implements NotificationService {
 
 		log.info("getUnreviewedNotificationsCount: execution ended");
 		return new ResponseEntityDto(false, unreadCount);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public ResponseEntityDto getNotificationCountByType() {
+		log.info("getNotificationCountByType: execution started");
+
+		Long userId = userService.getCurrentUser().getUserId();
+		List<NotificationTypeCountResponseDto> results = notificationDao.countNotificationsByTypeForUser(userId);
+
+		Map<NotificationType, Long> countMap = results.stream()
+			.collect(Collectors.toMap(NotificationTypeCountResponseDto::getNotificationType,
+					NotificationTypeCountResponseDto::getNotificationCount));
+
+		long esignTotal = ESIGN_TYPES.stream().mapToLong(type -> countMap.getOrDefault(type, 0L)).sum();
+
+		List<NotificationTypeCountResponseDto> counts = Arrays.stream(NotificationType.values())
+			.filter(type -> type != NotificationType.ESIGN && !ESIGN_TYPES.contains(type))
+			.map(type -> new NotificationTypeCountResponseDto(type, countMap.getOrDefault(type, 0L)))
+			.collect(Collectors.toList());
+		counts.add(new NotificationTypeCountResponseDto(NotificationType.ESIGN, esignTotal));
+
+		log.info("getNotificationCountByType: execution ended");
+		return new ResponseEntityDto(false, counts);
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntityDto markNotificationTypeAsRead(NotificationType notificationType) {
+		log.info("markNotificationTypeAsRead: execution started");
+
+		Long userId = userService.getCurrentUser().getUserId();
+		// ESIGN is an aggregation-only alias that is never stored in the DB; fan it out
+		// to all concrete ESIGN_DOCUMENT_* types so the badge clears correctly.
+		Set<NotificationType> typesToMark = (notificationType == NotificationType.ESIGN) ? ESIGN_TYPES
+				: EnumSet.of(notificationType);
+		notificationDao.markTypeViewedByUserIdAndTypes(userId, typesToMark);
+
+		log.info("markNotificationTypeAsRead: execution ended");
+		return new ResponseEntityDto(false, "");
 	}
 
 	public List<NotificationResponseDto> mapNotifications(List<Notification> notifications) {

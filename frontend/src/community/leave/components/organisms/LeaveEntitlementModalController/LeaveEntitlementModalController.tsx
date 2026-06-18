@@ -46,11 +46,6 @@ const LeaveEntitlementModalController: FC = () => {
   };
 
   const handleCloseModal = () => {
-    if (
-      leaveEntitlementModalType ===
-      LeaveEntitlementModelTypes.OVERRIDE_CONFIRMATION
-    )
-      return;
     setLeaveEntitlementModalType(LeaveEntitlementModelTypes.NONE);
 
     if (

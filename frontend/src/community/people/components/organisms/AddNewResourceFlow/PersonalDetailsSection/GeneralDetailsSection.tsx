@@ -51,7 +51,8 @@ import { ModifiedFileType } from "~community/people/types/AddNewResourceTypes";
 import {
   GenderList,
   MaritalStatusList,
-  NationalityList
+  NationalityList,
+  getTitleList
 } from "~community/people/utils/data/employeeSetupStaticData";
 import generateThumbnail from "~community/people/utils/image/thumbnailGenerator";
 import { employeeGeneralDetailsValidation } from "~community/people/utils/peopleValidations";
@@ -102,6 +103,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
       () => ({
         authPic: employeeGeneralDetails?.authPic ?? "",
         thumbnail: employeeGeneralDetails?.thumbnail ?? "",
+        title: employeeGeneralDetails?.title || "",
         firstName: employeeGeneralDetails?.firstName || "",
         middleName: employeeGeneralDetails?.middleName || "",
         lastName: employeeGeneralDetails?.lastName || "",
@@ -299,7 +301,7 @@ const GeneralDetailsSection = forwardRef<FormMethods, Props>(
         containerStyles={{
           padding: "0",
           margin: "0 auto",
-          height: "auto",
+          height: "auto"
         }}
         dividerStyles={{
           mt: "0.5rem"

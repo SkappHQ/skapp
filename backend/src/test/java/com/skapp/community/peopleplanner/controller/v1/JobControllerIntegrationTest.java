@@ -1,38 +1,41 @@
 package com.skapp.community.peopleplanner.controller.v1;
 
-import com.skapp.community.common.model.User;
 import com.skapp.community.common.security.AuthorityService;
-import com.skapp.community.common.security.SkappUserDetails;
 import com.skapp.community.common.service.JwtService;
-import com.skapp.community.common.type.Role;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.payload.request.JobFamilyDto;
 import com.skapp.community.peopleplanner.payload.request.JobTitleDto;
 import com.skapp.community.peopleplanner.payload.request.TransferJobTitleRequestDto;
 import com.skapp.community.peopleplanner.payload.request.UpdateJobFamilyRequestDto;
+import com.skapp.support.MockUserFactory;
+import com.skapp.support.SecurityTestUtils;
+import com.skapp.TestSkappApplication;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.skapp.support.TestConstants.MESSAGE_PATH;
+import static com.skapp.support.TestConstants.RESULTS_0_PATH;
+import static com.skapp.support.TestConstants.RESULTS_PATH;
+import static com.skapp.support.TestConstants.STATUS_PATH;
+import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,57 +43,37 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(classes = TestSkappApplication.class)
 @AutoConfigureMockMvc
+@Transactional
+@RequiredArgsConstructor
 @DisplayName("Job Controller Integration Tests")
 class JobControllerIntegrationTest {
 
 	private static final String BASE_PATH = "/v1/job";
 
-	private static final String STATUS_PATH = "['status']";
+	private final JsonMapper objectMapper;
 
-	private static final String RESULTS_PATH = "['results']";
+	private final AuthorityService authorityService;
 
-	private static final String RESULTS_0_PATH = "['results'][0]";
+	private final JwtService jwtService;
 
-	private static final String MESSAGE_PATH = "['message']";
+	private final UserDetailsService userDetailsService;
 
-	private static final String STATUS_SUCCESSFUL = "successful";
+	private final MockMvc mvc;
 
-	private static final String STATUS_UNSUCCESSFUL = "unsuccessful";
-
-	@Autowired
-	private JsonMapper objectMapper;
-
-	@Autowired
-	private AuthorityService authorityService;
-
-	@Autowired
-	private JwtService jwtService;
-
-	@Autowired
-	private UserDetailsService userDetailsService;
-
-	@Autowired
-	private MockMvc mvc;
+	private final MessageUtil messageUtil;
 
 	private String authToken;
 
 	@BeforeEach
 	void setup() {
-		setupSecurityContext();
+		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createSuperAdminWithAllRoles());
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
 	}
 
-	private RequestPostProcessor bearerToken() {
-		return request -> {
-			request.addHeader("Authorization", "Bearer " + authToken);
-			return request;
-		};
-	}
-
 	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {
-		return mvc.perform(request.with(bearerToken()));
+		return mvc.perform(request.with(SecurityTestUtils.bearerToken(authToken)));
 	}
 
 	private ResultActions performGetRequest(String path) throws Exception {
@@ -107,45 +90,6 @@ class JobControllerIntegrationTest {
 		return performRequest(patch(path).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(content))
 			.accept(MediaType.APPLICATION_JSON));
-	}
-
-	private void setupSecurityContext() {
-		User mockUser = createMockUser();
-		SkappUserDetails userDetails = SkappUserDetails.builder()
-			.username(mockUser.getEmail())
-			.password(mockUser.getPassword())
-			.enabled(mockUser.getIsActive())
-			.authorities(authorityService.getAuthorities(mockUser))
-			.build();
-
-		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-				userDetails.getAuthorities());
-
-		SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-		securityContext.setAuthentication(authentication);
-		SecurityContextHolder.setContext(securityContext);
-	}
-
-	private User createMockUser() {
-		User mockUser = new User();
-		mockUser.setEmail("user1@gmail.com");
-		mockUser.setPassword("$2a$12$CGe4n75Yejv/O8dnOTD7R.x0LruTiKM22kcdc3YNl4RRw01srJsB6");
-		mockUser.setIsActive(true);
-
-		Employee mockEmployee = new Employee();
-		mockEmployee.setEmployeeId(1L);
-		mockEmployee.setFirstName("name");
-
-		EmployeeRole role = new EmployeeRole();
-		role.setAttendanceRole(Role.SUPER_ADMIN);
-		role.setIsSuperAdmin(true);
-		role.setPeopleRole(Role.PEOPLE_ADMIN);
-		role.setLeaveRole(Role.LEAVE_ADMIN);
-		role.setAttendanceRole(Role.ATTENDANCE_ADMIN);
-
-		mockEmployee.setEmployeeRole(role);
-		mockUser.setEmployee(mockEmployee);
-		return mockUser;
 	}
 
 	@Nested
@@ -180,7 +124,8 @@ class JobControllerIntegrationTest {
 		void getJobFamilyWithNotExistingId_ReturnsNotFound() throws Exception {
 			performGetRequest(getFamilyPath("/12")).andExpect(status().isNotFound())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value("Job family isn't found"));
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_FAMILY_NOT_FOUND)));
 		}
 
 		@Test
@@ -192,7 +137,8 @@ class JobControllerIntegrationTest {
 
 			performPostRequest(getFamilyPath(""), jobFamilyDto).andExpect(status().isBadRequest())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value("Insufficient data for job family"));
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_FAMILY_INSUFFICIENT_DATA)));
 		}
 
 		@Test
@@ -215,8 +161,8 @@ class JobControllerIntegrationTest {
 
 			performPostRequest(getFamilyPath(""), jobFamilyDto).andExpect(status().isBadRequest())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value(
-						"Job family name & job title fields can only contain alphabets, numbers, whitespaces, and following symbols -_&/|[]"));
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value(messageUtil
+					.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_FAMILY_AND_JOB_TITLE_NAME_INVALID)));
 		}
 
 		@Test
@@ -270,7 +216,8 @@ class JobControllerIntegrationTest {
 
 			performPatchRequest(getTitlePath("/transfer/10"), transferDtos).andExpect(status().isNotFound())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value("Job title isn't found"));
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_TITLE_NOT_FOUND)));
 		}
 
 		@Test
@@ -281,7 +228,7 @@ class JobControllerIntegrationTest {
 			performPatchRequest(getTitlePath("/transfer/5"), transferDtos).andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value("Successfully transferred employees to another job title in the same job family"));
+					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_TRANSFER_JOB_TITLE)));
 		}
 
 		@Test
@@ -291,8 +238,8 @@ class JobControllerIntegrationTest {
 
 			performPatchRequest(getTitlePath("/transfer/5"), transferDtos).andExpect(status().isBadRequest())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value("Job title and job family do not match or invalid job title"));
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value(
+						messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_FAMILY_AND_JOB_TITLE_NOT_MATCH)));
 		}
 
 		@Test
@@ -303,7 +250,7 @@ class JobControllerIntegrationTest {
 			performPatchRequest(getTitlePath("/transfer/5"), transferDtos).andExpect(status().isNotFound())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value("No job title transfer data provided. Unable to process the transfer request."));
+					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_TITLE_REQUEST_EMPTY)));
 		}
 
 		private List<TransferJobTitleRequestDto> createTransferRequestList(Long jobTitleId) {

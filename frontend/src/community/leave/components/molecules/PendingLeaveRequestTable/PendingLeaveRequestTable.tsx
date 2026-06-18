@@ -1,6 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import { Theme, useTheme } from "@mui/material/styles";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -208,7 +208,7 @@ const PendingLeaveRequestTable: React.FC<Props> = ({ searchTerm }) => {
           variant={"tertiary"}
           onClick={navigateToLeaveRequests}
           size={"md"}
-          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          icon={<ArrowRightIcon />}
           iconPosition="end"
         >
           {translateText(["viewRequestBtn"])}

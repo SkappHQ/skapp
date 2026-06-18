@@ -1,0 +1,414 @@
+{
+  "contacts": {
+    "pageHead": "Contacts | Skapp",
+    "title": "Contacts",
+    "addContactBtn": "Add Contact",
+    "detailsPageHead": "Contact Details | Skapp",
+    "detailsTitle": "Contact Details",
+    "addContactModal": {
+      "title": "Add Contact",
+      "labels": {
+        "name": "Name",
+        "email": "Email",
+        "contactNumber": "Contact no.",
+        "company": "Company",
+        "owner": "Contact owner"
+      },
+      "placeholders": {
+        "name": "Enter name",
+        "email": "Enter email",
+        "contactNumber": "Enter contact no.",
+        "company": "Search company",
+        "owner": "Search contact owner"
+      },
+      "emptyStates": {
+        "noCompanies": "No companies found",
+        "noOwners": "No contact owners found"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancelAddContact": "Cancel"
+      },
+      "ariaLabels": {
+        "name": "Name",
+        "email": "Email",
+        "contactNumber": "Contact Number",
+        "company": "Company",
+        "owner": "Contact Owner",
+        "clearCompany": "Clear selected company",
+        "clearOwner": "Clear selected contact owner",
+        "save": "Save",
+        "cancelAddContact": "Cancel Add Contact"
+      },
+      "validations": {
+        "name": "Name is required",
+        "nameLength": "Name must be less than 50 characters",
+        "email": "Email is required",
+        "invalidEmail": "Please enter a valid email address",
+        "contactNumber": "Contact number is invalid",
+        "contactNumberLength": "Contact number is too long",
+        "characterLength": "Entry must be less than 50 characters",
+        "owner": "Contact owner is required"
+      },
+      "contactToastMessages": {
+        "successTitle": "Contact added successfully",
+        "errorTitle": "Failed to add contact",
+        "errorDescription": "Please try again or contact support"
+      }
+    },
+    "contactDetailsPanel": {
+      "lastUpdated": "Last updated",
+      "errors": {
+        "contactNotFoundTitle": "Contact not found",
+        "contactNotFoundDescription": "This contact is no longer available."
+      },
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals"
+      }
+    },
+    "table": {
+      "clearButtonAriaLabel": "Clear search",
+      "search": "Search contact",
+      "infiniteScrollLoadingMessage": "Loading contacts...",
+      "closedDealsLabel_one": "Deal closed",
+      "closedDealsLabel_other": "Deals closed",
+      "overdueLabel": "overdue",
+      "emptyDataState": {
+        "title": "No contacts available.",
+        "description": "Create a contact to get started."
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
+      },
+      "companyFilter": {
+        "ariaLabel": "Filter by company",
+        "allCompanies": "All companies"
+      },
+      "columns": {
+        "nameHeader": "CONTACT",
+        "nameAriaLabel": "Contact Name",
+        "emailHeader": "EMAIL",
+        "emailAriaLabel": "Email",
+        "phoneHeader": "CONTACT NO.",
+        "phoneAriaLabel": "Contact Number",
+        "closedValueHeader": "DEAL VALUE",
+        "closedValueAriaLabel": "Deal Value",
+        "tasksHeader": "OPEN TASKS",
+        "tasksAriaLabel": "Open Tasks",
+        "contactOwnerHeader": "CONTACT OWNER",
+        "contactOwnerAriaLabel": "Contact Owner"
+      }
+    }
+  },
+  "companies": {
+    "pageHead": "Companies | Skapp",
+    "title": "Companies",
+    "addCompanyBtn": "Add company",
+    "addCompanyModal": {
+      "title": "Add company",
+      "labels": {
+        "name": "Company name",
+        "contactNumber": "Contact no.",
+        "website": "Website URL",
+        "address": "Address",
+        "industry": "Industry"
+      },
+      "placeholders": {
+        "name": "Enter company name",
+        "contactNumber": "Enter contact no.",
+        "website": "Enter website",
+        "address": "Enter address"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancelAddCompany": "Cancel"
+      },
+      "ariaLabels": {
+        "companyName": "Company Name",
+        "contactNumber": "Contact Number",
+        "website": "Website",
+        "address": "Address",
+        "industry": "Industry",
+        "save": "Save",
+        "cancelAddCompany": "Cancel Add Company"
+      },
+      "validations": {
+        "name": "Company name is required",
+        "companyExists": "A company with this name already exists",
+        "website": "Please enter a valid website URL",
+        "contactNumber": "Contact number is invalid",
+        "companyNameLength": "Company name must be less than 30 characters",
+        "characterLength": "Entry must be less than 50 characters",
+        "addressLength": "Address must be less than 100 characters",
+        "industry": "Please select a valid industry"
+      },
+      "toastMessages": {
+        "successTitle": "Company added successfully",
+        "successDescription": "The company has been successfully added",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to add the company. Please try again"
+      }
+    },
+    "industryOptions": {
+      "NONE": "None",
+      "ACCOMMODATION_SERVICES": "Accommodation services",
+      "ADMINISTRATIVE_AND_SUPPORT_SERVICES": "Administrative and support services",
+      "CONSTRUCTION": "Construction",
+      "CONSUMER_SERVICES": "Consumer services",
+      "EDUCATION": "Education",
+      "ENTERTAINMENT_PROVIDERS": "Entertainment providers",
+      "FARMING_RANCHING_FORESTRY": "Farming, ranching, forestry",
+      "FINANCIAL_SERVICES": "Financial services",
+      "GOVERNMENT_ADMINISTRATION": "Government administration",
+      "HOLDING_COMPANIES": "Holding companies",
+      "HOSPITALS_AND_HEALTH_CARE": "Hospitals and health care",
+      "MANUFACTURING": "Manufacturing",
+      "OIL_GAS_AND_MINING": "Oil, gas, and mining",
+      "PROFESSIONAL_SERVICES": "Professional services",
+      "REAL_ESTATE_AND_EQUIPMENT_RENTAL_SERVICES": "Real estate and equipment rental services",
+      "RETAIL": "Retail",
+      "TECHNOLOGY_INFORMATION_AND_MEDIA": "Technology, information and media",
+      "TRANSPORTATION_LOGISTICS_SUPPLY_CHAIN_AND_STORAGE": "Transportation, logistics, supply chain and storage",
+      "UTILITIES": "Utilities",
+      "WHOLESALE": "Wholesale"
+    },
+    "table": {
+      "clearButtonAriaLabel": "Clear search",
+      "filterButtonAriaLabel": "Filter companies",
+      "search": "Search company",
+      "infiniteScrollLoadingMessage": "Loading companies...",
+      "closedDealsLabel": "Deals closed",
+      "overdueLabel": "overdue",
+      "emptyDataState": {
+        "title": "No companies available.",
+        "description": "Create a company to get started."
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
+      },
+      "columns": {
+        "nameHeader": "NAME",
+        "nameAriaLabel": "Company Name",
+        "phoneHeader": "CONTACT NO.",
+        "phoneAriaLabel": "Contact Number",
+        "tasksHeader": "OPEN TASKS",
+        "tasksAriaLabel": "Open Tasks",
+        "pipelineHeader": "OPEN IN PIPELINE",
+        "pipelineAriaLabel": "Open in Pipeline",
+        "accountValueHeader": "ACCOUNT VALUE",
+        "accountValueAriaLabel": "Account Value"
+      }
+    },
+    "companyDetailsSidePanel": {
+      "sidePanelCompanyContacts": {
+        "title": "Contacts",
+        "columns": {
+          "contact": "CONTACT",
+          "email": "EMAIL",
+          "contactNo": "CONTACT NO.",
+          "revenue": "REVENUE",
+          "openTasks": "OPEN TASKS"
+        },
+        "noContacts": "No contacts",
+        "noContactsDescription": "No contacts associated with this company",
+        "addContact": "Add Contact",
+        "dealsClosed": "Deals closed",
+        "overdue": "overdue"
+      }
+    },
+    "editCompanyModal": {
+      "title": "Edit company",
+      "labels": {
+        "name": "Company name",
+        "contactNumber": "Contact no.",
+        "website": "Website URL",
+        "address": "Address",
+        "industry": "Industry"
+      },
+      "placeholders": {
+        "name": "Enter company name",
+        "contactNumber": "Enter contact no.",
+        "website": "Enter website",
+        "address": "Enter address",
+        "industry": "Select industry"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancelEditCompany": "Cancel"
+      },
+      "ariaLabels": {
+        "companyName": "Company Name",
+        "contactNumber": "Contact Number",
+        "website": "Website",
+        "address": "Address",
+        "industry": "Industry",
+        "save": "Save",
+        "cancelEditCompany": "Cancel Edit Company"
+      },
+      "validations": {
+        "name": "Company name is required",
+        "companyExists": "A company with this name already exists",
+        "website": "Please enter a valid website URL",
+        "contactNumber": "Contact number is invalid",
+        "companyNameLength": "Company name must be less than 30 characters",
+        "characterLength": "Entry must be less than 50 characters",
+        "addressLength": "Address must be less than 100 characters",
+        "industry": "Please select a valid industry"
+      },
+      "toastMessages": {
+        "successTitle": "Company updated successfully",
+        "successDescription": "The company has been successfully updated",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to edit the company. Please try again"
+      }
+    },
+    "deleteCompanyModal": {
+      "title": "Delete Company",
+      "description": "Are you sure you want to delete '{{companyName}}'? This will permanently remove this company. Any contacts linked to this company will become unlinked. This action cannot be undone.",
+      "buttons": {
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "ariaLabels": {
+        "confirm": "Confirm Delete Company",
+        "cancel": "Cancel Delete Company"
+      },
+      "toastMessages": {
+        "successTitle": "Company deleted",
+        "successDescription": "{{companyName}} has been deleted and linked contacts have been unlinked.",
+        "errorTitle": "Failed to delete company",
+        "errorDescription": "Something went wrong. Please try again"
+      }
+    },
+    "sidePanel": {
+      "editCompany": "Edit company",
+      "deleteCompany": "Delete company",
+      "kebabMenuAriaLabel": "Company actions",
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals",
+        "contacts": "Contacts"
+      }
+    }
+  },
+  "deals": {
+    "pageHead": "Deals | Skapp",
+    "title": "Deals",
+    "addDealBtn": "Add Deal",
+    "detailsPageHead": "Deal Details | Skapp",
+    "detailsTitle": "Deal Details",
+    "sidePanel": {
+      "addDealBtn": "Add deal",
+      "emptyTitle": "No deals",
+      "emptyDescription": "No deals associated with this company",
+      "descriptionLabel": "Description",
+      "ariaLabels": {
+        "addDealBtn": "Add Deal"
+      }
+    },
+    "dealsTable": {
+      "dealColumn": "Deal",
+      "valueColumn": "Value",
+      "stageColumn": "Stage",
+      "contactNameColumn": "Contact Name",
+      "companyNameColumn": "Company Name",
+      "dealOwnerColumn": "Deal Owner",
+      "searchPlaceholder": "Search deals",
+      "clearSearchAriaLabel": "Clear search",
+      "noDealsTitle": "No deals available.",
+      "noDealsDescription": "Add a new deal to get started",
+      "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
+      "noSearchResultsDescription": "Try adjusting your search or filters",
+      "infiniteScrollLoadingMessage": "Loading more deals..."
+    }
+  },
+  "tasks": {
+    "pageHead": "Tasks | Skapp",
+    "title": "Tasks",
+    "addTaskBtn": "Add Task",
+    "addTaskModal": {
+      "title": "Add task",
+      "labels": {
+        "type": "Type",
+        "task": "Task",
+        "dueDate": "Due date",
+        "priority": "Priority",
+        "contactName": "Contact name",
+        "deal": "Deal",
+        "taskOwner": "Task owner",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "type": "Select type",
+        "task": "Enter the task name",
+        "dueDate": "Select date",
+        "priority": "Select priority",
+        "contactName": "Enter name",
+        "deal": "Enter deal",
+        "taskOwner": "Select task owner",
+        "notes": "Add message"
+      },
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "taskTypes": {
+        "call": "Call",
+        "email": "Email",
+        "meeting": "Meeting",
+        "other": "Other"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "ariaLabels": {
+        "type": "Task type",
+        "task": "Task name",
+        "dueDate": "Due date",
+        "priority": "Priority",
+        "contactName": "Contact name",
+        "deal": "Deal",
+        "taskOwner": "Task owner",
+        "removeOwner": "Remove task owner",
+        "notes": "Notes",
+        "save": "Save task",
+        "cancel": "Cancel add task"
+      },
+      "successTitle": "Task added successfully",
+      "errorTitle": "Failed to add task",
+      "errorDescription": "Please try again or contact support",
+      "validations": {
+        "type": "Please select a task type.",
+        "name": "Task subject is required",
+        "nameLength": "Task name must be less than 50 characters",
+        "notesLength": "Notes must be less than 255 characters",
+        "dueDate": "Please select a valid due date.",
+        "dueDatePast": "Due date cannot be in the past.",
+        "owner": "Please select a task owner."
+      }
+    },
+    "tabs": {
+      "myTasks": "My Tasks",
+      "teamTasks": "Team Tasks",
+      "completedTasks": "Completed"
+    },
+    "table": {
+      "clearButtonAriaLabel": "Clear search",
+      "search": "Search task",
+      "infiniteScrollLoadingMessage": "Loading tasks...",
+      "emptyDataState": {
+        "title": "No tasks",
+        "description": "No tasks to complete. You're all caught up!"
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any matches for your search. Please try using a different term."
+      }
+    }
+  }
+}

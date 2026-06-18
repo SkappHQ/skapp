@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EmployeeTeamDao extends JpaRepository<EmployeeTeam, Long>, EmployeeTeamRepository {
@@ -21,5 +22,9 @@ public interface EmployeeTeamDao extends JpaRepository<EmployeeTeam, Long>, Empl
 	List<EmployeeTeam> findByTeamIn(Collection<Team> teams);
 
 	void deleteAllByIdIn(List<Long> employeeTeamIds);
+
+	List<EmployeeTeam> findByEmployeeAndIsSupervisorTrueAndTeamIsActiveTrue(Employee employee);
+
+	Optional<EmployeeTeam> findByTeamAndEmployee(Team team, Employee employee);
 
 }

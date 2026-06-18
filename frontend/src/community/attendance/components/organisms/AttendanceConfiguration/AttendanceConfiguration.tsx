@@ -15,6 +15,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import GeoFencingSettings from "~enterprise/configurations/components/organisms/GeoFencingSettings/GeoFencingSettings";
 
 import styles from "./styles";
 
@@ -151,6 +152,12 @@ const AttendanceConfiguration = (): JSX.Element => {
             />
           )}
         </Box>
+
+        <GeoFencingSettings
+          config={config}
+          initialConfig={initialConfig}
+          onSwitchChange={handleSwitchChange}
+        />
 
         <Stack direction="row" gap="0.75rem" sx={classes.buttonGroup}>
           <ButtonV2

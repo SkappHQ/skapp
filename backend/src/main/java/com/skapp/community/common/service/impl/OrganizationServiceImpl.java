@@ -20,6 +20,7 @@ import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.crmplanner.service.CrmConfigService;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
 import com.skapp.community.okrplanner.service.OkrConfigService;
@@ -68,6 +69,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 	private final TimeConfigDao timeConfigDao;
 
 	private final OkrConfigService okrConfigService;
+
+	private final CrmConfigService crmConfigService;
 
 	private static void setOrganizationDetails(UpdateOrganizationRequestDto organizationDto,
 			Organization organization) {
@@ -207,6 +210,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		leaveTypeService.createDefaultLeaveType();
 		leaveCycleService.setLeaveCycleDefaultConfigs();
 		okrConfigService.setOkrDefaultConfig();
+		crmConfigService.setDefaultCrmConfig();
 		saveEmailServerConfigs(new EmailServerRequestDto(null, null, null, null, false));
 
 		log.info("setDefaultOrganizationConfigs: execution ended");

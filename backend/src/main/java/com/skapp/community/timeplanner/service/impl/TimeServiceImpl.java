@@ -54,6 +54,7 @@ import com.skapp.community.timeplanner.payload.request.AddTimeRecordDto;
 import com.skapp.community.timeplanner.payload.request.AttendanceSummaryDto;
 import com.skapp.community.timeplanner.payload.request.EditTimeRequestDto;
 import com.skapp.community.timeplanner.payload.request.EmployeeAttendanceSummaryFilterDto;
+import com.skapp.community.timeplanner.payload.request.GetTimeConfigDeleteAvailabilityRequestDto;
 import com.skapp.community.timeplanner.payload.request.IndividualWorkHourFilterDto;
 import com.skapp.community.timeplanner.payload.request.ManagerAttendanceSummaryFilterDto;
 import com.skapp.community.timeplanner.payload.request.ManagerTimeRecordFilterDto;
@@ -129,6 +130,7 @@ import java.time.ZonedDateTime;
 import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -137,9 +139,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
-
-import static com.skapp.community.common.util.DateTimeUtils.MILLISECONDS_IN_AN_HOUR;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -152,13 +152,13 @@ public class TimeServiceImpl implements TimeService {
 
 	private final MessageUtil messageUtil;
 
-	private final UserService userService;
+	protected final UserService userService;
 
-	private final TimeRecordDao timeRecordDao;
+	protected final TimeRecordDao timeRecordDao;
 
 	private final TimeSlotDao timeSlotDao;
 
-	private final AttendanceConfigService attendanceConfigService;
+	protected final AttendanceConfigService attendanceConfigService;
 
 	private final LeaveRequestDao leaveRequestDao;
 
@@ -236,9 +236,10 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getActiveTimeSlot() {
 		User currentUser = userService.getCurrentUser();
-		log.info("getActiveTimeSlot: execution started by user: {}", currentUser.getUserId());
+		log.info("getActiveTimeSlot: execution started");
 
 		ResponseEntityDto leaveOrHolidayOrNonWorkingDayResponse = checkLeaveOrHolidayOrNonWorkingDay();
 		if (leaveOrHolidayOrNonWorkingDayResponse != null) {
@@ -253,7 +254,6 @@ public class TimeServiceImpl implements TimeService {
 			Optional<TimeSlot> activeTimeSlot = timeSlotDao.findByTimeRecordAndIsActiveRightNow(timeRecord.get(), true);
 
 			if (activeTimeSlot.isEmpty()) {
-				log.info("getActiveTimeSlot: no active time slot found for user: {}", currentUser.getUserId());
 				if (timeRecord.get().getClockOutTime() != null) {
 					LocalDateTime clockOutTimeUtc = DateTimeUtils
 						.epochMillisToUtcLocalDateTime(timeRecord.get().getClockOutTime(), null);
@@ -270,19 +270,21 @@ public class TimeServiceImpl implements TimeService {
 				activeTimeSlotResponseDto.setBreakHours(activeTimeSlot.get().getTimeRecord().getBreakHours());
 				activeTimeSlotResponseDto.setWorkHours(activeTimeSlot.get().getTimeRecord().getWorkedHours());
 			}
+			log.info("getActiveTimeSlot: execution ended with time records");
 			return new ResponseEntityDto(false, activeTimeSlotResponseDto);
 		}
 		else {
-			log.info("getActiveTimeSlot: no time record found for user: {}", currentUser.getUserId());
+			log.info("getActiveTimeSlot: execution ended without finding time records");
 			return new ResponseEntityDto();
 		}
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeeAttendanceSummary(
 			EmployeeAttendanceSummaryFilterDto employeeAttendanceSummaryFilterDto) {
 		User currentUser = userService.getCurrentUser();
-		log.info("getEmployeeTotalWorkBreakHours: execution started by user: {}", currentUser.getUserId());
+		log.info("getEmployeeTotalWorkBreakHours: execution started");
 
 		Optional<Employee> employeeOptional = employeeDao.findById(currentUser.getUserId());
 		if (employeeOptional.isEmpty()) {
@@ -299,27 +301,29 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeeDailyTimeRecords(TimeRecordFilterDto timeRecordFilterDto) {
 		User currentUser = userService.getCurrentUser();
-		log.info("getEmployeeDailyTimeRecords: execution started by user: {}", currentUser.getUserId());
+		log.info("getEmployeeDailyTimeRecords: execution started");
 
 		PageDto pageDto = getEmployeeTimeRecord(timeRecordFilterDto, currentUser.getUserId());
-		log.info("getEmployeeDailyTimeRecords: execution ended by user: {}", userService.getCurrentUser());
+		log.info("getEmployeeDailyTimeRecords: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeeDailyTimeRecordsByEmployeeId(TimeRecordFilterDto timeRecordFilterDto,
 			Long employeeId) {
-		User currentUser = userService.getCurrentUser();
-		log.info("getEmployeeDailyTimeRecordsByEmployeeId: execution started by user: {}", currentUser.getUserId());
+		log.info("getEmployeeDailyTimeRecordsByEmployeeId: execution started");
 
 		PageDto pageDto = getEmployeeTimeRecord(timeRecordFilterDto, employeeId);
-		log.info("getEmployeeDailyTimeRecordsByEmployeeId: execution ended by user: {}", userService.getCurrentUser());
+		log.info("getEmployeeDailyTimeRecordsByEmployeeId: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getPendingTimeRequestsCount() {
 		log.info("getPendingTimeRequestsCount: execution started");
 
@@ -412,9 +416,10 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getAllRequestsOfEmployee(EmployeeTimeRequestFilterDto employeeTimeRequestFilterDto) {
 		User currentUser = userService.getCurrentUser();
-		log.info("getAllRequestsOfEmployee: execution started by user: {}", currentUser.getUserId());
+		log.info("getAllRequestsOfEmployee: execution started");
 
 		if (Boolean.TRUE.equals(employeeTimeRequestFilterDto.getIsExport()))
 			employeeTimeRequestFilterDto.setPageSize(Integer.MAX_VALUE);
@@ -435,9 +440,10 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getRequestedDateTimeAvailability(TimeRequestAvailabilityRequestDto requestDto) {
 		User currentUser = userService.getCurrentUser();
-		log.info("getRequestedDateTimeAvailability: execution started by user: {}", currentUser.getUserId());
+		log.info("getRequestedDateTimeAvailability: execution started");
 
 		TimeRequestAvailabilityResponseDto response = new TimeRequestAvailabilityResponseDto();
 		response.setDate(requestDto.getDate());
@@ -460,8 +466,8 @@ public class TimeServiceImpl implements TimeService {
 		timeRequestFilterDto.setEmployeeId(currentUser.getEmployee().getEmployeeId());
 		timeRequestFilterDto.setStatus(List.of(RequestStatus.PENDING));
 		timeRequestFilterDto.setDate(requestDto.getDate());
-		TimeRequest editTimeRequest = timeRequestDao.findTimeRequestsByOptionalFilters(timeRequestFilterDto).isEmpty()
-				? null : timeRequestDao.findTimeRequestsByOptionalFilters(timeRequestFilterDto).getFirst();
+		List<TimeRequest> foundTimeRequests = timeRequestDao.findTimeRequestsByOptionalFilters(timeRequestFilterDto);
+		TimeRequest editTimeRequest = foundTimeRequests.isEmpty() ? null : foundTimeRequests.getFirst();
 
 		List<TimeRequest> manualTimeRequests = timeRequestDao.findPendingEntryRequestsWithoutTimeRecordId(
 				currentUser.getEmployee().getEmployeeId(), requestDto.getStartTime(), requestDto.getEndTime());
@@ -475,50 +481,35 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getIncompleteClockOuts() {
 		User currentUser = userService.getCurrentUser();
-		log.info("getIncompleteClockOuts: execution started by user: {}", currentUser.getUserId());
+		log.info("getIncompleteClockOuts: execution started");
 
 		LocalDate lastClockInDate = currentUser.getEmployee().getLastClockInDate();
 
 		Optional<TimeRecord> incompleteTimeRecords = Optional.empty();
 		if (lastClockInDate != null) {
-			incompleteTimeRecords = timeRecordDao.findIncompleteClockoutTimeRecords(lastClockInDate,
+			incompleteTimeRecords = timeRecordDao.findIncompleteClockOutTimeRecords(lastClockInDate,
 					currentUser.getEmployee().getEmployeeId());
 		}
 
 		return new ResponseEntityDto(false,
 				incompleteTimeRecords.isPresent() && !lastClockInDate.equals(DateTimeUtils.getCurrentUtcDate())
-						? timeMapper.timeRecordToTimeRecordResponseDto(incompleteTimeRecords.get())
-						: incompleteTimeRecords);
+						? timeMapper.timeRecordToTimeRecordResponseDto(incompleteTimeRecords.get()) : null);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getDefaultTimeConfigurations() {
 		log.info("getDefaultTimeConfigurations: execution started");
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<TimeConfigResponseDto> newTimeConfigs = new ArrayList<>();
-		for (TimeConfig tcm : timeConfigs) {
-			if (tcm.getStartHour() == null) {
-				tcm.setStartHour(0);
-			}
-			if (tcm.getStartMinute() == null) {
-				tcm.setStartMinute(0);
-			}
-			TimeConfigResponseDto obj = timeMapper.timeConfigToTimeConfigResponseDto(tcm);
-			newTimeConfigs.add(obj);
-		}
-		List<DayOfWeek> days = List.of(DayOfWeek.values());
-		List<TimeConfigResponseDto> sortedTimeConfigs = new ArrayList<>();
-		days.forEach(day -> {
-			List<TimeConfigResponseDto> timeConfig = newTimeConfigs.stream()
-				.filter(tc -> tc.getDay().equals(day))
-				.toList();
-			if (!timeConfig.isEmpty()) {
-				sortedTimeConfigs.add(timeConfig.getFirst());
-			}
-		});
+
+		List<TimeConfigResponseDto> sortedTimeConfigs = timeConfigs.stream()
+			.map(timeMapper::timeConfigToTimeConfigResponseDto)
+			.sorted(Comparator.comparingInt(timeConfig -> timeConfig.getDay().getValue()))
+			.toList();
 
 		log.info("getDefaultTimeConfigurations: execution ended");
 		return new ResponseEntityDto(false, sortedTimeConfigs);
@@ -528,7 +519,7 @@ public class TimeServiceImpl implements TimeService {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public ResponseEntityDto addTimeRecord(AddTimeRecordDto addTimeRecordDto) {
 		User currentUser = userService.getCurrentUser();
-		log.info("addTimeRecord: execution started by user: {}", currentUser.getUserId());
+		log.info("addTimeRecord: execution started");
 
 		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 		LocalDate timeRecordDate = addTimeRecordDto.getTime().toLocalDate();
@@ -549,7 +540,7 @@ public class TimeServiceImpl implements TimeService {
 				createTimeSlot(timeRecord.get(), timeToRecordInMillis, addTimeRecordDto.getRecordActionType());
 			}
 			else {
-				log.info("addTimeRecord: no time record found for user: {}", currentUser.getUserId());
+				log.info("addTimeRecord: no time record found");
 				throw new ModuleException(TimeMessageConstant.TIME_ERROR_CLOCK_IN_NOT_EXISTS_FOR_CURRENT_DATE);
 			}
 		}
@@ -562,7 +553,7 @@ public class TimeServiceImpl implements TimeService {
 	@Transactional
 	public ResponseEntityDto editTimeRequest(EditTimeRequestDto timeRequestDto) {
 		User currentUser = userService.getCurrentUser();
-		log.info("editClockInClockOut: execution started by user: {}", currentUser.getUserId());
+		log.info("editClockInClockOut: execution started");
 
 		validateRequestParameters(timeRequestDto);
 
@@ -588,10 +579,11 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
-	public ResponseEntityDto getIfTimeConfigRemovable(List<DayOfWeek> days) {
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getIfTimeConfigRemovable(GetTimeConfigDeleteAvailabilityRequestDto requestDto) {
 
 		ArrayNode arrayNode = mapper.createArrayNode();
-		days.forEach(day -> {
+		requestDto.getDays().forEach(day -> {
 			ObjectNode objectNode = mapper.createObjectNode();
 
 			objectNode.put(day.name(), leaveRequestDao.findAllFutureLeaveRequestsForTheDay(day).isEmpty());
@@ -605,7 +597,7 @@ public class TimeServiceImpl implements TimeService {
 	@Transactional
 	public ResponseEntityDto addManualEntryRequest(ManualEntryRequestDto timeRequestDto) {
 		User currentUser = userService.getCurrentUser();
-		log.info("addManualEntryRequest: execution started by user: {}", currentUser.getUserId());
+		log.info("addManualEntryRequest: execution started");
 
 		if (!employeeManagerDao.existsByEmployee(currentUser.getEmployee())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_NO_MANAGERS_FOUND);
@@ -639,8 +631,7 @@ public class TimeServiceImpl implements TimeService {
 
 	@Override
 	public ResponseEntityDto updateTimeRequests(UpdateTimeRequestsFilterDto updateTimeRequestsFilterDto) {
-		User currentUser = userService.getCurrentUser();
-		log.info("cancelTimeRecords: execution started by user: {}", currentUser.getUserId());
+		log.info("cancelTimeRecords: execution started");
 
 		Optional<TimeRequest> optionalTimeRequest = timeRequestDao
 			.findById(updateTimeRequestsFilterDto.getTimeRequestId());
@@ -674,7 +665,7 @@ public class TimeServiceImpl implements TimeService {
 	public ResponseEntityDto updateCurrentUserIncompleteTimeRecords(Long id,
 			UpdateIncompleteTimeRecordsRequestDto requestDto) {
 		User currentUser = userService.getCurrentUser();
-		log.info("clockoutIncompleteTimeRecords: execution started by user: {}", currentUser.getUserId());
+		log.info("clockoutIncompleteTimeRecords: execution started");
 
 		Optional<TimeRecord> timeRecord = timeRecordDao.findById(id);
 
@@ -740,10 +731,13 @@ public class TimeServiceImpl implements TimeService {
 					: teamDao.findAllByIsActive(true).stream().map(Team::getTeamId).toList();
 		}
 		else {
-			List<Long> invalidTeams = teamIds.stream()
-				.filter(team -> teamDao.findByTeamIdAndIsActive(team, true).isEmpty())
-				.toList();
-			if (!invalidTeams.isEmpty()) {
+			Set<Long> activeTeamIds = teamDao.findByTeamIdIn(teamIds)
+				.stream()
+				.filter(Team::isActive)
+				.map(Team::getTeamId)
+				.collect(Collectors.toSet());
+			boolean hasInvalidTeam = teamIds.stream().anyMatch(id -> !activeTeamIds.contains(id));
+			if (hasInvalidTeam) {
 				throw new EntityNotFoundException(
 						messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
 			}
@@ -781,12 +775,12 @@ public class TimeServiceImpl implements TimeService {
 	public ResponseEntityDto updateTimeRequestByManager(Long id,
 			TimeRequestManagerPatchDto timeRequestManagerPatchDto) {
 		User user = userService.getCurrentUser();
-		log.info("updateTimeRequestByManager: execution started by user: {}", user.getUserId());
+		log.info("updateTimeRequestByManager: execution started");
 
 		Optional<TimeRequest> timeRequest = timeRequestDao.findById(id);
 		TimeRequest timeRequestResponse;
 		if (timeRequest.isEmpty()) {
-			log.info("updateTimeRequestByManager: no time request found for user with given id: {}", user.getUserId());
+			log.info("updateTimeRequestByManager: no time request found");
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_NO_TIME_REQUEST_FOUND);
 		}
 
@@ -796,7 +790,7 @@ public class TimeServiceImpl implements TimeService {
 
 		Optional<Employee> employee = employeeDao.findByEmployeeId(timeRequest.get().getEmployee().getEmployeeId());
 		if (employee.isEmpty()) {
-			log.info("updateTimeRequestByManager: no employee found for user with given id: {}", user.getUserId());
+			log.info("updateTimeRequestByManager: no employee found");
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
@@ -804,7 +798,7 @@ public class TimeServiceImpl implements TimeService {
 			.getEmployee()
 			.getEmployeeManagers()
 			.stream()
-			.anyMatch(employeeManager -> employeeManager.getManager().getUser() == user);
+			.anyMatch(employeeManager -> employeeManager.getManager().getUser().getUserId().equals(user.getUserId()));
 
 		if (!isManager) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_TIME_REQUEST_MANAGER_MISMATCH);
@@ -839,16 +833,14 @@ public class TimeServiceImpl implements TimeService {
 	@Override
 	public TimeRequest handleEditTimeRecordRequests(TimeRequest timeRequest, User currentUser,
 			TimeRequestManagerPatchDto timeRequestManagerPatchDto) {
-		log.info("handleEditTimeRecordRequests: executing edit time record request method: {}",
-				currentUser.getUserId());
+		log.info("handleEditTimeRecordRequests: executing edit time record request method");
 
 		TimeRequest timeRequestResponse = null;
 		if (timeRequestManagerPatchDto.getStatus().equals(RequestStatus.DENIED)) {
 			timeRequestResponse = deleteTimeRequest(timeRequest);
 		}
 		else if (timeRequestManagerPatchDto.getStatus().equals(RequestStatus.APPROVED)) {
-			log.info("handleEditTimeRecordRequests: executing edit time record request method: {}",
-					currentUser.getUserId());
+			log.info("handleEditTimeRecordRequests: approved, processing edit");
 			List<TimeSlot> timeSlots = timeSlotDao.findTimeSlotByTimeRecord(timeRequest.getTimeRecord())
 				.stream()
 				.sorted((o1, o2) -> (int) (o1.getStartTime() - o2.getStartTime()))
@@ -859,7 +851,7 @@ public class TimeServiceImpl implements TimeService {
 			if (timeRequest.getRequestedStartTime() <= timeRequest.getInitialClockIn()) {
 				handleExpandClockInClockOut(timeRequest, timeRecord, timeSlots, RecordType.CLOCK_IN);
 			}
-			else if (timeRequest.getRequestedStartTime() > timeRequest.getInitialClockIn()) {
+			else {
 				handleShrinkClockInClockOut(timeRequest, timeRecord, RecordType.CLOCK_IN, timeSlots,
 						timeSlotsToBeDeleted);
 			}
@@ -868,7 +860,7 @@ public class TimeServiceImpl implements TimeService {
 					|| timeRequest.getRequestedEndTime() >= timeRequest.getInitialClockOut()) {
 				handleExpandClockInClockOut(timeRequest, timeRecord, timeSlots, RecordType.CLOCK_OUT);
 			}
-			else if (timeRequest.getRequestedEndTime() < timeRequest.getInitialClockOut()) {
+			else {
 				handleShrinkClockInClockOut(timeRequest, timeRecord, RecordType.CLOCK_OUT, timeSlots,
 						timeSlotsToBeDeleted);
 			}
@@ -878,7 +870,7 @@ public class TimeServiceImpl implements TimeService {
 			for (TimeSlot slot : timeSlots) {
 				if (timeSlotsToBeDeleted.contains(slot) || slot.getEndTime() == null)
 					continue;
-				float hours = (slot.getEndTime() - slot.getStartTime()) / MILLISECONDS_IN_AN_HOUR;
+				float hours = (slot.getEndTime() - slot.getStartTime()) / DateTimeUtils.MILLISECONDS_IN_AN_HOUR;
 				if (slot.getSlotType() == SlotType.WORK)
 					recalculatedWorkHours += hours;
 				else if (slot.getSlotType() == SlotType.BREAK)
@@ -905,7 +897,7 @@ public class TimeServiceImpl implements TimeService {
 	@Override
 	public TimeRequest handleManualTimeEntryRequests(TimeRequest timeRequest, User currentUser,
 			TimeRequestManagerPatchDto timeRequestManagerPatchDto) {
-		log.info("handleManualTimeEntryRequests: executing manual time record method: {}", currentUser.getUserId());
+		log.info("handleManualTimeEntryRequests: executing manual time record method");
 
 		TimeRequest timeRequestResponse = null;
 		if (timeRequestManagerPatchDto.getStatus().equals(RequestStatus.DENIED)) {
@@ -937,8 +929,9 @@ public class TimeServiceImpl implements TimeService {
 	@Override
 	@Transactional
 	public ResponseEntityDto managerAssignUsersTimeRecords(ManagerTimeRecordFilterDto managerTimeRecordFilterDto) {
-		Long currentUser = userService.getCurrentUser().getUserId();
-		log.info("managerAssignUsersTimeRecords: execution started by user: {}", currentUser);
+		log.info("managerAssignUsersTimeRecords: execution started");
+
+		User currentUser = userService.getCurrentUser();
 
 		LocalDate startDate = managerTimeRecordFilterDto.getStartDate();
 		LocalDate endDate = managerTimeRecordFilterDto.getEndDate();
@@ -949,9 +942,9 @@ public class TimeServiceImpl implements TimeService {
 
 		List<Long> teamIdsToFilter = managerTimeRecordFilterDto.getTeamIds();
 
-		if (userService.getCurrentUser().getEmployee().getEmployeeRole().getAttendanceRole() != Role.ATTENDANCE_ADMIN) {
+		if (currentUser.getEmployee().getEmployeeRole().getAttendanceRole() != Role.ATTENDANCE_ADMIN) {
 			teamIdsToFilter = validateFilteringTeamsByManager(managerTimeRecordFilterDto.getTeamIds(),
-					userService.getCurrentUser().getEmployee().getEmployeeId());
+					currentUser.getEmployee().getEmployeeId());
 		}
 
 		int pageSize = managerTimeRecordFilterDto.getSize();
@@ -963,8 +956,7 @@ public class TimeServiceImpl implements TimeService {
 		Pageable pageable = PageRequest.of(managerTimeRecordFilterDto.getPage(), pageSize,
 				managerTimeRecordFilterDto.getSortOrder(), managerTimeRecordFilterDto.getSortKey().toString());
 
-		Page<Employee> employees = teamDao.findEmployeesInManagerLeadingTeams(teamIdsToFilter, pageable,
-				userService.getCurrentUser());
+		Page<Employee> employees = teamDao.findEmployeesInManagerLeadingTeams(teamIdsToFilter, pageable, currentUser);
 
 		List<Long> employeeIds = employees.stream().map(Employee::getEmployeeId).toList();
 
@@ -973,11 +965,12 @@ public class TimeServiceImpl implements TimeService {
 		timeRecordFilterDto.setEndDate(endDate);
 		Pageable timeRecordsPageable = PageRequest.of(timeRecordFilterDto.getPage(), Integer.MAX_VALUE,
 				timeRecordFilterDto.getSortOrder(), timeRecordFilterDto.getSortKey().toString());
-		List<EmployeeTimeRecord> timeRecords = timeRecordDao.findEmployeesTimeRecordsWithTeams(employeeIds,
+		List<EmployeeTimeRecord> timeRecords = findEmployeesTimeRecordsWithTeams(employeeIds,
 				teamIdsToFilter.contains(-1L) ? null : teamIdsToFilter, startDate, endDate,
 				timeRecordsPageable.getPageSize(), timeRecordsPageable.getOffset());
 
 		List<LeaveRequest> leaveRequests = getLeaveRequests(startDate, endDate, employeeIds);
+		boolean geoFencingEnabled = isGeoFencingEnabled();
 
 		List<TimeRecordsResponseDto> response = new ArrayList<>();
 		for (Employee employee : employees.getContent()) {
@@ -990,11 +983,12 @@ public class TimeServiceImpl implements TimeService {
 
 			List<TimeRecordChipResponseDto> timeRecordRow = new ArrayList<>();
 			for (EmployeeTimeRecord timeRecord : employeeTimeRecords) {
-				TimeRecordChipResponseDto timeRecordChip = new TimeRecordChipResponseDto();
+				TimeRecordChipResponseDto timeRecordChip = createTimeRecordChipDto();
 				timeRecordChip.setTimeRecordId(timeRecord.getTimeRecordId());
 				timeRecordChip.setDate(timeRecord.getDate());
 				timeRecordChip.setWorkedHours(timeRecord.getWorkedHours());
 				timeRecordChip.setLeaveRequest(getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
+				populateEnterpriseChipFields(timeRecordChip, timeRecord, geoFencingEnabled);
 				timeRecordRow.add(timeRecordChip);
 			}
 
@@ -1008,7 +1002,7 @@ public class TimeServiceImpl implements TimeService {
 		pageDto.setTotalPages(employees.getTotalPages());
 		pageDto.setCurrentPage(timeRecordFilterDto.getPage());
 
-		log.info("managerAssignUsersTimeRecords: execution ended by user: {}", currentUser);
+		log.info("managerAssignUsersTimeRecords: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
@@ -1016,7 +1010,7 @@ public class TimeServiceImpl implements TimeService {
 	@Transactional
 	public ResponseEntityDto getAllAssignEmployeesTimeRequests(ManagerTimeRequestFilterDto timeRequestFilterDto) {
 		User user = userService.getCurrentUser();
-		log.info("getAllAssignEmployeesTimeRequests: execution started for user: {}", user.getUserId());
+		log.info("getAllAssignEmployeesTimeRequests: execution started");
 
 		Pageable pageable = PageRequest.of(timeRequestFilterDto.getPageNumber(), timeRequestFilterDto.getPageSize(),
 				Sort.by(timeRequestFilterDto.getSortBy(), String.valueOf(timeRequestFilterDto.getSortKey())));
@@ -1033,8 +1027,7 @@ public class TimeServiceImpl implements TimeService {
 
 		pageDto.setItems(timeRequestResponseDtoList);
 
-		log.info("getAllAssignEmployeesTimeRequests: execution ended user: {} with {} result(s)", user.getUserId(),
-				timeRequestResponseDtoList.size());
+		log.info("getAllAssignEmployeesTimeRequests: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
@@ -1042,9 +1035,9 @@ public class TimeServiceImpl implements TimeService {
 	@Transactional
 	public ResponseEntityDto managerTeamTimeRecordSummary(TeamTimeRecordFilterDto timeRecordSummaryDto) {
 		User user = userService.getCurrentUser();
-		log.info("managerTeamTimeRecordSummary: execution started by user: {}", user.getUserId());
+		log.info("managerTeamTimeRecordSummary: execution started");
 
-		return getTimeRecordSummaryDetails(timeRecordSummaryDto, user, Role.ATTENDANCE_MANAGER);
+		return getTimeRecordSummaryDetails(timeRecordSummaryDto, user);
 	}
 
 	@Override
@@ -1066,13 +1059,8 @@ public class TimeServiceImpl implements TimeService {
 		}
 		Employee employee = employeeOptional.get();
 
-		Pageable defaultPageable = PageRequest.of(0, Integer.MAX_VALUE);
-		List<Employee> managerEmployees = employeeDao.findEmployeesByManagerId(currentUser.getUserId(), defaultPageable)
-			.getContent();
-		Optional<Employee> optionalAssignedEmployee = managerEmployees.stream()
-			.filter(emp -> emp.getEmployeeId().equals(managerEmployeeLogFilterDto.getEmployeeId()))
-			.findFirst();
-		if (optionalAssignedEmployee.isEmpty()) {
+		if (!employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(
+				currentUser.getEmployee().getEmployeeId(), managerEmployeeLogFilterDto.getEmployeeId())) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_CANNOT_VIEW_EMPLOYEE_DATA);
 		}
 
@@ -1116,15 +1104,16 @@ public class TimeServiceImpl implements TimeService {
 				: (int) Math.ceil((double) totalItemCount / (double) managerEmployeeLogFilterDto.getSize()));
 		pageDto.setCurrentPage(managerEmployeeLogFilterDto.getPage());
 
-		log.info("getManagerEmployeeDailyLog: execution ended by user: {}", currentUser.getUserId());
+		log.info("getManagerEmployeeDailyLog: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getIndividualWorkHoursBySupervisor(
 			IndividualWorkHourFilterDto individualWorkHourFilterDto) {
 		User currentUser = userService.getCurrentUser();
-		log.info("getIndividualWorkHoursOfEmployee: execution started by user: {}", currentUser.getUserId());
+		log.info("getIndividualWorkHoursOfEmployee: execution started");
 
 		if (currentUser.getEmployee().getEmployeeRole().getAttendanceRole().equals(Role.ATTENDANCE_EMPLOYEE)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_PERMISSION_NOT_FOUND);
@@ -1143,9 +1132,10 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getIndividualWorkUtilizationByManager(Long id) {
 		User currentUser = userService.getCurrentUser();
-		log.info("getIndividualWorkUtilizationByManager: execution started by {}", currentUser.getUserId());
+		log.info("getIndividualWorkUtilizationByManager: execution started");
 
 		if (currentUser.getEmployee().getEmployeeRole().getAttendanceRole().equals(Role.ATTENDANCE_EMPLOYEE)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_PERMISSION_NOT_FOUND);
@@ -1170,13 +1160,13 @@ public class TimeServiceImpl implements TimeService {
 		UtilizationPercentageDto utilizationInfo = calculateWorkTimeUtilization(
 				List.of(employeeOpt.get().getEmployeeId()), timeConfigs, holidays);
 
-		log.info("getIndividualWorkUtilizationByManager: execution ended {}", currentUser.getUserId());
+		log.info("getIndividualWorkUtilizationByManager: execution ended");
 		return new ResponseEntityDto(false, utilizationInfo);
 	}
 
 	public ResponseEntityDto checkLeaveOrHolidayOrNonWorkingDay() {
 		User currentUser = userService.getCurrentUser();
-		log.info("checkLeaveOrHolidayOrNonWorkingDay: execution started by user: {}", currentUser.getUserId());
+		log.info("checkLeaveOrHolidayOrNonWorkingDay: execution started");
 
 		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 
@@ -1199,7 +1189,9 @@ public class TimeServiceImpl implements TimeService {
 				.findAny()
 				.orElse(null);
 
-			assert currentDayConfig != null;
+			if (currentDayConfig == null) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_CONFIGS_NOT_FOUND);
+			}
 			Map<String, Float> hoursMap = TimeUtil.extractHours(currentDayConfig);
 			float morningHours = hoursMap.get(CommonConstants.DEFAULT_TIME_CONFIG_VALUE_MORNING);
 			float eveningHours = hoursMap.get(CommonConstants.DEFAULT_TIME_CONFIG_VALUE_EVENING);
@@ -1282,7 +1274,7 @@ public class TimeServiceImpl implements TimeService {
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS);
 		if (!attendanceConfigForHolidays && !holidayList.isEmpty()) {
 			for (Holiday holiday : holidayList) {
-				boolean isEveningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_MORNING
+				boolean isEveningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_EVENING
 						&& TimeUtil.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours);
 				boolean isMorningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_MORNING
 						&& TimeUtil.isCurrentTimeInMorning(currentDayConfig, morningHours);
@@ -1409,11 +1401,10 @@ public class TimeServiceImpl implements TimeService {
 
 	private void handleOverlappingSlots(List<TimeSlot> overlappingSlots, TimeRequest timeRequest,
 			TimeRecord timeRecord) {
-		log.info("handleOverlappingSlots: executing overlapping slots method: {}",
-				timeRequest.getTimeRecord().getTimeRecordId());
+		log.info("handleOverlappingSlots: executing overlapping slots method");
 		if (timeRequest.getRequestedStartTime() < timeRecord.getClockInTime())
 			timeRecord.setClockInTime(timeRequest.getRequestedStartTime());
-		if (timeRequest.getRequestedEndTime() > timeRecord.getClockOutTime())
+		if (timeRecord.getClockOutTime() == null || timeRequest.getRequestedEndTime() > timeRecord.getClockOutTime())
 			timeRecord.setClockOutTime(timeRequest.getRequestedEndTime());
 
 		List<TimeSlot> updatedTimeSlots = new ArrayList<>();
@@ -1477,8 +1468,7 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	private void handleIndependentTimeSlots(TimeRequest timeRequest, TimeRecord timeRecord) {
-		log.info("handleIndependentTimeSlots: executing independent time slots method for request ID: {}",
-				timeRequest.getTimeRequestId());
+		log.info("handleIndependentTimeSlots: executing independent time slots method");
 		TimeSlot manualTimeSlot = timeMapper.newTimeSlotToTimeSlot(timeRequest.getRequestedStartTime(), SlotType.WORK,
 				false, timeRecord, true);
 		manualTimeSlot.setEndTime(timeRequest.getRequestedEndTime());
@@ -1510,7 +1500,7 @@ public class TimeServiceImpl implements TimeService {
 		}
 		else {
 
-			teamIdsToFilter = Stream.of(-1L).toList();
+			teamIdsToFilter = List.of(-1L);
 		}
 		return teamIdsToFilter;
 	}
@@ -1533,8 +1523,7 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@NotNull
-	private ResponseEntityDto getTimeRecordSummaryDetails(TeamTimeRecordFilterDto timeRecordSummaryDto, User user,
-			Role role) {
+	private ResponseEntityDto getTimeRecordSummaryDetails(TeamTimeRecordFilterDto timeRecordSummaryDto, User user) {
 		timeRecordSummaryDateValidations(timeRecordSummaryDto);
 
 		if (Boolean.TRUE.equals(timeRecordSummaryDto.getIsExport())) {
@@ -1550,11 +1539,11 @@ public class TimeServiceImpl implements TimeService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TEAM_NOT_FOUND);
 		}
 
-		if (role.equals(Role.ATTENDANCE_MANAGER) && (team.get()
+		if (team.get()
 			.getEmployees()
 			.stream()
 			.noneMatch(emp -> emp.getEmployee().getEmployeeId().equals(user.getEmployee().getEmployeeId())
-					&& emp.getIsSupervisor()))) {
+					&& emp.getIsSupervisor())) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_IS_NOT_A_TEAM_SUPERVISOR);
 		}
 
@@ -1695,7 +1684,7 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	public float getHoursPerDay() {
-		LocalDate localDate = LocalDate.now();
+		LocalDate localDate = DateTimeUtils.getCurrentUtcDate();
 
 		DayOfWeek dayOfWeek = localDate.getDayOfWeek();
 		TimeConfig timeConfigs = timeConfigDao.findByDay(dayOfWeek);
@@ -1719,20 +1708,13 @@ public class TimeServiceImpl implements TimeService {
 			timeRecordTotReturn = optionalTimeRecord.get();
 		}
 		else {
-			Optional<TimeRecord> timeRecord = timeRecordDao.findByEmployeeAndDate(
-					userService.getCurrentUser().getEmployee(),
-					DateTimeUtils.toLocalDate(timeRequestDto.getStartTime()));
-			if (timeRecord.isPresent()) {
-				timeRecordTotReturn = timeRecord.get();
-			}
-			else {
-				if (timeRequestDto.getStartTime().isAfter(DateTimeUtils.getCurrentUtcDateTime())) {
-					throw new ModuleException(TimeMessageConstant.TIME_ERROR_CANNOT_ADD_REQUEST_FOR_FUTURE);
-				}
 
-				if (timeRequestDto.getRequestType().equals(RequestType.EDIT_RECORD_REQUEST)) {
-					throw new ModuleException(TimeMessageConstant.TIME_ERROR_NO_TIME_RECORD_TO_EDIT);
-				}
+			if (timeRequestDto.getStartTime().isAfter(DateTimeUtils.getCurrentUtcDateTime())) {
+				throw new ModuleException(TimeMessageConstant.TIME_ERROR_CANNOT_ADD_REQUEST_FOR_FUTURE);
+			}
+
+			if (timeRequestDto.getRequestType().equals(RequestType.EDIT_RECORD_REQUEST)) {
+				throw new ModuleException(TimeMessageConstant.TIME_ERROR_NO_TIME_RECORD_TO_EDIT);
 			}
 		}
 		return timeRecordTotReturn;
@@ -1790,7 +1772,9 @@ public class TimeServiceImpl implements TimeService {
 		}
 		else if (request.getRequestType().equals(RequestType.MANUAL_ENTRY_REQUEST)) {
 			float workHoursAfterCap = (request.getRequestedStartTime().compareTo(request.getRequestedEndTime()) != 0)
-					? ((request.getRequestedEndTime() - request.getRequestedStartTime()) / MILLISECONDS_IN_AN_HOUR) : 0;
+					? ((request.getRequestedEndTime() - request.getRequestedStartTime())
+							/ DateTimeUtils.MILLISECONDS_IN_AN_HOUR)
+					: 0;
 			totalHoursByType.put(SlotType.WORK, workHoursAfterCap);
 			if (request.getTimeRecord() != null)
 				calculateHoursForManualEntry(timeRecord, request, totalHoursByType);
@@ -1823,7 +1807,7 @@ public class TimeServiceImpl implements TimeService {
 			if (slot.getStartTime() < request.getRequestedEndTime()
 					&& (slotEndTime == null || slotEndTime > request.getRequestedStartTime())) {
 				slotsInsideNewClockInOut.add(slot);
-				slotsInsideNewClockInOut.sort((a, b) -> Long.compare(a.getStartTime(), b.getStartTime()));
+				slotsInsideNewClockInOut.sort(Comparator.comparingLong(TimeSlot::getStartTime));
 			}
 		}
 
@@ -1876,21 +1860,11 @@ public class TimeServiceImpl implements TimeService {
 			if (endTime > request.getRequestedEndTime())
 				endTime = request.getRequestedEndTime();
 		}
-		return (startTime.compareTo(endTime) != 0) ? ((endTime - startTime) / MILLISECONDS_IN_AN_HOUR) : 0;
+		return (startTime.compareTo(endTime) != 0) ? ((endTime - startTime) / DateTimeUtils.MILLISECONDS_IN_AN_HOUR)
+				: 0;
 	}
 
 	private void validateTimeRequestToSave(TimeRequest timeRequestToSave) {
-		TimeSlotFilterDto timeSlotFilterDto = new TimeSlotFilterDto();
-		timeSlotFilterDto.setStartTime(timeRequestToSave.getRequestedStartTime());
-		timeSlotFilterDto.setEndTime(timeRequestToSave.getRequestedEndTime());
-		timeSlotFilterDto.setEmployeeId(timeRequestToSave.getEmployee().getEmployeeId());
-		timeSlotFilterDto.setSlotType(List.of(SlotType.WORK));
-		timeSlotFilterDto.setIsExport(true);
-
-		List<TimeSlot> overridingWorkSlots = timeSlotDao.getTimeSlotsByTimePeriod(timeSlotFilterDto).getContent();
-		if (overridingWorkSlots.size() == 1) {
-			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANUAL_ENTRY_OVER_WORK_SLOT);
-		}
 
 		EmployeeTimeRequestFilterDto filterDto = new EmployeeTimeRequestFilterDto();
 		filterDto.setRecordId(
@@ -1943,12 +1917,12 @@ public class TimeServiceImpl implements TimeService {
 			if (slot.getStartTime() < request.getRequestedStartTime()
 					&& slot.getEndTime() < request.getRequestedEndTime())
 				endTime = request.getRequestedStartTime();
-			else if (slot.getStartTime() > request.getRequestedStartTime()
-					&& slot.getEndTime() > request.getRequestedEndTime())
+			else if (slot.getStartTime() > request.getRequestedStartTime())
 				startTime = request.getRequestedEndTime();
 		}
 
-		return (startTime.compareTo(endTime) != 0) ? ((endTime - startTime) / MILLISECONDS_IN_AN_HOUR) : 0;
+		return (startTime.compareTo(endTime) != 0) ? ((endTime - startTime) / DateTimeUtils.MILLISECONDS_IN_AN_HOUR)
+				: 0;
 	}
 
 	private boolean validateDateTime(TimeRecord timeRecord, UpdateIncompleteTimeRecordsRequestDto requestDto) {
@@ -1981,13 +1955,13 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	private void recordClockInAndClockOut(User currentUser, long timeInMillis, TimeRecordActionTypes actionType) {
-		log.info("recordClockInAndClockOut: execution started by user: {}", currentUser.getUserId());
+		log.info("recordClockInAndClockOut: execution started");
 		Optional<TimeRecord> timeRecord = timeRecordDao.findByEmployeeAndDate(currentUser.getEmployee(),
 				DateTimeUtils.epochMillisToUtcLocalDate(timeInMillis));
 
 		if (actionType == TimeRecordActionTypes.START) {
 			if (timeRecord.isPresent()) {
-				log.info("recordClockInAndClockOut: clock in already exists for user: {}", currentUser.getUserId());
+				log.info("recordClockInAndClockOut: clock in already exists");
 				throw new ModuleException(TimeMessageConstant.TIME_ERROR_TIME_CLOCK_IN_EXISTS_FOR_CURRENT_DATE);
 			}
 
@@ -2002,7 +1976,7 @@ public class TimeServiceImpl implements TimeService {
 		}
 		else {
 			if (timeRecord.isEmpty()) {
-				log.info("recordClockOut: no clock in found for user: {}", currentUser.getUserId());
+				log.info("recordClockOut: no clock in found");
 				throw new ModuleException(TimeMessageConstant.TIME_ERROR_CLOCK_IN_NOT_EXISTS_FOR_CURRENT_DATE);
 			}
 			timeRecord.get().setClockOutTime(timeInMillis);
@@ -2073,23 +2047,22 @@ public class TimeServiceImpl implements TimeService {
 	private void setRemovingTimeConfigs(List<TimeConfig> currentTimeConfigs,
 			Set<TimeConfigDto.DayCapacity> dayCapacities) {
 
-		List<LeaveRequest> futureLeaves = new ArrayList<>();
-
 		List<TimeConfig> removingConfigs = currentTimeConfigs.stream()
 			.filter(timeConfig -> dayCapacities.stream()
 				.noneMatch(dayCapacity -> timeConfig.getDay().name().equals(dayCapacity.day().name())))
 			.toList();
-		removingConfigs.forEach(timeConfig -> futureLeaves
-			.addAll(leaveRequestDao.findAllFutureLeaveRequestsForTheDay(timeConfig.getDay())));
+		List<DayOfWeek> removingDays = removingConfigs.stream().map(TimeConfig::getDay).toList();
+		List<LeaveRequest> futureLeaves = new ArrayList<>(
+				leaveRequestDao.findAllFutureLeaveRequestsForDays(removingDays));
 		if (!futureLeaves.isEmpty()) {
 			futureLeaves.forEach(leaveRequest -> {
-				leaveRequest.setStatus(leaveRequest.getStatus().equals(LeaveRequestStatus.PENDING)
-						? LeaveRequestStatus.CANCELLED : LeaveRequestStatus.REVOKED);
-				leaveRequestDao.save(leaveRequest);
+				LeaveRequestStatus originalStatus = leaveRequest.getStatus();
+				leaveRequest.setStatus(originalStatus.equals(LeaveRequestStatus.PENDING) ? LeaveRequestStatus.CANCELLED
+						: LeaveRequestStatus.REVOKED);
 				updateLeaveEntitlement(leaveRequest);
 				handleCalendarEventsDeletion(leaveRequest);
 				if (leaveRequest.getEndDate().equals(leaveRequest.getStartDate())) {
-					if (leaveRequest.getStatus() == LeaveRequestStatus.PENDING) {
+					if (originalStatus == LeaveRequestStatus.PENDING) {
 						timeEmailService.sendNonWorkingDaySingleDayPendingLeaveRequestCancelEmployeeEmail(leaveRequest);
 						attendanceNotificationService
 							.sendNonWorkingDaySingleDayPendingLeaveRequestCancelEmployeeNotification(leaveRequest);
@@ -2098,7 +2071,7 @@ public class TimeServiceImpl implements TimeService {
 						attendanceNotificationService
 							.sendNonWorkingDaySingleDayPendingLeaveRequestCancelManagerNotification(leaveRequest);
 					}
-					else if (leaveRequest.getStatus() == LeaveRequestStatus.APPROVED) {
+					else if (originalStatus == LeaveRequestStatus.APPROVED) {
 						timeEmailService
 							.sendNonWorkingDaySingleDayApprovedLeaveRequestRevokedEmployeeEmail(leaveRequest);
 						attendanceNotificationService
@@ -2111,7 +2084,7 @@ public class TimeServiceImpl implements TimeService {
 					}
 				}
 				else {
-					if (leaveRequest.getStatus() == LeaveRequestStatus.PENDING) {
+					if (originalStatus == LeaveRequestStatus.PENDING) {
 						timeEmailService.sendNonWorkingDayMultiDayPendingLeaveRequestCancelEmployeeEmail(leaveRequest,
 								removingConfigs);
 						attendanceNotificationService
@@ -2123,7 +2096,7 @@ public class TimeServiceImpl implements TimeService {
 							.sendNonWorkingDayMultiDayPendingLeaveRequestCancelManagerNotification(leaveRequest,
 									removingConfigs);
 					}
-					else if (leaveRequest.getStatus() == LeaveRequestStatus.APPROVED) {
+					else if (originalStatus == LeaveRequestStatus.APPROVED) {
 						timeEmailService
 							.sendNonWorkingDayMultiDayApprovedLeaveRequestRevokedEmployeeEmail(leaveRequest);
 						attendanceNotificationService
@@ -2136,6 +2109,7 @@ public class TimeServiceImpl implements TimeService {
 				}
 
 			});
+			leaveRequestDao.saveAll(futureLeaves);
 		}
 		timeConfigDao.deleteAll(removingConfigs);
 		currentTimeConfigs.removeAll(removingConfigs);
@@ -2145,13 +2119,11 @@ public class TimeServiceImpl implements TimeService {
 	private void updateLeaveEntitlement(LeaveRequest leaveRequest) {
 		List<LeaveRequestEntitlement> leaveRequestEntitlement = leaveRequestEntitlementDao
 			.findAllByLeaveRequest(leaveRequest);
-		if (leaveRequestEntitlement != null) {
+		if (leaveRequestEntitlement != null && !leaveRequestEntitlement.isEmpty()) {
 			Optional<LeaveEntitlement> optionalLeaveEntitlement = leaveEntitlementDao
 				.findById(leaveRequestEntitlement.getFirst().getLeaveEntitlement().getEntitlementId());
-			if (optionalLeaveEntitlement.isPresent()) {
-				LeaveEntitlement leaveEntitlement = optionalLeaveEntitlement.get();
-				leaveEntitlement.setTotalDaysUsed(leaveEntitlement.getTotalDaysUsed() - leaveRequest.getDurationDays());
-			}
+			optionalLeaveEntitlement.ifPresent(leaveEntitlement -> leaveEntitlement
+				.setTotalDaysUsed(leaveEntitlement.getTotalDaysUsed() - leaveRequest.getDurationDays()));
 		}
 	}
 
@@ -2186,6 +2158,24 @@ public class TimeServiceImpl implements TimeService {
 	 */
 	protected void handleCalendarEventsDeletion(LeaveRequest leaveRequest) {
 		// This feature is available only for Pro tenants.
+	}
+
+	protected TimeRecordChipResponseDto createTimeRecordChipDto() {
+		return new TimeRecordChipResponseDto();
+	}
+
+	protected boolean isGeoFencingEnabled() {
+		return false;
+	}
+
+	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,
+			boolean isGeoFencingEnabled) {
+		// No-op in community edition; enterprise edition overrides this method
+	}
+
+	protected List<EmployeeTimeRecord> findEmployeesTimeRecordsWithTeams(List<Long> employeeIds, List<Long> teamIds,
+			LocalDate startDate, LocalDate endDate, int limit, long offset) {
+		return timeRecordDao.findEmployeesTimeRecordsWithTeams(employeeIds, teamIds, startDate, endDate, limit, offset);
 	}
 
 }

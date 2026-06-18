@@ -1,5 +1,6 @@
 package com.skapp.community.common.util;
 
+import com.skapp.community.common.constant.ValidationConstant;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -14,6 +15,10 @@ public class StringUtils {
 	 */
 	public static boolean isNullOrBlank(String string) {
 		return string == null || string.isBlank();
+	}
+
+	public static String escapeLikePattern(String input) {
+		return ValidationConstant.LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
 	}
 
 }

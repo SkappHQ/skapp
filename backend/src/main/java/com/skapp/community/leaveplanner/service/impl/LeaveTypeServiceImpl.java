@@ -1,7 +1,9 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
@@ -18,7 +20,9 @@ import com.skapp.community.leaveplanner.repository.LeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
 import com.skapp.community.leaveplanner.type.CalculationType;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
-import lombok.NonNull;
+import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,17 +38,17 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LeaveTypeServiceImpl implements LeaveTypeService {
 
-	@NonNull
 	private final LeaveTypeDao leaveTypeDao;
 
-	@NonNull
 	private final LeaveMapper leaveMapper;
 
-	@NonNull
 	private final UserService userService;
 
-	@NonNull
 	private final LeaveEntitlementDao leaveEntitlementDao;
+
+	private final EmployeeTeamDao employeeTeamDao;
+
+	private final EmployeeDao employeeDao;
 
 	@Override
 	public ResponseEntityDto addLeaveType(LeaveTypeRequestDto leaveTypeRequestDto) {
@@ -70,10 +74,14 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 		log.info("getLeaveTypes: execution started");
 		List<LeaveType> leaveTypes;
 
-		Long userId = userService.getCurrentUser().getUserId();
-
 		if (Boolean.TRUE.equals(leaveTypeFilterDto.getFilterByInUse())) {
-			leaveTypes = leaveTypeDao.getUsedUserLeaveTypes(userId,
+			User currentUser = userService.getCurrentUser();
+			Long employeeId = leaveTypeFilterDto.getEmployeeId() != null ? leaveTypeFilterDto.getEmployeeId()
+					: currentUser.getUserId();
+
+			validateEmployeeAccess(currentUser, employeeId);
+
+			leaveTypes = leaveTypeDao.getUsedUserLeaveTypes(employeeId,
 					Boolean.TRUE.equals(leaveTypeFilterDto.getIsCarryForward()));
 		}
 		else if (Boolean.TRUE.equals(leaveTypeFilterDto.getIsCarryForward())) {
@@ -90,7 +98,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 	}
 
 	@Override
-	public ResponseEntityDto getLeaveTypeById(@NonNull Long id) {
+	public ResponseEntityDto getLeaveTypeById(Long id) {
 		log.info("getLeaveTypeById: execution started");
 
 		Optional<LeaveType> optionalLeaveType = leaveTypeDao.findById(id);
@@ -106,7 +114,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateLeaveType(@NonNull Long id, LeaveTypePatchRequestDto leaveTypePatchRequestDto) {
+	public ResponseEntityDto updateLeaveType(Long id, LeaveTypePatchRequestDto leaveTypePatchRequestDto) {
 		log.info("updateLeaveType: execution started");
 
 		Optional<LeaveType> optionalLeaveType = leaveTypeDao.findById(id);
@@ -265,6 +273,17 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 	private boolean isLeaveTypeNameExist(String name) {
 		LeaveType defineLeaveType = leaveTypeDao.findLeaveTypeByName(name);
 		return defineLeaveType != null;
+	}
+
+	private void validateEmployeeAccess(User currentUser, Long targetEmployeeId) {
+		if (!currentUser.getUserId().equals(targetEmployeeId)
+				&& !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
+			Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
+			if (!employeeDao.existsManagerForEmployee(targetEmployeeId, currentEmployeeId)
+					&& !employeeTeamDao.existsEmployeeInSupervisedTeam(targetEmployeeId, currentEmployeeId)) {
+				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS);
+			}
+		}
 	}
 
 }

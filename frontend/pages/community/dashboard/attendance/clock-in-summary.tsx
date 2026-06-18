@@ -12,6 +12,20 @@ const ClockInSummary: NextPage = () => {
 
   return (
     <ContentLayout
+      breadcrumbs={[
+        {
+          label: translateText(["dashboard"]),
+          onClick: () => router.push(ROUTES.DASHBOARD.BASE)
+        },
+        {
+          label: translateText(["attendanceDashboard.attendance"])
+        },
+        {
+          label: translateText([
+            "attendanceDashboard.clockInTableSummary.title"
+          ])
+        }
+      ]}
       pageHead={translateText([
         "attendanceDashboard.clockInTableSummary.title"
       ])}

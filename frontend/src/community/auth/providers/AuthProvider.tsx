@@ -105,8 +105,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
             // Ensure critical cookies are available before redirect
             if (accessToken && isPasswordChangedForTheFirstTime !== null) {
-              const redirectPath =
-                (router.query.callback as string) || ROUTES.DASHBOARD.BASE;
+              const callback = router.query.callback as string;
+              const currentPath = router.asPath.split("?")[0];
+              const isSafeRedirect =
+                callback &&
+                callback.startsWith("/") &&
+                !callback.startsWith("//") &&
+                !callback.startsWith("/\\") &&
+                callback !== currentPath;
+              const redirectPath = isSafeRedirect
+                ? callback
+                : ROUTES.DASHBOARD.BASE;
               window.location.href = redirectPath;
             } else {
               console.error("Access token cookie not found after sign-in");

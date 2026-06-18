@@ -1,7 +1,9 @@
 import { Stack } from "@mui/material";
 import { ReactNode } from "react";
 
+import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
+import useRouteLoading from "~community/common/hooks/useRouteLoading";
 import {
   initialState,
   useToast
@@ -17,10 +19,12 @@ const ContentWithoutDrawer = ({ children }: Props) => {
   const classes = styles();
 
   const { toastMessage, setToastMessage } = useToast();
+  const loading = useRouteLoading();
 
   return (
     <>
       <Stack sx={classes.unProtectedWrapper}>
+        {loading && <FullScreenLoader />}
         {children}
         <ToastMessage
           key={toastMessage.key}

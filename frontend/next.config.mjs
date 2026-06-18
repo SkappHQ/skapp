@@ -417,10 +417,6 @@ const nextConfig = {
         destination: "/community/crm/deals"
       },
       {
-        source: "/crm/deals-kanban",
-        destination: "/community/crm/deals-kanban"
-      },
-      {
         source: "/crm/tasks",
         destination: "/community/crm/tasks"
       }

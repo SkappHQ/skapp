@@ -4,6 +4,7 @@ import {
   ManagerTypes
 } from "~community/common/types/CommonTypes";
 import { AccountStatus } from "~community/leave/types/LeaveTypes";
+import { TitleEnum } from "~community/people/enums/PeopleEnums";
 
 import {
   EmploymentAllocationTypes,
@@ -138,6 +139,7 @@ export interface JobLevel {
   name: string;
 }
 export interface BulkEmployeeDetails {
+  title: string | null;
   country: string | null;
   gender: string | null | undefined;
   identificationNo: string | null;
@@ -151,6 +153,7 @@ export interface BulkEmployeeDetails {
   teams: (string | number)[] | null;
   primaryManager: string | null;
   timeZone: string | null;
+  workLocation: string | null;
   employmentAllocation: string | null;
   accountStatus: AccountStatus;
   eeo: string | null;
@@ -159,7 +162,7 @@ export interface BulkEmployeeDetails {
   workEmail: string | null;
   employeePersonalInfo: EmployeePersonalInfoResponseType;
   employeeProgression: {
-    employeeType: EmploymentTypes | null;
+    employmentType: EmploymentTypes | null;
     jobFamilyId: string | number | null;
     jobTitleId: string | number | null;
     startDate: string | null;
@@ -191,11 +194,11 @@ export interface EmployeePersonalInfoResponseType {
     instagram: string | null | undefined;
     x: string | null | undefined;
   };
+  bloodGroup?: string | null;
   extraInfo: {
-    bloodGroup?: string | null;
     allergies: string | null | undefined;
     dietaryRestrictions: string | null | undefined;
-    tshirtSize: string | null | undefined;
+    tShirtSize: string | null | undefined;
   };
 }
 
@@ -259,6 +262,7 @@ export interface EmployeeDetails {
   employeePermission?: EmployeePermission | null;
   managers?: [] | Array<EmployeeManagerType>;
   gender: string | null;
+  title: TitleEnum | null | undefined;
   identificationNo: string | null | undefined;
   jobFamily?: null | JobFamilies;
   jobTitle?: JobTitles | null;
@@ -328,6 +332,9 @@ export interface EmployeeDetails {
   };
   userRoles: EmployeeRoleType;
   accountStatus?: string | null;
+  employment?: {
+    employmentDetails?: { workLocationId?: number };
+  };
 }
 
 export interface FamilyMemberResponseType {
@@ -414,7 +421,13 @@ export enum Role {
   ATTENDANCE_EMPLOYEE = "ATTENDANCE_EMPLOYEE",
   ESIGN_EMPLOYEE = "ESIGN_EMPLOYEE",
   ESIGN_SENDER = "ESIGN_SENDER",
-  ESIGN_ADMIN = "ESIGN_ADMIN"
+  ESIGN_ADMIN = "ESIGN_ADMIN",
+  PM_ADMIN = "PM_ADMIN",
+  PM_EMPLOYEE = "PM_EMPLOYEE",
+  CRM_ADMIN = "CRM_ADMIN",
+  CRM_SALES_MANAGER = "CRM_SALES_MANAGER",
+  CRM_SALES_REPRESENTATIVE = "CRM_SALES_REPRESENTATIVE",
+  CRM_NONE = "CRM_NONE"
 }
 
 export interface EmployeeRoleType {
@@ -423,12 +436,15 @@ export interface EmployeeRoleType {
   peopleRole: Role;
   leaveRole: Role;
   esignRole: Role;
+  pmRole: Role;
+  crmRole: Role;
 }
 
 export interface EmployeeDataExists {
   isIdentificationNoExists: boolean;
   isWorkEmailExists: boolean;
   isGoogleDomain: boolean;
+  isGuestUser: boolean;
 }
 
 export interface QuickAddEmployeePayload {
