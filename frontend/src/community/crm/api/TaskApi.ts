@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-
-import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
-import { CrmTaskResponseType,UpdateTaskStatusPayload } from "~community/crm/types/CommonTypes";
+import {
+  CrmTaskResponseType,
+  UpdateTaskStatusPayload
+} from "~community/crm/types/CommonTypes";
 
 import { CrmTaskCreatePayload } from "../types/CommonTypes";
-import { taskEndpoints } from "./utils/ApiEndpoints";
 import { taskQueryKeys } from "./utils/QueryKeys";
 
 const createTask = async (taskDetails: CrmTaskCreatePayload): Promise<void> => {
