@@ -9,7 +9,11 @@ import java.util.List;
 public interface ExternalPersonalSyncService {
     Logger log = LoggerFactory.getLogger(ExternalPersonalSyncService.class);
     void authenticate() throws Exception;
+    void registerWatch() throws Exception;
+    void renewWatchIfExpiring() throws Exception;
+    void processWatchNotification(String resourceState, String resourceUri);
     void bulkSync(String callerEmail);
+    boolean isValidChannelToken(String token);
     default void sendSummaryEmail(AsyncEmailSender asyncEmailSender, String toEmail,
                                   int synced, int failed, List<String> failures, String fatalError) {
 
