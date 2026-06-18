@@ -83,6 +83,28 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getTaskById(Long id) {
+		log.info("getTaskById: execution started");
+
+		CrmTask task = crmTaskDao.findByIdWithAssociations(id);
+		if (task == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmUtil.isCrmSalesRepresentative(currentUser)
+				&& !currentUser.getEmployee().getEmployeeId().equals(task.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
+		}
+
+		CrmTaskResponseDto responseDto = crmMapper.crmTaskToCrmTaskResponseDto(task);
+
+		log.info("getTaskById: execution ended with taskId={}", id);
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
 		log.info("getCompletedTasks: execution started");
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());

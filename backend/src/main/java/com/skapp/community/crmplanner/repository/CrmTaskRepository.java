@@ -16,6 +16,8 @@ public interface CrmTaskRepository {
 
 	List<CrmTask> findTasks(Long ownerId, CrmTaskFilterDto filterDto);
 
+	CrmTask findByIdWithAssociations(Long id);
+
 	List<CrmTask> findByContactIdWithAssociations(Long contactId);
 
 	CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId);
