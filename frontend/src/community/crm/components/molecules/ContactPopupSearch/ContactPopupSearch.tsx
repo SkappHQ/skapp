@@ -4,7 +4,7 @@ import {
   DropdownWithSearchablePopup,
   TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { FC, RefObject, useMemo } from "react";
+import { FC, useMemo } from "react";
 
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
 import { findById } from "~community/crm/utils/crmUtil";
@@ -77,13 +77,12 @@ const ContactPopupSearch: FC<Props> = ({
       );
     }
 
-    const { ref, ...restTriggerProps } = triggerProps;
-
     return (
       <ContactTriggerContent
-        triggerRef={ref as RefObject<HTMLButtonElement>}
         placeholder={placeholder}
-        triggerProps={restTriggerProps}
+        onSelect={() => {
+          triggerProps.onClick();
+        }}
       />
     );
   };
