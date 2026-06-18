@@ -28,6 +28,8 @@ public interface CrmDealRepository {
 
 	List<CrmDeal> findByContactIdWithAssociations(Long contactId);
 
+	CrmDeal findByIdWithAssociations(Long id);
+
 	CrmContactDealMetrics findDealMetricsByContactId(Long contactId);
 
 }

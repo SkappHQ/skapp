@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CrmDealDetailResponseDto {
+public class CrmDealByIdResponseDto {
 
 	private Long id;
 
@@ -19,5 +19,9 @@ public class CrmDealDetailResponseDto {
 	private String description;
 
 	private CrmOwnerResponseDto owner;
+
+	private CrmDealPriority priority;
+
+	private CrmContactLookupResponseDto contact;
 
 }

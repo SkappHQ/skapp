@@ -20,6 +20,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestD
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealByIdResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
@@ -312,15 +313,15 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getDealById(Long id) {
-		log.info("getDealById: execution started for id={}", id);
+		log.info("getDealById: execution started", id);
 
-		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+		CrmDeal deal = crmDealDao.findByIdWithAssociations(id);
+		if (deal == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
 
-		CrmDealDetailResponseDto responseDto = crmMapper.crmDealToCrmDealDetailResponseDto(deal);
-
-		log.info("getDealById: execution ended for id={}", id);
-		return new ResponseEntityDto(false, responseDto);
+		log.info("getDealById: execution ended", id);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealDetailResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
