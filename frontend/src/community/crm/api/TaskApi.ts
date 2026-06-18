@@ -1,6 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { CrmTaskCreatePayload, UpdateTaskStatusPayload } from "../types/CommonTypes";
+
+import {
+  CrmTaskCreatePayload,
+  UpdateTaskStatusPayload
+} from "../types/CommonTypes";
 import { taskEndpoints } from "./utils/ApiEndpoints";
 import { taskQueryKeys } from "./utils/QueryKeys";
 
