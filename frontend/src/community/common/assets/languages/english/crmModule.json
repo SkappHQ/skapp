@@ -431,7 +431,7 @@
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
-      "search": "Search task",
+      "search": "Search tasks",
       "infiniteScrollLoadingMessage": "Loading tasks...",
       "emptyDataState": {
         "title": "No tasks",
@@ -447,8 +447,8 @@
       },
       "groupLabels": {
         "overdue": "Overdue",
-        "dueToday": "Due today",
-        "dueTomorrow": "Due tomorrow",
+        "dueToday": "Today",
+        "dueTomorrow": "Tomorrow",
         "upcoming": "Upcoming"
       }
     }
