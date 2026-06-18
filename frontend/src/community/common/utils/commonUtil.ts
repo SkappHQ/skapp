@@ -582,33 +582,3 @@ export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
 
 export const concatStrings = (args: string[], separator: string = " ") =>
   args.join(separator);
-
-export const getChangedFields = <T extends Record<string, any>>(
-  values: T,
-  initialValues: T
-): Partial<T> => {
-  const result: Partial<T> = {};
-
-  for (const key of Object.keys(values) as Array<keyof T>) {
-    const current = values[key];
-    const initial = initialValues[key];
-
-    if (
-      current &&
-      initial &&
-      typeof current === "object" &&
-      typeof initial === "object" &&
-      !Array.isArray(current) &&
-      !Array.isArray(initial)
-    ) {
-      const nestedChanges = getChangedFields(current, initial);
-      if (Object.keys(nestedChanges).length > 0) {
-        result[key] = nestedChanges as T[typeof key];
-      }
-    } else if (!Object.is(current, initial)) {
-      result[key] = current;
-    }
-  }
-
-  return result;
-};
