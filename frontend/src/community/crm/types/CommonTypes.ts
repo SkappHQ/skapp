@@ -304,15 +304,11 @@ export interface BoardDealItem {
   name: string;
   contactName: string | null;
   companyName: string | null;
-  ownerFirstName: string | null;
-  ownerLastName: string | null;
-  ownerAuthPic: string | null;
-  ownerId: number | null;
+  owner: CrmOwner;
   amount: string | null;
-  currencyCode: string | null;
-  priority: CrmPriorityEnum | null;
+  priority: CrmPriorityEnum;
   taskCount: number;
-  orderIndex: number;
+  orderIndex: string;
 }
 
 export interface BoardStageDeals {

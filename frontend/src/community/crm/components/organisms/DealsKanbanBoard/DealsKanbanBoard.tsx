@@ -16,6 +16,8 @@ import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import type { DealStageLaneDeal } from "~community/crm/components/molecules/DealStageLane";
 import { CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { formatValue } from "~community/crm/utils/crmUtil";
 import type {
   BoardDealItem,
   BoardDealsGroupedRequest,
@@ -28,61 +30,57 @@ import type {
 // --- Mock stages (replace with useGetBoardInitData in feat/crm-kanban-api) ---
 
 const MOCK_STAGES: CrmDealStageType[] = [
-  { id: 1, name: "New", color: "blue", orderIndex: 0, stageType: CrmDealStageEnum.OPEN },
-  { id: 2, name: "Qualified", color: "orange", orderIndex: 1, stageType: CrmDealStageEnum.OPEN },
-  { id: 3, name: "Proposal", color: "purple", orderIndex: 2, stageType: CrmDealStageEnum.OPEN },
-  { id: 4, name: "Won", color: "green", orderIndex: 3, stageType: CrmDealStageEnum.WON },
+  { id: 1, name: "Lead", color: "PINK", orderIndex: 1, stageType: CrmDealStageEnum.INITIAL },
+  { id: 2, name: "Qualified", color: "TEAL", orderIndex: 2, stageType: CrmDealStageEnum.OPEN },
+  { id: 3, name: "Demo scheduled", color: "LAVENDER", orderIndex: 3, stageType: CrmDealStageEnum.OPEN },
+  { id: 4, name: "Proposal sent", color: "GOLD", orderIndex: 4, stageType: CrmDealStageEnum.OPEN },
+  { id: 5, name: "Deal Won", color: "LIME", orderIndex: 5, stageType: CrmDealStageEnum.WON },
+  { id: 6, name: "Deal Lost", color: "ROSEWOOD", orderIndex: 6, stageType: CrmDealStageEnum.LOST },
 ];
-
-// --- Constants ---
 
 const PAGE_LIMIT = 10;
 
-const STAGE_COLOR_MAP: Record<string, string> = {
-  blue: "bg-blue-400",
-  orange: "bg-orange-400",
-  amber: "bg-amber-400",
-  purple: "bg-purple-500",
-  teal: "bg-teal-500",
-  green: "bg-green-500",
-  red: "bg-red-500",
-  yellow: "bg-yellow-400",
-  pink: "bg-pink-400",
-  indigo: "bg-indigo-400",
+const MOCK_OWNER = {
+  employeeId: 1,
+  firstName: "Alice",
+  lastName: "Johnson",
+  authPic: null,
 };
 
-// --- Helpers ---
-
-const formatCurrency = (value: number | string | null | undefined): string => {
-  const num = typeof value === "string" ? Number.parseFloat(value) : (value ?? 0);
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(Number.isNaN(num) ? 0 : num);
+const MOCK_DEALS: Record<number, BoardDealItem[]> = {
+  1: [
+    { id: 101, name: "Acme Corp Expansion", contactName: "John Smith", companyName: "Acme Corp", owner: MOCK_OWNER, amount: "12000", priority: CrmPriorityEnum.HIGH, taskCount: 3, orderIndex: "1" },
+    { id: 102, name: "Beta Solutions Onboarding", contactName: "Sara Lee", companyName: "Beta Solutions", owner: MOCK_OWNER, amount: "4500", priority: CrmPriorityEnum.LOW, taskCount: 1, orderIndex: "2" },
+  ],
+  2: [
+    { id: 201, name: "Gamma Tech Upgrade", contactName: "Mike Chan", companyName: "Gamma Tech", owner: MOCK_OWNER, amount: "29000", priority: CrmPriorityEnum.MEDIUM, taskCount: 2, orderIndex: "1" },
+  ],
+  3: [
+    { id: 301, name: "Delta Finance Suite", contactName: "Emma Brown", companyName: "Delta Finance", owner: MOCK_OWNER, amount: "55000", priority: CrmPriorityEnum.HIGH, taskCount: 5, orderIndex: "1" },
+  ],
+  4: [],
+  5: [
+    { id: 501, name: "Omega Retail Deal", contactName: "Tom White", companyName: "Omega Retail", owner: MOCK_OWNER, amount: "18000", priority: CrmPriorityEnum.MEDIUM, taskCount: 0, orderIndex: "1" },
+  ],
+  6: [],
 };
 
-const getAccentClass = (color: string): string =>
-  STAGE_COLOR_MAP[color?.toLowerCase()] ?? "bg-zinc-400";
-
-const toDealPriority = (p: CrmPriorityEnum | null): CrmPriorityEnum =>
-  p ?? CrmPriorityEnum.LOW;
+const getAccentColor = (color: string): string =>
+  STAGE_COLOR_MAP[color?.toUpperCase()] ?? "#a1a1aa";
 
 const toStageLaneDeal = (deal: BoardDealItem): DealStageLaneDeal => ({
   id: String(deal.id),
   title: deal.name,
   contactName: deal.contactName ?? undefined,
   company: deal.companyName ?? '',
-  assignee: deal.ownerId
-    ? {
-        id: String(deal.ownerId),
-        firstName: deal.ownerFirstName ?? undefined,
-        lastName: deal.ownerLastName ?? undefined,
-        src: deal.ownerAuthPic ?? undefined,
-      }
-    : undefined,
-  formattedValue: formatCurrency(deal.amount),
-  priority: toDealPriority(deal.priority),
+  assignee: {
+    id: String(deal.owner.employeeId),
+    firstName: deal.owner.firstName,
+    lastName: deal.owner.lastName ?? undefined,
+    src: deal.owner.authPic ?? undefined,
+  },
+  formattedValue: formatValue(deal.amount),
+  priority: deal.priority,
   taskCount: deal.taskCount,
   taskCountTooltip: `${deal.taskCount} task${deal.taskCount === 1 ? '' : 's'}`,
   ariaLabel: `Deal: ${deal.name}`,
@@ -122,12 +120,12 @@ const DealsKanbanBoard: React.FC = () => {
   const [stageMap, setStageMap] = useState<Record<number, StageState>>({});
 
   useEffect(() => {
-    const emptyData: BoardStageDeals[] = MOCK_STAGES.map((s) => ({
+    const seedData: BoardStageDeals[] = MOCK_STAGES.map((s) => ({
       stageId: s.id,
-      deals: [],
-      totalCount: 0,
+      deals: MOCK_DEALS[s.id] ?? [],
+      totalCount: (MOCK_DEALS[s.id] ?? []).length,
     }));
-    setStageMap(buildInitialStageState(emptyData));
+    setStageMap(buildInitialStageState(seedData));
   }, []);
 
   const stageMapRef = useRef(stageMap);
@@ -343,8 +341,8 @@ const DealsKanbanBoard: React.FC = () => {
                 stage={{
                   id: String(stage.id),
                   name: stage.name,
-                  accentClass: getAccentClass(stage.color),
-                  formattedTotal: formatCurrency(totalValue),
+                  accentColor: getAccentColor(stage.color),
+                  formattedTotal: formatValue(String(totalValue)),
                   totalCount,
                 }}
                 deals={deals.map(toStageLaneDeal)}
@@ -368,18 +366,14 @@ const DealsKanbanBoard: React.FC = () => {
                 title={activeDeal.name}
                 contactName={activeDeal.contactName ?? undefined}
                 company={activeDeal.companyName ?? ''}
-                assignee={
-                  activeDeal.ownerId
-                    ? {
-                        id: String(activeDeal.ownerId),
-                        firstName: activeDeal.ownerFirstName ?? undefined,
-                        lastName: activeDeal.ownerLastName ?? undefined,
-                        src: activeDeal.ownerAuthPic ?? undefined,
-                      }
-                    : undefined
-                }
-                formattedValue={formatCurrency(activeDeal.amount)}
-                priority={toDealPriority(activeDeal.priority)}
+                assignee={{
+                    id: String(activeDeal.owner.employeeId),
+                    firstName: activeDeal.owner.firstName,
+                    lastName: activeDeal.owner.lastName ?? undefined,
+                    src: activeDeal.owner.authPic ?? undefined,
+                  }}
+                formattedValue={formatValue(activeDeal.amount)}
+                priority={activeDeal.priority}
                 taskCount={activeDeal.taskCount}
                 isInteractive={false}
                 ariaLabel={activeDeal.name}

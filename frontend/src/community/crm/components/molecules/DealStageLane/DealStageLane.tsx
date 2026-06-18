@@ -30,7 +30,7 @@ export interface DealStageLaneDeal {
 export interface DealStage {
   id: string;
   name: string;
-  accentClass: string;
+  accentColor: string;
   formattedTotal: string;
   totalCount?: number;
 }
@@ -139,7 +139,7 @@ const DealStageLane: React.FC<DealStageLaneProps> = ({
       ].join(" ")}
       aria-labelledby={`crm-stage-${stage.id}`}
     >
-      <div className={`h-1.5 rounded-t-lg ${stage.accentClass}`} />
+      <div className="h-1.5 rounded-t-lg" style={{ backgroundColor: stage.accentColor }} />
 
       <div className="flex items-center justify-between gap-2 px-3 pt-3">
         <div className="min-w-0">
@@ -180,30 +180,38 @@ const DealStageLane: React.FC<DealStageLaneProps> = ({
               ))}
             </SortableContext>
 
-            {deals.length === 0 && (
-              <div className="flex-1 rounded-lg border-2 border-dashed border-zinc-200" />
-            )}
-
-            {hasMore && (
-              <>
-                {isLoadingMore && (
-                  <>
-                    <DealCardSkeleton />
-                    <DealCardSkeleton />
-                  </>
-                )}
-                <div ref={sentinelRef} className="h-1 w-full" />
-              </>
-            )}
-
-            {onAddDeal && (
+            {deals.length === 0 && onAddDeal ? (
               <button
                 type="button"
                 onClick={() => onAddDeal(stage.id)}
-                className="body3 mt-1 w-full rounded-lg px-4 py-2 text-center font-medium text-zinc-500 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="body3 w-full rounded-lg px-4 py-2 text-center font-medium text-zinc-500 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Add deal +
               </button>
+            ) : (
+              <>
+                {hasMore && (
+                  <>
+                    {isLoadingMore && (
+                      <>
+                        <DealCardSkeleton />
+                        <DealCardSkeleton />
+                      </>
+                    )}
+                    <div ref={sentinelRef} className="h-1 w-full" />
+                  </>
+                )}
+
+                {onAddDeal && (
+                  <button
+                    type="button"
+                    onClick={() => onAddDeal(stage.id)}
+                    className="body3 mt-1 w-full rounded-lg px-4 py-2 text-center font-medium text-zinc-500 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Add deal +
+                  </button>
+                )}
+              </>
             )}
           </>
         )}

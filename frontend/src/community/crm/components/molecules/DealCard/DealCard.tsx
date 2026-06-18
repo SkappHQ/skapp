@@ -1,5 +1,6 @@
 ﻿import {
   Avatar,
+  Chip,
   ClipboardCheckIcon,
   DealValueIcon,
   HandshakeIcon,
@@ -169,22 +170,16 @@ const DealCard: React.FC<DealCardProps> = ({
 
       <div className="flex items-center justify-end gap-2">
         {taskCount !== undefined && taskCount > 0 && (
-          <span
-            title={taskCountTooltip ?? `${taskCount} tasks`}
-            className="flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1 text-zinc-600"
-          >
-            <ClipboardCheckIcon stroke="#52525b" />
-            <span
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontWeight: 400,
-                fontSize: "12px",
-                lineHeight: "16px"
-              }}
-            >
-              {taskCount}
-            </span>
-          </span>
+          <Chip
+            size="sm"
+            label={String(taskCount)}
+            prefixIcon={
+              <span className="[&_svg]:h-3 [&_svg]:w-3">
+                <ClipboardCheckIcon fill="text-slate-600"/>
+              </span>
+            }
+            className="bg-slate-200 text-slate-600"
+          />
         )}
 
         <span
