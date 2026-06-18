@@ -6,8 +6,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public interface ExternalPersonalSyncService {
-    Logger log = LoggerFactory.getLogger(ExternalPersonalSyncService.class);
+public interface ExternalPersonSyncService {
+    Logger log = LoggerFactory.getLogger(ExternalPersonSyncService.class);
+    String SYNC_SUMMARY_EMAIL_SUBJECT = "External Sync - Completed";
+
     void authenticate() throws Exception;
     void registerWatch() throws Exception;
     void renewWatchIfExpiring() throws Exception;
@@ -19,7 +21,7 @@ public interface ExternalPersonalSyncService {
 
         log.info("sendSummaryEmail: sending summary to {}", toEmail);
         try {
-            asyncEmailSender.sendMail(toEmail, "Google Workspace Sync - Completed",
+            asyncEmailSender.sendMail(toEmail, SYNC_SUMMARY_EMAIL_SUBJECT,
                     buildEmailBody(synced, failed, failures, fatalError), null);
             log.info("sendSummaryEmail: summary email sent to {}", toEmail);
         }

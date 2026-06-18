@@ -1,6 +1,7 @@
 package com.skapp.community.common.repository;
 
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.type.LoginMethod;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,5 +18,7 @@ public interface UserDao extends JpaRepository<User, Long> {
 	Long countByIsActive(boolean isActive);
 
 	List<User> findAllByIsActiveTrue();
+
+	List<User> findAllByLoginMethodAndIsActiveTrue(LoginMethod loginMethod);
 
 }

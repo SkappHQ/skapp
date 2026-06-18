@@ -71,6 +71,9 @@ domain:
 encryptDecryptAlgorithm:
   secret: ${ENCRYPT_DECRYPT_SECRET}
 
+external-sync:
+  provider: ${EXTERNAL_SYNC_PROVIDER:google}
+
 google:
   project-id: ${GOOGLE_PROJECT_ID}
   secret-name: ${GOOGLE_SECRET_NAME}

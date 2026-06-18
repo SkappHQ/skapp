@@ -18,12 +18,15 @@ import com.skapp.community.common.service.AsyncEmailSender;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.service.ExternalPersonalSyncService;
+import com.skapp.community.peopleplanner.service.ExternalPersonSyncService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
+import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -31,16 +34,34 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
 @Service
+@Qualifier("google")
+@ConditionalOnProperty(prefix = "external-sync", name = "provider", havingValue = "google", matchIfMissing = true)
 @RequiredArgsConstructor
-public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
+public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncService {
+
+    private static final String WATCH_HANDSHAKE_STATE = "sync";
+    private static final String WEBHOOK_CHANNEL_TYPE = "web_hook";
+    private static final String WORKSPACE_CUSTOMER_ALIAS = "my_customer";
+    private static final String DIRECTORY_LIST_FIELDS = "users(id,name,primaryEmail,suspended,etag),nextPageToken";
+    private static final String SECRET_LATEST_VERSION = "latest";
+    private static final String APPLICATION_NAME = "skapp-integration-poc";
+
+    private static final Duration WATCH_RENEWAL_THRESHOLD = Duration.ofHours(48);
+    private static final int MAX_BACKOFF_SECONDS = 32;
+    private static final int BACKOFF_JITTER_BOUND_MS = 1000;
+    private static final int HTTP_TOO_MANY_REQUESTS = 429;
+    private static final int HTTP_FORBIDDEN = 403;
 
     @Value("${google.project-id}")
     private String projectId;
@@ -70,6 +91,7 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
     private final EmployeeDao employeeDao;
     private final AsyncEmailSender asyncEmailSender;
     private final PeopleEmailService peopleEmailService;
+    private final RolesService rolesService;
 
     private Directory directoryService;
     private volatile Long channelExpiration;
@@ -90,14 +112,14 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
 
         GoogleCredentials credentials = ServiceAccountCredentials
                 .fromStream(new ByteArrayInputStream(secretJson.getBytes(StandardCharsets.UTF_8)))
-                .createScoped(Collections.singletonList(DirectoryScopes.ADMIN_DIRECTORY_USER_READONLY))
+                .createScoped(List.of(DirectoryScopes.ADMIN_DIRECTORY_USER_READONLY))
                 .createDelegated(adminEmail);
 
         directoryService = new Directory.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 GsonFactory.getDefaultInstance(),
                 new HttpCredentialsAdapter(credentials))
-                .setApplicationName("skapp-integration-poc")
+                .setApplicationName(APPLICATION_NAME)
                 .build();
 
         log.info("Authentication successful.");
@@ -114,7 +136,7 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
 
         Channel channel = new Channel()
                 .setId(UUID.randomUUID().toString())
-                .setType("web_hook")
+                .setType(WEBHOOK_CHANNEL_TYPE)
                 .setAddress(webhookUrl);
 
         if (channelToken != null && !channelToken.isBlank()) {
@@ -123,7 +145,7 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
 
         Channel registered = directoryService.users()
                 .watch(channel)
-                .setCustomer("my_customer")
+                .setCustomer(WORKSPACE_CUSTOMER_ALIAS)
                 .execute();
 
         channelExpiration = registered.getExpiration();
@@ -143,14 +165,14 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
             return;
         }
 
-        long millisUntilExpiry = channelExpiration - System.currentTimeMillis();
-        long fortyEightHoursMs = 48L * 60 * 60 * 1000;
+        Instant expiresAt = Instant.ofEpochMilli(channelExpiration);
+        Duration timeUntilExpiry = Duration.between(Instant.now(), expiresAt);
 
-        if (millisUntilExpiry < fortyEightHoursMs) {
-            log.info("Watch channel expires in {}h — renewing...", millisUntilExpiry / 3_600_000);
+        if (timeUntilExpiry.compareTo(WATCH_RENEWAL_THRESHOLD) < 0) {
+            log.info("Watch channel expires in {}h — renewing...", timeUntilExpiry.toHours());
             registerWatch();
         } else {
-            log.debug("Watch channel still valid. Expires at: {}", Instant.ofEpochMilli(channelExpiration));
+            log.debug("Watch channel still valid. Expires at: {}", expiresAt);
         }
     }
 
@@ -178,7 +200,7 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
     // -------------------------------------------------------------------------
     @Override
     public void processWatchNotification(String resourceState, String resourceUri) {
-        if ("sync".equals(resourceState)) {
+        if (WATCH_HANDSHAKE_STATE.equals(resourceState)) {
             log.info("Watch sync handshake received — no action needed.");
             return;
         }
@@ -219,6 +241,7 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
         int totalSynced = 0;
         int totalFailed = 0;
         List<String> failures = new ArrayList<>();
+        Set<String> googleEmails = new HashSet<>();
 
         authenticate();
 
@@ -226,13 +249,13 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
 
         do {
             Users result = fetchPageWithBackoff(pageToken, 0);
-            List<com.google.api.services.directory.model.User> users = result.getUsers();
+            var users = result.getUsers();
 
             if (users == null || users.isEmpty()) {
                 break;
             }
 
-            for (com.google.api.services.directory.model.User wsUser : users) {
+            for (var wsUser : users) {
                 try {
                     String email = wsUser.getPrimaryEmail();
                     Boolean suspended = wsUser.getSuspended();
@@ -249,6 +272,7 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
                         continue;
                     }
 
+                    googleEmails.add(email);
                     upsertUser(wsUser);
                     totalSynced++;
                     log.debug("Synced: <{}>", email);
@@ -266,7 +290,44 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
 
         } while (pageToken != null);
 
+        deactivateUsersMissingFrom(googleEmails);
+
         return new SyncResult(totalSynced, totalFailed, failures);
+    }
+
+    // -------------------------------------------------------------------------
+    // deactivateUsersMissingFrom() — deactivate skapp users (and their employee
+    // records) that came from Google but no longer appear in the Workspace
+    // response, e.g. they were removed/suspended-and-deleted in Workspace.
+    // Candidates are fetched in a single query rather than looked up per-user.
+    // -------------------------------------------------------------------------
+    private void deactivateUsersMissingFrom(Set<String> googleEmails) {
+        List<User> activeGoogleUsers = userDao.findAllByLoginMethodAndIsActiveTrue(LoginMethod.GOOGLE);
+
+        List<User> staleUsers = activeGoogleUsers.stream()
+                .filter(user -> !googleEmails.contains(user.getEmail()))
+                .toList();
+
+        if (staleUsers.isEmpty()) {
+            return;
+        }
+
+        List<Employee> staleEmployees = new ArrayList<>();
+        for (User user : staleUsers) {
+            user.setIsActive(false);
+            Employee employee = employeeDao.findEmployeeByEmail(user.getEmail());
+            if (employee != null) {
+                employee.setAccountStatus(AccountStatus.DEACTIVATED);
+                staleEmployees.add(employee);
+            }
+        }
+
+        userDao.saveAll(staleUsers);
+        employeeDao.saveAll(staleEmployees);
+
+        log.info("Deactivated {} user(s) no longer present in Google Workspace: {}",
+                staleUsers.size(),
+                staleUsers.stream().map(User::getEmail).toList());
     }
 
     private record SyncResult(int synced, int failed, List<String> failures) {
@@ -281,9 +342,10 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
         String lastName = wsUser.getName() != null ? wsUser.getName().getFamilyName() : "";
         boolean suspended = Boolean.TRUE.equals(wsUser.getSuspended());
 
-        boolean isNew = userDao.findByEmail(email).isEmpty();
+        Optional<User> existingUser = userDao.findByEmail(email);
+        boolean isNew = existingUser.isEmpty();
 
-        User user = userDao.findByEmail(email).orElseGet(User::new);
+        User user = existingUser.orElseGet(User::new);
         user.setEmail(email);
         user.setIsActive(!suspended);
         user.setLoginMethod(LoginMethod.GOOGLE);
@@ -297,7 +359,9 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
         employee.setFirstName(firstName);
         employee.setLastName(lastName);
         employee.setAccountStatus(suspended ? AccountStatus.DEACTIVATED : AccountStatus.ACTIVE);
-        employeeDao.save(employee);
+        Employee savedEmployee = employeeDao.save(employee);
+
+        rolesService.saveEmployeeRoles(savedEmployee);
 
         if (isNew) {
             peopleEmailService.sendUserInvitationEmail(savedUser);
@@ -311,9 +375,9 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
         try {
             Directory.Users.List request = directoryService.users()
                     .list()
-                    .setCustomer("my_customer")
+                    .setCustomer(WORKSPACE_CUSTOMER_ALIAS)
                     .setMaxResults(maxResults)
-                    .setFields("users(id,name,primaryEmail,suspended,etag),nextPageToken");
+                    .setFields(DIRECTORY_LIST_FIELDS);
 
             if (pageToken != null) {
                 request.setPageToken(pageToken);
@@ -324,7 +388,7 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
         catch (com.google.api.client.googleapis.json.GoogleJsonResponseException e) {
             int status = e.getStatusCode();
 
-            if (status != 429 && status != 403) {
+            if (status != HTTP_TOO_MANY_REQUESTS && status != HTTP_FORBIDDEN) {
                 throw e;
             }
 
@@ -333,7 +397,8 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
                 throw e;
             }
 
-            long waitMs = (long) (Math.min(32, Math.pow(2, attempt)) * 1000 + Math.random() * 1000);
+            long waitMs = (long) (Math.min(MAX_BACKOFF_SECONDS, Math.pow(2, attempt)) * 1000
+                    + Math.random() * BACKOFF_JITTER_BOUND_MS);
             log.warn("Rate limited ({}). Backoff attempt {}/{}, waiting {}ms...",
                     status, attempt + 1, maxBackoffAttempts, waitMs);
 
@@ -347,7 +412,7 @@ public class GoogleWorkspacePersonSync implements ExternalPersonalSyncService {
     // -------------------------------------------------------------------------
     private String getSecret(String projectId, String secretName) throws Exception {
         try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
-            SecretVersionName versionName = SecretVersionName.of(projectId, secretName, "latest");
+            SecretVersionName versionName = SecretVersionName.of(projectId, secretName, SECRET_LATEST_VERSION);
             AccessSecretVersionResponse response = client.accessSecretVersion(versionName);
             return response.getPayload().getData().toStringUtf8();
         }

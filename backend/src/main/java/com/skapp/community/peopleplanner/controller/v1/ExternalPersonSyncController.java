@@ -1,7 +1,7 @@
 package com.skapp.community.peopleplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.peopleplanner.service.ExternalPersonalSyncService;
+import com.skapp.community.peopleplanner.service.ExternalPersonSyncService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "External Sync Controller", description = "Endpoints for syncing persons from external providers")
 public class ExternalPersonSyncController {
 
-    private final ExternalPersonalSyncService externalPersonSyncService;
+    private static final String HEADER_RESOURCE_STATE = "X-Goog-Resource-State";
+    private static final String HEADER_RESOURCE_URI = "X-Goog-Resource-Uri";
+    private static final String HEADER_CHANNEL_TOKEN = "X-Goog-Channel-Token";
+    private static final String SYNC_STARTED_MESSAGE = "Sync started";
+
+    private final ExternalPersonSyncService externalPersonSyncService;
 
     @Operation(
             summary = "Bulk sync persons from Google Workspace",
@@ -34,20 +39,20 @@ public class ExternalPersonSyncController {
     public ResponseEntity<ResponseEntityDto> bulkSync(
             @AuthenticationPrincipal UserDetails userDetails) {
         externalPersonSyncService.bulkSync(userDetails.getUsername());
-        return new ResponseEntity<>(new ResponseEntityDto(false, "Sync started"), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(new ResponseEntityDto(false, SYNC_STARTED_MESSAGE), HttpStatus.ACCEPTED);
     }
 
     @Operation(
             summary = "Google Workspace push notification webhook",
-            description = "Receives push notifications from the Google Directory API when a user " +
-                    "is added, updated, or deleted in Google Workspace. This endpoint is public " +
-                    "and verified via X-Goog-Channel-Token."
+            description = "Receives push notifications from the Google Directory API when the " +
+                    "Workspace directory changes. This endpoint is public and verified via " +
+                    "X-Goog-Channel-Token."
     )
     @PostMapping(value = "/google-webhook")
     public ResponseEntity<Void> handleGoogleWebhook(
-            @RequestHeader(value = "X-Goog-Resource-State", required = false) String resourceState,
-            @RequestHeader(value = "X-Goog-Resource-Uri", required = false) String resourceUri,
-            @RequestHeader(value = "X-Goog-Channel-Token", required = false) String token) {
+            @RequestHeader(value = HEADER_RESOURCE_STATE, required = false) String resourceState,
+            @RequestHeader(value = HEADER_RESOURCE_URI, required = false) String resourceUri,
+            @RequestHeader(value = HEADER_CHANNEL_TOKEN, required = false) String token) {
 
         if (!externalPersonSyncService.isValidChannelToken(token)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

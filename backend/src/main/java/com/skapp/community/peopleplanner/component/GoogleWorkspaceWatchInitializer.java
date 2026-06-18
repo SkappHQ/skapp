@@ -1,6 +1,6 @@
 package com.skapp.community.peopleplanner.component;
 
-import com.skapp.community.peopleplanner.service.ExternalPersonalSyncService;
+import com.skapp.community.peopleplanner.service.ExternalPersonSyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class GoogleWorkspaceWatchInitializer {
 
-    private final ExternalPersonalSyncService externalPersonalSyncService;
+    private final ExternalPersonSyncService externalPersonSyncService;
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
         try {
             log.info("Application ready — registering Google Workspace users watch...");
-            externalPersonalSyncService.registerWatch();
+            externalPersonSyncService.registerWatch();
         }
         catch (Exception e) {
             log.error("Failed to register Google Workspace watch on startup: {}", e.getMessage(), e);
@@ -31,7 +31,7 @@ public class GoogleWorkspaceWatchInitializer {
     @Scheduled(cron = "0 0 2 * * ?")
     public void renewWatch() {
         try {
-            externalPersonalSyncService.renewWatchIfExpiring();
+            externalPersonSyncService.renewWatchIfExpiring();
         }
         catch (Exception e) {
             log.error("Failed to renew Google Workspace watch: {}", e.getMessage(), e);
