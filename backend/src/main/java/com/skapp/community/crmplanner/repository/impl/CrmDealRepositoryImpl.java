@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.repository.impl;
 
-import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
