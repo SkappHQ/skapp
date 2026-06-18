@@ -4,6 +4,12 @@ export enum CrmPriorityEnum {
   HIGH = "HIGH"
 }
 
+export enum CrmTaskTabEnum {
+  MY_TASKS = "my-tasks",
+  TEAM_TASKS = "team-tasks",
+  COMPLETED_TASKS = "completed-tasks"
+}
+
 export enum CrmIndustryEnum {
   NONE = "NONE",
   ACCOMMODATION_SERVICES = "ACCOMMODATION_SERVICES",

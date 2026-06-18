@@ -1,5 +1,7 @@
+import { CrmTaskTabEnum } from "../enums/common";
+
 export interface CrmTaskTab {
-  id: string;
+  id: CrmTaskTabEnum;
   label: string;
   position?: number;
 }

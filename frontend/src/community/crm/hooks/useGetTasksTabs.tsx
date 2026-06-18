@@ -1,9 +1,7 @@
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import {
-  SALES_REP_RESTRICTED_TASK_TABS,
-  TASK_TAB_IDS
-} from "~community/crm/constants/taskConstants";
+import { SALES_REP_RESTRICTED_TASK_TABS } from "~community/crm/constants/taskConstants";
+import { CrmTaskTabEnum } from "~community/crm/enums/common";
 import { CrmTaskTab } from "~community/crm/types/TaskTabTypes";
 
 export const useGetTasksTabs = (): CrmTaskTab[] => {
@@ -13,15 +11,15 @@ export const useGetTasksTabs = (): CrmTaskTab[] => {
 
   const allTabs: CrmTaskTab[] = [
     {
-      id: TASK_TAB_IDS.MY_TASKS,
+      id: CrmTaskTabEnum.MY_TASKS,
       label: translateText(["myTasks"])
     },
     {
-      id: TASK_TAB_IDS.TEAM_TASKS,
+      id: CrmTaskTabEnum.TEAM_TASKS,
       label: translateText(["teamTasks"])
     },
     {
-      id: TASK_TAB_IDS.COMPLETED_TASKS,
+      id: CrmTaskTabEnum.COMPLETED_TASKS,
       label: translateText(["completedTasks"])
     }
   ];

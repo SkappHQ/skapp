@@ -12,17 +12,17 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetOpenTasks } from "~community/crm/api/TaskApi";
 import { TASK_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/taskConstants";
-import { groupTasksByDueDate } from "~community/crm/utils/taskUtils";
+import { CrmTaskTabEnum } from "~community/crm/enums/common";
+import { getEmptyStateType } from "~community/crm/utils/commonHelpers";
+import { getTaskGroups } from "~community/crm/utils/taskUtils";
 
 import TaskGroup from "../../atoms/TaskGroup/TaskGroup";
 
 interface OpenTasksTabContentProps {
-  isMyTasks?: boolean;
+  tab: CrmTaskTabEnum;
 }
 
-const OpenTasksTabContent: FC<OpenTasksTabContentProps> = ({
-  isMyTasks = false
-}) => {
+const OpenTasksTabContent: FC<OpenTasksTabContentProps> = ({ tab }) => {
   const translateText = useTranslator("crmModule", "tasks");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
@@ -35,17 +35,10 @@ const OpenTasksTabContent: FC<OpenTasksTabContentProps> = ({
   const { data: taskData, isLoading, isError } = useGetOpenTasks();
 
   const { overdue, dueToday, dueTomorrow, upcoming } = useMemo(() => {
-    const allTasks = taskData?.tasks ?? [];
-    const tasks = isMyTasks
-      ? allTasks.filter((task) => task.owner.employeeId === userId)
-      : allTasks;
-    return groupTasksByDueDate(tasks);
-  }, [taskData, isMyTasks, userId]);
+    return getTaskGroups(taskData?.tasks ?? [], tab, userId);
+  }, [taskData, tab, userId]);
 
-  const emptyStateType =
-    debouncedSearch.trim() === ""
-      ? EmptyStateTypeEnum.NO_DATA
-      : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
+  const emptyStateType = getEmptyStateType(debouncedSearch);
 
   const isEmpty =
     overdue.length === 0 &&
@@ -102,22 +95,30 @@ const OpenTasksTabContent: FC<OpenTasksTabContentProps> = ({
           />
         ) : (
           <div className="flex flex-col h-full px-2 gap-4 overflow-y-auto">
-            <TaskGroup
-              label={translateText(["table", "groupLabels", "overdue"])}
-              tasks={overdue}
-            />
-            <TaskGroup
-              label={translateText(["table", "groupLabels", "dueToday"])}
-              tasks={dueToday}
-            />
-            <TaskGroup
-              label={translateText(["table", "groupLabels", "dueTomorrow"])}
-              tasks={dueTomorrow}
-            />
-            <TaskGroup
-              label={translateText(["table", "groupLabels", "upcoming"])}
-              tasks={upcoming}
-            />
+            {overdue && (
+              <TaskGroup
+                label={translateText(["table", "groupLabels", "overdue"])}
+                tasks={overdue}
+              />
+            )}
+            {dueToday && (
+              <TaskGroup
+                label={translateText(["table", "groupLabels", "dueToday"])}
+                tasks={dueToday}
+              />
+            )}
+            {dueTomorrow && (
+              <TaskGroup
+                label={translateText(["table", "groupLabels", "dueTomorrow"])}
+                tasks={dueTomorrow}
+              />
+            )}
+            {upcoming && (
+              <TaskGroup
+                label={translateText(["table", "groupLabels", "upcoming"])}
+                tasks={upcoming}
+              />
+            )}
           </div>
         )}
       </div>

@@ -1,4 +1,5 @@
 import { NextPage } from "next";
+import { useEffect, useRef, useState } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
@@ -11,6 +12,8 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState<string>("auto");
 
   const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
@@ -21,6 +24,19 @@ const Tasks: NextPage = () => {
     setIsTaskModalOpen(true);
     setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
   };
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        const offsetTop = containerRef.current.getBoundingClientRect().top;
+        setContainerHeight(`calc(100vh - ${offsetTop}px)`);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
 
   return (
     <ContentLayout
@@ -34,7 +50,11 @@ const Tasks: NextPage = () => {
       }}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
-      <div className="flex flex-col w-full h-[calc(100vh-10rem)] gap-4">
+      <div
+        ref={containerRef}
+        className="flex flex-col w-full gap-4"
+        style={{ height: containerHeight }}
+      >
         <TaskModalController />
         <TasksTable />
       </div>

@@ -1,5 +1,6 @@
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 
+import { CrmTaskTabEnum } from "../enums/common";
 import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
 
 export interface GroupedTasks {
@@ -9,7 +10,9 @@ export interface GroupedTasks {
   upcoming: CrmTaskDetailType[];
 }
 
-export const groupTasksByDueDate = (tasks: CrmTaskDetailType[]): GroupedTasks => {
+export const groupTasksByDueDate = (
+  tasks: CrmTaskDetailType[]
+): GroupedTasks => {
   const overdue: CrmTaskDetailType[] = [];
   const dueToday: CrmTaskDetailType[] = [];
   const dueTomorrow: CrmTaskDetailType[] = [];
@@ -30,4 +33,16 @@ export const groupTasksByDueDate = (tasks: CrmTaskDetailType[]): GroupedTasks =>
   }
 
   return { overdue, dueToday, dueTomorrow, upcoming };
+};
+
+export const getTaskGroups = (
+  tasks: CrmTaskDetailType[],
+  tab: CrmTaskTabEnum,
+  userId: number | undefined
+): GroupedTasks => {
+  const filteredTasks =
+    tab === CrmTaskTabEnum.MY_TASKS
+      ? tasks.filter((task) => task.owner.employeeId === userId)
+      : tasks;
+  return groupTasksByDueDate(filteredTasks);
 };
