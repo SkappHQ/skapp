@@ -54,7 +54,7 @@ public class CrmDealController {
 
 	@Operation(summary = "Get deal by ID", description = "Returns a single CRM deal by its ID.")
 	@GetMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getDealById(@PathVariable Long id) {
 		ResponseEntityDto response = crmDealService.getDealById(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
