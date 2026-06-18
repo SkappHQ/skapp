@@ -12,8 +12,10 @@ import {
   CrmTaskResponseType
 } from "~community/crm/types/CommonTypes";
 
-import { CrmTaskCreatePayload, UpdateTaskStatusPayload } from "../types/CommonTypes";
-import { taskEndpoints } from "./utils/ApiEndpoints";
+import {
+  CrmTaskCreatePayload,
+  UpdateTaskStatusPayload
+} from "../types/CommonTypes";
 import { taskQueryKeys } from "./utils/QueryKeys";
 
 const createTask = async (taskDetails: CrmTaskCreatePayload): Promise<void> => {
