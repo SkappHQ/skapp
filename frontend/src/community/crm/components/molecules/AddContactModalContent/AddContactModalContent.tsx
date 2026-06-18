@@ -340,10 +340,7 @@ const AddContactModalContent: React.FC = () => {
           onChange={(e) => setOwnerSearchText(e.target.value)}
           state={errors.ownerId ? "error" : "default"}
           errorMessage={errors.ownerId}
-          emptyMessage={
-            isOwnerFetching
-              ? undefined
-              : translateContactText(["emptyStates", "noOwners"])
+          emptyMessage={translateContactText(["emptyStates", "noOwners"])
           }
         />
       )}
