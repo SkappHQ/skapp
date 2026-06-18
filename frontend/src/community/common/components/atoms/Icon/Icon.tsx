@@ -112,6 +112,7 @@ import PopOutIcon from "~community/common/assets/Icons/PopOutIcon";
 import ProjectManagementModuleIcon from "~community/common/assets/Icons/ProjectManagementModuleIcon";
 import ProjectsIcon from "~community/common/assets/Icons/ProjectsIcon";
 import RadioSelectedIcon from "~community/common/assets/Icons/RadioSelectedIcon";
+import ReactivateUserIcon from "~community/common/assets/Icons/ReactivateUserIcon";
 import RemoveCircleIcon from "~community/common/assets/Icons/RemoveCircleIcon";
 import RequestCancelCrossIcon from "~community/common/assets/Icons/RequestCancelCrossIcon";
 import RestoreIcon from "~community/common/assets/Icons/RestoreIcon";
@@ -336,7 +337,8 @@ export const IconMapping: Partial<
   [IconName.BADGE_CHECK_ICON]: BadgeCheckIcon,
   [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
   [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon,
-  [IconName.LOCAL_PHONE_ICON]: LocalPhoneIcon
+  [IconName.LOCAL_PHONE_ICON]: LocalPhoneIcon,
+  [IconName.REACTIVATE_USER_ICON]: ReactivateUserIcon
   // Add more icons here as needed
 };
 
