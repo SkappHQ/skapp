@@ -1,5 +1,6 @@
 package com.skapp.community.timeplanner.repository;
 
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.timeplanner.model.TimeRecord;
 import com.skapp.community.timeplanner.payload.projection.EmployeeWorkHours;
 import com.skapp.community.timeplanner.payload.projection.TimeRecordTrendDto;
@@ -48,5 +49,9 @@ public interface TimeRecordRepository {
 	List<TimeRecordTrendDto> getEmployeeClockInTrend(List<Long> teams, String timeZone, LocalDate date);
 
 	List<TimeRecordTrendDto> getEmployeeClockOutTrend(List<Long> teams, String timeZone, LocalDate date);
+
+	Optional<TimeRecord> findByEmployeeAndDate(Employee employee, LocalDate currentDate);
+
+	TimeRecord findByDateAndEmployee(LocalDate date, Employee employee);
 
 }

@@ -9,7 +9,6 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.payload.request.EmployeeUpdateDto;
-import com.skapp.community.peopleplanner.payload.request.ReactivateTerminatedUserRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeCommonDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
@@ -278,12 +277,7 @@ class PeopleControllerIntegrationTest {
 			performRequest(patch("/v1/people/user/terminate/2").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
 
-			ReactivateTerminatedUserRequestDto requestDto = new ReactivateTerminatedUserRequestDto();
-			requestDto.setEmail("user2@gmail.com");
-
-			performRequest(patch("/v1/people/user/reactivate").contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(requestDto))
-				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+			performRequest(patch("/v1/people/user/reactivate/2").contentType(MediaType.APPLICATION_JSON)).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 		}
@@ -291,12 +285,7 @@ class PeopleControllerIntegrationTest {
 		@Test
 		@DisplayName("Reactivate an active (non-terminated) user - Returns Bad Request")
 		void reactivateTerminatedUser_WithActiveUser_ReturnsBadRequest() throws Exception {
-			ReactivateTerminatedUserRequestDto requestDto = new ReactivateTerminatedUserRequestDto();
-			requestDto.setEmail("user2@gmail.com");
-
-			performRequest(patch("/v1/people/user/reactivate").contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(requestDto))
-				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+			performRequest(patch("/v1/people/user/reactivate/2").contentType(MediaType.APPLICATION_JSON)).andDo(print())
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -304,33 +293,14 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Reactivate with non-existent email - Returns Not Found")
-		void reactivateTerminatedUser_WithNonExistentEmail_ReturnsNotFound() throws Exception {
-			ReactivateTerminatedUserRequestDto requestDto = new ReactivateTerminatedUserRequestDto();
-			requestDto.setEmail("nonexistent@gmail.com");
-
-			performRequest(patch("/v1/people/user/reactivate").contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(requestDto))
-				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+		@DisplayName("Reactivate with non-existent user ID - Returns Not Found")
+		void reactivateTerminatedUser_WithNonExistentId_ReturnsNotFound() throws Exception {
+			performRequest(patch("/v1/people/user/reactivate/99999").contentType(MediaType.APPLICATION_JSON))
+				.andDo(print())
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND)));
-		}
-
-		@Test
-		@DisplayName("Reactivate with invalid email format - Returns Bad Request")
-		void reactivateTerminatedUser_WithInvalidEmailFormat_ReturnsBadRequest() throws Exception {
-			ReactivateTerminatedUserRequestDto requestDto = new ReactivateTerminatedUserRequestDto();
-			requestDto.setEmail("not-a-valid-email");
-
-			performRequest(patch("/v1/people/user/reactivate").contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(requestDto))
-				.accept(MediaType.APPLICATION_JSON)).andDo(print())
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMAIL)));
+					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND)));
 		}
 
 	}
