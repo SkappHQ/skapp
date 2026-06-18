@@ -12,7 +12,7 @@ interface TaskGroupProps {
 const TaskGroup: FC<TaskGroupProps> = ({ label, tasks }) => {
   return (
     <div className="flex flex-col">
-      <div className="subtitle2 mb-2 sticky top-0 bg-white">{label}</div>
+      <div className="subtitle2 mb-2 sticky top-0 bg-white z-10">{label}</div>
       <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
         {tasks.map((task) => (
           <div key={task.id}>
