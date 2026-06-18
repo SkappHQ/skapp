@@ -352,10 +352,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
 		}
 
-		if (requestDto.getName() != null) {
+		if (requestDto.getName() != null && !requestDto.getName().equalsIgnoreCase(deal.getName())) {
 			CrmValidations.validateDealName(requestDto.getName());
-			if (!requestDto.getName().equalsIgnoreCase(deal.getName())
-					&& crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
+			if (crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
 			}
 			deal.setName(requestDto.getName());
