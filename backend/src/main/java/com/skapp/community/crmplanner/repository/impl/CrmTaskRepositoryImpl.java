@@ -194,7 +194,13 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		if (params.getSearchKeyword() != null && !params.getSearchKeyword().isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(params.getSearchKeyword().trim().toLowerCase());
-			predicates.add(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"));
+
+			Join<CrmTask, CrmContact> contactJoin = root.join(CrmTask_.contact, JoinType.LEFT);
+			Join<CrmTask, CrmDeal> dealJoin = root.join(CrmTask_.deal, JoinType.LEFT);
+
+			predicates.add(cb.or(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), "%" + escaped + "%"),
+					cb.like(cb.lower(dealJoin.get(CrmDeal_.name)), "%" + escaped + "%")));
 		}
 
 		if (params.getContactId() != null) {

@@ -240,16 +240,37 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get tasks with search keyword - Returns only matching tasks")
-	void getTasks_WithSearchKeyword_ReturnsMatchingTasks() throws Exception {
-		savedTask("Follow up call", false, false);
-		savedTask("Send proposal", false, false);
+	@DisplayName("Get tasks with search keyword matching contact name - Returns matching tasks")
+	void getTasks_WithSearchKeywordMatchingContactName_ReturnsMatchingTasks() throws Exception {
+		CrmContact contact = new CrmContact();
+		contact.setName("John Doe");
+		contact.setEmail("john@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		contact = crmContactDao.save(contact);
 
-		performGetRequest(authToken, "follow", null, null).andDo(print())
+		savedTask("Task 1", false, false, contact.getId());
+		savedTask("Task 2", false, false);
+
+		performGetRequest(authToken, "john", null, null).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Follow up call"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task 1"));
+	}
+
+	@Test
+	@DisplayName("Get tasks with search keyword matching deal name - Returns matching tasks")
+	void getTasks_WithSearchKeywordMatchingDealName_ReturnsMatchingTasks() throws Exception {
+		CrmDeal deal = savedDeal("Special Deal", crmContactDao.getReferenceById(contactId), null);
+
+		savedTask("Task 1", false, false, contactId, deal);
+		savedTask("Task 2", false, false);
+
+		performGetRequest(authToken, "special", null, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task 1"));
 	}
 
 	@Test
@@ -383,16 +404,38 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get completed tasks with search keyword - Returns only matching completed tasks")
-	void getCompletedTasks_WithSearchKeyword_ReturnsMatchingTasks() throws Exception {
-		savedTask("Completed call", false, true);
-		savedTask("Completed proposal", false, true);
+	@DisplayName("Get completed tasks with search keyword matching contact name - Returns matching tasks")
+	void getCompletedTasks_WithSearchKeywordMatchingContactName_ReturnsMatchingTasks() throws Exception {
+		CrmContact contact = new CrmContact();
+		contact.setName("Jane Smith");
+		contact.setEmail("jane@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		contact = crmContactDao.save(contact);
 
-		performGetCompletedRequest(authToken, "0", "10", "call", null, null).andDo(print())
+		savedTask("Completed Task 1", false, true, contact.getId());
+		savedTask("Completed Task 2", false, true);
+
+		performGetCompletedRequest(authToken, "0", "10", "jane", null, null).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed call"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed Task 1"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get completed tasks with search keyword matching deal name - Returns matching tasks")
+	void getCompletedTasks_WithSearchKeywordMatchingDealName_ReturnsMatchingTasks() throws Exception {
+		CrmDeal deal = savedDeal("Completed Deal Search", crmContactDao.getReferenceById(contactId), null);
+
+		savedTask("Completed Task 1", false, true, contactId, deal);
+		savedTask("Completed Task 2", false, true);
+
+		performGetCompletedRequest(authToken, "0", "10", "search", null, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed Task 1"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
 	}
 
