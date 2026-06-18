@@ -25,5 +25,6 @@ public interface CrmDealService {
 	ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto);
 
 	ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto);
+	ResponseEntityDto deleteDeal(Long id);
 
 }

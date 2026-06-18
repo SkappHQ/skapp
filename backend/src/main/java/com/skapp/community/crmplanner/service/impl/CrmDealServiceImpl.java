@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.FractionalIndexUtil;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
@@ -14,6 +15,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
@@ -33,6 +35,7 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.util.CrmValidations;
@@ -71,6 +74,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final UserService userService;
 
 	private final CrmOwnerResolverService crmOwnerResolver;
+	private final CrmTaskDao crmTaskDao;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -343,6 +349,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Transactional
 	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
 		log.info("editDeal: execution started");
+	public ResponseEntityDto deleteDeal(Long id) {
+		log.info("deleteDeal: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
@@ -407,6 +415,15 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("editDeal: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+		List<CrmTask> linkedTasks = crmTaskDao.findByDeal_IdAndIsDeletedFalse(id);
+		linkedTasks.forEach(task -> task.setIsDeleted(true));
+		crmTaskDao.saveAll(linkedTasks);
+
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		log.info("deleteDeal: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_DEAL_DELETED), false);
 	}
 
 }
