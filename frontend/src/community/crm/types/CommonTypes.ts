@@ -317,3 +317,10 @@ export interface CrmContactDetailResponseType {
   tasks: ContactDetailTask[];
   deals: ContactDetailDeal[];
 }
+
+export interface CrmCompletedTaskResponseType {
+  items: CrmTaskDetailType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}

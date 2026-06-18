@@ -53,5 +53,10 @@ export const companyQueryKeys = {
 
 export const taskQueryKeys = {
   GET_TASK_DATA: ["get-task-data"],
-  GET_OPEN_TASKS: ["get-open-tasks"]
+  GET_OPEN_TASKS: ["get-open-tasks"],
+  GET_COMPLETED_TASKS: (searchKeyword: string, limit: number) => [
+    "get-completed-tasks",
+    searchKeyword,
+    limit
+  ]
 };

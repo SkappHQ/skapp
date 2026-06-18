@@ -5,6 +5,7 @@ import { TASK_TAB_IDS } from "~community/crm/constants/taskConstants";
 import { useGetTasksTabs } from "~community/crm/hooks/useGetTasksTabs";
 
 import OpenTasksTabContent from "../../molecules/OpenTasksTabContent/OpenTasksTabContent";
+import CompletedTasksTabContent from "../../molecules/CompletedTasksTabContent/CompletedTasksTabContent";
 
 const TasksTable: FC = () => {
   const tabs = useGetTasksTabs();
@@ -29,6 +30,7 @@ const TasksTable: FC = () => {
           <OpenTasksTabContent isMyTasks />
         )}
         {activeTab === TASK_TAB_IDS.TEAM_TASKS && <OpenTasksTabContent />}
+        {activeTab === TASK_TAB_IDS.COMPLETED_TASKS && <CompletedTasksTabContent />}
       </div>
     </div>
   );

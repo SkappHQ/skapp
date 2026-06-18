@@ -1,8 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
-import { CrmTaskResponseType } from "~community/crm/types/CommonTypes";
+import {
+  CrmCompletedTaskResponseType,
+  CrmTaskResponseType
+} from "~community/crm/types/CommonTypes";
 
 import { CrmTaskCreatePayload } from "../types/CommonTypes";
 import { taskQueryKeys } from "./utils/QueryKeys";
@@ -35,5 +43,39 @@ export const useGetOpenTasks = () => {
   return useQuery({
     queryKey: taskQueryKeys.GET_OPEN_TASKS,
     queryFn: fetchOpenTasks
+  });
+};
+
+interface TaskSearchParams {
+  page: number;
+  size: number;
+  searchKeyword: string;
+}
+
+const fetchCompletedTasks = async ({
+  page,
+  size,
+  searchKeyword
+}: TaskSearchParams): Promise<CrmCompletedTaskResponseType> => {
+  const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
+    params: { page, size, searchKeyword }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetCompletedTasks = (searchKeyword: string, limit: number) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: taskQueryKeys.GET_COMPLETED_TASKS(searchKeyword, limit),
+    queryFn: ({ pageParam }) =>
+      fetchCompletedTasks({
+        page: pageParam,
+        size: limit,
+        searchKeyword
+      }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.currentPage + 1 >= lastPage.totalPages) return undefined;
+      return lastPage.currentPage + 1;
+    }
   });
 };

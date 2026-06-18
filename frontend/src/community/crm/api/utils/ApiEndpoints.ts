@@ -16,7 +16,8 @@ export const contactEndpoints = {
 };
 
 export const taskEndpoints = {
-  GET_OPEN_TASKS: `${moduleAPIPath.CRM}/task`
+  GET_OPEN_TASKS: `${moduleAPIPath.CRM}/task`,
+  GET_COMPLETED_TASKS: `${moduleAPIPath.CRM}/task/completed`,
 };
 
 export const companyEndpoints = {
