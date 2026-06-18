@@ -108,9 +108,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealContactId(requestDto.getContactId());
 		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
 
-		if (crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
-		}
+		validateDealNameUniquenessForContact(requestDto.getName(), requestDto.getContactId(), null);
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
@@ -346,6 +344,20 @@ public class CrmDealServiceImpl implements CrmDealService {
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);
 	}
 
+	private void validateDealNameUniquenessForContact(String dealName, Long contactId, Long excludeDealId) {
+		if (excludeDealId != null) {
+			if (crmDealDao.existsByNameIgnoreCaseAndContact_IdAndIsDeletedFalseAndIdNot(dealName, contactId,
+					excludeDealId)) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
+			}
+		}
+		else {
+			if (crmDealDao.existsByNameIgnoreCaseAndContact_IdAndIsDeletedFalse(dealName, contactId)) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
+			}
+		}
+	}
+
 	@Override
 	@Transactional
 	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
@@ -361,9 +373,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		if (requestDto.getName() != null && !requestDto.getName().equalsIgnoreCase(deal.getName())) {
 			CrmValidations.validateDealName(requestDto.getName());
-			if (crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
-			}
+			Long effectiveContactId = (requestDto.getContactId() != null) ? requestDto.getContactId()
+					: deal.getContact().getId();
+			validateDealNameUniquenessForContact(requestDto.getName(), effectiveContactId, deal.getId());
 			deal.setName(requestDto.getName());
 		}
 
@@ -396,6 +408,11 @@ public class CrmDealServiceImpl implements CrmDealService {
 			CrmValidations.validateDealContactId(requestDto.getContactId());
 			CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
+
+			if (requestDto.getName() == null || requestDto.getName().equalsIgnoreCase(deal.getName())) {
+				validateDealNameUniquenessForContact(deal.getName(), requestDto.getContactId(), deal.getId());
+			}
+
 			deal.setContact(contact);
 
 			CrmCompany company = null;

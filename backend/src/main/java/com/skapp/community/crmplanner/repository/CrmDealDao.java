@@ -14,6 +14,10 @@ public interface CrmDealDao extends JpaRepository<CrmDeal, Long>, CrmDealReposit
 
 	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 
+	boolean existsByNameIgnoreCaseAndContact_IdAndIsDeletedFalse(String name, Long contactId);
+
+	boolean existsByNameIgnoreCaseAndContact_IdAndIsDeletedFalseAndIdNot(String name, Long contactId, Long id);
+
 	List<CrmDeal> findByContact_IdAndIsDeletedFalse(Long contactId);
 
 	List<CrmDeal> findAllByCompanyIdAndIsDeletedFalse(Long companyId);
