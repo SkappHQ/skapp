@@ -1,6 +1,10 @@
 import * as Yup from "yup";
 
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import {
+  DEAL_DESCRIPTION_MAX_LENGTH,
+  DEAL_NAME_MAX_LENGTH
+} from "~community/crm/constants/dealConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { isDealNameValid } from "~community/crm/regex/crmRegexPatterns";
 
@@ -9,7 +13,10 @@ export const addDealValidations = (translator: TranslatorFunctionType) =>
     name: Yup.string()
       .trim()
       .required(translator(["validations", "dealNameRequired"]))
-      .max(255, translator(["validations", "dealNameMaxLength"]))
+      .max(
+        DEAL_NAME_MAX_LENGTH,
+        translator(["validations", "dealNameMaxLength"])
+      )
       .matches(
         isDealNameValid(),
         translator(["validations", "dealNameInvalidChars"])
@@ -30,5 +37,9 @@ export const addDealValidations = (translator: TranslatorFunctionType) =>
       "is-valid-amount",
       translator(["validations", "amountInvalid"]),
       (value) => !value || Number(value) > 0
+    ),
+    description: Yup.string().max(
+      DEAL_DESCRIPTION_MAX_LENGTH,
+      translator(["validations", "descriptionMaxLength"])
     )
   });
