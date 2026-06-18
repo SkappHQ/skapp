@@ -89,7 +89,6 @@ const CompletedTasksTabContent: FC = () => {
         className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto"
       >
         <TaskGroup
-          label={translateText(["table", "groupLabels", "upcoming"])}
           tasks={tasks}
           isCheckTaskVisible={false}
         />
