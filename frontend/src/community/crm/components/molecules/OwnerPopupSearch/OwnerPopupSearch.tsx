@@ -15,6 +15,7 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
+import { findById } from "~community/crm/utils/crmUtil";
 import { buildOwnerOptions } from "~community/crm/utils/dealUtil";
 
 import OwnerOptionItem from "./OwnerOptionItem";
@@ -48,9 +49,13 @@ const OwnerPopupSearch: FC<Props> = ({
     DEFAULT_LOOKUP_PAGE_SIZE,
     isCrmSalesManager ?? false
   );
-  const users = ownerLookupData?.items ?? [];
+  const users = useMemo(
+    () => ownerLookupData?.items ?? [],
+    [ownerLookupData?.items]
+  );
   const getLabel = (u: CrmOwner) =>
     concatStrings([u.firstName, u.lastName ?? ""]);
+  const getOwnerId = (u: CrmOwner) => u.employeeId;
 
   const options: DropdownOption[] = useMemo(
     () => buildOwnerOptions(users, selectedUser, getLabel),
@@ -72,8 +77,8 @@ const OwnerPopupSearch: FC<Props> = ({
     }
     const { id } = val as DropdownOption;
     const user =
-      users.find((u) => u.employeeId === Number(id)) ??
-      (selectedUser?.employeeId === id ? selectedUser : null);
+      findById(users, Number(id), getOwnerId) ??
+      (selectedUser?.employeeId === Number(id) ? selectedUser : null);
     onChange(user);
   };
 
@@ -81,13 +86,18 @@ const OwnerPopupSearch: FC<Props> = ({
     option: DropdownOption,
     triggerProps: TriggerProps
   ) => {
-    const user = users.find((u) => u.employeeId === Number(option?.id));
+    const user =
+      findById(users, Number(option?.id), getOwnerId) ??
+      (selectedUser?.employeeId === Number(option?.id) ? selectedUser : null);
+
     return user ? (
       <OwnerTriggerContent
         key={option.id}
         user={user}
         onSelect={() => {
-          triggerProps.onClick();
+          if (isCrmSalesManager) {
+            triggerProps.onClick();
+          }
         }}
       />
     ) : null;
@@ -97,7 +107,10 @@ const OwnerPopupSearch: FC<Props> = ({
     option: DropdownOption,
     onSelect: (value: DropdownValue) => void
   ) => {
-    const user = users.find((u) => u.employeeId === Number(option.id));
+    const user =
+      findById(users, Number(option.id), getOwnerId) ??
+      (selectedUser?.employeeId === Number(option.id) ? selectedUser : null);
+
     return user ? (
       <OwnerOptionItem
         key={option.id}

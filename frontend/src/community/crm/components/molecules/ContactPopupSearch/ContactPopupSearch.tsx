@@ -7,6 +7,7 @@ import {
 import { FC, RefObject, useMemo } from "react";
 
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
+import { findById } from "~community/crm/utils/crmUtil";
 import { buildContactOptions } from "~community/crm/utils/dealUtil";
 
 import ContactOptionItem from "./ContactOptionItem";
@@ -33,9 +34,11 @@ const ContactPopupSearch: FC<Props> = ({
   noResultsText,
   ariaInvalid
 }) => {
+  const getContactId = (contact: CrmContactLookup) => contact.id;
+
   const options: DropdownOption[] = useMemo(
-    () => buildContactOptions(contacts, selectedContact),
-    [contacts, selectedContact]
+    () => buildContactOptions(contacts),
+    [contacts]
   );
 
   const selectedValue: DropdownOption | null = selectedContact
@@ -52,9 +55,7 @@ const ContactPopupSearch: FC<Props> = ({
       return;
     }
     const { id } = val as DropdownOption;
-    const contact =
-      contacts.find((c) => c.id === id) ??
-      (selectedContact?.id === id ? selectedContact : null);
+    const contact = findById(contacts, Number(id), getContactId);
     onChange(contact);
   };
 
@@ -62,9 +63,7 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption | null,
     triggerProps: TriggerProps
   ) => {
-    const contact =
-      contacts.find((c) => c.id === Number(option?.id)) ??
-      (selectedContact?.id === option?.id ? selectedContact : null);
+    const contact = findById(contacts, Number(option?.id), getContactId);
 
     if (contact && option) {
       return (
@@ -93,9 +92,7 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption,
     onSelect: (value: DropdownValue) => void
   ) => {
-    const contact =
-      contacts.find((c) => c.id === Number(option.id)) ??
-      (selectedContact?.id === option.id ? selectedContact : null);
+    const contact = findById(contacts, Number(option.id), getContactId);
 
     return contact ? (
       <ContactOptionItem

@@ -66,7 +66,7 @@ describe("buildContactOptions", () => {
   ];
 
   it("should build contact dropdown options", () => {
-    const result = buildContactOptions(contacts, null);
+    const result = buildContactOptions(contacts);
 
     expect(result).toEqual([
       { id: 10, value: 10, label: "Acme Buyer" },
@@ -74,27 +74,7 @@ describe("buildContactOptions", () => {
     ]);
   });
 
-  it("should prepend the selected contact when it is missing from the lookup", () => {
-    const selectedContact: TestContact = {
-      id: 30,
-      name: "Gamma Contact"
-    };
-
-    const result = buildContactOptions(contacts, selectedContact);
-
-    expect(result).toEqual([
-      { id: 30, value: 30, label: "Gamma Contact" },
-      { id: 10, value: 10, label: "Acme Buyer" },
-      { id: 20, value: 20, label: "Beta Lead" }
-    ]);
-  });
-
-  it("should not duplicate the selected contact when it exists in the lookup", () => {
-    const result = buildContactOptions(contacts, contacts[1]);
-
-    expect(result).toEqual([
-      { id: 10, value: 10, label: "Acme Buyer" },
-      { id: 20, value: 20, label: "Beta Lead" }
-    ]);
+  it("should return empty options for empty input", () => {
+    expect(buildContactOptions([])).toEqual([]);
   });
 });

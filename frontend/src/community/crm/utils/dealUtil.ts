@@ -30,8 +30,7 @@ export const buildOwnerOptions = <T extends OptionSource>(
 };
 
 export const buildContactOptions = <T extends ContactOptionSource>(
-  items: T[],
-  selectedItem: T | null
+  items: T[]
 ): DropdownOption[] => {
   const toOption = (item: T): DropdownOption => ({
     id: item.id,
@@ -39,10 +38,5 @@ export const buildContactOptions = <T extends ContactOptionSource>(
     label: item.name
   });
 
-  const base = items.map(toOption);
-
-  const isSelectedMissing =
-    selectedItem && !items.some((item) => item.id === selectedItem.id);
-
-  return isSelectedMissing ? [toOption(selectedItem), ...base] : base;
+  return items.map(toOption);
 };
