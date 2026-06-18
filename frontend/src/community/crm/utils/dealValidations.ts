@@ -26,9 +26,12 @@ export const addDealValidations = (translator: TranslatorFunctionType) =>
     priority: Yup.mixed<CrmPriorityEnum>()
       .required(translator(["validations", "priorityRequired"]))
       .oneOf(Object.values(CrmPriorityEnum)),
-    amount: Yup.string().test(
-      "is-valid-amount",
-      translator(["validations", "amountInvalid"]),
-      (value) => !value || Number(value) > 0
-    )
+    amount: Yup.string()
+      .nullable()
+      .optional()
+      .test(
+        "is-valid-amount",
+        translator(["validations", "amountInvalid"]),
+        (value) => !value || Number(value) > 0
+      )
   });

@@ -1,68 +1,60 @@
 import {
   DropdownOption,
   DropdownValue,
-  DropdownWithSearchablePopup,
-  TriggerProps
+  DropdownWithSearchablePopup
 } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo } from "react";
+import { FC, useMemo, useState } from "react";
 
+import useDebounce from "~community/common/hooks/useDebounce";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { concatStrings } from "~community/common/utils/commonUtil";
+import { useGetOwnerLookup } from "~community/crm/api/ContactApi";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/commonConstants";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
+import { buildOwnerOptions } from "~community/crm/utils/dealUtil";
 
 import OwnerOptionItem from "./OwnerOptionItem";
 import OwnerTriggerContent from "./OwnerTriggerContent";
 
 interface Props {
-  users: CrmOwner[];
   selectedUser: CrmOwner | null;
-  onSearch: (term: string) => void;
   onChange: (user: CrmOwner | null) => void;
   placeholder: string;
   searchPlaceholder: string;
   noResultsText: string;
   ariaInvalid?: boolean;
-  backgroundColor?: string;
-  chipBackgroundColor?: string;
 }
 
 const OwnerPopupSearch: FC<Props> = ({
-  users,
   selectedUser,
-  onSearch,
   onChange,
   placeholder,
   searchPlaceholder,
   noResultsText,
-  ariaInvalid,
-  backgroundColor = "transparent",
-  chipBackgroundColor
+  ariaInvalid
 }) => {
+  const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
+  const { isCrmSalesManager } = useSessionData();
+  const debouncedOwnerSearch = useDebounce(
+    ownerSearchTerm.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const { data: ownerLookupData } = useGetOwnerLookup(
+    debouncedOwnerSearch,
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    isCrmSalesManager ?? false
+  );
+  const users = ownerLookupData?.items ?? [];
   const getLabel = (u: CrmOwner) =>
     concatStrings([u.firstName, u.lastName ?? ""]);
 
-  const userMap = useMemo(
-    () => new Map(users.map((u) => [u.employeeId, u])),
-    [users]
+  const options: DropdownOption[] = useMemo(
+    () => buildOwnerOptions(users, selectedUser, getLabel),
+    [users, selectedUser]
   );
-
-  const options: DropdownOption[] = useMemo(() => {
-    const mapped = users.map((u) => ({
-      id: u.employeeId,
-      value: u.employeeId,
-      label: getLabel(u)
-    }));
-    if (selectedUser && !userMap.has(selectedUser.employeeId)) {
-      return [
-        {
-          id: selectedUser.employeeId,
-          value: selectedUser.employeeId,
-          label: getLabel(selectedUser)
-        },
-        ...mapped
-      ];
-    }
-    return mapped;
-  }, [users, selectedUser, userMap]);
 
   const selectedValue: DropdownOption | null = selectedUser
     ? {
@@ -79,7 +71,7 @@ const OwnerPopupSearch: FC<Props> = ({
     }
     const { id } = val as DropdownOption;
     const user =
-      userMap.get(Number(id)) ??
+      users.find((u) => u.employeeId === Number(id)) ??
       (selectedUser?.employeeId === id ? selectedUser : null);
     onChange(user);
   };
@@ -89,42 +81,37 @@ const OwnerPopupSearch: FC<Props> = ({
       options={options}
       value={selectedValue}
       onChange={handleChange}
-      onSearch={onSearch}
+      onSearch={setOwnerSearchTerm}
       placeholder={placeholder}
       searchPlaceholder={searchPlaceholder}
       searchable
       clearable
       ariaInvalid={ariaInvalid}
       width="100%"
-      renderTrigger={(
-        _val: DropdownValue | null,
-        _isOpen: boolean,
-        _disabled: boolean,
-        triggerProps: TriggerProps
-      ) => (
-        <OwnerTriggerContent
-          user={selectedUser}
-          placeholder={placeholder}
-          triggerProps={triggerProps}
-          backgroundColor={backgroundColor}
-          chipBackgroundColor={chipBackgroundColor}
-        />
-      )}
+      renderTrigger={(option, _a, _b, triggerProps) => {
+        const opt = option as DropdownOption;
+        const user = users.find((u) => u.employeeId === Number(opt.id));
+        return user ? (
+          <OwnerTriggerContent
+            key={opt.id}
+            user={user}
+            onSelect={() => {
+              triggerProps.onClick();
+            }}
+          />
+        ) : null;
+      }}
       renderOption={(option, _index, onSelect) => {
         const opt = option as DropdownOption;
-        const id = Number(opt.id);
-        const user =
-          userMap.get(id) ??
-          (selectedUser?.employeeId === id ? selectedUser : null);
-        if (!user) return null;
-        return (
+        const user = users.find((u) => u.employeeId === Number(opt.id));
+        return user ? (
           <OwnerOptionItem
             key={opt.id}
             user={user}
             option={opt}
             onSelect={onSelect}
           />
-        );
+        ) : null;
       }}
       renderNoResults={() => (
         <div className="px-4 py-2 text-sm text-tertiary-text">
