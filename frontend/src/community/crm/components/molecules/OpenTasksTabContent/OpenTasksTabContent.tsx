@@ -95,25 +95,25 @@ const OpenTasksTabContent: FC<OpenTasksTabContentProps> = ({ tab }) => {
           />
         ) : (
           <div className="flex flex-col h-full px-2 gap-4 overflow-y-auto">
-            {overdue && (
+            {overdue.length > 0 && (
               <TaskGroup
                 label={translateText(["table", "groupLabels", "overdue"])}
                 tasks={overdue}
               />
             )}
-            {dueToday && (
+            {dueToday.length > 0 && (
               <TaskGroup
                 label={translateText(["table", "groupLabels", "dueToday"])}
                 tasks={dueToday}
               />
             )}
-            {dueTomorrow && (
+            {dueTomorrow.length > 0 && (
               <TaskGroup
                 label={translateText(["table", "groupLabels", "dueTomorrow"])}
                 tasks={dueTomorrow}
               />
             )}
-            {upcoming && (
+            {upcoming.length > 0 && (
               <TaskGroup
                 label={translateText(["table", "groupLabels", "upcoming"])}
                 tasks={upcoming}
