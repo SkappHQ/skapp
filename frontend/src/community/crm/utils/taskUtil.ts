@@ -5,11 +5,12 @@ import {
   PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
 import { isBefore, isToday, parseISO, startOfDay } from "date-fns";
+import { DateTime } from "luxon";
 import React, { ComponentType, ReactElement, createElement } from "react";
 
 import {
   convertDateToUTC,
-  formatISODateWithSuffix
+  formatDateTimeWithOrdinalIndicatorWithoutYear
 } from "~community/common/utils/dateTimeUtils";
 import { priorityOptions } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
@@ -26,7 +27,7 @@ export const getDueDateStatus = (
 ): TaskDueDateInfo | null => {
   if (!dueAt) return null;
 
-  const due = startOfDay(parseISO(convertDateToUTC(dueAt)));
+  const due = parseISO(convertDateToUTC(dueAt));
 
   if (!isCompleted && isBefore(due, startOfDay(new Date()))) {
     return { textKey: "dueDateOverdue", colorClass: "text-semantic-red-text" };
@@ -38,7 +39,9 @@ export const getDueDateStatus = (
 
   return {
     textKey: "dueDateDueOn",
-    dateValue: formatISODateWithSuffix(dueAt),
+    dateValue: formatDateTimeWithOrdinalIndicatorWithoutYear(
+      DateTime.fromJSDate(due)
+    ),
     colorClass: "text-secondary-text"
   };
 };
