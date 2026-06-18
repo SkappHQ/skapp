@@ -1,13 +1,13 @@
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
 import TaskRowContent from "./TaskRowContent";
 
 interface Props {
-  task: CrmTaskDetailType;
+  task: CrmTaskType;
   onRowClick?: () => void;
   isShowContact?: boolean;
   isCheckTaskVisible?: boolean;

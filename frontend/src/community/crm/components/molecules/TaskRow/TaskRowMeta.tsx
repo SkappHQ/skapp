@@ -1,11 +1,11 @@
 import { Avatar, PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
 import { getPriorityConfig } from "~community/crm/utils/taskUtil";
 
 interface Props {
-  task: CrmTaskDetailType;
+  task: CrmTaskType;
   applyCompletedStyle: boolean;
 }
 
