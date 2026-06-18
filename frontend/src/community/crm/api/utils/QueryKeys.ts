@@ -54,5 +54,9 @@ export const companyQueryKeys = {
 export const taskQueryKeys = {
   GET_TASK_DATA: ["get-task-data"],
   GET_OPEN_TASKS: ["get-open-tasks"],
-  GET_COMPLETED_TASKS: ["get-completed-tasks"]
+  GET_COMPLETED_TASKS: ["get-completed-tasks"],
+  GET_COMPLETED_TASKS_BY_SEARCH: (searchKeyword: string) => [
+    "get-completed-tasks",
+    searchKeyword
+  ]
 };

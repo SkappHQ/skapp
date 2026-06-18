@@ -8,6 +8,7 @@ import { ChangeEvent, FC, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
+import useInfiniteScroll from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompletedTasks } from "~community/crm/api/TaskApi";
 import {
@@ -30,7 +31,10 @@ const CompletedTasksTabContent: FC = () => {
   const {
     data: taskData,
     isLoading,
-    isError
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
   } = useGetCompletedTasks(debouncedSearch, DEFAULT_PAGE_SIZE);
 
   const emptyStateType = getEmptyStateType(debouncedSearch);
@@ -39,6 +43,12 @@ const CompletedTasksTabContent: FC = () => {
     () => taskData?.pages.flatMap((page) => page?.items ?? []) ?? [],
     [taskData]
   );
+
+  const scrollRef = useInfiniteScroll<HTMLDivElement>({
+    hasNextPage: hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage
+  });
 
   if (isLoading) {
     return <ProjectTableSkeletonLoader rowCount={10} />;
@@ -88,7 +98,10 @@ const CompletedTasksTabContent: FC = () => {
             icon={<SearchIcon />}
           />
         ) : (
-          <div className="flex flex-col h-full px-2 pb-4 gap-4 overflow-y-auto">
+          <div
+            ref={scrollRef}
+            className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto"
+          >
             <TaskGroup
               label={translateText(["table", "groupLabels", "upcoming"])}
               tasks={tasks}

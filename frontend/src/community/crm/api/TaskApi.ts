@@ -1,4 +1,9 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
@@ -83,13 +88,10 @@ const fetchCompletedTasks = async ({
   return response?.data?.results?.[0];
 };
 
-export const useGetCompletedTasks = (
-  searchKeyword: string,
-  size: number
-) => {
+export const useGetCompletedTasks = (searchKeyword: string, size: number) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: taskQueryKeys.GET_COMPLETED_TASKS,
+    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_SEARCH(searchKeyword),
     queryFn: ({ pageParam }) =>
       fetchCompletedTasks({
         page: pageParam,
