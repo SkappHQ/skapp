@@ -80,32 +80,31 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	}
 
 	@Override
-public ResponseEntityDto getAllAttendanceConfigs() {
-	log.info("getAllAttendanceConfigs: execution started");
-	List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
+	public ResponseEntityDto getAllAttendanceConfigs() {
+		log.info("getAllAttendanceConfigs: execution started");
+		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
-	if (userService.getCurrentUserRoles()
-			.contains(AuthUtil.withRolePrefix(Role.ATTENDANCE_ADMIN))) {
+		if (userService.getCurrentUserRoles().contains(AuthUtil.withRolePrefix(Role.ATTENDANCE_ADMIN))) {
 
-		AttendanceConfigRequestDto dto = getAttendanceConfigRequestDto(attendanceConfigs);
+			AttendanceConfigRequestDto dto = getAttendanceConfigRequestDto(attendanceConfigs);
+
+			log.info("getAllAttendanceConfigs: execution ended");
+			return new ResponseEntityDto(false, dto);
+		}
+
+		boolean isGeoFencingEnabled = attendanceConfigs.stream()
+			.filter(c -> c.getAttendanceConfigType() == AttendanceConfigType.GEO_FENCING_ENABLED)
+			.findFirst()
+			.map(c -> Boolean.parseBoolean(c.getAttendanceConfigValue()))
+			.orElse(false);
+
+		AttendanceConfigRequestDto attendanceConfigRequestDto = new AttendanceConfigRequestDto(null, null, null, null,
+				isGeoFencingEnabled);
 
 		log.info("getAllAttendanceConfigs: execution ended");
-		return new ResponseEntityDto(false, dto);
+
+		return new ResponseEntityDto(false, attendanceConfigRequestDto);
 	}
-
-	boolean isGeoFencingEnabled = attendanceConfigs.stream()
-		.filter(c -> c.getAttendanceConfigType() == AttendanceConfigType.GEO_FENCING_ENABLED)
-		.findFirst()
-		.map(c -> Boolean.parseBoolean(c.getAttendanceConfigValue()))
-		.orElse(false);
-
-	AttendanceConfigRequestDto attendanceConfigRequestDto =
-			new AttendanceConfigRequestDto(null, null, null, null, isGeoFencingEnabled);
-
-	log.info("getAllAttendanceConfigs: execution ended");
-
-	return new ResponseEntityDto(false, attendanceConfigRequestDto);
-}
 
 	private static AttendanceConfigRequestDto getAttendanceConfigRequestDto(List<AttendanceConfig> attendanceConfigs) {
 		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
