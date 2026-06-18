@@ -50,23 +50,56 @@ const CompletedTasksTabContent: FC = () => {
     fetchNextPage
   });
 
-  if (isLoading) {
-    return <ProjectTableSkeletonLoader rowCount={10} />;
-  }
+  const renderContent = () => {
+    if (isLoading) {
+      return <ProjectTableSkeletonLoader rowCount={10} />;
+    }
 
-  if (isError) {
+    if (isError) {
+      return (
+        <EmptyDataView
+          title={translateText(["table", "errorState", "title"])}
+          description={translateText(["table", "errorState", "description"])}
+          icon={<SearchIcon />}
+        />
+      );
+    }
+
+    if (tasks.length === 0) {
+      return (
+        <EmptyDataView
+          title={
+            emptyStateType === EmptyStateTypeEnum.NO_DATA
+              ? translateText(["table", "emptyDataState", "title"])
+              : translateText(["table", "emptySearchState", "title"])
+          }
+          description={
+            emptyStateType === EmptyStateTypeEnum.NO_DATA
+              ? translateText(["table", "emptyDataState", "description"])
+              : translateText(["table", "emptySearchState", "description"])
+          }
+          icon={<SearchIcon />}
+        />
+      );
+    }
+
     return (
-      <EmptyDataView
-        title={translateText(["table", "errorState", "title"])}
-        description={translateText(["table", "errorState", "description"])}
-        icon={<SearchIcon />}
-      />
+      <div
+        ref={scrollRef}
+        className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto"
+      >
+        <TaskGroup
+          label={translateText(["table", "groupLabels", "upcoming"])}
+          tasks={tasks}
+          isCheckTaskVisible={false}
+        />
+      </div>
     );
-  }
+  };
 
   return (
     <div className="flex flex-col h-full gap-4 overflow-hidden">
-      <div className="shrink-0">
+      <div className="p-1">
         <InputField
           ariaLabelClearButton={translateText([
             "table",
@@ -83,32 +116,7 @@ const CompletedTasksTabContent: FC = () => {
         />
       </div>
       <div className="flex flex-col flex-1 overflow-hidden">
-        {tasks.length === 0 ? (
-          <EmptyDataView
-            title={
-              emptyStateType === EmptyStateTypeEnum.NO_DATA
-                ? translateText(["table", "emptyDataState", "title"])
-                : translateText(["table", "emptySearchState", "title"])
-            }
-            description={
-              emptyStateType === EmptyStateTypeEnum.NO_DATA
-                ? translateText(["table", "emptyDataState", "description"])
-                : translateText(["table", "emptySearchState", "description"])
-            }
-            icon={<SearchIcon />}
-          />
-        ) : (
-          <div
-            ref={scrollRef}
-            className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto"
-          >
-            <TaskGroup
-              label={translateText(["table", "groupLabels", "upcoming"])}
-              tasks={tasks}
-              isCheckTaskVisible={false}
-            />
-          </div>
-        )}
+        {renderContent()}
       </div>
     </div>
   );
