@@ -168,9 +168,6 @@ public class Employee extends Auditable<String> {
 	@JoinColumn(name = "work_location_id")
 	private WorkLocation workLocation;
 
-	@OneToMany(mappedBy = "employee", fetch = FetchType.LAZY)
-	private List<EmployeeSkill> employeeSkills = new ArrayList<>();
-
 	public String getFullName() {
 		return firstName + " " + lastName;
 	}

@@ -1,7 +1,9 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.component.DefaultSkillLoader;
+import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.CustomSkill;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeSkill;
@@ -19,7 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,6 +40,7 @@ public class SkillServiceImpl implements SkillService {
 	@Override
 	@Transactional
 	public List<EmployeeSkill> saveEmployeeSkills(Employee employee, List<EmployeeSkillDto> skills) {
+		log.info("saveEmployeeSkills: execution started");
 		employeeSkillDao.deleteByEmployeeEmployeeId(employee.getEmployeeId());
 		employeeSkillDao.flush();
 
@@ -49,19 +55,21 @@ public class SkillServiceImpl implements SkillService {
 			employeeSkill.setEmployee(employee);
 
 			if (skillDto.getSkillType() == SkillType.DEFAULT) {
-				Optional<DefaultSkillLoader.DefaultSkill> defaultSkill = defaultSkillLoader
-					.findById(skillDto.getSkillId());
-				if (defaultSkill.isEmpty()) {
-					log.warn("Default skill not found with id: {}", skillDto.getSkillId());
-					continue;
-				}
-				employeeSkill.setSkillId(skillDto.getSkillId());
+				DefaultSkillLoader.DefaultSkill defaultSkill = defaultSkillLoader.findById(skillDto.getSkillId())
+					.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND));
+				employeeSkill.setSkillId(defaultSkill.id());
 				employeeSkill.setSkillType(SkillType.DEFAULT);
 			}
 			else if (skillDto.getSkillType() == SkillType.CUSTOM) {
+				if (skillDto.getName() == null || skillDto.getName().isBlank()) {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
+				}
 				CustomSkill customSkill = findOrCreateCustomSkill(skillDto.getName());
 				employeeSkill.setSkillId(customSkill.getId());
 				employeeSkill.setSkillType(SkillType.CUSTOM);
+			}
+			else {
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
 			}
 
 			employeeSkills.add(employeeSkill);
@@ -72,18 +80,30 @@ public class SkillServiceImpl implements SkillService {
 
 	@Override
 	public List<SkillResponseDto> getEmployeeSkillResponses(Long employeeId) {
+		log.info("getEmployeeSkillResponses: execution started");
 		List<EmployeeSkill> employeeSkills = employeeSkillDao.findByEmployeeEmployeeId(employeeId);
+
+		List<Long> customSkillIds = employeeSkills.stream()
+			.filter(es -> es.getSkillType() == SkillType.CUSTOM)
+			.map(EmployeeSkill::getSkillId)
+			.toList();
+
+		Map<Long, CustomSkill> customSkillMap = customSkillDao.findAllById(customSkillIds)
+			.stream()
+			.collect(Collectors.toMap(CustomSkill::getId, Function.identity()));
 
 		return employeeSkills.stream().map(es -> {
 			if (es.getSkillType() == SkillType.DEFAULT) {
-				Optional<DefaultSkillLoader.DefaultSkill> defaultSkill = defaultSkillLoader.findById(es.getSkillId());
-				String name = defaultSkill.map(DefaultSkillLoader.DefaultSkill::name).orElse("Unknown");
-				return new SkillResponseDto(es.getSkillId(), name, SkillType.DEFAULT);
+				DefaultSkillLoader.DefaultSkill defaultSkill = defaultSkillLoader.findById(es.getSkillId())
+					.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND));
+				return new SkillResponseDto(es.getSkillId(), defaultSkill.name(), SkillType.DEFAULT);
 			}
 			else {
-				Optional<CustomSkill> customSkill = customSkillDao.findById(es.getSkillId());
-				String name = customSkill.map(CustomSkill::getName).orElse("Unknown");
-				return new SkillResponseDto(es.getSkillId(), name, SkillType.CUSTOM);
+				CustomSkill customSkill = customSkillMap.get(es.getSkillId());
+				if (customSkill == null) {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
+				}
+				return new SkillResponseDto(es.getSkillId(), customSkill.getName(), SkillType.CUSTOM);
 			}
 		}).sorted(Comparator.comparing(SkillResponseDto::getName, String.CASE_INSENSITIVE_ORDER)).toList();
 	}
@@ -100,6 +120,7 @@ public class SkillServiceImpl implements SkillService {
 
 	@Override
 	public ResponseEntityDto getAllSkills() {
+		log.info("getAllSkills: execution started");
 		List<SkillResponseDto> customSkills = customSkillDao.findAll()
 			.stream()
 			.map(s -> new SkillResponseDto(s.getId(), s.getName(), SkillType.CUSTOM))

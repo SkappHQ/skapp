@@ -1,24 +1,21 @@
 package com.skapp.community.peopleplanner.component;
 
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 public class DefaultSkillLoader {
 
-	private List<DefaultSkill> defaultSkills = new ArrayList<>();
+	private Map<Long, DefaultSkill> defaultSkillsById = new HashMap<>();
 
 	@PostConstruct
 	public void init() {
@@ -33,22 +30,23 @@ public class DefaultSkillLoader {
 				Map<String, List<Map<String, Object>>> data = yaml.load(inputStream);
 				List<Map<String, Object>> skillsList = data.get("skills");
 				if (skillsList != null) {
-					defaultSkills = skillsList.stream()
-						.map(entry -> new DefaultSkill(((Number) entry.get("id")).longValue(),
-								(String) entry.get("name")))
-						.collect(Collectors.toList());
+					Map<Long, DefaultSkill> map = HashMap.newHashMap(skillsList.size());
+					for (Map<String, Object> entry : skillsList) {
+						Long id = ((Number) entry.get("id")).longValue();
+						String name = (String) entry.get("name");
+						map.put(id, new DefaultSkill(id, name));
+					}
+					defaultSkillsById = map;
 				}
 			}
-			log.info("Loaded default skills from skills.yml");
 		}
 		catch (Exception e) {
-			log.error("Failed to load default skills from skills.yml", e);
-			defaultSkills = Collections.emptyList();
+			defaultSkillsById = Collections.emptyMap();
 		}
 	}
 
 	public Optional<DefaultSkill> findById(Long id) {
-		return defaultSkills.stream().filter(skill -> skill.id().equals(id)).findFirst();
+		return Optional.ofNullable(defaultSkillsById.get(id));
 	}
 
 	public record DefaultSkill(Long id, String name) {

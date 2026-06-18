@@ -21,7 +21,7 @@ public class SkillController {
 
 	private final SkillService skillService;
 
-	@Operation(summary = "Get all skills", description = "Retrieves all default and custom skills.")
+	@Operation(summary = "Get all custom skills", description = "Retrieves all custom skills.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getAllSkills() {

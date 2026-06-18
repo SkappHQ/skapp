@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS `ppl_custom_skill`
     CONSTRAINT `PK_ppl_custom_skill` PRIMARY KEY (`id`)
 );
 
--- rollback DROP TABLE `ppl_custom_skill`;
+-- rollback DROP TABLE IF EXISTS `ppl_custom_skill`;

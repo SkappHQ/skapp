@@ -34,7 +34,7 @@ public class EmployeeSkill {
 
 	@Id
 	@Enumerated(EnumType.STRING)
-	@Column(name = "skill_type", nullable = false, columnDefinition = "text")
+	@Column(name = "skill_type", nullable = false)
 	private SkillType skillType;
 
 }
