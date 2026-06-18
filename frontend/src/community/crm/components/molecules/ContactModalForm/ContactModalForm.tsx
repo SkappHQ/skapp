@@ -16,8 +16,8 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
+import { useCrmStore } from "~community/crm/store/store";
 import {
-  CompanyLookup,
   CrmContactFormValues,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
@@ -26,7 +26,6 @@ import { addContactValidations } from "~community/crm/utils/contactValidations";
 export interface ContactFormProps {
   translateContactText: TranslatorFunctionType;
   initialValues: CrmContactFormValues;
-  initialCompany: CompanyLookup | null;
   initialOwner: CrmOwner | null;
   isPending: boolean;
   onSubmit: (values: CrmContactFormValues) => void;
@@ -36,17 +35,19 @@ export interface ContactFormProps {
 const ContactModalForm = ({
   translateContactText,
   initialValues,
-  initialCompany,
   initialOwner,
   isPending,
   onSubmit,
   onCancel
 }: ContactFormProps) => {
   const { isCrmSalesManager: canEditOwner } = useSessionData();
+  const { selectedContact } = useCrmStore((store) => ({
+    selectedContact: store.selectedContact
+  }));
 
   const [companySearchText, setCompanySearchText] = useState<string>("");
   const [selectedCompanyName, setSelectedCompanyName] = useState<string>(
-    initialCompany?.name ?? ""
+    selectedContact?.company?.name ?? ""
   );
 
   const debouncedCompanySearch = useDebounce(

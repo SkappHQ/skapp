@@ -92,7 +92,6 @@ const AddContactModalContent = () => {
     <ContactModalForm
       translateContactText={translateContactText}
       initialValues={initialValues}
-      initialCompany={null}
       initialOwner={initialOwner}
       isPending={isPending}
       onSubmit={createContact}

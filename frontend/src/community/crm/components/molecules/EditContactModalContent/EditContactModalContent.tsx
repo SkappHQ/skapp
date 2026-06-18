@@ -99,7 +99,6 @@ const EditContactModalContent = () => {
     <ContactModalForm
       translateContactText={translateContactText}
       initialValues={initialValues}
-      initialCompany={selectedContact?.company ?? null}
       initialOwner={selectedContact?.owner ?? null}
       isPending={isPending}
       onSubmit={submitEditContact}
