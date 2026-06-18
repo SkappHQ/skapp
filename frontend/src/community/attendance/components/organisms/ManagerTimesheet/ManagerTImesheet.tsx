@@ -26,8 +26,6 @@ const ManagerTimesheet = ({
   const { data: recordData, isLoading: isRecordLoading } =
     useGetManagerTimeRecords();
   const { data: workSummaryData } = useGetManagerWorkSummary();
-  const { data: exportRecordData, isPending: isExportRecordDataLoading } =
-    useGetManagerTimeRecords(true);
 
   const {
     approveTimesheetRequest,
@@ -44,11 +42,9 @@ const ManagerTimesheet = ({
     <>
       <TimesheetAnalytics
         recordData={recordData as TimeRecordDataResponseType}
-        exportRecordData={exportRecordData as TimeRecordDataResponseType}
         workSummaryData={workSummaryData}
         isManager={true}
         isRecordLoading={isRecordLoading}
-        isExportRecordDataLoading={isExportRecordDataLoading}
         isTeamSelectionAvailable={isTeamSelectionAvailable}
         selectedTeamName={selectedTeamName}
       />
