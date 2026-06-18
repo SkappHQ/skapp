@@ -103,6 +103,12 @@ export interface CrmOwnersResponseType {
   totalPages: number;
 }
 
+export interface CrmContactLookupResponseType {
+  items: CrmContactLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
 export interface CrmCompanyDomainSearchResponseType {
   companies: CrmCompanyType[];
 }
@@ -215,6 +221,16 @@ export interface CrmDealFilterParams {
   priority?: CrmPriorityEnum;
 }
 
+export interface CrmDealAddFormTypes {
+  name: string;
+  stageId: string;
+  contactId: string;
+  ownerId: string;
+  priority: CrmPriorityEnum;
+  amount: string;
+  description: string;
+}
+
 export interface CrmCreateDealPayload {
   name: string;
   stageId: number;
@@ -254,11 +270,6 @@ export interface CrmTaskCreatePayload {
   deal: string;
   owner: number | null;
   notes: string;
-}
-
-export interface UpdateTaskStatusPayload {
-  id: number;
-  isCompleted: boolean;
 }
 
 export interface DetailPanelTaskResponseType {

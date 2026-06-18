@@ -1,24 +1,22 @@
-import { Label } from "@rootcodelabs/skapp-ui";
 import { useMemo } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
+import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 import { priorityOptions } from "~community/crm/constants/taskConstants";
 
-const useGetPriorityOptions = () => {
-  const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
-
+const useGetPriorityOptions = (translateText: TranslatorFunctionType) => {
   return useMemo(
     () =>
       priorityOptions.map((option) => ({
         id: option.key,
         label: (
-          <Label
-            key={option.key}
-            backgroundColor={option.backgroundColor}
-            textColor={option.textColor}
-          >
-            {translateText(["priorityOptions", option.key])}
-          </Label>
+          <PriorityLabel
+            priority={option.value}
+            label={translateText([
+              "priorityOptions",
+              option.value.toLowerCase()
+            ])}
+          />
         ),
         value: option.value
       })),
