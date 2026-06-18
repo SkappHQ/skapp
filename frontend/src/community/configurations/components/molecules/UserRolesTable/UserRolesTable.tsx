@@ -46,6 +46,9 @@ const UserRolesTable = (): JSX.Element => {
           if (role?.module?.toUpperCase() === Modules.ATTENDANCE) {
             return user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE);
           }
+          if (role?.module?.toUpperCase() === Modules.CRM) {
+            return false;
+          }
 
           return true;
         })
@@ -57,7 +60,8 @@ const UserRolesTable = (): JSX.Element => {
             [Modules.LEAVE]: translateText(["leave"]),
             [Modules.ESIGN]: translateText(["eSignature"]),
             [Modules.INVOICE]: translateText(["invoice"]),
-            [Modules.PM]: translateText(["projectManagement"])
+            [Modules.PM]: translateText(["projectManagement"]),
+            // [Modules.CRM]: translateText(["crm"])
           };
 
           return {
@@ -112,6 +116,7 @@ const UserRolesTable = (): JSX.Element => {
             isEnabled: false
           }
         }}
+        isRowDisabled={(rowId: string) => rowId === Modules.CRM.toLowerCase()} // remove this once CRM module is ready in role restrictions
         tableBody={{
           onRowClick: (row) =>
             router.push(ROUTES.CONFIGURATIONS.USER_ROLES_MODULE(row.id))

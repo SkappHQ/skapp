@@ -57,7 +57,30 @@
       }
     },
     "contactDetailsPanel": {
-      "lastUpdated": "Last updated"
+      "lastUpdated": "Last updated",
+      "tasks": {
+        "addTaskButton": "Add task +",
+        "addTaskButtonEmptyView": "Add task",
+        "addTaskPlaceholder": "Type a task name…",
+        "emptyTitle": "No tasks",
+        "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
+        "toggleErrorTitle": "Failed to update task",
+        "toggleErrorDescription": "Could not update the task status. Please try again.",
+        "checkTaskMarkComplete": "Mark {{name}} as complete",
+        "checkTaskMarkIncomplete": "Mark {{name}} as incomplete",
+        "openTaskDetails": "Open task details panel for {{name}}",
+        "dueDateOverdue": "Overdue",
+        "dueDateToday": "Due today",
+        "dueDateDueOn": "Due on {{date}}"
+      },
+      "errors": {
+        "contactNotFoundTitle": "Contact not found",
+        "contactNotFoundDescription": "This contact is no longer available."
+      },
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals"
+      }
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
@@ -99,11 +122,11 @@
     "title": "Companies",
     "addCompanyBtn": "Add company",
     "addCompanyModal": {
-      "title": "Add Company",
+      "title": "Add company",
       "labels": {
         "name": "Company name",
         "contactNumber": "Contact no.",
-        "website": "Website",
+        "website": "Website URL",
         "address": "Address",
         "industry": "Industry"
       },
@@ -135,6 +158,12 @@
         "characterLength": "Entry must be less than 50 characters",
         "addressLength": "Address must be less than 100 characters",
         "industry": "Please select a valid industry"
+      },
+      "toastMessages": {
+        "successTitle": "Company added successfully",
+        "successDescription": "The company has been successfully added",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to add the company. Please try again"
       }
     },
     "industryOptions": {
@@ -188,11 +217,6 @@
         "accountValueAriaLabel": "Account Value"
       }
     },
-    "companyToastMessages": {
-      "successTitle": "Company added successfully",
-      "errorTitle": "Failed to add company",
-      "errorDescription": "Please try again or contact support"
-    },
     "companyDetailsSidePanel": {
       "sidePanelCompanyContacts": {
         "title": "Contacts",
@@ -211,11 +235,11 @@
       }
     },
     "editCompanyModal": {
-      "title": "Edit Company",
+      "title": "Edit company",
       "labels": {
         "name": "Company name",
         "contactNumber": "Contact no.",
-        "website": "Website",
+        "website": "Website URL",
         "address": "Address",
         "industry": "Industry"
       },
@@ -248,12 +272,13 @@
         "characterLength": "Entry must be less than 50 characters",
         "addressLength": "Address must be less than 100 characters",
         "industry": "Please select a valid industry"
+      },
+      "toastMessages": {
+        "successTitle": "Company updated successfully",
+        "successDescription": "The company has been successfully updated",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to edit the company. Please try again"
       }
-    },
-    "editCompanyToastMessages": {
-      "successTitle": "Company updated successfully",
-      "errorTitle": "Failed to update company",
-      "errorDescription": "Please try again or contact support"
     },
     "deleteCompanyModal": {
       "title": "Delete Company",
@@ -265,18 +290,23 @@
       "ariaLabels": {
         "confirm": "Confirm Delete Company",
         "cancel": "Cancel Delete Company"
+      },
+      "toastMessages": {
+        "successTitle": "Company deleted",
+        "successDescription": "{{companyName}} has been deleted and linked contacts have been unlinked.",
+        "errorTitle": "Failed to delete company",
+        "errorDescription": "Something went wrong. Please try again"
       }
-    },
-    "deleteCompanyToastMessages": {
-      "successTitle": "Company deleted",
-      "successDescription": "{{companyName}} has been deleted and linked contacts have been unlinked.",
-      "errorTitle": "Failed to delete company",
-      "errorDescription": "Something went wrong. Please try again"
     },
     "sidePanel": {
       "editCompany": "Edit company",
       "deleteCompany": "Delete company",
-      "kebabMenuAriaLabel": "Company actions"
+      "kebabMenuAriaLabel": "Company actions",
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals",
+        "contacts": "Contacts"
+      }
     }
   },
   "deals": {
@@ -286,7 +316,6 @@
     "detailsPageHead": "Deal Details | Skapp",
     "detailsTitle": "Deal Details",
     "sidePanel": {
-      "title": "Deals",
       "addDealBtn": "Add deal",
       "emptyTitle": "No deals",
       "emptyDescription": "No deals associated with this company",
@@ -309,12 +338,29 @@
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
       "infiniteScrollLoadingMessage": "Loading more deals..."
+    },
+    "deleteDealModal": {
+      "areYouSureModalTitle": "Are you sure?",
+      "description": "Are you sure you want to delete '{{dealName}}'? This will remove all tasks linked to this deal. This action cannot be undone.",
+      "buttons": {
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "ariaLabels": {
+        "cancel": "Cancel delete deal",
+        "confirm": "Confirm delete deal"
+      }
+    },
+    "sidePanel": {
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions"
     }
   },
   "tasks": {
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task",
+    "openTaskDetails": "Open task details panel for {{name}}",
     "addTaskModal": {
       "title": "Add task",
       "labels": {

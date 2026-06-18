@@ -13,12 +13,26 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
-  const { setIsAddContactModalOpen, setContactModalType } = useCrmStore(
-    (store) => ({
-      setIsAddContactModalOpen: store.setIsAddContactModalOpen,
-      setContactModalType: store.setContactModalType
-    })
-  );
+  const {
+    isCrmSidePanelOpen,
+    setIsCrmSidePanelOpen,
+    setSelectedContact,
+    setIsAddContactModalOpen,
+    setContactModalType,
+    selectedContact
+  } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    setSelectedContact: store.setSelectedContact,
+    setIsAddContactModalOpen: store.setIsAddContactModalOpen,
+    setContactModalType: store.setContactModalType,
+    selectedContact: store.selectedContact
+  }));
+
+  const handleCloseSidePanel = () => {
+    setIsCrmSidePanelOpen(false);
+    setSelectedContact(null);
+  };
 
   const onPrimaryButtonClick = () => {
     setIsAddContactModalOpen(true);
@@ -35,8 +49,13 @@ const Contacts: NextPage = () => {
       containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
+        {selectedContact && (
+          <ContactSidePanel
+            isOpen={isCrmSidePanelOpen}
+            onClose={handleCloseSidePanel}
+          />
+        )}
         <ContactModalController />
-        <ContactSidePanel />
         <ContactTable />
       </>
     </ContentLayout>

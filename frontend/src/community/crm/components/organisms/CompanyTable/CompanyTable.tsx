@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, FC, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -26,7 +26,7 @@ import {
   formatTasks
 } from "~community/crm/utils/tableHelpers";
 
-export const CompanyTable: React.FC = () => {
+export const CompanyTable: FC = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,13 +36,18 @@ export const CompanyTable: React.FC = () => {
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching
+  } = useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
-  const { setSelectedCompany, setIsCompanySidePanelOpen } = useCrmStore(
+  const { setSelectedCompany, setIsCrmSidePanelOpen } = useCrmStore(
     (store) => ({
       setSelectedCompany: store.setSelectedCompany,
-      setIsCompanySidePanelOpen: store.setIsCompanySidePanelOpen
+      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
     })
   );
 
@@ -170,7 +175,9 @@ export const CompanyTable: React.FC = () => {
         columns={columns as TableColumn<any>[]}
         data={companies ?? []}
         emptyStateType={emptyStateType}
-        isLoading={isLoading && companies?.length === 0}
+        isLoading={
+          isFetching && !isFetchingNextPage && (companies?.length ?? 0) === 0
+        }
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="34.5rem"
         hasMore={hasNextPage}
@@ -195,7 +202,7 @@ export const CompanyTable: React.FC = () => {
         }}
         onRowClick={(row) => {
           setSelectedCompany(row);
-          setIsCompanySidePanelOpen(true);
+          setIsCrmSidePanelOpen(true);
         }}
       />
     </div>

@@ -283,6 +283,24 @@ class LeaveTypeControllerIntegrationTest {
 		}
 
 		@Test
+		@DisplayName("Leave manager can query leave types for an employee they directly manage (employee_manager relationship, no supervised team)")
+		@Sql(statements = { "UPDATE employee_role SET leave_role = 'LEAVE_MANAGER' WHERE employee_id = 2",
+				"INSERT INTO employee_manager (id, employee_id, manager_id, is_direct_manager, manager_type) "
+						+ "VALUES (default, 3, 2, true, 'PRIMARY')" })
+		void getLeaveTypes_LeaveManagerQueryingDirectlyManagedEmployee_ReturnsOk() throws Exception {
+			SecurityTestUtils.setupSecurityContext(authorityService,
+					MockUserFactory.createLeaveManager("user2@gmail.com", 2L, 2L));
+			String authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+					2L);
+
+			performGetLeaveTypes(authToken, true, false, 3L).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_PATH, hasSize(1)))
+				.andExpect(jsonPath("$.results[0].name").value("Casual"));
+		}
+
+		@Test
 		@DisplayName("Returns 401 when no authentication token is provided")
 		void getLeaveTypes_NoAuth_ReturnsUnauthorized() throws Exception {
 			mvc.perform(get(ENDPOINT).accept(MediaType.APPLICATION_JSON))
