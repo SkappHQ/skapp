@@ -74,6 +74,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final UserService userService;
 
 	private final CrmOwnerResolverService crmOwnerResolver;
+
 	private final CrmTaskDao crmTaskDao;
 
 	private final MessageUtil messageUtil;
@@ -349,8 +350,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Transactional
 	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
 		log.info("editDeal: execution started");
-	public ResponseEntityDto deleteDeal(Long id) {
-		log.info("deleteDeal: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
@@ -415,6 +414,21 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("editDeal: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteDeal(Long id) {
+		log.info("deleteDeal: execution started");
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
+
 		List<CrmTask> linkedTasks = crmTaskDao.findByDeal_IdAndIsDeletedFalse(id);
 		linkedTasks.forEach(task -> task.setIsDeleted(true));
 		crmTaskDao.saveAll(linkedTasks);

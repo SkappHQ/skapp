@@ -61,6 +61,9 @@ public class CrmDealController {
 	public ResponseEntity<ResponseEntityDto> editDeal(@PathVariable Long id,
 			@RequestBody CrmDealEditRequestDto requestDto) {
 		ResponseEntityDto response = crmDealService.editDeal(id, requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Delete a deal by ID",
 			description = "Soft deletes a deal and all tasks linked to that deal. Only accessible by admins and sales managers.")
 	@DeleteMapping("/{id}")

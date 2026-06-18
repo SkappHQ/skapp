@@ -117,6 +117,7 @@ class CrmDealControllerIntegrationTest {
 		return performRequest(patch(BASE_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON));
+
 	private ResultActions performDeleteRequest(Long id) throws Exception {
 		return performRequest(delete(BASE_PATH + "/{id}", id).accept(MediaType.APPLICATION_JSON));
 	}

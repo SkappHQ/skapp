@@ -21,8 +21,7 @@ public class CrmOwnerResolverServiceImpl implements CrmOwnerResolverService {
 	public Employee resolveOwner(Long ownerId, User currentUser) {
 		Employee currentEmployee = currentUser.getEmployee();
 
-		if (CrmUtil.isCrmSalesRepresentative(currentUser)
-				&& !currentEmployee.getEmployeeId().equals(ownerId)) {
+		if (CrmUtil.isCrmSalesRepresentative(currentUser) && !currentEmployee.getEmployeeId().equals(ownerId)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED);
 		}
 
