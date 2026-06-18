@@ -13,7 +13,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetOpenTasks } from "~community/crm/api/TaskApi";
 import { TASK_SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/enums/common";
-import { getEmptyStateType } from "~community/crm/utils/commonHelpers";
+import { getEmptyStateType } from "~community/crm/utils/crmUtil";
 import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
 import TaskGroup from "../../atoms/TaskGroup/TaskGroup";
