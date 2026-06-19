@@ -13,4 +13,6 @@ public class CrmTaskFilterDto {
 
 	private Long dealId;
 
+	private Long companyId;
+
 }

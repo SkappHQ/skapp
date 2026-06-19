@@ -115,6 +115,11 @@ class CrmDealControllerIntegrationTest {
 		return performRequest(get(EXISTS_PATH).param("name", name).accept(MediaType.APPLICATION_JSON));
 	}
 
+	private ResultActions performGetDealsRequest(Long companyId) throws Exception {
+		return performRequest(
+				get(BASE_PATH).param("companyId", companyId.toString()).accept(MediaType.APPLICATION_JSON));
+	}
+
 	private CrmDealStage savedStage() {
 		CrmDealStage stage = new CrmDealStage();
 		stage.setName("Test Stage");
@@ -147,6 +152,37 @@ class CrmDealControllerIntegrationTest {
 		dto.setContactId(contactId);
 		dto.setOwnerId(1L);
 		return dto;
+	}
+
+	private CrmDeal savedDeal(String name, CrmDealStage stage, CrmCompany company) {
+		CrmDeal deal = new CrmDeal();
+		deal.setName(name);
+		deal.setStage(stage);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setContact(savedContact(company));
+		deal.setCompany(company);
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		return crmDealDao.save(deal);
+	}
+
+	// --- Get deals tests ---
+
+	@Test
+	@DisplayName("Get deals filtered by companyId - Returns only deals linked to that company")
+	void getDeals_FilterByCompanyId_ReturnsMatchingDeals() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Deal Filter Company");
+		CrmCompany otherCompany = savedCompany("Other Deal Filter Company");
+
+		savedDeal("Deal for company", stage, company);
+		savedDeal("Deal for other company", stage, otherCompany);
+
+		performGetDealsRequest(company.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Deal for company"));
 	}
 
 	// --- Check deal name exists tests ---

@@ -229,5 +229,14 @@
       "confirmButton": "Delete",
       "cancelButton": "Cancel"
     }
+  },
+  "crm": {
+    "dealsSection": {
+      "dealCompleteStateNote": "The following status defines the complete state of a deal."
+    },
+    "aria": {
+      "editStage": "Edit stage {{stageName}}",
+      "deleteStage": "Delete stage {{stageName}}"
+    }
   }
 }
