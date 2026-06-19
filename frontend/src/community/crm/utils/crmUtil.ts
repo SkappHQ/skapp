@@ -11,29 +11,21 @@ interface Id {
   id: number | string;
 }
 
-const toDropdownOption = <T>(
-  item: T,
-  getId: (item: T) => number | string,
-  getLabel: (item: T) => string
-): DropdownOption => ({
-  id: getId(item),
-  value: getId(item),
-  label: getLabel(item)
+type DropdownMappable = { id: number | string; label: string };
+
+const toDropdownOption = (item: DropdownMappable): DropdownOption => ({
+  id: item.id,
+  value: item.id,
+  label: item.label
 });
 
-export const toDropdownOptions = <T>(
-  items: T[],
-  getId: (item: T) => number | string,
-  getLabel: (item: T) => string
-): DropdownOption[] =>
-  items.map((item) => toDropdownOption(item, getId, getLabel));
+export const toDropdownOptions = (
+  items: DropdownMappable[]
+): DropdownOption[] => items.map(toDropdownOption);
 
-export const toSelectedDropdownOption = <T>(
-  item: T | null,
-  getId: (item: T) => number | string,
-  getLabel: (item: T) => string
-): DropdownOption | null =>
-  item ? toDropdownOption(item, getId, getLabel) : null;
+export const toSelectedDropdownOption = (
+  item: DropdownMappable | null
+): DropdownOption | null => (item ? toDropdownOption(item) : null);
 
 export const findById = <T>(
   items: T[],

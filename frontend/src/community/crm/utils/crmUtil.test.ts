@@ -17,12 +17,6 @@ interface TestUser {
   lastName: string;
 }
 
-const getId = (item: TestItem) => item.id;
-const getLabel = (item: TestItem) => item.name;
-
-const getUserId = (user: TestUser) => user.employeeId;
-const getUserLabel = (user: TestUser) => `${user.firstName} ${user.lastName}`;
-
 describe("formatValue", () => {
   it("should format numeric strings as currency", () => {
     expect(formatValue("1200")).toBe("$1200.00");
@@ -43,7 +37,7 @@ describe("toDropdownOptions", () => {
       { id: 3, name: "Item 3" }
     ];
 
-    const result = toDropdownOptions(items, getId, getLabel);
+    const result = toDropdownOptions(items.map((i) => ({ id: i.id, label: i.name })));
 
     expect(result).toEqual([
       { id: 1, value: 1, label: "Item 1" },
@@ -53,7 +47,7 @@ describe("toDropdownOptions", () => {
   });
 
   it("should return empty array for empty input", () => {
-    const result = toDropdownOptions([], getId, getLabel);
+    const result = toDropdownOptions([]);
 
     expect(result).toEqual([]);
   });
@@ -63,7 +57,9 @@ describe("toDropdownOptions", () => {
       { employeeId: 42, firstName: "John", lastName: "Doe" }
     ];
 
-    const result = toDropdownOptions(users, getUserId, getUserLabel);
+    const result = toDropdownOptions(
+      users.map((u) => ({ id: u.employeeId, label: `${u.firstName} ${u.lastName}` }))
+    );
 
     expect(result).toEqual([
       {
@@ -77,11 +73,7 @@ describe("toDropdownOptions", () => {
   it("should handle string ids", () => {
     const items = [{ id: "abc-123", name: "String ID Item" }];
 
-    const result = toDropdownOptions(
-      items,
-      (i) => i.id,
-      (i) => i.name
-    );
+    const result = toDropdownOptions(items.map((i) => ({ id: i.id, label: i.name })));
 
     expect(result).toEqual([
       {
@@ -97,7 +89,7 @@ describe("toSelectedDropdownOption", () => {
   it("should convert a non-null item to DropdownOption", () => {
     const item: TestItem = { id: 5, name: "Selected" };
 
-    const result = toSelectedDropdownOption(item, getId, getLabel);
+    const result = toSelectedDropdownOption({ id: item.id, label: item.name });
 
     expect(result).toEqual({
       id: 5,
@@ -107,7 +99,7 @@ describe("toSelectedDropdownOption", () => {
   });
 
   it("should return null for null input", () => {
-    const result = toSelectedDropdownOption(null, getId, getLabel);
+    const result = toSelectedDropdownOption(null);
 
     expect(result).toBeNull();
   });
