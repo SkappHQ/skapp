@@ -256,6 +256,11 @@ export interface CrmTaskCreatePayload {
   notes: string;
 }
 
+export interface UpdateTaskStatusPayload {
+  id: number;
+  isCompleted: boolean;
+}
+
 export interface DetailPanelTaskResponseType {
   id: number;
   name: string;
