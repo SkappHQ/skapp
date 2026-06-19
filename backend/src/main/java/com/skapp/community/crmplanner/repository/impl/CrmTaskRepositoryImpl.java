@@ -254,8 +254,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmTask> task = query.from(CrmTask.class);
 
-		query.select(cb.tuple(task.get(CrmTask_.deal).get(CrmDeal_.id).alias("dealId"),
-				cb.count(task.get(CrmTask_.id)).alias("cnt")));
+		query.select(cb.tuple(task.get(CrmTask_.deal).get(CrmDeal_.id), cb.count(task.get(CrmTask_.id))));
 		query.where(task.get(CrmTask_.deal).get(CrmDeal_.id).in(dealIds), cb.isFalse(task.get(CrmTask_.isDeleted)),
 				cb.isFalse(task.get(CrmTask_.isCompleted)));
 		query.groupBy(task.get(CrmTask_.deal).get(CrmDeal_.id));
@@ -263,7 +262,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		Map<Long, Long> counts = new HashMap<>();
 		entityManager.createQuery(query)
 			.getResultList()
-			.forEach(t -> counts.put(t.get("dealId", Long.class), t.get("cnt", Long.class)));
+			.forEach(t -> counts.put(t.get(0, Long.class), t.get(1, Long.class)));
 		return counts;
 	}
 

@@ -206,15 +206,14 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		addSearchKeywordPredicates(cb, deal, requestDto.getSearchKeyword(), predicates);
 
-		query.select(cb.tuple(deal.get(CrmDeal_.stage).get(CrmDealStage_.id).alias("stageId"),
-				cb.count(deal.get(CrmDeal_.id)).alias("cnt")));
+		query.select(cb.tuple(deal.get(CrmDeal_.stage).get(CrmDealStage_.id), cb.count(deal.get(CrmDeal_.id))));
 		query.where(predicates.toArray(new Predicate[0]));
 		query.groupBy(deal.get(CrmDeal_.stage).get(CrmDealStage_.id));
 
 		Map<Long, Long> counts = new HashMap<>();
 		entityManager.createQuery(query)
 			.getResultList()
-			.forEach(t -> counts.put(t.get("stageId", Long.class), t.get("cnt", Long.class)));
+			.forEach(t -> counts.put(t.get(0, Long.class), t.get(1, Long.class)));
 		return counts;
 	}
 

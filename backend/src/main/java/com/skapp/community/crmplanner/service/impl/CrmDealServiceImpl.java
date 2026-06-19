@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -189,23 +190,25 @@ public class CrmDealServiceImpl implements CrmDealService {
 		int limit = requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT;
 		Integer requestedPage = requestDto.getPage();
 		int page = (requestedPage != null && requestedPage >= 0 && uniqueStageIds.size() == 1) ? requestedPage : 0;
+		PageRequest pageRequest = PageRequest.of(page, limit);
 
 		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto);
 
-		List<Page<CrmDeal>> dealPages = new ArrayList<>();
+		Map<Long, Page<CrmDeal>> dealPagesByStage = new LinkedHashMap<>();
 		for (Long stageId : uniqueStageIds) {
 			long totalCount = stageCounts.getOrDefault(stageId, 0L);
-			PageRequest pageRequest = PageRequest.of(page, limit);
-			dealPages.add(crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount));
+			dealPagesByStage.put(stageId, crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount));
 		}
 
-		List<Long> allDealIds = dealPages.stream().flatMap(p -> p.getContent().stream()).map(CrmDeal::getId).toList();
+		List<Long> allDealIds = dealPagesByStage.values()
+			.stream()
+			.flatMap(p -> p.getContent().stream())
+			.map(CrmDeal::getId)
+			.toList();
 		Map<Long, Long> taskCountMap = crmTaskDao.countTasksByDealIds(allDealIds);
 
-		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
-		for (int i = 0; i < uniqueStageIds.size(); i++) {
-			Long stageId = uniqueStageIds.get(i);
-			Page<CrmDeal> dealsPage = dealPages.get(i);
+		List<CrmDealsByStageResponseDto> result = uniqueStageIds.stream().map(stageId -> {
+			Page<CrmDeal> dealsPage = dealPagesByStage.get(stageId);
 
 			List<CrmDealByStageItemResponseDto> deals = crmMapper
 				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
@@ -219,9 +222,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 			stageResult.setPageSize(dealsPage.getSize());
 			stageResult.setHasNextPage(dealsPage.hasNext());
 			stageResult.setDeals(deals);
-
-			result.add(stageResult);
-		}
+			return stageResult;
+		}).toList();
 
 		log.info("getDealsByStages: execution ended");
 		return new ResponseEntityDto(false, result);
