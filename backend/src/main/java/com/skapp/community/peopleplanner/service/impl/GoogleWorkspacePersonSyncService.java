@@ -403,12 +403,8 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         employee.setLastName(lastName);
         employee.setAccountStatus(suspended ? AccountStatus.DEACTIVATED : AccountStatus.ACTIVE);
         Employee savedEmployee = employeeDao.save(employee);
-
         rolesService.saveEmployeeRoles(savedEmployee);
 
-        if (isNew) {
-            peopleEmailService.sendUserInvitationEmail(savedUser);
-        }
 
         return isNew;
     }
@@ -469,22 +465,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             return;
         }
 
-        // ── Pre-flight: check SMTP config exists and is enabled ───────────────
-        // AsyncEmailSenderImpl reads EMAIL_CONFIGS from OrganizationConfig.
-        // If the row is missing or isEnabled=false every send fails silently.
-        // Configure SMTP via: POST /api/v1/org/email-server
-        Optional<OrganizationConfig> emailConfig = organizationConfigDao
-                .findOrganizationConfigByOrganizationConfigType(
-                        OrganizationConfigType.EMAIL_CONFIGS.name());
-
-        if (emailConfig.isEmpty()) {
-            log.error("sendInviteEmailsToNewUsers: SMTP server is not configured. " +
-                    "Invitation emails will NOT be sent. " +
-                    "Fix: POST /api/v1/org/email-server with your SMTP credentials, " +
-                    "then re-run the sync.");
-            return;
-        }
-
         log.info("sendInviteEmailsToNewUsers: sending invites to {} new user(s).",
                 newUserEmails.size());
 
@@ -492,19 +472,26 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             try {
                 userDao.findByEmail(email).ifPresentOrElse(
                         user -> {
-                            if (user.getEmployee() == null) {
-                                log.warn("sendInviteEmailsToNewUsers: skipping {} — " +
-                                        "employee record not linked.", email);
+
+                            Employee employee = employeeDao.findEmployeeByEmail(email);
+
+                            if (employee == null) {
+                                log.warn("Skipping {} — employee record not found.", email);
                                 return;
                             }
+
+                            // manually attach employee because entity mapping is unavailable
+                            user.setEmployee(employee);
+
                             peopleEmailService.sendUserInvitationEmail(user);
-                            log.info("sendInviteEmailsToNewUsers: invite sent to {}.", email);
+
+                            log.info("Invite sent to {}.", email);
                         },
-                        () -> log.warn("sendInviteEmailsToNewUsers: user not found for {}.", email)
+                        () -> log.warn("User not found for {}.", email)
                 );
+
             } catch (Exception e) {
-                log.error("sendInviteEmailsToNewUsers: failed to send invite to {}: {}",
-                        email, e.getMessage());
+                log.error("Failed to send invite to {}: {}", email, e.getMessage());
             }
         }
 
