@@ -71,6 +71,18 @@ export const useGetContactMetrics = (
   });
 };
 
+export const useGetSelectedContactById = (selectedContactId: number) => {
+  return useQuery({
+    queryKey: contactQueryKeys.GET_CONTACT_DATA,
+    queryFn: () => {
+      return useQueryClient()
+        .getQueriesData({ queryKey: contactQueryKeys.GET_CONTACT_DATA })
+        .flatMap(([, data]) => (data as CrmContactMetricsType[]) || [])
+        .find((contact) => contact.id === selectedContactId);
+    }
+  });
+};
+
 export const useGetCrmCompanies = (size: number) => {
   return useQuery({
     queryKey: companyQueryKeys.CRM_COMPANIES(size),
@@ -116,18 +128,15 @@ const editContact = async ({ id, ...payload }: EditContactPayload) => {
   return response?.data?.results?.[0];
 };
 
-export const useEditContact = (
-  onSuccess: (updatedData: CrmContactMetricsType) => void,
-  onError: () => void
-) => {
+export const useEditContact = (onSuccess: () => void, onError: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editContact,
-    onSuccess: (updatedData) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
       });
-      onSuccess(updatedData);
+      onSuccess();
     },
     onError
   });
