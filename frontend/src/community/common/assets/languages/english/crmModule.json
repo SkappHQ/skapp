@@ -354,6 +354,8 @@
     "title": "Tasks",
     "addTaskBtn": "Add Task",
     "openTaskDetails": "Open task details panel for {{name}}",
+    "checkTaskMarkComplete": "Mark as complete: {{name}}",
+    "checkTaskMarkIncomplete": "Mark as incomplete: {{name}}",
     "toggleErrorTitle": "Failed to update task",
     "toggleErrorDescription": "Could not update the task status. Please try again.",
     "addTaskModal": {
