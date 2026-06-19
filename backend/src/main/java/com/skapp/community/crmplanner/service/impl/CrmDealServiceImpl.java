@@ -68,8 +68,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
-	private final CrmTaskDao crmTaskDao;
-
 	private final CrmMapper crmMapper;
 
 	private final PageTransformer pageTransformer;
