@@ -191,7 +191,7 @@ export interface CrmTaskResponseType {
   tasks: CrmTaskDetailType[];
 }
 
-export interface CrmCompletedTaskResponseType{
+export interface CrmCompletedTaskResponseType {
   items: CrmTaskDetailType[];
   totalItems: number;
   currentPage: number;

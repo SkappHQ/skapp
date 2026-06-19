@@ -8,7 +8,7 @@ import { ChangeEvent, FC, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
-import useInfiniteScroll from "~community/common/hooks/useInfiniteScroll";
+import useInfiniteScroll from "~community/crm/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompletedTasks } from "~community/crm/api/TaskApi";
 import {
