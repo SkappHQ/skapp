@@ -48,8 +48,14 @@ const AddTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsTaskModalOpen } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen
+  const {
+    setIsTaskModalOpen,
+    preselectedContactName,
+    setPreselectedContactName
+  } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    preselectedContactName: store.preselectedContactName,
+    setPreselectedContactName: store.setPreselectedContactName
   }));
 
   const { data: currentUser } = useGetUserPersonalDetails();
@@ -63,7 +69,9 @@ const AddTaskModalContent: FC = () => {
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
-  const [selectedContactName, setSelectedContactName] = useState("");
+  const [selectedContactName, setSelectedContactName] = useState(
+    preselectedContactName ?? ""
+  );
   const [dealSearchText, setDealSearchText] = useState("");
   const [selectedDealName, setSelectedDealName] = useState("");
 
@@ -135,6 +143,7 @@ const AddTaskModalContent: FC = () => {
     setSelectedContactName("");
     setDealSearchText("");
     setSelectedDealName("");
+    setPreselectedContactName(null);
   };
 
   const handleSuccess = () => {

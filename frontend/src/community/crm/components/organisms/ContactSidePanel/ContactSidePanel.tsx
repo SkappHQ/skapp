@@ -12,6 +12,7 @@ import { useGetContactById } from "~community/crm/api/ContactApi";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 
@@ -68,8 +69,12 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       case SidePanelTabEnum.DEALS:
         return <SidePanelDealSection deals={contact?.deals ?? []} />;
       case SidePanelTabEnum.TASKS:
-        // TODO: Implement SidePanelTaskSection here
-        return null;
+        return (
+          <SidePanelTasksSection
+            tasks={contact?.tasks ?? []}
+            preselectedContactName={contact?.name}
+          />
+        );
       default:
         return null;
     }

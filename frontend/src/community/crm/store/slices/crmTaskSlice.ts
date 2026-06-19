@@ -5,10 +5,13 @@ import { CrmTaskSliceTypes } from "~community/crm/types/SliceTypes";
 const CrmTaskSlice = (set: SetType<CrmTaskSliceTypes>) => ({
   isTaskModalOpen: false,
   taskModalType: CrmModalTypes.ADD_TASK_MODAL,
+  preselectedContactName: null,
   setIsTaskModalOpen: (isTaskModalOpen: boolean) =>
     set({ isTaskModalOpen: isTaskModalOpen }),
   setTaskModalType: (taskModalType: CrmModalTypes) =>
-    set({ taskModalType: taskModalType })
+    set({ taskModalType: taskModalType }),
+  setPreselectedContactName: (name: string | null) =>
+    set({ preselectedContactName: name })
 });
 
 export default CrmTaskSlice;

@@ -26,6 +26,8 @@ export interface CrmTaskSliceTypes extends Pick<
   | "setIsTaskModalOpen"
   | "taskModalType"
   | "setTaskModalType"
+  | "preselectedContactName"
+  | "setPreselectedContactName"
 > {}
 
 export interface CrmSidePanelSliceTypes extends Pick<
