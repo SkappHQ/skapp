@@ -8,7 +8,7 @@ import { ChangeEvent, FC, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
-import useInfiniteScroll from "~community/crm/hooks/useInfiniteScroll";
+import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompletedTasks } from "~community/crm/api/TaskApi";
 import {
@@ -37,18 +37,18 @@ const CompletedTasksTabContent: FC = () => {
     isFetchingNextPage
   } = useGetCompletedTasks(debouncedSearch, DEFAULT_PAGE_SIZE);
 
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: fetchNextPage
+  });
+
   const emptyStateType = getEmptyStateType(debouncedSearch);
 
   const tasks = useMemo(
     () => taskData?.pages.flatMap((page) => page?.items ?? []) ?? [],
     [taskData]
   );
-
-  const scrollRef = useInfiniteScroll<HTMLDivElement>({
-    hasNextPage: hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage
-  });
 
   const renderContent = () => {
     if (isLoading) {
@@ -84,14 +84,9 @@ const CompletedTasksTabContent: FC = () => {
     }
 
     return (
-      <div
-        ref={scrollRef}
-        className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto"
-      >
-        <TaskGroup
-          tasks={tasks}
-          isCheckTaskVisible={false}
-        />
+      <div className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto">
+        <TaskGroup tasks={tasks} isCheckTaskVisible={false} />
+        <div ref={loadingRef} />
       </div>
     );
   };

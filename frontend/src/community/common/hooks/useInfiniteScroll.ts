@@ -1,41 +1,46 @@
-import { RefObject, useCallback, useEffect, useRef } from "react";
-import { DEFAULT_SCROLL_THRESHOLD } from "~community/crm/constants/taskConstants";
+'use client';
+import { useCallback, useRef, useEffect } from 'react';
 
 interface UseInfiniteScrollOptions {
   hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-  fetchNextPage: () => void;
+  isLoading: boolean;
+  onLoadMore: () => void;
   threshold?: number;
+  rootMargin?: string;
 }
 
-const useInfiniteScroll = <T extends HTMLElement>({
+export const useInfiniteScroll = ({
   hasNextPage,
-  isFetchingNextPage,
-  fetchNextPage,
-  threshold = DEFAULT_SCROLL_THRESHOLD
-}: UseInfiniteScrollOptions): RefObject<T> => {
-  const ref = useRef<T>(null);
+  isLoading,
+  onLoadMore,
+  threshold = 1.0,
+  rootMargin,
+}: UseInfiniteScrollOptions) => {
+  const loadingRef = useRef<HTMLDivElement>(null);
 
-  const handleScroll = useCallback(() => {
-    const element = ref.current;
-    if (!element || !hasNextPage || isFetchingNextPage) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = element;
-    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
-    if (scrollPercentage > threshold) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, threshold]);
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [target] = entries;
+      if (target.isIntersecting && hasNextPage && !isLoading) {
+        onLoadMore();
+      }
+    },
+    [hasNextPage, isLoading, onLoadMore],
+  );
 
   useEffect(() => {
-    const element = ref.current;
+    const element = loadingRef.current;
     if (!element) return;
 
-    element.addEventListener("scroll", handleScroll);
-    return () => element.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
+    const observer = new IntersectionObserver(handleObserver, {
+      threshold,
+      rootMargin,
+    });
 
-  return ref;
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [handleObserver, threshold, rootMargin]);
+
+  return { loadingRef };
 };
-
-export default useInfiniteScroll;
