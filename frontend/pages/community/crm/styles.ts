@@ -1,10 +1,7 @@
-import { CSSProperties } from "react";
-
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 
-const styles: Record<string, CSSProperties> = {
+const styles = {
   sidePanelWrapper: {
-    position: "relative",
     zIndex: ZIndexEnums.CRM_SIDE_PANEL
   }
 };
