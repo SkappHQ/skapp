@@ -56,5 +56,6 @@ export const companyQueryKeys = {
 };
 
 export const taskQueryKeys = {
-  GET_TASK_DATA: ["get-task-data"]
+  GET_TASK_DATA: ["get-task-data"],
+  GET_OPEN_TASKS: ["get-open-tasks"]
 };

@@ -189,6 +189,31 @@ export interface CrmTaskType {
   isDeleted: boolean;
 }
 
+export interface CrmDealLookup {
+  id: number;
+  name: string;
+}
+
+export interface CrmTaskResponseType {
+  tasks: CrmTaskDetailType[];
+}
+
+export interface CrmTaskDetailType {
+  id: number;
+  name: string;
+  typeId: number;
+  typeName: string;
+  priority: CrmPriorityEnum;
+  isCompleted: boolean;
+  dueAt: string | null;
+  notes: string | null;
+  contactId: number | null;
+  ownerName: string;
+  owner: CrmOwner;
+  contact: CrmContactLookup | null;
+  deal: CrmDealLookup | null;
+}
+
 export interface CrmTaskCategory {
   id: number;
   name: string;

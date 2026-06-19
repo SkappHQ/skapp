@@ -438,7 +438,7 @@
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
-      "search": "Search task",
+      "search": "Search tasks",
       "infiniteScrollLoadingMessage": "Loading tasks...",
       "emptyDataState": {
         "title": "No tasks",
@@ -447,6 +447,16 @@
       "emptySearchState": {
         "title": "No results found.",
         "description": "We couldn't find any matches for your search. Please try using a different term."
+      },
+      "errorState": {
+        "title": "Something went wrong",
+        "description": "Failed to load tasks. Please try again."
+      },
+      "groupLabels": {
+        "overdue": "Overdue",
+        "dueToday": "Today",
+        "dueTomorrow": "Tomorrow",
+        "upcoming": "Upcoming"
       }
     }
   }

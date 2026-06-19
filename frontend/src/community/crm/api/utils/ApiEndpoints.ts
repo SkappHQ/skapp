@@ -16,9 +16,10 @@ export const contactEndpoints = {
 };
 
 export const taskEndpoints = {
+  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
+  GET_OPEN_TASKS: `${moduleAPIPath.CRM}/task`,
   CREATE_TASK: `${moduleAPIPath.CRM}/task`,
   GET_TASKS: `${moduleAPIPath.CRM}/task`,
-  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
 export const companyEndpoints = {
