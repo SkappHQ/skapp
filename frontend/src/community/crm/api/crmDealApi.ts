@@ -21,11 +21,13 @@ import { crmDealQueryKeys } from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
-  params: CrmDealFilterParams
+  params: CrmDealFilterParams,
+  enabled: boolean = true
 ): UseInfiniteQueryResult<CrmDealPaginatedResponse> => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: crmDealQueryKeys.GET_DEALS(params),
+    enabled,
     queryFn: async ({ pageParam = 0 }) => {
       const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
         params: {

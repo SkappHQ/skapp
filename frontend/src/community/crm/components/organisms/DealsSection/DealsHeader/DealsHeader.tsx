@@ -19,11 +19,6 @@ interface Props {
   onViewChange: (view: DealView) => void;
 }
 
-const VIEW_OPTIONS = [
-  { value: DealViewEnum.LIST, icon: <ListViewIcon />, ariaLabel: "List view" },
-  { value: DealViewEnum.KANBAN, icon: <BoardIcon />, ariaLabel: "Kanban view" }
-];
-
 const DealsHeader: FC<Props> = ({
   inputValue,
   onSearchChange,
@@ -31,6 +26,19 @@ const DealsHeader: FC<Props> = ({
   onViewChange
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
+
+  const viewOptions = [
+    {
+      value: DealViewEnum.LIST,
+      icon: <ListViewIcon />,
+      ariaLabel: translateText(["listViewAriaLabel"])
+    },
+    {
+      value: DealViewEnum.KANBAN,
+      icon: <BoardIcon />,
+      ariaLabel: translateText(["kanbanViewAriaLabel"])
+    }
+  ];
 
   return (
     <div className="flex items-center justify-between gap-4">
@@ -46,13 +54,13 @@ const DealsHeader: FC<Props> = ({
         className="w-103 h-12"
       />
       <ViewToggle
-        options={VIEW_OPTIONS}
+        options={viewOptions}
         activeView={activeView}
         onChange={(v) => {
-          const opt = VIEW_OPTIONS.find((o) => o.value === v);
+          const opt = viewOptions.find((o) => o.value === v);
           if (opt) onViewChange(opt.value);
         }}
-        ariaLabel="Switch deal view"
+        ariaLabel={translateText(["switchDealViewAriaLabel"])}
       />
     </div>
   );

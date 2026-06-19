@@ -1,11 +1,13 @@
-﻿import { useDroppable } from "@dnd-kit/core";
+import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import React, { useEffect, useRef } from "react";
+import { FC, useEffect, useRef } from "react";
+
+import { useTranslator } from "~community/common/hooks/useTranslator";
 
 import type {
   DealCardOwner,
@@ -19,7 +21,7 @@ export interface DealStageLaneDeal {
   title: string;
   contactName?: string;
   company: string;
-  owner?:   DealCardOwner;
+  owner?: DealCardOwner;
   formattedValue: string;
   priority: DealPriority;
   taskCount?: number;
@@ -52,7 +54,7 @@ interface SortableItemProps {
   onDealClick?: (dealId: string) => void;
 }
 
-const SortableItem: React.FC<SortableItemProps> = ({ deal, onDealClick }) => {
+const SortableItem: FC<SortableItemProps> = ({ deal, onDealClick }) => {
   const {
     attributes,
     listeners,
@@ -90,7 +92,7 @@ const SortableItem: React.FC<SortableItemProps> = ({ deal, onDealClick }) => {
   );
 };
 
-const DealStageLane: React.FC<DealStageLaneProps> = ({
+const DealStageLane: FC<DealStageLaneProps> = ({
   stage,
   deals,
   isLoading = false,
@@ -101,6 +103,8 @@ const DealStageLane: React.FC<DealStageLaneProps> = ({
   onAddDeal,
   onLoadMore
 }) => {
+  const translateText = useTranslator("crmModule", "deals", "kanban");
+
   const { setNodeRef } = useDroppable({
     id: `stage::${stage.id}`,
     data: { type: "stage", stageId: stage.id }
@@ -188,7 +192,7 @@ const DealStageLane: React.FC<DealStageLaneProps> = ({
                 onClick={() => onAddDeal(stage.id)}
                 className="body3 w-full rounded-lg px-4 py-2 text-center font-medium text-zinc-500 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                Add deal +
+                {translateText(["addDealBtn"])}
               </button>
             ) : (
               <>
@@ -210,7 +214,7 @@ const DealStageLane: React.FC<DealStageLaneProps> = ({
                     onClick={() => onAddDeal(stage.id)}
                     className="body3 mt-1 w-full rounded-lg px-4 py-2 text-center font-medium text-zinc-500 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    Add deal +
+                    {translateText(["addDealBtn"])}
                   </button>
                 )}
               </>

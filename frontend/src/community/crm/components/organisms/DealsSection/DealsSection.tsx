@@ -18,13 +18,18 @@ const DealsSection: FC = () => {
   const [activeView, setActiveView] = useState<DealView>(DealViewEnum.LIST);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
 
+  const isListView = activeView === DealViewEnum.LIST;
+
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
-    useGetDealsInfinite({
-      size: DEAL_PAGE_SIZE,
-      sortKey: CrmDealSortEnum.STAGE_ORDER,
-      sortOrder: SortOrderTypes.ASC,
-      searchKeyword: debouncedSearch
-    });
+    useGetDealsInfinite(
+      {
+        size: DEAL_PAGE_SIZE,
+        sortKey: CrmDealSortEnum.STAGE_ORDER,
+        sortOrder: SortOrderTypes.ASC,
+        searchKeyword: debouncedSearch
+      },
+      isListView
+    );
 
   const allDeals = useMemo(
     () => data?.pages.flatMap((p) => p?.items ?? []),
@@ -54,7 +59,7 @@ const DealsSection: FC = () => {
           onLoadMore={loadMore}
         />
       ) : (
-        <DealsKanbanBoard />
+        <DealsKanbanBoard searchKeyword={debouncedSearch} />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-﻿import {
+import {
   DndContext,
   DragEndEvent,
   DragOverEvent,
@@ -11,7 +11,7 @@
   useSensors
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import React, { useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane, {
@@ -84,7 +84,7 @@ const MOCK_OWNER = {
   authPic: null
 };
 
-// moock deals grouped by stage (replace with api)
+// mock deals grouped by stage (replace with api)
 const MOCK_DEALS: Record<number, BoardDealItem[]> = {
   1: [
     {
@@ -196,8 +196,9 @@ const buildInitialStageState = (
     ])
   );
 
-const DealsKanbanBoard: React.FC = () => {
-  const searchKeyword = "";
+const DealsKanbanBoard: FC<{ searchKeyword?: string }> = ({
+  searchKeyword = ""
+}) => {
 
   // Replace mock data
   const stages: CrmDealStageType[] = MOCK_STAGES;
@@ -242,6 +243,7 @@ const DealsKanbanBoard: React.FC = () => {
     const stageId = Number(stageIdStr);
     const s = stageMapRef.current[stageId];
     if (!s || s.isLoadingMore) return;
+    const nextPage = s.page + 1;
     setStageMap((prev) => ({
       ...prev,
       [stageId]: { ...prev[stageId], isLoadingMore: true }
@@ -249,9 +251,14 @@ const DealsKanbanBoard: React.FC = () => {
     loadMore({
       stageIds: [stageId],
       searchKeyword: searchKeyword || undefined,
-      page: s.page + 1,
+      page: nextPage,
       limit: PAGE_LIMIT
     });
+    // Reset loading state and advance page (until real API is wired)
+    setStageMap((prev) => ({
+      ...prev,
+      [stageId]: { ...prev[stageId], isLoadingMore: false, page: nextPage }
+    }));
   };
 
   const handleDragStart = ({ active }: DragStartEvent) => {
