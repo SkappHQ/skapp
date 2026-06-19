@@ -15,7 +15,7 @@ const Deals: NextPage = () => {
       primaryButtonText={translateText(["addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
     >
-      {/*Add z index to  the sidpanel wrapper here once sidepanle is implemented.*/}
+      {/*Add z index to  the sidpanel wrapper here once side panel is implemented.*/}
       <DealsSection />
     </ContentLayout>
   );

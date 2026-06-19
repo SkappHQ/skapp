@@ -30,7 +30,7 @@ const Tasks: NextPage = () => {
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <>
-        {/*Add z index to  the sidpanel wrapper here once sidepanle is implemented.*/}
+        {/*Add z index to  the sidpanel wrapper here once side panel is implemented.*/}
         <TaskModalController />
         <TasksTable />
       </>
