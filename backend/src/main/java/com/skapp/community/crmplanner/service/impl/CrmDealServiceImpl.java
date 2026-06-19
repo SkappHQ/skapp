@@ -199,10 +199,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			dealPages.add(crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount));
 		}
 
-		List<Long> allDealIds = dealPages.stream()
-			.flatMap(p -> p.getContent().stream())
-			.map(CrmDeal::getId)
-			.toList();
+		List<Long> allDealIds = dealPages.stream().flatMap(p -> p.getContent().stream()).map(CrmDeal::getId).toList();
 		Map<Long, Long> taskCountMap = crmTaskDao.countTasksByDealIds(allDealIds);
 
 		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
@@ -210,8 +207,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 			Long stageId = uniqueStageIds.get(i);
 			Page<CrmDeal> dealsPage = dealPages.get(i);
 
-			List<CrmDealByStageItemResponseDto> deals =
-				crmMapper.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
+			List<CrmDealByStageItemResponseDto> deals = crmMapper
+				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
 			deals.forEach(deal -> deal.setTaskCount(taskCountMap.getOrDefault(deal.getId(), 0L)));
 
 			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
