@@ -22,8 +22,6 @@ import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestD
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealByIdResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
@@ -328,7 +326,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		log.info("getDealById: execution ended", id);
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealByIdResponseDto(deal));
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealViewResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {

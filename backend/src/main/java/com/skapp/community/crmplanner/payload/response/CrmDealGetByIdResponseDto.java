@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CrmDealByIdResponseDto {
+public class CrmDealViewResponseDto {
 
 	private Long id;
 
@@ -14,7 +14,7 @@ public class CrmDealByIdResponseDto {
 
 	private String amount;
 
-	private CrmDealStageResponseDto stage;
+	private Long stageId;
 
 	private String description;
 
