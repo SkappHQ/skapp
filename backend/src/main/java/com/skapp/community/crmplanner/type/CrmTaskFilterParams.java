@@ -17,4 +17,6 @@ public class CrmTaskFilterParams {
 
 	private final Long dealId;
 
+	private final Long companyId;
+
 }
