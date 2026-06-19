@@ -73,3 +73,28 @@ export const useCreateDeal = (
     onError
   });
 };
+
+const fetchDealLookup = async (
+  searchKeyword: string,
+  size: number
+): Promise<CrmDealPaginatedResponse> => {
+  const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
+    params: {
+      size,
+      searchKeyword
+    }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealLookup = (
+  searchKeyword: string,
+  size: number,
+  enabled: boolean = true
+): UseQueryResult<CrmDealPaginatedResponse> => {
+  return useQuery({
+    queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword),
+    queryFn: () => fetchDealLookup(searchKeyword, size),
+    enabled
+  });
+};
