@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CrmTaskRepository {
 
@@ -16,7 +17,7 @@ public interface CrmTaskRepository {
 
 	List<CrmTask> findTasks(Long ownerId, CrmTaskFilterDto filterDto);
 
-	CrmTask findByIdWithAssociations(Long id);
+	Optional<CrmTask> findByIdWithAssociations(Long id);
 
 	List<CrmTask> findByContactIdWithAssociations(Long contactId);
 

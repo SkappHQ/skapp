@@ -34,6 +34,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -150,7 +151,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public CrmTask findByIdWithAssociations(Long id) {
+	public Optional<CrmTask> findByIdWithAssociations(Long id) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
@@ -158,19 +159,11 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		task.fetch(CrmTask_.type, JoinType.INNER);
 		task.fetch(CrmTask_.owner, JoinType.INNER);
 		task.fetch(CrmTask_.contact, JoinType.LEFT);
-		task.fetch(CrmTask_.company, JoinType.LEFT);
 		task.fetch(CrmTask_.deal, JoinType.LEFT);
 
-		query.select(task)
-			.distinct(true)
-			.where(cb.equal(task.get(CrmTask_.id), id), cb.isFalse(task.get(CrmTask_.isDeleted)));
+		query.select(task).where(cb.equal(task.get(CrmTask_.id), id), cb.isFalse(task.get(CrmTask_.isDeleted)));
 
-		List<CrmTask> tasks = entityManager.createQuery(query).setMaxResults(1).getResultList();
-		if (tasks.isEmpty()) {
-			return null;
-		}
-
-		return tasks.get(0);
+		return entityManager.createQuery(query).getResultList().stream().findFirst();
 	}
 
 	@Override

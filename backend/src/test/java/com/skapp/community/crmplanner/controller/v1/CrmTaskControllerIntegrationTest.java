@@ -350,6 +350,29 @@ class CrmTaskControllerIntegrationTest {
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
 	}
 
+	@Test
+	@DisplayName("Sales rep getting own task - Returns OK")
+	void getTaskById_RepGettingOwnTask_ReturnsOk() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		CrmTask task = new CrmTask();
+		task.setName("Rep Task");
+		task.setType(crmTaskTypeDao.getReferenceById(taskTypeId));
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setContact(crmContactDao.getReferenceById(contactId));
+		task.setOwner(employeeDao.getReferenceById(2L));
+		task = crmTaskDao.save(task);
+
+		performGetByIdRequest(task.getId(), repToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(task.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Rep Task"));
+	}
+
 	// --- GET completed tasks helpers and tests ---
 
 	private ResultActions performGetCompletedRequest(String token, String page, String size) throws Exception {

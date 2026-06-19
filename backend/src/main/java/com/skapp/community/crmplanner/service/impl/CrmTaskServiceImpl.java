@@ -86,10 +86,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	public ResponseEntityDto getTaskById(Long id) {
 		log.info("getTaskById: execution started");
 
-		CrmTask task = crmTaskDao.findByIdWithAssociations(id);
-		if (task == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
-		}
+		CrmTask task = crmTaskDao.findByIdWithAssociations(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
 		if (CrmUtil.isCrmSalesRepresentative(currentUser)
@@ -97,10 +95,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
 		}
 
-		CrmTaskResponseDto responseDto = crmMapper.crmTaskToCrmTaskResponseDto(task);
-
-		log.info("getTaskById: execution ended with taskId={}", id);
-		return new ResponseEntityDto(false, responseDto);
+		log.info("getTaskById: execution");
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(task));
 	}
 
 	@Override
