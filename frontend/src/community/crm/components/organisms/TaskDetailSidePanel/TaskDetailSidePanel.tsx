@@ -46,6 +46,15 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsTaskModalOpen(true);
   };
 
+  const handleMarkAsDone = () => {
+    if (!selectedTask || selectedTask.isCompleted) return;
+
+    setSelectedTask({
+      ...selectedTask,
+      isCompleted: true
+    });
+  };
+
   if (!selectedTask) return null;
 
   const taskIcon = getTaskTypeIcon(selectedTask.type?.name ?? "Other");
@@ -163,7 +172,7 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="w-[295px] shrink-0">
-          <SidePanelTaskInfo task={selectedTask} />
+          <SidePanelTaskInfo task={selectedTask} onMarkAsDone={handleMarkAsDone} />
         </div>
       </div>
     </SidePanel>
