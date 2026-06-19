@@ -1,10 +1,7 @@
 import { CheckTask } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
-import { useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 interface Props {
