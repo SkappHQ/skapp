@@ -42,30 +42,44 @@ public interface ExternalPersonSyncService {
     // (Google Workspace today, Microsoft Teams etc. later) since they all
     // need to surface sync outcomes the same way.
     // -------------------------------------------------------------------------
-    default void notifySuperAdmins(EmployeeRoleDao employeeRoleDao, PushNotificationService pushNotificationService,
-                                    String title, String message) {
+    default void notifySuperAdmins(EmployeeRoleDao employeeRoleDao,
+                                   PushNotificationService pushNotificationService,
+                                   String title,
+                                   String message) {
+
         List<EmployeeRole> superAdminRoles = employeeRoleDao.findByIsSuperAdminTrue();
 
         for (EmployeeRole employeeRole : superAdminRoles) {
-            Employee employee = employeeRole.getEmployee();
-            if (employee == null || employee.getUser() == null) {
-                continue;
-            }
-
-            Notification notification = new Notification();
-            notification.setEmployee(employee);
-            notification.setBody(message);
-            notification.setNotificationType(NotificationType.EXTERNAL_SYNC_COMPLETED);
-
             try {
-                pushNotificationService.sendNotification(employee.getUser().getUserId(), notification, title);
+                Employee employee = employeeRole.getEmployee();
+
+                if (employee == null) {
+                    continue;
+                }
+
+                // Force Hibernate proxy initialization while object is available
+                employee.getEmployeeId();
+
+                if (employee.getUser() == null) {
+                    continue;
+                }
+
+                Long userId = employee.getUser().getUserId();
+
+                Notification notification = new Notification();
+                notification.setEmployee(employee);
+                notification.setBody(message);
+                notification.setNotificationType(NotificationType.EXTERNAL_SYNC_COMPLETED);
+
+                pushNotificationService.sendNotification(userId, notification, title);
+
             }
             catch (Exception e) {
-                log.error("notifySuperAdmins: failed to notify {}: {}", employee.getUser().getUserId(), e.getMessage());
+                log.error("notifySuperAdmins: failed to notify super admin: {}",
+                        e.getMessage());
             }
         }
     }
-
     default String buildEmailBody(int synced, int failed,
                                   List<String> failures, String fatalError) {
         StringBuilder body = new StringBuilder();
