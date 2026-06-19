@@ -43,17 +43,17 @@ const DraggableDealStageCard = ({
       style={style}
       className="w-full flex flex-row justify-between"
     >
-      {!isTerminalStage ? (
-        <div
+      {isTerminalStage ? (
+        <div className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
+      ) : (
+        <button
           {...listeners}
           {...attributes}
           className="cursor-grab"
-          role="button"
+          type="button"
         >
           <DragIcon />
-        </div>
-      ) : (
-        <div className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
+        </button>
       )}
       <StatusCard
         id={stage.id.toString()}

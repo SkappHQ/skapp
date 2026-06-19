@@ -232,8 +232,7 @@
   },
   "crm": {
     "dealsSection": {
-      "dealCompleteStateNote": "Won and lost stages stay fixed at the end of the list.",
-      "fetchError": "Deal stages could not be loaded."
+      "dealCompleteStateNote": "The following status defines the complete state of a deal."
     },
     "aria": {
       "editStage": "Edit stage {{stageName}}",

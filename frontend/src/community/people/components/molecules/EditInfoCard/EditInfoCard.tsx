@@ -155,11 +155,12 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
             id: "reactivate-employee",
             icon: (
               <Icon
-                name={IconName.RESTORE_ICON}
-                fill={theme.palette.error.contrastText}
+                name={IconName.REACTIVATE_USER_ICON}
+                fill={theme.palette.common.black}
               />
             ),
             text: translateTerminationText(["reactivateButtonText"]),
+            color: theme.palette.common.black,
             onClickHandler: () => handleReactivation()
           }
         ]
@@ -173,6 +174,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
         />
       ),
       text: translateTerminationText(["terminateButtonText"]),
+      color: theme.palette.error.contrastText,
       onClickHandler: () => handleTermination()
     },
     {
@@ -184,6 +186,7 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
         />
       ),
       text: translateTerminationText(["deleteButtonText"]),
+      color: theme.palette.error.contrastText,
       onClickHandler: () => handleDeletion()
         }
       ];
@@ -548,11 +551,6 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
                         id="add-team-kebab-menu"
                         menuItems={kebabMenuOptions}
                         icon={<Icon name={IconName.THREE_DOTS_ICON} />}
-                        customStyles={{
-                          menuItemText: {
-                            color: theme.palette.error.contrastText
-                          }
-                        }}
                       />
                     </Box>
                   )}
