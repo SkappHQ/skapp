@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -119,6 +120,10 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		if (filterDto.getPriority() != null) {
 			predicates.add(cb.equal(deal.get(CrmDeal_.priority), filterDto.getPriority()));
+		}
+
+		if (filterDto.getCompanyId() != null) {
+			predicates.add(cb.equal(deal.get(CrmDeal_.company).get(CrmCompany_.id), filterDto.getCompanyId()));
 		}
 
 		return predicates;
