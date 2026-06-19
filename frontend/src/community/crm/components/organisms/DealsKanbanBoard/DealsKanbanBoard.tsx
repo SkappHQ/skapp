@@ -14,7 +14,9 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import React, { useEffect, useRef, useState } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
-import DealStageLane, { type DealStageLaneDeal } from "~community/crm/components/molecules/DealStageLane/DealStageLane";
+import DealStageLane, {
+  type DealStageLaneDeal
+} from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
 import type {
@@ -27,8 +29,7 @@ import type {
 } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
-// --- Mock stages (replace with useGetBoardInitData in feat/crm-kanban-api) ---
-
+// --- Mock stages replace this ---
 const MOCK_STAGES: CrmDealStageType[] = [
   {
     id: 1,
@@ -198,7 +199,7 @@ const buildInitialStageState = (
 const DealsKanbanBoard: React.FC = () => {
   const searchKeyword = "";
 
-  // Replace mock data with useGetBoardInitData() and useGetDealsGrouped()
+  // Replace mock data
   const stages: CrmDealStageType[] = MOCK_STAGES;
   const stageIds = stages.map((s) => s.id);
   const isInitLoading = false;
@@ -338,8 +339,8 @@ const DealsKanbanBoard: React.FC = () => {
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     const activeDealId = Number(active.id);
-    const finalStageId = activeStageId; // current (possibly new) stage
-    const sourceStageId = originalStageIdRef.current; // where the drag started
+    const finalStageId = activeStageId;
+    const sourceStageId = originalStageIdRef.current;
 
     setActiveDeal(null);
     setActiveStageId(null);

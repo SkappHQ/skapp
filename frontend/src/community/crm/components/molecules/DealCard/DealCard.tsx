@@ -7,9 +7,9 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { CrmPriorityEnum } from "~community/crm/enums/common";
-import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export type DealPriority = CrmPriorityEnum;
 
@@ -34,8 +34,6 @@ export interface DealCardProps {
   onClick?: () => void;
   ariaLabel?: string;
 }
-
-
 
 const DealCard: FC<DealCardProps> = ({
   id,
