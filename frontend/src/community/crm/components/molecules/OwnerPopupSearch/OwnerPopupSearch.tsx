@@ -53,12 +53,11 @@ const OwnerPopupSearch: FC<Props> = ({
     () => ownerLookupData?.items ?? [],
     [ownerLookupData?.items]
   );
-  const getLabel = (u: CrmOwner) =>
-    concatStrings([u.firstName, u.lastName ?? ""]);
-  const getOwnerId = (u: CrmOwner) => u.employeeId;
-
   const options: DropdownOption[] = useMemo(
-    () => buildOwnerOptions(users, selectedUser, getLabel),
+    () =>
+      buildOwnerOptions(users, selectedUser, (u) =>
+        concatStrings([u.firstName, u.lastName ?? ""])
+      ),
     [users, selectedUser]
   );
 
@@ -66,7 +65,10 @@ const OwnerPopupSearch: FC<Props> = ({
     ? {
         id: selectedUser.employeeId,
         value: selectedUser.employeeId,
-        label: getLabel(selectedUser)
+        label: concatStrings([
+          selectedUser.firstName,
+          selectedUser.lastName ?? ""
+        ])
       }
     : null;
 
@@ -77,7 +79,7 @@ const OwnerPopupSearch: FC<Props> = ({
     }
     const { id } = val as DropdownOption;
     const user =
-      findById(users, Number(id), getOwnerId) ??
+      findById(users, Number(id), (u) => u.employeeId) ??
       (selectedUser?.employeeId === Number(id) ? selectedUser : null);
     onChange(user);
   };
@@ -87,7 +89,7 @@ const OwnerPopupSearch: FC<Props> = ({
     triggerProps: TriggerProps
   ) => {
     const user =
-      findById(users, Number(option?.id), getOwnerId) ??
+      findById(users, Number(option?.id), (u) => u.employeeId) ??
       (selectedUser?.employeeId === Number(option?.id) ? selectedUser : null);
 
     return user ? (
@@ -108,7 +110,7 @@ const OwnerPopupSearch: FC<Props> = ({
     onSelect: (value: DropdownValue) => void
   ) => {
     const user =
-      findById(users, Number(option.id), getOwnerId) ??
+      findById(users, Number(option.id), (u) => u.employeeId) ??
       (selectedUser?.employeeId === Number(option.id) ? selectedUser : null);
 
     return user ? (
