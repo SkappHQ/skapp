@@ -261,7 +261,7 @@ export interface UpdateTaskStatusPayload {
   isCompleted: boolean;
 }
 
-export interface DetailPanelTaskResponseType {
+export interface TaskRowResponseType {
   id: number;
   name: string;
   type: string;
@@ -270,6 +270,7 @@ export interface DetailPanelTaskResponseType {
   isOverdue: boolean;
   dueAt: string | null;
   owner: CrmOwner;
+  contact: CrmContactLookup | null;
 }
 
 export interface DetailPanelDealResponseType {
@@ -294,6 +295,6 @@ export interface CrmContactDetailResponseType {
   activeDealsCount: number;
   totalRevenue: string;
   pipelineRevenue: string;
-  tasks: DetailPanelTaskResponseType[];
+  tasks: TaskRowResponseType[];
   deals: DetailPanelDealResponseType[];
 }

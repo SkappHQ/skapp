@@ -1,12 +1,14 @@
 import { FC } from "react";
 
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import { useCrmStore } from "~community/crm/store/store";
+import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import SidePanelTasksEmptyView from "./SidePanelTasksEmptyView";
 import SidePanelTasksList from "./SidePanelTasksList";
 
 interface Props {
-  tasks: CrmTaskType[];
+  tasks: TaskRowResponseType[];
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
@@ -18,8 +20,14 @@ const SidePanelTasksSection: FC<Props> = ({
   isShowContact,
   onTaskRowClick
 }) => {
+  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    setTaskModalType: store.setTaskModalType
+  }));
+
   const handleAddTask = () => {
-    // TODO: open add task modal (wire up to CRM store)
+    setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+    setIsTaskModalOpen(true);
   };
 
   return tasks.length > 0 ? (

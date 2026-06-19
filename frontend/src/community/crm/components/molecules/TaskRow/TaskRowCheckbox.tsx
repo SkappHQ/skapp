@@ -5,10 +5,10 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 interface Props {
-  task: CrmTaskType;
+  task: TaskRowResponseType;
 }
 
 const TaskRowCheckbox: FC<Props> = ({ task }) => {
