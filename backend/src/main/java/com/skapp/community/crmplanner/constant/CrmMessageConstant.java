@@ -53,6 +53,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_TASK_NOT_FOUND("api.error.crm.task-not-found"),
 	CRM_ERROR_TASK_TYPE_NOT_FOUND("api.error.crm.task-type-not-found"),
 	CRM_ERROR_TASK_STATUS_REQUIRED("api.error.crm.task-status-required"),
+	CRM_ERROR_TASK_VIEW_DENIED("api.error.crm.task-view-denied"),
 	CRM_ERROR_TASK_EDIT_DENIED("api.error.crm.task-edit-denied"),
 	CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH("api.error.crm.task.contact-company-mismatch"),
 	CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH("api.error.crm.task.deal-contact-mismatch"),

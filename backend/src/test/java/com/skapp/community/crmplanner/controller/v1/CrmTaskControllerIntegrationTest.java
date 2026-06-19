@@ -335,7 +335,7 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Sales rep getting another owner's task - Returns Bad Request with task-not-found error")
+	@DisplayName("Sales rep getting another owner's task - Returns Bad Request with task-view-denied error")
 	void getTaskById_RepGettingOtherOwnersTask_ReturnsBadRequest() throws Exception {
 		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
 		employeeRoleDao.flush();
@@ -347,7 +347,7 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED)));
 	}
 
 	@Test

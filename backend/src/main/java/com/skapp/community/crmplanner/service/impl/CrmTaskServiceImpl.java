@@ -91,7 +91,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		User currentUser = userService.getCurrentUser();
 		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
 		}
 
 		log.info("getTaskById: execution");
