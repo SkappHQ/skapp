@@ -130,6 +130,18 @@ class CrmDealStageControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Create deal stage with two character name - Returns Created")
+	void createDealStage_TwoCharacterName_ReturnsCreated() throws Exception {
+		CrmDealStageCreateRequestDto dto = validPayload();
+		dto.setName("QA");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("QA"));
+	}
+
+	@Test
 	@DisplayName("Create deal stage without description - Returns Created with null description")
 	void createDealStage_NoDescription_ReturnsCreated() throws Exception {
 		CrmDealStageCreateRequestDto dto = validPayload();

@@ -361,8 +361,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	protected void validateDealStageAccess(CrmDealStage stage) {
 		// This method is a placeholder for enterprise deal stage access validation
-  }
-  
+	}
+
 	@Override
 	@Transactional
 	public ResponseEntityDto deleteDeal(Long id) {

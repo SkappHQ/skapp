@@ -26,7 +26,7 @@ public class CrmConstants {
 
 	public static final String DEAL_STAGE_NAME_REGEX = "^(?=.*\\p{L})[\\p{L}\\p{N} \\-.']+$";
 
-	public static final int DEAL_STAGE_DESCRIPTION_MAX_LENGTH = 250;
+	public static final int DEAL_STAGE_DESCRIPTION_MAX_LENGTH = 255;
 
 	public static final String DEAL_STAGE_DESCRIPTION_REGEX = "^[\\p{L}\\p{N} \\-.,']+$";
 
