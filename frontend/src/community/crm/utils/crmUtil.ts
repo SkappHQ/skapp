@@ -1,3 +1,5 @@
+import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
+
 type NumericValue = string | null;
 
 export const formatValue = (value: NumericValue): string => {
@@ -22,3 +24,8 @@ export const groupItemsByPriority = <T extends Id>(
 
   return { prioritized, deprioritized };
 };
+
+export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
+  searchTerm.trim() === ""
+    ? EmptyStateTypeEnum.NO_DATA
+    : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
