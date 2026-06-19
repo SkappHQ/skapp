@@ -489,6 +489,16 @@ class CrmDealControllerIntegrationTest {
 
 		mvc.perform(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
+	@DisplayName("Get deal by ID - Soft deleted deal returns bad request")
+	void getDealById_SoftDeleted_ReturnsBadRequest() throws Exception {
+		CrmDeal deal = savedDeal();
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		performRequest(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
 	@DisplayName("Delete non-existent deal - Returns Bad Request")
 	void deleteDeal_NonExistent_ReturnsBadRequest() throws Exception {
 			.andExpect(status().isBadRequest())
@@ -498,6 +508,14 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get deal by ID - Without CRM role returns forbidden")
+	void getDealById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmDeal deal = savedDeal();
+		String nonCrmToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user3@gmail.com"),
+				1L);
+
+		mvc.perform(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
 	@DisplayName("Delete deal without required role - Returns Forbidden")
 	void deleteDeal_WithoutRequiredRole_ReturnsForbidden() throws Exception {
 		// user2@gmail.com only has CRM_SALES_REPRESENTATIVE role
