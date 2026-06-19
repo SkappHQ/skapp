@@ -12,7 +12,7 @@ interface Props {
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
-  preselectedContactName?: string;
+  preselectedContact?: { id: number; name: string } | null;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
@@ -20,17 +20,17 @@ const SidePanelTasksSection: FC<Props> = ({
   isCheckTaskVisible,
   isShowContact,
   onTaskRowClick,
-  preselectedContactName
+  preselectedContact
 }) => {
-  const { setIsTaskModalOpen, setTaskModalType, setPreselectedContactName } =
+  const { setIsTaskModalOpen, setTaskModalType, setPreselectedContact } =
     useCrmStore((store) => ({
       setIsTaskModalOpen: store.setIsTaskModalOpen,
       setTaskModalType: store.setTaskModalType,
-      setPreselectedContactName: store.setPreselectedContactName
+      setPreselectedContact: store.setPreselectedContact
     }));
 
   const handleAddTask = () => {
-    setPreselectedContactName(preselectedContactName ?? null);
+    setPreselectedContact(preselectedContact ?? null);
     setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
     setIsTaskModalOpen(true);
   };
