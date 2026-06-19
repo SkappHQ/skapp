@@ -27,6 +27,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.community.common.util.event.UserCreatedEvent;
 import com.skapp.community.common.util.event.UserDeactivatedEvent;
+import com.skapp.community.common.util.event.UserReactivatedEvent;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
@@ -2560,11 +2561,12 @@ public class PeopleServiceImpl implements PeopleService {
 			employee.setTerminationDate(null);
 			user.setIsActive(true);
 
+			userDao.save(user);
+			applicationEventPublisher.publishEvent(new UserReactivatedEvent(this, user));
 			updateSubscriptionQuantity(1L, true, false);
 			userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
 			invalidateUserCache();
 			invalidateUserAuthPicCache();
-			userDao.save(user);
 			log.info("updateUserStatus: execution ended - user activated");
 			return;
 		}
