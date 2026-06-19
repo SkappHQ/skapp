@@ -3,13 +3,12 @@ import { NextPage } from "next";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-
-import styles from "./styles";
 
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -50,12 +49,12 @@ const Companies: NextPage = () => {
     >
       <>
         {selectedCompany && (
-          <div style={styles.sidePanelWrapper}>
+          <SidePanelWrapper>
             <CompanySidePanel
               isOpen={isCrmSidePanelOpen}
               onClose={handleCloseSidePanel}
             />
-          </div>
+          </SidePanelWrapper>
         )}
         <CompanyModalController />
         <CompanyTable />
