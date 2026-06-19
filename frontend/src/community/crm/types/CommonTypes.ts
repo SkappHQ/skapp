@@ -2,6 +2,7 @@ import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
 import {
   CrmDealSortEnum,
+  CrmDealStageColorsEnum,
   CrmDealStageEnum,
   CrmIndustryEnum,
   CrmPriorityEnum
@@ -162,7 +163,8 @@ export interface CrmDealType {
 export interface CrmDealStageType {
   id: number;
   name: string;
-  color: string;
+  description?: string | null;
+  color: CrmDealStageColorsEnum;
   orderIndex: number;
   stageType: CrmDealStageEnum;
 }
