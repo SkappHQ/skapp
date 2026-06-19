@@ -15,8 +15,8 @@ const Deals: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
+      {/*Add z index to  the sidpanel wrapper here once sidepanle is implemented.*/}
       <DealsSection />
     </ContentLayout>
   );

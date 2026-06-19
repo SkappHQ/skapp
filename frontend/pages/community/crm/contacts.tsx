@@ -46,15 +46,18 @@ const Contacts: NextPage = () => {
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
-        {selectedContact && (
-          <ContactSidePanel
-            isOpen={isCrmSidePanelOpen}
-            onClose={handleCloseSidePanel}
-          />
-        )}
+        <div
+          style={{ position: "relative", zIndex: ZIndexEnums.CRM_SIDE_PANEL }}
+        >
+          {selectedContact && (
+            <ContactSidePanel
+              isOpen={isCrmSidePanelOpen}
+              onClose={handleCloseSidePanel}
+            />
+          )}
+        </div>
         <ContactModalController />
         <ContactTable />
       </>

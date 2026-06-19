@@ -44,13 +44,16 @@ const Companies: NextPage = () => {
       primaryButtonText={translateText(["addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
-        <CompanySidePanel
-          isOpen={isCrmSidePanelOpen}
-          onClose={handleCloseSidePanel}
-        />
+        <div
+          style={{ position: "relative", zIndex: ZIndexEnums.CRM_SIDE_PANEL }}
+        >
+          <CompanySidePanel
+            isOpen={isCrmSidePanelOpen}
+            onClose={handleCloseSidePanel}
+          />
+        </div>
         <CompanyModalController />
         <CompanyTable />
       </>
