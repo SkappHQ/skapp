@@ -328,7 +328,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		log.info("getDealById: execution ended", id);
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealDetailResponseDto(deal));
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealByIdResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
