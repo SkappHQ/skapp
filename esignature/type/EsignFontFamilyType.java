@@ -10,6 +10,7 @@ public enum EsignFontFamilyType {
 	ARIMO("Arimo", "Arimo", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
 	CARLITO("Carlito", "Carlito", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
 	TINOS("Tinos", "Tinos", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
+	DEJAVU_SANS("DejaVuSans", "DejaVu Sans", "", "-Oblique", "-Bold", "-BoldOblique"),
 	NOTO_SANS("NotoSans", "Noto Sans", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
 	INTER("Inter", "Inter", "-Regular", "-Italic", "-Bold", "-BoldItalic"),
 	POPPINS("Poppins", "Poppins", "-Regular", "-Italic", "-Bold", "-BoldItalic");
