@@ -25,4 +25,6 @@ public interface JobFamilyRepository {
 
 	JobTitle getJobTitleByName(String jobTitleName);
 
+	JobTitle getJobTitleByNameAndJobFamily(String jobTitleName, Long jobFamilyId);
+
 }

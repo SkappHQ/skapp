@@ -41,6 +41,11 @@ export enum CrmDealStageEnum {
   LOST = "LOST"
 }
 
+export enum CrmMetricLabelThemeEnum {
+  GREEN = "GREEN",
+  RED = "RED"
+}
+
 export enum CrmTaskStatusEnum {
   PENDING = "PENDING",
   COMPLETED = "COMPLETED"

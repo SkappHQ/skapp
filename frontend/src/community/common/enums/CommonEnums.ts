@@ -14,7 +14,7 @@ export enum ZIndexEnums {
   MODAL = 1300,
   NEWMODAL = 1500,
   POPUP = 1600,
-  CRM_CONTENT_LAYOUT = 1200
+  CRM_SIDE_PANEL = 1200
 }
 
 export enum GlobalLoginMethod {

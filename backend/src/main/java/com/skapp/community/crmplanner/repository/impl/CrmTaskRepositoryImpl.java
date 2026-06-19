@@ -35,6 +35,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -148,6 +149,22 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public Optional<CrmTask> findByIdWithAssociations(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		task.fetch(CrmTask_.type, JoinType.INNER);
+		task.fetch(CrmTask_.owner, JoinType.INNER);
+		task.fetch(CrmTask_.contact, JoinType.LEFT);
+		task.fetch(CrmTask_.deal, JoinType.LEFT);
+
+		query.select(task).where(cb.equal(task.get(CrmTask_.id), id), cb.isFalse(task.get(CrmTask_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList().stream().findFirst();
 	}
 
 	@Override

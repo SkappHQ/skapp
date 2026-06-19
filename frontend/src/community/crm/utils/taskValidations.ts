@@ -29,7 +29,7 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
       .trim()
       .required(translator(["validations", "name"]))
       .max(
-        characterLengths.NAME_LENGTH,
+        characterLengths.TASK_NAME_LENGTH,
         translator(["validations", "nameLength"])
       ),
     notes: Yup.string()

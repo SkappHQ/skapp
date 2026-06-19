@@ -1,9 +1,9 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
 import { useCrmStore } from "~community/crm/store/store";
@@ -21,11 +21,13 @@ const Deals: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
       onPrimaryButtonClick={() => setIsCrmSidePanelOpen(true)}
     >
       <>
-        <AddDealSidePanel />
+        <SidePanelWrapper>
+          <AddDealSidePanel />
+        </SidePanelWrapper>
+
         <DealsSection />
       </>
     </ContentLayout>
