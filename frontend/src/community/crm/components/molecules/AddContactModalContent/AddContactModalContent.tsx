@@ -86,7 +86,7 @@ const AddContactModalContent: React.FC = () => {
     email: "",
     contactNumber: "",
     companyId: null,
-    ownerId: null
+    ownerId: selectedOwner?.employeeId ?? null
   };
 
   const handleSuccess = () => {
