@@ -67,16 +67,6 @@ const AddContactModalContent: React.FC = () => {
   const { isCrmSalesManager } = useSessionData();
   const { data: currentUser } = useGetUserPersonalDetails();
 
-  useEffect(() => {
-    if (!currentUser) return;
-    setSelectedOwner({
-      employeeId: Number(currentUser.employeeId),
-      firstName: currentUser.firstName ?? "",
-      lastName: currentUser.lastName ?? null,
-      authPic: currentUser.authPic as string | null
-    });
-  }, [currentUser]);
-
   const { setIsAddContactModalOpen } = useCrmStore((store) => ({
     setIsAddContactModalOpen: store.setIsAddContactModalOpen
   }));
@@ -86,8 +76,19 @@ const AddContactModalContent: React.FC = () => {
     email: "",
     contactNumber: "",
     companyId: null,
-    ownerId: selectedOwner?.employeeId ?? null
+    ownerId: null
   };
+
+  useEffect(() => {
+    if (!currentUser) return;
+    setSelectedOwner({
+      employeeId: Number(currentUser.employeeId),
+      firstName: currentUser.firstName ?? "",
+      lastName: currentUser.lastName ?? null,
+      authPic: currentUser.authPic as string | null
+    });
+    setFieldValue("ownerId", currentUser.employeeId);
+  }, [currentUser]);
 
   const handleSuccess = () => {
     setSubmitting(false);
