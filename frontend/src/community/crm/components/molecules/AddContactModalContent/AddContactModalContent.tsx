@@ -271,11 +271,7 @@ const AddContactModalContent: React.FC = () => {
           onChange={(e) => setCompanySearch(e.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearch("")}
-          emptyMessage={
-            isCompanyFetching
-              ? undefined
-              : translateContactText(["emptyStates", "noCompanies"])
-          }
+          emptyMessage={translateContactText(["emptyStates", "noCompanies"])}
           isOpenOnFocus={
             isDomainSearchEnabled && !!domainSearchData?.companies?.length
           }
@@ -340,8 +336,7 @@ const AddContactModalContent: React.FC = () => {
           onChange={(e) => setOwnerSearchText(e.target.value)}
           state={errors.ownerId ? "error" : "default"}
           errorMessage={errors.ownerId}
-          emptyMessage={translateContactText(["emptyStates", "noOwners"])
-          }
+          emptyMessage={translateContactText(["emptyStates", "noOwners"])}
         />
       )}
 
