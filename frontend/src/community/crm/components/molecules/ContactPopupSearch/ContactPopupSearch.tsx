@@ -70,9 +70,7 @@ const ContactPopupSearch: FC<Props> = ({
         <ContactTriggerContent
           key={option.id}
           contact={contact}
-          onSelect={() => {
-            triggerProps.onClick();
-          }}
+          onSelect={triggerProps.onClick}
         />
       );
     }
@@ -80,9 +78,7 @@ const ContactPopupSearch: FC<Props> = ({
     return (
       <ContactTriggerContent
         placeholder={placeholder}
-        onSelect={() => {
-          triggerProps.onClick();
-        }}
+        onSelect={triggerProps.onClick}
       />
     );
   };

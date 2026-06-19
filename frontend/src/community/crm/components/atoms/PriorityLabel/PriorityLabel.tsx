@@ -15,37 +15,38 @@ interface PriorityLabelProps {
 }
 
 const PriorityLabel: FC<PriorityLabelProps> = ({ priority, label }) => {
+  let backgroundColor: string;
+  let icon: React.ReactNode;
+  let textClassName: string;
+
   switch (priority) {
     case CrmPriorityEnum.LOW:
-      return (
-        <PriorityLabelItem
-          backgroundColor="bg-semantic-green-background"
-          icon={<LowPriorityIcon />}
-          textClassName="text-semantic-green-text"
-          label={label}
-        />
-      );
+      backgroundColor = "bg-semantic-green-background";
+      icon = <LowPriorityIcon />;
+      textClassName = "text-semantic-green-text";
+      break;
     case CrmPriorityEnum.MEDIUM:
-      return (
-        <PriorityLabelItem
-          backgroundColor="bg-semantic-amber-background"
-          icon={<MediumPriorityIcon />}
-          textClassName="text-semantic-amber-text"
-          label={label}
-        />
-      );
+      backgroundColor = "bg-semantic-amber-background";
+      icon = <MediumPriorityIcon />;
+      textClassName = "text-semantic-amber-text";
+      break;
     case CrmPriorityEnum.HIGH:
-      return (
-        <PriorityLabelItem
-          backgroundColor="bg-semantic-red-background"
-          icon={<HighPriorityIcon />}
-          textClassName="text-semantic-red-text"
-          label={label}
-        />
-      );
+      backgroundColor = "bg-semantic-red-background";
+      icon = <HighPriorityIcon />;
+      textClassName = "text-semantic-red-text";
+      break;
     default:
       return null;
   }
+
+  return (
+    <PriorityLabelItem
+      backgroundColor={backgroundColor}
+      icon={icon}
+      textClassName={textClassName}
+      label={label}
+    />
+  );
 };
 
 export default PriorityLabel;
