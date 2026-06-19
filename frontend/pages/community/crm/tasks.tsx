@@ -2,7 +2,6 @@ import { NextPage } from "next";
 import { useEffect, useRef } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
@@ -44,15 +43,12 @@ const Tasks: NextPage = () => {
       primaryButtonText={translateText(["addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       containerStyles={{
-        zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT,
         padding: { xs: "1.375rem 2rem 0", lg: "1.375rem 3rem 0" }
       }}
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
-      <div
-        ref={containerRef}
-        className="flex flex-col w-full gap-4"
-      >
+      <div ref={containerRef} className="flex flex-col w-full gap-4">
+        {/*Add z index to  the sidpanel wrapper here once side panel is implemented.*/}
         <TaskModalController />
         <TasksTable />
       </div>

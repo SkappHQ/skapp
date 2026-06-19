@@ -36,7 +36,7 @@ const useUserBulkValidation = () => {
       user?.phone &&
       user?.phone?.length <= characterLengths.PHONE_NUMBER_LENGTH_MAX &&
       user?.phone?.length >= characterLengths.PHONE_NUMBER_LENGTH_MIN &&
-      user?.address &&
+      user?.addressLine1 &&
       user?.city &&
       user?.city?.length <= characterLengths.STATE_LENGTH &&
       user?.country &&
@@ -62,10 +62,25 @@ const useUserBulkValidation = () => {
       user?.joinedDate &&
       dateValidation(user?.joinedDate) &&
       (!user?.primaryManager || isEmailInputValid(user?.primaryManager)) &&
-      (!user?.startDate || dateValidation(user?.startDate)) &&
-      (!user?.endDate || dateValidation(user?.endDate)) &&
+      (!user?.probationStartDate || dateValidation(user?.probationStartDate)) &&
+      (!user?.probationEndDate || dateValidation(user?.probationEndDate)) &&
+      (!user?.careerProgressionStartDate ||
+        dateValidation(user?.careerProgressionStartDate)) &&
+      validateCareerProgressionFields(user) &&
       user?.passportNo
     );
+  };
+
+  const validateCareerProgressionFields = (user: BulkUploadUser) => {
+    const hasEmployeeType = !!user?.employeeType;
+    const hasJobFamily = !!user?.jobFamily;
+    const hasJobTitle = !!user?.jobTitle;
+    const hasStartDate = !!user?.careerProgressionStartDate;
+    const anyProvided =
+      hasEmployeeType || hasJobFamily || hasJobTitle || hasStartDate;
+    const allProvided =
+      hasEmployeeType && hasJobFamily && hasJobTitle && hasStartDate;
+    return !anyProvided || allProvided;
   };
 
   const isArrayOfUsersValid = (userArray: BulkUploadUser[]) => {

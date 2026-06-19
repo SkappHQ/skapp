@@ -25,6 +25,7 @@ import MultiSelectChipInput from "~community/common/components/molecules/MultiSe
 import MultivalueDropdownList from "~community/common/components/molecules/MultiValueDropdownList/MultivalueDropdownList";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { allowsAlphaNumericWithHyphenAndUnderscore } from "~community/common/regex/regexPatterns";
 import { ManagerTypes } from "~community/common/types/AuthTypes";
@@ -238,13 +239,16 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
     }));
 
     const { values, errors, setFieldValue, setFieldError } = formik;
+    const debouncedWorkEmail = useDebounce(values.workEmail);
+    const debouncedEmployeeNumber = useDebounce(values.employeeNumber);
+
     const {
       data: checkEmailAndIdentificationNo,
       refetch,
       isSuccess
     } = useCheckEmailAndIdentificationNo(
-      values.workEmail,
-      values.employeeNumber
+      debouncedWorkEmail,
+      debouncedEmployeeNumber
     );
 
     useEffect(() => {
@@ -495,7 +499,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
         void refetch();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [values.workEmail, values.employeeNumber]);
+    }, [debouncedWorkEmail, debouncedEmployeeNumber]);
 
     useEffect(() => {
       if (values.joinedDate) {
