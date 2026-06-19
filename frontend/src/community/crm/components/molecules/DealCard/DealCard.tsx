@@ -1,25 +1,23 @@
-﻿import {
+import {
   Avatar,
   Chip,
   ClipboardCheckIcon,
   DealValueIcon,
-  HandshakeIcon,
-  HighPriorityIcon,
-  LowPriorityIcon,
-  MediumPriorityIcon
+  HandshakeIcon
 } from "@rootcodelabs/skapp-ui";
-import React from "react";
+import { FC } from "react";
 
 import { CrmPriorityEnum } from "~community/crm/enums/common";
+import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 
 export type DealPriority = CrmPriorityEnum;
 
-export interface DealCardAssignee {
+export interface DealCardOwner {
   id: string;
   firstName?: string;
   lastName?: string;
   src?: string;
-  alt?: string;
 }
 
 export interface DealCardProps {
@@ -27,57 +25,33 @@ export interface DealCardProps {
   title: string;
   contactName?: string;
   company: string;
-  assignee?: DealCardAssignee;
+  owner?: DealCardOwner;
   formattedValue: string;
   priority: DealPriority;
   taskCount?: number;
-  taskCountTooltip?: string;
   isInteractive?: boolean;
   className?: string;
   onClick?: () => void;
   ariaLabel?: string;
 }
 
-const PRIORITY_BADGE: Record<
-  CrmPriorityEnum,
-  { icon: React.ReactNode; bg: string; iconColor: string; ariaLabel: string }
-> = {
-  [CrmPriorityEnum.HIGH]: {
-    icon: <HighPriorityIcon />,
-    bg: "bg-semantic-red-background",
-    iconColor: "text-semantic-red-text",
-    ariaLabel: "High priority"
-  },
-  [CrmPriorityEnum.MEDIUM]: {
-    icon: <MediumPriorityIcon />,
-    bg: "bg-semantic-amber-background",
-    iconColor: "text-semantic-amber-text",
-    ariaLabel: "Medium priority"
-  },
-  [CrmPriorityEnum.LOW]: {
-    icon: <LowPriorityIcon />,
-    bg: "bg-semantic-green-background",
-    iconColor: "text-semantic-green-text",
-    ariaLabel: "Low priority"
-  }
-};
 
-const DealCard: React.FC<DealCardProps> = ({
+
+const DealCard: FC<DealCardProps> = ({
   id,
   title,
   contactName,
   company,
-  assignee,
+  owner,
   formattedValue,
   priority,
   taskCount,
-  taskCountTooltip,
   isInteractive = true,
   className = "",
   onClick,
   ariaLabel
 }) => {
-  const badge = PRIORITY_BADGE[priority];
+  const imageUrl = useGetImageUrl(owner?.src ?? "");
 
   const wrapperClasses = [
     "w-full min-h-[150px] rounded-[8px] bg-white px-2 py-3",
@@ -103,17 +77,13 @@ const DealCard: React.FC<DealCardProps> = ({
           </span>
         </div>
 
-        {assignee && (
+        {owner && (
           <Avatar
-            id={assignee.id}
+            id={owner.id}
             size="sm"
-            src={assignee.src}
-            firstName={assignee.firstName}
-            lastName={assignee.lastName}
-            alt={
-              assignee.alt ??
-              `${assignee.firstName ?? ""} ${assignee.lastName ?? ""}`.trim()
-            }
+            src={imageUrl ?? ""}
+            firstName={owner.firstName}
+            lastName={owner.lastName ?? ""}
           />
         )}
       </div>
@@ -175,19 +145,14 @@ const DealCard: React.FC<DealCardProps> = ({
             label={String(taskCount)}
             prefixIcon={
               <span className="[&_svg]:h-3 [&_svg]:w-3">
-                <ClipboardCheckIcon fill="text-slate-600"/>
+                <ClipboardCheckIcon fill="text-slate-600" />
               </span>
             }
             className="bg-slate-200 text-slate-600"
           />
         )}
 
-        <span
-          className={`flex h-7 w-7 items-center justify-center rounded-full [&_svg]:h-4 [&_svg]:w-4 ${badge.bg} ${badge.iconColor}`}
-          aria-label={badge.ariaLabel}
-        >
-          {badge.icon}
-        </span>
+        <PriorityLabel priority={priority} />
       </div>
     </>
   );

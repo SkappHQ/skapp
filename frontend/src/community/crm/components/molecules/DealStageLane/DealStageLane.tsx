@@ -8,9 +8,9 @@ import { CSS } from "@dnd-kit/utilities";
 import React, { useEffect, useRef } from "react";
 
 import type {
-  DealCardAssignee,
+  DealCardOwner,
   DealPriority
-} from "~community/crm/components/molecules/DealCard";
+} from "~community/crm/components/molecules/DealCard/DealCard";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 
@@ -19,7 +19,7 @@ export interface DealStageLaneDeal {
   title: string;
   contactName?: string;
   company: string;
-  assignee?: DealCardAssignee;
+  owner?:   DealCardOwner;
   formattedValue: string;
   priority: DealPriority;
   taskCount?: number;
@@ -78,11 +78,10 @@ const SortableItem: React.FC<SortableItemProps> = ({ deal, onDealClick }) => {
         title={deal.title}
         contactName={deal.contactName}
         company={deal.company}
-        assignee={deal.assignee}
+        owner={deal.owner}
         formattedValue={deal.formattedValue}
         priority={deal.priority}
         taskCount={deal.taskCount}
-        taskCountTooltip={deal.taskCountTooltip}
         ariaLabel={deal.ariaLabel}
         isInteractive
         onClick={onDealClick ? () => onDealClick(deal.id) : undefined}
@@ -139,7 +138,10 @@ const DealStageLane: React.FC<DealStageLaneProps> = ({
       ].join(" ")}
       aria-labelledby={`crm-stage-${stage.id}`}
     >
-      <div className="h-1.5 rounded-t-lg" style={{ backgroundColor: stage.accentColor }} />
+      <div
+        className="h-1.5 rounded-t-lg"
+        style={{ backgroundColor: stage.accentColor }}
+      />
 
       <div className="flex items-center justify-between gap-2 px-3 pt-3">
         <div className="min-w-0">

@@ -1,5 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from "react";
-import {
+﻿import {
   DndContext,
   DragEndEvent,
   DragOverEvent,
@@ -9,33 +8,71 @@ import {
   PointerSensor,
   closestCorners,
   useSensor,
-  useSensors,
+  useSensors
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import React, { useEffect, useRef, useState } from "react";
+
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
-import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import type { DealStageLaneDeal } from "~community/crm/components/molecules/DealStageLane";
-import { CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
+import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
-import { formatValue } from "~community/crm/utils/crmUtil";
+import { CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
 import type {
   BoardDealItem,
   BoardDealsGroupedRequest,
   BoardMoveBetweenStagesPayload,
   BoardReorderWithinStagePayload,
   BoardStageDeals,
-  CrmDealStageType,
+  CrmDealStageType
 } from "~community/crm/types/CommonTypes";
+import { formatValue } from "~community/crm/utils/crmUtil";
 
 // --- Mock stages (replace with useGetBoardInitData in feat/crm-kanban-api) ---
 
 const MOCK_STAGES: CrmDealStageType[] = [
-  { id: 1, name: "Lead", color: "PINK", orderIndex: 1, stageType: CrmDealStageEnum.INITIAL },
-  { id: 2, name: "Qualified", color: "TEAL", orderIndex: 2, stageType: CrmDealStageEnum.OPEN },
-  { id: 3, name: "Demo scheduled", color: "LAVENDER", orderIndex: 3, stageType: CrmDealStageEnum.OPEN },
-  { id: 4, name: "Proposal sent", color: "GOLD", orderIndex: 4, stageType: CrmDealStageEnum.OPEN },
-  { id: 5, name: "Deal Won", color: "LIME", orderIndex: 5, stageType: CrmDealStageEnum.WON },
-  { id: 6, name: "Deal Lost", color: "ROSEWOOD", orderIndex: 6, stageType: CrmDealStageEnum.LOST },
+  {
+    id: 1,
+    name: "Lead",
+    color: "PINK",
+    orderIndex: 1,
+    stageType: CrmDealStageEnum.INITIAL
+  },
+  {
+    id: 2,
+    name: "Qualified",
+    color: "TEAL",
+    orderIndex: 2,
+    stageType: CrmDealStageEnum.OPEN
+  },
+  {
+    id: 3,
+    name: "Demo scheduled",
+    color: "LAVENDER",
+    orderIndex: 3,
+    stageType: CrmDealStageEnum.OPEN
+  },
+  {
+    id: 4,
+    name: "Proposal sent",
+    color: "GOLD",
+    orderIndex: 4,
+    stageType: CrmDealStageEnum.OPEN
+  },
+  {
+    id: 5,
+    name: "Deal Won",
+    color: "LIME",
+    orderIndex: 5,
+    stageType: CrmDealStageEnum.WON
+  },
+  {
+    id: 6,
+    name: "Deal Lost",
+    color: "ROSEWOOD",
+    orderIndex: 6,
+    stageType: CrmDealStageEnum.LOST
+  }
 ];
 
 const PAGE_LIMIT = 10;
@@ -44,25 +81,76 @@ const MOCK_OWNER = {
   employeeId: 1,
   firstName: "Alice",
   lastName: "Johnson",
-  authPic: null,
+  authPic: null
 };
 
+// moock deals grouped by stage (replace with api)
 const MOCK_DEALS: Record<number, BoardDealItem[]> = {
   1: [
-    { id: 101, name: "Acme Corp Expansion", contactName: "John Smith", companyName: "Acme Corp", owner: MOCK_OWNER, amount: "12000", priority: CrmPriorityEnum.HIGH, taskCount: 3, orderIndex: "1" },
-    { id: 102, name: "Beta Solutions Onboarding", contactName: "Sara Lee", companyName: "Beta Solutions", owner: MOCK_OWNER, amount: "4500", priority: CrmPriorityEnum.LOW, taskCount: 1, orderIndex: "2" },
+    {
+      id: 101,
+      name: "Acme Corp Expansion",
+      contactName: "John Smith",
+      companyName: "Acme Corp",
+      owner: MOCK_OWNER,
+      amount: "12000",
+      priority: CrmPriorityEnum.HIGH,
+      taskCount: 3,
+      orderIndex: "1"
+    },
+    {
+      id: 102,
+      name: "Beta Solutions Onboarding",
+      contactName: "Sara Lee",
+      companyName: "Beta Solutions",
+      owner: MOCK_OWNER,
+      amount: "4500",
+      priority: CrmPriorityEnum.LOW,
+      taskCount: 1,
+      orderIndex: "2"
+    }
   ],
   2: [
-    { id: 201, name: "Gamma Tech Upgrade", contactName: "Mike Chan", companyName: "Gamma Tech", owner: MOCK_OWNER, amount: "29000", priority: CrmPriorityEnum.MEDIUM, taskCount: 2, orderIndex: "1" },
+    {
+      id: 201,
+      name: "Gamma Tech Upgrade",
+      contactName: "Mike Chan",
+      companyName: "Gamma Tech",
+      owner: MOCK_OWNER,
+      amount: "29000",
+      priority: CrmPriorityEnum.MEDIUM,
+      taskCount: 2,
+      orderIndex: "1"
+    }
   ],
   3: [
-    { id: 301, name: "Delta Finance Suite", contactName: "Emma Brown", companyName: "Delta Finance", owner: MOCK_OWNER, amount: "55000", priority: CrmPriorityEnum.HIGH, taskCount: 5, orderIndex: "1" },
+    {
+      id: 301,
+      name: "Delta Finance Suite",
+      contactName: "Emma Brown",
+      companyName: "Delta Finance",
+      owner: MOCK_OWNER,
+      amount: "55000",
+      priority: CrmPriorityEnum.HIGH,
+      taskCount: 5,
+      orderIndex: "1"
+    }
   ],
   4: [],
   5: [
-    { id: 501, name: "Omega Retail Deal", contactName: "Tom White", companyName: "Omega Retail", owner: MOCK_OWNER, amount: "18000", priority: CrmPriorityEnum.MEDIUM, taskCount: 0, orderIndex: "1" },
+    {
+      id: 501,
+      name: "Omega Retail Deal",
+      contactName: "Tom White",
+      companyName: "Omega Retail",
+      owner: MOCK_OWNER,
+      amount: "18000",
+      priority: CrmPriorityEnum.MEDIUM,
+      taskCount: 0,
+      orderIndex: "1"
+    }
   ],
-  6: [],
+  6: []
 };
 
 const getAccentColor = (color: string): string =>
@@ -72,21 +160,19 @@ const toStageLaneDeal = (deal: BoardDealItem): DealStageLaneDeal => ({
   id: String(deal.id),
   title: deal.name,
   contactName: deal.contactName ?? undefined,
-  company: deal.companyName ?? '',
-  assignee: {
+  company: deal.companyName ?? "",
+  owner: {
     id: String(deal.owner.employeeId),
     firstName: deal.owner.firstName,
     lastName: deal.owner.lastName ?? undefined,
-    src: deal.owner.authPic ?? undefined,
+    src: deal.owner.authPic ?? undefined
   },
   formattedValue: formatValue(deal.amount),
   priority: deal.priority,
   taskCount: deal.taskCount,
-  taskCountTooltip: `${deal.taskCount} task${deal.taskCount === 1 ? '' : 's'}`,
-  ariaLabel: `Deal: ${deal.name}`,
+  taskCountTooltip: `${deal.taskCount} task${deal.taskCount === 1 ? "" : "s"}`,
+  ariaLabel: `Deal: ${deal.name}`
 });
-
-// --- Per-stage state ---
 
 interface StageState {
   deals: BoardDealItem[];
@@ -101,29 +187,31 @@ const buildInitialStageState = (
   Object.fromEntries(
     data.map((s) => [
       s.stageId,
-      { deals: s.deals, totalCount: s.totalCount, page: 0, isLoadingMore: false },
+      {
+        deals: s.deals,
+        totalCount: s.totalCount,
+        page: 0,
+        isLoadingMore: false
+      }
     ])
   );
 
-// --- Main component ---
-
 const DealsKanbanBoard: React.FC = () => {
-  const searchKeyword = '';
+  const searchKeyword = "";
 
-  // TODO (feat/crm-kanban-api): Replace mock data with useGetBoardInitData() and useGetDealsGrouped()
+  // Replace mock data with useGetBoardInitData() and useGetDealsGrouped()
   const stages: CrmDealStageType[] = MOCK_STAGES;
   const stageIds = stages.map((s) => s.id);
   const isInitLoading = false;
   const isDealsLoading = false;
 
-  // Per-stage optimistic state
   const [stageMap, setStageMap] = useState<Record<number, StageState>>({});
 
   useEffect(() => {
     const seedData: BoardStageDeals[] = MOCK_STAGES.map((s) => ({
       stageId: s.id,
       deals: MOCK_DEALS[s.id] ?? [],
-      totalCount: (MOCK_DEALS[s.id] ?? []).length,
+      totalCount: (MOCK_DEALS[s.id] ?? []).length
     }));
     setStageMap(buildInitialStageState(seedData));
   }, []);
@@ -131,11 +219,10 @@ const DealsKanbanBoard: React.FC = () => {
   const stageMapRef = useRef(stageMap);
   stageMapRef.current = stageMap;
 
-  // DnD state
   const [activeDeal, setActiveDeal] = useState<BoardDealItem | null>(null);
   const [activeStageId, setActiveStageId] = useState<number | null>(null);
   const [overStageId, setOverStageId] = useState<number | null>(null);
-  // Track the stage the drag started from — never mutated during the drag
+
   const originalStageIdRef = useRef<number | null>(null);
 
   const sensors = useSensors(
@@ -143,13 +230,12 @@ const DealsKanbanBoard: React.FC = () => {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  // Optimistic rollback snapshot
   const snapshotRef = useRef<Record<number, StageState> | null>(null);
 
-  // TODO (feat/crm-kanban-api): Replace stubs with useReorderWithinStage / useMoveBetweenStages / useLoadMoreDeals
+  // Replace stubs with useReorderWithinStage / useMoveBetweenStages / useLoadMoreDeals
   const reorderWithinStage = (_payload: BoardReorderWithinStagePayload) => {};
   const moveBetweenStages = (_payload: BoardMoveBetweenStagesPayload) => {};
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const loadMore = (_payload: BoardDealsGroupedRequest) => {};
 
   const handleLoadMore = (stageIdStr: string) => {
@@ -158,17 +244,16 @@ const DealsKanbanBoard: React.FC = () => {
     if (!s || s.isLoadingMore) return;
     setStageMap((prev) => ({
       ...prev,
-      [stageId]: { ...prev[stageId], isLoadingMore: true },
+      [stageId]: { ...prev[stageId], isLoadingMore: true }
     }));
     loadMore({
       stageIds: [stageId],
       searchKeyword: searchKeyword || undefined,
       page: s.page + 1,
-      limit: PAGE_LIMIT,
+      limit: PAGE_LIMIT
     });
   };
 
-  // Drag handlers
   const handleDragStart = ({ active }: DragStartEvent) => {
     const dealId = Number(active.id);
     for (const [sid, state] of Object.entries(stageMapRef.current)) {
@@ -190,11 +275,12 @@ const DealsKanbanBoard: React.FC = () => {
 
     const overId = String(over.id);
     const targetStageId = overId.startsWith("stage::")
-      ? Number(overId.replace("stage::", ''))
+      ? Number(overId.replace("stage::", ""))
       : (() => {
           const overDealId = Number(overId);
           for (const [sid, state] of Object.entries(stageMapRef.current)) {
-            if (state.deals.some((d) => d.id === overDealId)) return Number(sid);
+            if (state.deals.some((d) => d.id === overDealId))
+              return Number(sid);
           }
           return null;
         })();
@@ -202,9 +288,9 @@ const DealsKanbanBoard: React.FC = () => {
     setOverStageId(targetStageId);
 
     const activeDealId = Number(active.id);
-    if (!targetStageId || !activeStageId || activeStageId === targetStageId) return;
+    if (!targetStageId || !activeStageId || activeStageId === targetStageId)
+      return;
 
-    // Optimistic cross-column move — insert at the hovered position
     setStageMap((prev) => {
       const srcState = prev[activeStageId];
       const tgtState = prev[targetStageId];
@@ -213,13 +299,10 @@ const DealsKanbanBoard: React.FC = () => {
       const deal = srcState.deals.find((d) => d.id === activeDealId);
       if (!deal) return prev;
 
-      // Remove from source (or re-remove if already moved on a previous DragOver)
       const srcDeals = srcState.deals.filter((d) => d.id !== activeDealId);
 
-      // Determine insertion index in the target column
-      let tgtDeals = tgtState.deals.filter((d) => d.id !== activeDealId); // remove if already there
+      let tgtDeals = tgtState.deals.filter((d) => d.id !== activeDealId);
       if (overId.startsWith("stage::")) {
-        // Dropped on empty-column drop zone — append to end
         tgtDeals = [...tgtDeals, deal];
       } else {
         const overDealId = Number(overId);
@@ -230,7 +313,7 @@ const DealsKanbanBoard: React.FC = () => {
           tgtDeals = [
             ...tgtDeals.slice(0, overIndex),
             deal,
-            ...tgtDeals.slice(overIndex),
+            ...tgtDeals.slice(overIndex)
           ];
         }
       }
@@ -240,13 +323,15 @@ const DealsKanbanBoard: React.FC = () => {
         [activeStageId]: {
           ...srcState,
           deals: srcDeals,
-          totalCount: Math.max(0, srcState.totalCount - 1),
+          totalCount: Math.max(0, srcState.totalCount - 1)
         },
         [targetStageId]: {
           ...tgtState,
           deals: tgtDeals,
-          totalCount: tgtState.totalCount + (tgtState.deals.some((d) => d.id === activeDealId) ? 0 : 1),
-        },
+          totalCount:
+            tgtState.totalCount +
+            (tgtState.deals.some((d) => d.id === activeDealId) ? 0 : 1)
+        }
       };
     });
     setActiveStageId(targetStageId);
@@ -254,7 +339,7 @@ const DealsKanbanBoard: React.FC = () => {
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     const activeDealId = Number(active.id);
-    const finalStageId = activeStageId;       // current (possibly new) stage
+    const finalStageId = activeStageId; // current (possibly new) stage
     const sourceStageId = originalStageIdRef.current; // where the drag started
 
     setActiveDeal(null);
@@ -272,21 +357,16 @@ const DealsKanbanBoard: React.FC = () => {
     if (activeIndex === -1) return;
 
     if (isCrossStage) {
-      // handleDragOver already inserted the deal at the correct position in
-      // the target column (live preview). targetDeals reflects the final order,
-      // so neighbours are simply the adjacent items around activeIndex.
       moveBetweenStages({
         dealId: activeDealId,
         newStageId: finalStageId,
         previousDealId: targetDeals[activeIndex - 1]?.id ?? null,
-        nextDealId: targetDeals[activeIndex + 1]?.id ?? null,
+        nextDealId: targetDeals[activeIndex + 1]?.id ?? null
       });
       return;
     }
-
-    // Same-stage reorder
     const overId = String(over.id);
-    if (overId.startsWith("stage::")) return; // dropped back on same column header — no change
+    if (overId.startsWith("stage::")) return;
 
     const overDealId = Number(overId);
     const overIndex = targetDeals.findIndex((d) => d.id === overDealId);
@@ -295,13 +375,13 @@ const DealsKanbanBoard: React.FC = () => {
     const reordered = arrayMove(targetDeals, activeIndex, overIndex);
     setStageMap((prev) => ({
       ...prev,
-      [finalStageId]: { ...prev[finalStageId], deals: reordered },
+      [finalStageId]: { ...prev[finalStageId], deals: reordered }
     }));
 
     reorderWithinStage({
       dealId: activeDealId,
       previousDealId: reordered[overIndex - 1]?.id ?? null,
-      nextDealId: reordered[overIndex + 1]?.id ?? null,
+      nextDealId: reordered[overIndex + 1]?.id ?? null
     });
   };
 
@@ -312,7 +392,8 @@ const DealsKanbanBoard: React.FC = () => {
     originalStageIdRef.current = null;
   };
 
-  const isInitialLoad = isInitLoading || (stageIds.length > 0 && isDealsLoading);
+  const isInitialLoad =
+    isInitLoading || (stageIds.length > 0 && isDealsLoading);
 
   return (
     <div className="flex flex-col">
@@ -330,7 +411,8 @@ const DealsKanbanBoard: React.FC = () => {
             const deals = state?.deals ?? [];
             const totalCount = state?.totalCount ?? 0;
             const totalValue = deals.reduce(
-              (sum, d) => sum + (Number.parseFloat(String(d.amount ?? "0")) || 0),
+              (sum, d) =>
+                sum + (Number.parseFloat(String(d.amount ?? "0")) || 0),
               0
             );
             const hasMore = deals.length < totalCount;
@@ -343,7 +425,7 @@ const DealsKanbanBoard: React.FC = () => {
                   name: stage.name,
                   accentColor: getAccentColor(stage.color),
                   formattedTotal: formatValue(String(totalValue)),
-                  totalCount,
+                  totalCount
                 }}
                 deals={deals.map(toStageLaneDeal)}
                 isLoading={isInitialLoad}
@@ -365,13 +447,13 @@ const DealsKanbanBoard: React.FC = () => {
                 id={String(activeDeal.id)}
                 title={activeDeal.name}
                 contactName={activeDeal.contactName ?? undefined}
-                company={activeDeal.companyName ?? ''}
-                assignee={{
-                    id: String(activeDeal.owner.employeeId),
-                    firstName: activeDeal.owner.firstName,
-                    lastName: activeDeal.owner.lastName ?? undefined,
-                    src: activeDeal.owner.authPic ?? undefined,
-                  }}
+                company={activeDeal.companyName ?? ""}
+                owner={{
+                  id: String(activeDeal.owner.employeeId),
+                  firstName: activeDeal.owner.firstName,
+                  lastName: activeDeal.owner.lastName ?? undefined,
+                  src: activeDeal.owner.authPic ?? undefined
+                }}
                 formattedValue={formatValue(activeDeal.amount)}
                 priority={activeDeal.priority}
                 taskCount={activeDeal.taskCount}
@@ -387,4 +469,3 @@ const DealsKanbanBoard: React.FC = () => {
 };
 
 export default DealsKanbanBoard;
-
