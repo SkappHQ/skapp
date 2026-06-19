@@ -14,8 +14,7 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import React, { useEffect, useRef, useState } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
-import type { DealStageLaneDeal } from "~community/crm/components/molecules/DealStageLane";
-import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
+import DealStageLane, { type DealStageLaneDeal } from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
 import type {
