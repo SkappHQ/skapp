@@ -22,4 +22,6 @@ public interface CrmTaskRepository {
 
 	Page<CrmTask> findCompletedTasks(Long ownerId, CrmTaskCompletedFilterDto filterDto, Pageable pageable);
 
+	List<CrmTask> findByDealIds(List<Long> dealIds);
+
 }

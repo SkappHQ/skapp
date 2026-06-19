@@ -32,6 +32,7 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -64,6 +66,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final EmployeeDao employeeDao;
 
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
+
+	private final CrmTaskDao crmTaskDao;
 
 	private final CrmMapper crmMapper;
 
@@ -192,6 +196,14 @@ public class CrmDealServiceImpl implements CrmDealService {
 			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount);
 			List<CrmDealByStageItemResponseDto> deals = crmMapper
 				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
+
+			if (!deals.isEmpty()) {
+				List<Long> dealIds = dealsPage.getContent().stream().map(CrmDeal::getId).toList();
+				Map<Long, Long> taskCountMap = crmTaskDao.findByDealIds(dealIds)
+					.stream()
+					.collect(Collectors.groupingBy(t -> t.getDeal().getId(), Collectors.counting()));
+				deals.forEach(deal -> deal.setTaskCount(taskCountMap.getOrDefault(deal.getId(), 0L)));
+			}
 
 			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
 			stageResult.setStageId(stageId);

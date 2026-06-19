@@ -214,4 +214,21 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		root.fetch(CrmTask_.deal, JoinType.LEFT);
 	}
 
+	@Override
+	public List<CrmTask> findByDealIds(List<Long> dealIds) {
+		if (dealIds == null || dealIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		task.fetch(CrmTask_.deal, JoinType.LEFT);
+
+		query.select(task)
+			.where(task.get(CrmTask_.deal).get(CrmDeal_.id).in(dealIds), cb.isFalse(task.get(CrmTask_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
 }
