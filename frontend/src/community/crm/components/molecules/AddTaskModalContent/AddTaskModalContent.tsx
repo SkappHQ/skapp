@@ -180,7 +180,7 @@ const AddTaskModalContent: FC = () => {
   const { data: ownerLookupData } = useGetOwnerLookup(
     debouncedOwnerSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    Boolean(isCrmSalesManager)
+    Boolean(isCrmSalesManager) && debouncedOwnerSearchText.length > 0
   );
 
   const { data: contactLookupData } = useGetCrmContacts(
