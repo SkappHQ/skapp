@@ -70,7 +70,8 @@ const Tasks: NextPage = () => {
         id: 1,
         name: "Enterprise License Deal",
         amount: 25000,
-        stage: { id: 1, name: "Negotiation", orderIndex: 2 }
+        stage: { id: 1, name: "Negotiation", orderIndex: 2 },
+        owner: { employeeId: 1, firstName: "John", lastName: "Doe", authPic: null }
       } as any,
       isDeleted: false
     });

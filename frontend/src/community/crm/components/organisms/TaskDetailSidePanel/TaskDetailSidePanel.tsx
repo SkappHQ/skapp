@@ -8,11 +8,13 @@ import {
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import SidePanelRelatedTasksSection from "~community/crm/components/molecules/SidePanelRelatedTasksSection/SidePanelRelatedTasksSection";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import SidePanelTaskNotes from "~community/crm/components/molecules/SidePanelTaskNotes/SidePanelTaskNotes";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskHelpers";
 
@@ -48,6 +50,47 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   const taskIcon = getTaskTypeIcon(selectedTask.type?.name ?? "Other");
   const taskDeals = selectedTask.deal ? [selectedTask.deal] : [];
+
+  const dummyTasks: CrmTaskType[] = [
+    {
+      id: 2,
+      name: "Call with client",
+      type: { id: 1, name: "Call", orderIndex: 0 },
+      priority: CrmPriorityEnum.HIGH,
+      isCompleted: false,
+      dueAt: "2026-06-21T14:00:00",
+      notes: "Follow up call about enterprise licensing.",
+      owner: {
+        employeeId: 1,
+        firstName: "John",
+        lastName: "Doe",
+        authPic: null
+      },
+      contact: null,
+      company: null,
+      deal: null,
+      isDeleted: false
+    },
+    {
+      id: 3,
+      name: "Prepare proposal",
+      type: { id: 4, name: "Other", orderIndex: 3 },
+      priority: CrmPriorityEnum.MEDIUM,
+      isCompleted: true,
+      dueAt: "2026-06-19T09:00:00",
+      notes: "Prepare and send price proposal draft.",
+      owner: {
+        employeeId: 1,
+        firstName: "John",
+        lastName: "Doe",
+        authPic: null
+      },
+      contact: null,
+      company: null,
+      deal: null,
+      isDeleted: false
+    }
+  ];
 
   const menuItems = [
     {
@@ -104,15 +147,22 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         <div className="flex flex-col flex-1 gap-6 min-w-0">
           <SidePanelTaskNotes notes={selectedTask.notes} />
 
-          <SidePanelDealSection deals={taskDeals} />
+          <div className="flex flex-col gap-3">
+            <h2 className="h2">{translateText(["dealsTitle"])}</h2>
+            <hr className="border-secondary-accent" />
+            <SidePanelDealSection deals={taskDeals} />
+          </div>
 
-          <SidePanelRelatedTasksSection
-            tasks={[]}
-            currentTaskId={selectedTask.id}
-          />
+          <div className="flex flex-col gap-3">
+            <h2 className="h2">{translateText(["relatedTasksTitle"])}</h2>
+            <hr className="border-secondary-accent" />
+            <SidePanelTasksSection
+              tasks={dummyTasks}
+            />
+          </div>
         </div>
 
-        <div className="w-[240px] shrink-0">
+        <div className="w-[295px] shrink-0">
           <SidePanelTaskInfo task={selectedTask} />
         </div>
       </div>

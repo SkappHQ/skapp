@@ -320,6 +320,8 @@
       "emptyTitle": "No deals",
       "emptyDescription": "No deals associated with this company",
       "descriptionLabel": "Description",
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions",
       "ariaLabels": {
         "addDealBtn": "Add Deal"
       }
@@ -350,10 +352,6 @@
         "cancel": "Cancel delete deal",
         "confirm": "Confirm delete deal"
       }
-    },
-    "sidePanel": {
-      "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions"
     }
   },
   "tasks": {
@@ -454,6 +452,7 @@
       "noRelatedTasks": "No related tasks",
       "statusDone": "Done",
       "statusPending": "Pending",
+      "markAsDone": "Mark as done",
       "assignedTo": "Assigned to",
       "priority": "Priority",
       "closingDate": "Closing date",
