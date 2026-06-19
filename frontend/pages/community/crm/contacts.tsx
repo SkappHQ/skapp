@@ -57,7 +57,6 @@ const Contacts: NextPage = () => {
           />
         )}
         <ContactModalController />
-        <TaskModalController />
         <ContactTable />
       </>
     </ContentLayout>

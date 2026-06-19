@@ -32,10 +32,6 @@ const TaskRow: FC<Props> = ({
     task.isCompleted
   );
 
-  useEffect(() => {
-    setOptimisticCompleted(task.isCompleted);
-  }, [task.isCompleted]);
-
   const { mutate: updateCompletion } = useUpdateTaskCompletion(
     () => {},
     () => {
