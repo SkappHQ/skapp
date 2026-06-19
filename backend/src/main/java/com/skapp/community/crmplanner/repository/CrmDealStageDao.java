@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CrmDealStageDao extends JpaRepository<CrmDealStage, Long> {
+public interface CrmDealStageDao extends JpaRepository<CrmDealStage, Long>, CrmDealStageRepository {
 
 	List<CrmDealStage> findAllByIsDeletedFalseOrderByOrderIndexAsc();
 
 	Optional<CrmDealStage> findByIdAndIsDeletedFalse(Long id);
 
 	List<CrmDealStage> findAllByIdInAndIsDeletedFalse(List<Long> ids);
+
+	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 
 }
