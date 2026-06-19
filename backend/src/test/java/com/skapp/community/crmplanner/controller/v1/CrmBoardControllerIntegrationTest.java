@@ -369,6 +369,38 @@ class CrmBoardControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Deals grouped by stage - completed task is excluded from taskCount")
+	void getDealsByStages_CompletedTaskExcludedFromTaskCount() throws Exception {
+		CrmDeal deal = createDeal("Deal With Mixed Tasks", stage1, "a0", 1L);
+		createTask(deal);
+		createCompletedTask(deal);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['taskCount']").value(1));
+	}
+
+	@Test
+	@DisplayName("Deals grouped by stage - soft-deleted task is excluded from taskCount")
+	void getDealsByStages_DeletedTaskExcludedFromTaskCount() throws Exception {
+		CrmDeal deal = createDeal("Deal With Deleted Task", stage1, "a0", 1L);
+		createTask(deal);
+		createDeletedTask(deal);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['taskCount']").value(1));
+	}
+
+	@Test
 	@DisplayName("Deals grouped by multiple stages - taskCounts computed independently per stage")
 	void getDealsByStages_MultipleStages_TaskCountsComputedPerStage() throws Exception {
 		CrmDeal dealInStage1 = createDeal("Stage1 Deal", stage1, "a0", 1L);
@@ -402,6 +434,30 @@ class CrmBoardControllerIntegrationTest {
 		task.setOwner(employeeDao.getReferenceById(1L));
 		task.setDeal(deal);
 		task.setIsDeleted(false);
+		task.setIsCompleted(false);
+		return crmTaskDao.save(task);
+	}
+
+	private CrmTask createCompletedTask(CrmDeal deal) {
+		CrmTask task = new CrmTask();
+		task.setName("Completed Task");
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setDeal(deal);
+		task.setIsDeleted(false);
+		task.setIsCompleted(true);
+		return crmTaskDao.save(task);
+	}
+
+	private CrmTask createDeletedTask(CrmDeal deal) {
+		CrmTask task = new CrmTask();
+		task.setName("Deleted Task");
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setDeal(deal);
+		task.setIsDeleted(true);
 		task.setIsCompleted(false);
 		return crmTaskDao.save(task);
 	}
