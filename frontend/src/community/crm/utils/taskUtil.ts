@@ -4,7 +4,7 @@ import {
   MeetingFilledIcon,
   PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
-import React, { ComponentType, ReactElement, createElement } from "react";
+import { ComponentType, ReactElement, createElement } from "react";
 
 import {
   convertUTCStringToLocalDateTime,
@@ -12,8 +12,12 @@ import {
   getCurrentDateAtMidnight,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
-import { priorityOptions } from "~community/crm/constants/taskConstants";
+import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
+import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+
+import { CrmTaskTabEnum } from "../enums/common";
+import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
 
 export interface TaskDueDateInfo {
   textKey: string;
@@ -62,9 +66,57 @@ export const getTaskTypeIcon = (typeName: string): ReactElement => {
 export const getPriorityConfig = (
   priority: CrmPriorityEnum
 ): { icon: ReactElement; bgColor: string } => {
-  const option = priorityOptions.find((o) => o.value === priority)!;
+  const option = PRIORITY_OPTIONS.find((o) => o.value === priority)!;
   return {
     icon: createElement(option.IconComponent),
     bgColor: option.backgroundColor
   };
+};
+
+export interface GroupedTasks {
+  overdue: CrmTaskDetailType[];
+  dueToday: CrmTaskDetailType[];
+  dueTomorrow: CrmTaskDetailType[];
+  upcoming: CrmTaskDetailType[];
+}
+
+export const groupTasksByDueDate = (
+  tasks: CrmTaskDetailType[]
+): GroupedTasks => {
+  const overdue: CrmTaskDetailType[] = [];
+  const dueToday: CrmTaskDetailType[] = [];
+  const dueTomorrow: CrmTaskDetailType[] = [];
+  const upcoming: CrmTaskDetailType[] = [];
+
+  for (const task of tasks) {
+    const localDueDate = task.dueAt
+      ? convertUTCStringToLocalDateTime(task.dueAt).toISO()
+      : null;
+
+    if (!localDueDate) {
+      upcoming.push(task);
+    } else if (isOverdue(localDueDate)) {
+      overdue.push(task);
+    } else if (isDueToday(localDueDate)) {
+      dueToday.push(task);
+    } else if (isDueTomorrow(localDueDate)) {
+      dueTomorrow.push(task);
+    } else {
+      upcoming.push(task);
+    }
+  }
+
+  return { overdue, dueToday, dueTomorrow, upcoming };
+};
+
+export const getTaskGroups = (
+  tasks: CrmTaskDetailType[],
+  tab: CrmTaskTabEnum,
+  userId: number | undefined
+): GroupedTasks => {
+  const filteredTasks =
+    tab === CrmTaskTabEnum.MY_TASKS
+      ? tasks.filter((task) => task.owner.employeeId === userId)
+      : tasks;
+  return groupTasksByDueDate(filteredTasks);
 };

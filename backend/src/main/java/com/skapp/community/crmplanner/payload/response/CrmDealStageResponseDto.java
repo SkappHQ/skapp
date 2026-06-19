@@ -16,6 +16,8 @@ public class CrmDealStageResponseDto {
 
 	private Integer orderIndex;
 
+	private String description;
+
 	private CrmDealStageType stageType;
 
 }
