@@ -1,8 +1,7 @@
-import { ReactNode } from "react";
+import { CrmTaskTabEnum } from "../enums/common";
 
 export interface CrmTaskTab {
-  id: string;
+  id: CrmTaskTabEnum;
   label: string;
-  component: ReactNode;
   position?: number;
 }

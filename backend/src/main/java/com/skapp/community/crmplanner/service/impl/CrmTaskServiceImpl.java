@@ -83,6 +83,23 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getTaskById(Long id) {
+		log.info("getTaskById: execution started");
+
+		CrmTask task = crmTaskDao.findByIdWithAssociations(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
+		}
+
+		log.info("getTaskById: execution");
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(task));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
 		log.info("getCompletedTasks: execution started");
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
@@ -171,7 +188,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, task.getOwner().getEmployeeId())) {
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
 		}
 
@@ -246,7 +263,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, task.getOwner().getEmployeeId())) {
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DELETE_DENIED);
 		}
 

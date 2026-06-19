@@ -1,15 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { UpdateTaskStatusPayload } from "~community/crm/types/CommonTypes";
+import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
+import {
+  CrmTaskCreatePayload,
+  CrmTaskResponseType,
+  UpdateTaskStatusPayload
+} from "~community/crm/types/CommonTypes";
 
-import { CrmTaskCreatePayload } from "../types/CommonTypes";
-import { taskEndpoints } from "./utils/ApiEndpoints";
 import { taskQueryKeys } from "./utils/QueryKeys";
 
-const createTask = async (taskDetails: CrmTaskCreatePayload): Promise<void> => {
-  // TODO: Replace with actual API call when backend is ready
-  throw new Error("createTask is not yet implemented");
+const createTask = async (taskDetails: CrmTaskCreatePayload) => {
+  const response = await authFetch.post(taskEndpoints.CREATE_TASK, taskDetails);
+  return response?.data?.results?.[0];
 };
 
 export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
@@ -23,6 +26,18 @@ export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
       onSuccess();
     },
     onError
+  });
+};
+
+const fetchOpenTasks = async (): Promise<CrmTaskResponseType> => {
+  const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS);
+  return response?.data?.results?.[0];
+};
+
+export const useGetOpenTasks = () => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_OPEN_TASKS,
+    queryFn: fetchOpenTasks
   });
 };
 

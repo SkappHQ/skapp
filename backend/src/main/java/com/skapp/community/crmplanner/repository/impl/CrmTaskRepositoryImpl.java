@@ -35,6 +35,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -151,6 +152,22 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
+	public Optional<CrmTask> findByIdWithAssociations(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		task.fetch(CrmTask_.type, JoinType.INNER);
+		task.fetch(CrmTask_.owner, JoinType.INNER);
+		task.fetch(CrmTask_.contact, JoinType.LEFT);
+		task.fetch(CrmTask_.deal, JoinType.LEFT);
+
+		query.select(task).where(cb.equal(task.get(CrmTask_.id), id), cb.isFalse(task.get(CrmTask_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList().stream().findFirst();
+	}
+
+	@Override
 	public CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContactTaskMetrics> query = cb.createQuery(CrmContactTaskMetrics.class);
@@ -194,7 +211,13 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		if (params.getSearchKeyword() != null && !params.getSearchKeyword().isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(params.getSearchKeyword().trim().toLowerCase());
-			predicates.add(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"));
+
+			Join<CrmTask, CrmContact> contactJoin = root.join(CrmTask_.contact, JoinType.LEFT);
+			Join<CrmTask, CrmDeal> dealJoin = root.join(CrmTask_.deal, JoinType.LEFT);
+
+			predicates.add(cb.or(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), "%" + escaped + "%"),
+					cb.like(cb.lower(dealJoin.get(CrmDeal_.name)), "%" + escaped + "%")));
 		}
 
 		if (params.getContactId() != null) {
