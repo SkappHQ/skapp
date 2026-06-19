@@ -228,7 +228,6 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		root.fetch(CrmTask_.deal, JoinType.LEFT);
 	}
 
-	// Counts only open (non-completed, non-deleted) tasks per deal.
 	@Override
 	public Map<Long, Long> countTasksByDealIds(List<Long> dealIds) {
 		if (dealIds == null || dealIds.isEmpty()) {
