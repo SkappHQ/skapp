@@ -267,7 +267,6 @@ export interface TaskRowResponseType {
   type: string;
   priority: CrmPriorityEnum;
   isCompleted: boolean;
-  isOverdue: boolean;
   dueAt: string | null;
   owner: CrmOwner;
   contact: CrmContactLookup | null;

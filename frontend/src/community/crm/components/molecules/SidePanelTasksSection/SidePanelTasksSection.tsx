@@ -1,10 +1,11 @@
+import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-import SidePanelTasksEmptyView from "./SidePanelTasksEmptyView";
 import SidePanelTasksList from "./SidePanelTasksList";
 
 interface Props {
@@ -20,6 +21,12 @@ const SidePanelTasksSection: FC<Props> = ({
   isShowContact,
   onTaskRowClick
 }) => {
+  const translateText = useTranslator(
+    "crmModule",
+    "contacts",
+    "contactDetailsPanel",
+    "tasks"
+  );
   const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType
@@ -39,7 +46,21 @@ const SidePanelTasksSection: FC<Props> = ({
       onAddTask={handleAddTask}
     />
   ) : (
-    <SidePanelTasksEmptyView onAddTask={handleAddTask} />
+    <EmptyDataView
+      icon={<SearchIcon width="24" height="24" />}
+      title={translateText(["emptyTitle"])}
+      description={translateText(["emptyDescription"])}
+      button={{
+        children: translateText(["addTaskButtonEmptyView"]),
+        variant: "tertiary",
+        onClick: handleAddTask,
+        icon: <PlusIcon />,
+        "aria-label": translateText(["addTaskButtonEmptyView"])
+      }}
+      className={{
+        wrapper: "h-[228px] bg-secondary-background rounded-lg"
+      }}
+    />
   );
 };
 
