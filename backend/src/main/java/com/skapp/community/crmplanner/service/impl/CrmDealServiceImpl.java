@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -187,27 +186,30 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto);
 
-		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
-
+		List<Page<CrmDeal>> dealPages = new ArrayList<>();
 		for (Long stageId : uniqueStageIds) {
 			long totalCount = stageCounts.getOrDefault(stageId, 0L);
 			PageRequest pageRequest = PageRequest.of(page, limit);
+			dealPages.add(crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount));
+		}
 
-			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount);
-			List<CrmDealByStageItemResponseDto> deals = crmMapper
-				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
+		List<Long> allDealIds = dealPages.stream()
+			.flatMap(p -> p.getContent().stream())
+			.map(CrmDeal::getId)
+			.toList();
+		Map<Long, Long> taskCountMap = crmTaskDao.countTasksByDealIds(allDealIds);
 
-			if (!deals.isEmpty()) {
-				List<Long> dealIds = dealsPage.getContent().stream().map(CrmDeal::getId).toList();
-				Map<Long, Long> taskCountMap = crmTaskDao.findByDealIds(dealIds)
-					.stream()
-					.collect(Collectors.groupingBy(t -> t.getDeal().getId(), Collectors.counting()));
-				deals.forEach(deal -> deal.setTaskCount(taskCountMap.getOrDefault(deal.getId(), 0L)));
-			}
+		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
+		for (int i = 0; i < uniqueStageIds.size(); i++) {
+			Long stageId = uniqueStageIds.get(i);
+			Page<CrmDeal> dealsPage = dealPages.get(i);
+
+			List<CrmDealByStageItemResponseDto> deals =
+				crmMapper.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
+			deals.forEach(deal -> deal.setTaskCount(taskCountMap.getOrDefault(deal.getId(), 0L)));
 
 			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
 			stageResult.setStageId(stageId);
-
 			stageResult.setTotalCount(dealsPage.getTotalElements());
 			stageResult.setCurrentPage(dealsPage.getNumber());
 			stageResult.setTotalPages(dealsPage.getTotalPages());

@@ -8,13 +8,19 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
+import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -32,6 +38,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.util.List;
+
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -41,6 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -76,6 +85,10 @@ class CrmBoardControllerIntegrationTest {
 
 	private final EmployeeRoleDao employeeRoleDao;
 
+	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
+
 	private String adminToken;
 
 	private String repToken;
@@ -89,6 +102,8 @@ class CrmBoardControllerIntegrationTest {
 	private CrmCompany company;
 
 	private CrmContact contact;
+
+	private CrmTaskType taskType;
 
 	@BeforeEach
 	void setup() {
@@ -117,6 +132,11 @@ class CrmBoardControllerIntegrationTest {
 		contact.setCompany(company);
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		crmContactDao.save(contact);
+
+		taskType = new CrmTaskType();
+		taskType.setName("Call");
+		taskType.setOrderIndex(1);
+		taskType = crmTaskTypeDao.save(taskType);
 	}
 
 	private ResultActions performPatchRequest(CrmDealUpdateStageRequestDto dto, String token) throws Exception {
@@ -315,6 +335,75 @@ class CrmBoardControllerIntegrationTest {
 		performPatchRequest(request, repToken).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Deals grouped by stage - deal with no tasks returns priority and taskCount zero")
+	void getDealsByStages_DealWithNoTasks_ReturnsPriorityAndZeroTaskCount() throws Exception {
+		createDeal("No Task Deal", stage1, "a0", 1L);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['priority']").value(CrmDealPriority.MEDIUM.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['taskCount']").value(0));
+	}
+
+	@Test
+	@DisplayName("Deals grouped by stage - deal with tasks returns correct taskCount")
+	void getDealsByStages_DealWithTasks_ReturnsCorrectTaskCount() throws Exception {
+		CrmDeal deal = createDeal("Tasked Deal", stage1, "a0", 1L);
+		createTask(deal);
+		createTask(deal);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['taskCount']").value(2));
+	}
+
+	@Test
+	@DisplayName("Deals grouped by multiple stages - taskCounts computed independently per stage")
+	void getDealsByStages_MultipleStages_TaskCountsComputedPerStage() throws Exception {
+		CrmDeal dealInStage1 = createDeal("Stage1 Deal", stage1, "a0", 1L);
+		createTask(dealInStage1);
+
+		createDeal("Stage2 Deal", stage2, "a0", 1L);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId(), stage2.getId()));
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['taskCount']").value(1))
+			.andExpect(jsonPath("['results'][1]['deals'][0]['taskCount']").value(0));
+	}
+
+	private ResultActions performPostDealsByStagesRequest(CrmDealsByStagesRequestDto dto, String token)
+			throws Exception {
+		return mvc.perform(post("/v1/crm/board/deals-grouped-by-stages").contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(token)));
+	}
+
+	private CrmTask createTask(CrmDeal deal) {
+		CrmTask task = new CrmTask();
+		task.setName("Test Task");
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setDeal(deal);
+		task.setIsDeleted(false);
+		task.setIsCompleted(false);
+		return crmTaskDao.save(task);
 	}
 
 }

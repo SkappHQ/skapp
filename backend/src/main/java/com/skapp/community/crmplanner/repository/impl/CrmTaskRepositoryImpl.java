@@ -34,6 +34,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -215,20 +217,22 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public List<CrmTask> findByDealIds(List<Long> dealIds) {
+	public Map<Long, Long> countTasksByDealIds(List<Long> dealIds) {
 		if (dealIds == null || dealIds.isEmpty()) {
-			return Collections.emptyList();
+			return Collections.emptyMap();
 		}
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		CriteriaQuery<Object[]> query = cb.createQuery(Object[].class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
-		task.fetch(CrmTask_.deal, JoinType.LEFT);
+		query.select(cb.array(task.get(CrmTask_.deal).get(CrmDeal_.id), cb.count(task.get(CrmTask_.id))))
+			.where(task.get(CrmTask_.deal).get(CrmDeal_.id).in(dealIds), cb.isFalse(task.get(CrmTask_.isDeleted)))
+			.groupBy(task.get(CrmTask_.deal).get(CrmDeal_.id));
 
-		query.select(task)
-			.where(task.get(CrmTask_.deal).get(CrmDeal_.id).in(dealIds), cb.isFalse(task.get(CrmTask_.isDeleted)));
-
-		return entityManager.createQuery(query).getResultList();
+		return entityManager.createQuery(query)
+			.getResultList()
+			.stream()
+			.collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
 	}
 
 }

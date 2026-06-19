@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CrmTaskRepository {
 
@@ -22,6 +23,6 @@ public interface CrmTaskRepository {
 
 	Page<CrmTask> findCompletedTasks(Long ownerId, CrmTaskCompletedFilterDto filterDto, Pageable pageable);
 
-	List<CrmTask> findByDealIds(List<Long> dealIds);
+	Map<Long, Long> countTasksByDealIds(List<Long> dealIds);
 
 }
