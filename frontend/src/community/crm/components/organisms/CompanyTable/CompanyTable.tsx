@@ -36,8 +36,13 @@ export const CompanyTable: FC = () => {
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching
+  } = useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
   const { setSelectedCompany, setIsCrmSidePanelOpen } = useCrmStore(
     (store) => ({
@@ -170,7 +175,9 @@ export const CompanyTable: FC = () => {
         columns={columns as TableColumn<any>[]}
         data={companies ?? []}
         emptyStateType={emptyStateType}
-        isLoading={isLoading && companies?.length === 0}
+        isLoading={
+          isFetching && !isFetchingNextPage && (companies?.length ?? 0) === 0
+        }
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="34.5rem"
         hasMore={hasNextPage}

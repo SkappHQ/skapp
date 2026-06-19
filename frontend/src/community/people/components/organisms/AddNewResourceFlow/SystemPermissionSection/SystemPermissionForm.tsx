@@ -373,7 +373,7 @@ const SystemPermissionForm = ({
             />
           )}
 
-          {isCrmModuleEnabled && (
+          {/* {isCrmModuleEnabled && (
             <DropdownList
               inputName={"crmRole"}
               label={systemPermissionsText(["crm"])}
@@ -391,7 +391,7 @@ const SystemPermissionForm = ({
                 isProfileView || values.isSuperAdmin || isInputsDisabled
               }
             />
-          )}
+          )} */}
         </Stack>
 
         {isUpdate &&

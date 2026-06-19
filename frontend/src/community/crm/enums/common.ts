@@ -4,6 +4,12 @@ export enum CrmPriorityEnum {
   HIGH = "HIGH"
 }
 
+export enum CrmTaskTabEnum {
+  MY_TASKS = "my-tasks",
+  TEAM_TASKS = "team-tasks",
+  COMPLETED_TASKS = "completed-tasks"
+}
+
 export enum CrmIndustryEnum {
   NONE = "NONE",
   ACCOMMODATION_SERVICES = "ACCOMMODATION_SERVICES",
@@ -47,4 +53,19 @@ export enum CrmDealSortEnum {
   AMOUNT = "AMOUNT",
   STAGE_TYPE = "STAGE_TYPE",
   STAGE_ORDER = "STAGE_ORDER"
+}
+
+export enum CrmDealStageColorsEnum {
+  SKY = "SKY",
+  PINK = "PINK",
+  APRICOT = "APRICOT",
+  SUNSHINE = "SUNSHINE",
+  TEAL = "TEAL",
+  LAVENDER = "LAVENDER",
+  GOLD = "GOLD",
+  CORAL = "CORAL",
+  SLATE = "SLATE",
+  LIME = "LIME",
+  ROSEWOOD = "ROSEWOOD",
+  INDIGO = "INDIGO"
 }

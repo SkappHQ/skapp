@@ -111,6 +111,21 @@
     },
     "contactDetailsPanel": {
       "lastUpdated": "Last updated",
+      "tasks": {
+        "addTaskButton": "Add task +",
+        "addTaskButtonEmptyView": "Add task",
+        "addTaskPlaceholder": "Type a task name…",
+        "emptyTitle": "No tasks",
+        "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
+        "toggleErrorTitle": "Failed to update task",
+        "toggleErrorDescription": "Could not update the task status. Please try again.",
+        "checkTaskMarkComplete": "Mark {{name}} as complete",
+        "checkTaskMarkIncomplete": "Mark {{name}} as incomplete",
+        "openTaskDetails": "Open task details panel for {{name}}",
+        "dueDateOverdue": "Overdue",
+        "dueDateToday": "Due today",
+        "dueDateDueOn": "Due on {{date}}"
+      },
       "errors": {
         "contactNotFoundTitle": "Contact not found",
         "contactNotFoundDescription": "This contact is no longer available."
@@ -376,12 +391,29 @@
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
       "infiniteScrollLoadingMessage": "Loading more deals..."
+    },
+    "deleteDealModal": {
+      "areYouSureModalTitle": "Are you sure?",
+      "description": "Are you sure you want to delete '{{dealName}}'? This will remove all tasks linked to this deal. This action cannot be undone.",
+      "buttons": {
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "ariaLabels": {
+        "cancel": "Cancel delete deal",
+        "confirm": "Confirm delete deal"
+      }
+    },
+    "sidePanel": {
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions"
     }
   },
   "tasks": {
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task",
+    "openTaskDetails": "Open task details panel for {{name}}",
     "addTaskModal": {
       "title": "Add task",
       "labels": {
@@ -452,7 +484,7 @@
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
-      "search": "Search task",
+      "search": "Search tasks",
       "infiniteScrollLoadingMessage": "Loading tasks...",
       "emptyDataState": {
         "title": "No tasks",
@@ -461,6 +493,16 @@
       "emptySearchState": {
         "title": "No results found.",
         "description": "We couldn't find any matches for your search. Please try using a different term."
+      },
+      "errorState": {
+        "title": "Something went wrong",
+        "description": "Failed to load tasks. Please try again."
+      },
+      "groupLabels": {
+        "overdue": "Overdue",
+        "dueToday": "Today",
+        "dueTomorrow": "Tomorrow",
+        "upcoming": "Upcoming"
       }
     }
   }
