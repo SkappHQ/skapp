@@ -13,13 +13,15 @@ interface Props {
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
+  emptyDescription?: string;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
   tasks,
   isCheckTaskVisible,
   isShowContact,
-  onTaskRowClick
+  onTaskRowClick,
+  emptyDescription
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -49,7 +51,7 @@ const SidePanelTasksSection: FC<Props> = ({
     <EmptyDataView
       icon={<SearchIcon width="24" height="24" />}
       title={translateText(["emptyTitle"])}
-      description={translateText(["emptyDescription"])}
+      description={emptyDescription ?? translateText(["emptyDescription"])}
       button={{
         children: translateText(["addTaskButtonEmptyView"]),
         variant: "tertiary",

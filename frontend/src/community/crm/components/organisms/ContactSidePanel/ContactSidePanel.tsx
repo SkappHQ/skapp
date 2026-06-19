@@ -69,7 +69,12 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       case SidePanelTabEnum.DEALS:
         return <SidePanelDealSection deals={contact?.deals ?? []} />;
       case SidePanelTabEnum.TASKS:
-        return <SidePanelTasksSection tasks={contact?.tasks ?? []} />;
+        return (
+          <SidePanelTasksSection
+            tasks={contact?.tasks ?? []}
+            emptyDescription={translateText(["tasks", "emptyDescription"])}
+          />
+        );
       default:
         return null;
     }

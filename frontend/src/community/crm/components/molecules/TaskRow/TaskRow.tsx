@@ -1,6 +1,9 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
@@ -22,7 +25,36 @@ const TaskRow: FC<Props> = ({
   className
 }) => {
   const translateText = useTranslator("crmModule", "tasks");
-  const applyCompletedStyle = task.isCompleted && isCheckTaskVisible;
+
+  const { setToastMessage } = useToast();
+
+  const [optimisticCompleted, setOptimisticCompleted] = useState(
+    task.isCompleted
+  );
+
+  useEffect(() => {
+    setOptimisticCompleted(task.isCompleted);
+  }, [task.isCompleted]);
+
+  const { mutate: updateCompletion } = useUpdateTaskCompletion(
+    () => {},
+    () => {
+      setOptimisticCompleted(task.isCompleted);
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["toggleErrorTitle"]),
+        description: translateText(["toggleErrorDescription"])
+      });
+    }
+  );
+
+  const handleToggleChange = (checked: boolean) => {
+    setOptimisticCompleted(checked);
+    updateCompletion({ id: task.id, isCompleted: checked });
+  };
+
+  const applyCompletedStyle = optimisticCompleted && isCheckTaskVisible;
 
   return (
     <div
@@ -35,7 +67,13 @@ const TaskRow: FC<Props> = ({
         if (e.key === "Enter" || e.key === " ") onRowClick?.();
       }}
     >
-      {isCheckTaskVisible && <TaskRowCheckbox task={task} />}
+      {isCheckTaskVisible && (
+        <TaskRowCheckbox
+          task={task}
+          handleToggleChange={handleToggleChange}
+          isOptimisticCompleted={optimisticCompleted}
+        />
+      )}
 
       <TaskRowContent
         task={task}

@@ -1,5 +1,5 @@
 import { CheckTask } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -9,32 +9,16 @@ import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 interface Props {
   task: TaskRowResponseType;
+  handleToggleChange: (checked: boolean) => void;
+  isOptimisticCompleted: boolean;
 }
 
-const TaskRowCheckbox: FC<Props> = ({ task }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactDetailsPanel",
-    "tasks"
-  );
-
-  const { setToastMessage } = useToast();
-  const { mutate: updateCompletion } = useUpdateTaskCompletion(
-    () => {},
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["toggleErrorTitle"]),
-        description: translateText(["toggleErrorDescription"])
-      });
-    }
-  );
-
-  const handleToggleChange = (checked: boolean) => {
-    updateCompletion({ id: task.id, isCompleted: checked });
-  };
+const TaskRowCheckbox: FC<Props> = ({
+  task,
+  handleToggleChange,
+  isOptimisticCompleted
+}) => {
+  const translateText = useTranslator("crmModule", "tasks");
 
   return (
     <div
@@ -42,11 +26,11 @@ const TaskRowCheckbox: FC<Props> = ({ task }) => {
       onClick={(e) => e.stopPropagation()}
     >
       <CheckTask
-        checked={task.isCompleted}
+        checked={isOptimisticCompleted}
         onChange={handleToggleChange}
         aria-label={translateText(
           [
-            task.isCompleted
+            isOptimisticCompleted
               ? "checkTaskMarkIncomplete"
               : "checkTaskMarkComplete"
           ],
