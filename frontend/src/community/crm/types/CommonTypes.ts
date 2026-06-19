@@ -2,6 +2,7 @@ import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
 import {
   CrmDealSortEnum,
+  CrmDealStageColorsEnum,
   CrmDealStageEnum,
   CrmIndustryEnum,
   CrmPriorityEnum
@@ -162,7 +163,8 @@ export interface CrmDealType {
 export interface CrmDealStageType {
   id: number;
   name: string;
-  color: string;
+  description?: string | null;
+  color: CrmDealStageColorsEnum;
   orderIndex: number;
   stageType: CrmDealStageEnum;
 }
@@ -180,6 +182,31 @@ export interface CrmTaskType {
   company: CrmCompanyType | null;
   deal: CrmDealType | null;
   isDeleted: boolean;
+}
+
+export interface CrmDealLookup {
+  id: number;
+  name: string;
+}
+
+export interface CrmTaskResponseType {
+  tasks: CrmTaskDetailType[];
+}
+
+export interface CrmTaskDetailType {
+  id: number;
+  name: string;
+  typeId: number;
+  typeName: string;
+  priority: CrmPriorityEnum;
+  isCompleted: boolean;
+  dueAt: string | null;
+  notes: string | null;
+  contactId: number | null;
+  ownerName: string;
+  owner: CrmOwner;
+  contact: CrmContactLookup | null;
+  deal: CrmDealLookup | null;
 }
 
 export interface CrmTaskCategory {
@@ -254,6 +281,11 @@ export interface CrmTaskCreatePayload {
   deal: string;
   owner: number | null;
   notes: string;
+}
+
+export interface UpdateTaskStatusPayload {
+  id: number;
+  isCompleted: boolean;
 }
 
 export interface DetailPanelTaskResponseType {

@@ -1,8 +1,24 @@
-import { isAfter, isToday, startOfDay } from "date-fns";
+import {
+  isAfter,
+  isBefore,
+  isToday,
+  isTomorrow,
+  parseISO,
+  startOfDay,
+  startOfToday
+} from "date-fns";
 import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+
+export const isOverdue = (dueAt: string): boolean =>
+  isBefore(parseISO(dueAt), startOfToday());
+
+export const isDueToday = (dueAt: string): boolean => isToday(parseISO(dueAt));
+
+export const isDueTomorrow = (dueAt: string): boolean =>
+  isTomorrow(parseISO(dueAt));
 
 export const addTaskValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
