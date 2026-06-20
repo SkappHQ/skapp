@@ -81,9 +81,11 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto createContact(CrmContactCreateRequestDto requestDto) {
 		log.info("createContact: execution started");
 
-		User currentUser = userService.getCurrentUser();
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
 				requestDto.getOwnerId(), requestDto.getCompanyId());
+		validateContactCreation();
+
+		User currentUser = userService.getCurrentUser();
 
 		String lowercaseEmail = requestDto.getEmail().toLowerCase();
 		if (crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(lowercaseEmail)) {
@@ -104,6 +106,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("createContact: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+	}
+
+	protected void validateContactCreation() {
 	}
 
 	@Override
