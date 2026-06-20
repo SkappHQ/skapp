@@ -64,3 +64,21 @@ export const useUpdateTaskCompletion = (
     onError
   });
 };
+
+const deleteTask = async (id: number) => {
+  await authFetch.delete(taskEndpoints.DELETE_TASK(id));
+};
+
+export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_TASK_DATA // TODO :INVALIDATE OPEN AND COMPLETE WHEN MERGED
+      });
+      onSuccess();
+    },
+    onError
+  });
+};
