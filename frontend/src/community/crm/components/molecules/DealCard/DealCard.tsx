@@ -54,10 +54,10 @@ const DealCard: FC<DealCardProps> = ({
   const wrapperClasses = [
     "w-full min-h-[150px] rounded-[8px] bg-white px-2 py-3",
     "flex flex-col gap-3",
-    "outline outline-1 outline-zinc-200",
+    "outline outline-1 outline-secondary-accent",
     "text-left transition-shadow",
     isInteractive && "cursor-pointer hover:shadow-md hover:outline-zinc-300",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent",
     className
   ]
     .filter(Boolean)
@@ -70,7 +70,7 @@ const DealCard: FC<DealCardProps> = ({
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-500 text-white">
             <HandshakeIcon />
           </span>
-          <span className="body3 font-semibold text-zinc-500">
+          <span className="body3 font-semibold text-secondary-icon">
             {id.startsWith("#") ? id : `#${id.replace(/^deal-/, "")}`}
           </span>
         </div>
@@ -86,30 +86,12 @@ const DealCard: FC<DealCardProps> = ({
         )}
       </div>
 
-      <p
-        className="line-clamp-2 text-zinc-950"
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontWeight: 400,
-          fontSize: "14px",
-          lineHeight: "18px",
-          letterSpacing: "0.1px"
-        }}
-      >
+      <p className="body2 line-clamp-2 leading-4.5 tracking-[0.1px] text-zinc-950">
         {title}
       </p>
 
       {(contactName || company) && (
-        <p
-          className="truncate text-zinc-500"
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 400,
-            fontSize: "12px",
-            lineHeight: "16px",
-            letterSpacing: "0.1px"
-          }}
-        >
+        <p className="body3 truncate leading-4 tracking-[0.1px] text-secondary-icon">
           {contactName && <span>{contactName}</span>}
           {contactName && company && (
             <span className="mx-1 text-zinc-300">•</span>
@@ -119,19 +101,10 @@ const DealCard: FC<DealCardProps> = ({
       )}
 
       <div className="flex items-center gap-1.5">
-        <span className="shrink-0 text-zinc-500">
+        <span className="shrink-0 text-secondary-icon">
           <DealValueIcon className="h-4 w-4" />
         </span>
-        <span
-          className="text-zinc-950"
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 400,
-            fontSize: "12px",
-            lineHeight: "18px",
-            letterSpacing: "0.1px"
-          }}
-        >
+        <span className="body3 leading-4.5 tracking-[0.1px] text-zinc-950">
           {formattedValue}
         </span>
       </div>
@@ -146,7 +119,7 @@ const DealCard: FC<DealCardProps> = ({
                 <ClipboardCheckIcon fill="text-slate-600" />
               </span>
             }
-            className="bg-slate-200 text-slate-600"
+            className="bg-secondary-accent text-secondary-text"
           />
         )}
 

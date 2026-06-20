@@ -56,10 +56,7 @@ const DealsHeader: FC<Props> = ({
       <ViewToggle
         options={viewOptions}
         activeView={activeView}
-        onChange={(v) => {
-          const opt = viewOptions.find((o) => o.value === v);
-          if (opt) onViewChange(opt.value);
-        }}
+        onChange={(v) => onViewChange(v as DealView)}
         ariaLabel={translateText(["switchDealViewAriaLabel"])}
       />
     </div>

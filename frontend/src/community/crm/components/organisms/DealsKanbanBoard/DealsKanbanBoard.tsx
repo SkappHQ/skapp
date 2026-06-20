@@ -18,7 +18,7 @@ import DealStageLane, {
   type DealStageLaneDeal
 } from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
-import { CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
+import { CrmDealStageColorsEnum, CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
 import type {
   BoardDealItem,
   BoardDealsGroupedRequest,
@@ -34,42 +34,42 @@ const MOCK_STAGES: CrmDealStageType[] = [
   {
     id: 1,
     name: "Lead",
-    color: "PINK",
+    color: CrmDealStageColorsEnum.PINK,
     orderIndex: 1,
     stageType: CrmDealStageEnum.INITIAL
   },
   {
     id: 2,
     name: "Qualified",
-    color: "TEAL",
+    color: CrmDealStageColorsEnum.TEAL,
     orderIndex: 2,
     stageType: CrmDealStageEnum.OPEN
   },
   {
     id: 3,
     name: "Demo scheduled",
-    color: "LAVENDER",
+    color: CrmDealStageColorsEnum.LAVENDER,
     orderIndex: 3,
     stageType: CrmDealStageEnum.OPEN
   },
   {
     id: 4,
     name: "Proposal sent",
-    color: "GOLD",
+    color: CrmDealStageColorsEnum.GOLD,
     orderIndex: 4,
     stageType: CrmDealStageEnum.OPEN
   },
   {
     id: 5,
     name: "Deal Won",
-    color: "LIME",
+    color: CrmDealStageColorsEnum.LIME,
     orderIndex: 5,
     stageType: CrmDealStageEnum.WON
   },
   {
     id: 6,
     name: "Deal Lost",
-    color: "ROSEWOOD",
+    color: CrmDealStageColorsEnum.ROSEWOOD,
     orderIndex: 6,
     stageType: CrmDealStageEnum.LOST
   }
@@ -154,7 +154,7 @@ const MOCK_DEALS: Record<number, BoardDealItem[]> = {
 };
 
 const getAccentColor = (color: string): string =>
-  STAGE_COLOR_MAP[color?.toUpperCase()] ?? "#a1a1aa";
+  STAGE_COLOR_MAP[color?.toUpperCase()];
 
 const toStageLaneDeal = (deal: BoardDealItem): DealStageLaneDeal => ({
   id: String(deal.id),
@@ -170,7 +170,6 @@ const toStageLaneDeal = (deal: BoardDealItem): DealStageLaneDeal => ({
   formattedValue: formatValue(deal.amount),
   priority: deal.priority,
   taskCount: deal.taskCount,
-  taskCountTooltip: `${deal.taskCount} task${deal.taskCount === 1 ? "" : "s"}`,
   ariaLabel: `Deal: ${deal.name}`
 });
 
@@ -196,7 +195,11 @@ const buildInitialStageState = (
     ])
   );
 
-const DealsKanbanBoard: FC<{ searchKeyword?: string }> = ({
+interface DealsKanbanBoardProps {
+  searchKeyword?: string;
+}
+
+const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   searchKeyword = ""
 }) => {
 
@@ -262,13 +265,14 @@ const DealsKanbanBoard: FC<{ searchKeyword?: string }> = ({
   };
 
   const handleDragStart = ({ active }: DragStartEvent) => {
+    snapshotRef.current = { ...stageMapRef.current };
     const dealId = Number(active.id);
     for (const [sid, state] of Object.entries(stageMapRef.current)) {
       const found = state.deals.find((d) => d.id === dealId);
       if (found) {
         setActiveDeal(found);
         setActiveStageId(Number(sid));
-        originalStageIdRef.current = Number(sid); // lock in source stage
+        originalStageIdRef.current = Number(sid);
         break;
       }
     }
@@ -295,9 +299,35 @@ const DealsKanbanBoard: FC<{ searchKeyword?: string }> = ({
     setOverStageId(targetStageId);
 
     const activeDealId = Number(active.id);
-    if (!targetStageId || !activeStageId || activeStageId === targetStageId)
-      return;
+    if (!targetStageId || !activeStageId) return;
 
+    // Same stage: reposition within the lane
+    if (activeStageId === targetStageId) {
+      if (overId.startsWith("stage::")) return;
+      const overDealId = Number(overId);
+      if (overDealId === activeDealId) return;
+
+      setStageMap((prev) => {
+        const state = prev[targetStageId];
+        if (!state) return prev;
+        const activeIndex = state.deals.findIndex(
+          (d) => d.id === activeDealId
+        );
+        const overIndex = state.deals.findIndex((d) => d.id === overDealId);
+        if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex)
+          return prev;
+        return {
+          ...prev,
+          [targetStageId]: {
+            ...state,
+            deals: arrayMove(state.deals, activeIndex, overIndex)
+          }
+        };
+      });
+      return;
+    }
+
+    // Cross stage: move deal from source to target
     setStageMap((prev) => {
       const srcState = prev[activeStageId];
       const tgtState = prev[targetStageId];
@@ -354,9 +384,13 @@ const DealsKanbanBoard: FC<{ searchKeyword?: string }> = ({
     setOverStageId(null);
     originalStageIdRef.current = null;
 
-    if (!over || !finalStageId || !sourceStageId) return;
-
-    snapshotRef.current = { ...stageMapRef.current };
+    if (!over || !finalStageId || !sourceStageId) {
+      if (snapshotRef.current) {
+        setStageMap(snapshotRef.current);
+        snapshotRef.current = null;
+      }
+      return;
+    }
 
     const isCrossStage = sourceStageId !== finalStageId;
     const targetDeals = stageMapRef.current[finalStageId]?.deals ?? [];
@@ -370,6 +404,7 @@ const DealsKanbanBoard: FC<{ searchKeyword?: string }> = ({
         previousDealId: targetDeals[activeIndex - 1]?.id ?? null,
         nextDealId: targetDeals[activeIndex + 1]?.id ?? null
       });
+      snapshotRef.current = null;
       return;
     }
     const overId = String(over.id);
@@ -390,9 +425,14 @@ const DealsKanbanBoard: FC<{ searchKeyword?: string }> = ({
       previousDealId: reordered[overIndex - 1]?.id ?? null,
       nextDealId: reordered[overIndex + 1]?.id ?? null
     });
+    snapshotRef.current = null;
   };
 
   const handleDragCancel = () => {
+    if (snapshotRef.current) {
+      setStageMap(snapshotRef.current);
+      snapshotRef.current = null;
+    }
     setActiveDeal(null);
     setActiveStageId(null);
     setOverStageId(null);

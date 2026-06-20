@@ -25,7 +25,6 @@ export interface DealStageLaneDeal {
   formattedValue: string;
   priority: DealPriority;
   taskCount?: number;
-  taskCountTooltip?: string;
   ariaLabel?: string;
 }
 
@@ -135,9 +134,9 @@ const DealStageLane: FC<DealStageLaneProps> = ({
     <section
       ref={setNodeRef}
       className={[
-        "flex h-full w-[320px] shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow",
+        "flex h-full w-[320px] shrink-0 flex-col rounded-lg bg-tertiary-background outline outline-1 transition-shadow",
         isOver
-          ? "outline-blue-400 ring-2 ring-blue-200"
+          ? "outline-primary-accent ring-2 ring-primary-background"
           : "outline-secondary-accent"
       ].join(" ")}
       aria-labelledby={`crm-stage-${stage.id}`}
@@ -155,9 +154,9 @@ const DealStageLane: FC<DealStageLaneProps> = ({
           >
             {stage.name}
           </h2>
-          <p className="body3 mt-0.5 text-zinc-500">{stage.formattedTotal}</p>
+          <p className="body3 mt-0.5 text-secondary-icon">{stage.formattedTotal}</p>
         </div>
-        <span className="rounded-full bg-secondary-accent px-3 py-1 text-xs font-semibold text-zinc-600">
+        <span className="rounded-full bg-secondary-accent px-3 py-1 text-xs font-semibold text-secondary-text">
           {isLoading
             ? "…"
             : String(stage.totalCount ?? deals.length).padStart(2, "0")}
@@ -190,7 +189,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               <button
                 type="button"
                 onClick={() => onAddDeal(stage.id)}
-                className="body3 w-full rounded-lg px-4 py-2 text-center font-medium text-zinc-500 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="body3 w-full rounded-lg px-4 py-2 text-center font-medium text-secondary-icon transition hover:bg-secondary-accent focus:outline-none focus:ring-2 focus:ring-primary-accent"
               >
                 {translateText(["addDealBtn"])}
               </button>
@@ -212,7 +211,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
                   <button
                     type="button"
                     onClick={() => onAddDeal(stage.id)}
-                    className="body3 mt-1 w-full rounded-lg px-4 py-2 text-center font-medium text-zinc-500 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="body3 mt-1 w-full rounded-lg px-4 py-2 text-center font-medium text-secondary-icon transition hover:bg-secondary-accent focus:outline-none focus:ring-2 focus:ring-primary-accent"
                   >
                     {translateText(["addDealBtn"])}
                   </button>
