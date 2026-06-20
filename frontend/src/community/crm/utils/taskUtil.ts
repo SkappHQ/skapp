@@ -75,7 +75,7 @@ export interface GroupedTasks {
   dueToday: CrmTaskDetailType[];
   dueTomorrow: CrmTaskDetailType[];
   upcoming: CrmTaskDetailType[];
-  isEmpty: boolean;
+  isOpenTasksEmpty: boolean;
 }
 
 export const groupTasksByDueDate = (
@@ -104,13 +104,19 @@ export const groupTasksByDueDate = (
     }
   }
 
-  const isEmpty =
+  const isOpenTasksEmpty =
     overdue.length === 0 &&
     dueToday.length === 0 &&
     dueTomorrow.length === 0 &&
     upcoming.length === 0;
 
-  return { overdue, dueToday, dueTomorrow, upcoming, isEmpty };
+  return {
+    overdue,
+    dueToday,
+    dueTomorrow,
+    upcoming,
+    isOpenTasksEmpty
+  };
 };
 
 export const getTaskGroups = (

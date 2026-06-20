@@ -16,7 +16,7 @@ import {
   useGetOpenTasks
 } from "~community/crm/api/TaskApi";
 import {
-  DEFAULT_PAGE_SIZE,
+  TASK_PAGE_SIZE,
   TASK_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/enums/common";
@@ -48,7 +48,7 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
     isFetchingNextPage
   } = useGetCompletedTasks(
     debouncedSearch,
-    DEFAULT_PAGE_SIZE,
+    TASK_PAGE_SIZE,
     tab === CrmTaskTabEnum.COMPLETED_TASKS
   );
 
@@ -61,7 +61,7 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
     tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.TEAM_TASKS
   );
 
-  const { overdue, dueToday, dueTomorrow, upcoming, isEmpty } = useMemo(() => {
+  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } = useMemo(() => {
     return getTaskGroups(openTaskData?.tasks ?? [], tab, userId);
   }, [openTaskData, tab, userId]);
 
@@ -93,9 +93,7 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
       );
     }
 
-    const isTasksEmpty = isEmpty && completedTasks.length === 0;
-
-    if (isTasksEmpty) {
+    if (isOpenTasksEmpty && completedTasks.length === 0) {
       return (
         <EmptyDataView
           title={
@@ -120,7 +118,7 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
       case CrmTaskTabEnum.COMPLETED_TASKS:
         return renderCompletedTasksContent();
       default:
-        return null;
+        return <></>;
     }
   };
 

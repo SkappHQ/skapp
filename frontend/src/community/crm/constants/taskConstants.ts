@@ -12,7 +12,7 @@ import {
 
 export const TASK_SEARCH_DEBOUNCE_DELAY = 500;
 
-export const DEFAULT_PAGE_SIZE = 12;
+export const TASK_PAGE_SIZE = 12;
 
 export const SALES_REP_RESTRICTED_TASK_TABS = [CrmTaskTabEnum.TEAM_TASKS];
 
