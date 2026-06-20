@@ -40,10 +40,11 @@ const fetchOpenTasks = async (): Promise<CrmTaskResponseType> => {
   return response?.data?.results?.[0];
 };
 
-export const useGetOpenTasks = () => {
+export const useGetOpenTasks = (enabled: boolean) => {
   return useQuery({
     queryKey: taskQueryKeys.GET_OPEN_TASKS,
-    queryFn: fetchOpenTasks
+    queryFn: fetchOpenTasks,
+    enabled
   });
 };
 
@@ -88,7 +89,11 @@ const fetchCompletedTasks = async ({
   return response?.data?.results?.[0];
 };
 
-export const useGetCompletedTasks = (searchKeyword: string, size: number) => {
+export const useGetCompletedTasks = (
+  searchKeyword: string,
+  size: number,
+  enabled: boolean
+) => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_SEARCH(searchKeyword),
@@ -101,6 +106,7 @@ export const useGetCompletedTasks = (searchKeyword: string, size: number) => {
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
-    }
+    },
+    enabled
   });
 };

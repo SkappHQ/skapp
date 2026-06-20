@@ -9,33 +9,60 @@ import { ChangeEvent, FC, useMemo, useState } from "react";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetCompletedTasks } from "~community/crm/api/TaskApi";
+import {
+  useGetCompletedTasks,
+  useGetOpenTasks
+} from "~community/crm/api/TaskApi";
 import {
   DEFAULT_PAGE_SIZE,
   TASK_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/taskConstants";
+import { CrmTaskTabEnum } from "~community/crm/enums/common";
 import { getEmptyStateType } from "~community/crm/utils/crmUtil";
+import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
 import TaskGroup from "../../atoms/TaskGroup/TaskGroup";
 
-const CompletedTasksTabContent: FC = () => {
+interface TasksTabContentProps {
+  tab: CrmTaskTabEnum;
+}
+
+const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
   const translateText = useTranslator("crmModule", "tasks");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
+  const { userId } = useSessionData();
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
   const {
-    data: taskData,
-    isLoading,
-    isError,
+    data: completedTaskData,
+    isLoading: isCompletedTasksLoading,
+    isError: isCompletedTasksError,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useGetCompletedTasks(debouncedSearch, DEFAULT_PAGE_SIZE);
+  } = useGetCompletedTasks(
+    debouncedSearch,
+    DEFAULT_PAGE_SIZE,
+    tab === CrmTaskTabEnum.COMPLETED_TASKS
+  );
+
+  const {
+    data: openTaskData,
+    isLoading: isOpenTasksLoading,
+    isError: isOpenTasksError
+  } = useGetOpenTasks(
+    tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.TEAM_TASKS
+  );
+
+  const { overdue, dueToday, dueTomorrow, upcoming, isEmpty } = useMemo(() => {
+    return getTaskGroups(openTaskData?.tasks ?? [], tab, userId);
+  }, [openTaskData, tab, userId]);
 
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
@@ -45,17 +72,17 @@ const CompletedTasksTabContent: FC = () => {
 
   const emptyStateType = getEmptyStateType(debouncedSearch);
 
-  const tasks = useMemo(
-    () => taskData?.pages.flatMap((page) => page?.items ?? []) ?? [],
-    [taskData]
+  const completedTasks = useMemo(
+    () => completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? [],
+    [completedTaskData]
   );
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isCompletedTasksLoading || isOpenTasksLoading) {
       return <ProjectTableSkeletonLoader rowCount={10} />;
     }
 
-    if (isError) {
+    if (isCompletedTasksError || isOpenTasksError) {
       return (
         <EmptyDataView
           title={translateText(["table", "errorState", "title"])}
@@ -65,7 +92,9 @@ const CompletedTasksTabContent: FC = () => {
       );
     }
 
-    if (tasks.length === 0) {
+    const isTasksEmpty = isEmpty && completedTasks.length === 0;
+
+    if (isTasksEmpty) {
       return (
         <EmptyDataView
           title={
@@ -83,9 +112,52 @@ const CompletedTasksTabContent: FC = () => {
       );
     }
 
+    switch (tab) {
+      case CrmTaskTabEnum.MY_TASKS:
+      case CrmTaskTabEnum.TEAM_TASKS:
+        return renderOpenTasksContent();
+      case CrmTaskTabEnum.COMPLETED_TASKS:
+        return renderCompletedTasksContent();
+      default:
+        return null;
+    }
+  };
+
+  const renderOpenTasksContent = () => {
     return (
       <div className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto">
-        <TaskGroup tasks={tasks} isCheckTaskVisible={false} />
+        {overdue.length > 0 && (
+          <TaskGroup
+            label={translateText(["table", "groupLabels", "overdue"])}
+            tasks={overdue}
+          />
+        )}
+        {dueToday.length > 0 && (
+          <TaskGroup
+            label={translateText(["table", "groupLabels", "dueToday"])}
+            tasks={dueToday}
+          />
+        )}
+        {dueTomorrow.length > 0 && (
+          <TaskGroup
+            label={translateText(["table", "groupLabels", "dueTomorrow"])}
+            tasks={dueTomorrow}
+          />
+        )}
+        {upcoming.length > 0 && (
+          <TaskGroup
+            label={translateText(["table", "groupLabels", "upcoming"])}
+            tasks={upcoming}
+          />
+        )}
+      </div>
+    );
+  };
+
+  const renderCompletedTasksContent = () => {
+    return (
+      <div className="flex flex-col h-full px-2 pb-4 gap-4 overflow-y-auto">
+        <TaskGroup tasks={completedTasks} isCheckTaskVisible={false} />
         <div ref={loadingRef} />
       </div>
     );
@@ -116,4 +188,4 @@ const CompletedTasksTabContent: FC = () => {
   );
 };
 
-export default CompletedTasksTabContent;
+export default TasksTabContent;
