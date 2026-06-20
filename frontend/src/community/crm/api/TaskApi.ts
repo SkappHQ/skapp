@@ -8,8 +8,8 @@ import {
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import {
-  CrmTaskCreatePayload,
   CrmCompletedTaskResponseType,
+  CrmTaskCreatePayload,
   CrmTaskResponseType,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
@@ -35,15 +35,19 @@ export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
   });
 };
 
-const fetchOpenTasks = async (): Promise<CrmTaskResponseType> => {
-  const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS);
+const fetchOpenTasks = async (
+  searchKeyword?: string
+): Promise<CrmTaskResponseType> => {
+  const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
+    params: { searchKeyword }
+  });
   return response?.data?.results?.[0];
 };
 
-export const useGetOpenTasks = (enabled: boolean) => {
+export const useGetOpenTasks = ( searchKeyword: string, enabled: boolean) => {
   return useQuery({
-    queryKey: taskQueryKeys.GET_OPEN_TASKS,
-    queryFn: fetchOpenTasks,
+    queryKey: taskQueryKeys.GET_OPEN_TASKS(searchKeyword),
+    queryFn: () => fetchOpenTasks(searchKeyword),
     enabled
   });
 };

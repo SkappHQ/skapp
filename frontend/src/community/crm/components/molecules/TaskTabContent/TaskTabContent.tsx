@@ -57,6 +57,7 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
     isLoading: isOpenTasksLoading,
     isError: isOpenTasksError
   } = useGetOpenTasks(
+    debouncedSearch,
     tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.TEAM_TASKS
   );
 
