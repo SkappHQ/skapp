@@ -67,16 +67,6 @@ const AddContactModalContent: React.FC = () => {
   const { isCrmSalesManager } = useSessionData();
   const { data: currentUser } = useGetUserPersonalDetails();
 
-  useEffect(() => {
-    if (!currentUser) return;
-    setSelectedOwner({
-      employeeId: Number(currentUser.employeeId),
-      firstName: currentUser.firstName ?? "",
-      lastName: currentUser.lastName ?? null,
-      authPic: currentUser.authPic as string | null
-    });
-  }, [currentUser]);
-
   const { setIsAddContactModalOpen } = useCrmStore((store) => ({
     setIsAddContactModalOpen: store.setIsAddContactModalOpen
   }));
@@ -88,6 +78,17 @@ const AddContactModalContent: React.FC = () => {
     companyId: null,
     ownerId: null
   };
+
+  useEffect(() => {
+    if (!currentUser) return;
+    setSelectedOwner({
+      employeeId: Number(currentUser.employeeId),
+      firstName: currentUser.firstName ?? "",
+      lastName: currentUser.lastName ?? null,
+      authPic: currentUser.authPic as string | null
+    });
+    setFieldValue("ownerId", currentUser.employeeId);
+  }, [currentUser]);
 
   const handleSuccess = () => {
     setSubmitting(false);
@@ -271,13 +272,7 @@ const AddContactModalContent: React.FC = () => {
           onChange={(e) => setCompanySearch(e.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearch("")}
-          emptyMessage={
-            isCompanyFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noCompanies"])}
-              </p>
-            )
-          }
+          emptyMessage={translateContactText(["emptyStates", "noCompanies"])}
           isOpenOnFocus={
             isDomainSearchEnabled && !!domainSearchData?.companies?.length
           }
@@ -342,13 +337,7 @@ const AddContactModalContent: React.FC = () => {
           onChange={(e) => setOwnerSearchText(e.target.value)}
           state={errors.ownerId ? "error" : "default"}
           errorMessage={errors.ownerId}
-          emptyMessage={
-            isOwnerFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noOwners"])}
-              </p>
-            )
-          }
+          emptyMessage={translateContactText(["emptyStates", "noOwners"])}
         />
       )}
 

@@ -8,17 +8,17 @@ import {
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import {
+  CrmTaskCreatePayload,
   CrmCompletedTaskResponseType,
   CrmTaskResponseType,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 
-import { CrmTaskCreatePayload } from "../types/CommonTypes";
 import { taskQueryKeys } from "./utils/QueryKeys";
 
-const createTask = async (taskDetails: CrmTaskCreatePayload): Promise<void> => {
-  // TODO: Replace with actual API call when backend is ready
-  throw new Error("createTask is not yet implemented");
+const createTask = async (taskDetails: CrmTaskCreatePayload) => {
+  const response = await authFetch.post(taskEndpoints.CREATE_TASK, taskDetails);
+  return response?.data?.results?.[0];
 };
 
 export const useCreateTask = (onSuccess: () => void, onError: () => void) => {

@@ -10,6 +10,8 @@ public interface CrmTaskService {
 
 	ResponseEntityDto getTasks(CrmTaskFilterDto filterDto);
 
+	ResponseEntityDto getTaskById(Long id);
+
 	ResponseEntityDto createTask(CrmTaskCreateRequestDto requestDto);
 
 	ResponseEntityDto editTask(Long id, CrmTaskEditRequestDto requestDto);
