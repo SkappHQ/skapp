@@ -11,31 +11,27 @@ import PriorityLabelItem from "./PriorityLabelItem";
 
 interface PriorityLabelProps {
   priority: CrmPriorityEnum;
-  label: string;
 }
 
 const PRIORITY_CONFIG: Record<
   CrmPriorityEnum,
-  { backgroundColor: string; icon: ReactNode; textClassName: string }
+  { backgroundColor: string; icon: ReactNode }
 > = {
   [CrmPriorityEnum.LOW]: {
     backgroundColor: "bg-semantic-green-background",
-    icon: <LowPriorityIcon />,
-    textClassName: "text-semantic-green-text"
+    icon: <LowPriorityIcon />
   },
   [CrmPriorityEnum.MEDIUM]: {
     backgroundColor: "bg-semantic-amber-background",
-    icon: <MediumPriorityIcon />,
-    textClassName: "text-semantic-amber-text"
+    icon: <MediumPriorityIcon />
   },
   [CrmPriorityEnum.HIGH]: {
     backgroundColor: "bg-semantic-red-background",
-    icon: <HighPriorityIcon />,
-    textClassName: "text-semantic-red-text"
+    icon: <HighPriorityIcon />
   }
 };
 
-const PriorityLabel: FC<PriorityLabelProps> = ({ priority, label }) => {
+const PriorityLabel: FC<PriorityLabelProps> = ({ priority }) => {
   const config = PRIORITY_CONFIG[priority];
   if (!config) return null;
 
@@ -43,8 +39,6 @@ const PriorityLabel: FC<PriorityLabelProps> = ({ priority, label }) => {
     <PriorityLabelItem
       backgroundColor={config.backgroundColor}
       icon={config.icon}
-      textClassName={config.textClassName}
-      label={label}
     />
   );
 };

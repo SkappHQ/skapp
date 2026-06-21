@@ -3,22 +3,17 @@ import { FC, ReactNode } from "react";
 interface PriorityLabelItemProps {
   backgroundColor: string;
   icon: ReactNode;
-  textClassName: string;
-  label: string;
 }
 
 const PriorityLabelItem: FC<PriorityLabelItemProps> = ({
   backgroundColor,
-  icon,
-  textClassName,
-  label
+  icon
 }) => {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${backgroundColor}`}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${backgroundColor}`}
     >
       {icon}
-      <span className={`body3 font-medium ${textClassName}`}>{label}</span>
     </span>
   );
 };
