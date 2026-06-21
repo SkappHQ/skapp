@@ -1,7 +1,198 @@
-const DealStageModalForm = () => {
+import {
+  ButtonV2,
+  CloseIcon,
+  ColorSelector,
+  InputField,
+  TextArea
+} from "@rootcodelabs/skapp-ui";
+import { useFormik } from "formik";
+import React from "react";
+
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
+import {
+  useCreateDealStage,
+  useUpdateDealStage
+} from "~community/crm/api/crmDealApi";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { CrmDealStageColorsEnum } from "~community/crm/enums/common";
+import {
+  CrmDealStageCreatePayload,
+  CrmDealStageFormTypes,
+  CrmDealStageUpdatePayload
+} from "~community/crm/types/CommonTypes";
+import { dealStageValidations } from "~community/crm/utils/dealStageValidations";
+
+const dealStageColors = Object.entries(STAGE_COLOR_MAP).map(([key, hex]) => ({
+  id: key,
+  name: key,
+  value: key,
+  color: hex
+}));
+
+interface DealStageModalFormProps {
+  isEdit?: boolean;
+}
+
+const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
+  isEdit = false
+}) => {
+  const { setToastMessage } = useToast();
+
+  const translateText = useTranslator("configurations", "crm");
+
+  const { setIsDealStageModalOpen, selectedDealStage } = useConfigurationStore(
+    (store) => ({
+      setIsDealStageModalOpen: store.setIsDealStageModalOpen,
+      selectedDealStage: store.selectedDealStage
+    })
+  );
+
+  const initialValues: CrmDealStageFormTypes = {
+    name: isEdit ? selectedDealStage.name : "",
+    description: isEdit ? selectedDealStage?.description ?? "" : "",
+    color: isEdit ? selectedDealStage.color : CrmDealStageColorsEnum.SKY
+  };
+
+  const handleSuccess = () => {
+    setSubmitting(false);
+    handleCloseModal();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText([
+        isEdit ? "editDealStageModal" : "addDealStageModal",
+        "toastMessages",
+        "successTitle"
+      ]),
+      description: translateText([
+        isEdit ? "editDealStageModal" : "addDealStageModal",
+        "toastMessages",
+        "successDescription"
+      ])
+    });
+  };
+
+  const handleError = () => {
+    setSubmitting(false);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([
+        isEdit ? "editDealStageModal" : "addDealStageModal",
+        "toastMessages",
+        "errorTitle"
+      ]),
+      description: translateText([
+        isEdit ? "editDealStageModal" : "addDealStageModal",
+        "toastMessages",
+        "errorDescription"
+      ])
+    });
+  };
+
+  const handleCloseModal = (): void => {
+    setIsDealStageModalOpen(false);
+  };
+
+  const { mutate: createDealStage, isPending: isCreatePending } =
+    useCreateDealStage(handleSuccess, handleError);
+
+  const { mutate: updateDealStage, isPending: isUpdatePending } =
+    useUpdateDealStage(handleSuccess, handleError);
+
+  const handleSubmit = (values: CrmDealStageFormTypes) => {
+    if (isEdit) {
+      const payload: CrmDealStageUpdatePayload = {
+        id: selectedDealStage.id,
+        name: values.name.trim(),
+        description: values.description.trim() || null,
+        color: values.color
+      };
+      updateDealStage(payload);
+    } else {
+      const payload: CrmDealStageCreatePayload = {
+        name: values.name.trim(),
+        description: values.description.trim() || null,
+        color: values.color
+      };
+      createDealStage(payload);
+    }
+  };
+
+  const formik = useFormik({
+    initialValues,
+    onSubmit: handleSubmit,
+    validationSchema: dealStageValidations(translateText),
+    validateOnChange: false,
+    validateOnBlur: false,
+    enableReinitialize: true
+  });
+
+  const {
+    values,
+    errors,
+    handleChange,
+    isSubmitting,
+    setSubmitting,
+    setFieldValue,
+    submitForm
+  } = formik;
+
+  const isPending = isCreatePending || isUpdatePending;
+
   return (
-    <div>
-      <h2>Deal Stage Modal Form</h2>
+    <div className="flex flex-col h-full justify-between gap-[0.625rem]">
+      <InputField
+        required
+        id="status-name-input-field"
+        name="name"
+        label={translateText(["dealStageModalForm", "nameInputLabel"])}
+        value={values.name}
+        state={errors?.name ? "error" : "default"}
+        errorMessage={errors?.name}
+        className="w-full"
+        onChange={handleChange}
+      />
+      <TextArea
+        id="status-description-textarea"
+        name="description"
+        label={translateText(["dealStageModalForm", "descriptionInputLabel"])}
+        value={values.description}
+        state={errors?.description ? "error" : "default"}
+        errorMessage={errors?.description}
+        onChange={handleChange}
+      />
+      <ColorSelector
+        id="status-color-selector"
+        label={translateText(["dealStageModalForm", "colorInputLabel"])}
+        selectedColorId={values.color}
+        onColorChange={(color) => setFieldValue("color", color.value)}
+        colors={dealStageColors}
+      />
+      <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
+        <ButtonV2
+          variant="tertiary"
+          type="button"
+          disabled={isPending}
+          onClick={handleCloseModal}
+          icon={<CloseIcon />}
+          iconPosition="end"
+        >
+          {translateText(["dealStageModalForm", "buttons", "cancel"])}
+        </ButtonV2>
+        <ButtonV2
+          variant="primary"
+          type="button"
+          onClick={() => submitForm()}
+          disabled={isPending}
+          isLoading={isPending}
+        >
+          {translateText(["dealStageModalForm", "buttons", "save"])}
+        </ButtonV2>
+      </div>
     </div>
   );
 };
