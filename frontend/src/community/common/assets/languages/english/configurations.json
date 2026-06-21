@@ -301,6 +301,20 @@
         "errorDescription": "Failed to update the deal stage. Please try again"
       }
     },
+    "deleteDealStageModal": {
+      "title": "Are you sure?",
+      "description": "Are you sure you want to delete the \"{{stageName}}\" stage? This action cannot be undone.",
+      "buttons": {
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "toastMessages": {
+        "successTitle": "Deal stage deleted",
+        "successDescription": "The deal stage has been successfully deleted",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to delete the deal stage. Please try again"
+      }
+    },
     "aria": {
       "editStage": "Edit stage {{stageName}}",
       "deleteStage": "Delete stage {{stageName}}"

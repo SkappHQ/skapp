@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealStageModalForm from "~community/configurations/components/molecules/DealStageModalForm/DealStageModalForm";
+import DeleteDealStageModalContent from "~community/configurations/components/molecules/DeleteDealStageModalContent/DeleteDealStageModalContent";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -26,6 +27,8 @@ const DealStageModalController = () => {
         return translateText(["addDealStageModal", "title"]);
       case CrmModalTypes.EDIT_DEAL_STAGE_MODAL:
         return translateText(["editDealStageModal", "title"]);
+      case CrmModalTypes.DELETE_DEAL_STAGE_MODAL:
+        return translateText(["deleteDealStageModal", "title"]);
       default:
         return "";
     }
@@ -37,6 +40,8 @@ const DealStageModalController = () => {
         return <DealStageModalForm />;
       case CrmModalTypes.EDIT_DEAL_STAGE_MODAL:
         return <DealStageModalForm isEdit />;
+      case CrmModalTypes.DELETE_DEAL_STAGE_MODAL:
+        return <DeleteDealStageModalContent />;
       default:
         return null;
     }

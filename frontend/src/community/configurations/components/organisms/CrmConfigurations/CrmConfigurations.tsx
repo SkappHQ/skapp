@@ -82,8 +82,10 @@ const CrmConfigurations = () => {
     setIsDealStageModalOpen(true);
   };
 
-  const handleDelete = (_stage: CrmDealStageType) => {
-    // open delete confirmation modal
+  const handleDelete = (stage: CrmDealStageType) => {
+    setSelectedDealStage(stage);
+    setDealStageModalType(CrmModalTypes.DELETE_DEAL_STAGE_MODAL);
+    setIsDealStageModalOpen(true);
   };
 
   const handleSaveReorder = () => {

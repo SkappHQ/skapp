@@ -177,3 +177,22 @@ export const useReorderDealStages = (
     onError
   });
 };
+
+const deleteDealStage = async (id: number): Promise<void> => {
+  await authFetch.delete(crmDealEndpoints.DELETE_DEAL_STAGE(id));
+};
+
+export const useDeleteDealStage = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteDealStage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      onSuccess();
+    },
+    onError
+  });
+};
