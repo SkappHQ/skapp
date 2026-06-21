@@ -7,15 +7,15 @@ export const dealStageValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: Yup.string()
       .trim()
-      .required(translator(["validations", "nameRequired"]))
+      .required(translator(["dealStageModal", "validations", "nameRequired"]))
       .max(
         characterLengths.NAME_LENGTH,
-        translator(["validations", "nameLength"])
+        translator(["dealStageModal", "validations", "nameLength"])
       ),
     description: Yup.string()
       .optional()
       .max(
         characterLengths.CHARACTER_LENGTH,
-        translator(["validations", "descriptionLength"])
+        translator(["dealStageModal", "validations", "descriptionLength"])
       )
   });

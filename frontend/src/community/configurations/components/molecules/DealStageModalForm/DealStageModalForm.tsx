@@ -149,7 +149,7 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
         required
         id="status-name-input-field"
         name="name"
-        label={translateText(["dealStageModalForm", "nameInputLabel"])}
+        label={translateText(["dealStageModal", "nameInputLabel"])}
         value={values.name}
         state={errors?.name ? "error" : "default"}
         errorMessage={errors?.name}
@@ -159,7 +159,7 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
       <TextArea
         id="status-description-textarea"
         name="description"
-        label={translateText(["dealStageModalForm", "descriptionInputLabel"])}
+        label={translateText(["dealStageModal", "descriptionInputLabel"])}
         value={values.description}
         state={errors?.description ? "error" : "default"}
         errorMessage={errors?.description}
@@ -167,7 +167,7 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
       />
       <ColorSelector
         id="status-color-selector"
-        label={translateText(["dealStageModalForm", "colorInputLabel"])}
+        label={translateText(["dealStageModal", "colorInputLabel"])}
         selectedColorId={values.color}
         onColorChange={(color) => setFieldValue("color", color.value)}
         colors={dealStageColors}
@@ -181,7 +181,7 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
           icon={<CloseIcon />}
           iconPosition="end"
         >
-          {translateText(["dealStageModalForm", "buttons", "cancel"])}
+          {translateText(["dealStageModal", "buttons", "cancel"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
@@ -190,7 +190,7 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
           disabled={isPending}
           isLoading={isPending}
         >
-          {translateText(["dealStageModalForm", "buttons", "save"])}
+          {translateText(["dealStageModal", "buttons", "save"])}
         </ButtonV2>
       </div>
     </div>

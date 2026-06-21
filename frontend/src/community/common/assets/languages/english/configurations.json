@@ -262,38 +262,23 @@
         "saveChanges": "Save changes"
       }
     },
-    "addDealStageModal": {
-      "title": "Add Deal Stage",
-      "labels": {
-        "stageName": "Name",
-        "stageDescription": "Description",
-        "stageColor": "Color"
-      },
-      "placeholders": {
-        "stageName": "Enter stage name",
-        "stageDescription": "Enter description",
-        "stageColor": "Select color"
-      },
+    "dealStageModal": {
+      "nameInputLabel": "Name",
+      "descriptionInputLabel": "Description",
+      "colorInputLabel": "Color",
       "buttons": {
         "save": "Save",
-        "cancel": "Cancel",
-        "add": "Add"
-      },
-      "ariaLabels": {
-        "stageName": "Stage Name",
-        "stageDescription": "Stage Description",
-        "stageColor": "Stage Color",
-        "save": "Save",
-        "cancel": "Cancel",
-        "add": "Add Deal Stage"
+        "cancel": "Cancel"
       },
       "validations": {
-        "stageName": "Stage name is required",
-        "stageExists": "A stage with this name already exists",
-        "stageNameLength": "Stage name must be less than 50 characters",
-        "descriptionLength": "Description must be less than 100 characters",
-        "stageColor": "Please select a valid color"
-      },
+        "nameRequired": "Stage name is required",
+        "nameExists": "A stage with this name already exists",
+        "nameLength": "Stage name must be less than 50 characters",
+        "descriptionLength": "Description must be less than 100 characters"
+      }
+    },
+    "addDealStageModal": {
+      "title": "Add Deal Stage",
       "toastMessages": {
         "successTitle": "Deal stage added successfully",
         "successDescription": "The deal stage has been successfully added",
@@ -303,46 +288,16 @@
     },
     "editDealStageModal": {
       "title": "Edit Deal Stage",
-      "labels": {
-        "stageName": "Name",
-        "stageDescription": "Description",
-        "stageColor": "Color"
-      },
-      "placeholders": {
-        "stageName": "Enter stage name",
-        "stageDescription": "Enter description",
-        "stageColor": "Select color"
-      },
-      "buttons": {
-        "save": "Save",
-        "cancel": "Cancel",
-        "update": "Update"
-      },
-      "ariaLabels": {
-        "stageName": "Stage Name",
-        "stageDescription": "Stage Description",
-        "stageColor": "Stage Color",
-        "save": "Save",
-        "cancel": "Cancel",
-        "update": "Update Deal Stage"
-      },
-      "validations": {
-        "stageName": "Stage name is required",
-        "stageExists": "A stage with this name already exists",
-        "stageNameLength": "Stage name must be less than 50 characters",
-        "descriptionLength": "Description must be less than 100 characters",
-        "stageColor": "Please select a valid color"
-      },
       "toastMessages": {
         "successTitle": "Deal stage updated successfully",
         "successDescription": "The deal stage has been successfully updated",
         "errorTitle": "Oops! Something went wrong",
         "errorDescription": "Failed to update the deal stage. Please try again"
-      },
-      "aria": {
-        "editStage": "Edit stage {{stageName}}",
-        "deleteStage": "Delete stage {{stageName}}"
       }
+    },
+    "aria": {
+      "editStage": "Edit stage {{stageName}}",
+      "deleteStage": "Delete stage {{stageName}}"
     }
   }
 }
