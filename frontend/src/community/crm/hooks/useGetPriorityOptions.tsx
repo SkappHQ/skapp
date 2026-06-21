@@ -1,7 +1,7 @@
+import { Label } from "@rootcodelabs/skapp-ui";
 import { useMemo } from "react";
 
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
 
 const useGetPriorityOptions = (translateText: TranslatorFunctionType) => {
@@ -10,13 +10,12 @@ const useGetPriorityOptions = (translateText: TranslatorFunctionType) => {
       PRIORITY_OPTIONS.map((option) => ({
         id: option.key,
         label: (
-          <PriorityLabel
-            priority={option.value}
-            label={translateText([
-              "priorityOptions",
-              option.value.toLowerCase()
-            ])}
-          />
+          <Label backgroundColor={option.backgroundColor} className="py-2 px-3">
+            <option.IconComponent />
+            <span className={`body3 ${option.textColor}`}>
+              {translateText(["priorityOptions", option.key])}
+            </span>
+          </Label>
         ),
         value: option.value
       })),
