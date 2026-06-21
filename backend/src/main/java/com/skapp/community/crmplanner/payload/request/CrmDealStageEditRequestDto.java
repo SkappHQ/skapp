@@ -14,6 +14,4 @@ public class CrmDealStageEditRequestDto {
 
 	private CrmDealStageColors color;
 
-	private Integer orderIndex;
-
 }

@@ -3,8 +3,11 @@ package com.skapp.community.crmplanner.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealStageReorderRequestDto;
 import com.skapp.community.crmplanner.service.CrmDealStageService;
 import io.swagger.v3.oas.annotations.Operation;
+
+import java.util.List;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -58,6 +61,16 @@ public class CrmDealStageController {
 	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> deleteDealStage(@PathVariable Long id) {
 		ResponseEntityDto response = crmDealStageService.deleteDealStage(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Reorder deal stages",
+			description = "Reorders all deal stages. The stage with minimum orderIndex will be set to INITIAL type.")
+	@PostMapping("/reorder")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> reorderDealStages(
+			@RequestBody List<CrmDealStageReorderRequestDto> stages) {
+		ResponseEntityDto response = crmDealStageService.reorderDealStages(stages);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

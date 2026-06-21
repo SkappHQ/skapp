@@ -2,14 +2,17 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealStageReorderRequestDto;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealStageService;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -26,6 +32,8 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	private final CrmDealStageDao crmDealStageDao;
 
 	private final CrmMapper crmMapper;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -75,7 +83,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		log.info("editDealStage: execution started for id={}", id);
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
 		if (requestDto.getName() != null && !requestDto.getName().equals(stage.getName())) {
 			CrmValidations.validateDealStageName(requestDto.getName());
@@ -95,10 +103,6 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			stage.setColor(requestDto.getColor().name());
 		}
 
-		if (requestDto.getOrderIndex() != null) {
-			stage.setOrderIndex(requestDto.getOrderIndex());
-		}
-
 		CrmDealStage saved = crmDealStageDao.save(stage);
 
 		log.info("editDealStage: execution ended, updated stage id={}", saved.getId());
@@ -112,14 +116,36 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		log.info("deleteDealStage: execution started for id={}", id);
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
 		stage.setIsDeleted(true);
 		crmDealStageDao.save(stage);
 
 		log.info("deleteDealStage: execution ended, deleted stage id={}", id);
 
-		return new ResponseEntityDto(false, null);
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_DEAL_STAGE_DELETED), false);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto reorderDealStages(List<CrmDealStageReorderRequestDto> stages) {
+		log.info("reorderDealStages: execution started");
+
+		CrmValidations.validateDealStageReorderRequest(stages);
+
+		List<Long> stageIds = stages.stream()
+				.map(CrmDealStageReorderRequestDto::getId)
+				.collect(Collectors.toList());
+
+		List<CrmDealStage> existingStages = crmDealStageDao.findAllByIdInAndIsDeletedFalse(stageIds);
+
+		if (existingStages.size() != stageIds.size()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
+		}
+
+		log.info("reorderDealStages: execution ended, reordered {} stages", stages.size());
+
+		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existingStages));
 	}
 
 	protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {
@@ -128,6 +154,10 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 	protected void validateDealStageCreation() {
 		// This method is a placeholder for enterprise deal stage creation logic
+	}
+
+	protected void validateDealStageReorder(List<CrmDealStage> stages) {
+		// This method is a placeholder for enterprise deal stage reorder logic
 	}
 
 }
