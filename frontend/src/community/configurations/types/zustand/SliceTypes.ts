@@ -6,6 +6,6 @@ export interface DealStageSliceTypes extends Pick<
   | "setIsDealStageModalOpen"
   | "dealStageModalType"
   | "setDealStageModalType"
-  | "selectedDealStage"
-  | "setSelectedDealStage"
+  | "selectedDealStageId"
+  | "setSelectedDealStageId"
 > {}

@@ -26,11 +26,11 @@ const CrmConfigurations = () => {
   const {
     setIsDealStageModalOpen,
     setDealStageModalType,
-    setSelectedDealStage
+    setSelectedDealStageId
   } = useConfigurationStore((store) => ({
     setIsDealStageModalOpen: store.setIsDealStageModalOpen,
     setDealStageModalType: store.setDealStageModalType,
-    setSelectedDealStage: store.setSelectedDealStage
+    setSelectedDealStageId: store.setSelectedDealStageId
   }));
 
   const { setToastMessage } = useToast();
@@ -77,13 +77,13 @@ const CrmConfigurations = () => {
   };
 
   const handleEdit = (stage: CrmDealStageType) => {
-    setSelectedDealStage(stage);
+    setSelectedDealStageId(stage.id);
     setDealStageModalType(CrmModalTypes.EDIT_DEAL_STAGE_MODAL);
     setIsDealStageModalOpen(true);
   };
 
   const handleDelete = (stage: CrmDealStageType) => {
-    setSelectedDealStage(stage);
+    setSelectedDealStageId(stage.id);
     setDealStageModalType(CrmModalTypes.DELETE_DEAL_STAGE_MODAL);
     setIsDealStageModalOpen(true);
   };
@@ -100,7 +100,7 @@ const CrmConfigurations = () => {
   };
 
   const handleAddStage = () => {
-    setSelectedDealStage(null);
+    setSelectedDealStageId(null);
     setDealStageModalType(CrmModalTypes.ADD_DEAL_STAGE_MODAL);
     setIsDealStageModalOpen(true);
   };

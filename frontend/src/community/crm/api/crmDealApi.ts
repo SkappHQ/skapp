@@ -196,3 +196,9 @@ export const useDeleteDealStage = (
     onError
   });
 };
+
+export const useDealStageById = (id: number) => {
+  return useQueryClient()
+    .getQueryData<CrmDealStageType[]>(crmDealQueryKeys.DEAL_STAGES)
+    ?.find((stage) => stage.id === id);
+};

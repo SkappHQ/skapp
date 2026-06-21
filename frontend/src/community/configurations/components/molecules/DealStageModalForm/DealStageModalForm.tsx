@@ -14,6 +14,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import {
   useCreateDealStage,
+  useDealStageById,
   useUpdateDealStage
 } from "~community/crm/api/crmDealApi";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
@@ -43,12 +44,14 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
 
   const translateText = useTranslator("configurations", "crm");
 
-  const { setIsDealStageModalOpen, selectedDealStage } = useConfigurationStore(
+  const { setIsDealStageModalOpen, selectedDealStageId } = useConfigurationStore(
     (store) => ({
       setIsDealStageModalOpen: store.setIsDealStageModalOpen,
-      selectedDealStage: store.selectedDealStage
+      selectedDealStageId: store.selectedDealStageId
     })
   );
+
+  const selectedDealStage = useDealStageById(selectedDealStageId);
 
   const initialValues: CrmDealStageFormTypes = {
     name: isEdit ? selectedDealStage.name : "",

@@ -5,18 +5,20 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
-import { useDeleteDealStage } from "~community/crm/api/crmDealApi";
+import { useDealStageById, useDeleteDealStage } from "~community/crm/api/crmDealApi";
 
 const DeleteDealStageModalContent: FC = () => {
   const translateText = useTranslator("configurations", "crm");
   const { setToastMessage } = useToast();
 
-  const { selectedDealStage, setIsDealStageModalOpen } = useConfigurationStore(
+  const { selectedDealStageId, setIsDealStageModalOpen } = useConfigurationStore(
     (store) => ({
-      selectedDealStage: store.selectedDealStage,
+      selectedDealStageId: store.selectedDealStageId,
       setIsDealStageModalOpen: store.setIsDealStageModalOpen
     })
   );
+
+  const selectedDealStage = useDealStageById(selectedDealStageId);
 
   const handleCloseModal = () => {
     setIsDealStageModalOpen(false);
