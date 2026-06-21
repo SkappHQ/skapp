@@ -16,6 +16,7 @@ import SearchableDropdown, {
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { convertUTCStringToLocalDateTime } from "~community/common/utils/dateTimeUtils";
 import {
   useGetCrmContacts,
   useGetOwnerLookup
@@ -138,6 +139,14 @@ const TaskModalForm: FC<TaskFormProps> = ({
     [dealLookupData]
   );
 
+  const handleTypeSelect = (value: string) => {
+    formik.setFieldValue("type", getCategoryById(Number(value)) ?? null);
+  };
+
+  const handleDueDateSelect = (date: Date | undefined) => {
+    formik.setFieldValue("dueDate", date?.toISOString() ?? null);
+  };
+
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
     const owner = ownerLookupData?.items?.find(
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
@@ -204,12 +213,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
             placeholder={translateText(["placeholders", "type"])}
             options={taskTypeOptions}
             value={formik.values.type?.id?.toString() ?? undefined}
-            onChange={(value) =>
-              formik.setFieldValue(
-                "type",
-                getCategoryById(Number(value)) ?? null
-              )
-            }
+            onChange={handleTypeSelect}
             errorMessage={formik.errors.type}
             variant={formik.errors.type ? "primary-error" : "primary"}
             width="100%"
@@ -239,12 +243,12 @@ const TaskModalForm: FC<TaskFormProps> = ({
             mode="single"
             selected={
               formik.values.dueDate
-                ? new Date(formik.values.dueDate)
+                ? convertUTCStringToLocalDateTime(
+                    formik.values.dueDate
+                  ).toJSDate()
                 : undefined
             }
-            onSelect={(date) =>
-              formik.setFieldValue("dueDate", date?.toISOString() ?? null)
-            }
+            onSelect={handleDueDateSelect}
             popperProps={{ position: "bottom-end" }}
           >
             <div>
@@ -252,7 +256,11 @@ const TaskModalForm: FC<TaskFormProps> = ({
                 name="dueDate"
                 value={
                   formik.values.dueDate
-                    ? new Date(formik.values.dueDate).toLocaleDateString()
+                    ? convertUTCStringToLocalDateTime(
+                        formik.values.dueDate
+                      )
+                        .toJSDate()
+                        .toLocaleDateString()
                     : ""
                 }
                 label={translateText(["labels", "dueDate"])}
