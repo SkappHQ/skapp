@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.community.crmplanner.payload.request.CrmDealStageReorderRequestDto;
 import lombok.experimental.UtilityClass;
 
 import java.net.MalformedURLException;
@@ -20,6 +21,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class CrmValidations {
@@ -295,6 +300,24 @@ public class CrmValidations {
 
 		if (domain.length() > CrmConstants.DOMAIN_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_INVALID);
+		}
+	}
+
+	public static void validateDealStageReorderRequest(List<CrmDealStageReorderRequestDto> stages) {
+		if (stages == null || stages.isEmpty()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
+		}
+
+		Set<Long> ids = new HashSet<>();
+		Set<Integer> orderIndexes = new HashSet<>();
+
+		for (CrmDealStageReorderRequestDto stage : stages) {
+			if (stage.getId() == null || stage.getOrderIndex() == null) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_INVALID_REQUEST);
+			}
+			if (!ids.add(stage.getId()) || !orderIndexes.add(stage.getOrderIndex())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DUPLICATE_VALUES);
+			}
 		}
 	}
 
