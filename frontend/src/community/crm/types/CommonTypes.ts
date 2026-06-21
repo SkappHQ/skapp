@@ -312,6 +312,29 @@ export interface UpdateTaskStatusPayload {
   isCompleted: boolean;
 }
 
+export interface CrmTaskEditFormTypes {
+  name: string;
+  type: CrmTaskCategory | null;
+  dueDate: string | null;
+  priority: CrmPriorityEnum;
+  contactId: number | null;
+  dealId: number | null;
+  owner: number | null;
+  notes: string;
+}
+
+export interface CrmTaskUpdatePayload {
+  id: number;
+  name: string;
+  typeId?: number;
+  dueAt: string | null;
+  priority: CrmPriorityEnum;
+  contactId?: number;
+  dealId?: number;
+  ownerId?: number;
+  notes: string;
+}
+
 export interface DetailPanelTaskResponseType {
   id: number;
   name: string;

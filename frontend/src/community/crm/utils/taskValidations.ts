@@ -55,3 +55,29 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
       .nullable()
       .required(translator(["validations", "owner"]))
   });
+
+export const editTaskValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    type: Yup.object()
+      .nullable()
+      .required(translator(["validations", "type"])),
+    name: Yup.string()
+      .trim()
+      .required(translator(["validations", "name"]))
+      .max(
+        characterLengths.TASK_NAME_LENGTH,
+        translator(["validations", "nameLength"])
+      ),
+    notes: Yup.string()
+      .nullable()
+      .max(
+        characterLengths.TASK_NOTES_LENGTH,
+        translator(["validations", "notesLength"])
+      ),
+    dueDate: Yup.date()
+      .nullable()
+      .required(translator(["validations", "dueDate"])),
+    owner: Yup.number()
+      .nullable()
+      .required(translator(["validations", "owner"]))
+  });
