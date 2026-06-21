@@ -91,7 +91,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
     <section
       ref={setNodeRef}
       className={[
-        "flex h-full w-[320px] shrink-0 flex-col rounded-lg bg-tertiary-background outline outline-1 transition-shadow",
+        "flex h-full w-[320px] shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow",
         isOver
           ? "outline-primary-accent ring-2 ring-primary-background"
           : "outline-secondary-accent"
@@ -113,10 +113,8 @@ const DealStageLane: FC<DealStageLaneProps> = ({
           </h2>
           <p className="body3 mt-0.5 text-secondary-icon">{stage.totalValue}</p>
         </div>
-        <span className="rounded-full bg-secondary-accent px-3 py-1 text-xs font-semibold text-secondary-text">
-          {isLoading
-            ? "…"
-            : String(stage.totalCount ?? deals.length).padStart(2, "0")}
+        <span className="flex h-8 min-w-[2rem] shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold text-secondary-text">
+          {isLoading ? "…" : stage.totalCount}
         </span>
       </div>
 

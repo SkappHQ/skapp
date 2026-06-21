@@ -82,10 +82,10 @@ const DealCard: FC<DealCardProps> = ({
     <>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-500 text-white">
-            <HandshakeIcon />
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-500 text-white">
+            <HandshakeIcon width={14} height={9} />
           </span>
-          <span className="body3 font-semibold text-secondary-icon">
+          <span className="body3 font-semibold text-secondary">
             {id.startsWith("#") ? id : `#${id.replace(/^deal-/, "")}`}
           </span>
         </div>
@@ -93,38 +93,39 @@ const DealCard: FC<DealCardProps> = ({
         {showOwner && owner && (
           <Avatar
             id={owner.id}
-            size="sm"
+            size="xs"
             src={imageUrl ?? ""}
             firstName={owner.firstName}
             lastName={owner.lastName ?? ""}
+            className="w-6 h-6"
           />
         )}
       </div>
 
-      <p className="body2 line-clamp-2 leading-4.5 tracking-[0.1px] text-zinc-950">
-        {title}
-      </p>
-
-      {showContactInfo && (contactName || company) && (
-        <p className="body3 truncate leading-4 tracking-[0.1px] text-secondary-icon">
-          {contactName && <span>{contactName}</span>}
-          {contactName && company && (
-            <span className="mx-1 text-zinc-300">•</span>
-          )}
-          {company && <span>{company}</span>}
+      <div className="flex flex-col gap-1">
+        <p className="body2 line-clamp-2 leading-4.5 tracking-[0.1px] text-zinc-950">
+          {title}
         </p>
-      )}
 
-      {showValue && (
-        <div className="flex items-center gap-1.5">
-          <span className="shrink-0 text-secondary-icon">
-            <DealValueIcon className="h-4 w-4" />
-          </span>
-          <span className="body3 leading-4.5 tracking-[0.1px] text-zinc-950">
-            {amount}
-          </span>
-        </div>
-      )}
+        {showContactInfo && (contactName || company) && (
+          <p className="body3 truncate text-secondary-icon">
+            {contactName && <span>{contactName}</span>}
+            {contactName && company && (
+              <span className="mx-1 text-zinc-300">•</span>
+            )}
+            {company && <span>{company}</span>}
+          </p>
+        )}
+
+        {showValue && (
+          <div className="flex items-center gap-1.5">
+            <span className="shrink-0 text-secondary-icon">
+              <DealValueIcon className="h-4 w-4" />
+            </span>
+            <span className="body3 text-zinc-950">{amount}</span>
+          </div>
+        )}
+      </div>
 
       {(showTaskCount || showPriority) && (
         <div className="flex items-center justify-end gap-2">
@@ -133,11 +134,13 @@ const DealCard: FC<DealCardProps> = ({
               size="sm"
               label={String(taskCount)}
               prefixIcon={
-                <span className="[&_svg]:h-3 [&_svg]:w-3">
-                  <ClipboardCheckIcon fill="text-slate-600" />
-                </span>
+                <ClipboardCheckIcon
+                  fill="text-slate-600"
+                  width={9}
+                  height={10}
+                />
               }
-              className="bg-secondary-accent text-secondary-text"
+              className="bg-secondary-accent text-secondary-text w-12 h-6"
             />
           )}
 
