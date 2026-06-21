@@ -255,7 +255,7 @@
     "dealsSection": {
       "addButtonText": "Add",
       "dealCompleteStateNote": "The following status defines the complete state of a deal.",
-      "dealPipelineStatusesTitle": "Deal Pipeline stages",
+      "dealPipelineStatusesTitle": "Deal Pipeline Stages",
       "buttons": {
         "add": "Add",
         "cancel": "Cancel",

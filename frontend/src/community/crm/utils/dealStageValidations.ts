@@ -9,13 +9,13 @@ export const dealStageValidations = (translator: TranslatorFunctionType) =>
       .trim()
       .required(translator(["dealStageModal", "validations", "nameRequired"]))
       .max(
-        characterLengths.NAME_LENGTH,
+        characterLengths.DEAL_STAGE_NAME_LENGTH,
         translator(["dealStageModal", "validations", "nameLength"])
       ),
     description: Yup.string()
       .optional()
       .max(
-        characterLengths.CHARACTER_LENGTH,
+        characterLengths.DEAL_STAGE_DESCRIPTION_LENGTH,
         translator(["dealStageModal", "validations", "descriptionLength"])
       )
   });
