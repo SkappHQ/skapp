@@ -198,9 +198,8 @@ export const useGetContactById = (
   });
 };
 
-const deleteContact = async (id: number) => {
-  const response = await authFetch.delete(contactEndpoints.DELETE_CONTACT(id));
-  return response?.data?.results?.[0];
+const deleteContact = async (id: number): Promise<void> => {
+  await authFetch.delete(contactEndpoints.DELETE_CONTACT(id));
 };
 
 export const useDeleteContact = (
