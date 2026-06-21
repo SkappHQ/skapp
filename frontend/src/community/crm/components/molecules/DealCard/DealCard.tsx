@@ -5,7 +5,7 @@ import {
   DealValueIcon,
   HandshakeIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, FocusEvent, KeyboardEvent, MouseEvent } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
@@ -66,28 +66,44 @@ const DealCard: FC<DealCardProps> = ({
   const showPriority = fieldVisibility?.priority !== false;
   const imageUrl = useGetImageUrl(owner?.src ?? "");
 
-  const wrapperClasses = [
-    "w-full min-h-[150px] rounded-[8px] bg-white px-2 py-3",
-    "flex flex-col gap-3",
-    "outline outline-1 outline-secondary-accent",
-    "text-left transition-shadow",
-    isInteractive && "cursor-pointer hover:shadow-md hover:outline-zinc-300",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent",
-    className
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const handleTitleClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    if (onClick && isInteractive) {
+      onClick();
+    }
+  };
 
-  const inner = (
-    <>
+  const handleTitleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onClick && isInteractive) {
+        onClick();
+      }
+    }
+  };
+
+  const handleFocus = (e: FocusEvent<HTMLButtonElement>) => {
+    if (isInteractive) {
+      e.currentTarget.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest"
+      });
+    }
+  };
+
+  return (
+    <div
+      className={`w-full min-h-[150px] rounded-lg bg-white px-2 py-3 flex flex-col gap-3 text-left shadow-md ${isInteractive ? "cursor-grab active:cursor-grabbing hover:shadow-sm" : ""} ${className}`.trim()}
+      aria-label={ariaLabel}
+    >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-500 text-white">
             <HandshakeIcon width={14} height={9} />
           </span>
-          <span className="body3 font-semibold text-secondary">
-            {id.startsWith("#") ? id : `#${id.replace(/^deal-/, "")}`}
-          </span>
+          <span className="body3 text-secondary-text">#{id}</span>
         </div>
 
         {showOwner && owner && (
@@ -103,9 +119,21 @@ const DealCard: FC<DealCardProps> = ({
       </div>
 
       <div className="flex flex-col gap-1">
-        <p className="body2 line-clamp-2 leading-4.5 tracking-[0.1px] text-zinc-950">
-          {title}
-        </p>
+        {isInteractive ? (
+          <button
+            type="button"
+            className="body2 line-clamp-2 leading-4.5 tracking-[0.1px] text-zinc-950 cursor-pointer text-left hover:text-primary-text hover:underline"
+            onClick={handleTitleClick}
+            onKeyDown={handleTitleKeyDown}
+            onFocus={handleFocus}
+          >
+            {title}
+          </button>
+        ) : (
+          <p className="body2 line-clamp-2 leading-4.5 tracking-[0.1px] text-zinc-950">
+            {title}
+          </p>
+        )}
 
         {showContactInfo && (contactName || company) && (
           <p className="body3 truncate text-secondary-icon">
@@ -147,25 +175,6 @@ const DealCard: FC<DealCardProps> = ({
           {showPriority && <PriorityLabel priority={priority} />}
         </div>
       )}
-    </>
-  );
-
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        className={wrapperClasses}
-        onClick={onClick}
-        aria-label={ariaLabel}
-      >
-        {inner}
-      </button>
-    );
-  }
-
-  return (
-    <div className={wrapperClasses} aria-label={ariaLabel}>
-      {inner}
     </div>
   );
 };

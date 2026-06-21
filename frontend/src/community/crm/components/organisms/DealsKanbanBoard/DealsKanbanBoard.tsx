@@ -458,8 +458,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
             const deals = state?.deals ?? [];
             const totalCount = state?.totalCount ?? 0;
             const totalValue = deals.reduce(
-              (sum, d) =>
-                sum + (Number.parseFloat(String(d.amount ?? "0")) || 0),
+              (sum, d) => sum + (Number.parseFloat(String(d.amount)) || 0),
               0
             );
             const hasMore = deals.length < totalCount;
@@ -489,7 +488,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
 
         <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
           {activeDeal && (
-            <div className="w-74 rotate-1 opacity-95 shadow-2xl">
+            <div className="w-74 opacity-95">
               <DealCard
                 id={String(activeDeal.id)}
                 title={activeDeal.name}
@@ -498,8 +497,8 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                 owner={{
                   id: String(activeDeal.owner.employeeId),
                   firstName: activeDeal.owner.firstName,
-                  lastName: activeDeal.owner.lastName ?? undefined,
-                  src: activeDeal.owner.authPic ?? undefined
+                  lastName: activeDeal.owner.lastName ?? "",
+                  src: activeDeal.owner.authPic ?? ""
                 }}
                 amount={formatValue(activeDeal.amount)}
                 priority={activeDeal.priority}

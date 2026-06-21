@@ -145,7 +145,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               <button
                 type="button"
                 onClick={() => onAddDeal(stage.id)}
-                className="body3 w-full rounded-lg px-4 py-2 text-center font-medium text-secondary-icon transition hover:bg-secondary-accent focus:outline-none focus:ring-2 focus:ring-primary-accent"
+                className="body3 w-full rounded-lg px-4 py-2 text-center font-medium text-black transition hover:bg-secondary-accent focus:outline-none focus:ring-2 focus:ring-primary-accent"
               >
                 {translateText(["addDealBtn"])}
               </button>
@@ -167,7 +167,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
                   <button
                     type="button"
                     onClick={() => onAddDeal(stage.id)}
-                    className="body3 mt-1 w-full rounded-lg px-4 py-2 text-center font-medium text-secondary-icon transition hover:bg-secondary-accent focus:outline-none focus:ring-2 focus:ring-primary-accent"
+                    className="body3 mt-1 w-full rounded-lg px-4 py-2 text-center font-medium text-black transition hover:bg-secondary-accent focus:outline-none focus:ring-2 focus:ring-primary-accent"
                   >
                     {translateText(["addDealBtn"])}
                   </button>
