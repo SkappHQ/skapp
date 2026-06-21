@@ -184,8 +184,4 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		// This method is a placeholder for enterprise deal stage creation logic
 	}
 
-	protected void validateDealStageReorder(List<CrmDealStage> stages) {
-		// This method is a placeholder for enterprise deal stage reorder logic
-	}
-
 }
