@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -31,6 +31,10 @@ const TaskRow: FC<Props> = ({
   const [optimisticCompleted, setOptimisticCompleted] = useState(
     task.isCompleted
   );
+
+  useEffect(() => {
+    setOptimisticCompleted(task.isCompleted);
+  }, [task.isCompleted]);
 
   const { mutate: updateCompletion } = useUpdateTaskCompletion(
     () => {},

@@ -53,7 +53,7 @@ const SidePanelTasksSection: FC<Props> = ({
         "aria-label": translateText(["addTaskButtonEmptyView"])
       }}
       className={{
-        wrapper: "h-[228px] bg-secondary-background rounded-lg"
+        wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
       }}
     />
   );
