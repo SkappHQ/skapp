@@ -7,6 +7,7 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealStageEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealStageService;
 import com.skapp.community.crmplanner.util.CrmValidations;
@@ -66,6 +67,59 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		log.info("createDealStage: execution ended, created stage id={}", saved.getId());
 
 		return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto editDealStage(Long id, CrmDealStageEditRequestDto requestDto) {
+		log.info("editDealStage: execution started for id={}", id);
+
+		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+
+		if (requestDto.getName() != null && !requestDto.getName().equals(stage.getName())) {
+			CrmValidations.validateDealStageName(requestDto.getName());
+			if (crmDealStageDao.existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(requestDto.getName(), id)) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE);
+			}
+			stage.setName(requestDto.getName());
+		}
+
+		if (requestDto.getDescription() != null) {
+			CrmValidations.validateDealStageDescription(requestDto.getDescription());
+			stage.setDescription(requestDto.getDescription());
+		}
+
+		if (requestDto.getColor() != null) {
+			CrmValidations.validateDealStageColor(requestDto.getColor());
+			stage.setColor(requestDto.getColor().name());
+		}
+
+		if (requestDto.getOrderIndex() != null) {
+			stage.setOrderIndex(requestDto.getOrderIndex());
+		}
+
+		CrmDealStage saved = crmDealStageDao.save(stage);
+
+		log.info("editDealStage: execution ended, updated stage id={}", saved.getId());
+
+		return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteDealStage(Long id) {
+		log.info("deleteDealStage: execution started for id={}", id);
+
+		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+
+		stage.setIsDeleted(true);
+		crmDealStageDao.save(stage);
+
+		log.info("deleteDealStage: execution ended, deleted stage id={}", id);
+
+		return new ResponseEntityDto(false, null);
 	}
 
 	protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {
