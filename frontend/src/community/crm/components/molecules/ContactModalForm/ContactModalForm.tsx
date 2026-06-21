@@ -9,7 +9,10 @@ import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { useGetCompanyLookup } from "~community/crm/api/ContactApi";
+import {
+  useGetCompanyLookup,
+  useGetSelectedContactById
+} from "~community/crm/api/ContactApi";
 import EditableContactOwnerField from "~community/crm/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import {
@@ -41,10 +44,12 @@ const ContactModalForm = ({
   onCancel
 }: ContactFormProps) => {
   const { isCrmSalesManager: canEditOwner } = useSessionData();
-  const { selectedContact } = useCrmStore((store) => ({
-    selectedContact: store.selectedContact
+  const { selectedContactId } = useCrmStore((store) => ({
+    selectedContactId: store.selectedContactId
   }));
 
+  const selectedContact = useGetSelectedContactById(selectedContactId);
+  
   const [companySearchText, setCompanySearchText] = useState<string>("");
   const [selectedCompanyName, setSelectedCompanyName] = useState<string>(
     selectedContact?.company?.name ?? ""

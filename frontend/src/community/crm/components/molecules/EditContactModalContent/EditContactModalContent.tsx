@@ -1,14 +1,16 @@
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useEditContact } from "~community/crm/api/ContactApi";
-import { getChangedContactFields } from "~community/crm/utils/crmUtil";
+import {
+  useEditContact,
+  useGetSelectedContactById
+} from "~community/crm/api/ContactApi";
 import ContactModalForm from "~community/crm/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStore } from "~community/crm/store/store";
 import {
-  CrmContactFormValues,
-  CrmContactMetricsType
+  CrmContactFormValues
 } from "~community/crm/types/CommonTypes";
+import { getChangedContactFields } from "~community/crm/utils/crmUtil";
 
 const EditContactModalContent = () => {
   const { setToastMessage } = useToast();
@@ -17,38 +19,33 @@ const EditContactModalContent = () => {
     "contacts",
     "editContactModal"
   );
-  const { setIsAddContactModalOpen, selectedContact, setSelectedContact } =
+  const { setIsAddContactModalOpen, selectedContactId, setSelectedContactId } =
     useCrmStore((store) => ({
       setIsAddContactModalOpen: store.setIsAddContactModalOpen,
-      selectedContact: store.selectedContact,
-      setSelectedContact: store.setSelectedContact
+      selectedContactId: store.selectedContactId,
+      setSelectedContactId: store.setSelectedContactId
     }));
 
+  const selectedContact = useGetSelectedContactById(selectedContactId);
+
   const handleCloseModal = () => {
+    setSelectedContactId(null);
     setIsAddContactModalOpen(false);
   };
 
-  const handleSuccess = (updatedData: CrmContactMetricsType) => {
-    handleCloseModal();
-    if (selectedContact?.id === updatedData.id) {
-      setSelectedContact({
-        ...selectedContact,
-        ...updatedData
-      });
-    }
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateContactText(["contactToastMessages", "successTitle"]),
-      description: translateContactText([
-        "contactToastMessages",
-        "successDescription"
-      ])
-    });
-  };
-
   const { mutate: editContact, isPending } = useEditContact(
-    handleSuccess,
+    () => {
+      handleCloseModal();
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateContactText(["contactToastMessages", "successTitle"]),
+        description: translateContactText([
+          "contactToastMessages",
+          "successDescription"
+        ])
+      });
+    },
     () => {
       setToastMessage({
         open: true,
@@ -85,7 +82,10 @@ const EditContactModalContent = () => {
       companyId: selectedContact?.company?.id ?? null,
       ownerId: selectedContact?.owner?.employeeId ?? null
     };
-    const changedFields = getChangedContactFields(normalizedValues, originalValues);
+    const changedFields = getChangedContactFields(
+      normalizedValues,
+      originalValues
+    );
 
     if (Object.keys(changedFields).length === 0) return;
 

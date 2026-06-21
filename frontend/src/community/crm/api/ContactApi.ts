@@ -1,4 +1,5 @@
 import {
+  InfiniteData,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -72,15 +73,15 @@ export const useGetContactMetrics = (
 };
 
 export const useGetSelectedContactById = (selectedContactId: number) => {
-  return useQuery({
-    queryKey: contactQueryKeys.GET_CONTACT_DATA,
-    queryFn: () => {
-      return useQueryClient()
-        .getQueriesData({ queryKey: contactQueryKeys.GET_CONTACT_DATA })
-        .flatMap(([, data]) => (data as CrmContactMetricsType[]) || [])
-        .find((contact) => contact.id === selectedContactId);
-    }
-  });
+  const queryClient = useQueryClient();
+
+  const contacts = queryClient
+    .getQueriesData<InfiniteData<CrmContactMetricsResponseType>>({
+      queryKey: contactQueryKeys.ALL
+    })
+    .flatMap(([, data]) => data?.pages.flatMap((page) => page.items) ?? []);
+
+  return contacts.find((contact) => contact.id === selectedContactId);
 };
 
 export const useGetCrmCompanies = (size: number) => {
