@@ -304,7 +304,6 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     const activeDealId = Number(active.id);
     if (!targetStageId || !activeStageId) return;
 
-    // Same stage: reposition within the lane
     if (activeStageId === targetStageId) {
       if (overId.startsWith("stage::")) return;
       const overDealId = Number(overId);
