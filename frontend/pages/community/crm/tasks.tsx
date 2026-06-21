@@ -13,12 +13,16 @@ const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType
-  }));
+  const { setIsTaskModalOpen, setTaskModalType, setSelectedTask } = useCrmStore(
+    (store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType,
+      setSelectedTask: store.setSelectedTask
+    })
+  );
 
   const onPrimaryButtonClick = () => {
+    setSelectedTask(null);
     setIsTaskModalOpen(true);
     setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
   };

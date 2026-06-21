@@ -285,7 +285,7 @@ export interface CrmCompanyEditFormTypes {
   contactNumber: string | null;
 }
 
-export interface CrmTaskAddFormTypes {
+export interface CrmTaskFormTypes {
   name: string;
   type: CrmTaskCategory | null;
   dueDate: string | null;
@@ -310,17 +310,6 @@ export interface CrmTaskCreatePayload {
 export interface UpdateTaskStatusPayload {
   id: number;
   isCompleted: boolean;
-}
-
-export interface CrmTaskEditFormTypes {
-  name: string;
-  type: CrmTaskCategory | null;
-  dueDate: string | null;
-  priority: CrmPriorityEnum;
-  contactId: number | null;
-  dealId: number | null;
-  owner: number | null;
-  notes: string;
 }
 
 export interface CrmTaskUpdatePayload {
