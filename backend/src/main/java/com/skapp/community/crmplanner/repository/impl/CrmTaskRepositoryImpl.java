@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -34,6 +35,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -59,7 +61,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		applyFetchGraph(task);
 
 		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, false, filterDto.getSearchKeyword(),
-				filterDto.getContactId(), filterDto.getDealId());
+				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
 		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
 
 		query.select(task)
@@ -79,7 +81,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		applyFetchGraph(task);
 
 		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, true, filterDto.getSearchKeyword(),
-				filterDto.getContactId(), filterDto.getDealId());
+				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
 		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
 
 		query.select(task)
@@ -150,6 +152,22 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
+	public Optional<CrmTask> findByIdWithAssociations(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		task.fetch(CrmTask_.type, JoinType.INNER);
+		task.fetch(CrmTask_.owner, JoinType.INNER);
+		task.fetch(CrmTask_.contact, JoinType.LEFT);
+		task.fetch(CrmTask_.deal, JoinType.LEFT);
+
+		query.select(task).where(cb.equal(task.get(CrmTask_.id), id), cb.isFalse(task.get(CrmTask_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList().stream().findFirst();
+	}
+
+	@Override
 	public CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContactTaskMetrics> query = cb.createQuery(CrmContactTaskMetrics.class);
@@ -193,7 +211,13 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		if (params.getSearchKeyword() != null && !params.getSearchKeyword().isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(params.getSearchKeyword().trim().toLowerCase());
-			predicates.add(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"));
+
+			Join<CrmTask, CrmContact> contactJoin = root.join(CrmTask_.contact, JoinType.LEFT);
+			Join<CrmTask, CrmDeal> dealJoin = root.join(CrmTask_.deal, JoinType.LEFT);
+
+			predicates.add(cb.or(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), "%" + escaped + "%"),
+					cb.like(cb.lower(dealJoin.get(CrmDeal_.name)), "%" + escaped + "%")));
 		}
 
 		if (params.getContactId() != null) {
@@ -202,6 +226,10 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		if (params.getDealId() != null) {
 			predicates.add(cb.equal(root.get(CrmTask_.deal).get(CrmDeal_.id), params.getDealId()));
+		}
+
+		if (params.getCompanyId() != null) {
+			predicates.add(cb.equal(root.get(CrmTask_.company).get(CrmCompany_.id), params.getCompanyId()));
 		}
 
 		return predicates;

@@ -217,35 +217,34 @@ const LeaveEntitlementsReportsTable: FC = () => {
             options={years}
           />
         </Box>
-        <Box>
-          <FilterButton
-            handleApplyBtnClick={handleApplyFilters}
-            handleResetBtnClick={handleResetFilters}
-            selectedFilters={selectedLeaveTypes.map((type) => ({
-              filter: [type]
+        <FilterButton
+          handleApplyBtnClick={handleApplyFilters}
+          handleResetBtnClick={handleResetFilters}
+          selectedFilters={selectedLeaveTypes.map((type) => ({
+            filter: [type]
+          }))}
+          position={"bottom-end"}
+          id={"filter-types"}
+          isResetBtnDisabled={selectedLeaveTypes.length === 0}
+        >
+          <SelectableItemList
+            title={translateText(["filterPopperLeaveTypeTitle"])}
+            items={leaveTypeButtons.map((leaveType) => ({
+              label: leaveType.text,
+              value: leaveType.text
             }))}
-            position={"bottom-end"}
-            id={"filter-types"}
-            isResetBtnDisabled={selectedLeaveTypes.length === 0}
-          >
-            <SelectableItemList
-              title={translateText(["filterPopperLeaveTypeTitle"])}
-              items={leaveTypeButtons.map((leaveType) => ({
-                label: leaveType.text,
-                value: leaveType.text
-              }))}
-              selectedValues={selectedLeaveTypes}
-              onChipClick={(leaveTypeText) => {
-                const leaveType = leaveTypeButtons.find(
-                  (btn) => btn.text === leaveTypeText
-                );
-                if (leaveType) {
-                  handleLeaveTypeFilter(leaveType);
-                }
-              }}
-            />
-          </FilterButton>
-        </Box>
+            selectedValues={selectedLeaveTypes}
+            onChipClick={(leaveTypeText) => {
+              const leaveType = leaveTypeButtons.find(
+                (btn) => btn.text === leaveTypeText
+              );
+              if (leaveType) {
+                handleLeaveTypeFilter(leaveType);
+              }
+            }}
+            className="max-h-full"
+          />
+        </FilterButton>
       </Stack>
       <Stack sx={classes.stackContainer}>
         {reportData?.items?.length === 0 ? (

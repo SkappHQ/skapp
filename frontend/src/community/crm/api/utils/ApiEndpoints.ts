@@ -15,6 +15,13 @@ export const contactEndpoints = {
   CONTACT_BY_ID: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`
 };
 
+export const taskEndpoints = {
+  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
+  GET_OPEN_TASKS: `${moduleAPIPath.CRM}/task`,
+  CREATE_TASK: `${moduleAPIPath.CRM}/task`,
+  GET_TASKS: `${moduleAPIPath.CRM}/task`,
+};
+
 export const companyEndpoints = {
   GET_COMPANY_METRICS: `${moduleAPIPath.CRM}/company/metrics`,
   GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`,

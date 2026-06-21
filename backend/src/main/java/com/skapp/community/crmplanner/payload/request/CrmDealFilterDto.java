@@ -25,4 +25,6 @@ public class CrmDealFilterDto {
 
 	private CrmDealPriority priority;
 
+	private Long companyId;
+
 }

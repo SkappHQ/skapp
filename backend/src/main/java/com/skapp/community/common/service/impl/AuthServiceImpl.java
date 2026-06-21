@@ -27,7 +27,6 @@ import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.AuthService;
 import com.skapp.community.common.service.BulkContextService;
-import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.BulkItemStatus;
@@ -110,8 +109,6 @@ public class AuthServiceImpl implements AuthService {
 	private final PeopleEmailService peopleEmailService;
 
 	private final PeopleNotificationService peopleNotificationService;
-
-	private final EncryptionDecryptionService encryptionDecryptionService;
 
 	private final ProfileActivator profileActivator;
 
@@ -408,9 +405,14 @@ public class AuthServiceImpl implements AuthService {
 		}
 		User user = optionalUser.get();
 
-		log.info("sharePassword: User found for sharePassword: userEmail={}", user.getEmail());
-		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user,
-				encryptionDecryptionService.decrypt(user.getTempPassword()));
+		log.info("sharePassword: Generating new temp password for userEmail={}", user.getEmail());
+		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+		user.setTempPassword(passwordEncoder.encode(tempPassword));
+		user.setPassword(passwordEncoder.encode(tempPassword));
+		user.setIsPasswordChangedForTheFirstTime(false);
+		userDao.save(user);
+
+		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user, tempPassword);
 
 		log.info("sharePassword: execution ended for  ={}", user.getEmail());
 		return new ResponseEntityDto(false, sharePasswordResponseDto);
@@ -429,7 +431,7 @@ public class AuthServiceImpl implements AuthService {
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		log.info("resetAndSharePassword: Generated new temp password for userEmail={}", user.getEmail());
-		user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
+		user.setTempPassword(passwordEncoder.encode(tempPassword));
 		user.setPassword(passwordEncoder.encode(tempPassword));
 		user.setIsPasswordChangedForTheFirstTime(true);
 		User savedUser = userDao.save(user);
@@ -615,8 +617,8 @@ public class AuthServiceImpl implements AuthService {
 
 	protected void createNewPassword(String newPassword, User user) {
 		log.info("createNewPassword: execution started={}", user.getEmail());
-		String tempPassword = user.getTempPassword();
-		if (tempPassword != null && Objects.equals(encryptionDecryptionService.decrypt(tempPassword), newPassword)) {
+		String tempPasswordHash = user.getTempPassword();
+		if (tempPasswordHash != null && passwordEncoder.matches(newPassword, tempPasswordHash)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);
 		}
 
@@ -670,14 +672,16 @@ public class AuthServiceImpl implements AuthService {
 			LoginMethod loginMethod = firstUser.isPresent() ? firstUser.get().getLoginMethod()
 					: LoginMethod.CREDENTIALS;
 
+			String tempPassword = null;
 			if (loginMethod.equals(LoginMethod.CREDENTIALS)) {
-				String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-				user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
+				tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+				user.setTempPassword(passwordEncoder.encode(tempPassword));
 				user.setPassword(passwordEncoder.encode(tempPassword));
+				user.setIsPasswordChangedForTheFirstTime(false);
 			}
 
 			userDao.save(user);
-			peopleEmailService.sendUserInvitationEmail(user);
+			peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 			bulkStatusSummary.incrementSuccessCount();
 		}
 		catch (Exception e) {
