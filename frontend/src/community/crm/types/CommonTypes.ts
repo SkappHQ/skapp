@@ -1,9 +1,13 @@
+import { ReactElement } from "react";
+
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
 import {
   CrmDealSortEnum,
+  CrmDealStageColorsEnum,
   CrmDealStageEnum,
   CrmIndustryEnum,
+  CrmMetricLabelThemeEnum,
   CrmPriorityEnum
 } from "../enums/common";
 
@@ -33,8 +37,8 @@ export interface CrmCompanyMetricsType {
   address: string | null;
   tasks: number;
   overdue: number;
-  openValue: number;
-  accountValue: number;
+  openValue: string;
+  accountValue: string;
   closedDeals: number;
   openDeals: number;
 }
@@ -44,6 +48,20 @@ export interface CrmCompanyMetricsResponseType {
   totalItems: number;
   currentPage: number;
   totalPages: number;
+}
+
+export interface MetricChip {
+  label: string;
+  icon?: ReactElement;
+  variant: CrmMetricLabelThemeEnum;
+}
+
+export interface MetricItem {
+  id: string;
+  title: string;
+  amount: string;
+  isCurrency?: boolean;
+  chip?: MetricChip;
 }
 
 export interface CrmCompanyAddFormTypes {
@@ -96,11 +114,22 @@ export interface CrmCompaniesResponseType {
   totalPages: number;
 }
 
+export interface CrmContactLookupResponseType {
+  items: CrmContactLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
 export interface CrmOwnersResponseType {
   items: CrmOwner[];
   totalItems: number;
   currentPage: number;
   totalPages: number;
+}
+
+export interface CrmCompanyDomainSearchResponseType {
+  companies: CrmCompanyType[];
 }
 
 export interface CrmContactAddFormTypes {
@@ -158,7 +187,8 @@ export interface CrmDealType {
 export interface CrmDealStageType {
   id: number;
   name: string;
-  color: string;
+  description?: string | null;
+  color: CrmDealStageColorsEnum;
   orderIndex: number;
   stageType: CrmDealStageEnum;
 }
@@ -176,6 +206,31 @@ export interface CrmTaskType {
   company: CrmCompanyType | null;
   deal: CrmDealType | null;
   isDeleted: boolean;
+}
+
+export interface CrmDealLookup {
+  id: number;
+  name: string;
+}
+
+export interface CrmTaskResponseType {
+  tasks: CrmTaskDetailType[];
+}
+
+export interface CrmTaskDetailType {
+  id: number;
+  name: string;
+  typeId: number;
+  typeName: string;
+  priority: CrmPriorityEnum;
+  isCompleted: boolean;
+  dueAt: string | null;
+  notes: string | null;
+  contactId: number | null;
+  ownerName: string;
+  owner: CrmOwner;
+  contact: CrmContactLookup | null;
+  deal: CrmDealLookup | null;
 }
 
 export interface CrmTaskCategory {
@@ -235,19 +290,61 @@ export interface CrmTaskAddFormTypes {
   type: CrmTaskCategory | null;
   dueDate: string | null;
   priority: CrmPriorityEnum;
-  contactName: string;
-  deal: string;
+  contactId: number | null;
+  dealId: number | null;
   owner: number | null;
   notes: string;
 }
 
 export interface CrmTaskCreatePayload {
   name: string;
-  type: CrmTaskCategory | null;
+  typeId?: number;
   dueAt: string | null;
   priority: CrmPriorityEnum;
-  contactName: string;
-  deal: string;
-  owner: number | null;
+  contactId?: number;
+  dealId?: number;
+  ownerId?: number;
   notes: string;
+}
+
+export interface UpdateTaskStatusPayload {
+  id: number;
+  isCompleted: boolean;
+}
+
+export interface DetailPanelTaskResponseType {
+  id: number;
+  name: string;
+  type: string;
+  priority: CrmPriorityEnum;
+  isCompleted: boolean;
+  isOverdue: boolean;
+  dueAt: string | null;
+  owner: CrmOwner;
+}
+
+export interface DetailPanelDealResponseType {
+  id: number;
+  name: string;
+  description: string | null;
+  amount: string;
+  owner: CrmOwner;
+  stage: CrmDealStageType;
+}
+
+export interface CrmContactDetailResponseType {
+  id: number;
+  name: string;
+  email: string;
+  contactNumber: string;
+  lastModifiedDate: string;
+  company: CompanyLookup | null;
+  owner: CrmOwner;
+  openTasksCount: number;
+  overdueTasksCount: number;
+  activeDealsCount: number;
+  totalRevenue: string;
+  pipelineRevenue: string;
+  tasks: DetailPanelTaskResponseType[];
+  deals: DetailPanelDealResponseType[];
 }

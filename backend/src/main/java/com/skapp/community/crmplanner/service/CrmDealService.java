@@ -11,6 +11,8 @@ public interface CrmDealService {
 
 	ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto);
 
+	ResponseEntityDto checkDealNameExists(String name);
+
 	ResponseEntityDto getDeals(CrmDealFilterDto filterDto);
 
 	ResponseEntityDto getDealsByStages(CrmDealsByStagesRequestDto requestDto);
@@ -20,5 +22,7 @@ public interface CrmDealService {
 	ResponseEntityDto updateDealStage(CrmDealUpdateStageRequestDto requestDto);
 
 	ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto);
+
+	ResponseEntityDto deleteDeal(Long id);
 
 }

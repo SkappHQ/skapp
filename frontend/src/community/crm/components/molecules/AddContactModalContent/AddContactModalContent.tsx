@@ -5,7 +5,7 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -16,7 +16,9 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { concatStrings } from "~community/common/utils/commonUtil";
+import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
 import {
   useCreateNewContact,
   useGetCompanyLookup,
@@ -32,6 +34,8 @@ import {
   CrmContactCreatePayload,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { extractDomainFromEmail } from "~community/crm/utils/commonHelpers";
+import { mergeAndPrioritizeCompanyDropdownItems } from "~community/crm/utils/contactUtil";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
@@ -63,16 +67,6 @@ const AddContactModalContent: React.FC = () => {
   const { isCrmSalesManager } = useSessionData();
   const { data: currentUser } = useGetUserPersonalDetails();
 
-  useEffect(() => {
-    if (!currentUser) return;
-    setSelectedOwner({
-      employeeId: Number(currentUser.employeeId),
-      firstName: currentUser.firstName ?? "",
-      lastName: currentUser.lastName ?? null,
-      authPic: currentUser.authPic as string | null
-    });
-  }, [currentUser]);
-
   const { setIsAddContactModalOpen } = useCrmStore((store) => ({
     setIsAddContactModalOpen: store.setIsAddContactModalOpen
   }));
@@ -84,6 +78,17 @@ const AddContactModalContent: React.FC = () => {
     companyId: null,
     ownerId: null
   };
+
+  useEffect(() => {
+    if (!currentUser) return;
+    setSelectedOwner({
+      employeeId: Number(currentUser.employeeId),
+      firstName: currentUser.firstName ?? "",
+      lastName: currentUser.lastName ?? null,
+      authPic: currentUser.authPic as string | null
+    });
+    setFieldValue("ownerId", currentUser.employeeId);
+  }, [currentUser]);
 
   const handleSuccess = () => {
     setSubmitting(false);
@@ -147,14 +152,32 @@ const AddContactModalContent: React.FC = () => {
     submitForm
   } = formik;
 
+  const debouncedEmail = useDebounce(
+    values.email.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+
+  const extractedDomain = extractDomainFromEmail(debouncedEmail);
+
+  const isDomainSearchEnabled =
+    extractedDomain.length > 0 && isValidEmail().test(debouncedEmail);
+
+  const { data: domainSearchData } = useSearchCompaniesByDomain(
+    extractedDomain,
+    isDomainSearchEnabled
+  );
+
   const { data: companyLookupData, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
 
-  const companyDropdownItems: SearchableDropdownItem[] =
-    companyLookupData?.items?.map((company) => ({
-      id: String(company.id),
-      content: company.name
-    })) ?? [];
+  const companyDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      mergeAndPrioritizeCompanyDropdownItems(
+        companyLookupData?.items,
+        domainSearchData?.companies
+      ),
+    [companyLookupData?.items, domainSearchData?.companies]
+  );
 
   const handleCompanySelect = (companyDropDownItem: SearchableDropdownItem) => {
     const company = companyLookupData?.items?.find(
@@ -249,12 +272,9 @@ const AddContactModalContent: React.FC = () => {
           onChange={(e) => setCompanySearch(e.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearch("")}
-          emptyMessage={
-            isCompanyFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noCompanies"])}
-              </p>
-            )
+          emptyMessage={translateContactText(["emptyStates", "noCompanies"])}
+          isOpenOnFocus={
+            isDomainSearchEnabled && !!domainSearchData?.companies?.length
           }
         />
       ) : (
@@ -317,13 +337,7 @@ const AddContactModalContent: React.FC = () => {
           onChange={(e) => setOwnerSearchText(e.target.value)}
           state={errors.ownerId ? "error" : "default"}
           errorMessage={errors.ownerId}
-          emptyMessage={
-            isOwnerFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noOwners"])}
-              </p>
-            )
-          }
+          emptyMessage={translateContactText(["emptyStates", "noOwners"])}
         />
       )}
 

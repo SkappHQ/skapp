@@ -732,6 +732,26 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
+	public boolean existsManagerForEmployee(Long employeeId, Long managerId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> query = cb.createQuery(Long.class);
+
+		Root<EmployeeManager> root = query.from(EmployeeManager.class);
+
+		Join<EmployeeManager, Employee> managerJoin = root.join(EmployeeManager_.manager);
+		Join<Employee, User> userJoin = managerJoin.join(Employee_.user);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.equal(root.get(EmployeeManager_.employee).get(Employee_.employeeId), employeeId));
+		predicates.add(cb.equal(managerJoin.get(Employee_.employeeId), managerId));
+		predicates.add(cb.notEqual(userJoin.get(User_.isActive), false));
+
+		query.select(cb.count(root)).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(query).getSingleResult() > 0;
+	}
+
+	@Override
 	public List<EmployeeLeaveRequestDto> getEmployeesOnLeaveByTeam(EmployeesOnLeaveFilterDto filterDto,
 			Long currentUserId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();

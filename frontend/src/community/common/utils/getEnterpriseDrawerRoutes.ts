@@ -74,7 +74,7 @@ const getEnterpriseDrawerRoutes = ({
       }
 
       return {
-        id: "8",
+        id: "9",
         name: "Settings",
         url: ROUTES.SETTINGS.BASE,
         icon: IconName.SETTINGS_ICON,

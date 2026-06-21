@@ -1,9 +1,9 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
@@ -18,13 +18,15 @@ const Contacts: NextPage = () => {
     setIsCrmSidePanelOpen,
     setSelectedContact,
     setIsAddContactModalOpen,
-    setContactModalType
+    setContactModalType,
+    selectedContact
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedContact: store.setSelectedContact,
     setIsAddContactModalOpen: store.setIsAddContactModalOpen,
-    setContactModalType: store.setContactModalType
+    setContactModalType: store.setContactModalType,
+    selectedContact: store.selectedContact
   }));
 
   const handleCloseSidePanel = () => {
@@ -44,13 +46,17 @@ const Contacts: NextPage = () => {
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
-        <ContactSidePanel
-          isOpen={isCrmSidePanelOpen}
-          onClose={handleCloseSidePanel}
-        />
+        {selectedContact && (
+          <SidePanelWrapper>
+            <ContactSidePanel
+              isOpen={isCrmSidePanelOpen}
+              onClose={handleCloseSidePanel}
+            />
+          </SidePanelWrapper>
+        )}
+
         <ContactModalController />
         <ContactTable />
       </>

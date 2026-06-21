@@ -4,12 +4,12 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @UtilityClass
 public class CrmValidations {
 
-	public static boolean isEditRestricted(User currentUser, Long ownerEmployeeId) {
+	public static boolean isOwnerRestrictedForRepresentative(User currentUser, Long ownerEmployeeId) {
 		Role currentCrmRole = currentUser.getEmployee().getEmployeeRole().getCrmRole();
 		return currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
 				&& !currentUser.getEmployee().getEmployeeId().equals(ownerEmployeeId);
@@ -254,6 +254,47 @@ public class CrmValidations {
 		}
 		if (deal.getCompany() == null || !deal.getCompany().getId().equals(company.getId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH);
+		}
+	}
+
+	public static void validateDealStageName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_REQUIRED);
+		}
+		if (name.length() < CrmConstants.DEAL_STAGE_NAME_MIN_LENGTH
+				|| name.length() > CrmConstants.DEAL_STAGE_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_LENGTH);
+		}
+		if (!name.matches(CrmConstants.DEAL_STAGE_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealStageDescription(String description) {
+		if (description == null || description.isBlank()) {
+			return;
+		}
+		if (description.length() > CrmConstants.DEAL_STAGE_DESCRIPTION_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_TOO_LONG);
+		}
+		if (!description.matches(CrmConstants.DEAL_STAGE_DESCRIPTION_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealStageColor(CrmDealStageColors color) {
+		if (color == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_COLOR_REQUIRED);
+		}
+	}
+
+	public static void validateDomain(String domain) {
+		if (domain == null || domain.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_REQUIRED);
+		}
+
+		if (domain.length() > CrmConstants.DOMAIN_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_INVALID);
 		}
 	}
 
