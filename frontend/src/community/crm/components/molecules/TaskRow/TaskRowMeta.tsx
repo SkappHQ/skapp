@@ -1,6 +1,7 @@
 import { Avatar, PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 import { getPriorityConfig } from "~community/crm/utils/taskUtil";
 
@@ -11,6 +12,7 @@ interface Props {
 
 const TaskRowMeta: FC<Props> = ({ task, applyCompletedStyle }) => {
   const priorityConfig = getPriorityConfig(task.priority);
+  const imageUrl = useGetImageUrl(task.owner.authPic ?? "");
 
   return (
     <div
@@ -24,7 +26,7 @@ const TaskRowMeta: FC<Props> = ({ task, applyCompletedStyle }) => {
       <Avatar
         id={`task-owner-${task.id}`}
         size="xs"
-        src={task.owner.authPic ?? undefined}
+        src={imageUrl}
         firstName={task.owner.firstName}
         lastName={task.owner.lastName ?? undefined}
       />
