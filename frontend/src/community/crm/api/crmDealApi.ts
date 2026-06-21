@@ -13,6 +13,7 @@ import {
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
   CrmDealStageCreatePayload,
+  CrmDealStageReorderItem,
   CrmDealStageType,
   CrmDealStageUpdatePayload,
   CrmDealType
@@ -144,6 +145,31 @@ export const useUpdateDealStage = (
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateDealStage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const reorderDealStages = async (
+  payload: CrmDealStageReorderItem[]
+): Promise<CrmDealStageType[]> => {
+  const response = await authFetch.post(
+    crmDealEndpoints.REORDER_DEAL_STAGES,
+    payload
+  );
+  return response?.data?.results;
+};
+
+export const useReorderDealStages = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: reorderDealStages,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
       onSuccess();

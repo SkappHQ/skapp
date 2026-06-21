@@ -260,6 +260,12 @@
         "add": "Add",
         "cancel": "Cancel",
         "saveChanges": "Save changes"
+      },
+      "toastMessages": {
+        "reorderSuccessTitle": "Deal stages reordered",
+        "reorderSuccessDescription": "The deal stages have been successfully reordered",
+        "reorderErrorTitle": "Oops! Something went wrong",
+        "reorderErrorDescription": "Failed to reorder deal stages. Please try again"
       }
     },
     "dealStageModal": {

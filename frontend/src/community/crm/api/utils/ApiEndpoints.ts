@@ -5,7 +5,8 @@ export const crmDealEndpoints = {
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
   DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
   CREATE_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`,
-  UPDATE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`
+  UPDATE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
+  REORDER_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage/reorder`
 };
 
 export const contactEndpoints = {

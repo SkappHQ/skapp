@@ -209,6 +209,11 @@ export interface CrmDealStageUpdatePayload extends CrmDealStageCreatePayload {
   id: number;
 }
 
+export interface CrmDealStageReorderItem {
+  id: number;
+  orderIndex: number;
+}
+
 export interface CrmTaskType {
   id: number;
   name: string;
