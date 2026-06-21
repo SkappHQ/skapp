@@ -66,7 +66,7 @@ const DraggableDealStageCard = ({
         title={DEFAULT_STAGE_NAME_MAP[stage.name] ?? stage.name}
         description={stage.description ?? ""}
         className={{
-          title: "body1 md:!w-1/5 flex-shrink-0",
+          title: "body1 md:!w-[23%] flex-shrink-0",
           description: "body2 flex-1"
         }}
         iconButtons={{
