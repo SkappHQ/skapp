@@ -2,8 +2,7 @@ import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import AddDealStageModalContent from "~community/configurations/components/molecules/AddDealStageModalContent/AddDealStageModalContent";
-import EditDealStageModalContent from "~community/configurations/components/molecules/EditDealStageModalContent/EditDealStageModalContent";
+import DealStageModalForm from "~community/configurations/components/molecules/DealStageModalForm/DealStageModalForm";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -35,9 +34,9 @@ const DealStageModalController = () => {
   const getModalContent = (): ReactNode => {
     switch (dealStageModalType) {
       case CrmModalTypes.ADD_DEAL_STAGE_MODAL:
-        return <AddDealStageModalContent />;
+        return <DealStageModalForm />;
       case CrmModalTypes.EDIT_DEAL_STAGE_MODAL:
-        return <EditDealStageModalContent />;
+        return <DealStageModalForm isEdit />;
       default:
         return null;
     }
@@ -54,3 +53,4 @@ const DealStageModalController = () => {
 };
 
 export default DealStageModalController;
+

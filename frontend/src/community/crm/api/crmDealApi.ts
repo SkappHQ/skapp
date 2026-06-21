@@ -12,7 +12,9 @@ import {
   CrmCreateDealPayload,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
+  CrmDealStageCreatePayload,
   CrmDealStageType,
+  CrmDealStageUpdatePayload,
   CrmDealType
 } from "~community/crm/types/CommonTypes";
 
@@ -96,5 +98,56 @@ export const useGetDealLookup = (
     queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword),
     queryFn: () => fetchDealLookup(searchKeyword, size),
     enabled
+  });
+};
+
+const createDealStage = async (
+  payload: CrmDealStageCreatePayload
+): Promise<CrmDealStageType> => {
+  const response = await authFetch.post(
+    crmDealEndpoints.CREATE_DEAL_STAGE,
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useCreateDealStage = (
+  onSuccess: () => void,
+  onError: (error: unknown) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createDealStage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const updateDealStage = async (
+  payload: CrmDealStageUpdatePayload
+): Promise<CrmDealStageType> => {
+  const { id, ...rest } = payload;
+  const response = await authFetch.patch(
+    crmDealEndpoints.UPDATE_DEAL_STAGE(id),
+    rest
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useUpdateDealStage = (
+  onSuccess: () => void,
+  onError: (error: unknown) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateDealStage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      onSuccess();
+    },
+    onError
   });
 };
