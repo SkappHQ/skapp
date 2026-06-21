@@ -159,15 +159,15 @@ const getAccentColor = (color: string): string =>
 const toStageLaneDeal = (deal: BoardDealItem): DealStageLaneDeal => ({
   id: String(deal.id),
   title: deal.name,
-  contactName: deal.contactName ?? undefined,
+  contactName: deal.contactName,
   company: deal.companyName ?? "",
   owner: {
     id: String(deal.owner.employeeId),
     firstName: deal.owner.firstName,
-    lastName: deal.owner.lastName ?? undefined,
-    src: deal.owner.authPic ?? undefined
+    lastName: deal.owner.lastName ?? "",
+    src: deal.owner.authPic ?? ""
   },
-  formattedValue: formatValue(deal.amount),
+  amount: formatValue(deal.amount),
   priority: deal.priority,
   taskCount: deal.taskCount,
   ariaLabel: `Deal: ${deal.name}`
@@ -493,7 +493,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
               <DealCard
                 id={String(activeDeal.id)}
                 title={activeDeal.name}
-                contactName={activeDeal.contactName ?? undefined}
+                contactName={activeDeal.contactName}
                 company={activeDeal.companyName ?? ""}
                 owner={{
                   id: String(activeDeal.owner.employeeId),
@@ -501,7 +501,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                   lastName: activeDeal.owner.lastName ?? undefined,
                   src: activeDeal.owner.authPic ?? undefined
                 }}
-                formattedValue={formatValue(activeDeal.amount)}
+                dealAmount={formatValue(activeDeal.amount)}
                 priority={activeDeal.priority}
                 taskCount={activeDeal.taskCount}
                 isInteractive={false}

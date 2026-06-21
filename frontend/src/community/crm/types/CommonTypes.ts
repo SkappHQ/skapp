@@ -334,7 +334,7 @@ export interface BoardInitDataResponse {
 export interface BoardDealItem {
   id: number;
   name: string;
-  contactName: string | null;
+  contactName: string;
   companyName: string | null;
   owner: CrmOwner;
   amount: string | null;

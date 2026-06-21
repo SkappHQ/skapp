@@ -17,10 +17,10 @@ import DraggableDealCard from "~community/crm/components/molecules/DraggableDeal
 export interface DealStageLaneDeal {
   id: string;
   title: string;
-  contactName?: string;
+  contactName: string;
   company: string;
   owner?: DealCardOwner;
-  formattedValue: string;
+  amount: string;
   priority: DealPriority;
   taskCount?: number;
   ariaLabel?: string;

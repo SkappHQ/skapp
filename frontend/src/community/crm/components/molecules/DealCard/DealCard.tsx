@@ -31,10 +31,10 @@ export interface DealCardOwner {
 export interface DealCardProps {
   id: string;
   title: string;
-  contactName?: string;
+  contactName: string;
   company: string;
   owner?: DealCardOwner;
-  formattedValue: string;
+  dealAmount: string;
   priority: DealPriority;
   taskCount?: number;
   fieldVisibility?: DealCardFieldVisibility;
@@ -50,7 +50,7 @@ const DealCard: FC<DealCardProps> = ({
   contactName,
   company,
   owner,
-  formattedValue,
+  dealAmount,
   priority,
   taskCount,
   fieldVisibility,
@@ -121,7 +121,7 @@ const DealCard: FC<DealCardProps> = ({
             <DealValueIcon className="h-4 w-4" />
           </span>
           <span className="body3 leading-4.5 tracking-[0.1px] text-zinc-950">
-            {formattedValue}
+            {dealAmount}
           </span>
         </div>
       )}
