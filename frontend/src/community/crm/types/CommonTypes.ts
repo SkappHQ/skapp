@@ -314,14 +314,14 @@ export interface UpdateTaskStatusPayload {
 
 export interface CrmTaskUpdatePayload {
   id: number;
-  name: string;
+  name?: string;
   typeId?: number;
-  dueAt: string | null;
-  priority: CrmPriorityEnum;
+  dueAt?: string | null;
+  priority?: CrmPriorityEnum;
   contactId?: number;
   dealId?: number;
   ownerId?: number;
-  notes: string;
+  notes?: string;
 }
 
 export interface DetailPanelTaskResponseType {

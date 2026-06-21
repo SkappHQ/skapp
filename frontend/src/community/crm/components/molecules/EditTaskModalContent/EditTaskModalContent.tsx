@@ -12,6 +12,7 @@ import {
   CrmTaskFormTypes,
   CrmTaskUpdatePayload
 } from "~community/crm/types/CommonTypes";
+import { getChangedTaskFields } from "~community/crm/utils/taskUtil";
 import { editTaskValidations } from "~community/crm/utils/taskValidations";
 
 import TaskModalForm from "../TaskModalForm/TaskModalForm";
@@ -31,16 +32,11 @@ const EditTaskModalContent: FC = () => {
   const submitEditTask = (formValues: CrmTaskFormTypes) => {
     if (!selectedTask) return;
 
+    const changedFields = getChangedTaskFields(formValues, initialValues);
+
     const payload: CrmTaskUpdatePayload = {
       id: selectedTask.id,
-      name: formValues.name.trim(),
-      typeId: formValues.type?.id ?? undefined,
-      dueAt: formValues.dueDate ?? null,
-      priority: formValues.priority,
-      contactId: formValues.contactId ?? undefined,
-      dealId: formValues.dealId ?? undefined,
-      ownerId: formValues.owner ?? undefined,
-      notes: formValues.notes?.trim() ?? ""
+      ...changedFields
     };
 
     editTask(payload);
