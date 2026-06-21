@@ -10,19 +10,19 @@ import { useCrmStore } from "~community/crm/store/store";
 const DeleteTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
-  const { selectedTask, setSelectedTask, setIsTaskModalOpen } = useCrmStore(
-    (store) => ({
-      selectedTask: store.selectedTask,
-      setSelectedTask: store.setSelectedTask,
-      setIsTaskModalOpen: store.setIsTaskModalOpen
-    })
-  );
+  const {
+    selectedTask,
+    setSelectedTask,
+    setIsTaskModalOpen,
+    setIsCrmSidePanelOpen
+  } = useCrmStore((store) => ({
+    selectedTask: store.selectedTask,
+    setSelectedTask: store.setSelectedTask,
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+  }));
 
-  const translateText = useTranslator(
-    "crmModule",
-    "tasks",
-    "deleteTaskModal"
-  );
+  const translateText = useTranslator("crmModule", "tasks", "deleteTaskModal");
 
   const handleCloseModal = () => {
     setIsTaskModalOpen(false);
@@ -37,6 +37,7 @@ const DeleteTaskModalContent: FC = () => {
     });
 
     handleCloseModal();
+    setIsCrmSidePanelOpen(false);
     setSelectedTask(null);
   };
 

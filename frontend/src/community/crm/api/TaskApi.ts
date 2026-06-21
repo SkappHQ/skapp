@@ -75,7 +75,7 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
     mutationFn: deleteTask,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_TASK_DATA // TODO :INVALIDATE OPEN AND COMPLETE WHEN MERGED
+        queryKey: taskQueryKeys.GET_OPEN_TASKS
       });
       onSuccess();
     },
