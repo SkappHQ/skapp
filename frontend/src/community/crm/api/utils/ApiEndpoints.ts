@@ -3,7 +3,9 @@ import { moduleAPIPath } from "~community/common/constants/configs";
 export const crmDealEndpoints = {
   GET_DEALS: `${moduleAPIPath.CRM}/deal`,
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
-  DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`
+  DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
+  CREATE_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`,
+  UPDATE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`
 };
 
 export const contactEndpoints = {

@@ -193,6 +193,22 @@ export interface CrmDealStageType {
   stageType: CrmDealStageEnum;
 }
 
+export interface CrmDealStageFormTypes {
+  name: string;
+  description: string;
+  color: CrmDealStageColorsEnum;
+}
+
+export interface CrmDealStageCreatePayload {
+  name: string;
+  description: string | null;
+  color: CrmDealStageColorsEnum;
+}
+
+export interface CrmDealStageUpdatePayload extends CrmDealStageCreatePayload {
+  id: number;
+}
+
 export interface CrmTaskType {
   id: number;
   name: string;
