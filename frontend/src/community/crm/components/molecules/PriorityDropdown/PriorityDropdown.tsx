@@ -8,21 +8,15 @@ import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 interface PriorityDropdownProps {
   value: CrmPriorityEnum;
   onChange?: (value: CrmPriorityEnum) => void;
-  onSave?: (value: CrmPriorityEnum) => void;
 }
 
-const PriorityDropdown: FC<PriorityDropdownProps> = ({
-  value,
-  onChange,
-  onSave
-}) => {
+const PriorityDropdown: FC<PriorityDropdownProps> = ({ value, onChange }) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const dropdownOptions = useGetPriorityOptions(translateText);
 
   const handleDropdownChange = (selectedValue: string) => {
     const priority = selectedValue as CrmPriorityEnum;
     onChange?.(priority);
-    onSave?.(priority);
   };
 
   return (
@@ -31,9 +25,7 @@ const PriorityDropdown: FC<PriorityDropdownProps> = ({
       onChange={handleDropdownChange}
       options={dropdownOptions}
       variant="jsx-content"
-      width="auto"
       menuWidth="content"
-      usePortal={false}
       height="min-h-8"
       hideArrowIcon={true}
       padding="py-2 px-1"

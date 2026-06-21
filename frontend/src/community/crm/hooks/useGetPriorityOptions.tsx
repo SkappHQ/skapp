@@ -1,5 +1,5 @@
 import { Label } from "@rootcodelabs/skapp-ui";
-import { useMemo } from "react";
+import { createElement, useMemo } from "react";
 
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
@@ -11,7 +11,7 @@ const useGetPriorityOptions = (translateText: TranslatorFunctionType) => {
         id: option.key,
         label: (
           <Label backgroundColor={option.backgroundColor} className="py-2 px-3">
-            <option.IconComponent />
+            {createElement(option.IconComponent)}
             <span className={`body3 ${option.textColor}`}>
               {translateText(["priorityOptions", option.key])}
             </span>
