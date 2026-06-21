@@ -34,7 +34,7 @@ export interface DealCardProps {
   contactName: string;
   company: string;
   owner?: DealCardOwner;
-  dealAmount: string;
+  amount: string;
   priority: DealPriority;
   taskCount?: number;
   fieldVisibility?: DealCardFieldVisibility;
@@ -50,7 +50,7 @@ const DealCard: FC<DealCardProps> = ({
   contactName,
   company,
   owner,
-  dealAmount,
+  amount: dealAmount,
   priority,
   taskCount,
   fieldVisibility,

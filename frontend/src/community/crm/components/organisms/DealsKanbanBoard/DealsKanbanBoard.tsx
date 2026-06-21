@@ -18,7 +18,11 @@ import DealStageLane, {
   type DealStageLaneDeal
 } from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
-import { CrmDealStageColorsEnum, CrmDealStageEnum, CrmPriorityEnum } from "~community/crm/enums/common";
+import {
+  CrmDealStageColorsEnum,
+  CrmDealStageEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
 import type {
   BoardDealItem,
   BoardDealsGroupedRequest,
@@ -202,7 +206,6 @@ interface DealsKanbanBoardProps {
 const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   searchKeyword = ""
 }) => {
-
   // Replace mock data
   const stages: CrmDealStageType[] = MOCK_STAGES;
   const stageIds = stages.map((s) => s.id);
@@ -310,9 +313,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
       setStageMap((prev) => {
         const state = prev[targetStageId];
         if (!state) return prev;
-        const activeIndex = state.deals.findIndex(
-          (d) => d.id === activeDealId
-        );
+        const activeIndex = state.deals.findIndex((d) => d.id === activeDealId);
         const overIndex = state.deals.findIndex((d) => d.id === overDealId);
         if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex)
           return prev;
@@ -501,7 +502,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                   lastName: activeDeal.owner.lastName ?? undefined,
                   src: activeDeal.owner.authPic ?? undefined
                 }}
-                dealAmount={formatValue(activeDeal.amount)}
+                amount={formatValue(activeDeal.amount)}
                 priority={activeDeal.priority}
                 taskCount={activeDeal.taskCount}
                 isInteractive={false}
