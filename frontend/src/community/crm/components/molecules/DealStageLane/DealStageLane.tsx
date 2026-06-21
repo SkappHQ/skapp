@@ -30,7 +30,7 @@ export interface DealStage {
   id: string;
   name: string;
   accentColor: string;
-  formattedTotal: string;
+  totalValue: string;
   totalCount?: number;
 }
 
@@ -111,9 +111,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
           >
             {stage.name}
           </h2>
-          <p className="body3 mt-0.5 text-secondary-icon">
-            {stage.formattedTotal}
-          </p>
+          <p className="body3 mt-0.5 text-secondary-icon">{stage.totalValue}</p>
         </div>
         <span className="rounded-full bg-secondary-accent px-3 py-1 text-xs font-semibold text-secondary-text">
           {isLoading

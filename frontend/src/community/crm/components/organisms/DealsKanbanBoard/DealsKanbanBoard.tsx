@@ -471,7 +471,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                   id: String(stage.id),
                   name: stage.name,
                   accentColor: getAccentColor(stage.color),
-                  formattedTotal: formatValue(String(totalValue)),
+                  totalValue: formatValue(String(totalValue)),
                   totalCount
                 }}
                 deals={deals.map(toStageLaneDeal)}

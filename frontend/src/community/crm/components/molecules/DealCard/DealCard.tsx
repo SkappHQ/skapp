@@ -141,7 +141,9 @@ const DealCard: FC<DealCardProps> = ({
             />
           )}
 
-          {showPriority && <PriorityLabel priority={priority} />}
+          {showPriority && (
+            <PriorityLabel priority={priority} label={priority} />
+          )}
         </div>
       )}
     </>
