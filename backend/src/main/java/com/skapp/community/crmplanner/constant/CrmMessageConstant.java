@@ -69,9 +69,12 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_STAGE_NAME_LENGTH("api.error.crm.deal-stage.name-length"),
 	CRM_ERROR_DEAL_STAGE_NAME_INVALID_CHARS("api.error.crm.deal-stage.name-invalid-chars"),
 	CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE("api.error.crm.deal-stage.name-duplicate"),
+	CRM_SUCCESS_DEAL_STAGE_DELETED("api.success.crm.deal-stage-deleted"),
 	CRM_ERROR_DEAL_STAGE_DESCRIPTION_TOO_LONG("api.error.crm.deal-stage.description-too-long"),
 	CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS("api.error.crm.deal-stage.description-invalid-chars"),
 	CRM_ERROR_DEAL_STAGE_COLOR_REQUIRED("api.error.crm.deal-stage.color-required"),
+	CRM_ERROR_INVALID_REQUEST("api.error.crm.deal-stage.reorder-invalid-request"),
+	CRM_ERROR_DUPLICATE_VALUES("api.error.crm.deal-stage.reorder-duplicate-values"),
 	CRM_ERROR_DEAL_ID_REQUIRED("api.error.crm.deal.deal-id-required"),
 	CRM_ERROR_DEAL_INVALID_NEIGHBOUR("api.error.crm.deal.invalid-neighbour"),
 	CRM_ERROR_DEAL_NEIGHBOUR_STAGE_MISMATCH("api.error.crm.deal.neighbour-stage-mismatch"),
@@ -80,6 +83,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_ALREADY_IN_STAGE("api.error.crm.deal.already-in-stage"),
 	CRM_ERROR_DEAL_EXISTS("api.error.crm.deal.name-exists"), CRM_SUCCESS_TASK_DELETED("api.success.crm.task-deleted"),
 	CRM_ERROR_TASK_DELETE_DENIED("api.error.crm.task-delete-denied"),
+	CRM_ERROR_CANNOT_REORDER_TERMINAL_STAGE("api.error.crm.deal-stage.cannot-reorder-terminal-stage"),
 	CRM_SUCCESS_DEAL_DELETED("api.success.crm.deal-deleted");
 
 	private final String messageKey;
