@@ -1,5 +1,6 @@
-'use client';
-import { useCallback, useRef, useEffect } from 'react';
+"use client";
+
+import { useCallback, useEffect, useRef } from "react";
 
 interface UseInfiniteScrollOptions {
   hasNextPage: boolean;
@@ -13,8 +14,8 @@ export const useInfiniteScroll = ({
   hasNextPage,
   isLoading,
   onLoadMore,
-  threshold = 1.0,
-  rootMargin,
+  threshold = 1,
+  rootMargin
 }: UseInfiniteScrollOptions) => {
   const loadingRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +26,7 @@ export const useInfiniteScroll = ({
         onLoadMore();
       }
     },
-    [hasNextPage, isLoading, onLoadMore],
+    [hasNextPage, isLoading, onLoadMore]
   );
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export const useInfiniteScroll = ({
 
     const observer = new IntersectionObserver(handleObserver, {
       threshold,
-      rootMargin,
+      rootMargin
     });
 
     observer.observe(element);
