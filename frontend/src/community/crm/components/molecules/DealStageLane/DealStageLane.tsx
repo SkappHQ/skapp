@@ -18,9 +18,9 @@ export interface DealStageLaneDeal {
   id: string;
   title: string;
   contactName: string;
-  company: string;
-  owner?: DealCardOwner;
-  amount: string;
+  company?: string;
+  owner: DealCardOwner;
+  amount?: string;
   priority: DealPriority;
   taskCount?: number;
   ariaLabel?: string;

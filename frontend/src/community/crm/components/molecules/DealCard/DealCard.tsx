@@ -32,9 +32,9 @@ export interface DealCardProps {
   id: string;
   title: string;
   contactName: string;
-  company: string;
-  owner?: DealCardOwner;
-  amount: string;
+  company?: string;
+  owner: DealCardOwner;
+  amount?: string;
   priority: DealPriority;
   taskCount?: number;
   fieldVisibility?: DealCardFieldVisibility;
