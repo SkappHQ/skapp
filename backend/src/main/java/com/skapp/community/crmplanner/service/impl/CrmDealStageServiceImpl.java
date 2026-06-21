@@ -19,9 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -118,6 +119,10 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
+		if (CrmConstants.NON_DELETEABLE_STAGES.contains(stage.getStageType())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_TERMINAL_STAGE);
+		}
+
 		stage.setIsDeleted(true);
 		crmDealStageDao.save(stage);
 
@@ -128,14 +133,14 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto reorderDealStages(List<CrmDealStageReorderRequestDto> stages) {
+	public ResponseEntityDto reorderDealStages(List<CrmDealStageReorderRequestDto> changedStages) {
 		log.info("reorderDealStages: execution started");
 
-		CrmValidations.validateDealStageReorderRequest(stages);
+		CrmValidations.validateDealStageReorderRequest(changedStages);
 
-		List<Long> stageIds = stages.stream()
-				.map(CrmDealStageReorderRequestDto::getId)
-				.collect(Collectors.toList());
+		List<Long> stageIds = changedStages.stream()
+			.map(CrmDealStageReorderRequestDto::getId)
+			.collect(Collectors.toList());
 
 		List<CrmDealStage> existingStages = crmDealStageDao.findAllByIdInAndIsDeletedFalse(stageIds);
 
@@ -143,9 +148,32 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
 		}
 
-		log.info("reorderDealStages: execution ended, reordered {} stages", stages.size());
+		if (existingStages.stream().map(CrmDealStage::getStageType).anyMatch(CrmConstants.TERMINAL_STAGES::contains)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_REORDER_TERMINAL_STAGE);
+		}
+
+		Map<Long, CrmDealStage> exisitingStagesMap = existingStages.stream()
+			.collect(Collectors.toMap(CrmDealStage::getId, stage -> stage));
+
+		changedStages.forEach(newStage -> {
+			CrmDealStage stage = exisitingStagesMap.get(newStage.getId());
+			stage.setOrderIndex(newStage.getOrderIndex());
+		});
+
+		ensureFirstStageIsInitial(existingStages);
+
+		crmDealStageDao.saveAll(existingStages);
+
+		log.info("reorderDealStages: execution ended");
 
 		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existingStages));
+	}
+
+	private void ensureFirstStageIsInitial(List<CrmDealStage> reorderedStages) {
+		CrmDealStage firstStage = Collections.min(reorderedStages, Comparator.comparing(CrmDealStage::getOrderIndex));
+
+		reorderedStages.forEach(stage -> stage
+			.setStageType(stage.getId().equals(firstStage.getId()) ? CrmDealStageType.INITIAL : CrmDealStageType.OPEN));
 	}
 
 	protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {

@@ -5,6 +5,7 @@ import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.experimental.UtilityClass;
 
+import java.util.EnumSet;
 import java.util.Set;
 
 @UtilityClass
@@ -57,4 +58,8 @@ public class CrmConstants {
 
 	public static final int DOMAIN_MAX_LENGTH = 255;
 
+	public static final Set<CrmDealStageType> TERMINAL_STAGES = EnumSet.of(CrmDealStageType.WON, CrmDealStageType.LOST);
+
+	public static final Set<CrmDealStageType> NON_DELETEABLE_STAGES = EnumSet.of(CrmDealStageType.INITIAL,
+			CrmDealStageType.WON, CrmDealStageType.LOST);
 }
