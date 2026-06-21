@@ -47,7 +47,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
   initialOwner,
   translateText
 }) => {
-
   const { setIsTaskModalOpen, selectedTask } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     selectedTask: store.selectedTask
@@ -256,9 +255,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
                 name="dueDate"
                 value={
                   formik.values.dueDate
-                    ? convertUTCStringToLocalDateTime(
-                        formik.values.dueDate
-                      )
+                    ? convertUTCStringToLocalDateTime(formik.values.dueDate)
                         .toJSDate()
                         .toLocaleDateString()
                     : ""

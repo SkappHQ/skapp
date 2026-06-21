@@ -66,21 +66,12 @@ export const useUpdateTaskCompletion = (
   });
 };
 
-const editTask = async ({
-  id,
-  ...payload
-}: CrmTaskUpdatePayload) => {
-  const response = await authFetch.patch(
-    taskEndpoints.EDIT_TASK(id),
-    payload
-  );
+const editTask = async ({ id, ...payload }: CrmTaskUpdatePayload) => {
+  const response = await authFetch.patch(taskEndpoints.EDIT_TASK(id), payload);
   return response?.data?.results?.[0];
 };
 
-export const useUpdateTask = (
-  onSuccess: () => void,
-  onError: () => void
-) => {
+export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editTask,
