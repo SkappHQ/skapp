@@ -14,7 +14,11 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
-import { CrmTaskDetailType, CrmTaskFormTypes, CrmTaskUpdatePayload } from "~community/crm/types/CommonTypes";
+import {
+  CrmTaskDetailType,
+  CrmTaskFormTypes,
+  CrmTaskUpdatePayload
+} from "~community/crm/types/CommonTypes";
 
 import { CrmTaskTabEnum } from "../enums/common";
 import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";

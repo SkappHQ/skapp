@@ -67,7 +67,7 @@ export const useUpdateTaskCompletion = (
 };
 
 const editTask = async ({ id, ...payload }: CrmTaskUpdatePayload) => {
-  const response = await authFetch.patch(taskEndpoints.EDIT_TASK(id), payload);
+  const response = await authFetch.patch(taskEndpoints.UPDATE_TASK(id), payload);
   return response?.data?.results?.[0];
 };
 

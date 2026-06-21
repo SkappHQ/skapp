@@ -91,6 +91,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
   const handleCloseModal = (): void => {
     setIsTaskModalOpen(false);
+    formik.resetForm();
   };
 
   const { data: ownerLookupData } = useGetOwnerLookup(
