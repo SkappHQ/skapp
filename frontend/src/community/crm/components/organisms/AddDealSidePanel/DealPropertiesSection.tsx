@@ -67,7 +67,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 w-full">
+    <div className="border secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
       <PropertyRow label={translateText(["labels", "value"])}>
         <div className="flex flex-col w-full px-1">
           <input
