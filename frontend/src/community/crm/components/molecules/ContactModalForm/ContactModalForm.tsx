@@ -1,6 +1,6 @@
 import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -8,7 +8,9 @@ import SearchableDropdown, {
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
+import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
 import {
   useGetCompanyLookup,
   useGetSelectedContactById
@@ -24,6 +26,8 @@ import {
   CrmContactFormValues,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { extractDomainFromEmail } from "~community/crm/utils/commonHelpers";
+import { mergeAndPrioritizeCompanyDropdownItems } from "~community/crm/utils/contactUtil";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
 
 export interface ContactFormProps {
@@ -49,7 +53,7 @@ const ContactModalForm = ({
   }));
 
   const selectedContact = useGetSelectedContactById(selectedContactId);
-  
+
   const [companySearchText, setCompanySearchText] = useState<string>("");
   const [selectedCompanyName, setSelectedCompanyName] = useState<string>(
     selectedContact?.company?.name ?? ""
@@ -71,14 +75,30 @@ const ContactModalForm = ({
 
   const { values, errors, handleChange, setFieldValue, submitForm } = formik;
 
+  const debouncedEmail = useDebounce(
+    values.email.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const extractedDomain = extractDomainFromEmail(debouncedEmail);
+  const isDomainSearchEnabled =
+    extractedDomain.length > 0 && isValidEmail().test(debouncedEmail);
+
+  const { data: domainSearchData } = useSearchCompaniesByDomain(
+    extractedDomain,
+    isDomainSearchEnabled
+  );
+
   const { data: companyLookupData, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
 
-  const companyDropdownItems: SearchableDropdownItem[] =
-    companyLookupData?.items?.map((company) => ({
-      id: String(company.id),
-      content: company.name
-    })) ?? [];
+  const companyDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      mergeAndPrioritizeCompanyDropdownItems(
+        companyLookupData?.items,
+        domainSearchData?.companies
+      ),
+    [companyLookupData?.items, domainSearchData?.companies]
+  );
 
   const handleCompanySelect = (item: SearchableDropdownItem) => {
     const company = companyLookupData?.items?.find(
@@ -136,6 +156,9 @@ const ContactModalForm = ({
           onChange={(event) => setCompanySearchText(event.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearchText("")}
+          isOpenOnFocus={
+            isDomainSearchEnabled && !!domainSearchData?.companies?.length
+          }
           emptyMessage={
             isCompanyFetching ? undefined : (
               <p className="px-4 py-2 body2">
