@@ -1,6 +1,7 @@
 import { SetType } from "~community/common/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmTaskSliceTypes } from "~community/crm/types/SliceTypes";
+import { PreselectedContact } from "~community/crm/types/CommonTypes";
 
 const CrmTaskSlice = (set: SetType<CrmTaskSliceTypes>) => ({
   isTaskModalOpen: false,
@@ -10,7 +11,7 @@ const CrmTaskSlice = (set: SetType<CrmTaskSliceTypes>) => ({
     set({ isTaskModalOpen: isTaskModalOpen }),
   setTaskModalType: (taskModalType: CrmModalTypes) =>
     set({ taskModalType: taskModalType }),
-  setPreselectedContact: (contact: { id: number; name: string } | null) =>
+  setPreselectedContact: (contact: PreselectedContact | null) =>
     set({ preselectedContact: contact })
 });
 

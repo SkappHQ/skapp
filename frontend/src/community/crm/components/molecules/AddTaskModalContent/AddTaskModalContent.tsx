@@ -165,7 +165,8 @@ const AddTaskModalContent: FC = () => {
 
   const { mutate: createNewTask, isPending } = useCreateTask(
     handleSuccess,
-    handleError
+    handleError,
+    preselectedContact?.id
   );
 
   const createTask = (formValues: CrmTaskAddFormTypes) => {

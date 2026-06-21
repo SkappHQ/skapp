@@ -1,7 +1,10 @@
 import { FC } from "react";
 
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import {
+  CrmTaskType,
+  PreselectedContact
+} from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import SidePanelTasksEmptyView from "./SidePanelTasksEmptyView";
@@ -12,7 +15,7 @@ interface Props {
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
-  preselectedContact?: { id: number; name: string } | null;
+  preselectedContact?: PreselectedContact | null;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
