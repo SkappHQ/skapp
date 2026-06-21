@@ -30,7 +30,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalSocialMediaDetailsDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
-import com.skapp.community.peopleplanner.service.SkillService;
+import com.skapp.community.peopleplanner.service.EmployeeSkillService;
 import com.skapp.community.peopleplanner.type.EmployeeProfileViewAccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +57,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 
 	private final UserService userService;
 
-	private final SkillService skillService;
+	private final EmployeeSkillService employeeSkillService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -119,7 +119,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeePersonalDetailsDto dto = new EmployeePersonalDetailsDto();
 		dto.setGeneral(mapPersonalGeneralDetails(employee, accessLevel));
-		dto.setSkills(skillService.getEmployeeSkillResponses(employee.getEmployeeId()).stream().map(s -> {
+		dto.setSkills(employeeSkillService.getEmployeeSkillResponses(employee.getEmployeeId()).stream().map(s -> {
 			EmployeeSkillDto skillDto = new EmployeeSkillDto();
 			skillDto.setSkillId(s.getId());
 			skillDto.setSkillType(s.getSkillType());

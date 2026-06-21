@@ -1,6 +1,6 @@
 package com.skapp.community.peopleplanner.type;
 
-public enum SkillType {
+public enum EmployeeSkillType {
 
 	DEFAULT,
 

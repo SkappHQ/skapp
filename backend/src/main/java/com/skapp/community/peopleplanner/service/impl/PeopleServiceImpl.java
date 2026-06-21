@@ -107,7 +107,7 @@ import com.skapp.community.peopleplanner.service.EmployeeValidationService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.service.RolesService;
-import com.skapp.community.peopleplanner.service.SkillService;
+import com.skapp.community.peopleplanner.service.EmployeeSkillService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.BulkItemStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
@@ -206,7 +206,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private final EmployeeExportMapperService employeeExportMapperService;
 
-	private final SkillService skillService;
+	private final EmployeeSkillService employeeSkillService;
 
 	@Override
 	@Transactional
@@ -778,7 +778,7 @@ public class PeopleServiceImpl implements PeopleService {
 			return;
 		}
 
-		skillService.saveEmployeeSkills(employee, requestDto.getSkills());
+		employeeSkillService.saveEmployeeSkills(employee, requestDto.getSkills());
 	}
 
 	private void processEmployeeManagers(EmployeeEmploymentDetailsDto requestDto, Employee employee) {
@@ -1165,7 +1165,8 @@ public class PeopleServiceImpl implements PeopleService {
 
 		EmployeeDetailedResponseDto employeeDetailedResponseDto = peopleMapper
 			.employeeToEmployeeDetailedResponseDto(employee.get());
-		employeeDetailedResponseDto.setSkills(skillService.getEmployeeSkillResponses(employee.get().getEmployeeId()));
+		employeeDetailedResponseDto
+			.setSkills(employeeSkillService.getEmployeeSkillResponses(employee.get().getEmployeeId()));
 		List<EmployeePeriod> period = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
 				employee.get().getEmployeeId(), Sort.by(Sort.Direction.DESC, EmployeePeriodSort.ID.getSortField()));
 
@@ -1770,7 +1771,7 @@ public class PeopleServiceImpl implements PeopleService {
 		for (Employee employee : employees.getContent()) {
 
 			EmployeeDetailedResponseDto responseDto = peopleMapper.employeeToEmployeeDetailedResponseDto(employee);
-			responseDto.setSkills(skillService.getEmployeeSkillResponses(employee.getEmployeeId()));
+			responseDto.setSkills(employeeSkillService.getEmployeeSkillResponses(employee.getEmployeeId()));
 			responseDto.setJobFamily(peopleMapper.jobFamilyToEmployeeJobFamilyDto(employee.getJobFamily()));
 			Optional<EmployeePeriod> period = employeePeriodDao
 				.findEmployeePeriodByEmployee_EmployeeIdAndIsActiveTrue(employee.getEmployeeId());

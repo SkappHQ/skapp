@@ -1,25 +1,23 @@
 package com.skapp.community.peopleplanner.model;
 
-import com.skapp.community.peopleplanner.type.SkillType;
+import com.skapp.community.peopleplanner.type.EmployeeSkillType;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class EmployeeSkillId implements Serializable {
+public class EmployeeSkillId {
 
 	private Long employee;
 
 	private Long skillId;
 
-	private SkillType skillType;
+	private EmployeeSkillType skillType;
 
 }

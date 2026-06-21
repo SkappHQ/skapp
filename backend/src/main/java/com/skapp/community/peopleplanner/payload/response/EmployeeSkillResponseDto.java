@@ -1,6 +1,6 @@
 package com.skapp.community.peopleplanner.payload.response;
 
-import com.skapp.community.peopleplanner.type.SkillType;
+import com.skapp.community.peopleplanner.type.EmployeeSkillType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,12 +10,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SkillResponseDto {
+public class EmployeeSkillResponseDto {
 
 	private Long id;
 
 	private String name;
 
-	private SkillType skillType;
+	private EmployeeSkillType skillType;
 
 }

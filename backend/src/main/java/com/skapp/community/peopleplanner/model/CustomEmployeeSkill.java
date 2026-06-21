@@ -15,14 +15,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "ppl_custom_skill")
-public class CustomSkill {
+public class CustomEmployeeSkill {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
+	@Column(name = "id", nullable = false)
 	private Long id;
 
-	@Column(name = "name", nullable = false, columnDefinition = "text")
+	@Column(name = "name", nullable = false)
 	private String name;
 
 }

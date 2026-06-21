@@ -1,6 +1,6 @@
 package com.skapp.community.peopleplanner.model;
 
-import com.skapp.community.peopleplanner.type.SkillType;
+import com.skapp.community.peopleplanner.type.EmployeeSkillType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,6 +35,6 @@ public class EmployeeSkill {
 	@Id
 	@Enumerated(EnumType.STRING)
 	@Column(name = "skill_type", nullable = false)
-	private SkillType skillType;
+	private EmployeeSkillType skillType;
 
 }

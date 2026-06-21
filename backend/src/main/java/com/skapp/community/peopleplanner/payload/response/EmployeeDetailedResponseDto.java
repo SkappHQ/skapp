@@ -92,6 +92,6 @@ public class EmployeeDetailedResponseDto {
 
 	private EmployeeRoleResponseDto employeeRole;
 
-	private List<SkillResponseDto> skills;
+	private List<EmployeeSkillResponseDto> skills;
 
 }

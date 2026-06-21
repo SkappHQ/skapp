@@ -1,12 +1,11 @@
 package com.skapp.community.peopleplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.peopleplanner.service.SkillService;
+import com.skapp.community.peopleplanner.service.EmployeeSkillService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,16 +15,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/people/skills")
-@Tag(name = "Skill Controller", description = "Endpoints for skill management")
-public class SkillController {
+@Tag(name = "Employee Skill Controller", description = "Endpoints for employee skill management")
+public class EmployeeSkillController {
 
-	private final SkillService skillService;
+	private final EmployeeSkillService employeeSkillService;
 
 	@Operation(summary = "Get all custom skills", description = "Retrieves all custom skills.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
-	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_EMPLOYEE')")
+	@GetMapping
 	public ResponseEntity<ResponseEntityDto> getAllSkills() {
-		ResponseEntityDto response = skillService.getAllSkills();
+		ResponseEntityDto response = employeeSkillService.getAllSkills();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
