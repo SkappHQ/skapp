@@ -13,6 +13,14 @@ import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export type DealPriority = CrmPriorityEnum;
 
+export interface DealCardFieldVisibility {
+  owner?: boolean;
+  contactInfo?: boolean;
+  value?: boolean;
+  taskCount?: boolean;
+  priority?: boolean;
+}
+
 export interface DealCardOwner {
   id: string;
   firstName?: string;
@@ -29,6 +37,7 @@ export interface DealCardProps {
   formattedValue: string;
   priority: DealPriority;
   taskCount?: number;
+  fieldVisibility?: DealCardFieldVisibility;
   isInteractive?: boolean;
   className?: string;
   onClick?: () => void;
@@ -44,11 +53,17 @@ const DealCard: FC<DealCardProps> = ({
   formattedValue,
   priority,
   taskCount,
+  fieldVisibility,
   isInteractive = true,
   className = "",
   onClick,
   ariaLabel
 }) => {
+  const showOwner = fieldVisibility?.owner !== false;
+  const showContactInfo = fieldVisibility?.contactInfo !== false;
+  const showValue = fieldVisibility?.value !== false;
+  const showTaskCount = fieldVisibility?.taskCount !== false;
+  const showPriority = fieldVisibility?.priority !== false;
   const imageUrl = useGetImageUrl(owner?.src ?? "");
 
   const wrapperClasses = [
@@ -75,7 +90,7 @@ const DealCard: FC<DealCardProps> = ({
           </span>
         </div>
 
-        {owner && (
+        {showOwner && owner && (
           <Avatar
             id={owner.id}
             size="sm"
@@ -90,7 +105,7 @@ const DealCard: FC<DealCardProps> = ({
         {title}
       </p>
 
-      {(contactName || company) && (
+      {showContactInfo && (contactName || company) && (
         <p className="body3 truncate leading-4 tracking-[0.1px] text-secondary-icon">
           {contactName && <span>{contactName}</span>}
           {contactName && company && (
@@ -100,31 +115,35 @@ const DealCard: FC<DealCardProps> = ({
         </p>
       )}
 
-      <div className="flex items-center gap-1.5">
-        <span className="shrink-0 text-secondary-icon">
-          <DealValueIcon className="h-4 w-4" />
-        </span>
-        <span className="body3 leading-4.5 tracking-[0.1px] text-zinc-950">
-          {formattedValue}
-        </span>
-      </div>
+      {showValue && (
+        <div className="flex items-center gap-1.5">
+          <span className="shrink-0 text-secondary-icon">
+            <DealValueIcon className="h-4 w-4" />
+          </span>
+          <span className="body3 leading-4.5 tracking-[0.1px] text-zinc-950">
+            {formattedValue}
+          </span>
+        </div>
+      )}
 
-      <div className="flex items-center justify-end gap-2">
-        {taskCount !== undefined && taskCount > 0 && (
-          <Chip
-            size="sm"
-            label={String(taskCount)}
-            prefixIcon={
-              <span className="[&_svg]:h-3 [&_svg]:w-3">
-                <ClipboardCheckIcon fill="text-slate-600" />
-              </span>
-            }
-            className="bg-secondary-accent text-secondary-text"
-          />
-        )}
+      {(showTaskCount || showPriority) && (
+        <div className="flex items-center justify-end gap-2">
+          {showTaskCount && taskCount !== undefined && taskCount > 0 && (
+            <Chip
+              size="sm"
+              label={String(taskCount)}
+              prefixIcon={
+                <span className="[&_svg]:h-3 [&_svg]:w-3">
+                  <ClipboardCheckIcon fill="text-slate-600" />
+                </span>
+              }
+              className="bg-secondary-accent text-secondary-text"
+            />
+          )}
 
-        <PriorityLabel priority={priority} />
-      </div>
+          {showPriority && <PriorityLabel priority={priority} />}
+        </div>
+      )}
     </>
   );
 

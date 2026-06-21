@@ -1,20 +1,18 @@
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
-  useSortable,
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { FC, useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-
 import type {
+  DealCardFieldVisibility,
   DealCardOwner,
   DealPriority
 } from "~community/crm/components/molecules/DealCard/DealCard";
-import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
+import DraggableDealCard from "~community/crm/components/molecules/DraggableDealCard/DraggableDealCard";
 
 export interface DealStageLaneDeal {
   id: string;
@@ -39,6 +37,7 @@ export interface DealStage {
 export interface DealStageLaneProps {
   stage: DealStage;
   deals: DealStageLaneDeal[];
+  fieldVisibility?: DealCardFieldVisibility;
   isLoading?: boolean;
   hasMore?: boolean;
   isLoadingMore?: boolean;
@@ -48,52 +47,10 @@ export interface DealStageLaneProps {
   onLoadMore?: (stageId: string) => void;
 }
 
-interface SortableItemProps {
-  deal: DealStageLaneDeal;
-  onDealClick?: (dealId: string) => void;
-}
-
-const SortableItem: FC<SortableItemProps> = ({ deal, onDealClick }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({ id: deal.id, data: { type: "deal" } });
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0 : 1
-      }}
-      {...attributes}
-      {...listeners}
-    >
-      <DealCard
-        id={deal.id}
-        title={deal.title}
-        contactName={deal.contactName}
-        company={deal.company}
-        owner={deal.owner}
-        formattedValue={deal.formattedValue}
-        priority={deal.priority}
-        taskCount={deal.taskCount}
-        ariaLabel={deal.ariaLabel}
-        isInteractive
-        onClick={onDealClick ? () => onDealClick(deal.id) : undefined}
-      />
-    </div>
-  );
-};
-
 const DealStageLane: FC<DealStageLaneProps> = ({
   stage,
   deals,
+  fieldVisibility,
   isLoading = false,
   hasMore = false,
   isLoadingMore = false,
@@ -154,7 +111,9 @@ const DealStageLane: FC<DealStageLaneProps> = ({
           >
             {stage.name}
           </h2>
-          <p className="body3 mt-0.5 text-secondary-icon">{stage.formattedTotal}</p>
+          <p className="body3 mt-0.5 text-secondary-icon">
+            {stage.formattedTotal}
+          </p>
         </div>
         <span className="rounded-full bg-secondary-accent px-3 py-1 text-xs font-semibold text-secondary-text">
           {isLoading
@@ -177,9 +136,10 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               strategy={verticalListSortingStrategy}
             >
               {deals.map((deal) => (
-                <SortableItem
+                <DraggableDealCard
                   key={deal.id}
                   deal={deal}
+                  fieldVisibility={fieldVisibility}
                   onDealClick={onDealClick}
                 />
               ))}
