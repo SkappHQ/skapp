@@ -95,9 +95,7 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 			.stream()
 			.collect(Collectors.toMap(CustomEmployeeSkill::getId, Function.identity()));
 
-		return employeeSkills.stream()
-			.map(es -> mapToEmployeeSkillResponseDto(es, customSkillMap))
-			.toList();
+		return employeeSkills.stream().map(es -> mapToEmployeeSkillResponseDto(es, customSkillMap)).toList();
 	}
 
 	@Override
@@ -133,8 +131,7 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 			DefaultEmployeeSkillsYaml data = YamlReader.read(SKILLS_YAML_PATH, DefaultEmployeeSkillsYaml.class);
 			defaultEmployeeSkillNames = data.getSkills()
 				.stream()
-				.collect(Collectors.toMap(DefaultEmployeeSkill::getId,
-						DefaultEmployeeSkill::getName));
+				.collect(Collectors.toMap(DefaultEmployeeSkill::getId, DefaultEmployeeSkill::getName));
 		}
 
 		String name = defaultEmployeeSkillNames.get(id);
