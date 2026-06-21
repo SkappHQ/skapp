@@ -11,12 +11,19 @@ import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
+import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
+import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
+
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
+
+  // TODO: Replace with real isLoading from useGetCompanyById when API is wired
+  const isLoading = false;
 
   const [activeTab, setActiveTab] = useState<SidePanelTabEnum>(
     SidePanelTabEnum.TASKS
@@ -94,31 +101,46 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       isOpen={isOpen}
       onClose={onClose}
       closeOnBackdropClick
+      header={
+        isLoading ? (
+          <SidePanelHeaderSkeleton isShowLastUpdate={false} />
+        ) : undefined
+      }
       headerActions={
-        <KebabMenu
-          id={"company-actions"}
-          menuItems={menuItems}
-          anchorButton={{
-            "aria-label": translateText(["kebabMenuAriaLabel"])
-          }}
-          className={{
-            anchorElement:
-              "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-          }}
-        />
+        isLoading ? (
+          <SidePanelHeaderActionsSkeleton count={1} />
+        ) : (
+          <KebabMenu
+            id={"company-actions"}
+            menuItems={menuItems}
+            anchorButton={{
+              "aria-label": translateText(["kebabMenuAriaLabel"])
+            }}
+            className={{
+              anchorElement:
+                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+            }}
+          />
+        )
       }
     >
-      <div className="flex flex-col pb-4 gap-[16px]">
-        {/*Add company info section here, similar to ContactSidePanel*/}
-        <div className="flex flex-col pt-2 w-full">
-          <Tabs
-            tabs={tabs}
-            activeTabId={activeTab}
-            onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
-          />
-        </div>
-        <hr className="border-secondary-accent" />
-        {renderTabContent()}
+      <div className="flex flex-col pb-4 gap-4">
+        {isLoading ? (
+          <CompanySidePanelSkeleton />
+        ) : (
+          <>
+            {/*Add company info section here, similar to ContactSidePanel*/}
+            <div className="flex flex-col pt-2 w-full">
+              <Tabs
+                tabs={tabs}
+                activeTabId={activeTab}
+                onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+              />
+            </div>
+            <hr className="border-secondary-accent" />
+            {renderTabContent()}
+          </>
+        )}
       </div>
     </SidePanel>
   );

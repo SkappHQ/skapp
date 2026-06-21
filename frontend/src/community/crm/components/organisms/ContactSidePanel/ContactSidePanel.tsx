@@ -12,8 +12,12 @@ import { useGetContactById } from "~community/crm/api/ContactApi";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
+import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
+
+import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
 
 const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator(
@@ -45,7 +49,11 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setSelectedContact(null);
   };
 
-  const { data: contact, isError } = useGetContactById(
+  const {
+    data: contact,
+    isError,
+    isLoading
+  } = useGetContactById(
     selectedContact?.id ?? 0,
     isOpen && !!selectedContact?.id
   );
@@ -92,29 +100,40 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       onClose={handleClose}
       closeOnBackdropClick
       header={
-        <SidePanelContactHeader
-          name={contact?.name}
-          lastModifiedDate={contact?.lastModifiedDate}
-        />
+        isLoading ? (
+          <SidePanelHeaderSkeleton isShowLastUpdate={true} />
+        ) : (
+          <SidePanelContactHeader
+            name={contact?.name}
+            lastModifiedDate={contact?.lastModifiedDate}
+          />
+        )
       }
+      headerActions={isLoading ? <SidePanelHeaderActionsSkeleton /> : <></>}
     >
       <div className="flex flex-col pb-4 gap-4">
-        {contact && (
-          <SidePanelContactInfo
-            contact={contact}
-            onCompanyClick={handleCompanyClick}
-          />
-        )}
+        {isLoading ? (
+          <ContactSidePanelSkeleton />
+        ) : (
+          <>
+            {contact && (
+              <SidePanelContactInfo
+                contact={contact}
+                onCompanyClick={handleCompanyClick}
+              />
+            )}
 
-        <div className="flex flex-col pt-2 w-full">
-          <Tabs
-            tabs={tabs}
-            activeTabId={activeTab}
-            onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
-          />
-        </div>
-        <hr className="border-secondary-accent" />
-        {renderTabContent()}
+            <div className="flex flex-col pt-2 w-full">
+              <Tabs
+                tabs={tabs}
+                activeTabId={activeTab}
+                onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+              />
+              <hr className="border-secondary-accent" />
+            </div>
+            {renderTabContent()}
+          </>
+        )}
       </div>
     </SidePanel>
   );
