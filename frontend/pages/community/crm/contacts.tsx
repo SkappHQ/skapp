@@ -17,22 +17,22 @@ const Contacts: NextPage = () => {
   const {
     isCrmSidePanelOpen,
     setIsCrmSidePanelOpen,
-    setSelectedContact,
+    setSelectedContactId,
     setIsAddContactModalOpen,
     setContactModalType,
-    selectedContact
+    selectedContactId
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedContact: store.setSelectedContact,
+    setSelectedContactId: store.setSelectedContactId,
     setIsAddContactModalOpen: store.setIsAddContactModalOpen,
     setContactModalType: store.setContactModalType,
-    selectedContact: store.selectedContact
+    selectedContactId: store.selectedContactId
   }));
 
   const handleCloseSidePanel = () => {
     setIsCrmSidePanelOpen(false);
-    setSelectedContact(null);
+    setSelectedContactId(null);
   };
 
   const onPrimaryButtonClick = () => {
@@ -49,7 +49,7 @@ const Contacts: NextPage = () => {
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <>
-        {selectedContact && (
+        {selectedContactId && (
           <SidePanelWrapper>
             <ContactSidePanel
               isOpen={isCrmSidePanelOpen}

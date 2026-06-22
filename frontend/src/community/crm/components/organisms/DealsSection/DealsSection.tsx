@@ -16,20 +16,18 @@ const DealsSection: FC = () => {
   const [inputValue, setInputValue] = useState("");
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isLoading,
-    isFetchingNextPage
-  } = useGetDealsInfinite({
-    size: DEAL_PAGE_SIZE,
-    sortKey: CrmDealSortEnum.STAGE_ORDER,
-    sortOrder: SortOrderTypes.ASC,
-    searchKeyword: debouncedSearch
-  });
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
+    useGetDealsInfinite({
+      size: DEAL_PAGE_SIZE,
+      sortKey: CrmDealSortEnum.STAGE_ORDER,
+      sortOrder: SortOrderTypes.ASC,
+      searchKeyword: debouncedSearch
+    });
 
-  const allDeals = useMemo(() => data?.pages.flatMap((p) => p?.items ?? []), [data]);
+  const allDeals = useMemo(
+    () => data?.pages.flatMap((p) => p?.items ?? []),
+    [data]
+  );
 
   const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {

@@ -1,8 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import {
+  CrmCompletedTaskResponseType,
   CrmTaskCreatePayload,
   CrmTaskResponseType,
   UpdateTaskStatusPayload
@@ -25,7 +31,10 @@ export const useCreateTask = (
     mutationFn: createTask,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_TASK_DATA
+        queryKey: taskQueryKeys.GET_OPEN_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
       if (contactId) {
         queryClient.invalidateQueries({
@@ -38,15 +47,20 @@ export const useCreateTask = (
   });
 };
 
-const fetchOpenTasks = async (): Promise<CrmTaskResponseType> => {
-  const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS);
+const fetchOpenTasks = async (
+  searchKeyword?: string
+): Promise<CrmTaskResponseType> => {
+  const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
+    params: { searchKeyword }
+  });
   return response?.data?.results?.[0];
 };
 
-export const useGetOpenTasks = () => {
+export const useGetOpenTasks = ( searchKeyword: string, enabled: boolean) => {
   return useQuery({
-    queryKey: taskQueryKeys.GET_OPEN_TASKS,
-    queryFn: fetchOpenTasks
+    queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword),
+    queryFn: () => fetchOpenTasks(searchKeyword),
+    enabled
   });
 };
 
@@ -68,6 +82,66 @@ export const useUpdateTaskCompletion = (
     mutationFn: updateTaskStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+interface TaskSearchParams {
+  page: number;
+  size: number;
+  searchKeyword: string;
+}
+
+const fetchCompletedTasks = async ({
+  page,
+  size,
+  searchKeyword
+}: TaskSearchParams): Promise<CrmCompletedTaskResponseType> => {
+  const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
+    params: { page, size, searchKeyword }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetCompletedTasks = (
+  searchKeyword: string,
+  size: number,
+  enabled: boolean
+) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_SEARCH(searchKeyword),
+    queryFn: ({ pageParam }) =>
+      fetchCompletedTasks({
+        page: pageParam,
+        size,
+        searchKeyword
+      }),
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.currentPage + 1;
+      return nextPage < lastPage.totalPages ? nextPage : undefined;
+    },
+    enabled
+  });
+};
+
+const deleteTask = async (id: number) => {
+  await authFetch.delete(taskEndpoints.DELETE_TASK(id));
+};
+
+export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_OPEN_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
       onSuccess();
     },
     onError
