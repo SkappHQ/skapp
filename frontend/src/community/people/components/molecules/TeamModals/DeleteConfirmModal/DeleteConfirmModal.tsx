@@ -9,7 +9,11 @@ import { useTransferTeamMembers } from "~community/people/api/TeamApi";
 import { usePeopleStore } from "~community/people/store/store";
 import { TeamModelTypes } from "~community/people/types/TeamTypes";
 
-const DeleteConfirmModal = () => {
+interface Props {
+  hasTransferableMembers: boolean;
+}
+
+const DeleteConfirmModal = ({ hasTransferableMembers }: Props) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     setTeamModalType,
@@ -65,14 +69,16 @@ const DeleteConfirmModal = () => {
       <Typography>{translateText(["confirmDeleteModalDes"])}</Typography>
       <Box>
         <div className="flex flex-row gap-3 mt-4 justify-end">
-          <ButtonV2
-            variant={"primary"}
-            onClick={handleReassignClick}
-            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            iconPosition="end"
-          >
-            {translateText(["reassignBtnText"])}
-          </ButtonV2>
+          {hasTransferableMembers && (
+            <ButtonV2
+              variant={"primary"}
+              onClick={handleReassignClick}
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["reassignBtnText"])}
+            </ButtonV2>
+          )}
           <ButtonV2
             variant={"error"}
             onClick={handleDeleteClick}
