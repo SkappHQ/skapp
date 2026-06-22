@@ -1,6 +1,14 @@
-import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useState } from "react";
-
 import { SmallModal } from "@rootcodelabs/skapp-ui";
+import {
+  Dispatch,
+  FC,
+  ReactNode,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
+
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
@@ -11,10 +19,12 @@ import TeamActionModal from "~community/people/components/molecules/TeamModals/T
 import UnsavedAddTeamModal from "~community/people/components/molecules/TeamModals/UnsavedAddTeamModal/UnsavedAddTeamModal";
 import UnsavedEditTeamModal from "~community/people/components/molecules/TeamModals/UnsavedEditTeamModal/UnsavedEditTeamModal";
 import { usePeopleStore } from "~community/people/store/store";
+import { EmployeeType } from "~community/people/types/EmployeeTypes";
 import {
   AddTeamType,
   TeamModelTypes,
-  TeamNamesType
+  TeamNamesType,
+  TeamType
 } from "~community/people/types/TeamTypes";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
@@ -53,8 +63,64 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
   const [tempTeamDetails, setTempTeamDetails] = useState<AddTeamType>();
   const [currentTeamFormData, setCurrentTeamFormData] = useState<AddTeamType>();
 
-
   const { isLoading: teamsIsLoading, data } = useGetAllTeams();
+
+  const { hasTransferableMembers, transferableMembers, availableTeamsMap } =
+    useMemo(() => {
+      if (!data || !currentDeletingTeam) {
+        return {
+          hasTransferableMembers: false,
+          transferableMembers: [] as EmployeeType[],
+          availableTeamsMap: new Map<number, TeamType[]>()
+        };
+      }
+
+      const otherTeams = data.filter(
+        (team) => team.teamId !== currentDeletingTeam.teamId
+      );
+
+      const memberTeamsMap = new Map<number, Set<string | number>>();
+      for (const team of otherTeams) {
+        const allEmployees = [
+          ...(team.supervisors || []),
+          ...(team.teamMembers || [])
+        ];
+        for (const emp of allEmployees) {
+          const employeeId = Number(emp.employeeId);
+          if (!memberTeamsMap.has(employeeId)) {
+            memberTeamsMap.set(employeeId, new Set());
+          }
+          memberTeamsMap.get(employeeId)!.add(team.teamId);
+        }
+      }
+
+      const deletingTeamMembers = [
+        ...(currentDeletingTeam.supervisors || []),
+        ...(currentDeletingTeam.teamMembers || [])
+      ];
+
+      const transferable: EmployeeType[] = [];
+      const teamsMap = new Map<number, TeamType[]>();
+
+      for (const member of deletingTeamMembers) {
+        const employeeId = Number(member.employeeId);
+        const existingTeamIds = memberTeamsMap.get(employeeId) || new Set();
+        const transferableTeams = otherTeams.filter(
+          (team) => !existingTeamIds.has(team.teamId)
+        );
+
+        if (transferableTeams.length > 0) {
+          transferable.push(member);
+          teamsMap.set(employeeId, transferableTeams);
+        }
+      }
+
+      return {
+        hasTransferableMembers: transferable.length > 0,
+        transferableMembers: transferable,
+        availableTeamsMap: teamsMap
+      };
+    }, [data, currentDeletingTeam]);
 
   const getModalTitle = (): string => {
     switch (teamModalType) {
@@ -136,8 +202,7 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
   };
 
   useEffect(() => {
-    if (!teamsIsLoading && data)
-      setProjectTeamNames(data as TeamNamesType[]);
+    if (!teamsIsLoading && data) setProjectTeamNames(data as TeamNamesType[]);
   }, [teamsIsLoading, data]);
 
   const modalContent = (): ReactNode => {
@@ -162,11 +227,7 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
           />
         );
       case TeamModelTypes.UNSAVED_ADD_TEAM:
-        return (
-          <UnsavedAddTeamModal
-            setTempTeamDetails={setTempTeamDetails}
-          />
-        );
+        return <UnsavedAddTeamModal setTempTeamDetails={setTempTeamDetails} />;
       case TeamModelTypes.UNSAVED_EDIT_TEAM:
         return (
           <UnsavedEditTeamModal
@@ -175,9 +236,16 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
           />
         );
       case TeamModelTypes.CONFIRM_DELETE:
-        return <DeleteConfirmModal />;
+        return (
+          <DeleteConfirmModal hasTransferableMembers={hasTransferableMembers} />
+        );
       case TeamModelTypes.REASSIGN_MEMBERS:
-        return <ReassignMembersModal />;
+        return (
+          <ReassignMembersModal
+            transferableMembers={transferableMembers}
+            availableTeamsMap={availableTeamsMap}
+          />
+        );
       default:
         return null;
     }
@@ -193,7 +261,9 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
         }
         onClose={handleCloseModal}
         modalHeader={
-          isPeopleAdmin ? getModalTitle() : translateText(["viewTeamModalTitle"])
+          isPeopleAdmin
+            ? getModalTitle()
+            : translateText(["viewTeamModalTitle"])
         }
         content={modalContent()}
       />
