@@ -48,6 +48,7 @@ public interface CrmMapper {
 	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "companyId", source = "company.id")
 	@Mapping(target = "contactId", source = "contact.id")
+	@Mapping(target = "taskCount", ignore = true)
 	CrmDealByStageItemResponseDto crmDealToCrmDealByStageItemResponseDto(CrmDeal crmDeal);
 
 	List<CrmDealByStageItemResponseDto> crmDealsToCrmDealByStageItemResponseDtos(List<CrmDeal> crmDeals);
