@@ -1,4 +1,11 @@
 {
+  "common": {
+    "ownerPopupSearch": {
+      "placeholder": "None",
+      "searchPlaceholder": "Search Owner",
+      "noResults": "No results"
+    }
+  },
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",
@@ -352,6 +359,69 @@
         "cancel": "Cancel delete deal",
         "confirm": "Confirm delete deal"
       }
+    },
+    "sidePanel": {
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions"
+    },
+    "addDealSidePanel": {
+      "title": "Add Deal",
+      "labels": {
+        "dealName": "Deal Name",
+        "stage": "Stage",
+        "description": "Description",
+        "value": "Value",
+        "priority": "Priority",
+        "ownedBy": "Owned by",
+        "contactName": "Contact"
+      },
+      "placeholders": {
+        "dealName": "Enter deal name",
+        "stage": "Select stage",
+        "description": "Enter description",
+        "amount": "Enter amount",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "none": "None",
+        "noResults": "No results"
+      },
+      "buttons": {
+        "addDeal": "Add Deal"
+      },
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "ariaLabels": {
+        "closePanel": "Close add deal panel",
+        "addDeal": "Add Deal",
+        "dealName": "Deal Name",
+        "stage": "Stage",
+        "description": "Description",
+        "amount": "Amount",
+        "priority": "Priority",
+        "owner": "Deal Owner",
+        "contact": "Contact"
+      },
+      "validations": {
+        "dealNameRequired": "Deal name is required",
+        "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
+        "dealNameMaxLength": "Deal name must be 255 characters or less",
+        "descriptionMaxLength": "Description must be 2000 characters or less",
+        "stageRequired": "Stage is required",
+        "stageLoadError": "Failed to load stages. Please try again.",
+        "contactRequired": "Contact is required",
+        "ownerRequired": "Owner is required",
+        "priorityRequired": "Priority is required",
+        "amountInvalid": "Please enter a valid positive amount"
+      },
+      "toastMessages": {
+        "successTitle": "Deal added successfully",
+        "successDescription": "The new deal has been created",
+        "errorTitle": "Failed to add deal",
+        "errorDescription": "Please try again or contact support"
+      }
     }
   },
   "tasks": {
@@ -467,21 +537,15 @@
       "notes": "Notes",
       "noNotes": "No notes",
       "dealsTitle": "Deals",
-      "noDeal": "No deal linked",
       "relatedTasksTitle": "Related tasks",
-      "noRelatedTasks": "No related tasks",
       "statusDone": "Done",
-      "statusPending": "Pending",
       "markAsDone": "Mark as done",
       "assignedTo": "Assigned to",
       "priority": "Priority",
       "closingDate": "Closing date",
       "contactName": "Contact name",
       "noClosingDate": "Not set",
-      "noContact": "No contact",
-      "descriptionLabel": "Description",
-      "overdue": "Overdue",
-      "dueOn": "Due on {{date}}"
+      "noContact": "No contact"
     }
   }
 }

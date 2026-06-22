@@ -4,10 +4,7 @@ export const crmDealQueryKeys = {
   ALL: ["crm-deals"],
   GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
   DEAL_STAGES: ["crm-deal-stages"],
-  DEAL_LOOKUP: (searchKeyword: string) => [
-    "crm-deal-lookup",
-    searchKeyword
-  ]
+  DEAL_LOOKUP: (searchKeyword: string) => ["crm-deal-lookup", searchKeyword]
 };
 
 export const contactQueryKeys = {
@@ -58,6 +55,13 @@ export const companyQueryKeys = {
 export const taskQueryKeys = {
   GET_TASK_DATA: ["get-task-data"],
   GET_OPEN_TASKS: ["get-open-tasks"],
+  GET_OPEN_TASKS_BY_SEARCH: (searchKeyword?: string) => ["get-open-tasks", searchKeyword],
+  GET_COMPLETED_TASKS: ["get-completed-tasks"],
+  GET_COMPLETED_TASKS_BY_SEARCH: (searchKeyword: string, size?: number) => [
+    "get-completed-tasks",
+    searchKeyword,
+    size
+  ],
   TASK_BY_ID: (id: number) => ["crm-task-by-id", id],
   TASK_BY_ID_ALL: ["crm-task-by-id"],
   RELATED_TASKS: (
