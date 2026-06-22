@@ -47,7 +47,7 @@ const fetchOpenTasks = async (
   return response?.data?.results?.[0];
 };
 
-export const useGetOpenTasks = ( searchKeyword: string, enabled: boolean) => {
+export const useGetOpenTasks = (searchKeyword: string, enabled: boolean) => {
   return useQuery({
     queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword),
     queryFn: () => fetchOpenTasks(searchKeyword),
@@ -73,6 +73,10 @@ export const useUpdateTaskCompletion = (
     mutationFn: updateTaskStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
       onSuccess();
     },
     onError
