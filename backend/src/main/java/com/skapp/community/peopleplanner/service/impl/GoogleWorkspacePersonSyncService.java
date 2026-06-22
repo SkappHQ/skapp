@@ -39,6 +39,8 @@ import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -214,7 +216,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // collection changed) — there is no per-user resourceUri to parse out, so we
     // can't know which user changed and must resync the whole directory.
     // -------------------------------------------------------------------------
+    private static final Duration GOOGLE_PROPAGATION_DELAY = Duration.ofSeconds(10);
+
     @Override
+    @Async("syncTaskExecutor")
     public void processWatchNotification(String resourceState, String resourceUri) {
         if (WATCH_HANDSHAKE_STATE.equals(resourceState)) {
             log.info("Watch sync handshake received — no action needed.");
@@ -223,18 +228,26 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         String callerEmail = "sudam.manudith@rootcode.io";
 
-        log.info("Watch notification ({}) received for {} — resyncing all users.", resourceState, resourceUri);
+        log.info("Watch notification ({}) received — waiting {}s for Google propagation before syncing.",
+                resourceState, GOOGLE_PROPAGATION_DELAY.getSeconds());
+
+        // ← KEY FIX: wait for Google's internal replication to finish
+        try {
+            Thread.sleep(GOOGLE_PROPAGATION_DELAY.toMillis());
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            log.warn("Propagation delay interrupted — proceeding anyway.");
+        }
+
+        log.info("Propagation delay done — resyncing all users.");
         try {
             SyncResult result = performFullSync();
             log.info("Resync complete. Synced: {}, Failed: {}", result.synced(), result.failed());
-            // All users+employees are persisted — now send invitation emails
             sendInviteEmailsToNewUsers(result.newUserEmails());
-
             sendSummaryEmail(asyncEmailSender, callerEmail,
                     result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Resync triggered by watch notification failed: {}", e.getMessage(), e);
             sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
             notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
@@ -415,10 +428,11 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // -------------------------------------------------------------------------
     // upsertUser() — create or update User + Employee from a Workspace user
     // -------------------------------------------------------------------------
-    private boolean upsertUser(com.google.api.services.directory.model.User wsUser) {
+    @Transactional
+    boolean upsertUser(com.google.api.services.directory.model.User wsUser) {
         String email = wsUser.getPrimaryEmail();
         String firstName = wsUser.getName() != null ? wsUser.getName().getGivenName() : "";
-        String lastName = wsUser.getName() != null ? wsUser.getName().getFamilyName() : "";
+        String lastName  = wsUser.getName() != null ? wsUser.getName().getFamilyName() : "";
         boolean suspended = Boolean.TRUE.equals(wsUser.getSuspended());
 
         Optional<User> existingUser = userDao.findByEmail(email);
@@ -439,8 +453,11 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         employee.setLastName(lastName);
         employee.setAccountStatus(suspended ? AccountStatus.DEACTIVATED : AccountStatus.ACTIVE);
         Employee savedEmployee = employeeDao.save(employee);
-        rolesService.saveEmployeeRoles(savedEmployee);
 
+        // Only assign roles to brand-new employees — never overwrite existing role assignments
+        if (isNew && savedEmployee.getEmployeeRole() == null) {
+            rolesService.saveEmployeeRoles(savedEmployee);
+        }
 
         return isNew;
     }

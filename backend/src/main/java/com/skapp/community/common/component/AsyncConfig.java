@@ -24,15 +24,16 @@ public class AsyncConfig {
 		return executor;
 	}
 
-	@Bean(name = "syncTaskExecutor")
+	@Bean("syncTaskExecutor")
 	public Executor syncTaskExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setThreadNamePrefix("Sync-Thread-");
+		executor.setThreadNamePrefix("SyncTask-");
 		executor.setCorePoolSize(2);
-		executor.setMaxPoolSize(5);
+		executor.setMaxPoolSize(4);
 		executor.setQueueCapacity(10);
 		executor.initialize();
 		return executor;
 	}
+
 
 }
