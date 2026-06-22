@@ -18,6 +18,7 @@ import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTask
 import SidePanelTaskNotes from "~community/crm/components/organisms/TaskDetailSidePanel/TaskDetailSidePanelNotes/TaskDetailSidePanelNotes";
 import { useCrmStore } from "~community/crm/store/store";
 import {
+  CrmContactMetricsType,
   DetailPanelDealResponseType
 } from "~community/crm/types/CommonTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
@@ -29,11 +30,13 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const {
     selectedTaskId,
     setSelectedTaskId,
-    setIsCrmSidePanelOpen
+    setIsCrmSidePanelOpen,
+    setSelectedContact
   } = useCrmStore((store) => ({
     selectedTaskId: store.selectedTaskId,
     setSelectedTaskId: store.setSelectedTaskId,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    setSelectedContact: store.setSelectedContact
   }));
 
   const handleClose = (): void => {
@@ -94,11 +97,17 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     updateCompletion({ id: task.id, isCompleted: true });
   };
 
+  const handleContactClick = (contactId: number) => {
+    setSelectedTaskId(null);
+    setSelectedContact({ id: contactId } as CrmContactMetricsType);
+    setIsCrmSidePanelOpen(true);
+  };
+
   if (isTaskLoading || !task) return null;
 
   const taskTypeName = task.typeName;
   const taskIcon = getTaskTypeIcon(taskTypeName ?? "Other");
-  const taskDeals: DetailPanelDealResponseType[] = [];
+  const taskDeals: DetailPanelDealResponseType[] = task.deal ? [task.deal] : [];
 
   return (
     <SidePanel
@@ -135,7 +144,7 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="w-[295px] shrink-0">
-          <SidePanelTaskInfo task={task} onMarkAsDone={handleMarkAsDone} />
+          <SidePanelTaskInfo task={task} onMarkAsDone={handleMarkAsDone} onContactClick={handleContactClick} />
         </div>
       </div>
     </SidePanel>

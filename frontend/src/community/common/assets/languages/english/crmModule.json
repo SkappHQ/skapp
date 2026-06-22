@@ -322,17 +322,7 @@
     "addDealBtn": "Add Deal",
     "detailsPageHead": "Deal Details | Skapp",
     "detailsTitle": "Deal Details",
-    "sidePanel": {
-      "addDealBtn": "Add deal",
-      "emptyTitle": "No deals",
-      "emptyDescription": "No deals associated with this company",
-      "descriptionLabel": "Description",
-      "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions",
-      "ariaLabels": {
-        "addDealBtn": "Add Deal"
-      }
-    },
+
     "dealsTable": {
       "dealColumn": "Deal",
       "valueColumn": "Value",
@@ -361,8 +351,15 @@
       }
     },
     "sidePanel": {
+      "addDealBtn": "Add deal",
+      "emptyTitle": "No deals",
+      "emptyDescription": "No deals associated with this company",
+      "descriptionLabel": "Description",
       "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions"
+      "kebabMenuAriaLabel": "Deal actions",
+      "ariaLabels": {
+        "addDealBtn": "Add Deal"
+      }
     },
     "addDealSidePanel": {
       "title": "Add Deal",

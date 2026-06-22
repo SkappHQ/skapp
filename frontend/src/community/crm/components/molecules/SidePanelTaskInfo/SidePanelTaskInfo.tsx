@@ -11,9 +11,10 @@ import { getPriorityConfig } from "~community/crm/utils/taskUtil";
 interface Props {
   task: CrmTaskDetailType;
   onMarkAsDone?: () => void;
+  onContactClick?: (contactId: number) => void;
 }
 
-const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
+const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone, onContactClick }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
   const priorityConfig = getPriorityConfig(task.priority);
@@ -35,10 +36,10 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
             lastName={task.owner.lastName ?? ""}
             src={task.owner.authPic ?? ""}
           />
-          <span className="body3">{ownerName}</span>
+          <span className="body2">{ownerName}</span>
         </div>
       ) : (
-        <span className="body3">—</span>
+        <span className="body2">—</span>
       )
     },
     {
@@ -67,12 +68,13 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
       value: task.contact ? (
         <button
           type="button"
-          className="flex items-center gap-1 cursor-pointer text-primary-brand body3 hover:opacity-80"
+          className="flex items-center gap-1 cursor-pointer text-primary-accent body2 hover:opacity-80"
+          onClick={() => onContactClick?.(task.contact!.id)}
         >
-          <span>{task.contact.name}</span>
+          <span className="underline">{task.contact.name}</span>
           <Icon
             name={IconName.POP_OUT_ICON}
-            fill="var(--color-primary-brand)"
+            fill="var(--color-primary-accent)"
             width="14"
             height="14"
           />

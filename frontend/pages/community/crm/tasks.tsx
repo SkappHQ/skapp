@@ -5,6 +5,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
+import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import TaskDetailSidePanel from "~community/crm/components/organisms/TaskDetailSidePanel/TaskDetailSidePanel";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
@@ -20,6 +21,8 @@ const Tasks: NextPage = () => {
     setIsCrmSidePanelOpen,
     selectedTaskId,
     setSelectedTaskId,
+    selectedContact,
+    setSelectedContact,
     setIsTaskModalOpen,
     setTaskModalType
   } = useCrmStore((store) => ({
@@ -27,6 +30,8 @@ const Tasks: NextPage = () => {
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     selectedTaskId: store.selectedTaskId,
     setSelectedTaskId: store.setSelectedTaskId,
+    selectedContact: store.selectedContact,
+    setSelectedContact: store.setSelectedContact,
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType
   }));
@@ -39,6 +44,11 @@ const Tasks: NextPage = () => {
   const handleCloseSidePanel = () => {
     setIsCrmSidePanelOpen(false);
     setSelectedTaskId(null);
+  };
+
+  const handleCloseContactSidePanel = () => {
+    setIsCrmSidePanelOpen(false);
+    setSelectedContact(null);
   };
 
   useEffect(() => {
@@ -66,11 +76,20 @@ const Tasks: NextPage = () => {
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <div ref={containerRef} className="flex flex-col w-full gap-4">
-        {selectedTaskId && (
+        {selectedTaskId && !selectedContact && (
           <SidePanelWrapper>
             <TaskDetailSidePanel
               isOpen={isCrmSidePanelOpen}
               onClose={handleCloseSidePanel}
+            />
+          </SidePanelWrapper>
+        )}
+
+        {selectedContact && (
+          <SidePanelWrapper>
+            <ContactSidePanel
+              isOpen={isCrmSidePanelOpen}
+              onClose={handleCloseContactSidePanel}
             />
           </SidePanelWrapper>
         )}

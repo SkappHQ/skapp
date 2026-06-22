@@ -19,6 +19,7 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskDetailDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
@@ -95,7 +96,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		}
 
 		log.info("getTaskById: execution");
-		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(task));
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskDetailDto(task));
 	}
 
 	@Override

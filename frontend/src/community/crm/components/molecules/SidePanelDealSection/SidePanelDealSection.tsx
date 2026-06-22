@@ -70,12 +70,12 @@ const SidePanelDealSection: React.FC<Props> = ({
           button={
             showEmptyStateAddDeal
               ? {
-                  children: translateText(["addDealBtn"]),
-                  variant: "tertiary",
-                  onClick: handleAddDeal,
-                  icon: <PlusIcon />,
-                  "aria-label": translateText(["ariaLabels", "addDealBtn"])
-                }
+                children: translateText(["addDealBtn"]),
+                variant: "tertiary",
+                onClick: handleAddDeal,
+                icon: <PlusIcon />,
+                "aria-label": translateText(["ariaLabels", "addDealBtn"])
+              }
               : undefined
           }
           className={{
