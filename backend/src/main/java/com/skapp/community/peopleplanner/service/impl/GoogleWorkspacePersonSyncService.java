@@ -34,6 +34,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import com.skapp.community.common.service.NotificationService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.NotificationCategory;
+import com.skapp.community.common.type.NotificationType;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -47,6 +52,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -61,6 +68,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private static final String DIRECTORY_LIST_FIELDS = "users(id,name,primaryEmail,suspended,etag),nextPageToken";
     private static final String SECRET_LATEST_VERSION = "latest";
     private static final String APPLICATION_NAME = "skapp-integration-poc";
+    private final NotificationService notificationService;
 
     private static final Duration WATCH_RENEWAL_THRESHOLD = Duration.ofHours(48);
     private static final int MAX_BACKOFF_SECONDS = 32;
@@ -264,13 +272,41 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // outcome and delegates to the shared notifySuperAdmins() default method
     // on the interface, so every integration reports the same way.
     // -------------------------------------------------------------------------
+//    private void notifySuperAdminsOfSyncResult(int synced, int failed, String fatalError) {
+//        String title = "Google Workspace Sync";
+//        String message = fatalError != null
+//                ? "Google Workspace sync failed: " + fatalError
+//                : "Google Workspace sync completed. Synced: " + synced + ", Failed: " + failed;
+//
+//        notifySuperAdmins(employeeRoleDao, pushNotificationService, title, message);
+//    }
     private void notifySuperAdminsOfSyncResult(int synced, int failed, String fatalError) {
-        String title = "Google Workspace Sync";
         String message = fatalError != null
                 ? "Google Workspace sync failed: " + fatalError
                 : "Google Workspace sync completed. Synced: " + synced + ", Failed: " + failed;
 
-        notifySuperAdmins(employeeRoleDao, pushNotificationService, title, message);
+        List<EmployeeRole> superAdminRoles = employeeRoleDao.findByIsSuperAdminTrue();
+
+        for (EmployeeRole role : superAdminRoles) {
+            try {
+                Employee employee = role.getEmployee();
+                if (employee == null) continue;
+
+                Map<String, String> dynamicFields = new HashMap<>();
+                dynamicFields.put("message", message);
+
+                notificationService.createNotification(
+                        employee,
+                        null,
+                        NotificationType.EXTERNAL_SYNC_COMPLETED,
+                        EmailBodyTemplates.PEOPLE_MODULE_EXTERNAL_SYNC_COMPLETED,
+                        dynamicFields,   // ← changed from message to dynamicFields
+                        NotificationCategory.PEOPLE_SYNC
+                );
+            } catch (Exception e) {
+                log.error("Failed to notify super admin: {}", e.getMessage());
+            }
+        }
     }
 
     // -------------------------------------------------------------------------

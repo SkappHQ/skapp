@@ -104,7 +104,10 @@ public enum EmailBodyTemplates implements EmailTemplates {
 	// E-Sign Templates
 	ESIGN_DOCUMENT_SIGN_REQUEST("esign-document-sign-request"), ESIGN_DOCUMENT_COMPLETED("esign-document-completed"),
 	ESIGN_DOCUMENT_DECLINED("esign-document-declined"), ESIGN_DOCUMENT_VOIDED("esign-document-voided"),
-	ESIGN_DOCUMENT_REMINDER("esign-document-reminder"), ESIGN_DOCUMENT_EXPIRED("esign-document-expired");
+	ESIGN_DOCUMENT_REMINDER("esign-document-reminder"), ESIGN_DOCUMENT_EXPIRED("esign-document-expired"),
+
+	// GoogleSync Templates
+	PEOPLE_MODULE_EXTERNAL_SYNC_COMPLETED("people-module-external-sync-completed");
 
 	private final String templateId;
 

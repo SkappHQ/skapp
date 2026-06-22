@@ -317,6 +317,14 @@
         "title": "Document expired",
         "message": "{{documentName}} is expiring today. Please review and sign."
       }
+    ],
+
+    "people_sync": [
+      {
+        "id": "people-module-external-sync-completed",
+        "title": "Google Workspace Sync",
+        "message": "{{message}}"
+      }
     ]
   }
 }

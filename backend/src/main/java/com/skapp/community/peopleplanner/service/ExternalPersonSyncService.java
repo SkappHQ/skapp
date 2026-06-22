@@ -17,6 +17,7 @@ public interface ExternalPersonSyncService {
     String SYNC_SUMMARY_EMAIL_SUBJECT = "External Sync - Completed";
 
     void authenticate() throws Exception;
+
     void registerWatch() throws Exception;
     void renewWatchIfExpiring() throws Exception;
     void processWatchNotification(String resourceState, String resourceUri);
