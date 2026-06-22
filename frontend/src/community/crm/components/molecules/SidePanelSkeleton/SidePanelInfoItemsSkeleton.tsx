@@ -11,7 +11,10 @@ const SidePanelInfoItemsSkeleton: FC<Props> = ({
   itemCount,
   endIconItemIndex
 }) => (
-  <div className="flex items-center justify-between max-w-157.25 w-full">
+  <div
+    className="flex items-center justify-between max-w-157.25 w-full"
+    aria-hidden="true"
+  >
     {Array.from({ length: itemCount }).map((_, i) => (
       <div key={i} className="flex items-center gap-3">
         <SkeletonShape circle className="h-5 w-5 shrink-0" />
