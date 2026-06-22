@@ -107,17 +107,17 @@ const DealCard: FC<DealCardProps> = ({
             {title}
           </button>
         ) : (
-          <p className="body2 line-clamp-2">{title}</p>
+          <p className="body2">{title}</p>
         )}
 
         {(contactName || companyName) && (
-          <p className="body3 truncate text-secondary-icon">
+          <div className="flex gap-1 items-center body3 truncate text-secondary-icon">
             {contactName && <span>{contactName}</span>}
             {contactName && companyName && (
-              <span className="mx-1 text-secondary-accent">•</span>
+              <div className="size-1 bg-secondary-accent rounded-full shrink-0" />
             )}
             {companyName && <span>{companyName}</span>}
-          </p>
+          </div>
         )}
 
         <div className="flex items-center gap-1.5">
