@@ -58,6 +58,13 @@
     },
     "contactDetailsPanel": {
       "lastUpdated": "Last updated",
+      "metrics": {
+        "openTasks": "Open tasks",
+        "activeDeals": "No. of active deals",
+        "totalRevenue": "Total revenue",
+        "pipelineRevenue": "Revenue on pipeline",
+        "overdueChipLabel": "{{count}} Overdue"
+      },
       "tasks": {
         "addTaskButton": "Add task +",
         "addTaskButtonEmptyView": "Add task",

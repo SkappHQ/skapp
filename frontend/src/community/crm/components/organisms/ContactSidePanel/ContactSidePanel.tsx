@@ -12,8 +12,10 @@ import { useGetContactById } from "~community/crm/api/ContactApi";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
+import { mapContactToMetricItems } from "~community/crm/utils/contactUtil";
 
 const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator(
@@ -98,24 +100,28 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         />
       }
     >
-      <div className="flex flex-col pb-4 gap-4">
-        {contact && (
+      {contact && (
+        <div className="flex flex-col pb-6 gap-4">
           <SidePanelContactInfo
             contact={contact}
             onCompanyClick={handleCompanyClick}
           />
-        )}
 
-        <div className="flex flex-col pt-2 w-full">
-          <Tabs
-            tabs={tabs}
-            activeTabId={activeTab}
-            onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+          <SidePanelMetricCards
+            metrics={mapContactToMetricItems(contact, translateText)}
           />
+
+          <div className="flex flex-col pt-2 w-full">
+            <Tabs
+              tabs={tabs}
+              activeTabId={activeTab}
+              onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+            />
+            <hr className="border-secondary-accent" />
+          </div>
+          {renderTabContent()}
         </div>
-        <hr className="border-secondary-accent" />
-        {renderTabContent()}
-      </div>
+      )}
     </SidePanel>
   );
 };
