@@ -10,6 +10,7 @@ import {
 import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
@@ -22,12 +23,12 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     SidePanelTabEnum.TASKS
   );
 
-  const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(
-    (store) => ({
+  const { setIsCompanyModalOpen, setCompanyModalType, selectedCompany } =
+    useCrmStore((store) => ({
       setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      setCompanyModalType: store.setCompanyModalType
-    })
-  );
+      setCompanyModalType: store.setCompanyModalType,
+      selectedCompany: store.selectedCompany
+    }));
 
   const openCompanyModal = (type: CrmModalTypes) => {
     setCompanyModalType(type);
@@ -94,6 +95,11 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       isOpen={isOpen}
       onClose={onClose}
       closeOnBackdropClick
+      header={
+        <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
+          {selectedCompany?.name}
+        </h2>
+      }
       headerActions={
         <KebabMenu
           id={"company-actions"}
@@ -108,18 +114,21 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         />
       }
     >
-      <div className="flex flex-col pb-4 gap-[16px]">
-        {/*Add company info section here, similar to ContactSidePanel*/}
-        <div className="flex flex-col pt-2 w-full">
-          <Tabs
-            tabs={tabs}
-            activeTabId={activeTab}
-            onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
-          />
+      {selectedCompany && (
+        <div className="flex flex-col pb-4 gap-4">
+          <SidePanelCompanyHeader company={selectedCompany} />
+
+          <div className="flex flex-col pt-2 w-full">
+            <Tabs
+              tabs={tabs}
+              activeTabId={activeTab}
+              onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+            />
+          </div>
+          <hr className="border-secondary-accent" />
+          {renderTabContent()}
         </div>
-        <hr className="border-secondary-accent" />
-        {renderTabContent()}
-      </div>
+      )}
     </SidePanel>
   );
 };
