@@ -1,12 +1,12 @@
 import { FC } from "react";
 
-import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+import { CrmTaskType } from "~community/crm/types/CommonTypes";
 
 import SidePanelTasksEmptyView from "./SidePanelTasksEmptyView";
 import SidePanelTasksList from "./SidePanelTasksList";
 
 interface Props {
-  tasks: CrmTaskDetailType[];
+  tasks: CrmTaskType[];
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
