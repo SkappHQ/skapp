@@ -28,6 +28,33 @@ const AddTaskModalContent: FC = () => {
 
   const { data: currentUser } = useGetUserPersonalDetails();
 
+  const { isCrmSalesManager } = useSessionData();
+
+  const priorityDropdownOptions = useGetPriorityOptions(translateText);
+
+  const { options: taskTypeOptions, getCategoryById } =
+    useGetTaskTypeOptions(translateText);
+
+  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
+  const [ownerSearchText, setOwnerSearchText] = useState("");
+  const [contactSearchText, setContactSearchText] = useState("");
+  const [selectedContactName, setSelectedContactName] = useState("");
+  const [dealSearchText, setDealSearchText] = useState("");
+  const [selectedDealName, setSelectedDealName] = useState("");
+
+  const debouncedOwnerSearchText = useDebounce(
+    ownerSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const debouncedContactSearchText = useDebounce(
+    contactSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const debouncedDealSearchText = useDebounce(
+    dealSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+
   const defaultOwner = useMemo((): CrmOwner | null => {
     if (!currentUser?.employeeId) return null;
     return {
