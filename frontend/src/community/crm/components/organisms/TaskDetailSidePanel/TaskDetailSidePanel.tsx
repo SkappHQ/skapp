@@ -18,7 +18,7 @@ import {
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
-import SidePanelTaskNotes from "~community/crm/components/molecules/SidePanelTaskNotes/SidePanelTaskNotes";
+import SidePanelTaskNotes from "~community/crm/components/organisms/TaskDetailSidePanel/TaskDetailSidePanellNotes/TaskDetailSidePanellNotes";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   DetailPanelDealResponseType

@@ -13,7 +13,7 @@ const DealAccordionItemHeader: React.FC<Props> = ({ deal }) => (
     <span className="body2">{deal.name}</span>
     <div className="flex items-center gap-2 text-secondary-text">
       <span className="body3">
-        {deal.owner ? concatStrings([deal.owner.firstName, deal.owner.lastName ?? ""]) : ""}
+        {concatStrings([deal.owner.firstName, deal.owner.lastName ?? ""])}
       </span>
       {deal.amount && (
         <>

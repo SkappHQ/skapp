@@ -320,8 +320,6 @@
       "emptyTitle": "No deals",
       "emptyDescription": "No deals associated with this company",
       "descriptionLabel": "Description",
-      "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions",
       "ariaLabels": {
         "addDealBtn": "Add Deal"
       }
@@ -351,7 +349,11 @@
       "ariaLabels": {
         "cancel": "Cancel delete deal",
         "confirm": "Confirm delete deal"
-      }
+      },
+    "sidePanel": {
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions"
+    }
     }
   },
   "tasks": {
@@ -461,6 +463,12 @@
       "editTask": "Edit task",
       "deleteTask": "Delete task",
       "kebabMenuAriaLabel": "Task actions",
+      "taskLoadErrorTitle": "Task not found",
+      "taskLoadErrorDescription": "This task is no longer available.",
+      "taskMarkAsDoneSuccessTitle": "Task updated",
+      "taskMarkAsDoneSuccessDescription": "Task marked as done.",
+      "taskMarkAsDoneErrorTitle": "Failed to update task",
+      "taskMarkAsDoneErrorDescription": "Could not update task status. Please try again.",
       "notes": "Notes",
       "noNotes": "No notes",
       "dealsTitle": "Deals",

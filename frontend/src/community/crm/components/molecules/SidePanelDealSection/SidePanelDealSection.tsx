@@ -49,7 +49,7 @@ const SidePanelDealSection: React.FC<Props> = ({
             allowMultiple={true}
             className="gap-4"
           />
-          {showAddDealButton && (
+      
             <div className="mt-2">
               <ButtonV2
                 variant="line"
@@ -62,7 +62,7 @@ const SidePanelDealSection: React.FC<Props> = ({
                 {translateText(["addDealBtn"])}
               </ButtonV2>
             </div>
-          )}
+   
         </div>
       ) : (
         <EmptyDataView
