@@ -76,7 +76,8 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
       }
 
       const otherTeams = data.filter(
-        (team) => team.teamId !== currentDeletingTeam.teamId
+        (team) =>
+          team.teamId.toString() !== currentDeletingTeam.teamId.toString()
       );
 
       const memberTeamsMap = new Map<number, Set<string | number>>();

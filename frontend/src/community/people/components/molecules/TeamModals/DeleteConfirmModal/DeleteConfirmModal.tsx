@@ -32,6 +32,7 @@ const DeleteConfirmModal = ({ hasTransferableMembers }: Props) => {
       description: translateText(["teamDeleteSuccessDes"]),
       isIcon: true
     });
+    setCurrentDeletingTeam(undefined);
   };
 
   const handleError = () => {
@@ -50,19 +51,20 @@ const DeleteConfirmModal = ({ hasTransferableMembers }: Props) => {
     setTeamModalType(TeamModelTypes.REASSIGN_MEMBERS);
   };
 
-  const handleDeleteClick = async () => {
+  const handleDeleteClick = () => {
+    if (!currentDeletingTeam) return;
+
     setIsTeamModalOpen(false);
     setTeamModalType(TeamModelTypes.CONFIRM_DELETE);
 
     const transferMembers: never[] = [];
 
     const data = {
-      teamId: currentDeletingTeam!.teamId.toString(),
+      teamId: currentDeletingTeam.teamId.toString(),
       transferMembers
     };
 
-    await mutate(data);
-    setCurrentDeletingTeam(undefined);
+    mutate(data);
   };
   return (
     <Box>

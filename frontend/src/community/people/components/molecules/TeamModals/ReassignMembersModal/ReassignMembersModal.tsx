@@ -28,7 +28,7 @@ const ReassignMembersModal = ({
     setCurrentDeletingTeam
   } = usePeopleStore((state) => state);
 
-  const { mutate } = useTransferTeamMembers();
+  const { mutateAsync } = useTransferTeamMembers();
   const { setToastMessage } = useToast();
 
   const [memberTeamAssignments, setMemberTeamAssignments] = useState<
@@ -43,18 +43,22 @@ const ReassignMembersModal = ({
   };
 
   const reassignAndDeleteClick = async () => {
-    const transferMembers = transferableMembers.map((member) => ({
-      employeeId: +member.employeeId,
-      teamId: memberTeamAssignments[+member.employeeId] ?? null
-    }));
+    if (!currentDeletingTeam) return;
+
+    const transferMembers = transferableMembers
+      .filter((member) => memberTeamAssignments[Number(member.employeeId)] !== undefined)
+      .map((member) => ({
+        employeeId: Number(member.employeeId),
+        teamId: memberTeamAssignments[Number(member.employeeId)]
+      }));
 
     const data = {
-      teamId: currentDeletingTeam!.teamId.toString(),
+      teamId: currentDeletingTeam.teamId.toString(),
       transferMembers
     };
 
     try {
-      await mutate(data);
+      await mutateAsync(data);
       setToastMessage({
         open: true,
         toastType: "success",
@@ -64,7 +68,7 @@ const ReassignMembersModal = ({
       });
       setIsTeamModalOpen(false);
       setCurrentDeletingTeam(undefined);
-    } catch (error) {
+    } catch {
       setToastMessage({
         open: true,
         toastType: "error",
