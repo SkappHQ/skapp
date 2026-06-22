@@ -62,4 +62,5 @@ public class CrmConstants {
 
 	public static final Set<CrmDealStageType> NON_DELETEABLE_STAGES = EnumSet.of(CrmDealStageType.INITIAL,
 			CrmDealStageType.WON, CrmDealStageType.LOST);
+
 }
