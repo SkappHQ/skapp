@@ -16,12 +16,6 @@ import { FC, useEffect, useRef, useState } from "react";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
-import {
-  CrmDealStageColorsEnum,
-  CrmDealStageEnum,
-  CrmIndustryEnum,
-  CrmPriorityEnum
-} from "~community/crm/enums/common";
 import type {
   BoardDealsGroupedRequest,
   BoardMoveBetweenStagesPayload,
@@ -31,227 +25,140 @@ import type {
 } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
-// --- Mock stages replace this ---
-const MOCK_STAGES: CrmDealStageType[] = [
-  {
-    id: 1,
-    name: "Lead",
-    color: CrmDealStageColorsEnum.PINK,
-    orderIndex: 1,
-    stageType: CrmDealStageEnum.INITIAL
-  },
-  {
-    id: 2,
-    name: "Qualified",
-    color: CrmDealStageColorsEnum.TEAL,
-    orderIndex: 2,
-    stageType: CrmDealStageEnum.OPEN
-  },
-  {
-    id: 3,
-    name: "Demo scheduled",
-    color: CrmDealStageColorsEnum.LAVENDER,
-    orderIndex: 3,
-    stageType: CrmDealStageEnum.OPEN
-  },
-  {
-    id: 4,
-    name: "Proposal sent",
-    color: CrmDealStageColorsEnum.GOLD,
-    orderIndex: 4,
-    stageType: CrmDealStageEnum.OPEN
-  },
-  {
-    id: 5,
-    name: "Deal Won",
-    color: CrmDealStageColorsEnum.LIME,
-    orderIndex: 5,
-    stageType: CrmDealStageEnum.WON
-  },
-  {
-    id: 6,
-    name: "Deal Lost",
-    color: CrmDealStageColorsEnum.ROSEWOOD,
-    orderIndex: 6,
-    stageType: CrmDealStageEnum.LOST
-  }
-];
+import { MOCK_DEALS, MOCK_STAGES } from "./mockData";
 
 const PAGE_LIMIT = 10;
 
-const MOCK_OWNER = {
-  employeeId: 1,
-  firstName: "Alice",
-  lastName: "Johnson",
-  authPic: null
-};
-
-// mock deals grouped by stage (replace with api)
-const MOCK_DEALS: Record<number, CrmDealBoardType[]> = {
-  1: [
-    {
-      id: 101,
-      name: "Acme Corp Expansion",
-      description: null,
-      stage: MOCK_STAGES[0],
-      priority: CrmPriorityEnum.HIGH,
-      amount: "12000",
-      company: {
-        id: 1,
-        name: "Acme Corp",
-        industry: CrmIndustryEnum.TECHNOLOGY_INFORMATION_AND_MEDIA,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 1,
-        name: "John Smith",
-        email: "john@acme.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
-      owner: MOCK_OWNER,
-      taskCount: 0
-    },
-    {
-      id: 102,
-      name: "Beta Solutions Onboarding",
-      description: null,
-      stage: MOCK_STAGES[0],
-      priority: CrmPriorityEnum.LOW,
-      amount: "4500",
-      company: {
-        id: 2,
-        name: "Beta Solutions",
-        industry: CrmIndustryEnum.PROFESSIONAL_SERVICES,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 2,
-        name: "Sara Lee",
-        email: "sara@beta.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
-      owner: MOCK_OWNER,
-      taskCount: 1
-    }
-  ],
-  2: [
-    {
-      id: 201,
-      name: "Gamma Tech Upgrade",
-      description: null,
-      stage: MOCK_STAGES[1],
-      priority: CrmPriorityEnum.MEDIUM,
-      amount: "29000",
-      company: {
-        id: 3,
-        name: "Gamma Tech",
-        industry: CrmIndustryEnum.TECHNOLOGY_INFORMATION_AND_MEDIA,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 3,
-        name: "Mike Chan",
-        email: "mike@gamma.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
-      owner: MOCK_OWNER,
-      taskCount: 2
-    }
-  ],
-  3: [
-    {
-      id: 301,
-      name: "Delta Finance Suite",
-      description: null,
-      stage: MOCK_STAGES[2],
-      priority: CrmPriorityEnum.HIGH,
-      amount: "55000",
-      company: {
-        id: 4,
-        name: "Delta Finance",
-        industry: CrmIndustryEnum.FINANCIAL_SERVICES,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 4,
-        name: "Emma Brown",
-        email: "emma@delta.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
-      owner: MOCK_OWNER,
-      taskCount: 5
-    }
-  ],
-  4: [],
-  5: [
-    {
-      id: 501,
-      name: "Omega Retail Deal",
-      description: null,
-      stage: MOCK_STAGES[4],
-      priority: CrmPriorityEnum.MEDIUM,
-      amount: "18000",
-      company: {
-        id: 5,
-        name: "Omega Retail",
-        industry: CrmIndustryEnum.RETAIL,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 5,
-        name: "Tom White",
-        email: "tom@omega.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
-      owner: MOCK_OWNER,
-      taskCount: 0
-    }
-  ],
-  6: []
-};
-
 const getAccentColor = (color: string): string =>
   STAGE_COLOR_MAP[color?.toUpperCase()];
+
+const resolveTargetStageId = (
+  overId: string,
+  stageMap: Record<number, StageState>
+): number | null => {
+  if (overId.startsWith("stage::"))
+    return Number(overId.replace("stage::", ""));
+  const overDealId = Number(overId);
+  for (const [sid, state] of Object.entries(stageMap)) {
+    if (state.deals.some((d) => d.id === overDealId)) return Number(sid);
+  }
+  return null;
+};
+
+const computeInsertIndex = (
+  overId: string,
+  tgtDeals: CrmDealBoardType[],
+  activeMidY: number,
+  overMidY: number
+): number => {
+  if (overId.startsWith("stage::")) return tgtDeals.length;
+  const overDealId = Number(overId);
+  const overIndex = tgtDeals.findIndex((d) => d.id === overDealId);
+  if (overIndex === -1) return tgtDeals.length;
+  return activeMidY > overMidY ? overIndex + 1 : overIndex;
+};
+
+interface CrossStageMoveParams {
+  activeDealId: number;
+  deal: CrmDealBoardType;
+  overId: string;
+  sourceStageId: number;
+  targetStageId: number;
+  srcState: StageState;
+  tgtState: StageState;
+  activeMidY: number;
+  overMidY: number;
+  setStageMap: (
+    fn: (prev: Record<number, StageState>) => Record<number, StageState>
+  ) => void;
+  moveBetweenStages: (payload: BoardMoveBetweenStagesPayload) => void;
+}
+
+const commitCrossStageMove = ({
+  activeDealId,
+  deal,
+  overId,
+  sourceStageId,
+  targetStageId,
+  srcState,
+  tgtState,
+  activeMidY,
+  overMidY,
+  setStageMap,
+  moveBetweenStages
+}: CrossStageMoveParams) => {
+  const tgtDeals = tgtState.deals.filter((d) => d.id !== activeDealId);
+  const insertIndex = computeInsertIndex(
+    overId,
+    tgtDeals,
+    activeMidY,
+    overMidY
+  );
+  const newTgtDeals = [
+    ...tgtDeals.slice(0, insertIndex),
+    deal,
+    ...tgtDeals.slice(insertIndex)
+  ];
+  setStageMap((prev) => ({
+    ...prev,
+    [sourceStageId]: {
+      ...prev[sourceStageId],
+      deals: srcState.deals.filter((d) => d.id !== activeDealId),
+      totalCount: Math.max(0, prev[sourceStageId].totalCount - 1)
+    },
+    [targetStageId]: {
+      ...prev[targetStageId],
+      deals: newTgtDeals,
+      totalCount: prev[targetStageId].totalCount + 1
+    }
+  }));
+  moveBetweenStages({
+    dealId: activeDealId,
+    newStageId: targetStageId,
+    previousDealId: newTgtDeals[insertIndex - 1]?.id ?? null,
+    nextDealId: newTgtDeals[insertIndex + 1]?.id ?? null
+  });
+};
+
+interface SameStageReorderParams {
+  activeDealId: number;
+  sourceStageId: number;
+  overId: string;
+  srcDeals: CrmDealBoardType[];
+  setStageMap: (
+    fn: (prev: Record<number, StageState>) => Record<number, StageState>
+  ) => void;
+  reorderWithinStage: (payload: BoardReorderWithinStagePayload) => void;
+}
+
+const commitSameStageReorder = ({
+  activeDealId,
+  sourceStageId,
+  overId,
+  srcDeals,
+  setStageMap,
+  reorderWithinStage
+}: SameStageReorderParams) => {
+  if (overId.startsWith("stage::")) return;
+
+  const overDealId = Number(overId);
+  const activeIndex = srcDeals.findIndex((d) => d.id === activeDealId);
+  const overIndex = srcDeals.findIndex((d) => d.id === overDealId);
+
+  if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex)
+    return;
+
+  const reordered = arrayMove(srcDeals, activeIndex, overIndex);
+  setStageMap((prev) => ({
+    ...prev,
+    [sourceStageId]: { ...prev[sourceStageId], deals: reordered }
+  }));
+  reorderWithinStage({
+    dealId: activeDealId,
+    previousDealId: reordered[overIndex - 1]?.id ?? null,
+    nextDealId: reordered[overIndex + 1]?.id ?? null
+  });
+};
 
 interface StageState {
   deals: CrmDealBoardType[];
@@ -311,17 +218,12 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   stageMapRef.current = stageMap;
 
   const [activeDeal, setActiveDeal] = useState<CrmDealBoardType | null>(null);
-  const [activeStageId, setActiveStageId] = useState<number | null>(null);
   const [overStageId, setOverStageId] = useState<number | null>(null);
 
-  const originalStageIdRef = useRef<number | null>(null);
-
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-
-  const snapshotRef = useRef<Record<number, StageState> | null>(null);
 
   // Replace stubs with useReorderWithinStage / useMoveBetweenStages / useLoadMoreDeals
   const reorderWithinStage = (_payload: BoardReorderWithinStagePayload) => {};
@@ -352,175 +254,81 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   };
 
   const handleDragStart = ({ active }: DragStartEvent) => {
-    snapshotRef.current = { ...stageMapRef.current };
     const dealId = Number(active.id);
-    for (const [sid, state] of Object.entries(stageMapRef.current)) {
+    for (const state of Object.values(stageMapRef.current)) {
       const found = state.deals.find((d) => d.id === dealId);
       if (found) {
         setActiveDeal(found);
-        setActiveStageId(Number(sid));
-        originalStageIdRef.current = Number(sid);
         break;
       }
     }
   };
 
-  const handleDragOver = ({ active, over }: DragOverEvent) => {
-    if (!over) {
-      setOverStageId(null);
-      return;
-    }
-
-    const overId = String(over.id);
-    const targetStageId = overId.startsWith("stage::")
-      ? Number(overId.replace("stage::", ""))
-      : (() => {
-          const overDealId = Number(overId);
-          for (const [sid, state] of Object.entries(stageMapRef.current)) {
-            if (state.deals.some((d) => d.id === overDealId))
-              return Number(sid);
-          }
-          return null;
-        })();
-
-    setOverStageId(targetStageId);
-
-    const activeDealId = Number(active.id);
-    if (!targetStageId || !activeStageId) return;
-
-    if (activeStageId === targetStageId) {
-      if (overId.startsWith("stage::")) return;
-      const overDealId = Number(overId);
-      if (overDealId === activeDealId) return;
-
-      setStageMap((prev) => {
-        const state = prev[targetStageId];
-        if (!state) return prev;
-        const activeIndex = state.deals.findIndex((d) => d.id === activeDealId);
-        const overIndex = state.deals.findIndex((d) => d.id === overDealId);
-        if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex)
-          return prev;
-        return {
-          ...prev,
-          [targetStageId]: {
-            ...state,
-            deals: arrayMove(state.deals, activeIndex, overIndex)
-          }
-        };
-      });
-      return;
-    }
-
-    // Cross stage: move deal from source to target
-    setStageMap((prev) => {
-      const srcState = prev[activeStageId];
-      const tgtState = prev[targetStageId];
-      if (!srcState || !tgtState) return prev;
-
-      const deal = srcState.deals.find((d) => d.id === activeDealId);
-      if (!deal) return prev;
-
-      const srcDeals = srcState.deals.filter((d) => d.id !== activeDealId);
-
-      let tgtDeals = tgtState.deals.filter((d) => d.id !== activeDealId);
-      if (overId.startsWith("stage::")) {
-        tgtDeals = [...tgtDeals, deal];
-      } else {
-        const overDealId = Number(overId);
-        const overIndex = tgtDeals.findIndex((d) => d.id === overDealId);
-        if (overIndex === -1) {
-          tgtDeals = [...tgtDeals, deal];
-        } else {
-          tgtDeals = [
-            ...tgtDeals.slice(0, overIndex),
-            deal,
-            ...tgtDeals.slice(overIndex)
-          ];
-        }
-      }
-
-      return {
-        ...prev,
-        [activeStageId]: {
-          ...srcState,
-          deals: srcDeals,
-          totalCount: Math.max(0, srcState.totalCount - 1)
-        },
-        [targetStageId]: {
-          ...tgtState,
-          deals: tgtDeals,
-          totalCount:
-            tgtState.totalCount +
-            (tgtState.deals.some((d) => d.id === activeDealId) ? 0 : 1)
-        }
-      };
-    });
-    setActiveStageId(targetStageId);
+  const handleDragOver = ({ over }: DragOverEvent) => {
+    setOverStageId(
+      over ? resolveTargetStageId(String(over.id), stageMapRef.current) : null
+    );
   };
 
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    const activeDealId = Number(active.id);
-    const finalStageId = activeStageId;
-    const sourceStageId = originalStageIdRef.current;
-
+  const handleDragEnd = async ({ active, over }: DragEndEvent) => {
     setActiveDeal(null);
-    setActiveStageId(null);
     setOverStageId(null);
-    originalStageIdRef.current = null;
 
-    if (!over || !finalStageId || !sourceStageId) {
-      if (snapshotRef.current) {
-        setStageMap(snapshotRef.current);
-        snapshotRef.current = null;
-      }
-      return;
-    }
+    if (!over || !active) return;
 
-    const isCrossStage = sourceStageId !== finalStageId;
-    const targetDeals = stageMapRef.current[finalStageId]?.deals ?? [];
-    const activeIndex = targetDeals.findIndex((d) => d.id === activeDealId);
-    if (activeIndex === -1) return;
-
-    if (isCrossStage) {
-      moveBetweenStages({
-        dealId: activeDealId,
-        newStageId: finalStageId,
-        previousDealId: targetDeals[activeIndex - 1]?.id ?? null,
-        nextDealId: targetDeals[activeIndex + 1]?.id ?? null
-      });
-      snapshotRef.current = null;
-      return;
-    }
+    const activeDealId = Number(active.id);
     const overId = String(over.id);
-    if (overId.startsWith("stage::")) return;
 
-    const overDealId = Number(overId);
-    const overIndex = targetDeals.findIndex((d) => d.id === overDealId);
-    if (overIndex === -1 || activeIndex === overIndex) return;
+    let sourceStageId = -1;
+    for (const [sid, state] of Object.entries(stageMapRef.current)) {
+      if (state.deals.some((d) => d.id === activeDealId)) {
+        sourceStageId = Number(sid);
+        break;
+      }
+    }
+    if (sourceStageId === -1) return;
+    const targetStageId = resolveTargetStageId(overId, stageMapRef.current);
+    if (!targetStageId) return;
 
-    const reordered = arrayMove(targetDeals, activeIndex, overIndex);
-    setStageMap((prev) => ({
-      ...prev,
-      [finalStageId]: { ...prev[finalStageId], deals: reordered }
-    }));
+    const srcState = stageMapRef.current[sourceStageId];
+    const tgtState = stageMapRef.current[targetStageId];
+    if (!srcState || !tgtState) return;
 
-    reorderWithinStage({
-      dealId: activeDealId,
-      previousDealId: reordered[overIndex - 1]?.id ?? null,
-      nextDealId: reordered[overIndex + 1]?.id ?? null
+    const deal = srcState.deals.find((d) => d.id === activeDealId);
+    if (!deal) return;
+
+    if (sourceStageId !== targetStageId) {
+      commitCrossStageMove({
+        activeDealId,
+        deal,
+        overId,
+        sourceStageId,
+        targetStageId,
+        srcState,
+        tgtState,
+        activeMidY:
+          (active.rect.current.translated?.top ?? 0) +
+          (active.rect.current.translated?.height ?? 0) / 2,
+        overMidY: over.rect.top + over.rect.height / 2,
+        setStageMap,
+        moveBetweenStages
+      });
+      return;
+    }
+
+    commitSameStageReorder({
+      activeDealId,
+      sourceStageId,
+      overId,
+      srcDeals: srcState.deals,
+      setStageMap,
+      reorderWithinStage
     });
-    snapshotRef.current = null;
   };
 
   const handleDragCancel = () => {
-    if (snapshotRef.current) {
-      setStageMap(snapshotRef.current);
-      snapshotRef.current = null;
-    }
     setActiveDeal(null);
-    setActiveStageId(null);
     setOverStageId(null);
-    originalStageIdRef.current = null;
   };
 
   const isInitialLoad =

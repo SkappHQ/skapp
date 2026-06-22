@@ -194,6 +194,7 @@ export interface CrmDealBoardType {
   id: number;
   name: string;
   description: string | null;
+  orderIndex: number;
   taskCount?: number;
   stage: CrmDealStageType;
   priority: CrmPriorityEnum | null;
