@@ -3,6 +3,7 @@ import {
   SortableContext,
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -81,7 +82,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
       aria-labelledby={`crm-stage-${stage.id}`}
     >
       <div
-        className="h-1.5 rounded-t-lg"
+        className="h-1.75 rounded-lg m-2"
         style={{ backgroundColor: stage.accentColor }}
       />
 
@@ -89,23 +90,23 @@ const DealStageLane: FC<DealStageLaneProps> = ({
         <div className="min-w-0">
           <h2
             id={`crm-stage-${stage.id}`}
-            className="subtitle1 truncate capitalize text-zinc-950"
+            className="subtitle1 truncate capitalize"
           >
             {stage.name}
           </h2>
           <p className="body3 mt-0.5 text-secondary-icon">{stage.totalValue}</p>
         </div>
         <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold text-secondary-text">
-          {isLoading ? "…" : stage.totalCount}
+          {stage.totalCount}
         </span>
       </div>
 
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-3 pb-3">
         {isLoading ? (
           <>
-            <DealCardSkeleton />
-            <DealCardSkeleton />
-            <DealCardSkeleton />
+            {Array.from({ length: 3 }).map((_, index) => (
+              <DealCardSkeleton key={index} />
+            ))}
           </>
         ) : (
           <>
@@ -123,21 +124,24 @@ const DealStageLane: FC<DealStageLaneProps> = ({
             </SortableContext>
 
             {deals.length === 0 && onAddDeal ? (
-              <button
+              <ButtonV2
+                variant="line"
                 type="button"
+                isFullWidth
+                size="sm"
                 onClick={() => onAddDeal(stage.id)}
-                className="body3 w-full rounded-lg px-4 py-2 text-center font-medium text-black transition hover:bg-secondary-accent focus:outline-none focus:ring-2 focus:ring-primary-accent"
               >
                 {translateText(["addDealBtn"])}
-              </button>
+              </ButtonV2>
             ) : (
               <>
                 {hasMore && (
                   <>
                     {isLoadingMore && (
                       <>
-                        <DealCardSkeleton />
-                        <DealCardSkeleton />
+                        {Array.from({ length: 2 }).map((_, index) => (
+                          <DealCardSkeleton key={index} />
+                        ))}
                       </>
                     )}
                     <div ref={sentinelRef} className="h-1 w-full" />
@@ -145,13 +149,15 @@ const DealStageLane: FC<DealStageLaneProps> = ({
                 )}
 
                 {onAddDeal && (
-                  <button
+                  <ButtonV2
+                    variant="line"
                     type="button"
+                    isFullWidth
+                    size="sm"
                     onClick={() => onAddDeal(stage.id)}
-                    className="body3 mt-1 w-full rounded-lg px-4 py-2 text-center font-medium text-black transition hover:bg-secondary-accent focus:outline-none focus:ring-2 focus:ring-primary-accent"
                   >
                     {translateText(["addDealBtn"])}
-                  </button>
+                  </ButtonV2>
                 )}
               </>
             )}
