@@ -100,6 +100,7 @@ const EditContactModalContent = () => {
       translateContactText={translateContactText}
       initialValues={initialValues}
       initialOwner={selectedContact?.owner ?? null}
+      initialCompanyName={selectedContact?.company?.name}
       isPending={isPending}
       onSubmit={submitEditContact}
       onCancel={handleCloseModal}

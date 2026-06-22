@@ -11,17 +11,13 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
-import {
-  useGetCompanyLookup,
-  useGetSelectedContactById
-} from "~community/crm/api/ContactApi";
+import { useGetCompanyLookup } from "~community/crm/api/ContactApi";
 import EditableContactOwnerField from "~community/crm/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
-import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactFormValues,
   CrmOwner
@@ -34,6 +30,7 @@ export interface ContactFormProps {
   translateContactText: TranslatorFunctionType;
   initialValues: CrmContactFormValues;
   initialOwner: CrmOwner | null;
+  initialCompanyName?: string;
   isPending: boolean;
   onSubmit: (values: CrmContactFormValues) => void;
   onCancel: () => void;
@@ -43,20 +40,16 @@ const ContactModalForm = ({
   translateContactText,
   initialValues,
   initialOwner,
+  initialCompanyName,
   isPending,
   onSubmit,
   onCancel
 }: ContactFormProps) => {
   const { isCrmSalesManager: canEditOwner } = useSessionData();
-  const { selectedContactId } = useCrmStore((store) => ({
-    selectedContactId: store.selectedContactId
-  }));
-
-  const selectedContact = useGetSelectedContactById(selectedContactId);
 
   const [companySearchText, setCompanySearchText] = useState<string>("");
   const [selectedCompanyName, setSelectedCompanyName] = useState<string>(
-    selectedContact?.company?.name ?? ""
+    initialCompanyName ?? ""
   );
 
   const debouncedCompanySearch = useDebounce(
