@@ -106,7 +106,7 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   if (isTaskLoading || !task) return null;
 
   const taskTypeName = task.typeName;
-  const taskIcon = getTaskTypeIcon(taskTypeName ?? "Other");
+  const taskIcon = getTaskTypeIcon(taskTypeName ?? "Other", "24", "24");
   const taskDeals: DetailPanelDealResponseType[] = task.deal ? [task.deal] : [];
 
   return (

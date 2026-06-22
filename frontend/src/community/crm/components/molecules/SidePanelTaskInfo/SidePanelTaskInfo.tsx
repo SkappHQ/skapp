@@ -100,7 +100,7 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone, onContactClick }) =>
           task.isCompleted ? (
             <Icon
               name={IconName.TICK_ICON}
-              fill="var(--color-secondary-text)"
+              fill="var(--color-secondary-icon)"
               width="16"
               height="16"
             />
