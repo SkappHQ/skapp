@@ -17,13 +17,13 @@ import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
   deals: DetailPanelDealResponseType[];
-  showAddDealButton?: boolean;
+  showEmptyStateAddDeal?: boolean;
   emptyViewHeight?: string;
 }
 
 const SidePanelDealSection: React.FC<Props> = ({
   deals,
-  showAddDealButton = true,
+  showEmptyStateAddDeal = true,
   emptyViewHeight = "h-auto"
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
@@ -49,20 +49,18 @@ const SidePanelDealSection: React.FC<Props> = ({
             allowMultiple={true}
             className="gap-4"
           />
-      
-            <div className="mt-2">
-              <ButtonV2
-                variant="line"
-                size="sm"
-                onClick={handleAddDeal}
-                aria-label={translateText(["ariaLabels", "addDealBtn"])}
-                icon={<PlusIcon />}
-                iconPosition="end"
-              >
-                {translateText(["addDealBtn"])}
-              </ButtonV2>
-            </div>
-   
+          <div className="mt-2">
+            <ButtonV2
+              variant="line"
+              size="sm"
+              onClick={handleAddDeal}
+              aria-label={translateText(["ariaLabels", "addDealBtn"])}
+              icon={<PlusIcon />}
+              iconPosition="end"
+            >
+              {translateText(["addDealBtn"])}
+            </ButtonV2>
+          </div>
         </div>
       ) : (
         <EmptyDataView
@@ -70,7 +68,7 @@ const SidePanelDealSection: React.FC<Props> = ({
           title={translateText(["emptyTitle"])}
           description={translateText(["emptyDescription"])}
           button={
-            showAddDealButton
+            showEmptyStateAddDeal
               ? {
                   children: translateText(["addDealBtn"]),
                   variant: "tertiary",

@@ -1,7 +1,4 @@
 import {
-  DeleteButtonIcon,
-  EditIcon,
-  KebabMenu,
   SidePanel,
   SidePanelProps
 } from "@rootcodelabs/skapp-ui";
@@ -18,12 +15,11 @@ import {
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
-import SidePanelTaskNotes from "~community/crm/components/organisms/TaskDetailSidePanel/TaskDetailSidePanellNotes/TaskDetailSidePanellNotes";
+import SidePanelTaskNotes from "~community/crm/components/organisms/TaskDetailSidePanel/TaskDetailSidePanelNotes/TaskDetailSidePanelNotes";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   DetailPanelDealResponseType
 } from "~community/crm/types/CommonTypes";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
 
 const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
@@ -33,26 +29,17 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const {
     selectedTaskId,
     setSelectedTaskId,
-    setIsCrmSidePanelOpen,
-    setIsTaskModalOpen,
-    setTaskModalType
+    setIsCrmSidePanelOpen
   } = useCrmStore((store) => ({
     selectedTaskId: store.selectedTaskId,
     setSelectedTaskId: store.setSelectedTaskId,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
   }));
 
   const handleClose = (): void => {
     setSelectedTaskId(null);
     setIsCrmSidePanelOpen(false);
     if (onClose) onClose();
-  };
-
-  const openTaskModal = (type: CrmModalTypes) => {
-    setTaskModalType(type);
-    setIsTaskModalOpen(true);
   };
 
   const {
@@ -113,30 +100,6 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const taskIcon = getTaskTypeIcon(taskTypeName ?? "Other");
   const taskDeals: DetailPanelDealResponseType[] = [];
 
-  const menuItems = [
-    {
-      id: "edit",
-      label: translateText(["editTask"]),
-      icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: () => openTaskModal(CrmModalTypes.EDIT_TASK_MODAL)
-    },
-    {
-      id: "delete",
-      label: translateText(["deleteTask"]),
-      icon: {
-        start: (
-          <DeleteButtonIcon
-            width="12px"
-            height="14px"
-            fill="var(--color-semantic-red-text)"
-          />
-        )
-      },
-      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: () => openTaskModal(CrmModalTypes.DELETE_TASK_MODAL)
-    }
-  ];
-
   return (
     <SidePanel
       isOpen={isOpen}
@@ -150,19 +113,6 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           <span className="h1 text-black">{task.name}</span>
         </div>
       }
-      headerActions={
-        <KebabMenu
-          id="task-actions"
-          menuItems={menuItems}
-          anchorButton={{
-            "aria-label": translateText(["kebabMenuAriaLabel"])
-          }}
-          className={{
-            anchorElement:
-              "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-          }}
-        />
-      }
     >
       <div className="flex gap-6 pb-4">
         <div className="flex flex-col flex-1 gap-6 min-w-0">
@@ -173,7 +123,7 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             <hr className="border-secondary-accent" />
             <SidePanelDealSection
               deals={taskDeals}
-              showAddDealButton={false}
+              showEmptyStateAddDeal={false}
             />
           </div>
 

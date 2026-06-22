@@ -6,7 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { formatDateWithOrdinalSuffix } from "~community/common/utils/dateTimeUtils";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
-import { getPriorityConfig } from "~community/crm/utils/taskHelpers";
+import { getPriorityConfig } from "~community/crm/utils/taskUtil";
 
 interface Props {
   task: CrmTaskDetailType;
@@ -45,7 +45,7 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
       label: translateText(["priority"]),
       value: (
         <Label
-          backgroundColor={priorityConfig.backgroundColor}
+          backgroundColor={priorityConfig.bgColor}
           textColor={priorityConfig.textColor}
         >
           {task.priority.charAt(0) + task.priority.slice(1).toLowerCase()}
