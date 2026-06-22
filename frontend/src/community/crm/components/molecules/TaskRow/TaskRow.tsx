@@ -36,17 +36,19 @@ const TaskRow: FC<Props> = ({
     setOptimisticCompleted(task.isCompleted);
   }, [task.isCompleted]);
 
+  const handleUpdateCompletionError = () => {
+    setOptimisticCompleted(task.isCompleted);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
+    });
+  };
+
   const { mutate: updateCompletion } = useUpdateTaskCompletion(
     () => {},
-    () => {
-      setOptimisticCompleted(task.isCompleted);
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["toggleErrorTitle"]),
-        description: translateText(["toggleErrorDescription"])
-      });
-    }
+    handleUpdateCompletionError
   );
 
   const handleToggleChange = (checked: boolean) => {
