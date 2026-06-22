@@ -39,7 +39,10 @@ export const mergeAndPrioritizeCompanyDropdownItems = (
 
 export const mapContactToMetricItems = (
   contact: CrmContactDetailResponseType,
-  translateText: (keys: string[]) => string
+  translateText: (
+    keys: string[],
+    interpolationValues?: Record<string, any>
+  ) => string
 ): MetricItem[] => {
   const overdueChip =
     contact.overdueTasksCount > 0
