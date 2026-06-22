@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import SkeletonBlock from "./SkeletonBlock";
+import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 
 interface Props {
   isShowLastUpdate?: boolean;
@@ -8,8 +8,8 @@ interface Props {
 
 const SidePanelHeaderSkeleton: FC<Props> = ({ isShowLastUpdate = true }) => (
   <div className="flex flex-col gap-2 pl-2" aria-hidden="true">
-    <SkeletonBlock className="h-4 w-24" />
-    {isShowLastUpdate && <SkeletonBlock className="h-2.5 w-32" />}
+    <SkeletonShape className="h-4 w-24" />
+    {isShowLastUpdate && <SkeletonShape className="h-2.5 w-32" />}
   </div>
 );
 

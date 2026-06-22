@@ -1,7 +1,6 @@
 import { FC } from "react";
 
-import SkeletonBlock from "./SkeletonBlock";
-import SkeletonCircle from "./SkeletonCircle";
+import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 
 interface Props {
   tabCount: number;
@@ -26,7 +25,7 @@ const SidePanelTabsSkeleton: FC<Props> = ({ tabCount }) => (
                 : "border-transparent bg-secondary-background"
             }`}
           >
-            <SkeletonBlock className="h-2.5 w-6" />
+            <SkeletonShape className="h-2.5 w-6" />
           </div>
         ))}
       </div>
@@ -38,30 +37,30 @@ const SidePanelTabsSkeleton: FC<Props> = ({ tabCount }) => (
         <div key={i} className="flex items-center justify-between px-3 py-3">
           <div className="flex items-center gap-4">
             {i === 0 ? (
-              <SkeletonCircle className="h-6 w-6 shrink-0" />
+              <SkeletonShape circle className="h-6 w-6 shrink-0" />
             ) : (
-              <SkeletonBlock className="h-6 w-6 shrink-0" />
+              <SkeletonShape className="h-6 w-6 shrink-0" />
             )}
             <div className="flex items-center gap-3">
-              <SkeletonCircle className="h-5 w-5 shrink-0" />
+              <SkeletonShape circle className="h-5 w-5 shrink-0" />
               <div className="flex flex-col gap-1">
-                <SkeletonBlock className="h-2.5 w-17.75" />
-                <SkeletonBlock className="h-2 w-12" />
+                <SkeletonShape className="h-2.5 w-17.75" />
+                <SkeletonShape className="h-2 w-12" />
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
-            <SkeletonCircle className="h-8 w-8" />
-            <SkeletonBlock className="h-6 w-6" />
+            <SkeletonShape circle className="h-8 w-8" />
+            <SkeletonShape className="h-6 w-6" />
           </div>
         </div>
       ))}
     </div>
 
     <div className="flex items-center gap-2">
-      <SkeletonBlock className="h-4 w-16" />
-      <SkeletonBlock className="h-4 w-4" />
+      <SkeletonShape className="h-4 w-16" />
+      <SkeletonShape className="h-4 w-4" />
     </div>
   </div>
 );

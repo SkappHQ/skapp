@@ -1,15 +1,15 @@
 import { FC } from "react";
 
 import ContactMetricsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/ContactMetricsSkeleton";
-import SidePanelInfoItemsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelInfoItemsSkeleton";
-import SidePanelTabsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelTabsSkeleton";
+import SidePanelBodySkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelBodySkeleton";
 
 const ContactSidePanelSkeleton: FC = () => (
-  <div className="flex flex-col gap-4 w-full" aria-hidden="true">
-    <SidePanelInfoItemsSkeleton itemCount={3} endIconItemIndex={2} />
-    <ContactMetricsSkeleton />
-    <SidePanelTabsSkeleton tabCount={2} />
-  </div>
+  <SidePanelBodySkeleton
+    infoItemsCount={3}
+    endIconItemIndex={2}
+    tabCount={2}
+    metricsSlot={<ContactMetricsSkeleton />}
+  />
 );
 
 export default ContactSidePanelSkeleton;
