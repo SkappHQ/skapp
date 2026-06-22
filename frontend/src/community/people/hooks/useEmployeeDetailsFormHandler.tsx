@@ -11,6 +11,7 @@ import React, {
 } from "react";
 
 import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
+import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { allowsAlphaNumericWithHyphenAndUnderscore } from "~community/common/regex/regexPatterns";
 import { DropdownListType } from "~community/common/types/CommonTypes";
@@ -113,13 +114,16 @@ const useEmployeeDetailsFormHandler = ({
     }
   );
 
+  const debouncedEmail = useDebounce(values.email as string);
+  const debouncedEmployeeNumber = useDebounce(values.employeeNumber ?? "");
+
   const {
     data: checkEmailAndIdentificationNo,
     refetch,
     isSuccess
   } = useCheckEmailAndIdentificationNo(
-    values.email as string,
-    values.employeeNumber ?? ""
+    debouncedEmail,
+    debouncedEmployeeNumber
   );
 
   useEffect(() => {
@@ -440,7 +444,7 @@ const useEmployeeDetailsFormHandler = ({
     if (!isManager && !isProfileView) {
       void refetch();
     }
-  }, [values.email, values.employeeNumber]);
+  }, [debouncedEmail, debouncedEmployeeNumber]);
 
   useEffect(() => {
     if (values.joinedDate) {

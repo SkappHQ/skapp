@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @UtilityClass
 public class CrmValidations {
 
-	public static boolean isEditRestricted(User currentUser, Long ownerEmployeeId) {
+	public static boolean isOwnerRestrictedForRepresentative(User currentUser, Long ownerEmployeeId) {
 		Role currentCrmRole = currentUser.getEmployee().getEmployeeRole().getCrmRole();
 		return currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
 				&& !currentUser.getEmployee().getEmployeeId().equals(ownerEmployeeId);

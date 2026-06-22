@@ -1,9 +1,9 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
@@ -46,15 +46,17 @@ const Contacts: NextPage = () => {
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
         {selectedContactId && (
-          <ContactSidePanel
-            isOpen={isCrmSidePanelOpen}
-            onClose={handleCloseSidePanel}
-          />
+          <SidePanelWrapper>
+            <ContactSidePanel
+              isOpen={isCrmSidePanelOpen}
+              onClose={handleCloseSidePanel}
+            />
+          </SidePanelWrapper>
         )}
+
         <ContactModalController />
         <ContactTable />
       </>

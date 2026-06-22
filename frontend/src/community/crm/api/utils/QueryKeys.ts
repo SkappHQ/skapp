@@ -3,7 +3,8 @@ import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
 export const crmDealQueryKeys = {
   ALL: ["crm-deals"],
   GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
-  DEAL_STAGES: ["crm-deal-stages"]
+  DEAL_STAGES: ["crm-deal-stages"],
+  DEAL_LOOKUP: (searchKeyword: string) => ["crm-deal-lookup", searchKeyword]
 };
 
 export const contactQueryKeys = {
@@ -53,5 +54,11 @@ export const companyQueryKeys = {
 
 export const taskQueryKeys = {
   GET_TASK_DATA: ["get-task-data"],
-  GET_OPEN_TASKS: ["get-open-tasks"]
+  GET_OPEN_TASKS: ["get-open-tasks"],
+  GET_OPEN_TASKS_BY_SEARCH: (searchKeyword?: string) => ["get-open-tasks", searchKeyword],
+  GET_COMPLETED_TASKS: ["get-completed-tasks"],
+  GET_COMPLETED_TASKS_BY_SEARCH: (searchKeyword: string) => [
+    "get-completed-tasks",
+    searchKeyword
+  ]
 };
