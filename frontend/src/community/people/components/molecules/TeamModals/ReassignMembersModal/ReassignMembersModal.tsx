@@ -8,9 +8,18 @@ import { IconName } from "~community/common/types/IconTypes";
 import { useTransferTeamMembers } from "~community/people/api/TeamApi";
 import ReassignMemberRow from "~community/people/components/molecules/ReassignMemberRow/ReassignMemberRow";
 import { usePeopleStore } from "~community/people/store/store";
-import { TeamModelTypes } from "~community/people/types/TeamTypes";
+import { EmployeeType } from "~community/people/types/EmployeeTypes";
+import { TeamModelTypes, TeamType } from "~community/people/types/TeamTypes";
 
-const ReassignMembersModal = () => {
+interface Props {
+  transferableMembers: EmployeeType[];
+  availableTeamsMap: Map<number, TeamType[]>;
+}
+
+const ReassignMembersModal = ({
+  transferableMembers,
+  availableTeamsMap
+}: Props) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     currentDeletingTeam,
@@ -34,16 +43,13 @@ const ReassignMembersModal = () => {
   };
 
   const reassignAndDeleteClick = async () => {
-    const transferMembers = [
-      ...(currentDeletingTeam?.supervisors || []),
-      ...(currentDeletingTeam?.teamMembers || [])
-    ].map((member) => ({
+    const transferMembers = transferableMembers.map((member) => ({
       employeeId: +member.employeeId,
-      teamId: memberTeamAssignments[+member.employeeId] || null
+      teamId: memberTeamAssignments[+member.employeeId] ?? null
     }));
 
     const data = {
-      teamId: currentDeletingTeam?.teamId,
+      teamId: currentDeletingTeam!.teamId.toString(),
       transferMembers
     };
 
@@ -79,22 +85,14 @@ const ReassignMembersModal = () => {
     <div>
       <p className="my-4">{translateText(["reassignModalDes"])}</p>
       <div className="flex flex-col gap-2 max-h-56 overflow-auto">
-        {currentDeletingTeam?.supervisors?.map((supervisor) => (
+        {transferableMembers.map((member) => (
           <ReassignMemberRow
-            key={supervisor.employeeId}
-            teamMember={supervisor}
-            setTeamId={(teamId) =>
-              setTeamId(Number(supervisor.employeeId), teamId)
+            key={member.employeeId}
+            teamMember={member}
+            availableTeams={
+              availableTeamsMap.get(Number(member.employeeId)) || []
             }
-          />
-        ))}
-        {currentDeletingTeam?.teamMembers?.map((teamMember) => (
-          <ReassignMemberRow
-            key={teamMember.employeeId}
-            teamMember={teamMember}
-            setTeamId={(teamId) =>
-              setTeamId(Number(teamMember.employeeId), teamId)
-            }
+            setTeamId={(teamId) => setTeamId(Number(member.employeeId), teamId)}
           />
         ))}
       </div>
