@@ -14,21 +14,19 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { FC, useEffect, useRef, useState } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
-import DealStageLane, {
-  type DealStageLaneDeal
-} from "~community/crm/components/molecules/DealStageLane/DealStageLane";
+import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import {
   CrmDealStageColorsEnum,
   CrmDealStageEnum,
+  CrmIndustryEnum,
   CrmPriorityEnum
 } from "~community/crm/enums/common";
 import type {
-  BoardDealItem,
   BoardDealsGroupedRequest,
   BoardMoveBetweenStagesPayload,
   BoardReorderWithinStagePayload,
-  BoardStageDeals,
+  CrmDealBoardType,
   CrmDealStageType
 } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
@@ -89,55 +87,131 @@ const MOCK_OWNER = {
 };
 
 // mock deals grouped by stage (replace with api)
-const MOCK_DEALS: Record<number, BoardDealItem[]> = {
+const MOCK_DEALS: Record<number, CrmDealBoardType[]> = {
   1: [
     {
       id: 101,
       name: "Acme Corp Expansion",
-      contactName: "John Smith",
-      companyName: "Acme Corp",
-      owner: MOCK_OWNER,
-      amount: "12000",
+      description: null,
+      stage: MOCK_STAGES[0],
       priority: CrmPriorityEnum.HIGH,
-      taskCount: 3,
-      orderIndex: "1"
+      amount: "12000",
+      company: {
+        id: 1,
+        name: "Acme Corp",
+        industry: CrmIndustryEnum.TECHNOLOGY_INFORMATION_AND_MEDIA,
+        website: null,
+        address: null,
+        contactNumber: null,
+        isDeleted: false
+      },
+      contact: {
+        id: 1,
+        name: "John Smith",
+        email: "john@acme.com",
+        contactNumber: null,
+        lastContactAt: null,
+        lastModifiedDate: "",
+        company: null,
+        owner: MOCK_OWNER,
+        isDeleted: false
+      },
+      owner: MOCK_OWNER,
+      taskCount: 0
     },
     {
       id: 102,
       name: "Beta Solutions Onboarding",
-      contactName: "Sara Lee",
-      companyName: "Beta Solutions",
-      owner: MOCK_OWNER,
-      amount: "4500",
+      description: null,
+      stage: MOCK_STAGES[0],
       priority: CrmPriorityEnum.LOW,
-      taskCount: 1,
-      orderIndex: "2"
+      amount: "4500",
+      company: {
+        id: 2,
+        name: "Beta Solutions",
+        industry: CrmIndustryEnum.PROFESSIONAL_SERVICES,
+        website: null,
+        address: null,
+        contactNumber: null,
+        isDeleted: false
+      },
+      contact: {
+        id: 2,
+        name: "Sara Lee",
+        email: "sara@beta.com",
+        contactNumber: null,
+        lastContactAt: null,
+        lastModifiedDate: "",
+        company: null,
+        owner: MOCK_OWNER,
+        isDeleted: false
+      },
+      owner: MOCK_OWNER,
+      taskCount: 1
     }
   ],
   2: [
     {
       id: 201,
       name: "Gamma Tech Upgrade",
-      contactName: "Mike Chan",
-      companyName: "Gamma Tech",
-      owner: MOCK_OWNER,
-      amount: "29000",
+      description: null,
+      stage: MOCK_STAGES[1],
       priority: CrmPriorityEnum.MEDIUM,
-      taskCount: 2,
-      orderIndex: "1"
+      amount: "29000",
+      company: {
+        id: 3,
+        name: "Gamma Tech",
+        industry: CrmIndustryEnum.TECHNOLOGY_INFORMATION_AND_MEDIA,
+        website: null,
+        address: null,
+        contactNumber: null,
+        isDeleted: false
+      },
+      contact: {
+        id: 3,
+        name: "Mike Chan",
+        email: "mike@gamma.com",
+        contactNumber: null,
+        lastContactAt: null,
+        lastModifiedDate: "",
+        company: null,
+        owner: MOCK_OWNER,
+        isDeleted: false
+      },
+      owner: MOCK_OWNER,
+      taskCount: 2
     }
   ],
   3: [
     {
       id: 301,
       name: "Delta Finance Suite",
-      contactName: "Emma Brown",
-      companyName: "Delta Finance",
-      owner: MOCK_OWNER,
-      amount: "55000",
+      description: null,
+      stage: MOCK_STAGES[2],
       priority: CrmPriorityEnum.HIGH,
-      taskCount: 5,
-      orderIndex: "1"
+      amount: "55000",
+      company: {
+        id: 4,
+        name: "Delta Finance",
+        industry: CrmIndustryEnum.FINANCIAL_SERVICES,
+        website: null,
+        address: null,
+        contactNumber: null,
+        isDeleted: false
+      },
+      contact: {
+        id: 4,
+        name: "Emma Brown",
+        email: "emma@delta.com",
+        contactNumber: null,
+        lastContactAt: null,
+        lastModifiedDate: "",
+        company: null,
+        owner: MOCK_OWNER,
+        isDeleted: false
+      },
+      owner: MOCK_OWNER,
+      taskCount: 5
     }
   ],
   4: [],
@@ -145,13 +219,32 @@ const MOCK_DEALS: Record<number, BoardDealItem[]> = {
     {
       id: 501,
       name: "Omega Retail Deal",
-      contactName: "Tom White",
-      companyName: "Omega Retail",
-      owner: MOCK_OWNER,
-      amount: "18000",
+      description: null,
+      stage: MOCK_STAGES[4],
       priority: CrmPriorityEnum.MEDIUM,
-      taskCount: 0,
-      orderIndex: "1"
+      amount: "18000",
+      company: {
+        id: 5,
+        name: "Omega Retail",
+        industry: CrmIndustryEnum.RETAIL,
+        website: null,
+        address: null,
+        contactNumber: null,
+        isDeleted: false
+      },
+      contact: {
+        id: 5,
+        name: "Tom White",
+        email: "tom@omega.com",
+        contactNumber: null,
+        lastContactAt: null,
+        lastModifiedDate: "",
+        company: null,
+        owner: MOCK_OWNER,
+        isDeleted: false
+      },
+      owner: MOCK_OWNER,
+      taskCount: 0
     }
   ],
   6: []
@@ -160,32 +253,19 @@ const MOCK_DEALS: Record<number, BoardDealItem[]> = {
 const getAccentColor = (color: string): string =>
   STAGE_COLOR_MAP[color?.toUpperCase()];
 
-const toStageLaneDeal = (deal: BoardDealItem): DealStageLaneDeal => ({
-  id: String(deal.id),
-  title: deal.name,
-  contactName: deal.contactName,
-  company: deal.companyName ?? "",
-  owner: {
-    id: String(deal.owner.employeeId),
-    firstName: deal.owner.firstName,
-    lastName: deal.owner.lastName ?? "",
-    src: deal.owner.authPic ?? ""
-  },
-  amount: formatValue(deal.amount),
-  priority: deal.priority,
-  taskCount: deal.taskCount,
-  ariaLabel: `Deal: ${deal.name}`
-});
-
 interface StageState {
-  deals: BoardDealItem[];
+  deals: CrmDealBoardType[];
   totalCount: number;
   page: number;
   isLoadingMore: boolean;
 }
 
 const buildInitialStageState = (
-  data: BoardStageDeals[]
+  data: Array<{
+    stageId: number;
+    deals: CrmDealBoardType[];
+    totalCount: number;
+  }>
 ): Record<number, StageState> =>
   Object.fromEntries(
     data.map((s) => [
@@ -215,7 +295,11 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   const [stageMap, setStageMap] = useState<Record<number, StageState>>({});
 
   useEffect(() => {
-    const seedData: BoardStageDeals[] = MOCK_STAGES.map((s) => ({
+    const seedData: Array<{
+      stageId: number;
+      deals: CrmDealBoardType[];
+      totalCount: number;
+    }> = MOCK_STAGES.map((s) => ({
       stageId: s.id,
       deals: MOCK_DEALS[s.id] ?? [],
       totalCount: (MOCK_DEALS[s.id] ?? []).length
@@ -226,7 +310,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   const stageMapRef = useRef(stageMap);
   stageMapRef.current = stageMap;
 
-  const [activeDeal, setActiveDeal] = useState<BoardDealItem | null>(null);
+  const [activeDeal, setActiveDeal] = useState<CrmDealBoardType | null>(null);
   const [activeStageId, setActiveStageId] = useState<number | null>(null);
   const [overStageId, setOverStageId] = useState<number | null>(null);
 
@@ -473,7 +557,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                   totalValue: formatValue(String(totalValue)),
                   totalCount
                 }}
-                deals={deals.map(toStageLaneDeal)}
+                deals={deals}
                 isLoading={isInitialLoad}
                 hasMore={hasMore}
                 isLoadingMore={state?.isLoadingMore ?? false}
@@ -492,19 +576,13 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
               <DealCard
                 id={String(activeDeal.id)}
                 title={activeDeal.name}
-                contactName={activeDeal.contactName}
-                company={activeDeal.companyName ?? ""}
-                owner={{
-                  id: String(activeDeal.owner.employeeId),
-                  firstName: activeDeal.owner.firstName,
-                  lastName: activeDeal.owner.lastName ?? "",
-                  src: activeDeal.owner.authPic ?? ""
-                }}
-                amount={formatValue(activeDeal.amount)}
+                contactName={activeDeal.contact.name}
+                companyName={activeDeal.company?.name}
+                owner={activeDeal.owner}
+                amount={activeDeal.amount ?? undefined}
                 priority={activeDeal.priority}
                 taskCount={activeDeal.taskCount}
                 isInteractive={false}
-                ariaLabel={activeDeal.name}
               />
             </div>
           )}

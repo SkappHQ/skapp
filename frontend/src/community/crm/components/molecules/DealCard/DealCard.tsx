@@ -16,7 +16,7 @@ export interface DealCardProps {
   id: string;
   title: string;
   contactName: string;
-  company?: string;
+  companyName?: string;
   owner: CrmOwner;
   amount?: string;
   priority: CrmPriorityEnum | null;
@@ -31,7 +31,7 @@ const DealCard: FC<DealCardProps> = ({
   id,
   title,
   contactName,
-  company,
+  companyName,
   owner,
   amount,
   priority,
@@ -112,13 +112,13 @@ const DealCard: FC<DealCardProps> = ({
           </p>
         )}
 
-        {(contactName || company) && (
+        {(contactName || companyName) && (
           <p className="body3 truncate text-secondary-icon">
             {contactName && <span>{contactName}</span>}
-            {contactName && company && (
+            {contactName && companyName && (
               <span className="mx-1 text-secondary-accent">•</span>
             )}
-            {company && <span>{company}</span>}
+            {companyName && <span>{companyName}</span>}
           </p>
         )}
 
@@ -131,7 +131,7 @@ const DealCard: FC<DealCardProps> = ({
       </div>
 
       <div className="flex items-center justify-end gap-2">
-        {taskCount !== undefined && taskCount > 0 && (
+        {taskCount !== undefined && (
           <Chip
             size="sm"
             label={String(taskCount)}

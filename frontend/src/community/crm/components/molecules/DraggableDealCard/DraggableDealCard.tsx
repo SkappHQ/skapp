@@ -3,10 +3,10 @@ import { CSS } from "@dnd-kit/utilities";
 import { FC } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
-import { CrmDealType } from "~community/crm/types/CommonTypes";
+import { CrmDealBoardType } from "~community/crm/types/CommonTypes";
 
 interface DraggableDealCardProps {
-  deal: CrmDealType;
+  deal: CrmDealBoardType;
   onDealClick?: (dealId: string) => void;
 }
 
@@ -42,10 +42,11 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
         id={String(deal.id)}
         title={deal.name}
         contactName={deal.contact.name}
-        company={deal.company?.name}
+        companyName={deal.company?.name}
         owner={deal.owner}
-        amount={deal.amount ?? undefined}
+        amount={deal.amount ?? ""}
         priority={deal.priority}
+        taskCount={deal.taskCount}
         isInteractive={!isDragging}
         onClick={onDealClick ? () => onDealClick(String(deal.id)) : undefined}
       />

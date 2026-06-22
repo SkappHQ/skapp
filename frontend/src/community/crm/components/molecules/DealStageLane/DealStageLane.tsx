@@ -8,7 +8,7 @@ import { FC, useEffect, useRef } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import DraggableDealCard from "~community/crm/components/molecules/DraggableDealCard/DraggableDealCard";
-import { CrmDealType } from "~community/crm/types/CommonTypes";
+import { CrmDealBoardType } from "~community/crm/types/CommonTypes";
 
 export interface SwimlaneDealStage {
   id: string;
@@ -20,7 +20,7 @@ export interface SwimlaneDealStage {
 
 export interface DealStageLaneProps {
   stage: SwimlaneDealStage;
-  deals: CrmDealType[];
+  deals: CrmDealBoardType[];
   isLoading?: boolean;
   hasMore?: boolean;
   isLoadingMore?: boolean;
