@@ -1,15 +1,15 @@
 import { Avatar, ButtonV2, Label } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { formatDateWithOrdinalSuffix } from "~community/common/utils/dateTimeUtils";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 import { getPriorityConfig } from "~community/crm/utils/taskHelpers";
 
 interface Props {
-  task: CrmTaskType;
+  task: CrmTaskDetailType;
   onMarkAsDone?: () => void;
 }
 
@@ -17,12 +17,13 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
   const priorityConfig = getPriorityConfig(task.priority);
+  const ownerLastName = task.owner?.lastName ? ` ${task.owner.lastName}` : "";
 
   const ownerName = task.owner
-    ? `${task.owner.firstName}${task.owner.lastName ? ` ${task.owner.lastName}` : ""}`
+    ? `${task.owner.firstName}${ownerLastName}`
     : "";
 
-  const infoRows: { label: string; value: React.ReactNode }[] = [
+  const infoRows: { label: string; value: ReactNode }[] = [
     {
       label: translateText(["assignedTo"]),
       value: task.owner ? (
@@ -64,9 +65,8 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
     {
       label: translateText(["contactName"]),
       value: task.contact ? (
-        <span
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           className="flex items-center gap-1 cursor-pointer text-primary-brand body3 hover:opacity-80"
         >
           <span>{task.contact.name}</span>
@@ -76,7 +76,7 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
             width="14"
             height="14"
           />
-        </span>
+        </button>
       ) : (
         <span className="body3 text-secondary-text">
           {translateText(["noContact"])}

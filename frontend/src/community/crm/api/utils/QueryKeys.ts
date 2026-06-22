@@ -57,5 +57,13 @@ export const companyQueryKeys = {
 
 export const taskQueryKeys = {
   GET_TASK_DATA: ["get-task-data"],
-  GET_OPEN_TASKS: ["get-open-tasks"]
+  GET_OPEN_TASKS: ["get-open-tasks"],
+  TASK_BY_ID: (id: number) => ["crm-task-by-id", id],
+  TASK_BY_ID_ALL: ["crm-task-by-id"],
+  RELATED_TASKS: (
+    contactId: number | null,
+    dealId: number | null,
+    currentTaskId: number | undefined
+  ) => ["crm-related-tasks", contactId, dealId, currentTaskId],
+  RELATED_TASKS_ALL: ["crm-related-tasks"]
 };

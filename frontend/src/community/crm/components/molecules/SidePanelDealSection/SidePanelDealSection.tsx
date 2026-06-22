@@ -17,9 +17,15 @@ import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
   deals: DetailPanelDealResponseType[];
+  showAddDealButton?: boolean;
+  emptyViewHeight?: string;
 }
 
-const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
+const SidePanelDealSection: React.FC<Props> = ({
+  deals,
+  showAddDealButton = true,
+  emptyViewHeight = "h-auto"
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
 
@@ -43,33 +49,39 @@ const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
             allowMultiple={true}
             className="gap-4"
           />
-          <div className="mt-2">
-            <ButtonV2
-              variant="line"
-              size="sm"
-              onClick={handleAddDeal}
-              aria-label={translateText(["ariaLabels", "addDealBtn"])}
-              icon={<PlusIcon />}
-              iconPosition="end"
-            >
-              {translateText(["addDealBtn"])}
-            </ButtonV2>
-          </div>
+          {showAddDealButton && (
+            <div className="mt-2">
+              <ButtonV2
+                variant="line"
+                size="sm"
+                onClick={handleAddDeal}
+                aria-label={translateText(["ariaLabels", "addDealBtn"])}
+                icon={<PlusIcon />}
+                iconPosition="end"
+              >
+                {translateText(["addDealBtn"])}
+              </ButtonV2>
+            </div>
+          )}
         </div>
       ) : (
         <EmptyDataView
           icon={<SearchIcon />}
           title={translateText(["emptyTitle"])}
           description={translateText(["emptyDescription"])}
-          button={{
-            children: translateText(["addDealBtn"]),
-            variant: "tertiary",
-            onClick: handleAddDeal,
-            icon: <PlusIcon />,
-            "aria-label": translateText(["ariaLabels", "addDealBtn"])
-          }}
+          button={
+            showAddDealButton
+              ? {
+                  children: translateText(["addDealBtn"]),
+                  variant: "tertiary",
+                  onClick: handleAddDeal,
+                  icon: <PlusIcon />,
+                  "aria-label": translateText(["ariaLabels", "addDealBtn"])
+                }
+              : undefined
+          }
           className={{
-            wrapper: "h-[228px] bg-secondary-background rounded-lg"
+            wrapper: `${emptyViewHeight} bg-secondary-background rounded-lg`
           }}
         />
       )}

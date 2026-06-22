@@ -62,7 +62,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
         // Pass the real API data to SidePanelDealSection when available
-        return <SidePanelDealSection deals={[]} />;
+        return <SidePanelDealSection deals={[]} emptyViewHeight="h-[228px]" />;
       case SidePanelTabEnum.TASKS:
         // Implement SidePanelTaskSection here
         return null;

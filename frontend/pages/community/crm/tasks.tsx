@@ -17,13 +17,13 @@ const Tasks: NextPage = () => {
   const {
     isCrmSidePanelOpen,
     setIsCrmSidePanelOpen,
-    setSelectedTask,
+    setSelectedTaskId,
     setIsTaskModalOpen,
     setTaskModalType
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedTask: store.setSelectedTask,
+    setSelectedTaskId: store.setSelectedTaskId,
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType
   }));
@@ -35,7 +35,7 @@ const Tasks: NextPage = () => {
 
   const handleCloseSidePanel = () => {
     setIsCrmSidePanelOpen(false);
-    setSelectedTask(null);
+    setSelectedTaskId(null);
   };
 
   useEffect(() => {
