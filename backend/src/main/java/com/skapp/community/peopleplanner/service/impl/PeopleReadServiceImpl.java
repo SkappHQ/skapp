@@ -119,13 +119,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeePersonalDetailsDto dto = new EmployeePersonalDetailsDto();
 		dto.setGeneral(mapPersonalGeneralDetails(employee, accessLevel));
-		dto.setSkills(employeeSkillService.getEmployeeSkillResponses(employee.getEmployeeId()).stream().map(s -> {
-			EmployeeSkillDto skillDto = new EmployeeSkillDto();
-			skillDto.setSkillId(s.getId());
-			skillDto.setSkillType(s.getSkillType());
-			skillDto.setName(s.getName());
-			return skillDto;
-		}).toList());
+		dto.setSkills(mapEmployeeSkills(employee));
 
 		if (accessLevel.canSeeSensitiveData()) {
 			dto.setContact(mapPersonalContactDetails(employee));
@@ -143,6 +137,16 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		}
 
 		return dto;
+	}
+
+	private List<EmployeeSkillDto> mapEmployeeSkills(Employee employee) {
+		return employeeSkillService.getEmployeeSkillResponses(employee.getEmployeeId()).stream().map(s -> {
+			EmployeeSkillDto skillDto = new EmployeeSkillDto();
+			skillDto.setSkillId(s.getId());
+			skillDto.setSkillType(s.getSkillType());
+			skillDto.setName(s.getName());
+			return skillDto;
+		}).toList();
 	}
 
 	private EmployeePersonalGeneralDetailsDto mapPersonalGeneralDetails(Employee employee,

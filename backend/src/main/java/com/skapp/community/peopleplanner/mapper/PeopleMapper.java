@@ -16,6 +16,7 @@ import com.skapp.community.peopleplanner.model.EmployeePeriod;
 import com.skapp.community.peopleplanner.model.EmployeePersonalInfo;
 import com.skapp.community.peopleplanner.model.EmployeeProgression;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.model.EmployeeSkill;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeVisa;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -51,6 +52,7 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeJobFamilyDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeePeriodResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeRoleResponseDto;
+import com.skapp.community.peopleplanner.payload.response.EmployeeSkillResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayWorkLocationResponseDto;
@@ -128,8 +130,11 @@ public interface PeopleMapper {
 	@Mapping(target = "email", source = "user.email")
 	@Mapping(target = "isActive", source = "user.isActive")
 	@Mapping(target = "managers", source = "employeeManagers")
-	@Mapping(target = "skills", ignore = true)
+	@Mapping(target = "skills", source = "employeeSkills")
 	EmployeeDetailedResponseDto employeeToEmployeeDetailedResponseDto(Employee employee);
+
+	@Mapping(source = "skillId", target = "id")
+	EmployeeSkillResponseDto employeeSkillToEmployeeSkillResponseDto(EmployeeSkill employeeSkill);
 
 	EmployeePeriodResponseDto employeePeriodToEmployeePeriodResponseDto(EmployeePeriod employeePeriod);
 

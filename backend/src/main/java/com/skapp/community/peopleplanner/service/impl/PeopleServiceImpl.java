@@ -238,8 +238,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 		userDao.save(user);
 
-		processEmployeeSkills(requestDto.getPersonal(), employee);
-
 		applicationEventPublisher.publishEvent(new UserCreatedEvent(this, user));
 		addNewEmployeeTimeLineRecords(employee, requestDto);
 		if (!isGuestConversion) {
@@ -320,8 +318,6 @@ public class PeopleServiceImpl implements PeopleService {
 		user.setEmployee(createEmployeeEntity(employee, requestDto));
 
 		userDao.save(user);
-
-		processEmployeeSkills(requestDto.getPersonal(), employee);
 
 		addUpdatedEmployeeTimeLineRecords(currentEmployeeDto, requestDto);
 		invalidateUserCache();
@@ -446,6 +442,11 @@ public class PeopleServiceImpl implements PeopleService {
 		// Educations
 		if (requestDto != null && requestDto.getPersonal() != null) {
 			processEmployeeEducations(requestDto, employee);
+		}
+
+		// Skills
+		if (requestDto != null && requestDto.getPersonal() != null) {
+			processEmployeeSkills(requestDto.getPersonal(), employee);
 		}
 
 		// Teams

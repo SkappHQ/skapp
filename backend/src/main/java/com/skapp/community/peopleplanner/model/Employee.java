@@ -153,6 +153,9 @@ public class Employee extends Auditable<String> {
 	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<EmployeePeriod> employeePeriods;
 
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<EmployeeSkill> employeeSkills;
+
 	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
 	private List<Notification> notifications = new ArrayList<>();
 
