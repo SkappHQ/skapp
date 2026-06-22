@@ -1,3 +1,5 @@
+import { DropdownOption } from "@rootcodelabs/skapp-ui";
+
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 
 type NumericValue = string | null;
@@ -10,6 +12,28 @@ export const formatValue = (value: NumericValue): string => {
 interface Id {
   id: number | string;
 }
+
+type DropdownMappable = { id: number | string; label: string };
+
+const toDropdownOption = (item: DropdownMappable): DropdownOption => ({
+  id: item.id,
+  value: item.id,
+  label: item.label
+});
+
+export const toDropdownOptions = (
+  items: DropdownMappable[]
+): DropdownOption[] => items.map(toDropdownOption);
+
+export const toSelectedDropdownOption = (
+  item: DropdownMappable | null
+): DropdownOption | null => (item ? toDropdownOption(item) : null);
+
+export const findById = <T>(
+  items: T[],
+  id: number | string,
+  getId: (item: T) => number | string
+): T | null => items.find((item) => getId(item) === id) ?? null;
 
 export const groupItemsByPriority = <T extends Id>(
   items: T[],

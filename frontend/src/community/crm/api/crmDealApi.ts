@@ -44,13 +44,16 @@ export const useGetDealsInfinite = (
   });
 };
 
-export const useGetDealStages = (): UseQueryResult<CrmDealStageType[]> => {
+export const useGetDealStages = (
+  enabled: boolean = true
+): UseQueryResult<CrmDealStageType[]> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_STAGES,
     queryFn: async (): Promise<CrmDealStageType[]> => {
       const response = await authFetch.get(crmDealEndpoints.DEAL_STAGES);
       return response?.data?.results;
-    }
+    },
+    enabled
   });
 };
 
@@ -73,5 +76,30 @@ export const useCreateDeal = (
       onSuccess();
     },
     onError
+  });
+};
+
+const fetchDealLookup = async (
+  searchKeyword: string,
+  size: number
+): Promise<CrmDealPaginatedResponse> => {
+  const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
+    params: {
+      size,
+      searchKeyword
+    }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealLookup = (
+  searchKeyword: string,
+  size: number,
+  enabled: boolean = true
+): UseQueryResult<CrmDealPaginatedResponse> => {
+  return useQuery({
+    queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword),
+    queryFn: () => fetchDealLookup(searchKeyword, size),
+    enabled
   });
 };

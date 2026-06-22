@@ -8,17 +8,29 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import {
+  useGetCrmContacts,
+  useGetOwnerLookup
+} from "~community/crm/api/ContactApi";
 import { useCreateTask } from "~community/crm/api/TaskApi";
+import { useGetDealLookup } from "~community/crm/api/crmDealApi";
+import OwnerDropdownItem from "~community/crm/components/atoms/OwnerDropdownItem/OwnerDropdownItem";
+import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/commonConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
@@ -31,7 +43,7 @@ import {
 import { addTaskValidations } from "~community/crm/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
-const AddTaskModalContent: React.FC = () => {
+const AddTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
@@ -44,20 +56,37 @@ const AddTaskModalContent: React.FC = () => {
 
   const { isCrmSalesManager } = useSessionData();
 
+  const priorityDropdownOptions = useGetPriorityOptions(translateText);
+
+  const { options: taskTypeOptions, getCategoryById } =
+    useGetTaskTypeOptions(translateText);
+
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
-
   const [ownerSearchText, setOwnerSearchText] = useState("");
+  const [contactSearchText, setContactSearchText] = useState("");
+  const [selectedContactName, setSelectedContactName] = useState("");
+  const [dealSearchText, setDealSearchText] = useState("");
+  const [selectedDealName, setSelectedDealName] = useState("");
 
-  const priorityDropdownOptions = useGetPriorityOptions();
-  const { options: taskTypeOptions, getCategoryById } = useGetTaskTypeOptions();
+  const debouncedOwnerSearchText = useDebounce(
+    ownerSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const debouncedContactSearchText = useDebounce(
+    contactSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+  const debouncedDealSearchText = useDebounce(
+    dealSearchText.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
 
   const defaultOwner = useMemo((): CrmOwner | null => {
-    if (!currentUser?.employeeId) return null;
     return {
-      employeeId: Number(currentUser.employeeId),
-      firstName: currentUser.firstName ?? "",
-      lastName: currentUser.lastName ?? null,
-      authPic: currentUser.authPic as string | null
+      employeeId: Number(currentUser?.employeeId),
+      firstName: currentUser?.firstName ?? "",
+      lastName: currentUser?.lastName ?? null,
+      authPic: currentUser?.authPic as string | null
     };
   }, [currentUser]);
 
@@ -72,8 +101,8 @@ const AddTaskModalContent: React.FC = () => {
     type: null,
     dueDate: null,
     priority: CrmPriorityEnum.MEDIUM,
-    contactName: "",
-    deal: "",
+    contactId: null,
+    dealId: null,
     owner: defaultOwner?.employeeId ? Number(defaultOwner.employeeId) : null,
     notes: ""
   };
@@ -103,6 +132,10 @@ const AddTaskModalContent: React.FC = () => {
     resetForm();
     setOwnerSearchText("");
     setSelectedOwner(defaultOwner);
+    setContactSearchText("");
+    setSelectedContactName("");
+    setDealSearchText("");
+    setSelectedDealName("");
   };
 
   const handleSuccess = () => {
@@ -125,13 +158,6 @@ const AddTaskModalContent: React.FC = () => {
     });
   };
 
-  const handleOwnerSelect = (owner: SearchableDropdownItem) => {
-    setFieldValue("owner", Number(owner.id));
-    setOwnerSearchText("");
-    // TODO: Lookup owner from owner.id and construct CrmOwner to set
-    setSelectedOwner(null);
-  };
-
   const { mutate: createNewTask, isPending } = useCreateTask(
     handleSuccess,
     handleError
@@ -140,16 +166,104 @@ const AddTaskModalContent: React.FC = () => {
   const createTask = (formValues: CrmTaskAddFormTypes) => {
     const payload: CrmTaskCreatePayload = {
       name: formValues.name.trim(),
-      type: formValues.type,
-      dueAt: formValues.dueDate,
+      typeId: formValues.type?.id ?? undefined,
+      dueAt: formValues.dueDate ?? null,
       priority: formValues.priority,
-      contactName: formValues.contactName?.trim(),
-      deal: formValues.deal?.trim(),
-      owner: formValues.owner,
+      contactId: formValues.contactId ?? undefined,
+      dealId: formValues.dealId ?? undefined,
+      ownerId: formValues.owner ?? undefined,
       notes: formValues.notes?.trim()
     };
 
     createNewTask(payload);
+  };
+
+  const { data: ownerLookupData } = useGetOwnerLookup(
+    debouncedOwnerSearchText,
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    Boolean(isCrmSalesManager) && debouncedOwnerSearchText.length > 0
+  );
+
+  const { data: contactLookupData } = useGetCrmContacts(
+    debouncedContactSearchText,
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    debouncedContactSearchText.length > 0
+  );
+
+  const { data: dealLookupData } = useGetDealLookup(
+    debouncedDealSearchText,
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    debouncedDealSearchText.length > 0
+  );
+
+  const ownerDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      ownerLookupData?.items?.map((owner) => ({
+        id: String(owner.employeeId),
+        content: <OwnerDropdownItem owner={owner} />
+      })) ?? [],
+    [ownerLookupData]
+  );
+
+  const contactDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      contactLookupData?.items?.map((contact) => ({
+        id: String(contact.id),
+        content: contact.name
+      })) ?? [],
+    [contactLookupData]
+  );
+
+  const dealDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      dealLookupData?.items?.map((deal) => ({
+        id: String(deal.id),
+        content: deal.name
+      })) ?? [],
+    [dealLookupData]
+  );
+
+  const handleOwnerSelect = (item: SearchableDropdownItem) => {
+    const owner = ownerLookupData?.items?.find(
+      (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
+    );
+    setFieldValue("owner", owner?.employeeId);
+    setSelectedOwner(owner ?? null);
+    setOwnerSearchText("");
+  };
+
+  const handleContactSelect = (item: SearchableDropdownItem) => {
+    const contact = contactLookupData?.items?.find(
+      (contactLookupItem) => String(contactLookupItem.id) === item.id
+    );
+    setFieldValue("contactId", Number(item.id));
+    setSelectedContactName(contact?.name ?? String(item.content));
+    setContactSearchText("");
+  };
+
+  const handleDealSelect = (item: SearchableDropdownItem) => {
+    const deal = dealLookupData?.items?.find(
+      (dealLookupItem) => String(dealLookupItem.id) === item.id
+    );
+    setFieldValue("dealId", Number(item.id));
+    setSelectedDealName(deal?.name ?? String(item.content));
+    setDealSearchText("");
+  };
+  const handleClearOwner = () => {
+    setSelectedOwner(null);
+    setFieldValue("owner", null);
+  };
+
+  const handleClearContact = () => {
+    setFieldValue("contactId", null);
+    setSelectedContactName("");
+    setContactSearchText("");
+  };
+
+  const handleClearDeal = () => {
+    setFieldValue("dealId", null);
+    setSelectedDealName("");
+    setDealSearchText("");
   };
 
   return (
@@ -167,7 +281,7 @@ const AddTaskModalContent: React.FC = () => {
         required
       />
 
-      <div className="flex flex-row gap-[0.625rem]">
+      <div className="flex flex-row items-start gap-[0.625rem]">
         <div className="flex-1">
           <Dropdown
             label={translateText(["labels", "type"])}
@@ -200,13 +314,13 @@ const AddTaskModalContent: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-row gap-[0.625rem]">
+      <div className="flex flex-row items-start gap-[0.625rem]">
         <div className="flex-1">
           <DatePicker
             mode="single"
             selected={values.dueDate ? new Date(values.dueDate) : undefined}
-            onSelect={(date: Date | undefined) =>
-              setFieldValue("dueDate", date ? date.toISOString() : null)
+            onSelect={(date) =>
+              setFieldValue("dueDate", date?.toISOString() ?? null)
             }
             popperProps={{ position: "bottom-end" }}
           >
@@ -237,8 +351,7 @@ const AddTaskModalContent: React.FC = () => {
               label={translateText(["labels", "taskOwner"])}
               owner={selectedOwner}
               onRemove={() => {
-                setSelectedOwner(null);
-                setFieldValue("owner", null);
+                handleClearOwner();
               }}
               showRemoveButton={isCrmSalesManager ?? false}
               ariaLabel={translateText(["ariaLabels", "removeOwner"])}
@@ -246,36 +359,48 @@ const AddTaskModalContent: React.FC = () => {
           ) : (
             <SearchableDropdown
               id="owner-search"
-              items={[]}
+              items={ownerDropdownItems}
               onSelect={handleOwnerSelect}
               label={translateText(["labels", "taskOwner"])}
               placeholder={translateText(["placeholders", "taskOwner"])}
               value={ownerSearchText}
               onChange={(e) => setOwnerSearchText(e.target.value)}
               state={errors.owner ? "error" : "default"}
+              errorMessage={errors.owner}
+              emptyMessage={translateText(["emptyStates", "noOwners"])}
             />
           )}
         </div>
       </div>
 
-      <SearchableDropdown
+      <SelectableSearchField
         id="contact-search"
         label={translateText(["labels", "contactName"])}
         placeholder={translateText(["placeholders", "contactName"])}
-        value={values.contactName ?? ""}
-        onChange={(e) => setFieldValue("contactName", e.target.value)}
-        items={[]}
-        onSelect={(item) => setFieldValue("contactName", item.id)}
+        selectedValue={selectedContactName}
+        onClear={handleClearContact}
+        clearAriaLabel={translateText(["ariaLabels", "clearContact"])}
+        fieldAriaLabel={translateText(["ariaLabels", "contactName"])}
+        searchValue={contactSearchText}
+        onSearchChange={(e) => setContactSearchText(e.target.value)}
+        items={contactDropdownItems}
+        onSelect={handleContactSelect}
+        emptyMessage={translateText(["emptyStates", "noContacts"])}
       />
 
-      <SearchableDropdown
+      <SelectableSearchField
         id="deal-search"
         label={translateText(["labels", "deal"])}
         placeholder={translateText(["placeholders", "deal"])}
-        value={values.deal ?? ""}
-        onChange={(e) => setFieldValue("deal", e.target.value)}
-        items={[]}
-        onSelect={(item) => setFieldValue("deal", item.id)}
+        selectedValue={selectedDealName}
+        onClear={handleClearDeal}
+        clearAriaLabel={translateText(["ariaLabels", "clearDeal"])}
+        fieldAriaLabel={translateText(["ariaLabels", "deal"])}
+        searchValue={dealSearchText}
+        onSearchChange={(e) => setDealSearchText(e.target.value)}
+        items={dealDropdownItems}
+        onSelect={handleDealSelect}
+        emptyMessage={translateText(["emptyStates", "noDeals"])}
       />
 
       <TextArea

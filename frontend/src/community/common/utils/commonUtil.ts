@@ -28,6 +28,10 @@ import { characterLengths } from "~community/common/constants/stringConstants";
 export const getBlinkClass = (shouldBlink: boolean): string =>
   shouldBlink ? "animate-pulse" : "";
 
+export const openInNewTab = (url: string) => {
+  window.open(url, "_blank", "noopener,noreferrer");
+};
+
 export const getLabelByValue = (
   objectArray: DropdownListType[],
   value: number | string

@@ -72,6 +72,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_USER_ENTITLEMENT_BULK_UPLOAD_VALIDATION_FAILED(
 			"api.error.people.user-entitlement-bulk-upload.validation.failed"),
 	PEOPLE_ERROR_MISSING_USER_BULK_MANDATORY_FIELDS("api.error.people.missing.user.bulk.mandatory.fields"),
+	PEOPLE_ERROR_CAREER_PROGRESSION_FIELDS_EMPTY("api.error.people.career-progression.fields.empty"),
 	PEOPLE_ERROR_INVALID_TIMEZONE("app.error.people.employee.invalid.timezone"),
 	PEOPLE_ERROR_INVALID_EMAIL("app.error.people.employee.invalid.email"),
 	PEOPLE_ERROR_SUPER_ADMIN_RESTRICTED_ASSIGNING_ROLE_ACCESS(
