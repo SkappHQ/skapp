@@ -214,10 +214,12 @@ public class PeopleServiceImpl implements PeopleService {
 		boolean isGuestConversion = false;
 
 		Optional<User> existingGuestUser = findGuestUserByEmail(requestDto);
+		boolean wasDeactivatedGuest = false;
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
 			user.setIsActive(true);
 			employee = user.getEmployee();
+			wasDeactivatedGuest = employee.getAccountStatus() == AccountStatus.DEACTIVATED;
 			// Reset to PENDING so createUserEntity triggers credential setup and
 			// invitation email
 			employee.setAccountStatus(AccountStatus.PENDING);
@@ -243,6 +245,10 @@ public class PeopleServiceImpl implements PeopleService {
 			peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 			updateSubscriptionQuantity(1L, true, false);
 		}
+		else if (wasDeactivatedGuest) {
+			updateSubscriptionQuantity(1L, true, false);
+		}
+
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
 
@@ -262,10 +268,12 @@ public class PeopleServiceImpl implements PeopleService {
 		CreateEmployeeRequestDto createEmployeeRequestDto = createEmployeeRequest(employeeQuickAddDto);
 
 		Optional<User> existingGuestUser = findGuestUserByEmail(createEmployeeRequestDto);
+		boolean wasDeactivatedGuest = false;
 		if (existingGuestUser.isPresent()) {
 			user = existingGuestUser.get();
 			user.setIsActive(true);
 			employee = user.getEmployee();
+			wasDeactivatedGuest = employee.getAccountStatus() == AccountStatus.DEACTIVATED;
 			// Reset to PENDING so createUserEntity triggers credential setup and
 			// invitation email
 			employee.setAccountStatus(AccountStatus.PENDING);
@@ -286,6 +294,9 @@ public class PeopleServiceImpl implements PeopleService {
 			// Skip for guest conversion: email is sent via createUserEntity ->
 			// resendInvitationEmail
 			peopleEmailService.sendUserInvitationEmail(user, tempPassword);
+			updateSubscriptionQuantity(1L, true, false);
+		}
+		else if (wasDeactivatedGuest) {
 			updateSubscriptionQuantity(1L, true, false);
 		}
 		invalidateUserCache();
