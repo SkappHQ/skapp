@@ -18,26 +18,26 @@ const Tasks: NextPage = () => {
   const {
     setIsTaskModalOpen,
     setTaskModalType,
-    selectedTask,
-    setSelectedTask,
+    selectedTaskId,
+    setSelectedTaskId,
     isCrmSidePanelOpen,
     setIsCrmSidePanelOpen
   } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType,
-    selectedTask: store.selectedTask,
-    setSelectedTask: store.setSelectedTask,
+    selectedTaskId: store.selectedTaskId,
+    setSelectedTaskId: store.setSelectedTaskId,
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
   }));
 
   const handleCloseSidePanel = () => {
     setIsCrmSidePanelOpen(false);
-    setSelectedTask(null);
+    setSelectedTaskId(null);
   };
 
   const onPrimaryButtonClick = () => {
-    setSelectedTask(null);
+    setSelectedTaskId(null);
     setIsTaskModalOpen(true);
     setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
   };
@@ -67,7 +67,7 @@ const Tasks: NextPage = () => {
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <>
-        {selectedTask && (
+        {selectedTaskId && (
           <SidePanelWrapper>
             <TaskSidePanel
               isOpen={isCrmSidePanelOpen}

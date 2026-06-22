@@ -4,7 +4,7 @@ import { FC, useMemo } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useUpdateTask } from "~community/crm/api/TaskApi";
+import { useGetTaskById, useUpdateTask } from "~community/crm/api/TaskApi";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
 import { useCrmStore } from "~community/crm/store/store";
@@ -22,25 +22,27 @@ const EditTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
 
-  const { setIsTaskModalOpen, selectedTask } = useCrmStore((store) => ({
+  const { setIsTaskModalOpen, selectedTaskId } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
-    selectedTask: store.selectedTask
+    selectedTaskId: store.selectedTaskId
   }));
 
-  const { getCategoryById } = useGetTaskTypeOptions();
+  const { getCategoryById } = useGetTaskTypeOptions(translateText);
 
   const submitEditTask = (formValues: CrmTaskFormTypes) => {
-    if (!selectedTask) return;
+    if (!selectedTaskId) return;
 
     const changedFields = getChangedTaskFields(formValues, initialValues);
 
     const payload: CrmTaskUpdatePayload = {
-      id: selectedTask.id,
+      id: selectedTaskId,
       ...changedFields
     };
 
     editTask(payload);
   };
+
+  const { data: selectedTask } = useGetTaskById(selectedTaskId!);
 
   const initialValues: CrmTaskFormTypes = useMemo(
     () => ({

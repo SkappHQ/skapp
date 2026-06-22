@@ -482,6 +482,7 @@
     "openTaskDetails": "Open task details panel for {{name}}",
     "sidePanel": {
       "deleteTask": "Delete task",
+      "editTask": "Edit task",
       "kebabMenuAriaLabel": "Task actions"
     },
     "deleteTaskModal": {
@@ -630,6 +631,17 @@
         "noContacts": "No contacts found",
         "noDeals": "No deals found",
         "noOwners": "No task owners found"
+      },
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "taskTypes": {
+        "call": "Call",
+        "email": "Email",
+        "meeting": "Meeting",
+        "other": "Other"
       }
     },
     "tabs": {

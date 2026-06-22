@@ -26,8 +26,8 @@ export interface CrmTaskSliceTypes extends Pick<
   | "setIsTaskModalOpen"
   | "taskModalType"
   | "setTaskModalType"
-  | "selectedTask"
-  | "setSelectedTask"
+  | "selectedTaskId"
+  | "setSelectedTaskId"
 > {}
 
 export interface CrmSidePanelSliceTypes extends Pick<

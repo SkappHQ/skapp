@@ -1,4 +1,5 @@
 import {
+  InfiniteData,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -10,6 +11,7 @@ import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import {
   CrmCompletedTaskResponseType,
   CrmTaskCreatePayload,
+  CrmTaskDetailType,
   CrmTaskResponseType,
   CrmTaskUpdatePayload,
   UpdateTaskStatusPayload
@@ -48,7 +50,7 @@ const fetchOpenTasks = async (
   return response?.data?.results?.[0];
 };
 
-export const useGetOpenTasks = ( searchKeyword: string, enabled: boolean) => {
+export const useGetOpenTasks = (searchKeyword: string, enabled: boolean) => {
   return useQuery({
     queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword),
     queryFn: () => fetchOpenTasks(searchKeyword),
@@ -141,20 +143,60 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
 };
 
 const editTask = async ({ id, ...payload }: CrmTaskUpdatePayload) => {
-  const response = await authFetch.patch(taskEndpoints.UPDATE_TASK(id), payload);
+  const response = await authFetch.patch(
+    taskEndpoints.UPDATE_TASK(id),
+    payload
+  );
   return response?.data?.results?.[0];
 };
 
-export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
+export const useUpdateTask = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editTask,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_OPEN_TASKS
+      });
+      await queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_TASK_DATA
       });
       onSuccess();
     },
     onError
+  });
+};
+
+export const useGetTaskById = (id: number) => {
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: taskQueryKeys.GET_TASK_DATA_BY_ID(id),
+    queryFn: () => {
+      const openTasks = queryClient
+        .getQueriesData<CrmTaskResponseType>({
+          queryKey: taskQueryKeys.GET_OPEN_TASKS
+        })
+        .flatMap(([, data]) => data?.tasks ?? []);
+
+      const foundOpenTask = openTasks.find((task) => task.id === id);
+      if (foundOpenTask) return foundOpenTask;
+
+      const completedTasks = queryClient
+        .getQueriesData<InfiniteData<CrmCompletedTaskResponseType>>({
+          queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+        })
+        .flatMap(
+          ([, data]) => data?.pages?.flatMap((page) => page.items ?? []) ?? []
+        );
+ 
+      return completedTasks.find((task) => task.id === id) ?? null;
+    }
   });
 };

@@ -1,5 +1,6 @@
 import {
   DeleteButtonIcon,
+  EditIcon,
   KebabMenu,
   SidePanel,
   SidePanelProps
@@ -7,16 +8,22 @@ import {
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+// import { useGetTaskById } from "~community/crm/api/TaskApi";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
-  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType
-  }));
+  const { setIsTaskModalOpen, setTaskModalType, selectedTaskId } = useCrmStore(
+    (store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType,
+      selectedTaskId: store.selectedTaskId
+    })
+  );
+
+  // const { data: selectedTask } = useGetTaskById(selectedTaskId);
 
   const openTaskModal = (type: CrmModalTypes) => {
     setTaskModalType(type);
@@ -24,6 +31,12 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   };
 
   const menuItems = [
+    {
+      id: "edit",
+      label: translateText(["editTask"]),
+      icon: { start: <EditIcon width="16px" height="16px" /> },
+      onClick: () => openTaskModal(CrmModalTypes.EDIT_TASK_MODAL)
+    },
     {
       id: "delete",
       label: translateText(["deleteTask"]),
