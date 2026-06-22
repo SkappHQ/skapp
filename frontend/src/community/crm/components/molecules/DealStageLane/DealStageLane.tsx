@@ -6,27 +6,11 @@ import {
 import { FC, useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import type {
-  DealCardFieldVisibility,
-  DealCardOwner,
-  DealPriority
-} from "~community/crm/components/molecules/DealCard/DealCard";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import DraggableDealCard from "~community/crm/components/molecules/DraggableDealCard/DraggableDealCard";
+import { CrmDealType } from "~community/crm/types/CommonTypes";
 
-export interface DealStageLaneDeal {
-  id: string;
-  title: string;
-  contactName: string;
-  company?: string;
-  owner: DealCardOwner;
-  amount?: string;
-  priority: DealPriority;
-  taskCount?: number;
-  ariaLabel?: string;
-}
-
-export interface DealStage {
+export interface SwimlaneDealStage {
   id: string;
   name: string;
   accentColor: string;
@@ -35,9 +19,8 @@ export interface DealStage {
 }
 
 export interface DealStageLaneProps {
-  stage: DealStage;
-  deals: DealStageLaneDeal[];
-  fieldVisibility?: DealCardFieldVisibility;
+  stage: SwimlaneDealStage;
+  deals: CrmDealType[];
   isLoading?: boolean;
   hasMore?: boolean;
   isLoadingMore?: boolean;
@@ -50,7 +33,6 @@ export interface DealStageLaneProps {
 const DealStageLane: FC<DealStageLaneProps> = ({
   stage,
   deals,
-  fieldVisibility,
   isLoading = false,
   hasMore = false,
   isLoadingMore = false,
@@ -113,7 +95,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
           </h2>
           <p className="body3 mt-0.5 text-secondary-icon">{stage.totalValue}</p>
         </div>
-        <span className="flex h-8 min-w-[2rem] shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold text-secondary-text">
+        <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold text-secondary-text">
           {isLoading ? "…" : stage.totalCount}
         </span>
       </div>
@@ -135,7 +117,6 @@ const DealStageLane: FC<DealStageLaneProps> = ({
                 <DraggableDealCard
                   key={deal.id}
                   deal={deal}
-                  fieldVisibility={fieldVisibility}
                   onDealClick={onDealClick}
                 />
               ))}

@@ -3,18 +3,15 @@ import { CSS } from "@dnd-kit/utilities";
 import { FC } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
-import type { DealCardFieldVisibility } from "~community/crm/components/molecules/DealCard/DealCard";
-import type { DealStageLaneDeal } from "~community/crm/components/molecules/DealStageLane/DealStageLane";
+import { CrmDealType } from "~community/crm/types/CommonTypes";
 
 interface DraggableDealCardProps {
-  deal: DealStageLaneDeal;
-  fieldVisibility?: DealCardFieldVisibility;
+  deal: CrmDealType;
   onDealClick?: (dealId: string) => void;
 }
 
 const DraggableDealCard: FC<DraggableDealCardProps> = ({
   deal,
-  fieldVisibility,
   onDealClick
 }) => {
   const {
@@ -39,21 +36,18 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
       className={`cursor-grab active:cursor-grabbing transform-gpu ${
         isDragging ? "z-50 shadow-lg" : ""
       }`}
-      id={deal.id}
+      id={String(deal.id)}
     >
       <DealCard
-        id={deal.id}
-        title={deal.title}
-        contactName={deal.contactName}
-        company={deal.company}
+        id={String(deal.id)}
+        title={deal.name}
+        contactName={deal.contact.name}
+        company={deal.company?.name}
         owner={deal.owner}
-        amount={deal.amount}
+        amount={deal.amount ?? undefined}
         priority={deal.priority}
-        taskCount={deal.taskCount}
-        fieldVisibility={fieldVisibility}
-        ariaLabel={deal.ariaLabel}
         isInteractive={!isDragging}
-        onClick={onDealClick ? () => onDealClick(deal.id) : undefined}
+        onClick={onDealClick ? () => onDealClick(String(deal.id)) : undefined}
       />
     </div>
   );
