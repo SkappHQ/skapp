@@ -72,7 +72,7 @@ const DealCard: FC<DealCardProps> = ({
 
   return (
     <div
-      className={`w-full min-h-37.5 rounded-lg bg-white px-2 py-3 flex flex-col gap-3 text-left shadow-md ${isInteractive ? "cursor-grab active:cursor-grabbing hover:shadow-sm" : ""} ${className}`.trim()}
+      className={`w-full min-h-37.5 rounded-lg bg-white px-2 py-3 flex flex-col gap-3 text-left shadow-md ${isInteractive ? "cursor-grab active:cursor-grabbing" : ""} ${className}`.trim()}
       aria-label={ariaLabel}
     >
       <div className="flex items-center justify-between gap-2">
@@ -99,7 +99,7 @@ const DealCard: FC<DealCardProps> = ({
         {isInteractive ? (
           <button
             type="button"
-            className="body2 line-clamp-2 leading-4.5 tracking-[0.1px] cursor-pointer text-left hover:text-primary-text hover:underline"
+            className="body2 cursor-pointer text-left hover:text-primary-text hover:underline"
             onClick={handleTitleClick}
             onKeyDown={handleTitleKeyDown}
             onFocus={handleFocus}
@@ -107,9 +107,7 @@ const DealCard: FC<DealCardProps> = ({
             {title}
           </button>
         ) : (
-          <p className="body2 line-clamp-2 leading-4.5 tracking-[0.1px]">
-            {title}
-          </p>
+          <p className="body2 line-clamp-2">{title}</p>
         )}
 
         {(contactName || companyName) && (
