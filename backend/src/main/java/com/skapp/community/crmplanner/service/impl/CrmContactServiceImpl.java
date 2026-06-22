@@ -109,6 +109,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 	}
 
 	protected void validateContactCreation() {
+		// This method is a placeholder for enterprise contact creation logic
 	}
 
 	@Override
