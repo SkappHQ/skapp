@@ -5,7 +5,7 @@ import { CrmTaskSliceTypes } from "~community/crm/types/SliceTypes";
 const CrmTaskSlice = (set: SetType<CrmTaskSliceTypes>) => ({
   isTaskModalOpen: false,
   taskModalType: CrmModalTypes.ADD_TASK_MODAL,
-  selectedTaskId: null as number | null,
+  selectedTaskId: null,
   setIsTaskModalOpen: (isTaskModalOpen: boolean) =>
     set({ isTaskModalOpen: isTaskModalOpen }),
   setTaskModalType: (taskModalType: CrmModalTypes) =>

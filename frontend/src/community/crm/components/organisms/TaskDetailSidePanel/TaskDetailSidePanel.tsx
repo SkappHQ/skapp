@@ -94,7 +94,7 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     updateCompletion({ id: task.id, isCompleted: true });
   };
 
-  if (!task || isTaskLoading) return null;
+  if (isTaskLoading || !task) return null;
 
   const taskTypeName = task.typeName;
   const taskIcon = getTaskTypeIcon(taskTypeName ?? "Other");

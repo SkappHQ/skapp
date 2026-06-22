@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import TaskDetailSidePanel from "~community/crm/components/organisms/TaskDetailSidePanel/TaskDetailSidePanel";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
@@ -17,12 +18,14 @@ const Tasks: NextPage = () => {
   const {
     isCrmSidePanelOpen,
     setIsCrmSidePanelOpen,
+    selectedTaskId,
     setSelectedTaskId,
     setIsTaskModalOpen,
     setTaskModalType
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    selectedTaskId: store.selectedTaskId,
     setSelectedTaskId: store.setSelectedTaskId,
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType
@@ -63,7 +66,15 @@ const Tasks: NextPage = () => {
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <div ref={containerRef} className="flex flex-col w-full gap-4">
-        <TaskDetailSidePanel isOpen={isCrmSidePanelOpen} onClose={handleCloseSidePanel} />
+        {selectedTaskId && (
+          <SidePanelWrapper>
+            <TaskDetailSidePanel
+              isOpen={isCrmSidePanelOpen}
+              onClose={handleCloseSidePanel}
+            />
+          </SidePanelWrapper>
+        )}
+
         <TaskModalController />
         <TasksTable />
       </div>

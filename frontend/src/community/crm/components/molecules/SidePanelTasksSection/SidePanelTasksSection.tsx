@@ -1,8 +1,6 @@
 import { FC } from "react";
 
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
-import { useCrmStore } from "~community/crm/store/store";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import SidePanelTasksEmptyView from "./SidePanelTasksEmptyView";
 import SidePanelTasksList from "./SidePanelTasksList";
@@ -20,14 +18,8 @@ const SidePanelTasksSection: FC<Props> = ({
   isShowContact,
   onTaskRowClick
 }) => {
-  const { setTaskModalType, setIsTaskModalOpen } = useCrmStore((store) => ({
-    setTaskModalType: store.setTaskModalType,
-    setIsTaskModalOpen: store.setIsTaskModalOpen
-  }));
-
   const handleAddTask = () => {
-    setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
-    setIsTaskModalOpen(true);
+    // TODO: open add task modal (wire up to CRM store)
   };
 
   return tasks.length > 0 ? (
