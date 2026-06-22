@@ -130,6 +130,9 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_OPEN_TASKS
       });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
       onSuccess();
     },
     onError
