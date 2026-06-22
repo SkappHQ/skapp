@@ -33,7 +33,7 @@ const SidePanelTasksSection: FC<Props> = ({
     }));
 
   const handleAddTask = () => {
-    setPreselectedContact(preselectedContact ?? null);
+    setPreselectedContact(preselectedContact);
     setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
     setIsTaskModalOpen(true);
   };
