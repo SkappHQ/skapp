@@ -36,8 +36,7 @@ const resolveTargetStageId = (
   overId: string,
   stageMap: Record<number, StageState>
 ): number | null => {
-  if (overId.startsWith("stage::"))
-    return Number(overId.replace("stage::", ""));
+  if (overId) return Number(overId);
   const overDealId = Number(overId);
   for (const [sid, state] of Object.entries(stageMap)) {
     if (state.deals.some((d) => d.id === overDealId)) return Number(sid);
@@ -51,7 +50,7 @@ const computeInsertIndex = (
   activeMidY: number,
   overMidY: number
 ): number => {
-  if (overId.startsWith("stage::")) return tgtDeals.length;
+  if (overId) return tgtDeals.length;
   const overDealId = Number(overId);
   const overIndex = tgtDeals.findIndex((d) => d.id === overDealId);
   if (overIndex === -1) return tgtDeals.length;
@@ -139,7 +138,7 @@ const commitSameStageReorder = ({
   setStageMap,
   reorderWithinStage
 }: SameStageReorderParams) => {
-  if (overId.startsWith("stage::")) return;
+  if (overId) return;
 
   const overDealId = Number(overId);
   const activeIndex = srcDeals.findIndex((d) => d.id === activeDealId);
@@ -378,7 +377,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
           })}
         </div>
 
-        <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
+        <DragOverlay>
           {activeDeal && (
             <div className="w-74 opacity-95">
               <DealCard

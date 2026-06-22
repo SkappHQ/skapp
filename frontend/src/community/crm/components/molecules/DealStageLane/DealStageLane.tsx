@@ -26,8 +26,8 @@ export interface DealStageLaneProps {
   hasMore?: boolean;
   isLoadingMore?: boolean;
   isOver?: boolean;
-  onDealClick?: (dealId: string) => void;
-  onAddDeal?: (stageId: string) => void;
+  onDealClick: (dealId: string) => void;
+  onAddDeal: (stageId: string) => void;
   onLoadMore?: (stageId: string) => void;
 }
 
@@ -45,7 +45,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
   const translateText = useTranslator("crmModule", "deals", "kanban");
 
   const { setNodeRef } = useDroppable({
-    id: `stage::${stage.id}`,
+    id: stage.id,
     data: { type: "stage", stageId: stage.id }
   });
 
@@ -73,12 +73,11 @@ const DealStageLane: FC<DealStageLaneProps> = ({
   return (
     <section
       ref={setNodeRef}
-      className={[
-        "flex h-full w-75 shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow",
+      className={`flex h-full w-75 shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow ${
         isOver
           ? "outline-primary-accent ring-2 ring-primary-background"
           : "outline-secondary-accent"
-      ].join(" ")}
+      }`}
       aria-labelledby={`crm-stage-${stage.id}`}
     >
       <div

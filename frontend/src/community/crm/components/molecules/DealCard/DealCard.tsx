@@ -72,7 +72,7 @@ const DealCard: FC<DealCardProps> = ({
 
   return (
     <div
-      className={`w-full min-h-37.5 rounded-lg bg-white px-2 py-3 flex flex-col gap-3 text-left shadow-md ${isInteractive ? "cursor-grab active:cursor-grabbing" : ""} ${className}`.trim()}
+      className={`w-full min-h-37.5 rounded-lg bg-white px-2 py-3 flex flex-col gap-3 text-left shadow-md ${isInteractive ? "cursor-grab active:cursor-grabbing" : ""} ${className}`}
       aria-label={ariaLabel}
     >
       <div className="flex items-center justify-between gap-2">
@@ -129,7 +129,7 @@ const DealCard: FC<DealCardProps> = ({
       </div>
 
       <div className="flex items-center justify-end gap-2">
-        {taskCount !== undefined && (
+        {taskCount !== null && (
           <Chip
             size="sm"
             label={String(taskCount)}

@@ -10,13 +10,11 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { DealViewEnum } from "~community/crm/enums/common";
 
-export type DealView = DealViewEnum;
-
 interface Props {
   inputValue: string;
   onSearchChange: (value: string) => void;
-  activeView: DealView;
-  onViewChange: (view: DealView) => void;
+  activeView: DealViewEnum;
+  onViewChange: (view: DealViewEnum) => void;
 }
 
 const DealsHeader: FC<Props> = ({
@@ -56,7 +54,7 @@ const DealsHeader: FC<Props> = ({
       <ViewToggle
         options={viewOptions}
         activeView={activeView}
-        onChange={(v) => onViewChange(v as DealView)}
+        onChange={(v) => onViewChange(v as DealViewEnum)}
         ariaLabel={translateText(["switchDealViewAriaLabel"])}
       />
     </div>
