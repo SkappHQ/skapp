@@ -17,9 +17,11 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.AsyncEmailSender;
+import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.PushNotificationService;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -33,6 +35,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
@@ -106,11 +109,12 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private final EmployeeDao employeeDao;
     private final AsyncEmailSender asyncEmailSender;
     private final PeopleEmailService peopleEmailService;
+    private final EncryptionDecryptionService encryptionDecryptionService;
+    private final PasswordEncoder passwordEncoder;
     private final RolesService rolesService;
     private final OrganizationConfigDao organizationConfigDao;
     private final PushNotificationService pushNotificationService;
     private final EmployeeRoleDao employeeRoleDao;
-
     private Directory directoryService;
     private volatile Long channelExpiration;
 
@@ -441,8 +445,25 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         User user = existingUser.orElseGet(User::new);
         user.setEmail(email);
         user.setIsActive(!suspended);
-        user.setLoginMethod(LoginMethod.GOOGLE);
-        User savedUser = userDao.save(user);
+
+        if (isNew) {
+            // Provision with credentials so the standard invitation email
+            // (PEOPLE_MODULE_USER_INVITATION_V1) is sent, which includes the
+            // temporary password. On first login the app detects
+            // isPasswordChangedForTheFirstTime=false and forces a password reset.
+            String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+            CommonModuleUtils.setIfExists(
+                    () -> encryptionDecryptionService.encrypt(tempPassword),
+                    user::setTempPassword);
+            CommonModuleUtils.setIfExists(
+                    () -> passwordEncoder.encode(tempPassword),
+                    user::setPassword);
+            user.setLoginMethod(LoginMethod.CREDENTIALS);
+            user.setIsPasswordChangedForTheFirstTime(false);
+        }
+        // Existing users: never overwrite loginMethod, password, or tempPassword.
+
+        User savedUser = userDao.saveAndFlush(user);
 
         Employee employee = employeeDao.findEmployeeByEmail(email);
         if (employee == null) {
@@ -453,10 +474,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         employee.setLastName(lastName);
         employee.setAccountStatus(suspended ? AccountStatus.DEACTIVATED : AccountStatus.ACTIVE);
         Employee savedEmployee = employeeDao.save(employee);
-
-        // Only assign roles to brand-new employees — never overwrite existing role assignments
-        if (isNew && savedEmployee.getEmployeeRole() == null) {
+        if (!employeeRoleDao.existsById(savedEmployee.getEmployeeId())) {
             rolesService.saveEmployeeRoles(savedEmployee);
+        } else {
+            log.debug("Skipping role creation for {} — role record already exists.", email);
         }
 
         return isNew;
