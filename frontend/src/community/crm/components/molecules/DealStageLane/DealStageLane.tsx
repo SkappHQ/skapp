@@ -74,7 +74,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
     <section
       ref={setNodeRef}
       className={[
-        "flex h-full w-[320px] shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow",
+        "flex h-full w-75 shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow",
         isOver
           ? "outline-primary-accent ring-2 ring-primary-background"
           : "outline-secondary-accent"
@@ -103,11 +103,9 @@ const DealStageLane: FC<DealStageLaneProps> = ({
 
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-3 pb-3">
         {isLoading ? (
-          <>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <DealCardSkeleton key={index} />
-            ))}
-          </>
+          Array.from({ length: 3 }).map((_, index) => (
+            <DealCardSkeleton key={index} />
+          ))
         ) : (
           <>
             <SortableContext
@@ -137,13 +135,10 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               <>
                 {hasMore && (
                   <>
-                    {isLoadingMore && (
-                      <>
-                        {Array.from({ length: 2 }).map((_, index) => (
-                          <DealCardSkeleton key={index} />
-                        ))}
-                      </>
-                    )}
+                    {isLoadingMore &&
+                      Array.from({ length: 2 }).map((_, index) => (
+                        <DealCardSkeleton key={index} />
+                      ))}
                     <div ref={sentinelRef} className="h-1 w-full" />
                   </>
                 )}
