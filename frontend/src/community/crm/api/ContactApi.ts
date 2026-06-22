@@ -171,7 +171,7 @@ const fetchOwnerLookup = async (
 export const useGetOwnerLookup = (
   searchKeyword: string,
   size: number,
-  enabled: boolean = true
+  enabled: boolean
 ) => {
   return useQuery({
     queryKey: contactQueryKeys.OWNERS_LOOKUP(searchKeyword),
