@@ -21,9 +21,7 @@ import {
   CrmContactCreatePayload,
   CrmContactDetailResponseType,
   CrmContactLookupResponseType,
-  CrmContactMetricsResponseType,
-  CrmContactMetricsType,
-  CrmOwner,
+  CrmContactMetricsResponseType, CrmOwner,
   CrmOwnersResponseType,
   EditContactPayload
 } from "~community/crm/types/CommonTypes";
