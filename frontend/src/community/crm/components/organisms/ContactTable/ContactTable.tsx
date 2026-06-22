@@ -51,9 +51,9 @@ export const ContactTable: FC = () => {
 
   const contacts = data?.pages.flatMap((page) => page.items);
 
-  const { setSelectedContact, setIsCrmSidePanelOpen } = useCrmStore(
+  const { setSelectedContactId, setIsCrmSidePanelOpen } = useCrmStore(
     (store) => ({
-      setSelectedContact: store.setSelectedContact,
+      setSelectedContactId: store.setSelectedContactId,
       setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
     })
   );
@@ -247,7 +247,7 @@ export const ContactTable: FC = () => {
           ])
         }}
         onRowClick={(row) => {
-          setSelectedContact(row);
+          setSelectedContactId(row.id);
           setIsCrmSidePanelOpen(true);
         }}
       />
