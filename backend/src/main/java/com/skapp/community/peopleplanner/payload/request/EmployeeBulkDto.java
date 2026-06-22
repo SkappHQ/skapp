@@ -47,7 +47,7 @@ public class EmployeeBulkDto {
 
 	private String phone;
 
-	private String address;
+	private String addressLine1;
 
 	private String addressLine2;
 

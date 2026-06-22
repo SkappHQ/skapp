@@ -6,6 +6,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.FractionalIndexUtil;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
@@ -14,6 +15,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
@@ -32,6 +34,7 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -71,6 +74,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	private final UserService userService;
 
+	private final CrmTaskDao crmTaskDao;
+
+	private final MessageUtil messageUtil;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto checkDealNameExists(String name) {
@@ -104,6 +111,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+		validateDealStageAccess(stage);
 
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
@@ -172,7 +180,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		List<Long> uniqueStageIds = new ArrayList<>(new LinkedHashSet<>(requestDto.getStageIds()));
 
-		List<CrmDealStage> stages = crmDealStageDao.findAllByIdInAndIsDeletedFalse(uniqueStageIds);
+		List<CrmDealStage> stages = filterVisibleDealStages(
+				crmDealStageDao.findAllByIdInAndIsDeletedFalse(uniqueStageIds));
 		if (stages.size() != uniqueStageIds.size()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
 		}
@@ -215,8 +224,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getBoardInitData() {
 		log.info("getBoardInitData: execution started");
 
-		List<CrmBoardStageResponseDto> stages = crmMapper
-			.crmDealStagesToCrmBoardStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmDealStage> visibleStages = filterVisibleDealStages(
+				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
 		List<CrmBoardContactResponseDto> contacts = crmMapper
 			.crmContactsToCrmBoardContactResponseDtos(crmContactDao.findAllContactsForBoardInit());
@@ -252,7 +262,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
 		}
 
@@ -276,7 +286,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
 		}
 
@@ -290,6 +300,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDealStage newStage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getNewStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+		validateDealStageAccess(newStage);
 
 		if (deal.getStage().getId().equals(newStage.getId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ALREADY_IN_STAGE);
@@ -342,6 +353,33 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);
+	}
+
+	protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {
+		return stages;
+	}
+
+	protected void validateDealStageAccess(CrmDealStage stage) {
+		// This method is a placeholder for enterprise deal stage access validation
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteDeal(Long id) {
+		log.info("deleteDeal: execution started");
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		List<CrmTask> linkedTasks = crmTaskDao.findByDeal_IdAndIsDeletedFalse(id);
+		linkedTasks.forEach(task -> task.setIsDeleted(true));
+		crmTaskDao.saveAll(linkedTasks);
+
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		log.info("deleteDeal: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_DEAL_DELETED), false);
 	}
 
 }

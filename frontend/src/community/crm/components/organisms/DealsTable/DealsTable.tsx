@@ -9,14 +9,38 @@ import {
 import { FC, ReactNode, useMemo } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
-
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { concatStrings } from "~community/common/utils/commonUtil";
-import { formatValue } from "~community/crm/utils/crmUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { CrmDealListItem } from "~community/crm/types/CommonTypes";
+import { formatValue } from "~community/crm/utils/crmUtil";
+
 import { useContainerWidth } from "./utils/dealsTableUtils";
+
+interface OwnerCellProps {
+  owner: CrmDealListItem["owner"];
+}
+
+const OwnerCell: FC<OwnerCellProps> = ({ owner }) => {
+  const fullName = concatStrings([owner.firstName, owner.lastName ?? ""]);
+  const imageUrl = useGetImageUrl(owner.authPic ?? "");
+
+  return (
+    <AvatarChip
+      avatarProps={{
+        id: String(owner.employeeId),
+        firstName: owner.firstName,
+        lastName: owner.lastName ?? "",
+        src: imageUrl ?? "",
+        size: "sm"
+      }}
+      label={fullName}
+      backgroundColor="bg-secondary-background"
+    />
+  );
+};
 
 interface DealRow extends BaseRowData {
   id: string;
@@ -127,16 +151,17 @@ const DealsTable: FC<Props> = ({
     (): DealRow[] =>
       allDeals.map((deal: CrmDealListItem) => {
         const formattedAmount = formatValue(deal.amount);
-        const ownerFullName = concatStrings([deal.owner?.firstName, deal.owner?.lastName ?? ""]);
 
         return {
           id: String(deal.id),
           dealName: (
             <div className="flex items-center gap-2">
-              <div
-                className="flex items-center justify-center size-6 rounded-full shrink-0 bg-teal-500"
-              >
-                <HandshakeIcon width="14" height="14" fill="var(--color-white)" />
+              <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
+                <HandshakeIcon
+                  width="14"
+                  height="14"
+                  fill="var(--color-white)"
+                />
               </div>
               <span className="body2">#{deal.id}</span>
               <span className="body2">{deal.name}</span>
@@ -158,19 +183,7 @@ const DealsTable: FC<Props> = ({
           ),
           companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
           contactName: <span className="body2">{deal.contactName ?? "-"}</span>,
-          dealOwner: (
-            <AvatarChip
-              avatarProps={{
-                id: String(deal.owner.employeeId),
-                firstName: deal.owner.firstName,
-                lastName: deal.owner.lastName ?? "",
-                src: deal?.owner?.authPic ?? "",
-                size: "sm"
-              }}
-              label={ownerFullName}
-              backgroundColor="bg-secondary-background"
-            />
-          )
+          dealOwner: <OwnerCell owner={deal.owner} />
         };
       }),
     [allDeals]
@@ -190,17 +203,16 @@ const DealsTable: FC<Props> = ({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="h-150 rounded-lg shadow-lg"
-    >
+    <div ref={containerRef} className="h-150 rounded-lg shadow-lg">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}
         hasMore={hasNextPage}
         onLoadMore={onLoadMore}
         emptyStateTitle={
-          searchKeyword.trim() ? noSearchResultsTitle : translateText(["noDealsTitle"])
+          searchKeyword.trim()
+            ? noSearchResultsTitle
+            : translateText(["noDealsTitle"])
         }
         emptyStateDescription={
           searchKeyword.trim()

@@ -14,7 +14,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
-import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.AsyncEmailServiceImpl;
@@ -28,6 +27,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.community.common.util.event.UserCreatedEvent;
 import com.skapp.community.common.util.event.UserDeactivatedEvent;
+import com.skapp.community.common.util.event.UserReactivatedEvent;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
@@ -58,10 +58,10 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeProgressionsDto
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
-import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
-import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
+import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
@@ -190,8 +190,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private final JsonMapper mapper;
 
-	private final EncryptionDecryptionService encryptionDecryptionService;
-
 	private final BulkContextService bulkContextService;
 
 	private final AsyncEmailServiceImpl asyncEmailServiceImpl;
@@ -231,7 +229,8 @@ public class PeopleServiceImpl implements PeopleService {
 		employeeValidationService.validateCreateEmployeeRequestEmploymentDetails(requestDto.getEmployment(), user);
 		rolesService.validateRoles(requestDto.getSystemPermissions(), user);
 
-		employee.setUser(createUserEntity(user, requestDto));
+		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+		employee.setUser(createUserEntity(user, requestDto, tempPassword));
 		user.setEmployee(createEmployeeEntity(employee, requestDto));
 
 		userDao.save(user);
@@ -241,13 +240,13 @@ public class PeopleServiceImpl implements PeopleService {
 		if (!isGuestConversion) {
 			// Skip for guest conversion: email is sent via createUserEntity ->
 			// resendInvitationEmail
-			peopleEmailService.sendUserInvitationEmail(user);
+			peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 			updateSubscriptionQuantity(1L, true, false);
 		}
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
 
-		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
+		return new ResponseEntityDto(false, processCreateEmployeeResponse(user, tempPassword));
 	}
 
 	@Override
@@ -275,8 +274,9 @@ public class PeopleServiceImpl implements PeopleService {
 
 		employeeValidationService.validateCreateEmployeeRequestRequiredFields(createEmployeeRequestDto, user);
 
+		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		user.setEmployee(createEmployeeEntity(employee, createEmployeeRequestDto));
-		employee.setUser(createUserEntity(user, createEmployeeRequestDto));
+		employee.setUser(createUserEntity(user, createEmployeeRequestDto, tempPassword));
 
 		userDao.save(user);
 
@@ -285,13 +285,13 @@ public class PeopleServiceImpl implements PeopleService {
 		if (!isGuestConversion) {
 			// Skip for guest conversion: email is sent via createUserEntity ->
 			// resendInvitationEmail
-			peopleEmailService.sendUserInvitationEmail(user);
+			peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 			updateSubscriptionQuantity(1L, true, false);
 		}
 		invalidateUserCache();
 		invalidateUserAuthPicCache();
 
-		return new ResponseEntityDto(false, processCreateEmployeeResponse(user));
+		return new ResponseEntityDto(false, processCreateEmployeeResponse(user, tempPassword));
 	}
 
 	@Override
@@ -473,6 +473,10 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto) {
+		return createUserEntity(user, requestDto, null);
+	}
+
+	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto, String tempPassword) {
 		if (requestDto.getEmployment() != null && requestDto.getEmployment().getEmploymentDetails() != null) {
 			String email = requestDto.getEmployment().getEmploymentDetails().getEmail();
 			if (email != null && !email.isEmpty()) {
@@ -499,11 +503,10 @@ public class PeopleServiceImpl implements PeopleService {
 
 		LoginMethod loginMethod = userDao.findById(1L).map(User::getLoginMethod).orElse(LoginMethod.CREDENTIALS);
 
-		if (loginMethod == LoginMethod.CREDENTIALS) {
-			String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-			CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword),
-					user::setTempPassword);
-			CommonModuleUtils.setIfExists(() -> passwordEncoder.encode(tempPassword), user::setPassword);
+		if (loginMethod == LoginMethod.CREDENTIALS && tempPassword != null) {
+			String encodedTempPassword = passwordEncoder.encode(tempPassword);
+			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setTempPassword);
+			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
 		}
 		else if (loginMethod == LoginMethod.GOOGLE) {
@@ -524,10 +527,11 @@ public class PeopleServiceImpl implements PeopleService {
 				user::setEmail);
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-		CommonModuleUtils.setIfExists(() -> encryptionDecryptionService.encrypt(tempPassword), user::setTempPassword);
-		CommonModuleUtils.setIfExists(() -> passwordEncoder.encode(tempPassword), user::setPassword);
+		String encodedTempPassword = passwordEncoder.encode(tempPassword);
+		CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setTempPassword);
+		CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setPassword);
 
-		peopleEmailService.sendUserInvitationEmail(user);
+		peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 
 	}
 
@@ -1068,14 +1072,14 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 	}
 
-	private ResponseEntityDto processCreateEmployeeResponse(User user) {
+	private ResponseEntityDto processCreateEmployeeResponse(User user, String tempPassword) {
 		Employee employee = user.getEmployee();
 		CreateEmployeeResponseDto responseDto = peopleMapper.employeeToCreateEmployeeResponseDto(employee);
 
 		if (user.getLoginMethod() == LoginMethod.CREDENTIALS) {
 			EmployeeCredentialsResponseDto credentials = new EmployeeCredentialsResponseDto();
 			credentials.setEmail(employee.getUser() != null ? employee.getUser().getEmail() : null);
-			credentials.setTempPassword(encryptionDecryptionService.decrypt(user.getTempPassword()));
+			credentials.setTempPassword(tempPassword);
 			responseDto.setEmployeeCredentials(credentials);
 		}
 
@@ -1179,6 +1183,7 @@ public class PeopleServiceImpl implements PeopleService {
 		waitForTaskCompletion(tasks, executorService);
 
 		asyncEmailServiceImpl.sendEmailsInBackground(results);
+
 		List<EmployeeBulkDto> overflowedEmployeeBulkDtoList = getOverFlowedEmployeeBulkDtoList(employeeBulkDtoList,
 				validEmployeeBulkDtoList);
 
@@ -1709,25 +1714,9 @@ public class PeopleServiceImpl implements PeopleService {
 
 	public void setBulkEmployeeProgression(EmployeeBulkDto employeeBulkDto, Employee employee) {
 		if (employeeBulkDto.getEmployeeProgression() != null) {
-			EmployeeProgression employeeProgression = peopleMapper
-				.employeeProgressionDtoToEmployeeProgression(employeeBulkDto.getEmployeeProgression());
 			if (employeeBulkDto.getEmployeeProgression().getEmploymentType() != null) {
 				employee.setEmploymentType(employeeBulkDto.getEmployeeProgression().getEmploymentType());
 			}
-
-			if (employeeBulkDto.getEmployeeProgression().getJobFamilyId() != null) {
-				employeeProgression.setJobFamilyId(employeeBulkDto.getEmployeeProgression().getJobFamilyId());
-			}
-
-			if (employeeBulkDto.getEmployeeProgression().getJobTitleId() != null) {
-				employeeProgression.setJobTitleId(employeeBulkDto.getEmployeeProgression().getJobTitleId());
-			}
-
-			employeeProgression.setEmployee(employee);
-
-			if (employeeBulkDto.getEmployeeProgression().getJobTitleId() != null
-					&& employeeBulkDto.getEmployeeProgression().getJobFamilyId() != null)
-				employee.setEmployeeProgressions(List.of(employeeProgression));
 		}
 	}
 
@@ -2049,7 +2038,7 @@ public class PeopleServiceImpl implements PeopleService {
 		return successCount;
 	}
 
-	private void createNewEmployeeFromBulk(EmployeeBulkDto employeeBulkDto) {
+	private void createNewEmployeeFromBulk(EmployeeBulkDto employeeBulkDto, String tempPassword) {
 		List<String> validationErrors = validateEmployeeBulkDto(employeeBulkDto);
 		if (!validationErrors.isEmpty()) {
 			throw new ValidationException(
@@ -2076,12 +2065,10 @@ public class PeopleServiceImpl implements PeopleService {
 			user.setLoginMethod(LoginMethod.GOOGLE);
 		}
 		else {
-			String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+			String encodedTempPassword = passwordEncoder.encode(tempPassword);
 
-			user.setTempPassword(encryptionDecryptionService.encrypt(tempPassword));
-			user.setPassword(passwordEncoder.encode(tempPassword));
-			user.setIsPasswordChangedForTheFirstTime(false);
-
+			user.setTempPassword(encodedTempPassword);
+			user.setPassword(encodedTempPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
 			user.setLoginMethod(LoginMethod.CREDENTIALS);
 		}
@@ -2143,17 +2130,20 @@ public class PeopleServiceImpl implements PeopleService {
 			List<EmployeeProgression> employeeProgressions = new ArrayList<>();
 			EmployeeProgression employeeProgression = new EmployeeProgression();
 
+			JobFamily resolvedJobFamily = null;
 			if (employeeBulkDto.getJobFamily() != null && !employeeBulkDto.getJobFamily().isEmpty()) {
-				JobFamily jobFamily = jobFamilyDao.getJobFamilyByName(employeeBulkDto.getJobFamily());
+				resolvedJobFamily = jobFamilyDao.getJobFamilyByName(employeeBulkDto.getJobFamily());
 
-				if (jobFamily != null) {
-					employee.setJobFamily(jobFamily);
-					employeeProgression.setJobFamilyId(jobFamily.getJobFamilyId());
+				if (resolvedJobFamily != null) {
+					employee.setJobFamily(resolvedJobFamily);
+					employeeProgression.setJobFamilyId(resolvedJobFamily.getJobFamilyId());
 				}
 			}
 
-			if (employeeBulkDto.getJobTitle() != null && !employeeBulkDto.getJobTitle().isEmpty()) {
-				JobTitle jobTitle = jobTitleDao.getJobTitleByName(employeeBulkDto.getJobTitle());
+			if (employeeBulkDto.getJobTitle() != null && !employeeBulkDto.getJobTitle().isEmpty()
+					&& resolvedJobFamily != null) {
+				JobTitle jobTitle = jobFamilyDao.getJobTitleByNameAndJobFamily(employeeBulkDto.getJobTitle(),
+						resolvedJobFamily.getJobFamilyId());
 
 				if (jobTitle != null) {
 					employee.setJobTitle(jobTitle);
@@ -2165,6 +2155,12 @@ public class PeopleServiceImpl implements PeopleService {
 				employeeProgression.setEmploymentType(EmploymentType.valueOf(employeeBulkDto.getEmployeeType()));
 			}
 
+			if (employeeBulkDto.getEmployeeProgression() != null
+					&& employeeBulkDto.getEmployeeProgression().getStartDate() != null) {
+				employeeProgression.setStartDate(employeeBulkDto.getEmployeeProgression().getStartDate());
+			}
+
+			employeeProgression.setIsCurrent(true);
 			employeeProgression.setEmployee(employee);
 			employeeProgressions.add(employeeProgression);
 			employee.setEmployeeProgressions(employeeProgressions);
@@ -2325,32 +2321,57 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 	}
 
-	private void validateCareerProgressionInBulk(EmployeeProgressionsDto employeeProgressionsDto, List<String> errors) {
-		if (employeeProgressionsDto != null) {
-			if (employeeProgressionsDto.getEmploymentType() != null && (employeeProgressionsDto.getJobFamilyId() == null
-					|| employeeProgressionsDto.getJobTitleId() == null)) {
-				errors.add(messageUtil
-					.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYMENT_TYPE_REQUIRES_JOB_FAMILY_AND_TITLE));
+	private void validateCareerProgressionInBulk(EmployeeBulkDto employeeBulkDto, List<String> errors) {
+		boolean hasEmploymentType = employeeBulkDto.getEmployeeType() != null
+				&& !employeeBulkDto.getEmployeeType().isBlank();
+		boolean hasJobFamily = employeeBulkDto.getJobFamily() != null && !employeeBulkDto.getJobFamily().isBlank();
+		boolean hasJobTitle = employeeBulkDto.getJobTitle() != null && !employeeBulkDto.getJobTitle().isBlank();
+		boolean hasStartDate = employeeBulkDto.getEmployeeProgression() != null
+				&& employeeBulkDto.getEmployeeProgression().getStartDate() != null;
+
+		boolean anyProvided = hasEmploymentType || hasJobFamily || hasJobTitle || hasStartDate;
+		boolean allProvided = hasEmploymentType && hasJobFamily && hasJobTitle && hasStartDate;
+
+		if (anyProvided && !allProvided) {
+			List<String> missingFields = new ArrayList<>();
+			if (!hasEmploymentType)
+				missingFields.add(PeopleConstants.FIELD_EMPLOYMENT_TYPE);
+			if (!hasJobFamily)
+				missingFields.add(PeopleConstants.FIELD_JOB_FAMILY);
+			if (!hasJobTitle)
+				missingFields.add(PeopleConstants.FIELD_JOB_TITLE);
+			if (!hasStartDate)
+				missingFields.add(PeopleConstants.FIELD_CURRENT_EMPLOYMENT_START_DATE);
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_CAREER_PROGRESSION_FIELDS_EMPTY,
+					new Object[] { String.join(", ", missingFields) }));
+			return;
+		}
+
+		if (!allProvided) {
+			return;
+		}
+
+		if (Arrays.stream(EmploymentType.values()).noneMatch(e -> e.name().equals(employeeBulkDto.getEmployeeType()))) {
+			errors
+				.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_INVALID_VALUE_FOR_EMPLOYMENT_TYPE_ENUM));
+		}
+
+		JobFamily jobFamily = jobFamilyDao.getJobFamilyByName(employeeBulkDto.getJobFamily());
+		if (jobFamily == null) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_FAMILY_NOT_FOUND));
+		}
+		else {
+			JobTitle jobTitle = jobFamilyDao.getJobTitleByNameAndJobFamily(employeeBulkDto.getJobTitle(),
+					jobFamily.getJobFamilyId());
+			if (jobTitle == null) {
+				errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_TITLE_NOT_FOUND));
 			}
-			if (employeeProgressionsDto.getJobFamilyId() != null) {
-				Optional<JobFamily> jobRole = jobFamilyDao
-					.findByJobFamilyIdAndIsActive(employeeProgressionsDto.getJobFamilyId(), true);
-				if (jobRole.isEmpty()) {
-					errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_FAMILY_NOT_FOUND));
-				}
-			}
-			if (employeeProgressionsDto.getJobTitleId() != null) {
-				Optional<JobTitle> jobLevel = jobTitleDao
-					.findByJobTitleIdAndIsActive(employeeProgressionsDto.getJobTitleId(), true);
-				if (jobLevel.isEmpty()) {
-					errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOB_TITLE_NOT_FOUND));
-				}
-			}
-			if (employeeProgressionsDto.getStartDate() != null && employeeProgressionsDto.getEndDate() != null
-					&& DateTimeUtils.isValidDateRange(employeeProgressionsDto.getStartDate(),
-							employeeProgressionsDto.getEndDate())) {
-				errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_INVALID_START_END_DATE));
-			}
+		}
+
+		EmployeeProgressionsDto employeeProgressionsDto = employeeBulkDto.getEmployeeProgression();
+		if (employeeProgressionsDto.getEndDate() != null && !DateTimeUtils
+			.isValidDateRange(employeeProgressionsDto.getStartDate(), employeeProgressionsDto.getEndDate())) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_INVALID_START_END_DATE));
 		}
 	}
 
@@ -2445,7 +2466,7 @@ public class PeopleServiceImpl implements PeopleService {
 		validateLastName(employeeBulkDto.getLastName(), errors);
 		validateUserEmail(employeeBulkDto.getWorkEmail(), errors);
 		validateUserSupervisor(employeeBulkDto.getPrimaryManager(), errors);
-		validateCareerProgressionInBulk(employeeBulkDto.getEmployeeProgression(), errors);
+		validateCareerProgressionInBulk(employeeBulkDto, errors);
 		validateStateInBulk(employeeBulkDto.getEmployeePersonalInfo().getState(), errors);
 
 		if (employeeBulkDto.getEmployeeEmergency() != null) {
@@ -2459,8 +2480,8 @@ public class PeopleServiceImpl implements PeopleService {
 			validateEmergencyContactNumberInBulk(employeeBulkDto.getEmployeeEmergency().getContactNo(), errors);
 		if (employeeBulkDto.getEmployeePersonalInfo().getNin() != null)
 			validateNIN(employeeBulkDto.getEmployeePersonalInfo().getNin(), errors);
-		if (employeeBulkDto.getAddress() != null)
-			validateAddressInBulk(employeeBulkDto.getAddress(), errors);
+		if (employeeBulkDto.getAddressLine1() != null)
+			validateAddressInBulk(employeeBulkDto.getAddressLine1(), errors);
 		if (employeeBulkDto.getAddressLine2() != null)
 			validateAddressInBulk(employeeBulkDto.getAddressLine2(), errors);
 		validateCityInBulk(employeeBulkDto.getEmployeePersonalInfo().getCity(), errors);
@@ -2502,9 +2523,12 @@ public class PeopleServiceImpl implements PeopleService {
 		return CompletableFuture.runAsync(() -> {
 			try {
 				bulkContextService.setContext(tenant);
-				saveEmployeeInTransaction(employeeBulkDto, transactionTemplate);
-				handleSuccessResponse(employeeBulkDto,
-						messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ADDED), results);
+				String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+				saveEmployeeInTransaction(employeeBulkDto, transactionTemplate, tempPassword);
+				EmployeeBulkResponseDto bulkResponseDto = createSuccessResponse(employeeBulkDto,
+						messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ADDED));
+				bulkResponseDto.setTempPassword(tempPassword);
+				results.add(bulkResponseDto);
 			}
 			catch (DataIntegrityViolationException e) {
 				handleDataIntegrityException(employeeBulkDto, e, results);
@@ -2515,11 +2539,12 @@ public class PeopleServiceImpl implements PeopleService {
 		}, executorService);
 	}
 
-	private void saveEmployeeInTransaction(EmployeeBulkDto employeeBulkDto, TransactionTemplate transactionTemplate) {
+	private void saveEmployeeInTransaction(EmployeeBulkDto employeeBulkDto, TransactionTemplate transactionTemplate,
+			String tempPassword) {
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
-				createNewEmployeeFromBulk(employeeBulkDto);
+				createNewEmployeeFromBulk(employeeBulkDto, tempPassword);
 			}
 		});
 	}
@@ -2554,11 +2579,12 @@ public class PeopleServiceImpl implements PeopleService {
 			employee.setTerminationDate(null);
 			user.setIsActive(true);
 
+			userDao.save(user);
+			applicationEventPublisher.publishEvent(new UserReactivatedEvent(this, user));
 			updateSubscriptionQuantity(1L, true, false);
 			userVersionService.upgradeUserVersion(user.getUserId(), VersionType.MAJOR);
 			invalidateUserCache();
 			invalidateUserAuthPicCache();
-			userDao.save(user);
 			log.info("updateUserStatus: execution ended - user activated");
 			return;
 		}

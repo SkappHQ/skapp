@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.timeplanner.constant.TimeConstants;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
@@ -83,8 +84,10 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		log.info("getAllAttendanceConfigs: execution started");
 		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
-		if (userService.getCurrentUserRoles().contains(Role.ATTENDANCE_ADMIN.name())) {
+		if (userService.getCurrentUserRoles().contains(AuthUtil.withRolePrefix(Role.ATTENDANCE_ADMIN))) {
+
 			AttendanceConfigRequestDto dto = getAttendanceConfigRequestDto(attendanceConfigs);
+
 			log.info("getAllAttendanceConfigs: execution ended");
 			return new ResponseEntityDto(false, dto);
 		}

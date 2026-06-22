@@ -1,4 +1,11 @@
 {
+  "common": {
+    "ownerPopupSearch": {
+      "placeholder": "None",
+      "searchPlaceholder": "Search Owner",
+      "noResults": "No results"
+    }
+  },
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",
@@ -79,6 +86,21 @@
       "editContact": "Edit contact",
       "deleteContact": "Delete contact",
       "kebabMenuAriaLabel": "Contact actions",
+      "tasks": {
+        "addTaskButton": "Add task +",
+        "addTaskButtonEmptyView": "Add task",
+        "addTaskPlaceholder": "Type a task name…",
+        "emptyTitle": "No tasks",
+        "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
+        "toggleErrorTitle": "Failed to update task",
+        "toggleErrorDescription": "Could not update the task status. Please try again.",
+        "checkTaskMarkComplete": "Mark {{name}} as complete",
+        "checkTaskMarkIncomplete": "Mark {{name}} as incomplete",
+        "openTaskDetails": "Open task details panel for {{name}}",
+        "dueDateOverdue": "Overdue",
+        "dueDateToday": "Due today",
+        "dueDateDueOn": "Due on {{date}}"
+      },
       "errors": {
         "contactNotFoundTitle": "Contact not found",
         "contactNotFoundDescription": "This contact is no longer available."
@@ -344,12 +366,88 @@
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
       "infiniteScrollLoadingMessage": "Loading more deals..."
+    },
+    "deleteDealModal": {
+      "areYouSureModalTitle": "Are you sure?",
+      "description": "Are you sure you want to delete '{{dealName}}'? This will remove all tasks linked to this deal. This action cannot be undone.",
+      "buttons": {
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "ariaLabels": {
+        "cancel": "Cancel delete deal",
+        "confirm": "Confirm delete deal"
+      }
+    },
+    "sidePanel": {
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions"
+    },
+    "addDealSidePanel": {
+      "title": "Add Deal",
+      "labels": {
+        "dealName": "Deal Name",
+        "stage": "Stage",
+        "description": "Description",
+        "value": "Value",
+        "priority": "Priority",
+        "ownedBy": "Owned by",
+        "contactName": "Contact"
+      },
+      "placeholders": {
+        "dealName": "Enter deal name",
+        "stage": "Select stage",
+        "description": "Enter description",
+        "amount": "Enter amount",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "none": "None",
+        "noResults": "No results"
+      },
+      "buttons": {
+        "addDeal": "Add Deal"
+      },
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "ariaLabels": {
+        "closePanel": "Close add deal panel",
+        "addDeal": "Add Deal",
+        "dealName": "Deal Name",
+        "stage": "Stage",
+        "description": "Description",
+        "amount": "Amount",
+        "priority": "Priority",
+        "owner": "Deal Owner",
+        "contact": "Contact"
+      },
+      "validations": {
+        "dealNameRequired": "Deal name is required",
+        "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
+        "dealNameMaxLength": "Deal name must be 255 characters or less",
+        "descriptionMaxLength": "Description must be 2000 characters or less",
+        "stageRequired": "Stage is required",
+        "stageLoadError": "Failed to load stages. Please try again.",
+        "contactRequired": "Contact is required",
+        "ownerRequired": "Owner is required",
+        "priorityRequired": "Priority is required",
+        "amountInvalid": "Please enter a valid positive amount"
+      },
+      "toastMessages": {
+        "successTitle": "Deal added successfully",
+        "successDescription": "The new deal has been created",
+        "errorTitle": "Failed to add deal",
+        "errorDescription": "Please try again or contact support"
+      }
     }
   },
   "tasks": {
     "pageHead": "Tasks | Skapp",
     "title": "Tasks",
     "addTaskBtn": "Add Task",
+    "openTaskDetails": "Open task details panel for {{name}}",
     "addTaskModal": {
       "title": "Add task",
       "labels": {
@@ -396,6 +494,8 @@
         "deal": "Deal",
         "taskOwner": "Task owner",
         "removeOwner": "Remove task owner",
+        "clearContact": "Clear selected contact",
+        "clearDeal": "Clear selected deal",
         "notes": "Notes",
         "save": "Save task",
         "cancel": "Cancel add task"
@@ -406,11 +506,16 @@
       "validations": {
         "type": "Please select a task type.",
         "name": "Task subject is required",
-        "nameLength": "Task name must be less than 50 characters",
-        "notesLength": "Notes must be less than 255 characters",
+        "nameLength": "Task name must be less than 255 characters",
+        "notesLength": "Notes must be less than 1000 characters",
         "dueDate": "Please select a valid due date.",
         "dueDatePast": "Due date cannot be in the past.",
         "owner": "Please select a task owner."
+      },
+      "emptyStates": {
+        "noContacts": "No contacts found",
+        "noDeals": "No deals found",
+        "noOwners": "No task owners found"
       }
     },
     "tabs": {
@@ -420,7 +525,7 @@
     },
     "table": {
       "clearButtonAriaLabel": "Clear search",
-      "search": "Search task",
+      "search": "Search tasks",
       "infiniteScrollLoadingMessage": "Loading tasks...",
       "emptyDataState": {
         "title": "No tasks",
@@ -429,6 +534,16 @@
       "emptySearchState": {
         "title": "No results found.",
         "description": "We couldn't find any matches for your search. Please try using a different term."
+      },
+      "errorState": {
+        "title": "Something went wrong",
+        "description": "Failed to load tasks. Please try again."
+      },
+      "groupLabels": {
+        "overdue": "Overdue",
+        "dueToday": "Today",
+        "dueTomorrow": "Tomorrow",
+        "upcoming": "Upcoming"
       }
     }
   }

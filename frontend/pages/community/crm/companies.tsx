@@ -1,9 +1,9 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
@@ -18,13 +18,15 @@ const Companies: NextPage = () => {
     setCompanyModalType,
     isCrmSidePanelOpen,
     setIsCrmSidePanelOpen,
-    setSelectedCompany
+    setSelectedCompany,
+    selectedCompany
   } = useCrmStore((store) => ({
     setIsCompanyModalOpen: store.setIsCompanyModalOpen,
     setCompanyModalType: store.setCompanyModalType,
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedCompany: store.setSelectedCompany
+    setSelectedCompany: store.setSelectedCompany,
+    selectedCompany: store.selectedCompany
   }));
 
   const handleCloseSidePanel = () => {
@@ -44,13 +46,16 @@ const Companies: NextPage = () => {
       primaryButtonText={translateText(["addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
-        <CompanySidePanel
-          isOpen={isCrmSidePanelOpen}
-          onClose={handleCloseSidePanel}
-        />
+        {selectedCompany && (
+          <SidePanelWrapper>
+            <CompanySidePanel
+              isOpen={isCrmSidePanelOpen}
+              onClose={handleCloseSidePanel}
+            />
+          </SidePanelWrapper>
+        )}
         <CompanyModalController />
         <CompanyTable />
       </>

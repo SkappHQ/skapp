@@ -1,24 +1,33 @@
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { SALES_REP_RESTRICTED_TASK_TABS } from "~community/crm/constants/taskConstants";
+import { CrmTaskTabEnum } from "~community/crm/enums/common";
 import { CrmTaskTab } from "~community/crm/types/TaskTabTypes";
 
 export const useGetTasksTabs = (): CrmTaskTab[] => {
   const translateText = useTranslator("crmModule", "tasks", "tabs");
+  const { isCrmSalesManager } = useSessionData();
 
-  return [
+  const allTabs: CrmTaskTab[] = [
     {
-      id: "my-tasks",
-      label: translateText(["myTasks"]),
-      component: <></>
+      id: CrmTaskTabEnum.MY_TASKS,
+      label: translateText(["myTasks"])
     },
     {
-      id: "team-tasks",
-      label: translateText(["teamTasks"]),
-      component: <></>
+      id: CrmTaskTabEnum.TEAM_TASKS,
+      label: translateText(["teamTasks"])
     },
     {
-      id: "completed-tasks",
-      label: translateText(["completedTasks"]),
-      component: <></>
+      id: CrmTaskTabEnum.COMPLETED_TASKS,
+      label: translateText(["completedTasks"])
     }
   ];
+
+  if (!(isCrmSalesManager ?? false)) {
+    return allTabs.filter(
+      (tab) => !SALES_REP_RESTRICTED_TASK_TABS.includes(tab.id)
+    );
+  }
+
+  return allTabs;
 };

@@ -9,12 +9,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CrmTaskRepository {
 
 	List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds);
 
 	List<CrmTask> findTasks(Long ownerId, CrmTaskFilterDto filterDto);
+
+	Optional<CrmTask> findByIdWithAssociations(Long id);
 
 	List<CrmTask> findByContactIdWithAssociations(Long contactId);
 

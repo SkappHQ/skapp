@@ -6,6 +6,6 @@ export const formatMonetaryValue = (value: NumericValue) => {
 };
 
 export const extractDomainFromEmail = (email: string): string => {
-  const parts = email.trim().split('@');
+  const parts = email.trim().split("@");
   return parts.length === 2 ? parts[1].toLowerCase() : "";
 };
