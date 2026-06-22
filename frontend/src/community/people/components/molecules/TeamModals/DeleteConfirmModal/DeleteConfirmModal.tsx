@@ -57,7 +57,7 @@ const DeleteConfirmModal = ({ hasTransferableMembers }: Props) => {
     const transferMembers: never[] = [];
 
     const data = {
-      teamId: currentDeletingTeam?.teamId.toString(),
+      teamId: currentDeletingTeam!.teamId.toString(),
       transferMembers
     };
 
@@ -66,7 +66,13 @@ const DeleteConfirmModal = ({ hasTransferableMembers }: Props) => {
   };
   return (
     <Box>
-      <Typography>{translateText(["confirmDeleteModalDes"])}</Typography>
+      <Typography>
+        {translateText([
+          hasTransferableMembers
+            ? "confirmDeleteModalDes"
+            : "confirmDeleteModalDesNoReassign"
+        ])}
+      </Typography>
       <Box>
         <div className="flex flex-row gap-3 mt-4 justify-end">
           {hasTransferableMembers && (
