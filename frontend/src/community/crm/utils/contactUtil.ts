@@ -47,10 +47,9 @@ export const mapContactToMetricItems = (
   const overdueChip =
     contact.overdueTasksCount > 0
       ? {
-          label: translateText(["metrics", "overdueChipLabel"]).replace(
-            "{{count}}",
-            String(contact.overdueTasksCount)
-          ),
+          label: translateText(["metrics", "overdueChipLabel"], {
+            count: contact.overdueTasksCount
+          }),
           variant: CrmMetricLabelThemeEnum.RED
         }
       : undefined;
