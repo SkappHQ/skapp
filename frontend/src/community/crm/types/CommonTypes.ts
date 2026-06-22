@@ -128,6 +128,12 @@ export interface CrmOwnersResponseType {
   totalPages: number;
 }
 
+export interface CrmContactLookupResponseType {
+  items: CrmContactLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
 export interface CrmCompanyDomainSearchResponseType {
   companies: CrmCompanyType[];
 }
@@ -264,6 +270,16 @@ export interface CrmDealFilterParams {
   searchKeyword?: string;
   stageId?: number;
   priority?: CrmPriorityEnum;
+}
+
+export interface CrmDealAddFormTypes {
+  name: string;
+  stageId: string;
+  contactId: string;
+  ownerId: string;
+  priority: CrmPriorityEnum;
+  amount: string;
+  description: string;
 }
 
 export interface CrmCreateDealPayload {
