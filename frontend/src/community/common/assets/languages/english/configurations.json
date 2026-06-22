@@ -77,7 +77,6 @@
     "managerRoleLabel": "Manager",
     "salesManagerRoleLabel": "Sales Manager",
     "senderRoleLabel": "Sender",
-    "salesRepresentativeRoleLabel": "Sales Representative",
     "teamAndOwn": "(Team & own)",
     "own": "(Own)",
     "viewDashboard": "View Dashboard",
@@ -87,11 +86,7 @@
     "manageCompanies": "Manage Companies",
     "viewAndCreateDeals": "View & Create Deals",
     "manageDeals": "Manage Deals",
-    "createAndManageTasks": "Create Tasks & Manage Tasks",
-    "viewContactsAndCompanies": "View Contacts & Companies",
-    "manageContactsAndCompanies": "Manage Contacts & Companies",
-    "manageTasks": "Manage Tasks",
-    "viewReports": "View Reports"
+    "createAndManageTasks": "Create & Manage Tasks"
   },
   "times": {
     "pageHead": "Time Configurations | Skapp",
