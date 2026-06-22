@@ -70,8 +70,7 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
       module: moduleType,
       isAdmin: values.isAdmin,
       isManager:
-        moduleType === Modules.ESIGN ? values.isSender : values.isManager,
-      ...(moduleType === Modules.CRM && { isEmployee: values.isEmployee })
+        moduleType === Modules.ESIGN ? values.isSender : values.isManager
     };
 
     updateUserRoleRestrictions(payload);
@@ -86,8 +85,7 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
       isSender:
         initialData !== undefined && moduleType === Modules.ESIGN
           ? initialData?.isManager
-          : false,
-      isEmployee: initialData !== undefined ? initialData?.isEmployee : false
+          : false
     },
     enableReinitialize: true,
     onSubmit: handleSubmit
@@ -105,7 +103,7 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
       case Modules.PM:
         return ["isAdmin"];
       case Modules.CRM:
-        return ["isAdmin", "isManager", "isEmployee"];
+        return ["isAdmin", "isManager"];
       default:
         return [];
     }
@@ -149,14 +147,6 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
                 name="isManager"
                 checked={values.isManager}
                 onChange={() => setFieldValue("isManager", !values.isManager)}
-              />
-            )}
-            {restrictableRoles.includes("isEmployee") && (
-              <Checkbox
-                label={translateText(["salesRepresentativeRoleLabel"])}
-                name="isEmployee"
-                checked={values.isEmployee}
-                onChange={() => setFieldValue("isEmployee", !values.isEmployee)}
               />
             )}
             {restrictableRoles.includes("isSender") && (
