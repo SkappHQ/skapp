@@ -28,16 +28,14 @@ const TaskRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const [optimisticCompleted, setOptimisticCompleted] = useState(
-    task.isCompleted
-  );
+  const [taskCompleted, setTaskCompleted] = useState(task.isCompleted);
 
   useEffect(() => {
-    setOptimisticCompleted(task.isCompleted);
+    setTaskCompleted(task.isCompleted);
   }, [task.isCompleted]);
 
   const handleUpdateCompletionError = () => {
-    setOptimisticCompleted(task.isCompleted);
+    setTaskCompleted(task.isCompleted);
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -52,11 +50,11 @@ const TaskRow: FC<Props> = ({
   );
 
   const handleToggleChange = (checked: boolean) => {
-    setOptimisticCompleted(checked);
+    setTaskCompleted(checked);
     updateCompletion({ id: task.id, isCompleted: checked });
   };
 
-  const applyCompletedStyle = optimisticCompleted && isCheckTaskVisible;
+  const applyCompletedStyle = taskCompleted && isCheckTaskVisible;
 
   return (
     <div
@@ -73,7 +71,7 @@ const TaskRow: FC<Props> = ({
         <TaskRowCheckbox
           task={task}
           handleToggleChange={handleToggleChange}
-          isOptimisticCompleted={optimisticCompleted}
+          isTaskCompleted={taskCompleted}
         />
       )}
 
