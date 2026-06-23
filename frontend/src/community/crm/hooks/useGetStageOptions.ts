@@ -18,9 +18,11 @@ const useGetStageOptions = () => {
     stages?.find((s) => s.id === id);
 
   const getStageByName = (name: string): string => {
-    const isDefaultStage = DEFAULT_STAGE_NAME_MAP[name];
+    const mappedLabel = DEFAULT_STAGE_NAME_MAP[name];
 
-    return isDefaultStage ? translateText([name]) : name;
+    if (!mappedLabel) return name;
+
+    return translateText([name]) || mappedLabel;
   };
 
   const options = useMemo(
