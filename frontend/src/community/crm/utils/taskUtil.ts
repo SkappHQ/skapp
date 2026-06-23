@@ -14,7 +14,10 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
-import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+import {
+  CrmTaskDetailType,
+  TaskRowResponseType
+} from "~community/crm/types/CommonTypes";
 
 import { CrmTaskTabEnum } from "../enums/common";
 import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
@@ -132,4 +135,19 @@ export const getTaskGroups = (
       ? tasks.filter((task) => task.owner.employeeId === userId)
       : tasks;
   return groupTasksByDueDate(filteredTasks);
+};
+
+export const mapTasktoTaskRowResponse: (
+  task: CrmTaskDetailType
+) => TaskRowResponseType = (task) => {
+  return {
+    id: task.id,
+    name: task.name,
+    type: task.typeName,
+    priority: task.priority,
+    isCompleted: task.isCompleted,
+    dueAt: task.dueAt,
+    owner: task.owner,
+    contact: task.contact
+  };
 };
