@@ -146,18 +146,18 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		CrmValidations.validateDealStageReorderRequest(changedStages);
 
-		List<CrmDealStage> existingStages = filterVisibleDealStages(
+		List<CrmDealStage> existing = filterVisibleDealStages(
 				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 
-		existingStages = existingStages.stream()
+		existing = existing.stream()
 			.filter(stage -> !CrmConstants.TERMINAL_STAGES.contains(stage.getStageType()))
 			.toList();
 
-		if (existingStages.size() != changedStages.size()) {
+		if (existing.size() != changedStages.size()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INVALID_REQUEST);
 		}
 
-		Map<Long, CrmDealStage> exisitingStagesMap = existingStages.stream()
+		Map<Long, CrmDealStage> exisitingStagesMap = existing.stream()
 			.collect(Collectors.toMap(CrmDealStage::getId, Function.identity()));
 
 		changedStages.forEach(newStage -> {
@@ -170,14 +170,14 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			stage.setOrderIndex(newStage.getOrderIndex());
 		});
 
-		ensureFirstStageIsInitial(existingStages);
-		crmDealStageDao.saveAll(existingStages);
+		ensureFirstStageIsInitial(existing);
+		crmDealStageDao.saveAll(existing);
 
-		existingStages.sort(Comparator.comparing(CrmDealStage::getOrderIndex));
+		existing.sort(Comparator.comparing(CrmDealStage::getOrderIndex));
 
 		log.info("reorderDealStages: execution ended");
 
-		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existingStages));
+		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existing));
 	}
 
 	private void ensureFirstStageIsInitial(List<CrmDealStage> reorderedStages) {
