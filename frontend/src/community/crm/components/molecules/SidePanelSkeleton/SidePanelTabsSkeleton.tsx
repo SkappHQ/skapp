@@ -6,6 +6,12 @@ interface Props {
   tabCount: number;
 }
 
+const getTabRoundedClass = (i: number, tabCount: number): string => {
+  if (i === 0) return "rounded-tl-lg";
+  if (i === tabCount - 1) return "rounded-tr-lg";
+  return "";
+};
+
 const SidePanelTabsSkeleton: FC<Props> = ({ tabCount }) => (
   <div className="flex flex-col gap-3 w-full" aria-hidden="true">
     <div className="flex flex-col">
@@ -13,13 +19,7 @@ const SidePanelTabsSkeleton: FC<Props> = ({ tabCount }) => (
         {Array.from({ length: tabCount }).map((_, i) => (
           <div
             key={`tab-skeleton-${i}`}
-            className={`px-5 py-2 border-b-2 ${
-              i === 0
-                ? "rounded-tl-lg"
-                : i === tabCount - 1
-                  ? "rounded-tr-lg"
-                  : ""
-            } ${
+            className={`px-5 py-2 border-b-2 ${getTabRoundedClass(i, tabCount)} ${
               i === 0
                 ? "border-primary-text bg-primary-background"
                 : "border-transparent bg-secondary-background"
