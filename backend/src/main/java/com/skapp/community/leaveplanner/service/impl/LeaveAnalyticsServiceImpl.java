@@ -520,8 +520,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	 * @param requestedAnalytics requested analytics
 	 */
 	private void isEmployeeUnderCurrentUserSupervision(User currentUser, Employee employee, String requestedAnalytics) {
-		String currentUserRole = currentUser.getEmployee().getEmployeeRole().getLeaveRole().toString();
-		if (currentUserRole.equalsIgnoreCase("MANAGERS")) {
+		Role currentUserRole = currentUser.getEmployee().getEmployeeRole().getLeaveRole();
+		if (Role.LEAVE_MANAGER.equals(currentUserRole)) {
 			// filter the list of manager the employee has to check whether the current
 			// user is one of the managers
 
@@ -547,8 +547,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	 * @param requestedAnalytics requested analytics
 	 */
 	private void isTeamUnderCurrentUserSupervision(User currentUser, Team team, String requestedAnalytics) {
-		String currentUserRole = currentUser.getEmployee().getEmployeeRole().getLeaveRole().toString();
-		if (currentUserRole.equalsIgnoreCase("MANAGERS") && team.getEmployees()
+		Role currentUserRole = currentUser.getEmployee().getEmployeeRole().getLeaveRole();
+		if (Role.LEAVE_MANAGER.equals(currentUserRole) && team.getEmployees()
 			.stream()
 			.filter(EmployeeTeam::getIsSupervisor)
 			.map(employeeTeam -> employeeTeam.getEmployee()
