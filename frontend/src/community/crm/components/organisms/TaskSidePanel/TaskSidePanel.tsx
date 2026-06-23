@@ -1,7 +1,4 @@
-import {
-  SidePanel,
-  SidePanelProps
-} from "@rootcodelabs/skapp-ui";
+import { SidePanel, SidePanelProps } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -12,29 +9,24 @@ import {
   useGetTaskById,
   useUpdateTaskCompletion
 } from "~community/crm/api/TaskApi";
-import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import SidePanelTaskNotes from "~community/crm/components/organisms/TaskSidePanel/TaskSidePanelNotes/TaskSidePanelNotes";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  DetailPanelDealResponseType
-} from "~community/crm/types/CommonTypes";
+import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
 
 const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
   const { setToastMessage } = useToast();
 
-  const {
-    selectedTaskId,
-    setSelectedTaskId,
-    setIsCrmSidePanelOpen
-  } = useCrmStore((store) => ({
-    selectedTaskId: store.selectedTaskId,
-    setSelectedTaskId: store.setSelectedTaskId,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-  }));
+  const { selectedTaskId, setSelectedTaskId, setIsCrmSidePanelOpen } =
+    useCrmStore((store) => ({
+      selectedTaskId: store.selectedTaskId,
+      setSelectedTaskId: store.setSelectedTaskId,
+      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    }));
 
   const handleClose = (): void => {
     setSelectedTaskId(null);
@@ -42,10 +34,10 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     if (onClose) onClose();
   };
 
-  const {
-    data: task,
-    isError: isTaskLoadError
-  } = useGetTaskById(selectedTaskId ?? 0, isOpen && !!selectedTaskId);
+  const { data: task, isError: isTaskLoadError } = useGetTaskById(
+    selectedTaskId ?? 0,
+    isOpen && !!selectedTaskId
+  );
 
   const contactId = task?.contact?.id ?? task?.contactId ?? null;
   const dealId = task?.deal?.id ?? null;
@@ -93,7 +85,7 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     updateCompletion({ id: task.id, isCompleted: true });
   };
 
-const taskIcon = task?.typeName ? getTaskTypeIcon(task.typeName, "24") : null;
+  const taskIcon = task?.typeName ? getTaskTypeIcon(task.typeName, "24") : null;
   const taskDeals: DetailPanelDealResponseType[] = task?.deal
     ? [task.deal]
     : [];
@@ -131,11 +123,8 @@ const taskIcon = task?.typeName ? getTaskTypeIcon(task.typeName, "24") : null;
             </div>
           </div>
 
-          <div className="w-[295px] shrink-0">
-            <SidePanelTaskInfo
-              task={task}
-              onMarkAsDone={handleMarkAsDone}
-            />
+          <div className="w-[18.4375rem] shrink-0">
+            <SidePanelTaskInfo task={task} onMarkAsDone={handleMarkAsDone} />
           </div>
         </div>
       )}

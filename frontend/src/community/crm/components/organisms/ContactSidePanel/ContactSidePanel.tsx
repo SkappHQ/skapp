@@ -69,7 +69,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         return (
           <SidePanelDealSection
             deals={contact?.deals ?? []}
-            emptyViewHeight="h-[228px]"
+            emptyViewHeight="h-[14.25rem]"
           />
         );
       case SidePanelTabEnum.TASKS:

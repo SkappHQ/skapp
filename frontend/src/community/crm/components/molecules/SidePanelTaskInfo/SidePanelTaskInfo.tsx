@@ -4,12 +4,16 @@ import { FC } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   convertUTCStringToLocalDateTime,
   formatDateTimeWithOrdinalIndicator
 } from "~community/common/utils/dateTimeUtils";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
-import { getPriorityConfig, getPriorityDisplayKey } from "~community/crm/utils/taskUtil";
+import {
+  getPriorityConfig,
+  getPriorityDisplayKey
+} from "~community/crm/utils/taskUtil";
 
 interface Props {
   task: CrmTaskDetailType;
@@ -20,8 +24,10 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
   const priorityConfig = getPriorityConfig(task.priority);
-  const ownerLastName = task.owner.lastName ? ` ${task.owner.lastName}` : "";
-  const ownerName = `${task.owner.firstName}${ownerLastName}`;
+  const ownerName = concatStrings([
+    task.owner.firstName,
+    task.owner.lastName ?? ""
+  ]);
 
   return (
     <>
@@ -48,9 +54,11 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
           : translateText(["markAsDone"])}
       </ButtonV2>
 
-      <div className="w-[295px] min-h-[200px] flex flex-col gap-3 border border-secondary-accent rounded-xl p-3 mt-4">
+      <div className="w-[18.4375rem] min-h-[12.5rem] flex flex-col gap-3 border border-secondary-accent rounded-xl p-3 mt-4">
         <div className="flex flex-1 items-center justify-between w-full">
-          <span className="subtitle3 text-secondary-text whitespace-nowrap">{translateText(["assignedTo"])}</span>
+          <span className="subtitle3 text-secondary-text whitespace-nowrap">
+            {translateText(["assignedTo"])}
+          </span>
           <div className="flex items-center">
             <div className="flex items-center gap-2">
               <Avatar
@@ -66,19 +74,26 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
         </div>
 
         <div className="flex flex-1 items-center justify-between w-full">
-          <span className="subtitle3 text-secondary-text whitespace-nowrap">{translateText(["priority"])}</span>
+          <span className="subtitle3 text-secondary-text whitespace-nowrap">
+            {translateText(["priority"])}
+          </span>
           <div className="flex items-center">
             <Label
               backgroundColor={priorityConfig.bgColor}
               textColor={priorityConfig.textColor}
             >
-              {translateText(["priorityOptions", getPriorityDisplayKey(task.priority)])}
+              {translateText([
+                "priorityOptions",
+                getPriorityDisplayKey(task.priority)
+              ])}
             </Label>
           </div>
         </div>
 
         <div className="flex flex-1 items-center justify-between w-full">
-          <span className="subtitle3 text-secondary-text whitespace-nowrap">{translateText(["closingDate"])}</span>
+          <span className="subtitle3 text-secondary-text whitespace-nowrap">
+            {translateText(["closingDate"])}
+          </span>
           <div className="flex items-center">
             <span className="body3">
               {task.dueAt
@@ -91,7 +106,9 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
         </div>
 
         <div className="flex flex-1 items-center justify-between w-full">
-          <span className="subtitle3 text-secondary-text whitespace-nowrap">{translateText(["contactName"])}</span>
+          <span className="subtitle3 text-secondary-text whitespace-nowrap">
+            {translateText(["contactName"])}
+          </span>
           <div className="flex items-center">
             {task.contact ? (
               <span className="body2">{task.contact.name}</span>

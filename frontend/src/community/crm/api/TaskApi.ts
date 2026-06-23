@@ -77,20 +77,20 @@ interface RelatedTaskFilters {
 
 const fetchRelatedOpenTasks = async (
   filters: RelatedTaskFilters
-): Promise<CrmTaskDetailType[]> => {
+): Promise<CrmTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
     params: filters
   });
-  return response?.data?.results?.[0]?.tasks ?? [];
+  return response?.data?.results?.[0];
 };
 
 const fetchRelatedCompletedTasks = async (
   filters: RelatedTaskFilters
-): Promise<CrmTaskDetailType[]> => {
+): Promise<CrmCompletedTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
     params: filters
   });
-  return response?.data?.results?.[0]?.items ?? [];
+  return response?.data?.results?.[0];
 };
 
 export const useGetRelatedTasks = (
@@ -107,16 +107,15 @@ export const useGetRelatedTasks = (
   return useQuery({
     queryKey: taskQueryKeys.RELATED_TASKS(contactId, dealId, currentTaskId),
     queryFn: async () => {
-      const [openTasks, completedTasks] = await Promise.all([
+      const [openTasksResponse, completedTasksResponse] = await Promise.all([
         fetchRelatedOpenTasks(filters),
         fetchRelatedCompletedTasks(filters)
       ]);
 
-      const allTasks = [...openTasks, ...completedTasks].filter(
-        (task) => task.id !== currentTaskId
-      );
-
-      return [...new Map(allTasks.map((task) => [task.id, task])).values()];
+      return [
+        ...(openTasksResponse?.tasks ?? []),
+        ...(completedTasksResponse?.items ?? [])
+      ].filter((task) => task.id !== currentTaskId);
     },
     enabled: enabled && (contactId != null || dealId != null),
     refetchOnWindowFocus: false

@@ -12,9 +12,7 @@ const SidePanelTaskNotes: FC<Props> = ({ notes }) => {
   return (
     <div className="flex flex-col gap-1">
       <p className="subtitle1">{translateText(["notes"])}</p>
-      <p className="subtitle3">
-        {notes || translateText(["noNotes"])}
-      </p>
+      <p className="subtitle3">{notes || translateText(["noNotes"])}</p>
     </div>
   );
 };
