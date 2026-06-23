@@ -93,7 +93,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmValidations.validateWebsite(crmCompany.getWebsite());
 		CrmValidations.validateAddress(crmCompany.getAddress());
 		CrmValidations.validateIndustry(crmCompany.getIndustry());
-		validateCompanyCreation();
+		validateCompanyCreationLimit();
 
 		if (checkCompanyExists(crmCompany.getName())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
@@ -107,8 +107,8 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
-	protected void validateCompanyCreation() {
-		// This method is a placeholder for enterprise company creation logic
+	protected void validateCompanyCreationLimit() {
+		// This method is a placeholder for enterprise company creation limit validation
 	}
 
 	private boolean checkCompanyExists(String name) {

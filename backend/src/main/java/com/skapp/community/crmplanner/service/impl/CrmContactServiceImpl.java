@@ -83,7 +83,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
 				requestDto.getOwnerId(), requestDto.getCompanyId());
-		validateContactCreation();
+		validateContactCreationLimit();
 
 		User currentUser = userService.getCurrentUser();
 
@@ -108,8 +108,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
 	}
 
-	protected void validateContactCreation() {
-		// This method is a placeholder for enterprise contact creation logic
+	protected void validateContactCreationLimit() {
+		// This method is a placeholder for enterprise contact creation limit validation
 	}
 
 	@Override

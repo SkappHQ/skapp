@@ -104,7 +104,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealStageId(requestDto.getStageId());
 		CrmValidations.validateDealContactId(requestDto.getContactId());
 		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
-		validateDealCreation();
+		validateDealCreationLimit();
 
 		if (crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
@@ -152,8 +152,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
-	protected void validateDealCreation() {
-		// This method is a placeholder for enterprise deal creation logic
+	protected void validateDealCreationLimit() {
+		// This method is a placeholder for enterprise deal creation limit validation
 	}
 
 	@Override
