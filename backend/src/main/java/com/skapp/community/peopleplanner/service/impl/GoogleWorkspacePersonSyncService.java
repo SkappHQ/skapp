@@ -46,6 +46,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
@@ -308,6 +309,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             sendSummaryEmail(asyncEmailSender, callerEmail,
                     result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
+            if (!result.removedUserEmails().isEmpty()) {
+                notifySuperAdminsOfRemovedUsers(result.removedUserEmails());
+            }
         } catch (Exception e) {
             log.error("Resync triggered by watch notification failed: {}", e.getMessage(), e);
             sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
@@ -336,6 +340,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             sendSummaryEmail(asyncEmailSender, callerEmail,
                     result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
+            if (!result.removedUserEmails().isEmpty()) {
+                notifySuperAdminsOfRemovedUsers(result.removedUserEmails());
+            }
         } catch (Exception e) {
             log.error("Sync failed: {}", e.getMessage(), e);
             sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
@@ -444,7 +451,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         } while (pageToken != null);
 
-        deactivateUsersMissingFrom(googleEmails);
+        List<String> removedUserEmails = deactivateUsersMissingFrom(googleEmails);
 
         // ── Phase 2: sync Google groups → Skapp teams ────────────────────────
         // Runs after all users are committed so every member email resolves
@@ -458,7 +465,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             totalFailed++;
         }
 
-        return new SyncResult(totalSynced, totalFailed, failures, newUserEmails);
+        return new SyncResult(totalSynced, totalFailed, failures, newUserEmails, removedUserEmails);
     }
 
     // -------------------------------------------------------------------------
@@ -613,18 +620,31 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     }
 
     // -------------------------------------------------------------------------
-    // deactivateUsersMissingFrom() — deactivates users removed from Workspace
-    // and notifies all super admins by email for each removed account.
+    // deactivateUsersMissingFrom()
+    // Returns the list of emails that were deactivated so callers can notify
+    // admins about users removed from Google Workspace.
     // -------------------------------------------------------------------------
-    private void deactivateUsersMissingFrom(Set<String> googleEmails) {
-        List<User> activeGoogleUsers =
-                userDao.findAllByLoginMethodAndIsActiveTrue(LoginMethod.GOOGLE);
+    private List<String> deactivateUsersMissingFrom(Set<String> googleEmails) {
+        // POC NOTE: Super admins are excluded from deactivation because they exist in Skapp
+        // but may not be in Google Workspace. In production, this should be handled by
+        // matching users based on login method (CREDENTIALS/GOOGLE) and org-specific rules
+        // rather than a blanket exclusion.
+        List<User> candidateUsers = userDao.findAll(); // includes both active and inactive users
 
-        List<User> staleUsers = activeGoogleUsers.stream()
+        List<User> staleUsers = candidateUsers.stream()
                 .filter(user -> !googleEmails.contains(user.getEmail()))
+                .filter(user -> {
+                    Employee emp = employeeDao.findEmployeeByEmail(user.getEmail());
+                    if (emp == null) return false;
+                    Optional<EmployeeRole> role = employeeRoleDao.findById(emp.getEmployeeId());
+                    // TODO (Production): Replace with login-method-based filtering instead
+                    // of super admin exclusion. Super admins provisioned via Google Workspace
+                    // should also be deactivatable.
+                    return role.isEmpty() || !Boolean.TRUE.equals(role.get().getIsSuperAdmin());
+                })
                 .toList();
 
-        if (staleUsers.isEmpty()) return;
+        if (staleUsers.isEmpty()) return new ArrayList<>();
 
         List<Employee> staleEmployees = new ArrayList<>();
         for (User user : staleUsers) {
@@ -639,68 +659,56 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         userDao.saveAll(staleUsers);
         employeeDao.saveAll(staleEmployees);
 
+        List<String> removedEmails = staleUsers.stream().map(User::getEmail).toList();
         log.info("Deactivated {} user(s) no longer in Google Workspace: {}",
-                staleUsers.size(),
-                staleUsers.stream().map(User::getEmail).toList());
-
-        // Notify every super admin by email for each removed account.
-        notifyAdminsOfRemovedUsers(staleUsers);
+                removedEmails.size(), removedEmails);
+        return removedEmails;
     }
 
     // -------------------------------------------------------------------------
-    // notifyAdminsOfRemovedUsers() — for each user removed from Google Workspace,
-    // sends the termination email to every active super admin so they are aware
-    // the account has been deactivated in Skapp.
-    //
-    // We temporarily swap the removed user's email address to the admin's email
-    // so that sendUserTerminationEmail() (which sends to user.getEmail()) delivers
-    // to the admin. The original email is restored after each send so the User
-    // entity isn't dirtied in the persistence context.
+    // notifySuperAdminsOfRemovedUsers() — fires an in-app notification to every
+    // super admin when users have been removed from Google Workspace and
+    // deactivated in Skapp, asking whether to keep or permanently remove them.
     // -------------------------------------------------------------------------
-    private void notifyAdminsOfRemovedUsers(List<User> removedUsers) {
-        if (removedUsers == null || removedUsers.isEmpty()) return;
+    private void notifySuperAdminsOfRemovedUsers(List<String> removedEmails) {
+        if (removedEmails == null || removedEmails.isEmpty()) return;
+
+        String emailList = String.join(", ", removedEmails);
+        String message = removedEmails.size() == 1
+                ? "The following user has been removed from Google Workspace and deactivated in Skapp: "
+                  + emailList + ". Do you wish to keep or permanently remove this account?"
+                : "The following " + removedEmails.size() + " users have been removed from Google Workspace "
+                  + "and deactivated in Skapp: " + emailList
+                  + ". Do you wish to keep or permanently remove these accounts?";
 
         List<EmployeeRole> superAdminRoles = employeeRoleDao.findByIsSuperAdminTrue();
 
-        if (superAdminRoles.isEmpty()) {
-            log.warn("notifyAdminsOfRemovedUsers: no super admins found to notify.");
-            return;
-        }
+        for (EmployeeRole role : superAdminRoles) {
+            try {
+                Employee employee = role.getEmployee();
+                if (employee == null) continue;
 
-        for (User removedUser : removedUsers) {
-            // Attach the employee so the email template can render the name
-            Employee emp = employeeDao.findEmployeeByEmail(removedUser.getEmail());
-            if (emp != null) {
-                removedUser.setEmployee(emp);
-            }
+                Map<String, String> dynamicFields = new HashMap<>();
+                dynamicFields.put("message", message);
+                dynamicFields.put("removedEmails", emailList);
 
-            String removedEmail = removedUser.getEmail();
-
-            for (EmployeeRole adminRole : superAdminRoles) {
-                try {
-                    Employee adminEmployee = adminRole.getEmployee();
-                    if (adminEmployee == null || adminEmployee.getUser() == null) continue;
-
-                    String adminEmail = adminEmployee.getUser().getEmail();
-
-                    // Temporarily redirect the email to the admin so the
-                    // existing sendUserTerminationEmail() sends to them
-                    removedUser.setEmail(adminEmail);
-                    peopleEmailService.sendUserTerminationEmail(removedUser);
-                    removedUser.setEmail(removedEmail); // restore
-
-                    log.info("notifyAdminsOfRemovedUsers: notified admin {} about removal of {}",
-                            adminEmail, removedEmail);
-                } catch (Exception e) {
-                    removedUser.setEmail(removedEmail); // restore on error too
-                    log.error("notifyAdminsOfRemovedUsers: failed to notify admin for removed user {}: {}",
-                            removedEmail, e.getMessage());
-                }
+                notificationService.createNotification(
+                        employee,
+                        null,
+                        NotificationType.GOOGLE_WORKSPACE_USER_REMOVED,
+                        EmailBodyTemplates.PEOPLE_MODULE_GOOGLE_WORKSPACE_USER_REMOVED,
+                        dynamicFields,
+                        NotificationCategory.PEOPLE_SYNC
+                );
+            } catch (Exception e) {
+                log.error("Failed to notify super admin of removed users: {}", e.getMessage());
             }
         }
+
+        log.info("Notified super admins of {} removed Google Workspace user(s): {}",
+                removedEmails.size(), removedEmails);
     }
-
-    private record SyncResult(int synced, int failed, List<String> failures, List<String> newUserEmails) {}
+    private record SyncResult(int synced, int failed, List<String> failures, List<String> newUserEmails, List<String> removedUserEmails) {}
 
     // -------------------------------------------------------------------------
     // upsertUser() — create or update User + Employee from a Workspace user
@@ -719,6 +727,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         user.setIsActive(!suspended);
 
         if (isNew) {
+            // Provision with credentials so the standard invitation email
+            // (PEOPLE_MODULE_USER_INVITATION_V1) is sent, which includes the
+            // temporary password. On first login the app detects
+            // isPasswordChangedForTheFirstTime=false and forces a password reset.
             String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
             CommonModuleUtils.setIfExists(
                     () -> encryptionDecryptionService.encrypt(tempPassword),
@@ -729,6 +741,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             user.setLoginMethod(LoginMethod.CREDENTIALS);
             user.setIsPasswordChangedForTheFirstTime(false);
         }
+        // Existing users: never overwrite loginMethod, password, or tempPassword.
 
         User savedUser = userDao.saveAndFlush(user);
 
@@ -879,5 +892,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             return response.getPayload().getData().toStringUtf8();
         }
     }
+
 
 }
