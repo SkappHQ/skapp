@@ -15,10 +15,11 @@ import DraggableDealStageCardSkeleton from "~community/configurations/components
 import DealStagesDraggableContent from "~community/configurations/components/molecules/DealStagesDraggableContent/DealStagesDraggableContent";
 import DealStageModalController from "~community/configurations/components/organisms/DealStageModalController/DealStageModalController";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
-import { useGetDealStages, useReorderDealStages } from "~community/crm/api/crmDealApi";
+import { useReorderDealStages } from "~community/crm/api/crmDealApi";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import useGetDealStageOptions from "~community/crm/hooks/useGetDealStageOptions";
 
 const CrmConfigurations = () => {
   const translateText = useTranslator("configurations", "crm");
@@ -35,7 +36,7 @@ const CrmConfigurations = () => {
 
   const { setToastMessage } = useToast();
 
-  const { data: dealStages, isPending } = useGetDealStages();
+  const { options: dealStages, isPending } = useGetDealStageOptions();
   const [stages, setStages] = useState<CrmDealStageType[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
 

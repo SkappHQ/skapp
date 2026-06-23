@@ -13,19 +13,17 @@ const useGetDealStageOptions = () => {
 
   const { data: stages, isPending } = useGetDealStages();
 
+  const getStageByName = (name: string) =>
+    DEFAULT_STAGE_NAME_MAP[name] ? translateText([name]) : name;
+
   const options = useMemo(
     () =>
       stages?.map((stage) => ({
         ...stage,
-        name: DEFAULT_STAGE_NAME_MAP[stage.name]
-          ? translateText([stage.name])
-          : stage.name
+        name: getStageByName(stage.name)
       })) ?? [],
     [stages, translateText]
   );
-
-  const getStageByName = (name: string) =>
-    DEFAULT_STAGE_NAME_MAP[name] ? translateText([name]) : name;
 
   return { options, getStageByName, isPending };
 };
