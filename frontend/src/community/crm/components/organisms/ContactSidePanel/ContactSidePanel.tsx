@@ -31,11 +31,11 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     SidePanelTabEnum.TASKS
   );
 
-  const { setIsCrmSidePanelOpen, setSelectedContact, selectedContact } =
+  const { setIsCrmSidePanelOpen, setSelectedContactId, selectedContactId } =
     useCrmStore((store) => ({
       setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-      setSelectedContact: store.setSelectedContact,
-      selectedContact: store.selectedContact
+      setSelectedContactId: store.setSelectedContactId,
+      selectedContactId: store.selectedContactId
     }));
 
   const handleContactLoadError = (): void => {
@@ -46,24 +46,21 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       description: translateText(["errors", "contactNotFoundDescription"])
     });
     setIsCrmSidePanelOpen(false);
-    setSelectedContact(null);
+    setSelectedContactId(null);
   };
 
   const {
     data: contact,
     isError,
     isLoading
-  } = useGetContactById(
-    selectedContact?.id ?? 0,
-    isOpen && !!selectedContact?.id
-  );
+  } = useGetContactById(selectedContactId ?? 0, isOpen && !!selectedContactId);
 
   useEffect(() => {
     if (isError) handleContactLoadError();
   }, [isError]);
 
   const handleClose = (): void => {
-    setSelectedContact(null);
+    setSelectedContactId(null);
     setIsCrmSidePanelOpen(false);
   };
 
@@ -108,11 +105,11 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       headerActions={isLoading ? <SidePanelHeaderActionsSkeleton /> : <></>}
     >
       <div className="flex flex-col pb-4 gap-4">
-        {isLoading ? (
+        {isLoading && !contact ? (
           <ContactSidePanelSkeleton />
         ) : (
           <>
-            {contact && <SidePanelContactInfo contact={contact} />}
+            <SidePanelContactInfo contact={contact} />
 
             <div className="flex flex-col pt-2 w-full">
               <Tabs

@@ -5,9 +5,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface Props {
   fullPage?: boolean;
+  zIndex?: number;
 }
 
-const FullScreenLoader = ({ fullPage = true }: Props) => {
+const FullScreenLoader = ({ fullPage = true, zIndex = ZIndexEnums.MAX }: Props) => {
   const theme = useTheme();
   const translateAria = useTranslator(
     "commonAria",
@@ -24,7 +25,7 @@ const FullScreenLoader = ({ fullPage = true }: Props) => {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: theme.palette.background.default,
-        zIndex: ZIndexEnums.MAX
+        zIndex: zIndex
       }}
       role="status"
       aria-live="polite"
