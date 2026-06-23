@@ -157,11 +157,11 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INVALID_REQUEST);
 		}
 
-		Map<Long, CrmDealStage> exisitingStagesMap = existingStages.stream()
+		Map<Long, CrmDealStage> existingStagesMap = existingStages.stream()
 			.collect(Collectors.toMap(CrmDealStage::getId, Function.identity()));
 
 		changedStages.forEach(newStage -> {
-			CrmDealStage stage = exisitingStagesMap.get(newStage.getId());
+			CrmDealStage stage = existingStagesMap.get(newStage.getId());
 
 			if (stage == null) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
