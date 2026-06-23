@@ -414,13 +414,8 @@ class CrmDealStageControllerIntegrationTest {
 		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
 		List<Long> ids = openStageIds();
 
-		List<CrmDealStageReorderRequestDto> payload = List.of(
-				reorderEntry(initialId, 5),
-				reorderEntry(ids.get(0), 3),
-				reorderEntry(ids.get(1), 1),
-				reorderEntry(ids.get(2), 2),
-				reorderEntry(ids.get(3), 4)
-		);
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(initialId, 5), reorderEntry(ids.get(0), 3),
+				reorderEntry(ids.get(1), 1), reorderEntry(ids.get(2), 2), reorderEntry(ids.get(3), 4));
 
 		performReorderRequest(payload).andDo(print())
 			.andExpect(status().isOk())
