@@ -5,7 +5,9 @@ import { FC, useEffect, useMemo } from "react";
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetDealStages } from "~community/crm/api/crmDealApi";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
+import useGetStageOptions from "~community/crm/hooks/useGetStageOptions";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
 
 interface DealNameStageSectionProps {
@@ -14,6 +16,7 @@ interface DealNameStageSectionProps {
 
 const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
+  const { getStageByName } = useGetStageOptions();
 
   const {
     data: stages = [],
@@ -42,9 +45,9 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
           <div className="inline-flex items-center gap-2.5">
             <div
               className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: s.color }}
+              style={{ backgroundColor: STAGE_COLOR_MAP[s.color] }}
             />
-            <span className="body2">{s.name}</span>
+            <span className="body2">{getStageByName(s.name)}</span>
           </div>
         )
       })),
