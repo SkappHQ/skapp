@@ -23,15 +23,12 @@ export const resolveTargetStageId = (
   overId: string,
   stageMap: StageMap
 ): number | null => {
-  const overIdNum = Number(overId);
-
-  if (stageMap[overIdNum] !== undefined) return overIdNum;
-
-  for (const [sid, state] of Object.entries(stageMap)) {
-    if (state.deals.some((d) => d.id === overIdNum)) return Number(sid);
-  }
-
-  return null;
+  const id = Number(overId);
+  if (id in stageMap) return id;
+  const entry = Object.entries(stageMap).find(([, s]) =>
+    s.deals.some((d) => d.id === id)
+  );
+  return entry ? Number(entry[0]) : null;
 };
 
 export const buildInitialStageState = (
@@ -79,16 +76,13 @@ export const commitCrossStageMove = ({
   moveBetweenStages
 }: CrossStageMoveParams): void => {
   const tgtDeals = tgtState.deals.filter((d) => d.id !== activeDealId);
-
-  const overDealIndex = tgtDeals.findIndex((d) => d.id === Number(overId));
-
+  const overIndex = tgtDeals.findIndex((d) => d.id === Number(overId));
   let insertIndex: number;
-  if (overDealIndex === -1) {
+  if (overIndex === -1) {
     insertIndex = tgtDeals.length;
   } else {
-    insertIndex = activeMidY < overMidY ? overDealIndex : overDealIndex + 1;
+    insertIndex = activeMidY < overMidY ? overIndex : overIndex + 1;
   }
-
   const newTgtDeals = [
     ...tgtDeals.slice(0, insertIndex),
     deal,
