@@ -1169,8 +1169,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		EmployeeDetailedResponseDto employeeDetailedResponseDto = peopleMapper
 			.employeeToEmployeeDetailedResponseDto(employee.get());
-		employeeDetailedResponseDto
-			.setSkills(employeeSkillService.getEmployeeSkills(employee.get().getEmployeeId()));
+		employeeDetailedResponseDto.setSkills(employeeSkillService.getEmployeeSkills(employee.get().getEmployeeId()));
 		List<EmployeePeriod> period = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
 				employee.get().getEmployeeId(), Sort.by(Sort.Direction.DESC, EmployeePeriodSort.ID.getSortField()));
 

@@ -52,35 +52,19 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 		for (EmployeeSkillDto skillDto : skills) {
 			EmployeeSkill employeeSkill = new EmployeeSkill();
 			employeeSkill.setEmployee(employee);
+			employeeSkill.setSkillType(skillDto.getSkillType());
 
-			if (skillDto.getSkillType() == EmployeeSkillType.DEFAULT) {
-				getDefaultEmployeeSkillName(skillDto.getSkillId());
-				employeeSkill.setSkillId(skillDto.getSkillId());
-				employeeSkill.setSkillType(EmployeeSkillType.DEFAULT);
-			}
-			else if (skillDto.getSkillType() == EmployeeSkillType.CUSTOM) {
-				if (skillDto.getName() == null || skillDto.getName().isBlank()) {
-					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
-				}
-
-				if (customEmployeeSkillDao.findByNameIgnoreCase(skillDto.getName()).isPresent()) {
-					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_ALREADY_EXISTS);
-				}
-
-				CustomEmployeeSkill customSkill = new CustomEmployeeSkill();
-				
-				customSkill.setName(skillDto.getName());
-				employeeSkill.setSkillId(customEmployeeSkillDao.save(customSkill).getId());
-				employeeSkill.setSkillType(EmployeeSkillType.CUSTOM);
-			}
-			else {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
-			}
+			employeeSkill.setSkillId(switch (skillDto.getSkillType()) {
+				case DEFAULT -> resolveDefaultSkillId(skillDto);
+				case CUSTOM -> resolveCustomSkillId(skillDto);
+				case null -> throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
+			});
 
 			employeeSkills.add(employeeSkill);
 		}
 
 		return employeeSkillDao.saveAll(employeeSkills);
+
 	}
 
 	@Override
@@ -131,6 +115,25 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 		}
 
 		return name;
+	}
+
+	private Long resolveDefaultSkillId(EmployeeSkillDto skillDto) {
+		getDefaultEmployeeSkillName(skillDto.getSkillId());
+		return skillDto.getSkillId();
+	}
+
+	private Long resolveCustomSkillId(EmployeeSkillDto skillDto) {
+		if (skillDto.getName() == null || skillDto.getName().isBlank()) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
+		}
+
+		return customEmployeeSkillDao.findByNameIgnoreCase(skillDto.getName())
+			.map(CustomEmployeeSkill::getId)
+			.orElseGet(() -> {
+				CustomEmployeeSkill customSkill = new CustomEmployeeSkill();
+				customSkill.setName(skillDto.getName());
+				return customEmployeeSkillDao.save(customSkill).getId();
+			});
 	}
 
 }
