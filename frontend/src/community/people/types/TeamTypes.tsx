@@ -102,3 +102,8 @@ export interface GetManagerTeamsResponseType {
   totalItems: number;
   totalPages: number;
 }
+
+export interface MemberTeamsType {
+  employeeId: number;
+  teamIds: number[];
+}
