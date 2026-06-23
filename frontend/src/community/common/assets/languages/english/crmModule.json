@@ -616,7 +616,12 @@
       "priority": "Priority",
       "closingDate": "Closing date",
       "contactName": "Contact name",
-      "none": "None"
+      "none": "None",
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
     }
   }
 }

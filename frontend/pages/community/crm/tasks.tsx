@@ -5,7 +5,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
-import TaskDetailSidePanel from "~community/crm/components/organisms/TaskDetailSidePanel/TaskDetailSidePanel";
+import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/TaskSidePanel";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
@@ -68,7 +68,7 @@ const Tasks: NextPage = () => {
       <>
         {selectedTaskId && (
           <SidePanelWrapper>
-            <TaskDetailSidePanel
+            <TaskSidePanel
               isOpen={isCrmSidePanelOpen}
               onClose={handleCloseTaskSidePanel}
             />

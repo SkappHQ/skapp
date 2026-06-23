@@ -176,7 +176,7 @@ export const useGetCompletedTasks = (
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_SEARCH(searchKeyword, size),
+    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_SEARCH(searchKeyword),
 
     queryFn: ({ pageParam }) =>
       fetchCompletedTasks({
