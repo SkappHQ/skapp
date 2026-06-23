@@ -15,6 +15,7 @@ import com.skapp.community.peopleplanner.payload.request.TeamPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamsRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TransferTeamMembersDto;
+import com.skapp.community.peopleplanner.payload.response.MemberTeamsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -390,6 +391,41 @@ public class TeamServiceImpl implements TeamService {
 			.filter(employeeTeam -> employeeTeam.getEmployee().equals(employee))
 			.findFirst();
 		return alreadyExistEmp.isPresent();
+	}
+
+	@Override
+	public ResponseEntityDto getTeamMemberTeams(Long teamId) {
+		log.info("getTeamMemberTeams: execution started for teamId: {}", teamId);
+
+		if (teamId == null || teamId <= 0) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
+		}
+
+		Team team = teamDao.findByTeamIdAndIsActive(teamId, true)
+			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
+
+		List<Long> memberIds = team.getEmployees().stream().map(et -> et.getEmployee().getEmployeeId()).toList();
+
+		if (memberIds.isEmpty()) {
+			log.info("getTeamMemberTeams: team has no members, execution ended");
+			return new ResponseEntityDto(false, List.of());
+		}
+
+		List<Object[]> rows = employeeTeamDao.findTeamIdsByEmployeeIds(memberIds);
+
+		Map<Long, List<Long>> employeeTeamMap = rows.stream()
+			.collect(Collectors.groupingBy(row -> (Long) row[0],
+					Collectors.mapping(row -> (Long) row[1], Collectors.toList())));
+
+		List<MemberTeamsResponseDto> results = memberIds.stream().map(empId -> {
+			MemberTeamsResponseDto dto = new MemberTeamsResponseDto();
+			dto.setEmployeeId(empId);
+			dto.setTeamIds(employeeTeamMap.getOrDefault(empId, List.of()));
+			return dto;
+		}).toList();
+
+		log.info("getTeamMemberTeams: execution ended");
+		return new ResponseEntityDto(false, results);
 	}
 
 }
