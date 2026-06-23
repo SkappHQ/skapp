@@ -172,12 +172,13 @@ export const useGetTeamDetailsById = (teamId: number) => {
 };
 
 export const useGetMemberTeams = (
-  teamId: number | string | undefined
+  teamId: number
 ): UseQueryResult<MemberTeamsType[]> => {
   return useQuery({
-    queryKey: [teamQueryKeys.MEMBER_TEAMS, teamId],
-    queryFn: () => authFetch.get(teamEndpoints.MEMBER_TEAMS(teamId!)),
-    select: (data) => data?.data?.results,
-    enabled: !!teamId
+    queryKey: teamQueryKeys.MEMBER_TEAMS(teamId),
+    queryFn: async () => {
+      const response = await authFetch.get(teamEndpoints.MEMBER_TEAMS(teamId));
+      return response?.data?.results;
+    }
   });
 };

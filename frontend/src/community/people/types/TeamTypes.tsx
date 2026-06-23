@@ -26,6 +26,11 @@ export interface TeamType {
   teamMembers: EmployeeType[];
 }
 
+export interface TransferableMember {
+  employeeId: number;
+  transferableTeams: TeamType[];
+}
+
 export enum TeamModelTypes {
   ADD_TEAM = "ADD_TEAM",
   UNSAVED_ADD_TEAM = "UNSAVED_ADD_TEAM",
