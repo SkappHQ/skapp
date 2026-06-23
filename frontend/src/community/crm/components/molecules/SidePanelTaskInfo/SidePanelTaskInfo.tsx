@@ -4,7 +4,10 @@ import { FC, ReactNode } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { formatDateWithOrdinalSuffix } from "~community/common/utils/dateTimeUtils";
+import {
+  convertUTCStringToLocalDateTime,
+  formatDateTimeWithOrdinalIndicator
+} from "~community/common/utils/dateTimeUtils";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 import { getPriorityConfig } from "~community/crm/utils/taskUtil";
 
@@ -58,7 +61,9 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone, onContactClick }) =>
       value: (
         <span className="body3">
           {task.dueAt
-            ? formatDateWithOrdinalSuffix(task.dueAt)
+            ? formatDateTimeWithOrdinalIndicator(
+                convertUTCStringToLocalDateTime(task.dueAt)
+              )
             : translateText(["noClosingDate"])}
         </span>
       )

@@ -47,7 +47,6 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   const {
     data: task,
-    isLoading: isTaskLoading,
     isError: isTaskLoadError
   } = useGetTaskById(selectedTaskId ?? 0, isOpen && !!selectedTaskId);
 
@@ -103,11 +102,13 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsCrmSidePanelOpen(true);
   };
 
-  if (isTaskLoading || !task) return null;
-
-  const taskTypeName = task.typeName;
-  const taskIcon = getTaskTypeIcon(taskTypeName ?? "Other", "24", "24");
-  const taskDeals: DetailPanelDealResponseType[] = task.deal ? [task.deal] : [];
+  const taskTypeName = task?.typeName;
+  const taskIcon = taskTypeName
+    ? getTaskTypeIcon(taskTypeName, "24", "24")
+    : null;
+  const taskDeals: DetailPanelDealResponseType[] = task?.deal
+    ? [task.deal]
+    : [];
 
   return (
     <SidePanel
@@ -119,34 +120,40 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       header={
         <div className="flex items-center gap-4 pl-2">
           {taskIcon}
-          <span className="h1 text-black">{task.name}</span>
+          <span className="h1 text-black">{task?.name}</span>
         </div>
       }
     >
-      <div className="flex gap-6 pb-4">
-        <div className="flex flex-col flex-1 gap-6 min-w-0">
-          <SidePanelTaskNotes notes={task.notes} />
+      {task && (
+        <div className="flex gap-6 pb-4">
+          <div className="flex flex-col flex-1 gap-6 min-w-0">
+            <SidePanelTaskNotes notes={task.notes} />
 
-          <div className="flex flex-col gap-3">
-            <h2 className="h2">{translateText(["dealsTitle"])}</h2>
-            <hr className="border-secondary-accent" />
-            <SidePanelDealSection
-              deals={taskDeals}
-              showEmptyStateAddDeal={false}
+            <div className="flex flex-col gap-3">
+              <h2 className="h2">{translateText(["dealsTitle"])}</h2>
+              <hr className="border-secondary-accent" />
+              <SidePanelDealSection
+                deals={taskDeals}
+                showEmptyStateAddDeal={false}
+              />
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h2 className="h2">{translateText(["relatedTasksTitle"])}</h2>
+              <hr className="border-secondary-accent" />
+              <SidePanelTasksSection tasks={relatedTasks} />
+            </div>
+          </div>
+
+          <div className="w-[295px] shrink-0">
+            <SidePanelTaskInfo
+              task={task}
+              onMarkAsDone={handleMarkAsDone}
+              onContactClick={handleContactClick}
             />
           </div>
-
-          <div className="flex flex-col gap-3">
-            <h2 className="h2">{translateText(["relatedTasksTitle"])}</h2>
-            <hr className="border-secondary-accent" />
-            <SidePanelTasksSection tasks={relatedTasks} />
-          </div>
         </div>
-
-        <div className="w-[295px] shrink-0">
-          <SidePanelTaskInfo task={task} onMarkAsDone={handleMarkAsDone} onContactClick={handleContactClick} />
-        </div>
-      </div>
+      )}
     </SidePanel>
   );
 };
