@@ -261,6 +261,10 @@ export interface CrmTaskCategory {
   orderIndex: number;
 }
 
+export interface CrmTaskCategoryResponseType {
+  taskTypes: CrmTaskCategory[];
+}
+
 export interface CrmDealListItem {
   id: number;
   name: string;
@@ -350,9 +354,9 @@ export interface CrmTaskUpdatePayload {
   typeId?: number;
   dueAt?: string | null;
   priority?: CrmPriorityEnum;
-  contactId?: number;
-  dealId?: number;
-  ownerId?: number;
+  contactId?: number | null;
+  dealId?: number | null;
+  ownerId?: number | null;
   notes?: string;
 }
 

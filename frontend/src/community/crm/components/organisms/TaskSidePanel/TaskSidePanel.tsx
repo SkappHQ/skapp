@@ -8,22 +8,16 @@ import {
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-// import { useGetTaskById } from "~community/crm/api/TaskApi";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
-  const { setIsTaskModalOpen, setTaskModalType, selectedTaskId } = useCrmStore(
-    (store) => ({
-      setIsTaskModalOpen: store.setIsTaskModalOpen,
-      setTaskModalType: store.setTaskModalType,
-      selectedTaskId: store.selectedTaskId
-    })
-  );
-
-  // const { data: selectedTask } = useGetTaskById(selectedTaskId);
+  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    setTaskModalType: store.setTaskModalType
+  }));
 
   const openTaskModal = (type: CrmModalTypes) => {
     setTaskModalType(type);

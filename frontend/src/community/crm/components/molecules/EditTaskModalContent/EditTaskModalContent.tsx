@@ -33,6 +33,10 @@ const EditTaskModalContent: FC = () => {
     if (!selectedTaskId) return;
 
     const changedFields = getChangedTaskFields(formValues, initialValues);
+    if (Object.keys(changedFields).length === 0) {
+      setIsTaskModalOpen(false);
+      return;
+    }
 
     const payload: CrmTaskUpdatePayload = {
       id: selectedTaskId,

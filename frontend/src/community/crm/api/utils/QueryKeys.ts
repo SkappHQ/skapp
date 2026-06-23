@@ -64,5 +64,6 @@ export const taskQueryKeys = {
   GET_COMPLETED_TASKS_BY_SEARCH: (searchKeyword: string) => [
     "get-completed-tasks",
     searchKeyword
-  ]
+  ],
+  GET_TASK_TYPES: ["get-task-types"]
 };

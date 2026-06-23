@@ -141,13 +141,13 @@ export const getChangedTaskFields = (
     changedFields.priority = newValues.priority;
   }
   if (newValues.contactId !== originalValues.contactId) {
-    changedFields.contactId = newValues.contactId ?? undefined;
+    changedFields.contactId = newValues.contactId;
   }
   if (newValues.dealId !== originalValues.dealId) {
-    changedFields.dealId = newValues.dealId ?? undefined;
+    changedFields.dealId = newValues.dealId;
   }
   if (newValues.owner !== originalValues.owner) {
-    changedFields.ownerId = newValues.owner ?? undefined;
+    changedFields.ownerId = newValues.owner;
   }
   if (newValues.notes !== originalValues.notes) {
     changedFields.notes = newValues.notes.trim();

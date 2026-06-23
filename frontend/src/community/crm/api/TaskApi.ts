@@ -10,8 +10,8 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import {
   CrmCompletedTaskResponseType,
+  CrmTaskCategoryResponseType,
   CrmTaskCreatePayload,
-  CrmTaskDetailType,
   CrmTaskResponseType,
   CrmTaskUpdatePayload,
   UpdateTaskStatusPayload
@@ -193,6 +193,16 @@ export const useGetTaskById = (id: number) => {
         );
 
       return completedTasks.find((task) => task.id === id) ?? null;
+    }
+  });
+};
+
+export const useGetTaskTypes = () => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_TASK_TYPES,
+    queryFn: async (): Promise<CrmTaskCategoryResponseType> => {
+      const response = await authFetch.get(taskEndpoints.GET_TASK_TYPES);
+      return response?.data?.results?.[0];
     }
   });
 };
