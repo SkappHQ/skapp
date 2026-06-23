@@ -169,7 +169,6 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
 
   const handleSaveTitle = async () => {
     // TODO: Add API call to update deal name
-    console.log("Saving title:", editedTitle);
     setIsEditingTitle(false);
   };
 
@@ -186,7 +185,6 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
 
   const handleSaveDescription = async () => {
     // TODO: Add API call to update deal description
-    console.log("Saving description:", editedDescription);
     setIsEditingDescription(false);
   };
 
@@ -327,20 +325,26 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
 
             {/* Right: Stage + Properties */}
             <DealPropertiesSidebar
-              isStagesLoading={isStagesLoading}
-              stageOptions={stageOptions}
-              selectedStageId={selectedStageId}
-              onStageChange={(v) => setSelectedStageId(String(v))}
-              amount={amount}
-              onAmountChange={setAmount}
-              priority={priority}
-              onPriorityChange={setPriority}
-              selectedOwner={selectedOwner}
-              onOwnerChange={setSelectedOwner}
+              stage={{
+                isLoading: isStagesLoading,
+                options: stageOptions,
+                selectedId: selectedStageId,
+                onChange: (v) => setSelectedStageId(String(v))
+              }}
+              properties={{
+                amount,
+                priority,
+                owner: selectedOwner,
+                contact: selectedContact
+              }}
+              handlers={{
+                onAmountChange: setAmount,
+                onPriorityChange: setPriority,
+                onOwnerChange: setSelectedOwner,
+                onContactChange: setSelectedContact,
+                onContactSearch: setContactSearchTerm
+              }}
               contacts={contacts}
-              selectedContact={selectedContact}
-              onContactChange={setSelectedContact}
-              onContactSearch={setContactSearchTerm}
             />
           </div>
         </div>

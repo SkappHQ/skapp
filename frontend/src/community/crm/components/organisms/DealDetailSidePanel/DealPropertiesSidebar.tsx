@@ -13,38 +13,40 @@ import {
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 
-interface DealPropertiesSidebarProps {
-  isStagesLoading: boolean;
-  stageOptions: DropdownOption[];
-  selectedStageId: string;
-  onStageChange: (value: string) => void;
+interface StageData {
+  isLoading: boolean;
+  options: DropdownOption[];
+  selectedId: string;
+  onChange: (value: string) => void;
+}
+
+interface PropertyData {
   amount: string;
-  onAmountChange: (value: string) => void;
   priority: CrmPriorityEnum;
+  owner: CrmOwner | null;
+  contact: CrmContactLookup | null;
+}
+
+interface PropertyHandlers {
+  onAmountChange: (value: string) => void;
   onPriorityChange: (value: CrmPriorityEnum) => void;
-  selectedOwner: CrmOwner | null;
   onOwnerChange: (owner: CrmOwner | null) => void;
-  contacts: CrmContactLookup[];
-  selectedContact: CrmContactLookup | null;
   onContactChange: (contact: CrmContactLookup | null) => void;
   onContactSearch: (term: string) => void;
 }
 
+interface DealPropertiesSidebarProps {
+  stage: StageData;
+  properties: PropertyData;
+  handlers: PropertyHandlers;
+  contacts: CrmContactLookup[];
+}
+
 const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
-  isStagesLoading,
-  stageOptions,
-  selectedStageId,
-  onStageChange,
-  amount,
-  onAmountChange,
-  priority,
-  onPriorityChange,
-  selectedOwner,
-  onOwnerChange,
-  contacts,
-  selectedContact,
-  onContactChange,
-  onContactSearch
+  stage,
+  properties,
+  handlers,
+  contacts
 }) => {
   const addDealTranslator = useTranslator(
     "crmModule",
@@ -54,13 +56,13 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   return (
     <div className="w-1/3 flex flex-col gap-4 shrink-0">
-      {isStagesLoading ? (
+      {stage.isLoading ? (
         <MultipleSkeletons numOfSkeletons={1} height={38} />
       ) : (
         <Dropdown
-          options={stageOptions}
-          value={selectedStageId}
-          onChange={(v) => onStageChange(String(v))}
+          options={stage.options}
+          value={stage.selectedId}
+          onChange={(v) => stage.onChange(String(v))}
           variant="primary"
           className="rounded-lg"
           width="55%"
@@ -73,8 +75,8 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         <PropertyRow label={addDealTranslator(["labels", "value"])}>
           <div className="flex flex-col w-full px-1">
             <input
-              value={amount}
-              onChange={(e) => onAmountChange(e.target.value)}
+              value={properties.amount}
+              onChange={(e) => handlers.onAmountChange(e.target.value)}
               placeholder={addDealTranslator(["placeholders", "none"])}
               type="text"
               className="w-full bg-transparent outline-none body2 placeholder:text-secondary-text"
@@ -84,14 +86,14 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         </PropertyRow>
 
         <PropertyRow label={addDealTranslator(["labels", "priority"])}>
-          <PriorityDropdown value={priority} onChange={onPriorityChange} />
+          <PriorityDropdown value={properties.priority} onChange={handlers.onPriorityChange} />
         </PropertyRow>
 
         <PropertyRow label={addDealTranslator(["labels", "ownedBy"])}>
           <div className="flex flex-col w-full">
             <OwnerPopupSearch
-              selectedUser={selectedOwner}
-              onChange={onOwnerChange}
+              selectedUser={properties.owner}
+              onChange={handlers.onOwnerChange}
               placeholder={addDealTranslator(["placeholders", "none"])}
               searchPlaceholder={addDealTranslator([
                 "placeholders",
@@ -109,9 +111,9 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           <div className="flex flex-col w-full">
             <ContactPopupSearch
               contacts={contacts}
-              selectedContact={selectedContact}
-              onChange={onContactChange}
-              onSearch={onContactSearch}
+              selectedContact={properties.contact}
+              onChange={handlers.onContactChange}
+              onSearch={handlers.onContactSearch}
               placeholder={addDealTranslator(["placeholders", "none"])}
               searchPlaceholder={addDealTranslator([
                 "placeholders",
