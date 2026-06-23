@@ -67,16 +67,16 @@ const updateTaskStatus = async ({
   });
 };
 
-export const useUpdateTaskCompletion = (
-  onSuccess: () => void,
-  onError: (error: Error) => void
-) => {
+export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateTaskStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
-      onSuccess();
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
     },
     onError
   });
