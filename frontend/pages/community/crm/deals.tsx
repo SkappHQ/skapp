@@ -25,7 +25,7 @@ const Deals: NextPage = () => {
   };
 
   const handleAddDealClick = () => {
-    setSelectedDealId(null); // Clear any selected deal
+    setSelectedDealId(null); 
     setIsCrmSidePanelOpen(true);
   };
 
