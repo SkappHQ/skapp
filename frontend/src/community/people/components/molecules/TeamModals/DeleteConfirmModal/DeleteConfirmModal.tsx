@@ -1,20 +1,23 @@
 import { Box, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useMemo } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import {
-  useGetAllTeams,
-  useGetMemberTeams,
-  useTransferTeamMembers
-} from "~community/people/api/TeamApi";
+import { useTransferTeamMembers } from "~community/people/api/TeamApi";
 import { usePeopleStore } from "~community/people/store/store";
 import { TeamModelTypes } from "~community/people/types/TeamTypes";
 
-const DeleteConfirmModal = () => {
+interface Props {
+  hasTransferableMembers: boolean;
+  isLoadingMemberData: boolean;
+}
+
+const DeleteConfirmModal = ({
+  hasTransferableMembers,
+  isLoadingMemberData
+}: Props) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     setTeamModalType,
@@ -24,21 +27,6 @@ const DeleteConfirmModal = () => {
   } = usePeopleStore((state) => state);
 
   const { setToastMessage } = useToast();
-
-  const { data: memberTeams } = useGetMemberTeams(currentDeletingTeam?.teamId);
-  const { data: allTeams } = useGetAllTeams();
-
-  const hasTransferableMembers = useMemo(() => {
-    if (!memberTeams || !allTeams) return false;
-    const deletingTeamId = Number(currentDeletingTeam?.teamId);
-    const otherTeamIds = allTeams
-      .filter((team) => Number(team.teamId) !== deletingTeamId)
-      .map((team) => Number(team.teamId));
-
-    return memberTeams.some((member) =>
-      otherTeamIds.some((id) => !member.teamIds.includes(id))
-    );
-  }, [memberTeams, allTeams, currentDeletingTeam]);
 
   const handleSuccess = () => {
     setToastMessage({
@@ -86,10 +74,11 @@ const DeleteConfirmModal = () => {
       <Typography>{translateText(["confirmDeleteModalDes"])}</Typography>
       <Box>
         <div className="flex flex-row gap-3 mt-4 justify-end">
-          {hasTransferableMembers && (
+          {(isLoadingMemberData || hasTransferableMembers) && (
             <ButtonV2
               variant={"primary"}
               onClick={handleReassignClick}
+              disabled={isLoadingMemberData}
               icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
               iconPosition="end"
             >
