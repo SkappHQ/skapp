@@ -10,6 +10,7 @@ import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageReorderRequestDto;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealStageService;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 	private final CrmDealStageDao crmDealStageDao;
+
+	private final CrmDealDao crmDealDao;
 
 	private final CrmMapper crmMapper;
 
@@ -121,6 +124,10 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		if (CrmConstants.NON_DELETEABLE_STAGES.contains(stage.getStageType())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_TERMINAL_STAGE);
+		}
+
+		if (crmDealDao.existsByStageIdAndIsDeletedFalse(id)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_STAGE_WITH_DEALS);
 		}
 
 		stage.setIsDeleted(true);
