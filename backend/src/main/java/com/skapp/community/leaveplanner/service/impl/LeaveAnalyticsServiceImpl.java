@@ -514,7 +514,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	}
 
 	/**
-	 * Checks whether the current user is a manager of the passed employee entity
+	 * Checks whether the current user is a manager or team supervisor of the passed
+	 * employee entity
 	 * @param currentUser logged user who requested the method
 	 * @param employee employee entity user requested the analytics of
 	 * @param requestedAnalytics requested analytics
@@ -522,17 +523,16 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	private void isEmployeeUnderCurrentUserSupervision(User currentUser, Employee employee, String requestedAnalytics) {
 		Role currentUserRole = currentUser.getEmployee().getEmployeeRole().getLeaveRole();
 		if (Role.LEAVE_MANAGER.equals(currentUserRole)) {
-			// filter the list of manager the employee has to check whether the current
-			// user is one of the managers
+			Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
 
-			List<EmployeeManager> managers = employee.getEmployeeManagers()
+			boolean isDirectManager = employee.getEmployeeManagers()
 				.stream()
-				.filter(employeeManager -> employeeManager.getManager()
-					.getEmployeeId()
-					.equals(currentUser.getEmployee().getEmployeeId()))
-				.toList();
+				.anyMatch(employeeManager -> employeeManager.getManager().getEmployeeId().equals(currentEmployeeId));
 
-			if (managers.isEmpty()) {
+			boolean isTeamSupervisor = employeeTeamDao.existsEmployeeInSupervisedTeam(employee.getEmployeeId(),
+					currentEmployeeId);
+
+			if (!isDirectManager && !isTeamSupervisor) {
 				throw new EntityNotFoundException(
 						PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_UNDER_CURRENT_EMPLOYEE_SUPERVISION,
 						new String[] { "Employee", requestedAnalytics });
@@ -548,17 +548,19 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	 */
 	private void isTeamUnderCurrentUserSupervision(User currentUser, Team team, String requestedAnalytics) {
 		Role currentUserRole = currentUser.getEmployee().getEmployeeRole().getLeaveRole();
-		if (Role.LEAVE_MANAGER.equals(currentUserRole) && team.getEmployees()
-			.stream()
-			.filter(EmployeeTeam::getIsSupervisor)
-			.map(employeeTeam -> employeeTeam.getEmployee()
-				.getEmployeeId()
-				.equals(currentUser.getEmployee().getEmployeeId()))
-			.toList()
-			.isEmpty()) {
-			throw new EntityNotFoundException(
-					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_UNDER_CURRENT_EMPLOYEE_SUPERVISION,
-					new String[] { "Team", requestedAnalytics });
+		if (Role.LEAVE_MANAGER.equals(currentUserRole)) {
+			boolean isSupervisor = team.getEmployees()
+				.stream()
+				.filter(EmployeeTeam::getIsSupervisor)
+				.anyMatch(employeeTeam -> employeeTeam.getEmployee()
+					.getEmployeeId()
+					.equals(currentUser.getEmployee().getEmployeeId()));
+
+			if (!isSupervisor) {
+				throw new EntityNotFoundException(
+						PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_UNDER_CURRENT_EMPLOYEE_SUPERVISION,
+						new String[] { "Team", requestedAnalytics });
+			}
 		}
 	}
 
