@@ -397,7 +397,7 @@ public class TeamServiceImpl implements TeamService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getTeamMemberTeams(Long teamId) {
-		log.info("getTeamMemberTeams: execution started for teamId: {}", teamId);
+		log.info("getTeamMemberTeams: execution started");
 
 		if (teamId == null || teamId <= 0) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
