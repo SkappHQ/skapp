@@ -85,7 +85,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto checkDealNameExists(String name) {
 		log.info("checkDealNameExists: execution started");
 		CrmValidations.validateDealName(name);
-		boolean exists = crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
+		boolean exists = crmDealDao.existsByNameAndIsDeletedFalse(name);
 
 		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
 		responseDto.setIsExists(exists);
@@ -109,8 +109,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		User currentUser = userService.getCurrentUser();
 
-		if (crmDealDao.existsByNameIgnoreCaseAndContact_IdAndIsDeletedFalse(requestDto.getName(),
-				requestDto.getContactId())) {
+		if (crmDealDao.existsByNameAndContact_IdAndIsDeletedFalse(requestDto.getName(), requestDto.getContactId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
 		}
 
@@ -382,12 +381,12 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
 		}
 
-		if (requestDto.getName() != null && !requestDto.getName().equalsIgnoreCase(deal.getName())) {
+		if (requestDto.getName() != null && !requestDto.getName().equals(deal.getName())) {
 			CrmValidations.validateDealName(requestDto.getName());
 			Long effectiveContactId = (requestDto.getContactId() != null) ? requestDto.getContactId()
 					: deal.getContact().getId();
-			if (crmDealDao.existsByNameIgnoreCaseAndContact_IdAndIsDeletedFalseAndIdNot(requestDto.getName(),
-					effectiveContactId, deal.getId())) {
+			if (crmDealDao.existsByNameAndContact_IdAndIsDeletedFalseAndIdNot(requestDto.getName(), effectiveContactId,
+					deal.getId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
 			}
 			deal.setName(requestDto.getName());
@@ -424,8 +423,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
 
 			if (!requestDto.getContactId().equals(deal.getContact().getId())) {
-				if (crmDealDao.existsByNameIgnoreCaseAndContact_IdAndIsDeletedFalse(deal.getName(),
-						requestDto.getContactId())) {
+				if (crmDealDao.existsByNameAndContact_IdAndIsDeletedFalse(deal.getName(), requestDto.getContactId())) {
 					throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
 				}
 			}
