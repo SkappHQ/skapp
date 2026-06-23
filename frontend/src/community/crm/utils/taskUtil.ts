@@ -57,7 +57,10 @@ const TASK_TYPE_ICON_MAP: Record<string, ComponentType> = {
 };
 
 export const getTaskTypeIcon = (typeName: string): ReactElement => {
-  return createElement(TASK_TYPE_ICON_MAP[typeName.toLowerCase()]);
+  return createElement(
+    TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ??
+      ChecklistVerificationFilledIcon
+  );
 };
 
 export const getPriorityConfig = (
@@ -75,6 +78,7 @@ export interface GroupedTasks {
   dueToday: CrmTaskDetailType[];
   dueTomorrow: CrmTaskDetailType[];
   upcoming: CrmTaskDetailType[];
+  isOpenTasksEmpty: boolean;
 }
 
 export const groupTasksByDueDate = (
@@ -103,7 +107,19 @@ export const groupTasksByDueDate = (
     }
   }
 
-  return { overdue, dueToday, dueTomorrow, upcoming };
+  const isOpenTasksEmpty =
+    overdue.length === 0 &&
+    dueToday.length === 0 &&
+    dueTomorrow.length === 0 &&
+    upcoming.length === 0;
+
+  return {
+    overdue,
+    dueToday,
+    dueTomorrow,
+    upcoming,
+    isOpenTasksEmpty
+  };
 };
 
 export const getTaskGroups = (
