@@ -48,7 +48,7 @@ const fetchOpenTasks = async (
   return response?.data?.results?.[0];
 };
 
-export const useGetOpenTasks = ( searchKeyword: string, enabled: boolean) => {
+export const useGetOpenTasks = (searchKeyword: string, enabled: boolean) => {
   return useQuery({
     queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword),
     queryFn: () => fetchOpenTasks(searchKeyword),
