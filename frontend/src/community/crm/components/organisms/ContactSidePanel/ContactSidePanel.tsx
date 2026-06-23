@@ -12,6 +12,7 @@ import { useGetContactById } from "~community/crm/api/ContactApi";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 
@@ -27,11 +28,11 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     SidePanelTabEnum.TASKS
   );
 
-  const { setIsCrmSidePanelOpen, setSelectedContact, selectedContact } =
+  const { setIsCrmSidePanelOpen, setSelectedContactId, selectedContactId } =
     useCrmStore((store) => ({
       setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-      setSelectedContact: store.setSelectedContact,
-      selectedContact: store.selectedContact
+      setSelectedContactId: store.setSelectedContactId,
+      selectedContactId: store.selectedContactId
     }));
 
   const handleContactLoadError = (): void => {
@@ -42,12 +43,12 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       description: translateText(["errors", "contactNotFoundDescription"])
     });
     setIsCrmSidePanelOpen(false);
-    setSelectedContact(null);
+    setSelectedContactId(null);
   };
 
   const { data: contact, isError } = useGetContactById(
-    selectedContact?.id ?? 0,
-    isOpen && !!selectedContact?.id
+    selectedContactId ?? 0,
+    isOpen && !!selectedContactId
   );
 
   useEffect(() => {
@@ -55,7 +56,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   }, [isError]);
 
   const handleClose = (): void => {
-    setSelectedContact(null);
+    setSelectedContactId(null);
     setIsCrmSidePanelOpen(false);
   };
 
@@ -68,8 +69,12 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       case SidePanelTabEnum.DEALS:
         return <SidePanelDealSection deals={contact?.deals ?? []} />;
       case SidePanelTabEnum.TASKS:
-        // TODO: Implement SidePanelTaskSection here
-        return null;
+        return (
+          <SidePanelTasksSection
+            tasks={contact?.tasks ?? []}
+            emptyDescription={translateText(["tasks", "emptyDescription"])}
+          />
+        );
       default:
         return null;
     }
@@ -112,8 +117,8 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             activeTabId={activeTab}
             onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
           />
+          <hr className="border-secondary-accent" />
         </div>
-        <hr className="border-secondary-accent" />
         {renderTabContent()}
       </div>
     </SidePanel>

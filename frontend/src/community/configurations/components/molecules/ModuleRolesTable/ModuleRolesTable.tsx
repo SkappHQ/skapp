@@ -8,6 +8,7 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import attendanceModuleRolesTableData from "~community/configurations/data/attendanceModuleRolesTableData.json";
+import crmModuleRolesTableData from "~community/configurations/data/crmModuleRolesTableData.json";
 import esignatureModuleRolesTableData from "~community/configurations/data/esignatureModuleRolesTableData.json";
 import invoiceModuleRolesTableData from "~community/configurations/data/invoiceModuleRolesTableData.json";
 import leaveModuleRolesTableData from "~community/configurations/data/leaveModuleRolesTableData.json";
@@ -49,6 +50,8 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
         return invoiceModuleRolesTableData;
       case Modules.PM:
         return projectManagementModuleRolesTableData;
+      case Modules.CRM:
+        return crmModuleRolesTableData;
       default:
         return [];
     }
@@ -119,7 +122,13 @@ const ModuleRolesTable = ({ module }: Props): JSX.Element => {
     [Modules.INVOICE]: [
       { id: "manager", label: translateText(["managerHeader"]) }
     ],
-    [Modules.PM]: [{ id: "employee", label: translateText(["employeeHeader"]) }]
+    [Modules.PM]: [
+      { id: "employee", label: translateText(["employeeHeader"]) }
+    ],
+    [Modules.CRM]: [
+      { id: "manager", label: translateText(["salesManagerHeader"]) },
+      { id: "employee", label: translateText(["salesRepresentativeHeader"]) }
+    ]
   };
 
   const headers = [

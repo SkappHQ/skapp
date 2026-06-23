@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
+import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { CrmTaskCategory } from "~community/crm/types/CommonTypes";
 
 // TODO: Replace with API-fetched categories once backend is implemented
@@ -11,9 +11,7 @@ const STATIC_TASK_CATEGORIES: CrmTaskCategory[] = [
   { id: 4, name: "Other", orderIndex: 3 }
 ];
 
-const useGetTaskTypeOptions = () => {
-  const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
-
+const useGetTaskTypeOptions = (translateText: TranslatorFunctionType) => {
   const options = useMemo(
     () =>
       STATIC_TASK_CATEGORIES.map((category) => ({

@@ -154,6 +154,23 @@ class CrmDealControllerIntegrationTest {
 		return dto;
 	}
 
+	private CrmDeal savedDeal() {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Deal Company");
+		CrmContact contact = savedContact(company);
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Saved Deal");
+		deal.setAmount("5000");
+		deal.setDescription("Test deal description");
+		deal.setPriority(CrmDealPriority.HIGH);
+		deal.setStage(stage);
+		deal.setContact(contact);
+		deal.setCompany(company);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setOrderIndex("a0");
+		return crmDealDao.save(deal);
+	}
+
 	private CrmDeal savedDeal(String name, CrmDealStage stage, CrmCompany company) {
 		CrmDeal deal = new CrmDeal();
 		deal.setName(name);
@@ -319,6 +336,79 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
 	}
 
+	// --- Get deal by ID tests ---
+
+	@Test
+	@DisplayName("Get deal by ID - Happy path returns deal detail")
+	void getDealById_HappyPath_ReturnsDealDetail() throws Exception {
+		CrmDeal deal = savedDeal();
+
+		performRequest(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(deal.getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Saved Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['amount']").value("5000"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['description']").value("Test deal description"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("HIGH"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(deal.getContact().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['name']").value("Deal Test Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['name']").value("Deal Company"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(deal.getStage().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']").exists())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['closingAt']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Get deal by ID - Deal with no company returns null company")
+	void getDealById_NoCompany_ReturnsNullCompany() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmContact contact = savedContact(null);
+		CrmDeal deal = new CrmDeal();
+		deal.setName("No Company Deal");
+		deal.setAmount("4000");
+		deal.setPriority(CrmDealPriority.LOW);
+		deal.setStage(stage);
+		deal.setContact(contact);
+		deal.setCompany(null);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setOrderIndex("a0");
+		CrmDeal savedDeal = crmDealDao.save(deal);
+
+		performRequest(get(BASE_PATH + "/" + savedDeal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(savedDeal.getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("No Company Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(savedDeal.getStage().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Get deal by ID - Not found returns bad request")
+	void getDealById_NotFound_ReturnsBadRequest() throws Exception {
+		performRequest(get(BASE_PATH + "/99999").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get deal by ID - Soft deleted deal returns bad request")
+	void getDealById_SoftDeleted_ReturnsBadRequest() throws Exception {
+		CrmDeal deal = savedDeal();
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		performRequest(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND)));
+	}
+
 	// --- Delete deal tests ---
 
 	@Test
@@ -402,9 +492,20 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get deal by ID - Without CRM role returns forbidden")
+	void getDealById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmDeal deal = savedDeal();
+		String nonCrmToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user3@gmail.com"),
+				1L);
+
+		mvc.perform(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	@Test
 	@DisplayName("Delete non-existent deal - Returns Bad Request")
 	void deleteDeal_NonExistent_ReturnsBadRequest() throws Exception {
-		performDeleteRequest(9999L).andDo(print())
+		performDeleteRequest(99999L).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
