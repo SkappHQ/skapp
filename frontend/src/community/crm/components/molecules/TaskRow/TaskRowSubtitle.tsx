@@ -1,11 +1,11 @@
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 import { getDueDateStatus } from "~community/crm/utils/taskUtil";
 
 interface Props {
-  task: CrmTaskType;
+  task: TaskRowResponseType;
   isShowContact: boolean;
   applyCompletedStyle: boolean;
 }

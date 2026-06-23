@@ -13,13 +13,13 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetTasksByCompany } from "~community/crm/api/CompanyApi";
 import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { mapCompanyToMetricItems } from "~community/crm/utils/companyUtil";
 
 import SidePanelMetricCards from "../../molecules/SidePanelMetricCards/SidePanelMetricCards";
-import SidePanelTasksSection from "../../molecules/SidePanelTasksSection/SidePanelTasksSection";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
@@ -139,6 +139,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             />
           </div>
           <hr className="border-secondary-accent" />
+
           {renderTabContent()}
         </div>
       )}
