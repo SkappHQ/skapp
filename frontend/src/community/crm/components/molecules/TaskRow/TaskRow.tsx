@@ -45,7 +45,6 @@ const TaskRow: FC<Props> = ({
   };
 
   const { mutate: updateCompletion } = useUpdateTaskCompletion(
-    () => {},
     handleUpdateCompletionError
   );
 
