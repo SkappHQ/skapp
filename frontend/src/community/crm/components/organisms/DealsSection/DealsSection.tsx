@@ -11,14 +11,12 @@ import {
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum, DealViewEnum } from "~community/crm/enums/common";
 
-import DealsHeader, { DealView } from "./DealsHeader/DealsHeader";
+import DealsHeader from "./DealsHeader/DealsHeader";
 
 const DealsSection: FC = () => {
   const [inputValue, setInputValue] = useState("");
-  const [activeView, setActiveView] = useState<DealView>(DealViewEnum.LIST);
+  const [activeView, setActiveView] = useState(DealViewEnum.LIST);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
-
-  const isListView = activeView === DealViewEnum.LIST;
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useGetDealsInfinite(
@@ -28,7 +26,7 @@ const DealsSection: FC = () => {
         sortOrder: SortOrderTypes.ASC,
         searchKeyword: debouncedSearch
       },
-      isListView
+      activeView === DealViewEnum.LIST
     );
 
   const allDeals = useMemo(

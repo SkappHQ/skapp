@@ -54,7 +54,6 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
         onClick={
           onDealClick
             ? () => {
-                alert(`Deal ${deal.id} clicked!`);
                 onDealClick(String(deal.id));
               }
             : undefined

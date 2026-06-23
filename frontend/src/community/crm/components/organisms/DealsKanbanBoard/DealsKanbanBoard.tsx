@@ -1,13 +1,9 @@
-import {
-  DndContext,
-  DragOverlay,
-  closestCorners
-} from "@dnd-kit/core";
+import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
 import { FC, useEffect, useRef, useState } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
-import { DEAL_KANDABN_PAGE_SIZE } from "~community/crm/constants/dealConstants";
+import { DEAL_KANBAN_PAGE_SIZE } from "~community/crm/constants/dealConstants";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
 import type {
   BoardDealsGroupedRequest,
@@ -67,31 +63,23 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     handleDragOver,
     handleDragEnd,
     handleDragCancel
-  } = useKanbanDrag({ stageMapRef, setStageMap, reorderWithinStage, moveBetweenStages });
+  } = useKanbanDrag({
+    stageMapRef,
+    setStageMap,
+    reorderWithinStage,
+    moveBetweenStages
+  });
 
-  const handleLoadMore = (stageIdStr: string) => {
-    const stageId = Number(stageIdStr);
-    const s = stageMapRef.current[stageId];
-    if (!s || s.isLoadingMore) return;
-    const nextPage = s.page + 1;
-    setStageMap((prev) => ({
-      ...prev,
-      [stageId]: { ...prev[stageId], isLoadingMore: true }
-    }));
+  const isInitialLoad =
+    isInitLoading || (stageIds.length > 0 && isDealsLoading);
+
+  const handleLoadMore = (stageId: number, nextPage: number) =>
     loadMore({
       stageIds: [stageId],
       searchKeyword: searchKeyword || undefined,
       page: nextPage,
-      limit: DEAL_KANDABN_PAGE_SIZE
+      limit: DEAL_KANBAN_PAGE_SIZE
     });
-    setStageMap((prev) => ({
-      ...prev,
-      [stageId]: { ...prev[stageId], isLoadingMore: false, page: nextPage }
-    }));
-  };
-
-  const isInitialLoad =
-    isInitLoading || (stageIds.length > 0 && isDealsLoading);
 
   return (
     <div className="flex flex-col">
@@ -127,11 +115,10 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                 deals={deals}
                 isLoading={isInitialLoad}
                 hasNextPage={hasMore}
-                isLoadingMore={state?.isLoadingMore ?? false}
                 isOver={overStageId === stage.id}
                 onDealClick={() => {}}
                 onAddDeal={() => {}}
-                fetchNextPage={handleLoadMore}
+                onLoadMore={(nextPage) => handleLoadMore(stage.id, nextPage)}
               />
             );
           })}

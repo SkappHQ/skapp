@@ -17,11 +17,11 @@ import type {
 } from "~community/crm/types/CommonTypes";
 
 import {
+  type SetStageMap,
+  type StageMap,
   commitCrossStageMove,
   commitSameStageReorder,
-  resolveTargetStageId,
-  type SetStageMap,
-  type StageMap
+  resolveTargetStageId
 } from "../utils/kanbanUtil";
 
 interface UseKanbanDragProps {
@@ -68,9 +68,7 @@ export const useKanbanDrag = ({
 
   const handleDragOver = ({ over }: DragOverEvent): void => {
     setOverStageId(
-      over
-        ? resolveTargetStageId(String(over.id), stageMapRef.current)
-        : null
+      over ? resolveTargetStageId(String(over.id), stageMapRef.current) : null
     );
   };
 

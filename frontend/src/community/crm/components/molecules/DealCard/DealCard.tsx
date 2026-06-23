@@ -66,13 +66,13 @@ const DealCard: FC<DealCardProps> = ({
       </div>
 
       <div className="flex flex-col gap-1">
-        <button
-          type="button"
+        <div
+          role="button"
           className="body2 cursor-pointer text-left hover:text-primary-text hover:underline"
           onClick={onClick}
         >
           {title}
-        </button>
+        </div>
 
         {(contactName || companyName) && (
           <div className="body3 flex items-center gap-1 truncate text-secondary-icon">

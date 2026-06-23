@@ -10,8 +10,6 @@ import type {
 export interface StageState {
   deals: CrmDealBoardType[];
   totalCount: number;
-  page: number;
-  isLoadingMore: boolean;
 }
 
 export type StageMap = Record<number, StageState>;
@@ -48,9 +46,7 @@ export const buildInitialStageState = (
       s.stageId,
       {
         deals: s.deals,
-        totalCount: s.totalCount,
-        page: 0,
-        isLoadingMore: false
+        totalCount: s.totalCount
       }
     ])
   );
@@ -87,10 +83,10 @@ export const commitCrossStageMove = ({
   const overDealIndex = tgtDeals.findIndex((d) => d.id === Number(overId));
 
   let insertIndex: number;
-  if (overDealIndex !== -1) {
-    insertIndex = activeMidY < overMidY ? overDealIndex : overDealIndex + 1;
-  } else {
+  if (overDealIndex === -1) {
     insertIndex = tgtDeals.length;
+  } else {
+    insertIndex = activeMidY < overMidY ? overDealIndex : overDealIndex + 1;
   }
 
   const newTgtDeals = [

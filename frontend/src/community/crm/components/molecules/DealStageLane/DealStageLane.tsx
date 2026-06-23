@@ -4,7 +4,7 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -25,11 +25,10 @@ export interface DealStageLaneProps {
   deals: CrmDealBoardType[];
   isLoading?: boolean;
   hasNextPage?: boolean;
-  isLoadingMore?: boolean;
   isOver?: boolean;
   onDealClick: (dealId: string) => void;
   onAddDeal: (stageId: string) => void;
-  fetchNextPage: (stageId: string) => void;
+  onLoadMore: (nextPage: number) => void;
 }
 
 const DealStageLane: FC<DealStageLaneProps> = ({
@@ -37,23 +36,33 @@ const DealStageLane: FC<DealStageLaneProps> = ({
   deals,
   isLoading = false,
   hasNextPage = false,
-  isLoadingMore = false,
   isOver = false,
   onDealClick,
   onAddDeal,
-  fetchNextPage
+  onLoadMore
 }) => {
   const translateText = useTranslator("crmModule", "deals", "kanban");
+
+  const [page, setPage] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const { setNodeRef } = useDroppable({
     id: stage.id,
     data: { type: "stage", stageId: stage.id }
   });
 
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    setIsLoadingMore(true);
+    onLoadMore(nextPage);
+    setIsLoadingMore(false);
+  };
+
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isLoadingMore,
-    onLoadMore: () => fetchNextPage(stage.id)
+    onLoadMore: handleLoadMore
   });
 
   return (
