@@ -56,7 +56,9 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       id: "edit",
       label: translateText(["editContact"]),
       icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: () => {} //Add edit contact functionality here
+      onClick: () => {
+        openContactModal(CrmModalTypes.EDIT_CONTACT_MODAL);
+      }
     },
     {
       id: "delete",
