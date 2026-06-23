@@ -3,7 +3,6 @@ import { NextPage } from "next";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealDetailSidePanel from "~community/crm/components/organisms/DealDetailSidePanel/DealDetailSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
@@ -28,13 +27,14 @@ const Deals: NextPage = () => {
       onPrimaryButtonClick={() => setIsCrmSidePanelOpen(true)}
     >
       <>
-        <SidePanelWrapper>
-          {selectedDealId ? (
-            <DealDetailSidePanel isOpen={isCrmSidePanelOpen} onClose={() => {}} />
-          ) : (
-            <AddDealSidePanel />
-          )}
-        </SidePanelWrapper>
+        {selectedDealId && (
+          <DealDetailSidePanel
+            isOpen={isCrmSidePanelOpen}
+            onClose={() => {}}
+          />
+        )}
+
+        <AddDealSidePanel />
 
         <DealsSection />
       </>

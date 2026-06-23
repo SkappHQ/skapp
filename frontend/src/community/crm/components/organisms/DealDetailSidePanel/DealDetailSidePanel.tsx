@@ -52,14 +52,17 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
     setIsCrmSidePanelOpen(false);
   };
 
-  const { data: deal } = useGetDealById(selectedDealId, isOpen);
+  const { data: deal } = useGetDealById(
+    selectedDealId ?? 0,
+    isOpen && !!selectedDealId
+  );
 
   // Fetch tasks filtered by deal
   const { data: relatedTasks = [] } = useGetRelatedTasks(
     null,
-    selectedDealId,
+    selectedDealId ?? 0,
     undefined,
-    isOpen
+    isOpen && !!selectedDealId
   );
 
   // Convert to TaskRowResponseType format for display

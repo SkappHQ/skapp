@@ -111,13 +111,13 @@ const fetchDealById = async (
 };
 
 export const useGetDealById = (
-  id: number | null,
+  id: number,
   enabled = true
 ): UseQueryResult<DetailPanelDealResponseType> => {
   return useQuery({
-    queryKey: id !== null ? crmDealQueryKeys.DEAL_BY_ID(id) : [],
-    queryFn: () => fetchDealById(id!),
+    queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
+    queryFn: () => fetchDealById(id),
     refetchOnWindowFocus: false,
-    enabled: enabled && id !== null
+    enabled
   });
 };
