@@ -1,6 +1,8 @@
 import { SetType } from "~community/common/types/CommonTypes";
-import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
-import { PreselectedContact } from "~community/crm/types/CommonTypes";
+import {
+  CrmTaskDetailType,
+  PreselectedContact
+} from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmTaskSliceTypes } from "~community/crm/types/SliceTypes";
 
