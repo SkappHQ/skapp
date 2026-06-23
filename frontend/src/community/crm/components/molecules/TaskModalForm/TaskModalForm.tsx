@@ -278,6 +278,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
             </div>
           </DatePicker>
         </div>
+        
         <div className="flex-1">
           {selectedOwner ? (
             <SelectedOwnerField
