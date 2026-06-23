@@ -17,12 +17,10 @@ const EditContactModalContent = () => {
     "contacts",
     "editContactModal"
   );
-  const { setIsContactModalOpen, selectedContactId, setSelectedContactId } =
-    useCrmStore((store) => ({
-      setIsContactModalOpen: store.setIsContactModalOpen,
-      selectedContactId: store.selectedContactId,
-      setSelectedContactId: store.setSelectedContactId
-    }));
+  const { setIsContactModalOpen, selectedContactId } = useCrmStore((store) => ({
+    setIsContactModalOpen: store.setIsContactModalOpen,
+    selectedContactId: store.selectedContactId
+  }));
 
   const selectedContact = useGetSelectedContactById(selectedContactId);
 
