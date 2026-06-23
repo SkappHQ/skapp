@@ -1,7 +1,7 @@
 import { FC } from "react";
 
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
-import { mapTasktoTaskRowResponse } from "~community/crm/utils/taskUtil";
+import { mapTaskToTaskRowResponse } from "~community/crm/utils/taskUtil";
 
 import TaskRow from "../../molecules/TaskRow/TaskRow";
 
@@ -26,7 +26,7 @@ const TaskGroup: FC<TaskGroupProps> = ({
           return (
             <div key={task.id}>
               <TaskRow
-                task={mapTasktoTaskRowResponse(task)}
+                task={mapTaskToTaskRowResponse(task)}
                 isCheckTaskVisible={isCheckTaskVisible}
               />
             </div>

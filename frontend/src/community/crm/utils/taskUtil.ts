@@ -137,9 +137,9 @@ export const getTaskGroups = (
   return groupTasksByDueDate(filteredTasks);
 };
 
-export const mapTasktoTaskRowResponse: (
+export const mapTaskToTaskRowResponse = (
   task: CrmTaskDetailType
-) => TaskRowResponseType = (task) => {
+): TaskRowResponseType => {
   return {
     id: task.id,
     name: task.name,
