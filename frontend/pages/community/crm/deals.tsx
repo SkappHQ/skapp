@@ -11,12 +11,23 @@ import { useCrmStore } from "~community/crm/store/store";
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
 
-  const { setIsCrmSidePanelOpen, isCrmSidePanelOpen, selectedDealId } =
+  const { setIsCrmSidePanelOpen, isCrmSidePanelOpen, selectedDealId, setSelectedDealId } =
     useCrmStore((store) => ({
       setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      selectedDealId: store.selectedDealId
+      selectedDealId: store.selectedDealId,
+      setSelectedDealId: store.setSelectedDealId
     }));
+
+  const handleCloseDealDetail = () => {
+    setSelectedDealId(null);
+    setIsCrmSidePanelOpen(false);
+  };
+
+  const handleAddDealClick = () => {
+    setSelectedDealId(null); // Clear any selected deal
+    setIsCrmSidePanelOpen(true);
+  };
 
   return (
     <ContentLayout
@@ -24,17 +35,17 @@ const Deals: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      onPrimaryButtonClick={() => setIsCrmSidePanelOpen(true)}
+      onPrimaryButtonClick={handleAddDealClick}
     >
       <>
-        {selectedDealId && (
+        {selectedDealId ? (
           <DealDetailSidePanel
             isOpen={isCrmSidePanelOpen}
-            onClose={() => {}}
+            onClose={handleCloseDealDetail}
           />
+        ) : (
+          <AddDealSidePanel />
         )}
-
-        <AddDealSidePanel />
 
         <DealsSection />
       </>
