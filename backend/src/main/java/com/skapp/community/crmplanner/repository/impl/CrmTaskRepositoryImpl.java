@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
@@ -203,6 +204,9 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
 
+		Join<CrmTask, CrmCompany> companyJoin = root.join(CrmTask_.company, JoinType.LEFT);
+		predicates.add(cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
+
 		if (params.getCompleted() != null) {
 			predicates.add(Boolean.TRUE.equals(params.getCompleted()) ? cb.isTrue(root.get(CrmTask_.isCompleted))
 					: cb.isFalse(root.get(CrmTask_.isCompleted)));
@@ -232,8 +236,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		}
 
 		if (params.getCompanyId() != null) {
-			predicates.add(cb.equal(root.get(CrmTask_.company).get(CrmCompany_.id), params.getCompanyId()));
-			predicates.add(cb.isFalse(root.get(CrmTask_.company).get(CrmCompany_.isDeleted)));
+			predicates.add(cb.equal(companyJoin.get(CrmCompany_.id), params.getCompanyId()));
 		}
 
 		return predicates;

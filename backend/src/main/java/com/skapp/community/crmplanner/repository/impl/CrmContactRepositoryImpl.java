@@ -93,8 +93,9 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Long companyId = filterDto.getCompanyId();
 		if (companyId != null) {
 			predicates.add(cb.equal(company.get(CrmCompany_.id), companyId));
-			predicates.add(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 		}
+
+		predicates.add(cb.or(cb.isNull(company), cb.isFalse(company.get(CrmCompany_.isDeleted))));
 
 		return predicates.toArray(new Predicate[0]);
 	}
@@ -115,9 +116,11 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
-		contact.fetch(CrmContact_.company, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
+				JoinType.LEFT);
 
-		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)),
+				cb.or(cb.isNull(company), cb.isFalse(company.get(CrmCompany_.isDeleted))));
 		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
 
 		return entityManager.createQuery(query).getResultList();
@@ -145,6 +148,9 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			CrmContactFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+
+		Join<CrmContact, CrmCompany> companyJoin = contact.join(CrmContact_.company, JoinType.LEFT);
+		predicates.add(cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {

@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
@@ -135,6 +136,9 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		predicates.add(cb.equal(deal.get(CrmDeal_.stage).get(CrmDealStage_.id), stageId));
 		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 
+		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
+		predicates.add(cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
+
 		addSearchKeywordPredicates(cb, deal, requestDto.getSearchKeyword(), predicates);
 
 		return predicates;
@@ -204,6 +208,9 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(deal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(stageIds));
 		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
+		predicates.add(cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
 
 		addSearchKeywordPredicates(cb, deal, requestDto.getSearchKeyword(), predicates);
 
