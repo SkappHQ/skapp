@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import AddTaskModalContent from "~community/crm/components/molecules/AddTaskModalContent/AddTaskModalContent";
+import DeleteTaskModalContent from "~community/crm/components/molecules/DeleteTaskModalContent/DeleteTaskModalContent";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -25,6 +26,8 @@ const TaskModalController = () => {
     switch (modalType) {
       case CrmModalTypes.ADD_TASK_MODAL:
         return translateText(["addTaskModal", "title"]);
+      case CrmModalTypes.DELETE_TASK_MODAL:
+        return translateText(["deleteTaskModal", "title"]);
       default:
         return "";
     }
@@ -34,6 +37,8 @@ const TaskModalController = () => {
     switch (taskModalType) {
       case CrmModalTypes.ADD_TASK_MODAL:
         return <AddTaskModalContent />;
+      case CrmModalTypes.DELETE_TASK_MODAL:
+        return <DeleteTaskModalContent />;
       default:
         return null;
     }
