@@ -8,7 +8,7 @@ import { CrmDealBoardType } from "~community/crm/types/CommonTypes";
 
 interface DraggableDealCardProps {
   deal: CrmDealBoardType;
-  onDealClick?: (dealId: string) => void;
+  onDealClick: (dealId: string) => void;
 }
 
 const DraggableDealCard: FC<DraggableDealCardProps> = ({
@@ -51,13 +51,7 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
         amount={deal.amount ?? ""}
         priority={deal.priority}
         taskCount={deal.taskCount}
-        onClick={
-          onDealClick
-            ? () => {
-                onDealClick(String(deal.id));
-              }
-            : undefined
-        }
+        onClick={() => onDealClick(String(deal.id))}
       />
     </div>
   );
