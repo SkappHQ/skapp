@@ -57,11 +57,11 @@ export const taskQueryKeys = {
   GET_OPEN_TASKS: ["get-open-tasks"],
   GET_OPEN_TASKS_BY_SEARCH: (searchKeyword?: string) => ["get-open-tasks", searchKeyword],
   GET_COMPLETED_TASKS: ["get-completed-tasks"],
-  GET_COMPLETED_TASKS_BY_SEARCH: (searchKeyword: string, size?: number) => [
+  GET_COMPLETED_TASKS_BY_SEARCH: (searchKeyword: string) => [
     "get-completed-tasks",
-    searchKeyword,
-    size
+    searchKeyword
   ],
+
   TASK_BY_ID: (id: number) => ["crm-task-by-id", id],
   TASK_BY_ID_ALL: ["crm-task-by-id"],
   RELATED_TASKS: (

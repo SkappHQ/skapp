@@ -57,10 +57,9 @@ const TASK_TYPE_ICON_MAP: Record<string, ComponentType> = {
 
 export const getTaskTypeIcon = (
   typeName: string,
-  width?: string,
-  height?: string
+  size?: string
 ): ReactElement => {
-  const props = width || height ? { width, height } : undefined;
+  const props = size ? { width: size, height: size } : undefined;
   return createElement(TASK_TYPE_ICON_MAP[typeName.toLowerCase()], props);
 };
 
@@ -73,6 +72,11 @@ export const getPriorityConfig = (
     bgColor: option.backgroundColor,
     textColor: option.textColor
   };
+};
+
+export const getPriorityDisplayKey = (priority: CrmPriorityEnum): string => {
+  const option = PRIORITY_OPTIONS.find((o) => o.value === priority);
+  return option?.key ?? "";
 };
 
 export interface GroupedTasks {

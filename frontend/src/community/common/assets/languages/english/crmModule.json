@@ -616,8 +616,7 @@
       "priority": "Priority",
       "closingDate": "Closing date",
       "contactName": "Contact name",
-      "noClosingDate": "Not set",
-      "noContact": "No contact"
+      "none": "None"
     }
   }
 }

@@ -70,14 +70,27 @@ export const useGetTaskById = (id: number, enabled = true) => {
   });
 };
 
-const fetchTasksByFilter = async (filters: {
+interface RelatedTaskFilters {
   contactId?: number;
   dealId?: number;
-}): Promise<CrmTaskDetailType[]> => {
-  const response = await authFetch.get(taskEndpoints.GET_TASKS, {
+}
+
+const fetchRelatedOpenTasks = async (
+  filters: RelatedTaskFilters
+): Promise<CrmTaskDetailType[]> => {
+  const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
     params: filters
   });
   return response?.data?.results?.[0]?.tasks ?? [];
+};
+
+const fetchRelatedCompletedTasks = async (
+  filters: RelatedTaskFilters
+): Promise<CrmTaskDetailType[]> => {
+  const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
+    params: filters
+  });
+  return response?.data?.results?.[0]?.items ?? [];
 };
 
 export const useGetRelatedTasks = (
@@ -86,33 +99,24 @@ export const useGetRelatedTasks = (
   currentTaskId: number | undefined,
   enabled = true
 ) => {
+  const filters: RelatedTaskFilters = {
+    ...(contactId != null && { contactId }),
+    ...(dealId != null && { dealId })
+  };
+
   return useQuery({
     queryKey: taskQueryKeys.RELATED_TASKS(contactId, dealId, currentTaskId),
     queryFn: async () => {
-      const requests: Promise<CrmTaskDetailType[]>[] = [];
+      const [openTasks, completedTasks] = await Promise.all([
+        fetchRelatedOpenTasks(filters),
+        fetchRelatedCompletedTasks(filters)
+      ]);
 
-      if (contactId != null) {
-        requests.push(fetchTasksByFilter({ contactId }));
-      }
+      const allTasks = [...openTasks, ...completedTasks].filter(
+        (task) => task.id !== currentTaskId
+      );
 
-      if (dealId != null) {
-        requests.push(fetchTasksByFilter({ dealId }));
-      }
-
-      const resultSets = await Promise.all(requests);
-
-      if (resultSets.length === 1) {
-        return resultSets[0].filter((task) => task.id !== currentTaskId);
-      }
-
-      const taskMap = new Map<number, CrmTaskDetailType>();
-      resultSets.flat().forEach((task) => {
-        if (task.id !== currentTaskId) {
-          taskMap.set(task.id, task);
-        }
-      });
-
-      return Array.from(taskMap.values());
+      return [...new Map(allTasks.map((task) => [task.id, task])).values()];
     },
     enabled: enabled && (contactId != null || dealId != null),
     refetchOnWindowFocus: false

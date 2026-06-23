@@ -1,5 +1,5 @@
 import { Avatar, ButtonV2, Label } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode } from "react";
+import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -9,89 +9,19 @@ import {
   formatDateTimeWithOrdinalIndicator
 } from "~community/common/utils/dateTimeUtils";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
-import { getPriorityConfig } from "~community/crm/utils/taskUtil";
+import { getPriorityConfig, getPriorityDisplayKey } from "~community/crm/utils/taskUtil";
 
 interface Props {
   task: CrmTaskDetailType;
   onMarkAsDone?: () => void;
-  onContactClick?: (contactId: number) => void;
 }
 
-const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone, onContactClick }) => {
+const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
   const priorityConfig = getPriorityConfig(task.priority);
-  const ownerLastName = task.owner?.lastName ? ` ${task.owner.lastName}` : "";
-
-  const ownerName = task.owner
-    ? `${task.owner.firstName}${ownerLastName}`
-    : "";
-
-  const infoRows: { label: string; value: ReactNode }[] = [
-    {
-      label: translateText(["assignedTo"]),
-      value: task.owner ? (
-        <div className="flex items-center gap-2">
-          <Avatar
-            id={`task-owner-${task.owner.employeeId}`}
-            size="xs"
-            firstName={task.owner.firstName}
-            lastName={task.owner.lastName ?? ""}
-            src={task.owner.authPic ?? ""}
-          />
-          <span className="body2">{ownerName}</span>
-        </div>
-      ) : (
-        <span className="body2">—</span>
-      )
-    },
-    {
-      label: translateText(["priority"]),
-      value: (
-        <Label
-          backgroundColor={priorityConfig.bgColor}
-          textColor={priorityConfig.textColor}
-        >
-          {task.priority.charAt(0) + task.priority.slice(1).toLowerCase()}
-        </Label>
-      )
-    },
-    {
-      label: translateText(["closingDate"]),
-      value: (
-        <span className="body3">
-          {task.dueAt
-            ? formatDateTimeWithOrdinalIndicator(
-                convertUTCStringToLocalDateTime(task.dueAt)
-              )
-            : translateText(["noClosingDate"])}
-        </span>
-      )
-    },
-    {
-      label: translateText(["contactName"]),
-      value: task.contact ? (
-        <button
-          type="button"
-          className="flex items-center gap-1 cursor-pointer text-primary-accent body2 hover:opacity-80"
-          onClick={() => onContactClick?.(task.contact!.id)}
-        >
-          <span className="underline">{task.contact.name}</span>
-          <Icon
-            name={IconName.POP_OUT_ICON}
-            fill="var(--color-primary-accent)"
-            width="14"
-            height="14"
-          />
-        </button>
-      ) : (
-        <span className="body3 text-secondary-text">
-          {translateText(["noContact"])}
-        </span>
-      )
-    }
-  ];
-
+  const ownerLastName = task.owner.lastName ? ` ${task.owner.lastName}` : "";
+  const ownerName = `${task.owner.firstName}${ownerLastName}`;
 
   return (
     <>
@@ -119,17 +49,57 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone, onContactClick }) =>
       </ButtonV2>
 
       <div className="w-[295px] min-h-[200px] flex flex-col gap-3 border border-secondary-accent rounded-xl p-3 mt-4">
-        {infoRows.map((row) => (
-          <div
-            key={row.label}
-            className="flex flex-1 items-center justify-between w-full"
-          >
-            <span className="subtitle3 text-secondary-text whitespace-nowrap">
-              {row.label}
-            </span>
-            <div className="flex items-center">{row.value}</div>
+        <div className="flex flex-1 items-center justify-between w-full">
+          <span className="subtitle3 text-secondary-text whitespace-nowrap">{translateText(["assignedTo"])}</span>
+          <div className="flex items-center">
+            <div className="flex items-center gap-2">
+              <Avatar
+                id={`task-owner-${task.owner.employeeId}`}
+                size="xs"
+                firstName={task.owner.firstName}
+                lastName={task.owner.lastName ?? ""}
+                src={task.owner.authPic ?? ""}
+              />
+              <span className="body2">{ownerName}</span>
+            </div>
           </div>
-        ))}
+        </div>
+
+        <div className="flex flex-1 items-center justify-between w-full">
+          <span className="subtitle3 text-secondary-text whitespace-nowrap">{translateText(["priority"])}</span>
+          <div className="flex items-center">
+            <Label
+              backgroundColor={priorityConfig.bgColor}
+              textColor={priorityConfig.textColor}
+            >
+              {translateText(["priorityOptions", getPriorityDisplayKey(task.priority)])}
+            </Label>
+          </div>
+        </div>
+
+        <div className="flex flex-1 items-center justify-between w-full">
+          <span className="subtitle3 text-secondary-text whitespace-nowrap">{translateText(["closingDate"])}</span>
+          <div className="flex items-center">
+            <span className="body3">
+              {task.dueAt
+                ? formatDateTimeWithOrdinalIndicator(
+                    convertUTCStringToLocalDateTime(task.dueAt)
+                  )
+                : translateText(["none"])}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-1 items-center justify-between w-full">
+          <span className="subtitle3 text-secondary-text whitespace-nowrap">{translateText(["contactName"])}</span>
+          <div className="flex items-center">
+            {task.contact ? (
+              <span className="body2">{task.contact.name}</span>
+            ) : (
+              <span className="body2">{translateText(["none"])}</span>
+            )}
+          </div>
+        </div>
       </div>
     </>
   );

@@ -18,7 +18,6 @@ import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTask
 import SidePanelTaskNotes from "~community/crm/components/organisms/TaskDetailSidePanel/TaskDetailSidePanelNotes/TaskDetailSidePanelNotes";
 import { useCrmStore } from "~community/crm/store/store";
 import {
-  CrmContactMetricsType,
   DetailPanelDealResponseType
 } from "~community/crm/types/CommonTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
@@ -30,13 +29,11 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const {
     selectedTaskId,
     setSelectedTaskId,
-    setIsCrmSidePanelOpen,
-    setSelectedContact
+    setIsCrmSidePanelOpen
   } = useCrmStore((store) => ({
     selectedTaskId: store.selectedTaskId,
     setSelectedTaskId: store.setSelectedTaskId,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedContact: store.setSelectedContact
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
   }));
 
   const handleClose = (): void => {
@@ -96,16 +93,7 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     updateCompletion({ id: task.id, isCompleted: true });
   };
 
-  const handleContactClick = (contactId: number) => {
-    setSelectedTaskId(null);
-    setSelectedContact({ id: contactId } as CrmContactMetricsType);
-    setIsCrmSidePanelOpen(true);
-  };
-
-  const taskTypeName = task?.typeName;
-  const taskIcon = taskTypeName
-    ? getTaskTypeIcon(taskTypeName, "24", "24")
-    : null;
+const taskIcon = task?.typeName ? getTaskTypeIcon(task.typeName, "24") : null;
   const taskDeals: DetailPanelDealResponseType[] = task?.deal
     ? [task.deal]
     : [];
@@ -149,7 +137,6 @@ const TaskDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             <SidePanelTaskInfo
               task={task}
               onMarkAsDone={handleMarkAsDone}
-              onContactClick={handleContactClick}
             />
           </div>
         </div>
