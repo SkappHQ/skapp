@@ -1,9 +1,14 @@
 import {
+  CloseIcon,
   DeleteButtonIcon,
   Dropdown,
+  IconButton,
+  InputField,
   KebabMenu,
   SidePanel,
-  SidePanelProps
+  SidePanelProps,
+  TextArea,
+  TickIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 
@@ -92,6 +97,14 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
     useState<CrmContactLookup | null>(null);
   const [contactSearchTerm, setContactSearchTerm] = useState("");
 
+  // Editable title state
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+
+  // Editable description state
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [editedDescription, setEditedDescription] = useState("");
+
   const debouncedContactSearch = useDebounce(
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
@@ -134,6 +147,8 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
       if (deal.stage) {
         setSelectedStageId(String(deal.stage.id));
       }
+      setEditedTitle(deal.name ?? "");
+      setEditedDescription(deal.description ?? "");
     }
   }, [deal]);
 
@@ -155,12 +170,45 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
     }
   ];
 
+  // Title editing handlers
+  const handleTitleClick = () => {
+    setIsEditingTitle(true);
+    setEditedTitle(deal?.name ?? "");
+  };
+
+  const handleSaveTitle = async () => {
+    // TODO: Add API call to update deal name
+    console.log("Saving title:", editedTitle);
+    setIsEditingTitle(false);
+  };
+
+  const handleDiscardTitle = () => {
+    setEditedTitle(deal?.name ?? "");
+    setIsEditingTitle(false);
+  };
+
+  // Description editing handlers
+  const handleDescriptionClick = () => {
+    setIsEditingDescription(true);
+    setEditedDescription(deal?.description ?? "");
+  };
+
+  const handleSaveDescription = async () => {
+    // TODO: Add API call to update deal description
+    console.log("Saving description:", editedDescription);
+    setIsEditingDescription(false);
+  };
+
+  const handleDiscardDescription = () => {
+    setEditedDescription(deal?.description ?? "");
+    setIsEditingDescription(false);
+  };
+
   return (
     <>
       <SidePanel
         isOpen={isOpen}
         onClose={handleClose}
-        width="lg"
         animation="slide"
         closeOnBackdropClick
         header={
@@ -194,18 +242,90 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
         }
       >
         <div className="flex flex-col gap-6">
-          <h2 className="h2">{deal?.name}</h2>
+          {/* Editable Title */}
+          {isEditingTitle ? (
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <InputField
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSaveTitle();
+                    }
+                  }}
+                  className="w-full"
+                  autoFocus
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: 700
+                  }}
+                />
+              </div>
+              <div className="flex gap-2">
+                <IconButton
+                  aria-label="Save title"
+                  isRounded={true}
+                  icon={<TickIcon fill="#408ce4" />}
+                  onClick={handleSaveTitle}
+                  variant="outlined"
+                />
+                <IconButton
+                  aria-label="Discard title"
+                  isRounded={true}
+                  icon={<CloseIcon />}
+                  onClick={handleDiscardTitle}
+                />
+              </div>
+            </div>
+          ) : (
+            <h2
+              className="h2 cursor-pointer hover:bg-secondary-background py-1 px-2 rounded"
+              onClick={handleTitleClick}
+            >
+              {deal?.name}
+            </h2>
+          )}
 
           <div className="flex gap-6 items-start">
             {/* Left: Description + Tasks */}
             <div className="flex-1 flex flex-col gap-6 min-w-0">
+              {/* Editable Description */}
               <div className="flex flex-col gap-1">
-                <p className="subtitle1">
-                  {translateText(["description"])}
-                </p>
-                <p className="subtitle1 text-secondary-text">
-                  {deal?.description ?? translateText(["noDescription"])}
-                </p>
+                <p className="subtitle1">{translateText(["description"])}</p>
+                {isEditingDescription ? (
+                  <div className="flex flex-col gap-3">
+                    <TextArea
+                      value={editedDescription}
+                      onChange={(e) => setEditedDescription(e.target.value)}
+                      className="w-full"
+                      rows={4}
+                      autoFocus
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={handleDiscardDescription}
+                        className="flex items-center justify-center rounded-[8px] transition-[background-color] duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-inset whitespace-nowrap outline-1 bg-tertiary-background outline-1 outline-gray-300 outline-offset-[-1px] hover:outline-2 hover:outline-offset-[-2px] hover:outline-gray-300 focus:ring-gray-300 cursor-pointer px-5 py-3 text-sm subtitle3 min-w-[110px]"
+                      >
+                        Discard
+                      </button>
+                      <button
+                        onClick={handleSaveDescription}
+                        className="flex items-center justify-center rounded-[8px] transition-[background-color] duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-inset whitespace-nowrap outline-1 bg-primary text-black outline-1 outline-transparent outline-offset-[-1px] hover:outline-primary-accent focus:ring-primary-accent cursor-pointer px-5 py-3 text-sm subtitle3 min-w-[110px]"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p
+                    className="subtitle1 text-secondary-text cursor-pointer hover:bg-secondary-background py-1 px-2 rounded"
+                    onClick={handleDescriptionClick}
+                  >
+                    {deal?.description ?? translateText(["noDescription"])}
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col gap-3">
@@ -250,39 +370,43 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
                 </PropertyRow>
 
                 <PropertyRow label={addDealTranslator(["labels", "ownedBy"])}>
-                  <OwnerPopupSearch
-                    selectedUser={selectedOwner}
-                    onChange={setSelectedOwner}
-                    placeholder={addDealTranslator(["placeholders", "none"])}
-                    searchPlaceholder={addDealTranslator([
-                      "placeholders",
-                      "ownerSearch"
-                    ])}
-                    noResultsText={addDealTranslator([
-                      "placeholders",
-                      "noResults"
-                    ])}
-                  />
+                  <div className="flex flex-col w-full">
+                    <OwnerPopupSearch
+                      selectedUser={selectedOwner}
+                      onChange={setSelectedOwner}
+                      placeholder={addDealTranslator(["placeholders", "none"])}
+                      searchPlaceholder={addDealTranslator([
+                        "placeholders",
+                        "ownerSearch"
+                      ])}
+                      noResultsText={addDealTranslator([
+                        "placeholders",
+                        "noResults"
+                      ])}
+                    />
+                  </div>
                 </PropertyRow>
 
                 <PropertyRow
                   label={addDealTranslator(["labels", "contactName"])}
                 >
-                  <ContactPopupSearch
-                    contacts={contacts}
-                    selectedContact={selectedContact}
-                    onChange={setSelectedContact}
-                    onSearch={setContactSearchTerm}
-                    placeholder={addDealTranslator(["placeholders", "none"])}
-                    searchPlaceholder={addDealTranslator([
-                      "placeholders",
-                      "contactSearch"
-                    ])}
-                    noResultsText={addDealTranslator([
-                      "placeholders",
-                      "noResults"
-                    ])}
-                  />
+                  <div className="flex flex-col w-full">
+                    <ContactPopupSearch
+                      contacts={contacts}
+                      selectedContact={selectedContact}
+                      onChange={setSelectedContact}
+                      onSearch={setContactSearchTerm}
+                      placeholder={addDealTranslator(["placeholders", "none"])}
+                      searchPlaceholder={addDealTranslator([
+                        "placeholders",
+                        "contactSearch"
+                      ])}
+                      noResultsText={addDealTranslator([
+                        "placeholders",
+                        "noResults"
+                      ])}
+                    />
+                  </div>
                 </PropertyRow>
               </div>
             </div>
