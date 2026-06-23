@@ -57,7 +57,6 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 			employeeSkill.setSkillId(switch (skillDto.getSkillType()) {
 				case DEFAULT -> resolveDefaultSkillId(skillDto);
 				case CUSTOM -> resolveCustomSkillId(skillDto);
-				case null -> throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
 			});
 
 			employeeSkills.add(employeeSkill);
