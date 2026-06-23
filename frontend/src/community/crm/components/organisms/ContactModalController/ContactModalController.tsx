@@ -7,6 +7,7 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import AddContactModalContent from "../../molecules/AddContactModalContent/AddContactModalContent";
 import DeleteContactModalContent from "../../molecules/DeleteContactModalContent/DeleteContactModalContent";
+import EditContactModalContent from "../../molecules/EditContactModalContent/EditContactModalContent";
 
 const ContactModalController = () => {
   const translateText = useTranslator("crmModule", "contacts");
@@ -23,24 +24,26 @@ const ContactModalController = () => {
   };
 
   const getModalTitle = (modalType: CrmModalTypes) => {
-    // TODO: more switch cases to be added when more modals are added for contacts
     switch (modalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
         return translateText(["addContactModal", "title"]);
       case CrmModalTypes.DELETE_CONTACT_MODAL:
         return translateText(["deleteContactModal", "title"]);
+      case CrmModalTypes.EDIT_CONTACT_MODAL:
+        return translateText(["editContactModal", "title"]);
       default:
         return "";
     }
   };
 
   const getModalContent = (): ReactNode => {
-    // TODO: more switch cases to be added when more modals are added for contacts
     switch (contactModalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
         return <AddContactModalContent />;
       case CrmModalTypes.DELETE_CONTACT_MODAL:
         return <DeleteContactModalContent />;
+      case CrmModalTypes.EDIT_CONTACT_MODAL:
+        return <EditContactModalContent />;
       default:
         return null;
     }

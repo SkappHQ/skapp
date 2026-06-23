@@ -34,15 +34,14 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   const {
     setIsCrmSidePanelOpen,
-    setSelectedContact,
-    selectedContact,
+    setSelectedContactId,
+    selectedContactId,
     setContactModalType,
     setIsAddContactModalOpen
   } = useCrmStore((store) => ({
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedContact: store.setSelectedContact,
-    selectedContact: store.selectedContact,
-
+    setSelectedContactId: store.setSelectedContactId,
+    selectedContactId: store.selectedContactId,
     setContactModalType: store.setContactModalType,
     setIsAddContactModalOpen: store.setIsAddContactModalOpen
   }));
@@ -86,12 +85,12 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       description: translateText(["errors", "contactNotFoundDescription"])
     });
     setIsCrmSidePanelOpen(false);
-    setSelectedContact(null);
+    setSelectedContactId(null);
   };
 
   const { data: contact, isError } = useGetContactById(
-    selectedContact?.id ?? 0,
-    isOpen && !!selectedContact?.id
+    selectedContactId ?? 0,
+    isOpen && !!selectedContactId
   );
 
   useEffect(() => {
@@ -99,7 +98,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   }, [isError]);
 
   const handleClose = (): void => {
-    setSelectedContact(null);
+    setSelectedContactId(null);
     setIsCrmSidePanelOpen(false);
   };
 

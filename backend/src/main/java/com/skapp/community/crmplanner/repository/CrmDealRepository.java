@@ -17,8 +17,6 @@ public interface CrmDealRepository {
 
 	List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds);
 
-	Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable);
-
 	Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable,
 			long preComputedTotal);
 
