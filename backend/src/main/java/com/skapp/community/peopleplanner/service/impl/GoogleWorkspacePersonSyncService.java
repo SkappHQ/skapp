@@ -16,19 +16,20 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.SecretVersionName;
+import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.OrganizationConfigDao;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.UserDao;
-import com.skapp.community.common.service.AsyncEmailSender;
-import com.skapp.community.common.service.EncryptionDecryptionService;
-import com.skapp.community.common.service.PushNotificationService;
+import com.skapp.community.common.service.*;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.Team;
+import com.skapp.community.peopleplanner.payload.email.PeopleEmailDynamicFields;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
@@ -45,7 +46,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
@@ -59,6 +59,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -78,7 +79,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private static final String WATCH_HANDSHAKE_STATE = "sync";
     private static final String WEBHOOK_CHANNEL_TYPE = "web_hook";
     private static final String WORKSPACE_CUSTOMER_ALIAS = "my_customer";
-    private static final String DIRECTORY_LIST_FIELDS = "users(id,name,primaryEmail,suspended,etag),nextPageToken";
+    // FIX: thumbnailPhotoUrl added to fields mask so getThumbnailPhotoUrl()
+    // returns a value — without it Google strips the field from the response.
+    private static final String DIRECTORY_LIST_FIELDS = "users(id,name,primaryEmail,suspended,etag,thumbnailPhotoUrl),nextPageToken";
     private static final String SECRET_LATEST_VERSION = "latest";
     private static final String APPLICATION_NAME = "skapp-integration-poc";
     private final NotificationService notificationService;
@@ -115,6 +118,14 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     @Value("${google.channel-token:}")
     private String channelToken;
 
+    @Value("${domain.base}")
+    private String baseDomain;
+
+    @Value("${domain.scheme:https}")
+    private String domainScheme;
+
+    private final EmailService emailService;
+    private final OrganizationDao organizationDao;
     private final UserDao userDao;
     private final EmployeeDao employeeDao;
     private final AsyncEmailSender asyncEmailSender;
@@ -602,7 +613,8 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     }
 
     // -------------------------------------------------------------------------
-    // deactivateUsersMissingFrom()
+    // deactivateUsersMissingFrom() — deactivates users removed from Workspace
+    // and notifies all super admins by email for each removed account.
     // -------------------------------------------------------------------------
     private void deactivateUsersMissingFrom(Set<String> googleEmails) {
         List<User> activeGoogleUsers =
@@ -630,6 +642,62 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         log.info("Deactivated {} user(s) no longer in Google Workspace: {}",
                 staleUsers.size(),
                 staleUsers.stream().map(User::getEmail).toList());
+
+        // Notify every super admin by email for each removed account.
+        notifyAdminsOfRemovedUsers(staleUsers);
+    }
+
+    // -------------------------------------------------------------------------
+    // notifyAdminsOfRemovedUsers() — for each user removed from Google Workspace,
+    // sends the termination email to every active super admin so they are aware
+    // the account has been deactivated in Skapp.
+    //
+    // We temporarily swap the removed user's email address to the admin's email
+    // so that sendUserTerminationEmail() (which sends to user.getEmail()) delivers
+    // to the admin. The original email is restored after each send so the User
+    // entity isn't dirtied in the persistence context.
+    // -------------------------------------------------------------------------
+    private void notifyAdminsOfRemovedUsers(List<User> removedUsers) {
+        if (removedUsers == null || removedUsers.isEmpty()) return;
+
+        List<EmployeeRole> superAdminRoles = employeeRoleDao.findByIsSuperAdminTrue();
+
+        if (superAdminRoles.isEmpty()) {
+            log.warn("notifyAdminsOfRemovedUsers: no super admins found to notify.");
+            return;
+        }
+
+        for (User removedUser : removedUsers) {
+            // Attach the employee so the email template can render the name
+            Employee emp = employeeDao.findEmployeeByEmail(removedUser.getEmail());
+            if (emp != null) {
+                removedUser.setEmployee(emp);
+            }
+
+            String removedEmail = removedUser.getEmail();
+
+            for (EmployeeRole adminRole : superAdminRoles) {
+                try {
+                    Employee adminEmployee = adminRole.getEmployee();
+                    if (adminEmployee == null || adminEmployee.getUser() == null) continue;
+
+                    String adminEmail = adminEmployee.getUser().getEmail();
+
+                    // Temporarily redirect the email to the admin so the
+                    // existing sendUserTerminationEmail() sends to them
+                    removedUser.setEmail(adminEmail);
+                    peopleEmailService.sendUserTerminationEmail(removedUser);
+                    removedUser.setEmail(removedEmail); // restore
+
+                    log.info("notifyAdminsOfRemovedUsers: notified admin {} about removal of {}",
+                            adminEmail, removedEmail);
+                } catch (Exception e) {
+                    removedUser.setEmail(removedEmail); // restore on error too
+                    log.error("notifyAdminsOfRemovedUsers: failed to notify admin for removed user {}: {}",
+                            removedEmail, e.getMessage());
+                }
+            }
+        }
     }
 
     private record SyncResult(int synced, int failed, List<String> failures, List<String> newUserEmails) {}
@@ -637,9 +705,8 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // -------------------------------------------------------------------------
     // upsertUser() — create or update User + Employee from a Workspace user
     // -------------------------------------------------------------------------
-    @Transactional
-    boolean upsertUser(com.google.api.services.directory.model.User wsUser) {
-        String email = wsUser.getPrimaryEmail();
+    private boolean upsertUser(com.google.api.services.directory.model.User wsUser) {
+        String email     = wsUser.getPrimaryEmail();
         String firstName = wsUser.getName() != null ? wsUser.getName().getGivenName() : "";
         String lastName  = wsUser.getName() != null ? wsUser.getName().getFamilyName() : "";
         boolean suspended = Boolean.TRUE.equals(wsUser.getSuspended());
@@ -652,10 +719,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         user.setIsActive(!suspended);
 
         if (isNew) {
-            // Provision with credentials so the standard invitation email
-            // (PEOPLE_MODULE_USER_INVITATION_V1) is sent, which includes the
-            // temporary password. On first login the app detects
-            // isPasswordChangedForTheFirstTime=false and forces a password reset.
             String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
             CommonModuleUtils.setIfExists(
                     () -> encryptionDecryptionService.encrypt(tempPassword),
@@ -666,7 +729,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             user.setLoginMethod(LoginMethod.CREDENTIALS);
             user.setIsPasswordChangedForTheFirstTime(false);
         }
-        // Existing users: never overwrite loginMethod, password, or tempPassword.
 
         User savedUser = userDao.saveAndFlush(user);
 
@@ -678,13 +740,38 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         employee.setFirstName(firstName);
         employee.setLastName(lastName);
         employee.setAccountStatus(suspended ? AccountStatus.DEACTIVATED : AccountStatus.ACTIVE);
+        // Sync Google profile photo URL into authPic.
+        // thumbnailPhotoUrl is returned by the Directory API and is a direct
+        // link to the user's profile picture. We only overwrite if Google
+        // provides a value — never blank out an existing pic if it's missing.
+        String photoUrl = wsUser.getThumbnailPhotoUrl();
+        if (photoUrl != null && !photoUrl.isBlank()) {
+            employee.setAuthPic(photoUrl);
+        }
+        // Set joinDate for new employees so they appear in the directory.
+        // The directory query excludes employees with no join date on some views.
+        if (employee.getJoinDate() == null) {
+            employee.setJoinDate(LocalDate.now());
+        }
         Employee savedEmployee = employeeDao.save(employee);
 
         // Guard: EmployeeRole shares PK with Employee via @MapsId — skip if
         // a role row already exists (e.g. existing super admin) to avoid a
         // duplicate-key INSERT.
         if (!employeeRoleDao.existsById(savedEmployee.getEmployeeId())) {
-            rolesService.saveEmployeeRoles(savedEmployee);
+            // setupBulkEmployeeRoles() only sets peopleRole/leaveRole/attendanceRole.
+            // We patch the remaining fields with the same defaults that
+            // getDefaultEmployeeRoles() uses, so the employee_role row is fully
+            // populated (no null columns for okrRole, pmRole, esignRole, etc.)
+            EmployeeRole role = rolesService.setupBulkEmployeeRoles(savedEmployee);
+            role.setEsignRole(com.skapp.community.common.type.Role.ESIGN_EMPLOYEE);
+            role.setOkrRole(com.skapp.community.common.type.Role.OKR_EMPLOYEE);
+            role.setPmRole(com.skapp.community.common.type.Role.PM_EMPLOYEE);
+            role.setInvoiceRole(com.skapp.community.common.type.Role.INVOICE_NONE);
+            role.setCrmRole(com.skapp.community.common.type.Role.CRM_NONE);
+            employeeRoleDao.save(role);
+            savedEmployee.setEmployeeRole(role);
+            log.debug("Roles assigned for {}.", email);
         } else {
             log.debug("Skipping role creation for {} — role already exists.", email);
         }
@@ -723,7 +810,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                                 return;
                             }
                             user.setEmployee(employee);
-                            peopleEmailService.sendUserInvitationEmail(user);
+                            sendGoogleSyncInvitationEmail(user);
                             log.info("Invite sent to {}.", email);
                         },
                         () -> log.warn("User not found for {}.", email)
@@ -734,6 +821,18 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         }
 
         log.info("sendInviteEmailsToNewUsers: done.");
+    }
+
+    private void sendGoogleSyncInvitationEmail(User user) {
+        PeopleEmailDynamicFields fields = new PeopleEmailDynamicFields();
+        fields.setEmployeeOrManagerName(user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
+        fields.setOrganizationName(organizationDao.findTopByOrderByOrganizationIdDesc()
+                .map(Organization::getOrganizationName).orElse(""));
+        fields.setWorkEmail(user.getEmail());
+        fields.setTemporaryPassword(encryptionDecryptionService.decrypt(user.getTempPassword()));
+        fields.setAppUrl(domainScheme + "://" + baseDomain + ":3000/signin");
+
+        emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_GOOGLE_SYNC_INVITATION, fields, user.getEmail());
     }
 
     // -------------------------------------------------------------------------
@@ -780,6 +879,5 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             return response.getPayload().getData().toStringUtf8();
         }
     }
-
 
 }

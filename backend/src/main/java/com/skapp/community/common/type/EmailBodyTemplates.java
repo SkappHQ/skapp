@@ -12,6 +12,7 @@ public enum EmailBodyTemplates implements EmailTemplates {
 	PEOPLE_MODULE_USER_INVITATION_GOOGLE_SSO("people-module-user-invitation-google-sso"),
 	PEOPLE_MODULE_USER_INVITATION_MICROSOFT_SSO("people-module-user-invitation-microsoft-sso"),
 	PEOPLE_MODULE_USER_TERMINATION_V1("people-module-user-termination"),
+	PEOPLE_MODULE_GOOGLE_SYNC_INVITATION("people-module-google-sync-invitation"),
 
 	// Holiday Templates
 	PEOPLE_MODULE_NEW_HOLIDAY_DECLARED("people-module-new-holiday-declared-employee"),

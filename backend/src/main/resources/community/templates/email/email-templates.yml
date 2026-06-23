@@ -42,6 +42,9 @@ en:
     - id: people-module-password-reset-request-manager
       subject: Password Reset Request
 
+    - id: people-module-google-sync-invitation
+      subject: You have been invited to Skapp!
+
   attendance:
     - id: attendance-module-non-working-day-single-day-pending-leave-request-canceled-employee
       subject: Your leave request has been canceled!
