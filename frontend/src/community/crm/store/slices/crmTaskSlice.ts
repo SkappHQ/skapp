@@ -13,7 +13,7 @@ const CrmTaskSlice = (set: SetType<CrmTaskSliceTypes>) => ({
   setTaskModalType: (taskModalType: CrmModalTypes) =>
     set({ taskModalType: taskModalType }),
   setSelectedTaskId: (selectedTaskId: number | null) =>
-    set({ selectedTaskId: selectedTaskId })
+    set({ selectedTaskId: selectedTaskId }),
   setSelectedTask: (selectedTask: CrmTaskDetailType | null) =>
     set({ selectedTask: selectedTask })
 });
