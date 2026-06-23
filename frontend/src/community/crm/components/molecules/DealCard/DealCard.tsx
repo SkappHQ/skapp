@@ -8,6 +8,7 @@ import {
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
@@ -68,8 +69,15 @@ const DealCard: FC<DealCardProps> = ({
       <div className="flex flex-col gap-1">
         <div
           role="button"
+          tabIndex={0}
           className="body2 cursor-pointer text-left hover:text-primary-text hover:underline"
           onClick={onClick}
+          onKeyDown={(e) => {
+            if (shouldActivateButton(e.key)) {
+              e.preventDefault();
+              onClick?.();
+            }
+          }}
         >
           {title}
         </div>
