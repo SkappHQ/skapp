@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -145,31 +146,34 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		CrmValidations.validateDealStageReorderRequest(changedStages);
 
-		List<Long> stageIds = changedStages.stream()
-			.map(CrmDealStageReorderRequestDto::getId)
-			.collect(Collectors.toList());
+		List<CrmDealStage> existingStages = filterVisibleDealStages(
+				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		
+		existingStages = existingStages.stream()
+				.filter(stage -> !CrmConstants.TERMINAL_STAGES.contains(stage.getStageType()))
+				.toList();
 
-		List<CrmDealStage> existingStages = crmDealStageDao.findAllByIdInAndIsDeletedFalse(stageIds);
-
-		if (existingStages.size() != stageIds.size()) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
-		}
-
-		if (existingStages.stream().map(CrmDealStage::getStageType).anyMatch(CrmConstants.TERMINAL_STAGES::contains)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_REORDER_TERMINAL_STAGE);
+		if (existingStages.size() != changedStages.size()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INVALID_REQUEST);
 		}
 
 		Map<Long, CrmDealStage> exisitingStagesMap = existingStages.stream()
-			.collect(Collectors.toMap(CrmDealStage::getId, stage -> stage));
+			.collect(Collectors.toMap(CrmDealStage::getId, Function.identity()));
 
 		changedStages.forEach(newStage -> {
 			CrmDealStage stage = exisitingStagesMap.get(newStage.getId());
+
+			if (stage == null) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
+			}
+
 			stage.setOrderIndex(newStage.getOrderIndex());
 		});
 
 		ensureFirstStageIsInitial(existingStages);
-
 		crmDealStageDao.saveAll(existingStages);
+
+		existingStages.sort(Comparator.comparing(CrmDealStage::getOrderIndex));
 
 		log.info("reorderDealStages: execution ended");
 
