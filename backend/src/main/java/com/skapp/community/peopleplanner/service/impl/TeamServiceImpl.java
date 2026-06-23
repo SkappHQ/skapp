@@ -416,16 +416,16 @@ public class TeamServiceImpl implements TeamService {
 			return new ResponseEntityDto(false, List.of());
 		}
 
-		List<EmployeeTeamIdDto> rows = employeeTeamDao.findTeamIdsByEmployeeIds(memberIds);
+		List<EmployeeTeamIdDto> employeeTeamRecords = employeeTeamDao.findTeamIdsByEmployeeIds(memberIds);
 
-		Map<Long, List<Long>> employeeTeamMap = rows.stream()
+		Map<Long, List<Long>> employeeTeamMap = employeeTeamRecords.stream()
 			.collect(Collectors.groupingBy(EmployeeTeamIdDto::getEmployeeId,
 					Collectors.mapping(EmployeeTeamIdDto::getTeamId, Collectors.toList())));
 
-		List<MemberTeamsResponseDto> results = memberIds.stream().map(empId -> {
+		List<MemberTeamsResponseDto> results = memberIds.stream().map(employeeId -> {
 			MemberTeamsResponseDto dto = new MemberTeamsResponseDto();
-			dto.setEmployeeId(empId);
-			dto.setTeamIds(employeeTeamMap.getOrDefault(empId, List.of()));
+			dto.setEmployeeId(employeeId);
+			dto.setTeamIds(employeeTeamMap.getOrDefault(employeeId, List.of()));
 			return dto;
 		}).toList();
 
