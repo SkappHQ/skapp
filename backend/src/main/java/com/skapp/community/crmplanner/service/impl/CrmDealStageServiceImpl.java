@@ -85,7 +85,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	@Override
 	@Transactional
 	public ResponseEntityDto editDealStage(Long id, CrmDealStageEditRequestDto requestDto) {
-		log.info("editDealStage: execution started for id={}", id);
+		log.info("editDealStage: execution started");
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
@@ -110,7 +110,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		CrmDealStage saved = crmDealStageDao.save(stage);
 
-		log.info("editDealStage: execution ended, updated stage id={}", saved.getId());
+		log.info("editDealStage: execution ended, updated stage");
 
 		return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
 	}
@@ -118,7 +118,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	@Override
 	@Transactional
 	public ResponseEntityDto deleteDealStage(Long id) {
-		log.info("deleteDealStage: execution started for id={}", id);
+		log.info("deleteDealStage: execution started");
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
@@ -134,7 +134,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		stage.setIsDeleted(true);
 		crmDealStageDao.save(stage);
 
-		log.info("deleteDealStage: execution ended, deleted stage id={}", id);
+		log.info("deleteDealStage: execution ended, deleted stage");
 
 		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_DEAL_STAGE_DELETED), false);
 	}
