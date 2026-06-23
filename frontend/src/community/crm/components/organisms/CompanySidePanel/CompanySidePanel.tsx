@@ -10,11 +10,16 @@ import {
 import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useGetTasksByCompany } from "~community/crm/api/CompanyApi";
 import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { mapCompanyToMetricItems } from "~community/crm/utils/companyUtil";
+
+import SidePanelMetricCards from "../../molecules/SidePanelMetricCards/SidePanelMetricCards";
+import SidePanelTasksSection from "../../molecules/SidePanelTasksSection/SidePanelTasksSection";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
@@ -29,6 +34,11 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       setCompanyModalType: store.setCompanyModalType,
       selectedCompany: store.selectedCompany
     }));
+
+  const { data: task, isLoading: isTaskLoading } = useGetTasksByCompany(
+    selectedCompany?.id,
+    isOpen && !!selectedCompany?.id
+  );
 
   const openCompanyModal = (type: CrmModalTypes) => {
     setCompanyModalType(type);
@@ -65,8 +75,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         // Pass the real API data to SidePanelDealSection when available
         return <SidePanelDealSection deals={[]} />;
       case SidePanelTabEnum.TASKS:
-        // Implement SidePanelTaskSection here
-        return null;
+        return <SidePanelTasksSection tasks={[task]} />;
       case SidePanelTabEnum.CONTACTS:
         // Implement SidePanelContactSection here
         return null;
@@ -117,6 +126,10 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       {selectedCompany && (
         <div className="flex flex-col pb-4 gap-4">
           <SidePanelCompanyHeader company={selectedCompany} />
+
+          <SidePanelMetricCards
+            metrics={mapCompanyToMetricItems(selectedCompany, translateText)}
+          />
 
           <div className="flex flex-col pt-2 w-full">
             <Tabs

@@ -13,8 +13,18 @@ import {
   CrmCompanyDomainSearchResponseType,
   EditCompanyPayload
 } from "../types/CommonTypes";
-import { companyEndpoints } from "./utils/ApiEndpoints";
-import { companyQueryKeys } from "./utils/QueryKeys";
+import {
+  companyEndpoints,
+  contactEndpoints,
+  crmDealEndpoints,
+  taskEndpoints
+} from "./utils/ApiEndpoints";
+import {
+  companyQueryKeys,
+  contactQueryKeys,
+  crmDealQueryKeys,
+  taskQueryKeys
+} from "./utils/QueryKeys";
 
 interface CompanyMetricSearchParams {
   page: number;
@@ -153,6 +163,54 @@ export const useSearchCompaniesByDomain = (
   return useQuery({
     queryKey: companyQueryKeys.SEARCH_COMPANIES_BY_DOMAIN(domain),
     queryFn: () => fetchCompaniesByDomain(domain),
+    enabled
+  });
+};
+
+const fetchTasksByCompany = async (companyId: number) => {
+  const response = await authFetch.get(taskEndpoints.GET_TASKS, {
+    params: { companyId }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetTasksByCompany = (companyId: number, enabled: boolean) => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_TASKS_BY_COMPANY(companyId),
+    queryFn: () => fetchTasksByCompany(companyId),
+    enabled
+  });
+};
+
+const fetchDealsByCompany = async (companyId: number) => {
+  const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
+    params: { companyId }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealsByCompany = (companyId: number, enabled: boolean) => {
+  return useQuery({
+    queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(companyId),
+    queryFn: () => fetchDealsByCompany(companyId),
+    enabled
+  });
+};
+
+const fetchContactsByCompany = async (companyId: number) => {
+  const response = await authFetch.get(contactEndpoints.GET_CONTACT_METRICS, {
+    params: { companyId }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetContactsByCompany = (
+  companyId: number,
+  enabled: boolean
+) => {
+  return useQuery({
+    queryKey: contactQueryKeys.GET_CONTACTS_BY_COMPANY(companyId),
+    queryFn: () => fetchContactsByCompany(companyId),
     enabled
   });
 };

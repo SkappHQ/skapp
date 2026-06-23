@@ -366,6 +366,11 @@
         "tasks": "Tasks",
         "deals": "Deals",
         "contacts": "Contacts"
+      },
+      "metrics": {
+        "accountValue": "Account value",
+        "openDeals": "Open deals",
+        "closeDeals": "Closed deals"
       }
     }
   },
