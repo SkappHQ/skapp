@@ -17,21 +17,14 @@ import {
   useDealStageById,
   useUpdateDealStage
 } from "~community/crm/api/crmDealApi";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmDealStageColorsEnum } from "~community/crm/enums/common";
 import {
   CrmDealStageCreatePayload,
   CrmDealStageFormTypes,
   CrmDealStageUpdatePayload
 } from "~community/crm/types/CommonTypes";
+import { dealStageColors } from "~community/crm/utils/crmUtil";
 import { dealStageValidations } from "~community/crm/utils/dealStageValidations";
-
-const dealStageColors = Object.entries(STAGE_COLOR_MAP).map(([key, hex]) => ({
-  id: key,
-  name: key,
-  value: key,
-  color: hex
-}));
 
 interface DealStageModalFormProps {
   isEdit?: boolean;
@@ -44,18 +37,17 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
 
   const translateText = useTranslator("configurations", "crm");
 
-  const { setIsDealStageModalOpen, selectedDealStageId } = useConfigurationStore(
-    (store) => ({
+  const { setIsDealStageModalOpen, selectedDealStageId } =
+    useConfigurationStore((store) => ({
       setIsDealStageModalOpen: store.setIsDealStageModalOpen,
       selectedDealStageId: store.selectedDealStageId
-    })
-  );
+    }));
 
-  const selectedDealStage = useDealStageById(selectedDealStageId);
+  const selectedDealStage = useDealStageById(selectedDealStageId!);
 
   const initialValues: CrmDealStageFormTypes = {
     name: isEdit ? selectedDealStage.name : "",
-    description: isEdit ? selectedDealStage?.description ?? "" : "",
+    description: isEdit ? (selectedDealStage?.description ?? "") : "",
     color: isEdit ? selectedDealStage.color : CrmDealStageColorsEnum.SKY
   };
 
