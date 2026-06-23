@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import DraggableDealStageCardSkeleton from "~community/configurations/components/molecules/DealStageCard/DraggableDealStageCardSkeleton";
 import DealStagesDraggableContent from "~community/configurations/components/molecules/DealStagesDraggableContent/DealStagesDraggableContent";
-import { useGetDealStages } from "~community/crm/api/crmDealApi";
+import useGetDealStageOptions from "~community/crm/hooks/useGetDealStageOptions";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 
 interface DealStagesContentProps {
@@ -11,7 +11,7 @@ interface DealStagesContentProps {
 }
 
 const DealStagesContent = ({ onEdit, onDelete }: DealStagesContentProps) => {
-  const { data: dealStages, isPending } = useGetDealStages();
+  const { options: dealStages, isPending } = useGetDealStageOptions();
   const [stages, setStages] = useState<CrmDealStageType[]>([]);
 
   useEffect(() => {
