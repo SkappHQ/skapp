@@ -23,8 +23,8 @@ public class EmployeeSkillController {
 	@Operation(summary = "Get all custom skills", description = "Retrieves all custom skills.")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_EMPLOYEE')")
 	@GetMapping
-	public ResponseEntity<ResponseEntityDto> getAllSkills() {
-		ResponseEntityDto response = employeeSkillService.getAllSkills();
+	public ResponseEntity<ResponseEntityDto> getAllCustomSkills() {
+		ResponseEntityDto response = employeeSkillService.getAllCustomSkills();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

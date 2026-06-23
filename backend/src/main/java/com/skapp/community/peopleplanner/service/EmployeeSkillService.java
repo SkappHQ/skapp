@@ -12,8 +12,8 @@ public interface EmployeeSkillService {
 
 	List<EmployeeSkill> saveEmployeeSkills(Employee employee, List<EmployeeSkillDto> skills);
 
-	List<EmployeeSkillResponseDto> getEmployeeSkillResponses(Long employeeId);
+	List<EmployeeSkillResponseDto> getEmployeeSkills(Long employeeId);
 
-	ResponseEntityDto getAllSkills();
+	ResponseEntityDto getAllCustomSkills();
 
 }

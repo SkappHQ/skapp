@@ -9,6 +9,6 @@ import java.util.List;
 @Setter
 public class DefaultEmployeeSkillsYaml {
 
-	private List<DefaultEmployeeSkill> skills;
+	private List<DefaultEmployeeSkill> defaultSkills;
 
 }

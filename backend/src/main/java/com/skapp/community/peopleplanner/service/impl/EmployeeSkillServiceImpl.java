@@ -23,8 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,8 +35,6 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 	private final CustomEmployeeSkillDao customEmployeeSkillDao;
 
 	private final EmployeeSkillDao employeeSkillDao;
-
-	private Map<Long, String> defaultEmployeeSkillNames;
 
 	@Override
 	@Transactional
@@ -66,8 +62,15 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 				if (skillDto.getName() == null || skillDto.getName().isBlank()) {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
 				}
-				CustomEmployeeSkill customSkill = findOrCreateCustomSkill(skillDto.getName());
-				employeeSkill.setSkillId(customSkill.getId());
+
+				if (customEmployeeSkillDao.findByNameIgnoreCase(skillDto.getName()).isPresent()) {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_ALREADY_EXISTS);
+				}
+
+				CustomEmployeeSkill customSkill = new CustomEmployeeSkill();
+				
+				customSkill.setName(skillDto.getName());
+				employeeSkill.setSkillId(customEmployeeSkillDao.save(customSkill).getId());
 				employeeSkill.setSkillType(EmployeeSkillType.CUSTOM);
 			}
 			else {
@@ -81,26 +84,18 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 	}
 
 	@Override
-	public List<EmployeeSkillResponseDto> getEmployeeSkillResponses(Long employeeId) {
-		log.info("getEmployeeSkillResponses: execution started");
+	public List<EmployeeSkillResponseDto> getEmployeeSkills(Long employeeId) {
+		log.info("getEmployeeSkills: execution started");
 
-		List<EmployeeSkill> employeeSkills = employeeSkillDao.findByEmployeeEmployeeId(employeeId);
-
-		List<Long> customSkillIds = employeeSkills.stream()
-			.filter(es -> es.getSkillType() == EmployeeSkillType.CUSTOM)
-			.map(EmployeeSkill::getSkillId)
-			.toList();
-
-		Map<Long, CustomEmployeeSkill> customSkillMap = customEmployeeSkillDao.findAllById(customSkillIds)
+		return employeeSkillDao.getEmployeeSkills(employeeId)
 			.stream()
-			.collect(Collectors.toMap(CustomEmployeeSkill::getId, Function.identity()));
-
-		return employeeSkills.stream().map(es -> mapToEmployeeSkillResponseDto(es, customSkillMap)).toList();
+			.map(this::mapToEmployeeSkillResponseDto)
+			.toList();
 	}
 
 	@Override
-	public ResponseEntityDto getAllSkills() {
-		log.info("getAllSkills: execution started");
+	public ResponseEntityDto getAllCustomSkills() {
+		log.info("getAllCustomSkills: execution started");
 
 		List<EmployeeSkillResponseDto> customSkills = customEmployeeSkillDao.findAll()
 			.stream()
@@ -110,29 +105,24 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 		return new ResponseEntityDto(false, customSkills);
 	}
 
-	private EmployeeSkillResponseDto mapToEmployeeSkillResponseDto(EmployeeSkill es,
-			Map<Long, CustomEmployeeSkill> customSkillMap) {
-		if (es.getSkillType() == EmployeeSkillType.DEFAULT) {
-			String skillName = getDefaultEmployeeSkillName(es.getSkillId());
-			return new EmployeeSkillResponseDto(es.getSkillId(), skillName, EmployeeSkillType.DEFAULT);
+	private EmployeeSkillResponseDto mapToEmployeeSkillResponseDto(EmployeeSkillResponseDto skill) {
+		if (skill.getSkillType() == EmployeeSkillType.DEFAULT) {
+			skill.setName(getDefaultEmployeeSkillName(skill.getId()));
+			return skill;
 		}
 
-		CustomEmployeeSkill customSkill = customSkillMap.get(es.getSkillId());
-
-		if (customSkill == null) {
+		if (skill.getName() == null) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
 		}
 
-		return new EmployeeSkillResponseDto(es.getSkillId(), customSkill.getName(), EmployeeSkillType.CUSTOM);
+		return skill;
 	}
 
 	private String getDefaultEmployeeSkillName(Long id) {
-		if (defaultEmployeeSkillNames == null) {
-			DefaultEmployeeSkillsYaml data = YamlReader.read(SKILLS_YAML_PATH, DefaultEmployeeSkillsYaml.class);
-			defaultEmployeeSkillNames = data.getSkills()
-				.stream()
-				.collect(Collectors.toMap(DefaultEmployeeSkill::getId, DefaultEmployeeSkill::getName));
-		}
+		DefaultEmployeeSkillsYaml data = YamlReader.read(SKILLS_YAML_PATH, DefaultEmployeeSkillsYaml.class);
+		Map<Long, String> defaultEmployeeSkillNames = data.getDefaultSkills()
+			.stream()
+			.collect(Collectors.toMap(DefaultEmployeeSkill::getId, DefaultEmployeeSkill::getName));
 
 		String name = defaultEmployeeSkillNames.get(id);
 
@@ -141,19 +131,6 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 		}
 
 		return name;
-	}
-
-	private CustomEmployeeSkill findOrCreateCustomSkill(String name) {
-		Optional<CustomEmployeeSkill> existing = customEmployeeSkillDao.findByNameIgnoreCase(name);
-
-		if (existing.isPresent()) {
-			return existing.get();
-		}
-
-		CustomEmployeeSkill customSkill = new CustomEmployeeSkill();
-		customSkill.setName(name);
-
-		return customEmployeeSkillDao.save(customSkill);
 	}
 
 }

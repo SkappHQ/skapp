@@ -1170,7 +1170,7 @@ public class PeopleServiceImpl implements PeopleService {
 		EmployeeDetailedResponseDto employeeDetailedResponseDto = peopleMapper
 			.employeeToEmployeeDetailedResponseDto(employee.get());
 		employeeDetailedResponseDto
-			.setSkills(employeeSkillService.getEmployeeSkillResponses(employee.get().getEmployeeId()));
+			.setSkills(employeeSkillService.getEmployeeSkills(employee.get().getEmployeeId()));
 		List<EmployeePeriod> period = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
 				employee.get().getEmployeeId(), Sort.by(Sort.Direction.DESC, EmployeePeriodSort.ID.getSortField()));
 
@@ -1757,7 +1757,7 @@ public class PeopleServiceImpl implements PeopleService {
 		for (Employee employee : employees.getContent()) {
 
 			EmployeeDetailedResponseDto responseDto = peopleMapper.employeeToEmployeeDetailedResponseDto(employee);
-			responseDto.setSkills(employeeSkillService.getEmployeeSkillResponses(employee.getEmployeeId()));
+			responseDto.setSkills(employeeSkillService.getEmployeeSkills(employee.getEmployeeId()));
 			responseDto.setJobFamily(peopleMapper.jobFamilyToEmployeeJobFamilyDto(employee.getJobFamily()));
 			Optional<EmployeePeriod> period = employeePeriodDao
 				.findEmployeePeriodByEmployee_EmployeeIdAndIsActiveTrue(employee.getEmployeeId());

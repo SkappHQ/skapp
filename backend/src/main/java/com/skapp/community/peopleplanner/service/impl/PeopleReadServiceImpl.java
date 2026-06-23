@@ -140,7 +140,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	}
 
 	private List<EmployeeSkillDto> mapEmployeeSkills(Employee employee) {
-		return employeeSkillService.getEmployeeSkillResponses(employee.getEmployeeId()).stream().map(s -> {
+		return employeeSkillService.getEmployeeSkills(employee.getEmployeeId()).stream().map(s -> {
 			EmployeeSkillDto skillDto = new EmployeeSkillDto();
 			skillDto.setSkillId(s.getId());
 			skillDto.setSkillType(s.getSkillType());

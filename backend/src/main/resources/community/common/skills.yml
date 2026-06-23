@@ -1,4 +1,4 @@
-skills:
+defaultSkills:
   - id: 1
     name: "Python Programming"
   - id: 2
