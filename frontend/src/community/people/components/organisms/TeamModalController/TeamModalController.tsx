@@ -80,13 +80,13 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
     if (!memberTeams || !allTeams) return [];
     const deletingTeamId = Number(currentDeletingTeam?.teamId);
     const otherTeams = allTeams.filter(
-      (t) => Number(t.teamId) !== deletingTeamId
+      (team) => Number(team.teamId) !== deletingTeamId
     );
     return memberTeams
       .map((member) => ({
         employeeId: member.employeeId,
         transferableTeams: otherTeams.filter(
-          (t) => !member.teamIds.includes(Number(t.teamId))
+          (team) => !member.teamIds.includes(Number(team.teamId))
         )
       }))
       .filter((member) => member.transferableTeams.length > 0);

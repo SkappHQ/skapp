@@ -423,10 +423,10 @@ public class TeamServiceImpl implements TeamService {
 					Collectors.mapping(EmployeeTeamIdDto::getTeamId, Collectors.toList())));
 
 		List<MemberTeamsResponseDto> results = memberIds.stream().map(employeeId -> {
-			MemberTeamsResponseDto dto = new MemberTeamsResponseDto();
-			dto.setEmployeeId(employeeId);
-			dto.setTeamIds(employeeTeamMap.getOrDefault(employeeId, List.of()));
-			return dto;
+			MemberTeamsResponseDto memberTeamsResponse = new MemberTeamsResponseDto();
+			memberTeamsResponse.setEmployeeId(employeeId);
+			memberTeamsResponse.setTeamIds(employeeTeamMap.getOrDefault(employeeId, List.of()));
+			return memberTeamsResponse;
 		}).toList();
 
 		log.info("getTeamMemberTeams: execution ended");
