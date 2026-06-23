@@ -2,6 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FC } from "react";
 
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import { CrmDealBoardType } from "~community/crm/types/CommonTypes";
 
@@ -21,11 +22,15 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
     transform,
     transition,
     isDragging
-  } = useSortable({ id: deal.id, data: { type: "deal", deal } });
+  } = useSortable({
+    id: deal.id,
+    data: { type: "deal", deal }
+  });
 
   return (
     <div
       ref={setNodeRef}
+      id={String(deal.id)}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
@@ -34,9 +39,8 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
       {...attributes}
       {...listeners}
       className={`cursor-grab active:cursor-grabbing transform-gpu ${
-        isDragging ? "z-50 shadow-lg" : ""
+        isDragging ? `z-[${ZIndexEnums.CRM_SIDE_PANEL}] shadow-lg` : ""
       }`}
-      id={String(deal.id)}
     >
       <DealCard
         id={String(deal.id)}
@@ -47,8 +51,14 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
         amount={deal.amount ?? ""}
         priority={deal.priority}
         taskCount={deal.taskCount}
-        isInteractive={!isDragging}
-        onClick={onDealClick ? () => onDealClick(String(deal.id)) : undefined}
+        onClick={
+          onDealClick
+            ? () => {
+                alert(`Deal ${deal.id} clicked!`);
+                onDealClick(String(deal.id));
+              }
+            : undefined
+        }
       />
     </div>
   );

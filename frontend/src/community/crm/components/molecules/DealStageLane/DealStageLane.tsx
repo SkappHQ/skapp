@@ -4,8 +4,9 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useRef } from "react";
+import { FC } from "react";
 
+import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import DraggableDealCard from "~community/crm/components/molecules/DraggableDealCard/DraggableDealCard";
@@ -23,24 +24,24 @@ export interface DealStageLaneProps {
   stage: SwimlaneDealStage;
   deals: CrmDealBoardType[];
   isLoading?: boolean;
-  hasMore?: boolean;
+  hasNextPage?: boolean;
   isLoadingMore?: boolean;
   isOver?: boolean;
   onDealClick: (dealId: string) => void;
   onAddDeal: (stageId: string) => void;
-  onLoadMore?: (stageId: string) => void;
+  fetchNextPage: (stageId: string) => void;
 }
 
 const DealStageLane: FC<DealStageLaneProps> = ({
   stage,
   deals,
   isLoading = false,
-  hasMore = false,
+  hasNextPage = false,
   isLoadingMore = false,
   isOver = false,
   onDealClick,
   onAddDeal,
-  onLoadMore
+  fetchNextPage
 }) => {
   const translateText = useTranslator("crmModule", "deals", "kanban");
 
@@ -49,26 +50,11 @@ const DealStageLane: FC<DealStageLaneProps> = ({
     data: { type: "stage", stageId: stage.id }
   });
 
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!hasMore || !onLoadMore || isLoadingMore) return;
-
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          onLoadMore(stage.id);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasMore, isLoadingMore, onLoadMore, stage.id]);
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage,
+    isLoading: isLoadingMore,
+    onLoadMore: () => fetchNextPage(stage.id)
+  });
 
   return (
     <section
@@ -95,7 +81,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
           </h2>
           <p className="body3 mt-0.5 text-secondary-icon">{stage.totalValue}</p>
         </div>
-        <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold text-secondary-text">
+        <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full body3 bg-white px-1.5 text-secondary-text">
           {stage.totalCount}
         </span>
       </div>
@@ -120,7 +106,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               ))}
             </SortableContext>
 
-            {deals.length === 0 && onAddDeal ? (
+            {deals.length === 0 ? (
               <ButtonV2
                 variant="line"
                 type="button"
@@ -132,31 +118,30 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               </ButtonV2>
             ) : (
               <>
-                {hasMore && (
+                {hasNextPage && (
                   <>
                     {isLoadingMore &&
                       Array.from({ length: 2 }).map((_, index) => (
                         <DealCardSkeleton key={index} />
                       ))}
-                    <div ref={sentinelRef} className="h-1 w-full" />
+                    <div className="h-1 w-full" />
                   </>
                 )}
 
-                {onAddDeal && (
-                  <ButtonV2
-                    variant="line"
-                    type="button"
-                    isFullWidth
-                    size="sm"
-                    onClick={() => onAddDeal(stage.id)}
-                  >
-                    {translateText(["addDealBtn"])}
-                  </ButtonV2>
-                )}
+                <ButtonV2
+                  variant="line"
+                  type="button"
+                  isFullWidth
+                  size="sm"
+                  onClick={() => onAddDeal(stage.id)}
+                >
+                  {translateText(["addDealBtn"])}
+                </ButtonV2>
               </>
             )}
           </>
         )}
+        <div ref={loadingRef} />
       </div>
     </section>
   );

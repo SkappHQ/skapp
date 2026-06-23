@@ -5,12 +5,13 @@ import {
   DealValueIcon,
   HandshakeIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC, FocusEvent, KeyboardEvent, MouseEvent } from "react";
+import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
+import { formatValue } from "~community/crm/utils/crmUtil";
 
 export interface DealCardProps {
   id: string;
@@ -21,10 +22,8 @@ export interface DealCardProps {
   amount?: string;
   priority: CrmPriorityEnum | null;
   taskCount?: number;
-  isInteractive?: boolean;
-  className?: string;
-  onClick?: () => void;
   ariaLabel?: string;
+  onClick?: () => void;
 }
 
 const DealCard: FC<DealCardProps> = ({
@@ -36,43 +35,14 @@ const DealCard: FC<DealCardProps> = ({
   amount,
   priority,
   taskCount,
-  isInteractive = true,
-  className = "",
-  onClick,
-  ariaLabel
+  ariaLabel,
+  onClick
 }) => {
   const imageUrl = useGetImageUrl(owner?.authPic ?? "");
 
-  const handleTitleClick = (e: MouseEvent) => {
-    e.stopPropagation();
-    if (onClick && isInteractive) {
-      onClick();
-    }
-  };
-
-  const handleTitleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.stopPropagation();
-      if (onClick && isInteractive) {
-        onClick();
-      }
-    }
-  };
-
-  const handleFocus = (e: FocusEvent<HTMLButtonElement>) => {
-    if (isInteractive) {
-      e.currentTarget.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "nearest"
-      });
-    }
-  };
-
   return (
     <div
-      className={`w-full min-h-37.5 rounded-lg bg-white px-2 py-3 flex flex-col gap-3 text-left shadow-md ${isInteractive ? "cursor-grab active:cursor-grabbing" : ""} ${className}`}
+      className={`flex min-h-37.5 w-full flex-col gap-3 rounded-lg bg-white px-2 py-3 text-left shadow-md`}
       aria-label={ariaLabel}
     >
       <div className="flex items-center justify-between gap-2">
@@ -90,31 +60,25 @@ const DealCard: FC<DealCardProps> = ({
             src={imageUrl ?? ""}
             firstName={owner.firstName}
             lastName={owner.lastName ?? ""}
-            className="w-6 h-6"
+            className="h-6 w-6"
           />
         )}
       </div>
 
       <div className="flex flex-col gap-1">
-        {isInteractive ? (
-          <button
-            type="button"
-            className="body2 cursor-pointer text-left hover:text-primary-text hover:underline"
-            onClick={handleTitleClick}
-            onKeyDown={handleTitleKeyDown}
-            onFocus={handleFocus}
-          >
-            {title}
-          </button>
-        ) : (
-          <p className="body2">{title}</p>
-        )}
+        <button
+          type="button"
+          className="body2 cursor-pointer text-left hover:text-primary-text hover:underline"
+          onClick={onClick}
+        >
+          {title}
+        </button>
 
         {(contactName || companyName) && (
-          <div className="flex gap-1 items-center body3 truncate text-secondary-icon">
+          <div className="body3 flex items-center gap-1 truncate text-secondary-icon">
             {contactName && <span>{contactName}</span>}
             {contactName && companyName && (
-              <div className="size-1 bg-secondary-accent rounded-full shrink-0" />
+              <div className="size-1 shrink-0 rounded-full bg-secondary-accent" />
             )}
             {companyName && <span>{companyName}</span>}
           </div>
@@ -124,12 +88,14 @@ const DealCard: FC<DealCardProps> = ({
           <span className="shrink-0 text-secondary-icon">
             <DealValueIcon className="h-4 w-4" />
           </span>
-          <span className="body3">{amount}</span>
+          <span className="body3">
+            {amount ? formatValue(String(amount)) : ""}
+          </span>
         </div>
       </div>
 
       <div className="flex items-center justify-end gap-2">
-        {taskCount !== null && (
+        {taskCount != null && (
           <Chip
             size="sm"
             label={String(taskCount)}
@@ -140,7 +106,7 @@ const DealCard: FC<DealCardProps> = ({
                 height={10}
               />
             }
-            className="bg-label-bg-slate text-label-text-slate w-12 h-6"
+            className="h-6 w-12 bg-label-bg-slate text-label-text-slate"
           />
         )}
 
