@@ -322,4 +322,19 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		entityManager.createQuery(delete).executeUpdate();
 	}
 
+	@Override
+	public List<Object[]> findTeamIdsByEmployeeIds(List<Long> employeeIds) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = cb.createQuery(Object[].class);
+		Root<EmployeeTeam> root = query.from(EmployeeTeam.class);
+
+		query.select(cb.array(root.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+				root.get(EmployeeTeam_.team).get(Team_.teamId)));
+
+		query.where(root.get(EmployeeTeam_.employee).get(Employee_.employeeId).in(employeeIds),
+				cb.isTrue(root.get(EmployeeTeam_.team).get(Team_.isActive)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
 }

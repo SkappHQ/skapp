@@ -26,4 +26,6 @@ public interface EmployeeTeamRepository {
 
 	void deleteEmployeeTeamByTeamIdAndEmployeeIds(Long teamId, List<Long> employeeIds);
 
+	List<Object[]> findTeamIdsByEmployeeIds(List<Long> employeeIds);
+
 }
