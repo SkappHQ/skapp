@@ -1,21 +1,23 @@
+import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
 import {
-  CrmTaskType,
-  PreselectedContact
+  PreselectedContact,
+  TaskRowResponseType
 } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
-import SidePanelTasksEmptyView from "./SidePanelTasksEmptyView";
 import SidePanelTasksList from "./SidePanelTasksList";
 
 interface Props {
-  tasks: CrmTaskType[];
+  tasks: TaskRowResponseType[];
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
   preselectedContact?: PreselectedContact | null;
+  emptyDescription?: string;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
@@ -23,7 +25,8 @@ const SidePanelTasksSection: FC<Props> = ({
   isCheckTaskVisible,
   isShowContact,
   onTaskRowClick,
-  preselectedContact
+  preselectedContact,
+  emptyDescription
 }) => {
   const { setIsTaskModalOpen, setTaskModalType, setPreselectedContact } =
     useCrmStore((store) => ({
@@ -32,12 +35,17 @@ const SidePanelTasksSection: FC<Props> = ({
       setPreselectedContact: store.setPreselectedContact
     }));
 
+  const translateText = useTranslator(
+    "crmModule",
+    "contacts",
+    "contactDetailsPanel"
+  );
+
   const handleAddTask = () => {
     setPreselectedContact(preselectedContact);
     setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
     setIsTaskModalOpen(true);
   };
-
   return tasks.length > 0 ? (
     <SidePanelTasksList
       tasks={tasks}
@@ -47,7 +55,21 @@ const SidePanelTasksSection: FC<Props> = ({
       onAddTask={handleAddTask}
     />
   ) : (
-    <SidePanelTasksEmptyView onAddTask={handleAddTask} />
+    <EmptyDataView
+      icon={<SearchIcon width="24" height="24" />}
+      title={translateText(["emptyTitle"])}
+      description={emptyDescription ?? translateText(["emptyDescription"])}
+      button={{
+        children: translateText(["addTaskButtonEmptyView"]),
+        variant: "tertiary",
+        onClick: handleAddTask,
+        icon: <PlusIcon />,
+        "aria-label": translateText(["addTaskButtonEmptyView"])
+      }}
+      className={{
+        wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
+      }}
+    />
   );
 };
 

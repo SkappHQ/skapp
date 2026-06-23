@@ -1,13 +1,13 @@
 import { FC } from "react";
 
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
 
 import TaskRowMeta from "./TaskRowMeta";
 import TaskRowSubtitle from "./TaskRowSubtitle";
 
 interface Props {
-  task: CrmTaskType;
+  task: TaskRowResponseType;
   isShowContact: boolean;
   applyCompletedStyle: boolean;
 }

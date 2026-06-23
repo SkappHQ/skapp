@@ -60,10 +60,6 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsCrmSidePanelOpen(false);
   };
 
-  const handleCompanyClick = () => {
-    //TODO: Implement company Id page and link it here
-  };
-
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
@@ -75,6 +71,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             preselectedContact={
               contact ? { id: contact.id, name: contact.name } : null
             }
+            emptyDescription={translateText(["tasks", "emptyDescription"])}
           />
         );
       default:
@@ -106,12 +103,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       }
     >
       <div className="flex flex-col pb-4 gap-4">
-        {contact && (
-          <SidePanelContactInfo
-            contact={contact}
-            onCompanyClick={handleCompanyClick}
-          />
-        )}
+        {contact && <SidePanelContactInfo contact={contact} />}
 
         <div className="flex flex-col pt-2 w-full">
           <Tabs
@@ -119,8 +111,8 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             activeTabId={activeTab}
             onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
           />
+          <hr className="border-secondary-accent" />
         </div>
-        <hr className="border-secondary-accent" />
         {renderTabContent()}
       </div>
     </SidePanel>
