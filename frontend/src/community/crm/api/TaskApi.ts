@@ -150,10 +150,7 @@ const editTask = async ({ id, ...payload }: CrmTaskUpdatePayload) => {
   return response?.data?.results?.[0];
 };
 
-export const useUpdateTask = (
-  onSuccess: () => void,
-  onError: () => void
-) => {
+export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editTask,
@@ -175,7 +172,6 @@ export const useUpdateTask = (
 
 export const useGetTaskById = (id: number) => {
   const queryClient = useQueryClient();
-
   return useQuery({
     queryKey: taskQueryKeys.GET_TASK_DATA_BY_ID(id),
     queryFn: () => {
@@ -195,7 +191,7 @@ export const useGetTaskById = (id: number) => {
         .flatMap(
           ([, data]) => data?.pages?.flatMap((page) => page.items ?? []) ?? []
         );
- 
+
       return completedTasks.find((task) => task.id === id) ?? null;
     }
   });
