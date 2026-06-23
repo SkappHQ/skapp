@@ -65,7 +65,7 @@ public class CrmDealStageController {
 	}
 
 	@Operation(summary = "Reorder deal stages",
-			description = "Reorders all deal stages. The stage with minimum orderIndex will be set to INITIAL type.")
+			description = "Reorders all deal stages.")
 	@PostMapping("/reorder")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> reorderDealStages(
