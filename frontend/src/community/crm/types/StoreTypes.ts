@@ -8,7 +8,7 @@ import { CrmModalTypes } from "./ModalTypes";
 interface ActionTypes {
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
   setCompanyModalType: (companyModalType: CrmModalTypes) => void;
-  setIsAddContactModalOpen: (isAddContactModalOpen: boolean) => void;
+  setIsContactModalOpen: (isContactModalOpen: boolean) => void;
   setContactModalType: (contactModalType: CrmModalTypes) => void;
   setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
@@ -21,7 +21,7 @@ interface ActionTypes {
 export interface CrmStore extends ActionTypes {
   isCompanyModalOpen: boolean;
   companyModalType: CrmModalTypes;
-  isAddContactModalOpen: boolean;
+  isContactModalOpen: boolean;
   contactModalType: CrmModalTypes;
   selectedCompany: CrmCompanyMetricsType | null;
   isTaskModalOpen: boolean;

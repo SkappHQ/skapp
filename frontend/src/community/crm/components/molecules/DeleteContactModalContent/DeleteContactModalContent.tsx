@@ -17,12 +17,12 @@ const DeleteContactModalContent: FC = () => {
     selectedContactId,
     setSelectedContactId,
     setIsCrmSidePanelOpen,
-    setIsAddContactModalOpen
+    setIsContactModalOpen
   } = useCrmStore((store) => ({
     selectedContactId: store.selectedContactId,
     setSelectedContactId: store.setSelectedContactId,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setIsAddContactModalOpen: store.setIsAddContactModalOpen
+    setIsContactModalOpen: store.setIsContactModalOpen
   }));
 
   const translateText = useTranslator(
@@ -32,7 +32,7 @@ const DeleteContactModalContent: FC = () => {
   );
 
   const handleCloseModal = () => {
-    setIsAddContactModalOpen(false);
+    setIsContactModalOpen(false);
   };
 
   const selectedContact = useGetSelectedContactById(selectedContactId);

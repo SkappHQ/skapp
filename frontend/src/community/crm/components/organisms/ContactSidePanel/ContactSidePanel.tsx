@@ -8,7 +8,7 @@ import {
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -37,47 +37,54 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setSelectedContactId,
     selectedContactId,
     setContactModalType,
-    setIsAddContactModalOpen
+    setIsContactModalOpen
   } = useCrmStore((store) => ({
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedContactId: store.setSelectedContactId,
     selectedContactId: store.selectedContactId,
     setContactModalType: store.setContactModalType,
-    setIsAddContactModalOpen: store.setIsAddContactModalOpen
+    setIsContactModalOpen: store.setIsContactModalOpen
   }));
 
-  const openContactModal = (type: CrmModalTypes): void => {
-    setContactModalType(type);
-    setIsAddContactModalOpen(true);
-  };
-
-  const menuItems: MenuItemProps[] = [
-    {
-      id: "edit",
-      label: translateText(["editContact"]),
-      icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: () => {
-        openContactModal(CrmModalTypes.EDIT_CONTACT_MODAL);
-      }
+  const openContactModal = useCallback(
+    (type: CrmModalTypes): void => {
+      setContactModalType(type);
+      setIsContactModalOpen(true);
     },
-    {
-      id: "delete",
-      label: translateText(["deleteContact"]),
-      icon: {
-        start: (
-          <DeleteButtonIcon
-            width="12px"
-            height="14px"
-            fill="var(--color-semantic-red-text)"
-          />
-        )
+    [setContactModalType, setIsContactModalOpen]
+  );
+
+  const menuItems: MenuItemProps[] = useMemo(
+    () => [
+      {
+        id: "edit",
+        label: translateText(["editContact"]),
+        icon: { start: <EditIcon width="16px" height="16px" /> },
+        onClick: () => {
+          openContactModal(CrmModalTypes.EDIT_CONTACT_MODAL);
+        }
       },
-      onClick: () => {
-        openContactModal(CrmModalTypes.DELETE_CONTACT_MODAL);
-      },
-      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text"
-    }
-  ];
+      {
+        id: "delete",
+        label: translateText(["deleteContact"]),
+        icon: {
+          start: (
+            <DeleteButtonIcon
+              width="12px"
+              height="14px"
+              fill="var(--color-semantic-red-text)"
+            />
+          )
+        },
+        onClick: () => {
+          openContactModal(CrmModalTypes.DELETE_CONTACT_MODAL);
+        },
+        activeBehavior:
+          "hover:bg-semantic-red-background text-semantic-red-text"
+      }
+    ],
+    [openContactModal, translateText]
+  );
 
   const handleContactLoadError = (): void => {
     setToastMessage({

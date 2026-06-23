@@ -17,9 +17,9 @@ const EditContactModalContent = () => {
     "contacts",
     "editContactModal"
   );
-  const { setIsAddContactModalOpen, selectedContactId, setSelectedContactId } =
+  const { setIsContactModalOpen, selectedContactId, setSelectedContactId } =
     useCrmStore((store) => ({
-      setIsAddContactModalOpen: store.setIsAddContactModalOpen,
+      setIsContactModalOpen: store.setIsContactModalOpen,
       selectedContactId: store.selectedContactId,
       setSelectedContactId: store.setSelectedContactId
     }));
@@ -27,7 +27,7 @@ const EditContactModalContent = () => {
   const selectedContact = useGetSelectedContactById(selectedContactId);
 
   const handleCloseModal = () => {
-    setIsAddContactModalOpen(false);
+    setIsContactModalOpen(false);
   };
 
   const { mutate: editContact, isPending } = useEditContact(

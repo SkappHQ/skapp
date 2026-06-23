@@ -14,7 +14,9 @@ import {
 } from "~community/crm/api/utils/ApiEndpoints";
 import {
   companyQueryKeys,
-  contactQueryKeys
+  contactQueryKeys,
+  crmDealQueryKeys,
+  taskQueryKeys
 } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
@@ -251,6 +253,15 @@ export const useDeleteContact = (
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_OPEN_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.ALL
       });
       onSuccess();
     },
