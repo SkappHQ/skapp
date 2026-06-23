@@ -18,6 +18,7 @@ import {
   useUpdateDealStage
 } from "~community/crm/api/crmDealApi";
 import { CrmDealStageColorsEnum } from "~community/crm/enums/common";
+import useGetDealStageOptions from "~community/crm/hooks/useGetDealStageOptions";
 import {
   CrmDealStageCreatePayload,
   CrmDealStageFormTypes,
@@ -34,7 +35,7 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
   isEdit = false
 }) => {
   const { setToastMessage } = useToast();
-
+  const { getStageByName } = useGetDealStageOptions();
   const translateText = useTranslator("configurations", "crm");
 
   const { setIsDealStageModalOpen, selectedDealStageId } =
@@ -46,7 +47,7 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
   const selectedDealStage = useDealStageById(selectedDealStageId!);
 
   const initialValues: CrmDealStageFormTypes = {
-    name: isEdit ? selectedDealStage.name : "",
+    name: isEdit ? getStageByName(selectedDealStage.name) : "",
     description: isEdit ? (selectedDealStage?.description ?? "") : "",
     color: isEdit ? selectedDealStage.color : CrmDealStageColorsEnum.SKY
   };
