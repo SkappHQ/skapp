@@ -2,6 +2,7 @@ package com.skapp.community.peopleplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.YamlReader;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.CustomEmployeeSkill;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -14,7 +15,6 @@ import com.skapp.community.peopleplanner.repository.CustomEmployeeSkillDao;
 import com.skapp.community.peopleplanner.repository.EmployeeSkillDao;
 import com.skapp.community.peopleplanner.service.EmployeeSkillService;
 import com.skapp.community.peopleplanner.type.EmployeeSkillType;
-import com.skapp.enterprise.common.util.YamlReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
