@@ -233,6 +233,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		if (params.getCompanyId() != null) {
 			predicates.add(cb.equal(root.get(CrmTask_.company).get(CrmCompany_.id), params.getCompanyId()));
+			predicates.add(cb.isFalse(root.get(CrmTask_.company).get(CrmCompany_.isDeleted)));
 		}
 
 		return predicates;

@@ -93,6 +93,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Long companyId = filterDto.getCompanyId();
 		if (companyId != null) {
 			predicates.add(cb.equal(company.get(CrmCompany_.id), companyId));
+			predicates.add(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 		}
 
 		return predicates.toArray(new Predicate[0]);
