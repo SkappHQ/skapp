@@ -17,6 +17,7 @@ import com.skapp.community.crmplanner.type.CrmTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -34,7 +35,10 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -151,6 +155,22 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
+	public Optional<CrmTask> findByIdWithAssociations(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		task.fetch(CrmTask_.type, JoinType.INNER);
+		task.fetch(CrmTask_.owner, JoinType.INNER);
+		task.fetch(CrmTask_.contact, JoinType.LEFT);
+		task.fetch(CrmTask_.deal, JoinType.LEFT);
+
+		query.select(task).where(cb.equal(task.get(CrmTask_.id), id), cb.isFalse(task.get(CrmTask_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList().stream().findFirst();
+	}
+
+	@Override
 	public CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContactTaskMetrics> query = cb.createQuery(CrmContactTaskMetrics.class);
@@ -194,7 +214,13 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		if (params.getSearchKeyword() != null && !params.getSearchKeyword().isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(params.getSearchKeyword().trim().toLowerCase());
-			predicates.add(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"));
+
+			Join<CrmTask, CrmContact> contactJoin = root.join(CrmTask_.contact, JoinType.LEFT);
+			Join<CrmTask, CrmDeal> dealJoin = root.join(CrmTask_.deal, JoinType.LEFT);
+
+			predicates.add(cb.or(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), "%" + escaped + "%"),
+					cb.like(cb.lower(dealJoin.get(CrmDeal_.name)), "%" + escaped + "%")));
 		}
 
 		if (params.getContactId() != null) {
@@ -217,6 +243,27 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		root.fetch(CrmTask_.owner);
 		root.fetch(CrmTask_.contact, JoinType.LEFT);
 		root.fetch(CrmTask_.deal, JoinType.LEFT);
+	}
+
+	@Override
+	public Map<Long, Long> countTasksByDealIds(List<Long> dealIds) {
+		if (dealIds == null || dealIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		query.select(cb.tuple(task.get(CrmTask_.deal).get(CrmDeal_.id), cb.count(task.get(CrmTask_.id))));
+		query.where(task.get(CrmTask_.deal).get(CrmDeal_.id).in(dealIds), cb.isFalse(task.get(CrmTask_.isDeleted)),
+				cb.isFalse(task.get(CrmTask_.isCompleted)));
+		query.groupBy(task.get(CrmTask_.deal).get(CrmDeal_.id));
+
+		Map<Long, Long> counts = new HashMap<>();
+		entityManager.createQuery(query)
+			.getResultList()
+			.forEach(t -> counts.put(t.get(0, Long.class), t.get(1, Long.class)));
+		return counts;
 	}
 
 }

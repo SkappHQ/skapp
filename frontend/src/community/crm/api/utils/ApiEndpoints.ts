@@ -1,9 +1,5 @@
 import { moduleAPIPath } from "~community/common/constants/configs";
 
-export const taskEndpoints = {
-  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
-};
-
 export const crmDealEndpoints = {
   GET_DEALS: `${moduleAPIPath.CRM}/deal`,
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
@@ -14,9 +10,19 @@ export const contactEndpoints = {
   GET_CONTACT_METRICS: `${moduleAPIPath.CRM}/contact/metrics`,
   GET_COMPANIES: `${moduleAPIPath.CRM}/company/lookup`,
   CREATE_CONTACT: `${moduleAPIPath.CRM}/contact`,
+  EDIT_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`,
   CONTACT_BY_ID: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`
+};
+
+export const taskEndpoints = {
+  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
+  GET_OPEN_TASKS: `${moduleAPIPath.CRM}/task`,
+  CREATE_TASK: `${moduleAPIPath.CRM}/task`,
+  GET_TASKS: `${moduleAPIPath.CRM}/task`,
+  GET_COMPLETED_TASKS: `${moduleAPIPath.CRM}/task/completed`,
+  DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
 export const companyEndpoints = {

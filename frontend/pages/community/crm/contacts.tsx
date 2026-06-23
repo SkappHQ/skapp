@@ -1,9 +1,9 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
@@ -16,22 +16,22 @@ const Contacts: NextPage = () => {
   const {
     isCrmSidePanelOpen,
     setIsCrmSidePanelOpen,
-    setSelectedContact,
+    setSelectedContactId,
     setIsAddContactModalOpen,
     setContactModalType,
-    selectedContact
+    selectedContactId
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedContact: store.setSelectedContact,
+    setSelectedContactId: store.setSelectedContactId,
     setIsAddContactModalOpen: store.setIsAddContactModalOpen,
     setContactModalType: store.setContactModalType,
-    selectedContact: store.selectedContact
+    selectedContactId: store.selectedContactId
   }));
 
   const handleCloseSidePanel = () => {
     setIsCrmSidePanelOpen(false);
-    setSelectedContact(null);
+    setSelectedContactId(null);
   };
 
   const onPrimaryButtonClick = () => {
@@ -46,15 +46,17 @@ const Contacts: NextPage = () => {
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      containerStyles={{ zIndex: ZIndexEnums.CRM_CONTENT_LAYOUT }}
     >
       <>
-        {selectedContact && (
-          <ContactSidePanel
-            isOpen={isCrmSidePanelOpen}
-            onClose={handleCloseSidePanel}
-          />
+        {selectedContactId && (
+          <SidePanelWrapper>
+            <ContactSidePanel
+              isOpen={isCrmSidePanelOpen}
+              onClose={handleCloseSidePanel}
+            />
+          </SidePanelWrapper>
         )}
+
         <ContactModalController />
         <ContactTable />
       </>

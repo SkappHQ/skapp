@@ -73,11 +73,20 @@
     "crmTitle": "CRM Module Roles",
     "salesManagerHeader": "SALES MANAGER",
     "salesRepresentativeHeader": "SALES REPRESENTATIVE",
-    "viewContactsAndCompanies": "View Contacts & Companies",
-    "manageContactsAndCompanies": "Manage Contacts & Companies",
+    "adminRoleLabel": "Admin",
+    "managerRoleLabel": "Manager",
+    "salesManagerRoleLabel": "Sales Manager",
+    "senderRoleLabel": "Sender",
+    "teamAndOwn": "(Team & own)",
+    "own": "(Own)",
+    "viewDashboard": "View Dashboard",
+    "createAndManageContacts": "Create & Manage Contacts",
+    "viewContacts": "View Contacts",
+    "viewCompanies": "View Companies",
+    "manageCompanies": "Manage Companies",
+    "viewAndCreateDeals": "View & Create Deals",
     "manageDeals": "Manage Deals",
-    "manageTasks": "Manage Tasks",
-    "viewReports": "View Reports"
+    "createAndManageTasks": "Create & Manage Tasks"
   },
   "times": {
     "pageHead": "Time Configurations | Skapp",
@@ -119,7 +128,8 @@
     "sign": "Sign",
     "userRoles": "User Roles",
     "invoice": "Invoice",
-    "organization": "Organization"
+    "organization": "Organization",
+    "crm": "CRM"
   },
   "workLocation": {
     "areYouSureModalTitle": "Are you sure?",
@@ -228,6 +238,120 @@
       "description": "Are you sure you want to delete this work location? This action cannot be undone.",
       "confirmButton": "Delete",
       "cancelButton": "Cancel"
+    }
+  },
+  "crm": {
+    "pageHead": "CRM Configurations | Skapp",
+    "title": "CRM Configurations",
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save changes"
+    },
+    "currencySection": {
+      "currencyPreferencesTitle": "Currency preferences",
+      "currencyPreferencesDescription": "Select the currency for your organization. All deal values, revenue figures, and pipeline tools will be displayed in the selected currency.",
+      "currencyInfoNote": "Changing the currency updates all CRM values for all users; existing deals aren't converted, only the display currency changes.",
+      "labels": {
+        "selectCurrency": "Select currency"
+      },
+      "ariaLabel": {
+        "selectCurrency": "Select currency dropdown"
+      },
+      "placeholders": {
+        "selectCurrency": "Select currency"
+      }
+    },
+    "dealsSection": {
+      "addButtonText": "Add",
+      "dealCompleteStateNote": "The following status defines the complete state of a deal.",
+      "dealPipelineStatusesTitle": "Deal Pipeline stages",
+      "buttons": {
+        "add": "Add",
+        "cancel": "Cancel",
+        "saveChanges": "Save changes"
+      }
+    },
+    "addDealStageModal": {
+      "title": "Add Deal Stage",
+      "labels": {
+        "stageName": "Name",
+        "stageDescription": "Description",
+        "stageColor": "Color"
+      },
+      "placeholders": {
+        "stageName": "Enter stage name",
+        "stageDescription": "Enter description",
+        "stageColor": "Select color"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "add": "Add"
+      },
+      "ariaLabels": {
+        "stageName": "Stage Name",
+        "stageDescription": "Stage Description",
+        "stageColor": "Stage Color",
+        "save": "Save",
+        "cancel": "Cancel",
+        "add": "Add Deal Stage"
+      },
+      "validations": {
+        "stageName": "Stage name is required",
+        "stageExists": "A stage with this name already exists",
+        "stageNameLength": "Stage name must be less than 50 characters",
+        "descriptionLength": "Description must be less than 100 characters",
+        "stageColor": "Please select a valid color"
+      },
+      "toastMessages": {
+        "successTitle": "Deal stage added successfully",
+        "successDescription": "The deal stage has been successfully added",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to add the deal stage. Please try again"
+      }
+    },
+    "editDealStageModal": {
+      "title": "Edit Deal Stage",
+      "labels": {
+        "stageName": "Name",
+        "stageDescription": "Description",
+        "stageColor": "Color"
+      },
+      "placeholders": {
+        "stageName": "Enter stage name",
+        "stageDescription": "Enter description",
+        "stageColor": "Select color"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "update": "Update"
+      },
+      "ariaLabels": {
+        "stageName": "Stage Name",
+        "stageDescription": "Stage Description",
+        "stageColor": "Stage Color",
+        "save": "Save",
+        "cancel": "Cancel",
+        "update": "Update Deal Stage"
+      },
+      "validations": {
+        "stageName": "Stage name is required",
+        "stageExists": "A stage with this name already exists",
+        "stageNameLength": "Stage name must be less than 50 characters",
+        "descriptionLength": "Description must be less than 100 characters",
+        "stageColor": "Please select a valid color"
+      },
+      "toastMessages": {
+        "successTitle": "Deal stage updated successfully",
+        "successDescription": "The deal stage has been successfully updated",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to update the deal stage. Please try again"
+      },
+      "aria": {
+        "editStage": "Edit stage {{stageName}}",
+        "deleteStage": "Delete stage {{stageName}}"
+      }
     }
   }
 }

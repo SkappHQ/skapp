@@ -5,13 +5,19 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { CrmPriorityEnum } from "../enums/common";
+import {
+  CrmPriorityEnum,
+  CrmTaskTabEnum
+} from "../enums/common";
 
 export const TASK_SEARCH_DEBOUNCE_DELAY = 500;
 
-export const priorityOptions = [
+export const TASK_PAGE_SIZE = 12;
+
+export const SALES_REP_RESTRICTED_TASK_TABS = [CrmTaskTabEnum.TEAM_TASKS];
+
+export const PRIORITY_OPTIONS = [
   {
-    label: "Low",
     key: "low",
     value: CrmPriorityEnum.LOW,
     backgroundColor: "bg-semantic-green-background",
@@ -19,7 +25,6 @@ export const priorityOptions = [
     IconComponent: LowPriorityIcon as FC
   },
   {
-    label: "Medium",
     key: "medium",
     value: CrmPriorityEnum.MEDIUM,
     backgroundColor: "bg-semantic-amber-background",
@@ -27,7 +32,6 @@ export const priorityOptions = [
     IconComponent: MediumPriorityIcon as FC
   },
   {
-    label: "High",
     key: "high",
     value: CrmPriorityEnum.HIGH,
     backgroundColor: "bg-semantic-red-background",
