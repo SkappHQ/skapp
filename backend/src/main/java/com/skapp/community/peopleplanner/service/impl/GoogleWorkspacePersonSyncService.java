@@ -5,6 +5,10 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.directory.Directory;
 import com.google.api.services.directory.DirectoryScopes;
 import com.google.api.services.directory.model.Channel;
+import com.google.api.services.directory.model.Group;
+import com.google.api.services.directory.model.Groups;
+import com.google.api.services.directory.model.Member;
+import com.google.api.services.directory.model.Members;
 import com.google.api.services.directory.model.Users;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -17,12 +21,18 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.AsyncEmailSender;
+import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.PushNotificationService;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeTeam;
+import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
+import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
+import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.ExternalPersonSyncService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.RolesService;
@@ -33,6 +43,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
@@ -108,10 +119,14 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private final EmployeeDao employeeDao;
     private final AsyncEmailSender asyncEmailSender;
     private final PeopleEmailService peopleEmailService;
+    private final EncryptionDecryptionService encryptionDecryptionService;
+    private final PasswordEncoder passwordEncoder;
     private final RolesService rolesService;
     private final OrganizationConfigDao organizationConfigDao;
     private final PushNotificationService pushNotificationService;
     private final EmployeeRoleDao employeeRoleDao;
+    private final TeamDao teamDao;
+    private final EmployeeTeamDao employeeTeamDao;
 
     private Directory directoryService;
     private volatile Long channelExpiration;
@@ -147,7 +162,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         GoogleCredentials credentials = ServiceAccountCredentials
                 .fromStream(new ByteArrayInputStream(secretJson.getBytes(StandardCharsets.UTF_8)))
-                .createScoped(List.of(DirectoryScopes.ADMIN_DIRECTORY_USER_READONLY))
+                .createScoped(List.of(
+                        DirectoryScopes.ADMIN_DIRECTORY_USER_READONLY,
+                        DirectoryScopes.ADMIN_DIRECTORY_GROUP_READONLY,
+                        DirectoryScopes.ADMIN_DIRECTORY_GROUP_MEMBER_READONLY))
                 .createDelegated(adminEmail);
 
         directoryService = new Directory.Builder(
@@ -273,7 +291,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         try {
             SyncResult result = performFullSync();
             log.info("Resync complete. Synced: {}, Failed: {}", result.synced(), result.failed());
+            // All users+employees are persisted — now send invitation emails
             sendInviteEmailsToNewUsers(result.newUserEmails());
+
             sendSummaryEmail(asyncEmailSender, callerEmail,
                     result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
@@ -301,9 +321,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             log.info("Sync complete. Synced: {}, Failed: {}, New users: {}",
                     result.synced(), result.failed(), result.newUserEmails().size());
 
-            // All users+employees are persisted — now send invitation emails
             sendInviteEmailsToNewUsers(result.newUserEmails());
-
             sendSummaryEmail(asyncEmailSender, callerEmail,
                     result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
@@ -374,9 +392,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             Users result = fetchPageWithBackoff(pageToken, 0);
             var users = result.getUsers();
 
-            if (users == null || users.isEmpty()) {
-                break;
-            }
+            if (users == null || users.isEmpty()) break;
 
             for (var wsUser : users) {
                 try {
@@ -403,9 +419,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                         newUserEmails.add(email);
                         log.debug("New user queued for invite: <{}>", email);
                     }
-                }
-                catch (Exception e) {
-                    String msg = "Failed to persist user: " + wsUser.getPrimaryEmail() + " — " + e.getMessage();
+                } catch (Exception e) {
+                    String msg = "Failed to persist user: " + wsUser.getPrimaryEmail()
+                            + " — " + e.getMessage();
                     log.error(msg, e);
                     failures.add(msg);
                     totalFailed++;
@@ -413,31 +429,190 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             }
 
             pageToken = result.getNextPageToken();
-            log.info("Page processed. Next page token: {}", pageToken != null ? "present" : "none");
+            log.info("Page processed. Next token: {}", pageToken != null ? "present" : "none");
 
         } while (pageToken != null);
 
         deactivateUsersMissingFrom(googleEmails);
 
+        // ── Phase 2: sync Google groups → Skapp teams ────────────────────────
+        // Runs after all users are committed so every member email resolves
+        // to an existing Employee row.
+        try {
+            syncGroupsToTeams();
+        } catch (Exception e) {
+            String msg = "Group→Team sync failed: " + e.getMessage();
+            log.error(msg, e);
+            failures.add(msg);
+            totalFailed++;
+        }
+
         return new SyncResult(totalSynced, totalFailed, failures, newUserEmails);
     }
 
     // -------------------------------------------------------------------------
-    // deactivateUsersMissingFrom() — deactivate skapp users (and their employee
-    // records) that came from Google but no longer appear in the Workspace
-    // response, e.g. they were removed/suspended-and-deleted in Workspace.
-    // Candidates are fetched in a single query rather than looked up per-user.
+    // syncGroupsToTeams() — maps each Google group to a Skapp Team and keeps
+    // memberships in sync.
+    //
+    // Strategy per group:
+    //   1. Find or create a Team whose name matches the Google group name.
+    //   2. Fetch current EmployeeTeam rows for that team.
+    //   3. For each group member whose email exists as an Employee in Skapp,
+    //      add an EmployeeTeam row if one doesn't already exist.
+    //   4. Remove EmployeeTeam rows for members who are no longer in the group.
+    //
+    // Groups API requires setCustomer("my_customer") — omitting it causes a
+    // 400 Bad Request. Members are fetched per group using the group email.
+    // -------------------------------------------------------------------------
+    private void syncGroupsToTeams() throws Exception {
+        log.info("syncGroupsToTeams: starting group→team sync");
+
+        String groupPageToken = null;
+        int teamsCreated = 0;
+        int membersAdded = 0;
+        int membersRemoved = 0;
+
+        do {
+            // FIX: must pass setCustomer() — omitting it causes 400 Bad Request
+            Groups groupsPage = directoryService.groups()
+                    .list()
+                    .setCustomer(WORKSPACE_CUSTOMER_ALIAS)
+                    .setMaxResults(200)
+                    .setPageToken(groupPageToken)
+                    .execute();
+
+            List<Group> groups = groupsPage.getGroups();
+            if (groups == null || groups.isEmpty()) break;
+
+            for (Group group : groups) {
+                try {
+                    String groupName  = group.getName();
+                    String groupEmail = group.getEmail();
+                    log.info("syncGroupsToTeams: processing group '{}' ({})", groupName, groupEmail);
+
+                    // 1. Find or create the Skapp Team
+                    Team team = teamDao.findByTeamNameAndIsActiveTrue(groupName)
+                            .orElseGet(() -> {
+                                Team t = new Team();
+                                t.setTeamName(groupName);
+                                t.setActive(true);
+                                return teamDao.save(t);
+                            });
+
+                    if (team.getTeamId() == null) {
+                        // freshly saved — force flush to get DB-generated ID
+                        team = teamDao.saveAndFlush(team);
+                        teamsCreated++;
+                        log.info("syncGroupsToTeams: created team '{}'", groupName);
+                    }
+
+                    // 2. Collect emails of current Google group members
+                    Set<String> memberEmails = fetchGroupMemberEmails(groupEmail);
+
+                    // 3. Existing EmployeeTeam rows for this team
+                    List<EmployeeTeam> existingMemberships =
+                            employeeTeamDao.findEmployeeTeamsByTeam(team);
+
+                    Set<String> alreadyMapped = new HashSet<>();
+                    List<Long> toRemove = new ArrayList<>();
+
+                    for (EmployeeTeam et : existingMemberships) {
+                        String empEmail = et.getEmployee() != null
+                                && et.getEmployee().getUser() != null
+                                ? et.getEmployee().getUser().getEmail()
+                                : null;
+
+                        if (empEmail != null && memberEmails.contains(empEmail)) {
+                            // still a member — keep
+                            alreadyMapped.add(empEmail);
+                        } else {
+                            // no longer in the group — remove
+                            toRemove.add(et.getId());
+                        }
+                    }
+
+                    if (!toRemove.isEmpty()) {
+                        employeeTeamDao.deleteAllByIdIn(toRemove);
+                        membersRemoved += toRemove.size();
+                        log.info("syncGroupsToTeams: removed {} stale member(s) from team '{}'",
+                                toRemove.size(), groupName);
+                    }
+
+                    // 4. Add new members
+                    for (String memberEmail : memberEmails) {
+                        if (alreadyMapped.contains(memberEmail)) continue;
+
+                        Employee employee = employeeDao.findEmployeeByEmail(memberEmail);
+                        if (employee == null) {
+                            log.debug("syncGroupsToTeams: skipping {} — not a Skapp employee", memberEmail);
+                            continue;
+                        }
+
+                        EmployeeTeam et = new EmployeeTeam();
+                        et.setTeam(team);
+                        et.setEmployee(employee);
+                        et.setIsSupervisor(false);
+                        employeeTeamDao.save(et);
+                        membersAdded++;
+                        log.debug("syncGroupsToTeams: added {} to team '{}'", memberEmail, groupName);
+                    }
+
+                } catch (Exception e) {
+                    log.error("syncGroupsToTeams: failed to process group '{}': {}",
+                            group.getName(), e.getMessage(), e);
+                }
+            }
+
+            groupPageToken = groupsPage.getNextPageToken();
+
+        } while (groupPageToken != null);
+
+        log.info("syncGroupsToTeams: done. Teams created: {}, Members added: {}, Members removed: {}",
+                teamsCreated, membersAdded, membersRemoved);
+    }
+
+    // -------------------------------------------------------------------------
+    // fetchGroupMemberEmails() — returns all member emails for a given group,
+    // handling pagination. Uses group email as the key (not group ID).
+    // -------------------------------------------------------------------------
+    private Set<String> fetchGroupMemberEmails(String groupEmail) throws Exception {
+        Set<String> emails = new HashSet<>();
+        String memberPageToken = null;
+
+        do {
+            Members membersPage = directoryService.members()
+                    .list(groupEmail)
+                    .setPageToken(memberPageToken)
+                    .execute();
+
+            List<Member> members = membersPage.getMembers();
+            if (members != null) {
+                for (Member m : members) {
+                    if (m.getEmail() != null) {
+                        emails.add(m.getEmail());
+                    }
+                }
+            }
+
+            memberPageToken = membersPage.getNextPageToken();
+
+        } while (memberPageToken != null);
+
+        return emails;
+    }
+
+    // -------------------------------------------------------------------------
+    // deactivateUsersMissingFrom()
     // -------------------------------------------------------------------------
     private void deactivateUsersMissingFrom(Set<String> googleEmails) {
-        List<User> activeGoogleUsers = userDao.findAllByLoginMethodAndIsActiveTrue(LoginMethod.GOOGLE);
+        List<User> activeGoogleUsers =
+                userDao.findAllByLoginMethodAndIsActiveTrue(LoginMethod.GOOGLE);
 
         List<User> staleUsers = activeGoogleUsers.stream()
                 .filter(user -> !googleEmails.contains(user.getEmail()))
                 .toList();
 
-        if (staleUsers.isEmpty()) {
-            return;
-        }
+        if (staleUsers.isEmpty()) return;
 
         List<Employee> staleEmployees = new ArrayList<>();
         for (User user : staleUsers) {
@@ -452,7 +627,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         userDao.saveAll(staleUsers);
         employeeDao.saveAll(staleEmployees);
 
-        log.info("Deactivated {} user(s) no longer present in Google Workspace: {}",
+        log.info("Deactivated {} user(s) no longer in Google Workspace: {}",
                 staleUsers.size(),
                 staleUsers.stream().map(User::getEmail).toList());
     }
@@ -475,8 +650,25 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         User user = existingUser.orElseGet(User::new);
         user.setEmail(email);
         user.setIsActive(!suspended);
-        user.setLoginMethod(LoginMethod.GOOGLE);
-        User savedUser = userDao.save(user);
+
+        if (isNew) {
+            // Provision with credentials so the standard invitation email
+            // (PEOPLE_MODULE_USER_INVITATION_V1) is sent, which includes the
+            // temporary password. On first login the app detects
+            // isPasswordChangedForTheFirstTime=false and forces a password reset.
+            String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+            CommonModuleUtils.setIfExists(
+                    () -> encryptionDecryptionService.encrypt(tempPassword),
+                    user::setTempPassword);
+            CommonModuleUtils.setIfExists(
+                    () -> passwordEncoder.encode(tempPassword),
+                    user::setPassword);
+            user.setLoginMethod(LoginMethod.CREDENTIALS);
+            user.setIsPasswordChangedForTheFirstTime(false);
+        }
+        // Existing users: never overwrite loginMethod, password, or tempPassword.
+
+        User savedUser = userDao.saveAndFlush(user);
 
         Employee employee = employeeDao.findEmployeeByEmail(email);
         if (employee == null) {
@@ -488,16 +680,64 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         employee.setAccountStatus(suspended ? AccountStatus.DEACTIVATED : AccountStatus.ACTIVE);
         Employee savedEmployee = employeeDao.save(employee);
 
-        // Only assign roles to brand-new employees — never overwrite existing role assignments
-        if (isNew && savedEmployee.getEmployeeRole() == null) {
+        // Guard: EmployeeRole shares PK with Employee via @MapsId — skip if
+        // a role row already exists (e.g. existing super admin) to avoid a
+        // duplicate-key INSERT.
+        if (!employeeRoleDao.existsById(savedEmployee.getEmployeeId())) {
             rolesService.saveEmployeeRoles(savedEmployee);
+        } else {
+            log.debug("Skipping role creation for {} — role already exists.", email);
         }
 
         return isNew;
     }
 
     // -------------------------------------------------------------------------
-    // fetchPageWithBackoff() — exponential backoff + jitter on rate limit errors
+    // sendInviteEmailsToNewUsers()
+    // -------------------------------------------------------------------------
+    private void sendInviteEmailsToNewUsers(List<String> newUserEmails) {
+        if (newUserEmails == null || newUserEmails.isEmpty()) {
+            log.info("sendInviteEmailsToNewUsers: no new users to invite.");
+            return;
+        }
+
+        Optional<OrganizationConfig> emailConfig = organizationConfigDao
+                .findOrganizationConfigByOrganizationConfigType(
+                        OrganizationConfigType.EMAIL_CONFIGS.name());
+
+        if (emailConfig.isEmpty()) {
+            log.error("sendInviteEmailsToNewUsers: SMTP not configured — " +
+                    "Fix: POST /api/v1/org/email-server");
+            return;
+        }
+
+        log.info("sendInviteEmailsToNewUsers: sending invites to {} new user(s).", newUserEmails.size());
+
+        for (String email : newUserEmails) {
+            try {
+                userDao.findByEmail(email).ifPresentOrElse(
+                        user -> {
+                            Employee employee = employeeDao.findEmployeeByEmail(email);
+                            if (employee == null) {
+                                log.warn("Skipping {} — employee record not found.", email);
+                                return;
+                            }
+                            user.setEmployee(employee);
+                            peopleEmailService.sendUserInvitationEmail(user);
+                            log.info("Invite sent to {}.", email);
+                        },
+                        () -> log.warn("User not found for {}.", email)
+                );
+            } catch (Exception e) {
+                log.error("Failed to send invite to {}: {}", email, e.getMessage());
+            }
+        }
+
+        log.info("sendInviteEmailsToNewUsers: done.");
+    }
+
+    // -------------------------------------------------------------------------
+    // fetchPageWithBackoff()
     // -------------------------------------------------------------------------
     private Users fetchPageWithBackoff(String pageToken, int attempt) throws Exception {
         try {
@@ -512,24 +752,18 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             }
 
             return request.execute();
-        }
-        catch (com.google.api.client.googleapis.json.GoogleJsonResponseException e) {
+
+        } catch (com.google.api.client.googleapis.json.GoogleJsonResponseException e) {
             int status = e.getStatusCode();
-
-            if (status != HTTP_TOO_MANY_REQUESTS && status != HTTP_FORBIDDEN) {
-                throw e;
-            }
-
+            if (status != HTTP_TOO_MANY_REQUESTS && status != HTTP_FORBIDDEN) throw e;
             if (attempt >= maxBackoffAttempts) {
                 log.error("Max retries ({}) reached. Aborting.", maxBackoffAttempts);
                 throw e;
             }
-
             long waitMs = (long) (Math.min(MAX_BACKOFF_SECONDS, Math.pow(2, attempt)) * 1000
                     + Math.random() * BACKOFF_JITTER_BOUND_MS);
             log.warn("Rate limited ({}). Backoff attempt {}/{}, waiting {}ms...",
                     status, attempt + 1, maxBackoffAttempts, waitMs);
-
             Thread.sleep(waitMs);
             return fetchPageWithBackoff(pageToken, attempt + 1);
         }
@@ -540,49 +774,12 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // -------------------------------------------------------------------------
     private String getSecret(String projectId, String secretName) throws Exception {
         try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
-            SecretVersionName versionName = SecretVersionName.of(projectId, secretName, SECRET_LATEST_VERSION);
+            SecretVersionName versionName =
+                    SecretVersionName.of(projectId, secretName, SECRET_LATEST_VERSION);
             AccessSecretVersionResponse response = client.accessSecretVersion(versionName);
             return response.getPayload().getData().toStringUtf8();
         }
     }
 
-    private void sendInviteEmailsToNewUsers(List<String> newUserEmails) {
-        if (newUserEmails == null || newUserEmails.isEmpty()) {
-            log.info("sendInviteEmailsToNewUsers: no new users to invite.");
-            return;
-        }
-
-        log.info("sendInviteEmailsToNewUsers: sending invites to {} new user(s).",
-                newUserEmails.size());
-
-        for (String email : newUserEmails) {
-            try {
-                userDao.findByEmail(email).ifPresentOrElse(
-                        user -> {
-
-                            Employee employee = employeeDao.findEmployeeByEmail(email);
-
-                            if (employee == null) {
-                                log.warn("Skipping {} — employee record not found.", email);
-                                return;
-                            }
-
-                            // manually attach employee because entity mapping is unavailable
-                            user.setEmployee(employee);
-
-                            peopleEmailService.sendUserInvitationEmail(user);
-
-                            log.info("Invite sent to {}.", email);
-                        },
-                        () -> log.warn("User not found for {}.", email)
-                );
-
-            } catch (Exception e) {
-                log.error("Failed to send invite to {}: {}", email, e.getMessage());
-            }
-        }
-
-        log.info("sendInviteEmailsToNewUsers: done.");
-    }
 
 }
