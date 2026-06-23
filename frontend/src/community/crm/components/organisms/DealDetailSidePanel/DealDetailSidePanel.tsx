@@ -1,7 +1,6 @@
 import {
   CloseIcon,
   DeleteButtonIcon,
-  Dropdown,
   IconButton,
   InputField,
   KebabMenu,
@@ -13,17 +12,12 @@ import {
 import { FC, useEffect, useMemo, useState } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
-import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCrmContacts } from "~community/crm/api/ContactApi";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
 import { useGetDealById, useGetDealStages } from "~community/crm/api/crmDealApi";
-import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
-import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
-import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
-import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
@@ -37,13 +31,10 @@ import {
   TaskRowResponseType
 } from "~community/crm/types/CommonTypes";
 
+import DealPropertiesSidebar from "./DealPropertiesSidebar";
+
 const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
-  const addDealTranslator = useTranslator(
-    "crmModule",
-    "deals",
-    "addDealSidePanel"
-  );
 
   const { selectedDealId, setSelectedDealId, setIsCrmSidePanelOpen } =
     useCrmStore((store) => ({
@@ -335,81 +326,22 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
             </div>
 
             {/* Right: Stage + Properties */}
-            <div className="w-1/3 flex flex-col gap-4 shrink-0">
-              {isStagesLoading ? (
-                <MultipleSkeletons numOfSkeletons={1} height={38} />
-              ) : (
-                <Dropdown
-                  options={stageOptions}
-                  value={selectedStageId}
-                  onChange={(v) => setSelectedStageId(String(v))}
-                  variant="primary"
-                  className="rounded-lg"
-                  width="55%"
-                  placeholder={addDealTranslator(["placeholders", "stage"])}
-                  ariaLabel={addDealTranslator(["ariaLabels", "stage"])}
-                />
-              )}
-
-              <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
-                <PropertyRow label={addDealTranslator(["labels", "value"])}>
-                  <div className="flex flex-col w-full px-1">
-                    <input
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder={addDealTranslator(["placeholders", "none"])}
-                      type="text"
-                      className="w-full bg-transparent outline-none body2 placeholder:text-secondary-text"
-                      aria-label={addDealTranslator(["ariaLabels", "amount"])}
-                    />
-                  </div>
-                </PropertyRow>
-
-                <PropertyRow label={addDealTranslator(["labels", "priority"])}>
-                  <PriorityDropdown value={priority} onChange={setPriority} />
-                </PropertyRow>
-
-                <PropertyRow label={addDealTranslator(["labels", "ownedBy"])}>
-                  <div className="flex flex-col w-full">
-                    <OwnerPopupSearch
-                      selectedUser={selectedOwner}
-                      onChange={setSelectedOwner}
-                      placeholder={addDealTranslator(["placeholders", "none"])}
-                      searchPlaceholder={addDealTranslator([
-                        "placeholders",
-                        "ownerSearch"
-                      ])}
-                      noResultsText={addDealTranslator([
-                        "placeholders",
-                        "noResults"
-                      ])}
-                    />
-                  </div>
-                </PropertyRow>
-
-                <PropertyRow
-                  label={addDealTranslator(["labels", "contactName"])}
-                >
-                  <div className="flex flex-col w-full">
-                    <ContactPopupSearch
-                      contacts={contacts}
-                      selectedContact={selectedContact}
-                      onChange={setSelectedContact}
-                      onSearch={setContactSearchTerm}
-                      placeholder={addDealTranslator(["placeholders", "none"])}
-                      searchPlaceholder={addDealTranslator([
-                        "placeholders",
-                        "contactSearch"
-                      ])}
-                      noResultsText={addDealTranslator([
-                        "placeholders",
-                        "noResults"
-                      ])}
-                    />
-                  </div>
-                </PropertyRow>
-              </div>
-            </div>
+            <DealPropertiesSidebar
+              isStagesLoading={isStagesLoading}
+              stageOptions={stageOptions}
+              selectedStageId={selectedStageId}
+              onStageChange={(v) => setSelectedStageId(String(v))}
+              amount={amount}
+              onAmountChange={setAmount}
+              priority={priority}
+              onPriorityChange={setPriority}
+              selectedOwner={selectedOwner}
+              onOwnerChange={setSelectedOwner}
+              contacts={contacts}
+              selectedContact={selectedContact}
+              onContactChange={setSelectedContact}
+              onContactSearch={setContactSearchTerm}
+            />
           </div>
         </div>
       </SidePanel>
