@@ -5,7 +5,7 @@ import { DragIcon, StatusCard } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { DEFAULT_STAGE_NAME_MAP, STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 
 interface DraggableDealStageCardProps {
@@ -63,7 +63,7 @@ const DraggableDealStageCard = ({
           label: stage.color,
           code: STAGE_COLOR_MAP[stage.color]
         }}
-        title={DEFAULT_STAGE_NAME_MAP[stage.name] ?? stage.name}
+        title={stage.name}
         description={stage.description ?? ""}
         className={{
           title: "body1 md:!w-[23%] flex-shrink-0",
