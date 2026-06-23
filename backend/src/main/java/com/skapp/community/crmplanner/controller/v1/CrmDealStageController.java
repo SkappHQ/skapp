@@ -64,8 +64,7 @@ public class CrmDealStageController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Reorder deal stages",
-			description = "Reorders all deal stages.")
+	@Operation(summary = "Reorder deal stages", description = "Reorders all deal stages.")
 	@PostMapping("/reorder")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> reorderDealStages(
