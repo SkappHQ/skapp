@@ -1,4 +1,11 @@
 {
+  "common": {
+    "ownerPopupSearch": {
+      "placeholder": "None",
+      "searchPlaceholder": "Search Owner",
+      "noResults": "No results"
+    }
+  },
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",
@@ -27,7 +34,7 @@
       },
       "buttons": {
         "save": "Save",
-        "cancelAddContact": "Cancel"
+        "cancel": "Cancel"
       },
       "ariaLabels": {
         "name": "Name",
@@ -38,7 +45,7 @@
         "clearCompany": "Clear selected company",
         "clearOwner": "Clear selected contact owner",
         "save": "Save",
-        "cancelAddContact": "Cancel Add Contact"
+        "cancel": "Cancel Add Contact"
       },
       "validations": {
         "name": "Name is required",
@@ -52,23 +59,69 @@
       },
       "contactToastMessages": {
         "successTitle": "Contact added successfully",
+        "successDescription": "You can view the contact details in the contact list.",
         "errorTitle": "Failed to add contact",
+        "errorDescription": "Please try again or contact support"
+      }
+    },
+    "editContactModal": {
+      "title": "Edit Contact",
+      "labels": {
+        "name": "Name",
+        "email": "Email",
+        "contactNumber": "Contact no.",
+        "company": "Company",
+        "owner": "Contact owner"
+      },
+      "placeholders": {
+        "name": "Enter name",
+        "email": "Enter email",
+        "contactNumber": "Enter contact no.",
+        "company": "Search company",
+        "owner": "Search contact owner"
+      },
+      "emptyStates": {
+        "noCompanies": "No companies found",
+        "noOwners": "No contact owners found"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "ariaLabels": {
+        "name": "Name",
+        "email": "Email",
+        "contactNumber": "Contact Number",
+        "company": "Company",
+        "owner": "Contact Owner",
+        "clearCompany": "Clear selected company",
+        "clearOwner": "Clear selected contact owner",
+        "save": "Save",
+        "cancel": "Cancel Edit Contact"
+      },
+      "validations": {
+        "name": "Name is required",
+        "nameLength": "Name must be less than 50 characters",
+        "email": "Email is required",
+        "invalidEmail": "Please enter a valid email address",
+        "contactNumber": "Contact number is invalid",
+        "contactNumberLength": "Contact number is too long",
+        "characterLength": "Entry must be less than 50 characters",
+        "owner": "Contact owner is required"
+      },
+      "contactToastMessages": {
+        "successTitle": "Contact updated successfully",
+        "successDescription": "Changes to the contact have been saved.",
+        "errorTitle": "Failed to update contact",
         "errorDescription": "Please try again or contact support"
       }
     },
     "contactDetailsPanel": {
       "lastUpdated": "Last updated",
       "tasks": {
-        "addTaskButton": "Add task +",
         "addTaskButtonEmptyView": "Add task",
-        "addTaskPlaceholder": "Type a task name…",
         "emptyTitle": "No tasks",
         "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
-        "toggleErrorTitle": "Failed to update task",
-        "toggleErrorDescription": "Could not update the task status. Please try again.",
-        "checkTaskMarkComplete": "Mark {{name}} as complete",
-        "checkTaskMarkIncomplete": "Mark {{name}} as incomplete",
-        "openTaskDetails": "Open task details panel for {{name}}",
         "dueDateOverdue": "Overdue",
         "dueDateToday": "Due today",
         "dueDateDueOn": "Due on {{date}}"
@@ -354,6 +407,65 @@
     "sidePanel": {
       "deleteDeal": "Delete Deal",
       "kebabMenuAriaLabel": "Deal actions"
+    },
+    "addDealSidePanel": {
+      "title": "Add Deal",
+      "labels": {
+        "dealName": "Deal Name",
+        "stage": "Stage",
+        "description": "Description",
+        "value": "Value",
+        "priority": "Priority",
+        "ownedBy": "Owned by",
+        "contactName": "Contact"
+      },
+      "placeholders": {
+        "dealName": "Enter deal name",
+        "stage": "Select stage",
+        "description": "Enter description",
+        "amount": "Enter amount",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "none": "None",
+        "noResults": "No results"
+      },
+      "buttons": {
+        "addDeal": "Add Deal"
+      },
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "ariaLabels": {
+        "closePanel": "Close add deal panel",
+        "addDeal": "Add Deal",
+        "dealName": "Deal Name",
+        "stage": "Stage",
+        "description": "Description",
+        "amount": "Amount",
+        "priority": "Priority",
+        "owner": "Deal Owner",
+        "contact": "Contact"
+      },
+      "validations": {
+        "dealNameRequired": "Deal name is required",
+        "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
+        "dealNameMaxLength": "Deal name must be 255 characters or less",
+        "descriptionMaxLength": "Description must be 2000 characters or less",
+        "stageRequired": "Stage is required",
+        "stageLoadError": "Failed to load stages. Please try again.",
+        "contactRequired": "Contact is required",
+        "ownerRequired": "Owner is required",
+        "priorityRequired": "Priority is required",
+        "amountInvalid": "Please enter a valid positive amount"
+      },
+      "toastMessages": {
+        "successTitle": "Deal added successfully",
+        "successDescription": "The new deal has been created",
+        "errorTitle": "Failed to add deal",
+        "errorDescription": "Please try again or contact support"
+      }
     }
   },
   "tasks": {
@@ -361,6 +473,32 @@
     "title": "Tasks",
     "addTaskBtn": "Add Task",
     "openTaskDetails": "Open task details panel for {{name}}",
+    "checkTaskMarkComplete": "Mark as complete: {{name}}",
+    "checkTaskMarkIncomplete": "Mark as incomplete: {{name}}",
+    "toggleErrorTitle": "Failed to update task",
+    "toggleErrorDescription": "Could not update the task status. Please try again.",
+    "sidePanel": {
+      "deleteTask": "Delete task",
+      "kebabMenuAriaLabel": "Task actions"
+    },
+    "deleteTaskModal": {
+      "title": "Delete Task",
+      "description": "Are you sure you want to delete this task? This action cannot be undone.",
+      "buttons": {
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "ariaLabels": {
+        "confirm": "Confirm Delete Task",
+        "cancel": "Cancel Delete Task"
+      },
+      "toastMessages": {
+        "successTitle": "Task deleted",
+        "successDescription": "The task has been deleted successfully.",
+        "errorTitle": "Failed to delete task",
+        "errorDescription": "Something went wrong. Please try again."
+      }
+    },
     "addTaskModal": {
       "title": "Add task",
       "labels": {

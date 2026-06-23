@@ -56,9 +56,10 @@ const AddTaskModalContent: FC = () => {
 
   const { isCrmSalesManager } = useSessionData();
 
-  const priorityDropdownOptions = useGetPriorityOptions();
+  const priorityDropdownOptions = useGetPriorityOptions(translateText);
 
-  const { options: taskTypeOptions, getCategoryById } = useGetTaskTypeOptions();
+  const { options: taskTypeOptions, getCategoryById } =
+    useGetTaskTypeOptions(translateText);
 
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
   const [ownerSearchText, setOwnerSearchText] = useState("");

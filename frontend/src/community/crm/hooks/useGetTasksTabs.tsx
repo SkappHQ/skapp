@@ -6,8 +6,7 @@ import { CrmTaskTab } from "~community/crm/types/TaskTabTypes";
 
 export const useGetTasksTabs = (): CrmTaskTab[] => {
   const translateText = useTranslator("crmModule", "tasks", "tabs");
-  const { isCrmSalesManager } =
-    useSessionData();
+  const { isCrmSalesManager } = useSessionData();
 
   const allTabs: CrmTaskTab[] = [
     {

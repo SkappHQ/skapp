@@ -128,11 +128,17 @@ export interface CrmOwnersResponseType {
   totalPages: number;
 }
 
+export interface CrmContactLookupResponseType {
+  items: CrmContactLookup[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
 export interface CrmCompanyDomainSearchResponseType {
   companies: CrmCompanyType[];
 }
 
-export interface CrmContactAddFormTypes {
+export interface CrmContactFormValues {
   name: string;
   email: string;
   contactNumber: string;
@@ -146,6 +152,15 @@ export interface CrmContactCreatePayload {
   contactNumber?: string;
   companyId?: number;
   ownerId?: number;
+}
+
+export interface EditContactPayload {
+  id?: number;
+  name?: string;
+  email?: string;
+  contactNumber?: string;
+  companyId?: number | null;
+  ownerId?: number | null;
 }
 
 export interface CrmContactMetricsType {
@@ -238,6 +253,13 @@ export interface CrmTaskResponseType {
   tasks: CrmTaskDetailType[];
 }
 
+export interface CrmCompletedTaskResponseType {
+  items: CrmTaskDetailType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
 export interface CrmTaskDetailType {
   id: number;
   name: string;
@@ -287,6 +309,16 @@ export interface CrmDealFilterParams {
   priority?: CrmPriorityEnum;
 }
 
+export interface CrmDealAddFormTypes {
+  name: string;
+  stageId: string;
+  contactId: string;
+  ownerId: string;
+  priority: CrmPriorityEnum;
+  amount: string;
+  description: string;
+}
+
 export interface CrmCreateDealPayload {
   name: string;
   stageId: number;
@@ -333,15 +365,15 @@ export interface UpdateTaskStatusPayload {
   isCompleted: boolean;
 }
 
-export interface DetailPanelTaskResponseType {
+export interface TaskRowResponseType {
   id: number;
   name: string;
   type: string;
   priority: CrmPriorityEnum;
   isCompleted: boolean;
-  isOverdue: boolean;
   dueAt: string | null;
   owner: CrmOwner;
+  contact: CrmContactLookup | null;
 }
 
 export interface DetailPanelDealResponseType {
@@ -366,6 +398,6 @@ export interface CrmContactDetailResponseType {
   activeDealsCount: number;
   totalRevenue: string;
   pipelineRevenue: string;
-  tasks: DetailPanelTaskResponseType[];
+  tasks: TaskRowResponseType[];
   deals: DetailPanelDealResponseType[];
 }

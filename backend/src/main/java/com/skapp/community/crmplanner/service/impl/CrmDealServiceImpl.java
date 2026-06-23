@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -189,31 +190,40 @@ public class CrmDealServiceImpl implements CrmDealService {
 		int limit = requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT;
 		Integer requestedPage = requestDto.getPage();
 		int page = (requestedPage != null && requestedPage >= 0 && uniqueStageIds.size() == 1) ? requestedPage : 0;
+		PageRequest pageRequest = PageRequest.of(page, limit);
 
 		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto);
 
-		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
-
+		Map<Long, Page<CrmDeal>> dealPagesByStage = new LinkedHashMap<>();
 		for (Long stageId : uniqueStageIds) {
 			long totalCount = stageCounts.getOrDefault(stageId, 0L);
-			PageRequest pageRequest = PageRequest.of(page, limit);
+			dealPagesByStage.put(stageId, crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount));
+		}
 
-			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount);
+		List<Long> allDealIds = dealPagesByStage.values()
+			.stream()
+			.flatMap(p -> p.getContent().stream())
+			.map(CrmDeal::getId)
+			.toList();
+		Map<Long, Long> taskCountMap = crmTaskDao.countTasksByDealIds(allDealIds);
+
+		List<CrmDealsByStageResponseDto> result = uniqueStageIds.stream().map(stageId -> {
+			Page<CrmDeal> dealsPage = dealPagesByStage.get(stageId);
+
 			List<CrmDealByStageItemResponseDto> deals = crmMapper
 				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
+			deals.forEach(deal -> deal.setTaskCount(taskCountMap.getOrDefault(deal.getId(), 0L)));
 
 			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
 			stageResult.setStageId(stageId);
-
 			stageResult.setTotalCount(dealsPage.getTotalElements());
 			stageResult.setCurrentPage(dealsPage.getNumber());
 			stageResult.setTotalPages(dealsPage.getTotalPages());
 			stageResult.setPageSize(dealsPage.getSize());
 			stageResult.setHasNextPage(dealsPage.hasNext());
 			stageResult.setDeals(deals);
-
-			result.add(stageResult);
-		}
+			return stageResult;
+		}).toList();
 
 		log.info("getDealsByStages: execution ended");
 		return new ResponseEntityDto(false, result);
@@ -317,6 +327,20 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("updateDealStage: execution ended");
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getDealById(Long id) {
+		log.info("getDealById: execution started", id);
+
+		CrmDeal deal = crmDealDao.findByIdWithAssociations(id);
+		if (deal == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
+
+		log.info("getDealById: execution ended", id);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealViewResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
