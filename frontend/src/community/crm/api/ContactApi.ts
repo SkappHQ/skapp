@@ -1,4 +1,5 @@
 import {
+  InfiniteData,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -22,7 +23,8 @@ import {
   CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
   CrmOwner,
-  CrmOwnersResponseType
+  CrmOwnersResponseType,
+  EditContactPayload
 } from "~community/crm/types/CommonTypes";
 
 interface ContactMetricsSearchParams {
@@ -69,6 +71,18 @@ export const useGetContactMetrics = (
   });
 };
 
+export const useGetSelectedContactById = (selectedContactId: number) => {
+  const queryClient = useQueryClient();
+
+  const contacts = queryClient
+    .getQueriesData<InfiniteData<CrmContactMetricsResponseType>>({
+      queryKey: contactQueryKeys.ALL
+    })
+    .flatMap(([, data]) => data?.pages.flatMap((page) => page.items) ?? []);
+
+  return contacts.find((contact) => contact.id === selectedContactId);
+};
+
 export const useGetCrmCompanies = (size: number) => {
   return useQuery({
     queryKey: companyQueryKeys.CRM_COMPANIES(size),
@@ -103,6 +117,28 @@ export const useCreateNewContact = (
       onSuccess();
     },
     onError: onError
+  });
+};
+
+const editContact = async ({ id, ...payload }: EditContactPayload) => {
+  const response = await authFetch.patch(
+    contactEndpoints.EDIT_CONTACT(id),
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useEditContact = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: editContact,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      onSuccess();
+    },
+    onError
   });
 };
 

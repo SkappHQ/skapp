@@ -187,3 +187,24 @@ export const useGetCompletedTasks = (
     enabled
   });
 };
+
+const deleteTask = async (id: number) => {
+  await authFetch.delete(taskEndpoints.DELETE_TASK(id));
+};
+
+export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_OPEN_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      onSuccess();
+    },
+    onError
+  });
+};
