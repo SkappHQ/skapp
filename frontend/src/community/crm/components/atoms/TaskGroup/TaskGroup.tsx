@@ -24,12 +24,11 @@ const TaskGroup: FC<TaskGroupProps> = ({
       <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
         {tasks.map((task) => {
           return (
-            <div key={task.id}>
-              <TaskRow
-                task={mapTaskToTaskRowResponse(task)}
-                isCheckTaskVisible={isCheckTaskVisible}
-              />
-            </div>
+            <TaskRow
+              key={task.id}
+              task={mapTaskToTaskRowResponse(task)}
+              isCheckTaskVisible={isCheckTaskVisible}
+            />
           );
         })}
       </div>
