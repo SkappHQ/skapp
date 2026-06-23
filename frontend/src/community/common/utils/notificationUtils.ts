@@ -14,6 +14,7 @@ import {
   NotificationSummaryItem,
   NotificationSummaryType
 } from "~community/common/types/notificationTypes";
+import PeopleModuleIcon from "../assets/Icons/PeopleModuleIcon";
 
 export const getNotificationCount = (
   summaryResults: NotificationSummaryItem[] | undefined,
@@ -42,6 +43,9 @@ export const getNotificationIcon = (
     case NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED_OWNER:
     case NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED_OWNER:
       return EsignatureModuleIcon;
+    case NotificationItemsTypes.EXTERNAL_SYNC_COMPLETED:
+    case NotificationItemsTypes.GOOGLE_WORKSPACE_USER_REMOVED:
+      return PeopleModuleIcon; 
     default:
       return null;
   }
@@ -163,6 +167,13 @@ export const handleNotifyRow = ({
     if (resourceId && !isNaN(Number(resourceId))) {
       router.push(ROUTES.SIGN.INBOX_INFO.ID(Number(resourceId)));
     }
+  } else if (
+    notificationType === NotificationItemsTypes.GOOGLE_WORKSPACE_USER_REMOVED
+  ) {
+    router.push(ROUTES.PEOPLE.DIRECTORY); // navigate to People directory so admin can act
+  } else if (
+    notificationType === NotificationItemsTypes.EXTERNAL_SYNC_COMPLETED
+  ) {
   }
   mutate(id);
 };
