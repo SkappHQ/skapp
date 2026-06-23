@@ -132,9 +132,12 @@ export const useEditContact = (onSuccess: () => void, onError: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editContact,
-    onSuccess: () => {
+    onSuccess: ({ id }) => {
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.CONTACT_BY_ID(id)
       });
       onSuccess();
     },
