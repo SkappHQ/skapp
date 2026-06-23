@@ -615,9 +615,10 @@
         "cancel": "Cancel edit task"
       },
       "toastMessages": {
-        "successTitle": "Task updated successfully",
-        "errorTitle": "Failed to update task",
-        "errorDescription": "Please try again or contact support"
+        "successTitle": "Task updated",
+        "successDescription": "Task updated successfully",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to update task. Please try again"
       },
       "validations": {
         "type": "Please select a task type.",
