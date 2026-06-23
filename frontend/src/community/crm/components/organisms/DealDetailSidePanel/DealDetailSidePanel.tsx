@@ -1,5 +1,5 @@
 import {
-  Button,
+  ButtonV2,
   CloseIcon,
   DeleteButtonIcon,
   IconButton,
@@ -294,22 +294,22 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
                       autoFocus
                     />
                     <div className="flex gap-2 justify-end">
-                      <Button
+                      <ButtonV2
                         onClick={handleDiscardDescription}
-                        size="lg"
+                        size="md"
                         type="button"
                         variant="tertiary"
                       >
                         Discard
-                      </Button>
-                      <Button
+                      </ButtonV2>
+                      <ButtonV2
                         onClick={handleSaveDescription}
-                        size="lg"
+                        size="md"
                         type="button"
                         variant="primary"
                       >
                         Save
-                      </Button>
+                      </ButtonV2>
                     </div>
                   </div>
                 ) : (
