@@ -77,14 +77,16 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private static final int BACKOFF_JITTER_BOUND_MS = 1000;
     private static final int HTTP_TOO_MANY_REQUESTS = 429;
     private static final int HTTP_FORBIDDEN = 403;
+    private volatile Instant lastSyncCompletedAt = null;
+    private static final Duration SYNC_DEBOUNCE_WINDOW = Duration.ofSeconds(30);
 
-    @Value("${google.project-id}")
+    @Value("${google.project-id:}")
     private String projectId;
 
-    @Value("${google.secret-name}")
+    @Value("${google.secret-name:}")
     private String secretName;
 
-    @Value("${google.admin-email}")
+    @Value("${google.admin-email:}")
     private String adminEmail;
 
     @Value("${google.max-results:500}")
@@ -96,7 +98,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     @Value("${google.credentials-path:}")
     private String credentialsPath;
 
-    @Value("${google.webhook-url}")
+    @Value("${google.webhook-url:}")
     private String webhookUrl;
 
     @Value("${google.channel-token:}")
@@ -114,11 +116,26 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private Directory directoryService;
     private volatile Long channelExpiration;
 
+    // isConfigured() — returns false when required Google env vars are absent.
+    // Allows the app to start without crashing when integration is not configured.
+    private boolean isConfigured() {
+        boolean configured = adminEmail != null && !adminEmail.isBlank()
+                && webhookUrl != null && !webhookUrl.isBlank()
+                && ((credentialsPath != null && !credentialsPath.isBlank())
+                || (projectId != null && !projectId.isBlank()
+                && secretName != null && !secretName.isBlank()));
+        if (!configured) {
+            log.warn("Google Workspace integration is not configured — skipping.");
+        }
+        return configured;
+    }
+
     // -------------------------------------------------------------------------
     // authenticate() — local file (dev) or Secret Manager (prod) → Directory
     // -------------------------------------------------------------------------
     @Override
     public void authenticate() throws Exception {
+        if (!isConfigured()) { return; }
         String secretJson;
         if (credentialsPath != null && !credentialsPath.isBlank()) {
             log.info("Authenticating via local credentials file: {}", credentialsPath);
@@ -148,6 +165,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // -------------------------------------------------------------------------
     @Override
     public void registerWatch() throws Exception {
+        if (!isConfigured()) { return; }
         if (directoryService == null) {
             authenticate();
         }
@@ -177,6 +195,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // -------------------------------------------------------------------------
     @Override
     public void renewWatchIfExpiring() throws Exception {
+        if (!isConfigured()) { return; }
         if (channelExpiration == null) {
             log.info("No active watch channel found — registering...");
             registerWatch();
@@ -221,9 +240,20 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     @Override
     @Async("syncTaskExecutor")
     public void processWatchNotification(String resourceState, String resourceUri) {
+        if (!isConfigured()) { return; }
         if (WATCH_HANDSHAKE_STATE.equals(resourceState)) {
             log.info("Watch sync handshake received — no action needed.");
             return;
+        }
+
+        synchronized (this) {
+            Instant now = Instant.now();
+            if (lastSyncCompletedAt != null
+                    && Duration.between(lastSyncCompletedAt, now).compareTo(SYNC_DEBOUNCE_WINDOW) < 0) {
+                log.info("Debounce active — suppressing duplicate sync.");
+                return;
+            }
+            lastSyncCompletedAt = now;
         }
 
         String callerEmail = "sudam.manudith@rootcode.io";
@@ -260,6 +290,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     @Override
     @Async("syncTaskExecutor")
     public void bulkSync(String callerEmail) {
+        if (!isConfigured()) {
+            log.warn("bulkSync called but Google Workspace integration is not configured — skipping.");
+            return;
+        }
         log.info("bulkSync started for caller: {}", callerEmail);
 
         try {
