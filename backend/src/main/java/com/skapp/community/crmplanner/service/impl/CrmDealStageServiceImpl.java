@@ -148,10 +148,10 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		List<CrmDealStage> existingStages = filterVisibleDealStages(
 				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
-		
+
 		existingStages = existingStages.stream()
-				.filter(stage -> !CrmConstants.TERMINAL_STAGES.contains(stage.getStageType()))
-				.toList();
+			.filter(stage -> !CrmConstants.TERMINAL_STAGES.contains(stage.getStageType()))
+			.toList();
 
 		if (existingStages.size() != changedStages.size()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INVALID_REQUEST);
