@@ -67,10 +67,6 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsCrmSidePanelOpen(false);
   };
 
-  const handleCompanyClick = () => {
-    //TODO: Implement company Id page and link it here
-  };
-
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
@@ -116,12 +112,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           <ContactSidePanelSkeleton />
         ) : (
           <>
-            {contact && (
-              <SidePanelContactInfo
-                contact={contact}
-                onCompanyClick={handleCompanyClick}
-              />
-            )}
+            {contact && <SidePanelContactInfo contact={contact} />}
 
             <div className="flex flex-col pt-2 w-full">
               <Tabs

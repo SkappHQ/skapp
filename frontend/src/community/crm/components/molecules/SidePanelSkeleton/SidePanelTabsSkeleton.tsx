@@ -12,7 +12,7 @@ const SidePanelTabsSkeleton: FC<Props> = ({ tabCount }) => (
       <div className="flex">
         {Array.from({ length: tabCount }).map((_, i) => (
           <div
-            key={i}
+            key={`tab-skeleton-${i}`}
             className={`px-5 py-2 border-b-2 ${
               i === 0
                 ? "rounded-tl-lg"
@@ -33,29 +33,70 @@ const SidePanelTabsSkeleton: FC<Props> = ({ tabCount }) => (
     </div>
 
     <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent w-full overflow-hidden">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="flex items-center justify-between px-3 py-3">
-          <div className="flex items-center gap-4">
-            {i === 0 ? (
-              <SkeletonShape circle className="h-6 w-6 shrink-0" />
-            ) : (
-              <SkeletonShape className="h-6 w-6 shrink-0" />
-            )}
-            <div className="flex items-center gap-3">
-              <SkeletonShape circle className="h-5 w-5 shrink-0" />
-              <div className="flex flex-col gap-1">
-                <SkeletonShape className="h-2.5 w-17.75" />
-                <SkeletonShape className="h-2 w-12" />
-              </div>
+      <div className="flex items-center justify-between px-3 py-3">
+        <div className="flex items-center gap-4">
+          <SkeletonShape circle className="h-6 w-6 shrink-0" />
+          <div className="flex items-center gap-3">
+            <SkeletonShape circle className="h-5 w-5 shrink-0" />
+            <div className="flex flex-col gap-1">
+              <SkeletonShape className="h-2.5 w-17.75" />
+              <SkeletonShape className="h-2 w-12" />
             </div>
           </div>
-
-          <div className="flex items-center gap-6">
-            <SkeletonShape circle className="h-8 w-8" />
-            <SkeletonShape className="h-6 w-6" />
+        </div>
+        <div className="flex items-center gap-6">
+          <SkeletonShape circle className="h-8 w-8" />
+          <SkeletonShape className="h-6 w-6" />
+        </div>
+      </div>
+      <div className="flex items-center justify-between px-3 py-3">
+        <div className="flex items-center gap-4">
+          <SkeletonShape className="h-6 w-6 shrink-0" />
+          <div className="flex items-center gap-3">
+            <SkeletonShape circle className="h-5 w-5 shrink-0" />
+            <div className="flex flex-col gap-1">
+              <SkeletonShape className="h-2.5 w-17.75" />
+              <SkeletonShape className="h-2 w-12" />
+            </div>
           </div>
         </div>
-      ))}
+        <div className="flex items-center gap-6">
+          <SkeletonShape circle className="h-8 w-8" />
+          <SkeletonShape className="h-6 w-6" />
+        </div>
+      </div>
+      <div className="flex items-center justify-between px-3 py-3">
+        <div className="flex items-center gap-4">
+          <SkeletonShape className="h-6 w-6 shrink-0" />
+          <div className="flex items-center gap-3">
+            <SkeletonShape circle className="h-5 w-5 shrink-0" />
+            <div className="flex flex-col gap-1">
+              <SkeletonShape className="h-2.5 w-17.75" />
+              <SkeletonShape className="h-2 w-12" />
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-6">
+          <SkeletonShape circle className="h-8 w-8" />
+          <SkeletonShape className="h-6 w-6" />
+        </div>
+      </div>
+      <div className="flex items-center justify-between px-3 py-3">
+        <div className="flex items-center gap-4">
+          <SkeletonShape className="h-6 w-6 shrink-0" />
+          <div className="flex items-center gap-3">
+            <SkeletonShape circle className="h-5 w-5 shrink-0" />
+            <div className="flex flex-col gap-1">
+              <SkeletonShape className="h-2.5 w-17.75" />
+              <SkeletonShape className="h-2 w-12" />
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-6">
+          <SkeletonShape circle className="h-8 w-8" />
+          <SkeletonShape className="h-6 w-6" />
+        </div>
+      </div>
     </div>
 
     <div className="flex items-center gap-2">
