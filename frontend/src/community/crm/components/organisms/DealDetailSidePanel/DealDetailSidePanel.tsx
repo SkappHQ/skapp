@@ -1,4 +1,5 @@
 import {
+  Button,
   CloseIcon,
   DeleteButtonIcon,
   IconButton,
@@ -293,18 +294,22 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
                       autoFocus
                     />
                     <div className="flex gap-2 justify-end">
-                      <button
+                      <Button
                         onClick={handleDiscardDescription}
-                        className="flex items-center justify-center rounded-[8px] transition-[background-color] duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-inset whitespace-nowrap outline-1 bg-tertiary-background outline-1 outline-gray-300 outline-offset-[-1px] hover:outline-2 hover:outline-offset-[-2px] hover:outline-gray-300 focus:ring-gray-300 cursor-pointer px-5 py-3 text-sm subtitle3 min-w-[110px]"
+                        size="lg"
+                        type="button"
+                        variant="tertiary"
                       >
                         Discard
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={handleSaveDescription}
-                        className="flex items-center justify-center rounded-[8px] transition-[background-color] duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-inset whitespace-nowrap outline-1 bg-primary text-black outline-1 outline-transparent outline-offset-[-1px] hover:outline-primary-accent focus:ring-primary-accent cursor-pointer px-5 py-3 text-sm subtitle3 min-w-[110px]"
+                        size="lg"
+                        type="button"
+                        variant="primary"
                       >
                         Save
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
