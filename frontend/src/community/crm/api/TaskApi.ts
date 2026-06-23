@@ -170,7 +170,7 @@ export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
   });
 };
 
-export const useGetTaskById = (id: number) => {
+export const useGetCachedTaskById = (id: number) => {
   const queryClient = useQueryClient();
   return useQuery({
     queryKey: taskQueryKeys.GET_TASK_DATA_BY_ID(id),

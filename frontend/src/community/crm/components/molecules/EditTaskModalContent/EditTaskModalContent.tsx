@@ -4,7 +4,11 @@ import { FC, useMemo } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetTaskById, useUpdateTask } from "~community/crm/api/TaskApi";
+import {
+  useGetCachedTaskById,
+  useUpdateTask
+} from "~community/crm/api/TaskApi";
+import TaskModalForm from "~community/crm/components/molecules/TaskModalForm/TaskModalForm";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
 import { useCrmStore } from "~community/crm/store/store";
@@ -14,8 +18,6 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { getChangedTaskFields } from "~community/crm/utils/taskUtil";
 import { editTaskValidations } from "~community/crm/utils/taskValidations";
-
-import TaskModalForm from "../TaskModalForm/TaskModalForm";
 
 const EditTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
@@ -46,7 +48,7 @@ const EditTaskModalContent: FC = () => {
     editTask(payload);
   };
 
-  const { data: selectedTask } = useGetTaskById(selectedTaskId!);
+  const { data: selectedTask } = useGetCachedTaskById(selectedTaskId!);
 
   const initialValues: CrmTaskFormTypes = useMemo(
     () => ({

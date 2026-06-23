@@ -21,8 +21,8 @@ import {
   useGetCrmContacts,
   useGetOwnerLookup
 } from "~community/crm/api/ContactApi";
+import { useGetCachedTaskById } from "~community/crm/api/TaskApi";
 import { useGetDealLookup } from "~community/crm/api/crmDealApi";
-import { useGetTaskById } from "~community/crm/api/TaskApi";
 import OwnerDropdownItem from "~community/crm/components/atoms/OwnerDropdownItem/OwnerDropdownItem";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
@@ -53,12 +53,13 @@ const TaskModalForm: FC<TaskFormProps> = ({
     selectedTaskId: store.selectedTaskId
   }));
 
-  const { data: selectedTask } = useGetTaskById(selectedTaskId!);
+  const { data: selectedTask } = useGetCachedTaskById(selectedTaskId!);
 
   const { isCrmSalesManager } = useSessionData();
 
   const priorityDropdownOptions = useGetPriorityOptions(translateText);
-  const { options: taskTypeOptions, getCategoryById } = useGetTaskTypeOptions(translateText);
+  const { options: taskTypeOptions, getCategoryById } =
+    useGetTaskTypeOptions(translateText);
 
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(
     selectedTask?.owner ?? initialOwner ?? null
@@ -77,7 +78,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     if (initialOwner && !selectedOwner) {
       setSelectedOwner(initialOwner);
     }
-  }, [initialOwner]);
+  }, [initialOwner, selectedOwner]);
 
   const debouncedOwnerSearchText = useDebounce(
     ownerSearchText.trim(),
