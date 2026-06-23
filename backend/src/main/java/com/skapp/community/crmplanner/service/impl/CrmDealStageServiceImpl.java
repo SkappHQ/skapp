@@ -73,7 +73,8 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	}
 
 	protected void validateDealStageCreationLimit() {
-		// This method is a placeholder for enterprise deal stage creation limit validation
+		// This method is a placeholder for enterprise deal stage creation limit
+		// validation
 	}
 
 }
