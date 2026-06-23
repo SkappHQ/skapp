@@ -80,7 +80,8 @@
         "successDescription": "{{contactName}} has been successfully deleted.",
         "errorTitle": "Failed to delete contact",
         "errorDescription": "Something went wrong. Please try again"
-      },
+      }
+    },
     "editContactModal": {
       "title": "Edit Contact",
       "labels": {
