@@ -304,7 +304,7 @@ public class CrmValidations {
 
 	public static void validateDealStageReorderRequest(List<CrmDealStageReorderRequestDto> stages) {
 		if (stages == null || stages.isEmpty()) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
 		}
 
 		Set<Long> ids = new HashSet<>();
@@ -312,10 +312,10 @@ public class CrmValidations {
 
 		for (CrmDealStageReorderRequestDto stage : stages) {
 			if (stage.getId() == null || stage.getOrderIndex() == null) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_INVALID_REQUEST);
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
 			}
 			if (!ids.add(stage.getId()) || !orderIndexes.add(stage.getOrderIndex())) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DUPLICATE_VALUES);
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DUPLICATE_VALUES);
 			}
 		}
 	}

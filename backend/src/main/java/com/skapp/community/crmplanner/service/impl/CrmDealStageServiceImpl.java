@@ -154,7 +154,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			.toList();
 
 		if (existingStages.size() != changedStages.size()) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INVALID_REQUEST);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
 		}
 
 		Map<Long, CrmDealStage> existingStagesMap = existingStages.stream()

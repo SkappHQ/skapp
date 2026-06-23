@@ -29,6 +29,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -410,14 +411,26 @@ class CrmDealStageControllerIntegrationTest {
 	@Test
 	@DisplayName("Reorder OPEN stages - Returns OK, minimum orderIndex stage becomes INITIAL")
 	void reorderDealStages_ValidOpenStages_ReturnsOkAndUpdatesInitial() throws Exception {
+		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
 		List<Long> ids = openStageIds();
 
-		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(ids.get(0), 3), reorderEntry(ids.get(1), 1),
-				reorderEntry(ids.get(2), 2), reorderEntry(ids.get(3), 4));
+		List<CrmDealStageReorderRequestDto> payload = List.of(
+				reorderEntry(initialId, 5),
+				reorderEntry(ids.get(0), 3),
+				reorderEntry(ids.get(1), 1),
+				reorderEntry(ids.get(2), 2),
+				reorderEntry(ids.get(3), 4)
+		);
 
 		performReorderRequest(payload).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(initialId).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(0)).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.INITIAL, crmDealStageDao.findById(ids.get(1)).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(2)).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(3)).orElseThrow().getStageType());
 	}
 
 	@Test
@@ -439,7 +452,7 @@ class CrmDealStageControllerIntegrationTest {
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INVALID_REQUEST)));
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST)));
 	}
 
 	@Test
@@ -453,7 +466,7 @@ class CrmDealStageControllerIntegrationTest {
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INVALID_REQUEST)));
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST)));
 	}
 
 	@Test
@@ -466,7 +479,7 @@ class CrmDealStageControllerIntegrationTest {
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DUPLICATE_VALUES)));
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DUPLICATE_VALUES)));
 	}
 
 	@Test
@@ -479,7 +492,7 @@ class CrmDealStageControllerIntegrationTest {
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DUPLICATE_VALUES)));
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DUPLICATE_VALUES)));
 	}
 
 	@Test
