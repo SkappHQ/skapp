@@ -14,6 +14,7 @@ import {
 import {
   AddTeamType,
   GetManagerTeamsResponseType,
+  MemberTeamsType,
   TeamNamesType,
   TeamResponseType,
   TeamType,
@@ -167,5 +168,16 @@ export const useGetTeamDetailsById = (teamId: number) => {
       const response = await authFetch.get(teamEndpoints.TEAM_BY_ID(teamId));
       return response?.data?.results?.[0];
     }
+  });
+};
+
+export const useGetMemberTeams = (
+  teamId: number | string | undefined
+): UseQueryResult<MemberTeamsType[]> => {
+  return useQuery({
+    queryKey: [teamQueryKeys.MEMBER_TEAMS, teamId],
+    queryFn: () => authFetch.get(teamEndpoints.MEMBER_TEAMS(teamId!)),
+    select: (data) => data?.data?.results,
+    enabled: !!teamId
   });
 };
