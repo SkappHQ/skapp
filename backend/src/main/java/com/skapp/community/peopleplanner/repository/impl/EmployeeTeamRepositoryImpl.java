@@ -16,6 +16,7 @@ import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.model.Team_;
+import com.skapp.community.peopleplanner.payload.EmployeeTeamIdDto;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamRepository;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.timeplanner.model.TimeRecord;
@@ -323,12 +324,12 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 	}
 
 	@Override
-	public List<Object[]> findTeamIdsByEmployeeIds(List<Long> employeeIds) {
+	public List<EmployeeTeamIdDto> findTeamIdsByEmployeeIds(List<Long> employeeIds) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Object[]> query = cb.createQuery(Object[].class);
+		CriteriaQuery<EmployeeTeamIdDto> query = cb.createQuery(EmployeeTeamIdDto.class);
 		Root<EmployeeTeam> root = query.from(EmployeeTeam.class);
 
-		query.select(cb.array(root.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+		query.select(cb.construct(EmployeeTeamIdDto.class, root.get(EmployeeTeam_.employee).get(Employee_.employeeId),
 				root.get(EmployeeTeam_.team).get(Team_.teamId)));
 
 		query.where(root.get(EmployeeTeam_.employee).get(Employee_.employeeId).in(employeeIds),

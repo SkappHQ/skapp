@@ -15,6 +15,7 @@ import com.skapp.community.peopleplanner.payload.request.TeamPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamsRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TransferTeamMembersDto;
+import com.skapp.community.peopleplanner.payload.EmployeeTeamIdDto;
 import com.skapp.community.peopleplanner.payload.response.MemberTeamsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamResponseDto;
@@ -394,6 +395,7 @@ public class TeamServiceImpl implements TeamService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getTeamMemberTeams(Long teamId) {
 		log.info("getTeamMemberTeams: execution started for teamId: {}", teamId);
 
@@ -404,18 +406,21 @@ public class TeamServiceImpl implements TeamService {
 		Team team = teamDao.findByTeamIdAndIsActive(teamId, true)
 			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
 
-		List<Long> memberIds = team.getEmployees().stream().map(et -> et.getEmployee().getEmployeeId()).toList();
+		List<Long> memberIds = team.getEmployees()
+			.stream()
+			.map(employeeTeam -> employeeTeam.getEmployee().getEmployeeId())
+			.toList();
 
 		if (memberIds.isEmpty()) {
 			log.info("getTeamMemberTeams: team has no members, execution ended");
 			return new ResponseEntityDto(false, List.of());
 		}
 
-		List<Object[]> rows = employeeTeamDao.findTeamIdsByEmployeeIds(memberIds);
+		List<EmployeeTeamIdDto> rows = employeeTeamDao.findTeamIdsByEmployeeIds(memberIds);
 
 		Map<Long, List<Long>> employeeTeamMap = rows.stream()
-			.collect(Collectors.groupingBy(row -> (Long) row[0],
-					Collectors.mapping(row -> (Long) row[1], Collectors.toList())));
+			.collect(Collectors.groupingBy(EmployeeTeamIdDto::getEmployeeId,
+					Collectors.mapping(EmployeeTeamIdDto::getTeamId, Collectors.toList())));
 
 		List<MemberTeamsResponseDto> results = memberIds.stream().map(empId -> {
 			MemberTeamsResponseDto dto = new MemberTeamsResponseDto();
