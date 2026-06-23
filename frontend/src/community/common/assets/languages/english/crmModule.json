@@ -406,7 +406,15 @@
     },
     "sidePanel": {
       "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions"
+      "kebabMenuAriaLabel": "Deal actions",
+      "description": "Description",
+      "noDescription": "No description",
+      "tasks": "Tasks",
+      "addTask": "Add task",
+      "value": "Value",
+      "priority": "Priority",
+      "ownedBy": "Owned by",
+      "contact": "Contact"
     },
     "addDealSidePanel": {
       "title": "Add Deal",

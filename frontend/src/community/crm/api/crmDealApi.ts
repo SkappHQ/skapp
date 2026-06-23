@@ -13,7 +13,8 @@ import {
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
   CrmDealStageType,
-  CrmDealType
+  CrmDealType,
+  DetailPanelDealResponseType
 } from "~community/crm/types/CommonTypes";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
@@ -99,5 +100,24 @@ export const useGetDealLookup = (
     queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword),
     queryFn: () => fetchDealLookup(searchKeyword, size),
     enabled
+  });
+};
+
+const fetchDealById = async (
+  id: number
+): Promise<DetailPanelDealResponseType> => {
+  const response = await authFetch.get(crmDealEndpoints.GET_DEAL_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealById = (
+  id: number | null,
+  enabled = true
+): UseQueryResult<DetailPanelDealResponseType> => {
+  return useQuery({
+    queryKey: id !== null ? crmDealQueryKeys.DEAL_BY_ID(id) : [],
+    queryFn: () => fetchDealById(id!),
+    refetchOnWindowFocus: false,
+    enabled: enabled && id !== null
   });
 };
