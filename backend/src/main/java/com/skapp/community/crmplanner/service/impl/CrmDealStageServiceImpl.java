@@ -173,8 +173,6 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		ensureFirstStageIsInitial(existingStages);
 		crmDealStageDao.saveAll(existingStages);
 
-		existingStages.sort(Comparator.comparing(CrmDealStage::getOrderIndex));
-
 		log.info("reorderDealStages: execution ended");
 
 		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existingStages));
