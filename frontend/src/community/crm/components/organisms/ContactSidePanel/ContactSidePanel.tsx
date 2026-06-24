@@ -75,6 +75,9 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         return (
           <SidePanelTasksSection
             tasks={contact?.tasks ?? []}
+            preselectedContact={
+              contact ? { id: contact.id, name: contact.name } : null
+            }
             emptyDescription={translateText(["tasks", "emptyDescription"])}
           />
         );

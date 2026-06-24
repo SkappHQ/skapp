@@ -48,9 +48,12 @@ const AddTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsTaskModalOpen } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen
-  }));
+  const { setIsTaskModalOpen, preselectedContact, setPreselectedContact } =
+    useCrmStore((store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      preselectedContact: store.preselectedContact,
+      setPreselectedContact: store.setPreselectedContact
+    }));
 
   const { data: currentUser } = useGetUserPersonalDetails();
 
@@ -64,7 +67,9 @@ const AddTaskModalContent: FC = () => {
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(null);
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
-  const [selectedContactName, setSelectedContactName] = useState("");
+  const [selectedContactName, setSelectedContactName] = useState(
+    preselectedContact?.name ?? ""
+  );
   const [dealSearchText, setDealSearchText] = useState("");
   const [selectedDealName, setSelectedDealName] = useState("");
 
@@ -101,7 +106,7 @@ const AddTaskModalContent: FC = () => {
     type: null,
     dueDate: null,
     priority: CrmPriorityEnum.MEDIUM,
-    contactId: null,
+    contactId: preselectedContact?.id ?? null,
     dealId: null,
     owner: defaultOwner?.employeeId ? Number(defaultOwner.employeeId) : null,
     notes: ""
@@ -134,6 +139,7 @@ const AddTaskModalContent: FC = () => {
     setSelectedOwner(defaultOwner);
     setContactSearchText("");
     setSelectedContactName("");
+    setPreselectedContact(null);
     setDealSearchText("");
     setSelectedDealName("");
   };
@@ -160,7 +166,8 @@ const AddTaskModalContent: FC = () => {
 
   const { mutate: createNewTask, isPending } = useCreateTask(
     handleSuccess,
-    handleError
+    handleError,
+    preselectedContact?.id
   );
 
   const createTask = (formValues: CrmTaskAddFormTypes) => {
