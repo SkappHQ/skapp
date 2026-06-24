@@ -63,9 +63,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
         // Pass the real API data to SidePanelDealSection when available
-        return (
-          <SidePanelDealSection deals={[]} emptyViewHeight="h-[14.25rem]" />
-        );
+        return <SidePanelDealSection deals={[]} />;
       case SidePanelTabEnum.TASKS:
         // Pass the real API data to SidePanelTasksSection when available
         return <SidePanelTasksSection tasks={[]} />;
@@ -111,7 +109,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         />
       }
     >
-      <div className="flex flex-col pb-4 gap-4">
+      <div className="flex flex-col pb-4 gap-[16px]">
         {/*Add company info section here, similar to ContactSidePanel*/}
         <div className="flex flex-col pt-2 w-full">
           <Tabs

@@ -156,16 +156,8 @@ const AddDealSidePanel: FC = () => {
                 onChange={(e) => setFieldValue("description", e.target.value)}
                 onBlur={formik.handleBlur}
                 className="w-full h-30.25"
-                state={
-                  formik.touched.description && formik.errors.description
-                    ? "error"
-                    : "default"
-                }
-                errorMessage={
-                  formik.touched.description
-                    ? formik.errors.description
-                    : undefined
-                }
+                state={formik.touched.description && formik.errors.description ? "error" : "default"}
+                errorMessage={formik.touched.description ? formik.errors.description : undefined}
                 aria-label={translateText(["ariaLabels", "description"])}
               />
             </div>

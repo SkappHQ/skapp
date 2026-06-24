@@ -5,7 +5,10 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { CrmPriorityEnum, CrmTaskTabEnum } from "../enums/common";
+import {
+  CrmPriorityEnum,
+  CrmTaskTabEnum
+} from "../enums/common";
 
 export const TASK_SEARCH_DEBOUNCE_DELAY = 500;
 

@@ -8,7 +8,9 @@ interface Props {
 const PropertyRow: FC<Props> = ({ label, children }) => (
   <div className="flex w-full items-center gap-4 min-h-11">
     <div className="w-30 shrink-0 flex items-center">
-      <span className="subtitle3 text-black whitespace-nowrap">{label}</span>
+      <span className="subtitle3 text-black whitespace-nowrap">
+        {label}
+      </span>
     </div>
     <div className="flex-1 min-w-0 flex items-center">{children}</div>
   </div>

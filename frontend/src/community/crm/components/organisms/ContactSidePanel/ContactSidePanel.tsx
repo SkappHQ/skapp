@@ -67,12 +67,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return (
-          <SidePanelDealSection
-            deals={contact?.deals ?? []}
-            emptyViewHeight="h-[14.25rem]"
-          />
-        );
+        return <SidePanelDealSection deals={contact?.deals ?? []} />;
       case SidePanelTabEnum.TASKS:
         return (
           <SidePanelTasksSection
