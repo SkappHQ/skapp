@@ -66,7 +66,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE);
 		}
 
-		validateDealStageCreation();
+		validateDealStageCreationLimit();
 
 		CrmDealStage stage = new CrmDealStage();
 		stage.setName(requestDto.getName());
@@ -189,8 +189,9 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		return stages;
 	}
 
-	protected void validateDealStageCreation() {
-		// This method is a placeholder for enterprise deal stage creation logic
+	protected void validateDealStageCreationLimit() {
+		// This method is a placeholder for enterprise deal stage creation limit
+		// validation
 	}
 
 }

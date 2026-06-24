@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.repository;
 
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,5 +20,7 @@ public interface CrmDealStageDao extends JpaRepository<CrmDealStage, Long>, CrmD
 	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 
 	boolean existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(String name, Long id);
+  
+	long countByIsDeletedFalseAndStageTypeAndNameNotIn(CrmDealStageType stageType, List<String> names);
 
 }
