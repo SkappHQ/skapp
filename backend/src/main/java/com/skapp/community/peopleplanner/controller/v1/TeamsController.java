@@ -96,8 +96,8 @@ public class TeamsController {
 			description = "Returns each member of the given team along with the IDs of all active teams they currently belong to")
 	@GetMapping("/{id}/member-teams")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> getTeamMemberTeams(@PathVariable Long id) {
-		ResponseEntityDto response = teamService.getTeamMemberTeams(id);
+	public ResponseEntity<ResponseEntityDto> getTeamMembersWithTeamIds(@PathVariable Long id) {
+		ResponseEntityDto response = teamService.getTeamMembersWithTeamIds(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

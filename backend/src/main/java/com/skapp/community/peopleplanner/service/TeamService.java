@@ -26,6 +26,6 @@ public interface TeamService {
 
 	ResponseEntityDto getTeamsForCurrentUser();
 
-	ResponseEntityDto getTeamMemberTeams(Long teamId);
+	ResponseEntityDto getTeamMembersWithTeamIds(Long teamId);
 
 }

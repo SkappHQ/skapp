@@ -338,4 +338,28 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		return entityManager.createQuery(query).getResultList();
 	}
 
+	@Override
+	public List<EmployeeTeamIdDto> findTeamEmployeeTeamIdsByTeamId(Long teamId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<EmployeeTeamIdDto> query = cb.createQuery(EmployeeTeamIdDto.class);
+		Root<EmployeeTeam> teamMemberRoot = query.from(EmployeeTeam.class);
+		Root<EmployeeTeam> employeeTeamRoot = query.from(EmployeeTeam.class);
+
+		query.select(cb.construct(EmployeeTeamIdDto.class,
+				teamMemberRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+				employeeTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId)));
+
+		query.where(
+				cb.equal(teamMemberRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+						employeeTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId)),
+				cb.equal(teamMemberRoot.get(EmployeeTeam_.team).get(Team_.teamId), teamId),
+				cb.isTrue(teamMemberRoot.get(EmployeeTeam_.team).get(Team_.isActive)),
+				cb.isTrue(employeeTeamRoot.get(EmployeeTeam_.team).get(Team_.isActive)));
+
+		query.orderBy(cb.asc(teamMemberRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId)),
+				cb.asc(employeeTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
 }

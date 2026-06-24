@@ -29,4 +29,6 @@ public interface EmployeeTeamRepository {
 
 	List<EmployeeTeamIdDto> findTeamIdsByEmployeeIds(List<Long> employeeIds);
 
+	List<EmployeeTeamIdDto> findTeamEmployeeTeamIdsByTeamId(Long teamId);
+
 }

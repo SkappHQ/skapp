@@ -396,35 +396,29 @@ public class TeamServiceImpl implements TeamService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getTeamMemberTeams(Long teamId) {
-		log.info("getTeamMemberTeams: execution started");
+	public ResponseEntityDto getTeamMembersWithTeamIds(Long teamId) {
+		log.info("getTeamMembersWithTeamIds: execution started");
 
 		if (teamId == null || teamId <= 0) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_ID_NOT_FOUND);
 		}
 
-		Team team = teamDao.findByTeamIdAndIsActive(teamId, true)
-			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
+		List<EmployeeTeamIdDto> employeeTeamRecords = employeeTeamDao.findTeamEmployeeTeamIdsByTeamId(teamId);
 
-		List<Long> employeeIds = team.getEmployees()
+		List<MemberTeamsResponseDto> results = employeeTeamRecords.stream()
+			.collect(Collectors.groupingBy(EmployeeTeamIdDto::getEmployeeId,
+					Collectors.mapping(EmployeeTeamIdDto::getTeamId, Collectors.toList())))
+			.entrySet()
 			.stream()
-			.map(employeeTeam -> employeeTeam.getEmployee().getEmployeeId())
+			.map(entry -> {
+				MemberTeamsResponseDto memberTeamsResponse = new MemberTeamsResponseDto();
+				memberTeamsResponse.setEmployeeId(entry.getKey());
+				memberTeamsResponse.setTeamIds(entry.getValue());
+				return memberTeamsResponse;
+			})
 			.toList();
 
-		List<EmployeeTeamIdDto> employeeTeamRecords = employeeTeamDao.findTeamIdsByEmployeeIds(employeeIds);
-
-		Map<Long, List<Long>> employeeTeamMap = employeeTeamRecords.stream()
-			.collect(Collectors.groupingBy(EmployeeTeamIdDto::getEmployeeId,
-					Collectors.mapping(EmployeeTeamIdDto::getTeamId, Collectors.toList())));
-
-		List<MemberTeamsResponseDto> results = employeeIds.stream().map(employeeId -> {
-			MemberTeamsResponseDto memberTeamsResponse = new MemberTeamsResponseDto();
-			memberTeamsResponse.setEmployeeId(employeeId);
-			memberTeamsResponse.setTeamIds(employeeTeamMap.getOrDefault(employeeId, List.of()));
-			return memberTeamsResponse;
-		}).toList();
-
-		log.info("getTeamMemberTeams: execution ended");
+		log.info("getTeamMembersWithTeamIds: execution ended");
 		return new ResponseEntityDto(false, results);
 	}
 
