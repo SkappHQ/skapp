@@ -123,7 +123,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
-		if (CrmConstants.NON_DELETEABLE_STAGES.contains(stage.getStageType())) {
+		if (CrmConstants.NON_DELETABLE_STAGES.contains(stage.getStageType())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_TERMINAL_STAGE);
 		}
 
