@@ -107,6 +107,15 @@ public class GlobalExceptionHandler {
 				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
 	}
 
+	@ExceptionHandler(InternalServerException.class)
+	public ResponseEntity<ResponseEntityDto> handleInternalServerException(InternalServerException e) {
+		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+		handleException(e, e.getMessageKey().name(), status);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
+	}
+
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<ResponseEntityDto> handleEntityNotFoundExceptions(EntityNotFoundException e) {
 		HttpStatus status = HttpStatus.NOT_FOUND;
