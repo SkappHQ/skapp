@@ -12,10 +12,13 @@ import { useGetContactById } from "~community/crm/api/ContactApi";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
+import { mapContactToMetricItems } from "~community/crm/utils/contactUtil";
 
 import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
 
@@ -69,8 +72,12 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       case SidePanelTabEnum.DEALS:
         return <SidePanelDealSection deals={contact?.deals ?? []} />;
       case SidePanelTabEnum.TASKS:
-        // TODO: Implement SidePanelTaskSection here
-        return null;
+        return (
+          <SidePanelTasksSection
+            tasks={contact?.tasks ?? []}
+            emptyDescription={translateText(["tasks", "emptyDescription"])}
+          />
+        );
       default:
         return null;
     }
@@ -110,6 +117,9 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         ) : (
           <>
             <SidePanelContactInfo contact={contact} />
+            <SidePanelMetricCards
+              metrics={mapContactToMetricItems(contact, translateText)}
+            />
 
             <div className="flex flex-col pt-2 w-full">
               <Tabs

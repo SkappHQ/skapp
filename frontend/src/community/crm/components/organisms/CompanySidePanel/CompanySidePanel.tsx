@@ -13,6 +13,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
@@ -71,8 +72,8 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         // Pass the real API data to SidePanelDealSection when available
         return <SidePanelDealSection deals={[]} />;
       case SidePanelTabEnum.TASKS:
-        // Implement SidePanelTaskSection here
-        return null;
+        // Pass the real API data to SidePanelTasksSection when available
+        return <SidePanelTasksSection tasks={[]} />;
       case SidePanelTabEnum.CONTACTS:
         // Implement SidePanelContactSection here
         return null;
@@ -136,8 +137,9 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
                 activeTabId={activeTab}
                 onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
               />
+              <hr className="border-secondary-accent" />
             </div>
-            <hr className="border-secondary-accent" />
+
             {renderTabContent()}
           </>
         )}
