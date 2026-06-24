@@ -55,12 +55,11 @@ const TASK_TYPE_ICON_MAP: Record<string, ComponentType> = {
   other: ChecklistVerificationFilledIcon
 };
 
-export const getTaskTypeIcon = (
-  typeName: string,
-  size?: string
-): ReactElement => {
-  const props = size ? { width: size, height: size } : undefined;
-  return createElement(TASK_TYPE_ICON_MAP[typeName.toLowerCase()], props);
+export const getTaskTypeIcon = (typeName: string): ReactElement => {
+  return createElement(
+    TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ??
+      ChecklistVerificationFilledIcon
+  );
 };
 
 export const getPriorityConfig = (

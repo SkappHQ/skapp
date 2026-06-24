@@ -13,11 +13,7 @@ interface Props {
   translateText: (keys: string[]) => string;
 }
 
-const TaskPriorityField: FC<Props> = ({
-  priority,
-  label,
-  translateText
-}) => {
+const TaskPriorityField: FC<Props> = ({ priority, label, translateText }) => {
   const priorityConfig = getPriorityConfig(priority);
 
   return (
@@ -30,10 +26,7 @@ const TaskPriorityField: FC<Props> = ({
           backgroundColor={priorityConfig.bgColor}
           textColor={priorityConfig.textColor}
         >
-          {translateText([
-            "priorityOptions",
-            getPriorityDisplayKey(priority)
-          ])}
+          {translateText(["priorityOptions", getPriorityDisplayKey(priority)])}
         </Label>
       </div>
     </div>

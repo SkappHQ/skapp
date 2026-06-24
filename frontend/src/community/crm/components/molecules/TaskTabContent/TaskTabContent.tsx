@@ -61,9 +61,10 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
     tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.TEAM_TASKS
   );
 
-  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } = useMemo(() => {
-    return getTaskGroups(openTaskData?.tasks ?? [], tab, userId);
-  }, [openTaskData, tab, userId]);
+  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
+    useMemo(() => {
+      return getTaskGroups(openTaskData?.tasks ?? [], tab, userId);
+    }, [openTaskData, tab, userId]);
 
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,

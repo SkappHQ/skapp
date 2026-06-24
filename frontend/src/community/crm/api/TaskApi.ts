@@ -9,8 +9,8 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import {
   CrmCompletedTaskResponseType,
-  CrmTaskDetailType,
   CrmTaskCreatePayload,
+  CrmTaskDetailType,
   CrmTaskResponseType,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
@@ -61,34 +61,31 @@ const fetchTaskById = async (id: number): Promise<CrmTaskDetailType> => {
   return response?.data?.results?.[0];
 };
 
-export const useGetTaskById = (id: number, enabled = true) => {
+export const useGetTaskById = (id: number | null, enabled = true) => {
   return useQuery({
     queryKey: taskQueryKeys.TASK_BY_ID(id),
-    queryFn: () => fetchTaskById(id),
-    enabled,
+    queryFn: () => fetchTaskById(id!),
+    enabled: enabled && id != null,
     refetchOnWindowFocus: false
   });
 };
 
-interface RelatedTaskFilters {
-  contactId?: number;
-  dealId?: number;
-}
-
 const fetchRelatedOpenTasks = async (
-  filters: RelatedTaskFilters
+  contactId: number | null,
+  dealId: number | null
 ): Promise<CrmTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
-    params: filters
+    params: { contactId, dealId }
   });
   return response?.data?.results?.[0];
 };
 
 const fetchRelatedCompletedTasks = async (
-  filters: RelatedTaskFilters
+  contactId: number | null,
+  dealId: number | null
 ): Promise<CrmCompletedTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
-    params: filters
+    params: { contactId, dealId }
   });
   return response?.data?.results?.[0];
 };
@@ -99,18 +96,14 @@ export const useGetRelatedTasks = (
   currentTaskId: number | undefined,
   enabled = true
 ) => {
-  const filters: RelatedTaskFilters = {
-    ...(contactId != null && { contactId }),
-    ...(dealId != null && { dealId })
-  };
-
   return useQuery({
     queryKey: taskQueryKeys.RELATED_TASKS(contactId, dealId, currentTaskId),
     queryFn: async () => {
-      const [openTasksResponse, completedTasksResponse] = await Promise.all([
-        fetchRelatedOpenTasks(filters),
-        fetchRelatedCompletedTasks(filters)
-      ]);
+      const openTasksResponse = await fetchRelatedOpenTasks(contactId, dealId);
+      const completedTasksResponse = await fetchRelatedCompletedTasks(
+        contactId,
+        dealId
+      );
 
       return [
         ...(openTasksResponse?.tasks ?? []),
@@ -131,21 +124,16 @@ const updateTaskStatus = async ({
   });
 };
 
-export const useUpdateTaskCompletion = (
-  onSuccess: () => void,
-  onError: (error: Error) => void
-) => {
+export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateTaskStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.TASK_BY_ID_ALL });
       queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.RELATED_TASKS_ALL
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
-      onSuccess();
+      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
     },
     onError
   });

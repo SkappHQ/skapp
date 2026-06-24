@@ -1,7 +1,7 @@
-import { CrmContactFormValues } from "~community/crm/types/CommonTypes";
 import { DropdownOption } from "@rootcodelabs/skapp-ui";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
+import { CrmContactFormValues } from "~community/crm/types/CommonTypes";
 
 type NumericValue = string | null;
 
@@ -32,8 +32,8 @@ export const getChangedContactFields = (
     changedFields.ownerId = newValues.ownerId;
   }
 
-  return changedFields;  
-}
+  return changedFields;
+};
 
 interface Id {
   id: number | string;

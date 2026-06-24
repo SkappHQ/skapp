@@ -1,20 +1,15 @@
 import { SidePanel, SidePanelProps } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect } from "react";
+import { FC, cloneElement, useEffect } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  useGetRelatedTasks,
-  useGetTaskById,
-  useUpdateTaskCompletion
-} from "~community/crm/api/TaskApi";
+import { useGetRelatedTasks, useGetTaskById } from "~community/crm/api/TaskApi";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import SidePanelTaskNotes from "~community/crm/components/organisms/TaskSidePanel/TaskSidePanelNotes/TaskSidePanelNotes";
 import { useCrmStore } from "~community/crm/store/store";
-import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
 
 const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
@@ -35,11 +30,11 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   };
 
   const { data: task, isError: isTaskLoadError } = useGetTaskById(
-    selectedTaskId ?? 0,
-    isOpen && !!selectedTaskId
+    selectedTaskId,
+    isOpen
   );
 
-  const contactId = task?.contact?.id ?? task?.contactId ?? null;
+  const contactId = task?.contact?.id ?? null;
   const dealId = task?.deal?.id ?? null;
 
   const { data: relatedTasks = [] } = useGetRelatedTasks(
@@ -47,25 +42,6 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     dealId,
     task?.id,
     isOpen && !!task
-  );
-
-  const { mutate: updateCompletion } = useUpdateTaskCompletion(
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["taskMarkAsDoneSuccessTitle"]),
-        description: translateText(["taskMarkAsDoneSuccessDescription"])
-      });
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["taskMarkAsDoneErrorTitle"]),
-        description: translateText(["taskMarkAsDoneErrorDescription"])
-      });
-    }
   );
 
   useEffect(() => {
@@ -80,15 +56,12 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     handleClose();
   }, [isTaskLoadError]);
 
-  const handleMarkAsDone = () => {
-    if (!task || task.isCompleted) return;
-    updateCompletion({ id: task.id, isCompleted: true });
-  };
-
-  const taskIcon = task?.typeName ? getTaskTypeIcon(task.typeName, "24") : null;
-  const taskDeals: DetailPanelDealResponseType[] = task?.deal
-    ? [task.deal]
-    : [];
+  const taskIcon = task?.typeName
+    ? cloneElement(getTaskTypeIcon(task.typeName), {
+        width: "24",
+        height: "24"
+      })
+    : null;
 
   return (
     <SidePanel
@@ -111,7 +84,7 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
               <h2 className="h2">{translateText(["dealsTitle"])}</h2>
               <hr className="border-secondary-accent" />
               <SidePanelDealSection
-                deals={taskDeals}
+                deals={task.deal ? [task.deal] : []}
                 showEmptyStateAddDeal={false}
               />
             </div>
@@ -124,7 +97,7 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div className="w-[18.4375rem] shrink-0">
-            <SidePanelTaskInfo task={task} onMarkAsDone={handleMarkAsDone} />
+            <SidePanelTaskInfo task={task} />
           </div>
         </div>
       )}

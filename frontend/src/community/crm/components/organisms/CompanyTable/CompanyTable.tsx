@@ -36,13 +36,8 @@ export const CompanyTable: FC = () => {
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetching
-  } = useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+    useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
   const { setSelectedCompany, setIsCrmSidePanelOpen } = useCrmStore(
     (store) => ({
