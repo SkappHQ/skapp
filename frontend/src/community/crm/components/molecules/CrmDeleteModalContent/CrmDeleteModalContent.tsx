@@ -28,6 +28,7 @@ const CrmDeleteModalContent: FC<Props> = ({
           onClick={onClose}
           icon={<CloseIcon />}
           iconPosition="end"
+          disabled={isPending}
         >
           {cancelLabel}
         </ButtonV2>
@@ -41,6 +42,7 @@ const CrmDeleteModalContent: FC<Props> = ({
               fill="var(--color-semantic-red-text)"
             />
           }
+          isLoading={isPending}
           iconPosition="end"
           onClick={onConfirm}
           disabled={isPending}

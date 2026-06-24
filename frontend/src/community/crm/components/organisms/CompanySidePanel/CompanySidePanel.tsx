@@ -31,7 +31,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     })
   );
   const openCompanyModal = useCallback(
-    (type: CrmModalTypes): void => {
+    (type: CrmModalTypes) => {
       setCompanyModalType(type);
       setIsCompanyModalOpen(true);
     },

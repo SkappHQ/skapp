@@ -50,7 +50,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   }));
 
   const openContactModal = useCallback(
-    (type: CrmModalTypes): void => {
+    (type: CrmModalTypes) => {
       setContactModalType(type);
       setIsContactModalOpen(true);
     },
