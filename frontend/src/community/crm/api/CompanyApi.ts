@@ -167,17 +167,38 @@ export const useSearchCompaniesByDomain = (
   });
 };
 
-const fetchTasksByCompany = async (companyId: number) => {
+const fetchOpenTasksByCompany = async (companyId: number) => {
   const response = await authFetch.get(taskEndpoints.GET_TASKS, {
     params: { companyId }
   });
   return response?.data?.results?.[0];
 };
 
-export const useGetTasksByCompany = (companyId: number, enabled: boolean) => {
+export const useGetOpenTasksByCompany = (
+  companyId: number,
+  enabled: boolean
+) => {
   return useQuery({
-    queryKey: taskQueryKeys.GET_TASKS_BY_COMPANY(companyId),
-    queryFn: () => fetchTasksByCompany(companyId),
+    queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_COMPANY(companyId),
+    queryFn: () => fetchOpenTasksByCompany(companyId),
+    enabled
+  });
+};
+
+const fetchCompletedTasksByCompany = async (companyId: number) => {
+  const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
+    params: { companyId }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetCompletedTasksByCompany = (
+  companyId: number,
+  enabled: boolean
+) => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_COMPANY(companyId),
+    queryFn: () => fetchCompletedTasksByCompany(companyId),
     enabled
   });
 };

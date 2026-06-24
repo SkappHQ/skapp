@@ -7,6 +7,7 @@ import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/S
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -57,6 +58,7 @@ const Companies: NextPage = () => {
           </SidePanelWrapper>
         )}
         <CompanyModalController />
+        <TaskModalController />
         <CompanyTable />
       </>
     </ContentLayout>

@@ -2,7 +2,9 @@ import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCrmStore } from "~community/crm/store/store";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import SidePanelTasksList from "./SidePanelTasksList";
 
@@ -21,6 +23,11 @@ const SidePanelTasksSection: FC<Props> = ({
   onTaskRowClick,
   emptyDescription
 }) => {
+  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    setTaskModalType: store.setTaskModalType
+  }));
+
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -29,7 +36,8 @@ const SidePanelTasksSection: FC<Props> = ({
   );
 
   const handleAddTask = () => {
-    // TODO: open add task modal (wire up to CRM store)
+    setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+    setIsTaskModalOpen(true);
   };
 
   return tasks.length > 0 ? (

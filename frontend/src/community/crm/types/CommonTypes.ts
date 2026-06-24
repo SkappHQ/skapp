@@ -270,6 +270,7 @@ export interface CrmDealListItem {
   companyName: string | null;
   contactName: string;
   owner: CrmOwner;
+  description: string | null;
 }
 
 export interface CrmDealPaginatedResponse {

@@ -74,8 +74,13 @@ export const taskQueryKeys = {
     "get-completed-tasks",
     searchKeyword
   ],
-  GET_TASKS_BY_COMPANY: (companyId: number) => [
-    "get-task-data",
+  GET_OPEN_TASKS_BY_COMPANY: (companyId: number) => [
+    "get-open-tasks",
+    "company",
+    companyId
+  ],
+  GET_COMPLETED_TASKS_BY_COMPANY: (companyId: number) => [
+    "get-completed-tasks",
     "company",
     companyId
   ]

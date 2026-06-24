@@ -155,6 +155,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 			task.setContact(contact);
+			task.setCompany(contact.getCompany());
 		}
 
 		if (requestDto.getCompanyId() != null) {

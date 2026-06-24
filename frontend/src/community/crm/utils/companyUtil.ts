@@ -1,4 +1,3 @@
-import { CrmMetricLabelThemeEnum } from "../enums/common";
 import { CrmCompanyMetricsType, MetricItem } from "../types/CommonTypes";
 
 export const mapCompanyToMetricItems = (

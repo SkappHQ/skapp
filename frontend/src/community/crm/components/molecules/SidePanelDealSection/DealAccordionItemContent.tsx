@@ -1,10 +1,10 @@
 import React from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
+import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 
 interface Props {
-  deal: DetailPanelDealResponseType;
+  deal: CrmDealListItem;
 }
 
 const DealAccordionItemContent: React.FC<Props> = ({ deal }) => {

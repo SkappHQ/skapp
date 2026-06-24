@@ -1,4 +1,5 @@
 import {
+  ButtonV2,
   Label,
   PlusIcon,
   SearchIcon,
@@ -9,21 +10,10 @@ import React from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-
-interface CrmSidePanelContactRow {
-  id: number;
-  contact: string;
-  email: string;
-  company: string;
-  contactNo: string;
-  revenue: string;
-  dealsClosed: number;
-  openTasks: number;
-  overdueTasks?: number;
-}
+import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
 
 const SidePanelCompanyContacts: React.FC<{
-  contacts: CrmSidePanelContactRow[];
+  contacts: CrmContactMetricsType[];
 }> = ({ contacts }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -32,7 +22,7 @@ const SidePanelCompanyContacts: React.FC<{
     "sidePanelCompanyContacts"
   );
 
-  const columns: TableColumn<CrmSidePanelContactRow>[] = [
+  const columns: TableColumn<CrmContactMetricsType>[] = [
     {
       columnAriaLabel: translateText(["columns", "contact"]),
       header: translateText(["columns", "contact"]),
@@ -40,8 +30,8 @@ const SidePanelCompanyContacts: React.FC<{
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1">
-            <div>{row.contact}</div>
-            <div className="body2 text-secondary-text">{row.company}</div>
+            <div>{row.name}</div>
+            <div className="body2 text-secondary-text">{row.company?.name}</div>
           </div>
         );
       },
@@ -56,7 +46,7 @@ const SidePanelCompanyContacts: React.FC<{
     {
       columnAriaLabel: translateText(["columns", "contactNo"]),
       header: translateText(["columns", "contactNo"]),
-      key: "contactNo",
+      key: "contactNumber",
       width: "20%"
     },
     {
@@ -66,10 +56,10 @@ const SidePanelCompanyContacts: React.FC<{
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{row.revenue}</div>
+            <div>{row.closedDealValue}</div>
             <div className="subtitle4 text-secondary-text">
-              {row.dealsClosed > 0
-                ? `${row.dealsClosed} ${translateText(["dealsClosed"])}`
+              {row.closedDealCount > 0
+                ? `${row.closedDealCount} ${translateText(["dealsClosed"])}`
                 : ""}
             </div>
           </div>
@@ -83,16 +73,16 @@ const SidePanelCompanyContacts: React.FC<{
       header: translateText(["columns", "openTasks"]),
       key: "openTasks",
       render(_value, row) {
-        if (row.openTasks === 0) return "-";
+        if (row.openTaskCount === 0) return "-";
         return (
           <div className="flex flex-row items-center gap-2 tabular-nums">
-            <div>{row.openTasks}</div>
-            {row.overdueTasks !== undefined && row.overdueTasks > 0 && (
+            <div>{row.openTaskCount}</div>
+            {row.overdueTaskCount !== undefined && row.overdueTaskCount > 0 && (
               <Label
                 backgroundColor="bg-semantic-red-background"
                 textColor="text-semantic-red-text"
               >
-                {`${row.overdueTasks} ${translateText(["overdue"])}`}
+                {`${row.overdueTaskCount} ${translateText(["overdue"])}`}
               </Label>
             )}
           </div>
@@ -103,28 +93,24 @@ const SidePanelCompanyContacts: React.FC<{
   ];
 
   return (
-    <div className="flex flex-col pt-6 w-full">
-      <h3 className="h3">{translateText(["title"])}</h3>
-      <div className="w-full h-px bg-secondary-accent my-3"></div>
-      <Table
-        className="w-full"
-        columns={columns as TableColumn<any>[]}
-        data={contacts ?? []}
-        emptyStateType={EmptyStateTypeEnum.NO_DATA}
-        height="17.25rem"
-        noDataState={{
-          icon: <SearchIcon />,
-          title: translateText(["noContacts"]),
-          description: translateText(["noContactsDescription"]),
-          buttonText: translateText(["addContact"]),
-          buttonIcon: <PlusIcon />,
-          buttonVariant: "tertiary",
-          onButtonClick: () => {
-            // Add contact action
-          }
-        }}
-      />
-    </div>
+    <Table
+      className="w-full"
+      columns={columns as TableColumn<any>[]}
+      data={contacts ?? []}
+      emptyStateType={EmptyStateTypeEnum.NO_DATA}
+      height="17.25rem"
+      noDataState={{
+        icon: <SearchIcon />,
+        title: translateText(["noContacts"]),
+        description: translateText(["noContactsDescription"]),
+        buttonText: translateText(["addContact"]),
+        buttonIcon: <PlusIcon />,
+        buttonVariant: "tertiary",
+        onButtonClick: () => {
+          // Add contact action
+        }
+      }}
+    />
   );
 };
 

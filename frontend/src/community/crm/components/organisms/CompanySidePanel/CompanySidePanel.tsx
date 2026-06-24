@@ -10,16 +10,21 @@ import {
 import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetTasksByCompany } from "~community/crm/api/CompanyApi";
+import {
+  useGetCompletedTasksByCompany,
+  useGetContactsByCompany,
+  useGetDealsByCompany,
+  useGetOpenTasksByCompany
+} from "~community/crm/api/CompanyApi";
+import SidePanelCompanyContacts from "~community/crm/components/molecules/SidePanelCompanyContacts/SidePanelCompanyContacts";
 import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { mapCompanyToMetricItems } from "~community/crm/utils/companyUtil";
-
-import SidePanelMetricCards from "../../molecules/SidePanelMetricCards/SidePanelMetricCards";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
@@ -35,10 +40,26 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       selectedCompany: store.selectedCompany
     }));
 
-  const { data: task, isLoading: isTaskLoading } = useGetTasksByCompany(
+  const { data: openTaskData, isLoading: isTaskLoading } =
+    useGetOpenTasksByCompany(selectedCompany?.id, !!selectedCompany?.id);
+
+  const { data: completedTaskData, isLoading: isCompletedTaskLoading } =
+    useGetCompletedTasksByCompany(selectedCompany?.id, !!selectedCompany?.id);
+
+  const taskData = [
+    ...(openTaskData?.tasks ?? []),
+    ...(completedTaskData?.items ?? [])
+  ];
+
+  const { data: dealData, isLoading: isDealLoading } = useGetDealsByCompany(
     selectedCompany?.id,
-    isOpen && !!selectedCompany?.id
+    !!selectedCompany?.id
   );
+
+  const { data: contactData, isLoading: isContactLoading } =
+    useGetContactsByCompany(selectedCompany?.id, !!selectedCompany?.id);
+
+  const isLoading = isTaskLoading || isDealLoading || isContactLoading;
 
   const openCompanyModal = (type: CrmModalTypes) => {
     setCompanyModalType(type);
@@ -72,13 +93,11 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        // Pass the real API data to SidePanelDealSection when available
-        return <SidePanelDealSection deals={[]} />;
+        return <SidePanelDealSection deals={dealData?.items ?? []} />;
       case SidePanelTabEnum.TASKS:
-        return <SidePanelTasksSection tasks={[task]} />;
+        return <SidePanelTasksSection tasks={taskData} />;
       case SidePanelTabEnum.CONTACTS:
-        // Implement SidePanelContactSection here
-        return null;
+        return <SidePanelCompanyContacts contacts={contactData?.items ?? []} />;
       default:
         return null;
     }

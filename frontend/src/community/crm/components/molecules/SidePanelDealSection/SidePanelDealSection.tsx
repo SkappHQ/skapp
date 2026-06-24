@@ -9,14 +9,14 @@ import {
 import React from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
+import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 
 import DealAccordionItemBadge from "./DealAccordionItemBadge";
 import DealAccordionItemContent from "./DealAccordionItemContent";
 import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
-  deals: DetailPanelDealResponseType[];
+  deals: CrmDealListItem[];
 }
 
 const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
