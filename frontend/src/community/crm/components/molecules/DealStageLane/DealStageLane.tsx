@@ -10,24 +10,18 @@ import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import DraggableDealCard from "~community/crm/components/molecules/DraggableDealCard/DraggableDealCard";
-import { CrmDealBoardType } from "~community/crm/types/CommonTypes";
-
-export interface SwimlaneDealStage {
-  id: string;
-  name: string;
-  accentColor: string;
-  totalValue: string;
-  totalCount?: number;
-}
+import { CrmDealBoardType, CrmDealStageType } from "~community/crm/types/CommonTypes";
+import { formatValue } from "~community/crm/utils/crmUtil";
+import { getAccentColor } from "~community/crm/utils/kanbanUtil";
 
 export interface DealStageLaneProps {
-  stage: SwimlaneDealStage;
+  stage: CrmDealStageType;
   deals: CrmDealBoardType[];
   isLoading?: boolean;
   hasNextPage?: boolean;
   isOver?: boolean;
   onDealClick: (dealId: string) => void;
-  onAddDeal: (stageId: string) => void;
+  onAddDeal: (stageId: number) => void;
   onLoadMore: (nextPage: number) => void;
 }
 
@@ -45,6 +39,12 @@ const DealStageLane: FC<DealStageLaneProps> = ({
 
   const [page, setPage] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const totalCount = deals.length;
+  const accentColor = getAccentColor(stage.color);
+  const totalValue = formatValue(
+    String(deals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0))
+  );
 
   const { setNodeRef } = useDroppable({
     id: stage.id,
@@ -77,7 +77,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
     >
       <div
         className="h-1.75 rounded-lg m-2"
-        style={{ backgroundColor: stage.accentColor }}
+        style={{ backgroundColor: accentColor }}
       />
 
       <div className="flex items-center justify-between gap-2 px-3 pt-3">
@@ -88,10 +88,10 @@ const DealStageLane: FC<DealStageLaneProps> = ({
           >
             {stage.name}
           </h2>
-          <p className="body3 mt-0.5 text-secondary-icon">{stage.totalValue}</p>
+          <p className="body3 mt-0.5 text-secondary-icon">{totalValue}</p>
         </div>
         <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full body3 bg-white px-1.5 text-secondary-text">
-          {stage.totalCount}
+          {totalCount}
         </span>
       </div>
 

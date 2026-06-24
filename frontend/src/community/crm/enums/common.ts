@@ -76,6 +76,6 @@ export enum CrmDealStageColorsEnum {
 }
 
 export enum DealViewEnum {
-  LIST = "list",
-  KANBAN = "kanban"
+  LIST = "LIST",
+  KANBAN = "KANBAN"
 }

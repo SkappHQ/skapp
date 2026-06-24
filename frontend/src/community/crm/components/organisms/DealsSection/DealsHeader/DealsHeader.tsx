@@ -25,6 +25,8 @@ const DealsHeader: FC<Props> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
 
+  const handleViewChange = (view: string) => onViewChange(view as DealViewEnum);
+
   const viewOptions = [
     {
       value: DealViewEnum.LIST,
@@ -54,7 +56,7 @@ const DealsHeader: FC<Props> = ({
       <ViewToggle
         options={viewOptions}
         activeView={activeView}
-        onChange={(v) => onViewChange(v as DealViewEnum)}
+        onChange={handleViewChange}
         ariaLabel={translateText(["switchDealViewAriaLabel"])}
       />
     </div>

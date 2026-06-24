@@ -1,22 +1,10 @@
 import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
-import { DEAL_KANBAN_PAGE_SIZE } from "~community/crm/constants/dealConstants";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
-import type {
-  BoardDealsGroupedRequest,
-  BoardMoveBetweenStagesPayload,
-  BoardReorderWithinStagePayload,
-  CrmDealStageType
-} from "~community/crm/types/CommonTypes";
-import { formatValue } from "~community/crm/utils/crmUtil";
-import {
-  type StageMap,
-  buildInitialStageState,
-  getAccentColor
-} from "~community/crm/utils/kanbanUtil";
+import type { CrmDealStageType } from "~community/crm/types/CommonTypes";
 
 import { MOCK_DEALS, MOCK_STAGES } from "./mockData";
 
@@ -24,62 +12,19 @@ interface DealsKanbanBoardProps {
   searchKeyword?: string;
 }
 
-const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
-  searchKeyword = ""
-}) => {
+const DealsKanbanBoard: FC<DealsKanbanBoardProps> = () => {
   const stages: CrmDealStageType[] = MOCK_STAGES;
-  const stageIds = stages.map((s) => s.id);
-  const isInitLoading = false;
-  const isDealsLoading = false;
-
-  const [stageMap, setStageMap] = useState<StageMap>({});
-
-  useEffect(() => {
-    setStageMap(
-      buildInitialStageState(
-        MOCK_STAGES.map((s) => ({
-          stageId: s.id,
-          deals: MOCK_DEALS[s.id] ?? [],
-          totalCount: (MOCK_DEALS[s.id] ?? []).length
-        }))
-      )
-    );
-  }, []);
-
-  const stageMapRef = useRef(stageMap);
-  stageMapRef.current = stageMap;
-
-  // Replace stubs with useReorderWithinStage / useMoveBetweenStages / useLoadMoreDeals
-  const reorderWithinStage = (_payload: BoardReorderWithinStagePayload) => {};
-  const moveBetweenStages = (_payload: BoardMoveBetweenStagesPayload) => {};
-
-  const loadMore = (_payload: BoardDealsGroupedRequest) => {};
 
   const {
-    sensors,
+    stageMap,
     activeDeal,
     overStageId,
+    sensors,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
     handleDragCancel
-  } = useKanbanDrag({
-    stageMapRef,
-    setStageMap,
-    reorderWithinStage,
-    moveBetweenStages
-  });
-
-  const isInitialLoad =
-    isInitLoading || (stageIds.length > 0 && isDealsLoading);
-
-  const handleLoadMore = (stageId: number, nextPage: number) =>
-    loadMore({
-      stageIds: [stageId],
-      searchKeyword: searchKeyword || undefined,
-      page: nextPage,
-      limit: DEAL_KANBAN_PAGE_SIZE
-    });
+  } = useKanbanDrag({ stages, dealsByStage: MOCK_DEALS });
 
   return (
     <div className="flex flex-col">
@@ -91,34 +36,21 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="flex gap-4 overflow-x-auto py-2 h-160 items-stretch">
+        <div className="flex h-160 items-stretch gap-4 overflow-x-auto py-2">
           {stages.map((stage) => {
-            const state = stageMap[stage.id];
-            const deals = state?.deals ?? [];
-            const totalCount = state?.totalCount ?? 0;
-            const totalValue = deals.reduce(
-              (sum, d) => sum + (Number.parseFloat(String(d.amount)) || 0),
-              0
-            );
-            const hasMore = deals.length < totalCount;
+            const { deals } = stageMap[stage.id];
 
             return (
               <DealStageLane
                 key={stage.id}
-                stage={{
-                  id: String(stage.id),
-                  name: stage.name,
-                  accentColor: getAccentColor(stage.color),
-                  totalValue: formatValue(String(totalValue)),
-                  totalCount
-                }}
+                stage={stage}
                 deals={deals}
-                isLoading={isInitialLoad}
-                hasNextPage={hasMore}
+                isLoading={false}
+                hasNextPage={false}
                 isOver={overStageId === stage.id}
                 onDealClick={() => {}}
                 onAddDeal={() => {}}
-                onLoadMore={(nextPage) => handleLoadMore(stage.id, nextPage)}
+                onLoadMore={() => {}}
               />
             );
           })}

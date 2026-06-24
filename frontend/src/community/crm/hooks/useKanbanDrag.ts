@@ -7,34 +7,30 @@ import {
   useSensor,
   useSensors
 } from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useState } from "react";
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { useRef, useState } from "react";
 
 import type {
-  BoardMoveBetweenStagesPayload,
-  BoardReorderWithinStagePayload,
-  CrmDealBoardType
+  CrmDealBoardType,
+  CrmDealStageType
 } from "~community/crm/types/CommonTypes";
 
 import {
-  type SetStageMap,
   type StageMap,
-  commitCrossStageMove,
-  commitSameStageReorder,
+  buildInitialStageState,
   resolveTargetStageId
 } from "../utils/kanbanUtil";
 
 interface UseKanbanDragProps {
-  stageMapRef: React.MutableRefObject<StageMap>;
-  setStageMap: SetStageMap;
-  reorderWithinStage: (payload: BoardReorderWithinStagePayload) => void;
-  moveBetweenStages: (payload: BoardMoveBetweenStagesPayload) => void;
+  stages: CrmDealStageType[];
+  dealsByStage: Record<number, CrmDealBoardType[]>;
 }
 
 export interface UseKanbanDragReturn {
-  sensors: ReturnType<typeof useSensors>;
+  stageMap: StageMap;
   activeDeal: CrmDealBoardType | null;
   overStageId: number | null;
+  sensors: ReturnType<typeof useSensors>;
   handleDragStart: (event: DragStartEvent) => void;
   handleDragOver: (event: DragOverEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
@@ -42,102 +38,140 @@ export interface UseKanbanDragReturn {
 }
 
 export const useKanbanDrag = ({
-  stageMapRef,
-  setStageMap,
-  reorderWithinStage,
-  moveBetweenStages
+  stages,
+  dealsByStage
 }: UseKanbanDragProps): UseKanbanDragReturn => {
+  const [stageMap, setStageMap] = useState<StageMap>(() =>
+    buildInitialStageState(stages, dealsByStage)
+  );
   const [activeDeal, setActiveDeal] = useState<CrmDealBoardType | null>(null);
   const [overStageId, setOverStageId] = useState<number | null>(null);
+
+  const dragStartSnapshotRef = useRef<StageMap | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const handleDragStart = ({ active }: DragStartEvent): void => {
-    const dealId = Number(active.id);
-    for (const state of Object.values(stageMapRef.current)) {
-      const found = state.deals.find((d) => d.id === dealId);
-      if (found) {
-        setActiveDeal(found);
-        break;
+  const findDeal = (id: number): CrmDealBoardType | null => {
+    for (const stage of Object.values(stageMap)) {
+      const deal = stage.deals.find((d) => d.id === id);
+      if (deal) return deal;
+    }
+    return null;
+  };
+
+  const findStageOfDeal = (id: number): number | null => {
+    for (const [stageId, stage] of Object.entries(stageMap)) {
+      if (stage.deals.some((d) => d.id === id)) {
+        return Number(stageId);
       }
     }
+    return null;
   };
 
-  const handleDragOver = ({ over }: DragOverEvent): void => {
-    setOverStageId(
-      over ? resolveTargetStageId(String(over.id), stageMapRef.current) : null
-    );
+  const handleDragStart = ({ active }: DragStartEvent): void => {
+    const deal = findDeal(Number(active.id));
+
+    if (deal) setActiveDeal(deal);
+    dragStartSnapshotRef.current = stageMap;
   };
 
-  const handleDragEnd = ({ active, over }: DragEndEvent): void => {
-    setActiveDeal(null);
-    setOverStageId(null);
-
-    if (!over || !active) return;
+  const handleDragOver = ({ active, over }: DragOverEvent): void => {
+    if (!over) {
+      setOverStageId(null);
+      return;
+    }
 
     const activeDealId = Number(active.id);
-    const overId = String(over.id);
+    const overDealId = Number(over.id);
+    const sourceStageId = findStageOfDeal(activeDealId);
+    const targetStageId = resolveTargetStageId(String(over.id), stageMap);
 
-    let sourceStageId = -1;
-    for (const [sid, state] of Object.entries(stageMapRef.current)) {
-      if (state.deals.some((d) => d.id === activeDealId)) {
-        sourceStageId = Number(sid);
-        break;
-      }
-    }
-    if (sourceStageId === -1) return;
+    if (sourceStageId === null || targetStageId === null) return;
 
-    const targetStageId = resolveTargetStageId(overId, stageMapRef.current);
-    if (!targetStageId) return;
+    setOverStageId(targetStageId);
 
-    const srcState = stageMapRef.current[sourceStageId];
-    const tgtState = stageMapRef.current[targetStageId];
-    if (!srcState || !tgtState) return;
+    if (sourceStageId === targetStageId) {
+      setStageMap((prev) => {
+        const deals = prev[sourceStageId].deals;
+        const activeIndex = deals.findIndex((d) => d.id === activeDealId);
+        const overIndex = deals.findIndex((d) => d.id === overDealId);
 
-    const deal = srcState.deals.find((d) => d.id === activeDealId);
-    if (!deal) return;
+        if (
+          activeIndex === -1 ||
+          overIndex === -1 ||
+          activeIndex === overIndex
+        ) {
+          return prev;
+        }
 
-    if (sourceStageId !== targetStageId) {
-      commitCrossStageMove({
-        activeDealId,
-        deal,
-        overId,
-        sourceStageId,
-        targetStageId,
-        srcState,
-        tgtState,
-        activeMidY:
-          (active.rect.current.translated?.top ?? 0) +
-          (active.rect.current.translated?.height ?? 0) / 2,
-        overMidY: over.rect.top + over.rect.height / 2,
-        setStageMap,
-        moveBetweenStages
+        return {
+          ...prev,
+          [sourceStageId]: {
+            ...prev[sourceStageId],
+            deals: arrayMove(deals, activeIndex, overIndex)
+          }
+        };
       });
       return;
     }
 
-    commitSameStageReorder({
-      activeDealId,
-      sourceStageId,
-      overId,
-      srcDeals: srcState.deals,
-      setStageMap,
-      reorderWithinStage
+    setStageMap((prev) => {
+      const sourceDeals = prev[sourceStageId].deals;
+      const targetDeals = prev[targetStageId].deals;
+
+      const activeIndex = sourceDeals.findIndex((d) => d.id === activeDealId);
+      if (activeIndex === -1) return prev;
+
+      const deal = sourceDeals[activeIndex];
+      const newSourceDeals = sourceDeals.filter((d) => d.id !== activeDealId);
+
+      const overIndex = targetDeals.findIndex((d) => d.id === overDealId);
+      const insertAt = overIndex === -1 ? targetDeals.length : overIndex;
+      const newTargetDeals = [
+        ...targetDeals.slice(0, insertAt),
+        deal,
+        ...targetDeals.slice(insertAt)
+      ];
+
+      return {
+        ...prev,
+        [sourceStageId]: {
+          ...prev[sourceStageId],
+          deals: newSourceDeals,
+          totalCount: Math.max(0, prev[sourceStageId].totalCount - 1)
+        },
+        [targetStageId]: {
+          ...prev[targetStageId],
+          deals: newTargetDeals,
+          totalCount: prev[targetStageId].totalCount + 1
+        }
+      };
     });
   };
 
+  const handleDragEnd = (): void => {
+    dragStartSnapshotRef.current = null;
+    setActiveDeal(null);
+    setOverStageId(null);
+  };
+
   const handleDragCancel = (): void => {
+    if (dragStartSnapshotRef.current) {
+      setStageMap(dragStartSnapshotRef.current);
+      dragStartSnapshotRef.current = null;
+    }
     setActiveDeal(null);
     setOverStageId(null);
   };
 
   return {
-    sensors,
+    stageMap,
     activeDeal,
     overStageId,
+    sensors,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
