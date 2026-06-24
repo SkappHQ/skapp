@@ -57,14 +57,16 @@ const SidePanelTasksSection: FC<Props> = ({
   ) : (
     <EmptyDataView
       icon={<SearchIcon width="24" height="24" />}
-      title={translateText(["emptyTitle"])}
-      description={emptyDescription ?? translateText(["emptyDescription"])}
+      title={translateText(["tasks", "emptyTitle"])}
+      description={
+        emptyDescription ?? translateText(["tasks", "emptyDescription"])
+      }
       button={{
-        children: translateText(["addTaskButtonEmptyView"]),
+        children: translateText(["tasks", "addTaskButtonEmptyView"]),
         variant: "tertiary",
         onClick: handleAddTask,
         icon: <PlusIcon />,
-        "aria-label": translateText(["addTaskButtonEmptyView"])
+        "aria-label": translateText(["tasks", "addTaskButtonEmptyView"])
       }}
       className={{
         wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
