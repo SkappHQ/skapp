@@ -13,6 +13,7 @@ export const dealStageValidations = (translator: TranslatorFunctionType) =>
         translator(["dealStageModal", "validations", "nameLength"])
       ),
     description: Yup.string()
+      .trim()
       .optional()
       .max(
         characterLengths.DEAL_STAGE_DESCRIPTION_LENGTH,
