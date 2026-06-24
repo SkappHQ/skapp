@@ -1,8 +1,4 @@
-import {
-  CrmCompanyMetricsType,
-  CrmContactMetricsType,
-  CrmTaskDetailType
-} from "./CommonTypes";
+import { CrmCompanyMetricsType, CrmTaskDetailType } from "./CommonTypes";
 import { CrmModalTypes } from "./ModalTypes";
 
 interface ActionTypes {
