@@ -22,7 +22,7 @@ const useGetDealStageOptions = () => {
         ...stage,
         name: getStageByName(stage.name)
       })) ?? [],
-    [stages, translateText]
+    [stages]
   );
 
   return { options, getStageByName, isPending };
