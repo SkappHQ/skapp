@@ -3,6 +3,7 @@ import { NextPage } from "next";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealDetailSidePanel from "~community/crm/components/organisms/DealDetailSidePanel/DealDetailSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
@@ -11,21 +12,24 @@ import { useCrmStore } from "~community/crm/store/store";
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
 
-  const { setIsCrmSidePanelOpen, isCrmSidePanelOpen, selectedDealId, setSelectedDealId } =
-    useCrmStore((store) => ({
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      selectedDealId: store.selectedDealId,
-      setSelectedDealId: store.setSelectedDealId
-    }));
+  const {
+    setIsCrmSidePanelOpen,
+    isCrmSidePanelOpen,
+    selectedDealId,
+    setSelectedDealId
+  } = useCrmStore((store) => ({
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    selectedDealId: store.selectedDealId,
+    setSelectedDealId: store.setSelectedDealId
+  }));
 
   const handleCloseDealDetail = () => {
-    setSelectedDealId(null);
     setIsCrmSidePanelOpen(false);
   };
 
   const handleAddDealClick = () => {
-    setSelectedDealId(null); 
+    setSelectedDealId(null);
     setIsCrmSidePanelOpen(true);
   };
 
@@ -38,14 +42,16 @@ const Deals: NextPage = () => {
       onPrimaryButtonClick={handleAddDealClick}
     >
       <>
-        {selectedDealId ? (
-          <DealDetailSidePanel
-            isOpen={isCrmSidePanelOpen}
-            onClose={handleCloseDealDetail}
-          />
-        ) : (
-          <AddDealSidePanel />
-        )}
+        <SidePanelWrapper>
+          {selectedDealId ? (
+            <DealDetailSidePanel
+              isOpen={isCrmSidePanelOpen}
+              onClose={handleCloseDealDetail}
+            />
+          ) : (
+            <AddDealSidePanel />
+          )}
+        </SidePanelWrapper>
 
         <DealsSection />
       </>
