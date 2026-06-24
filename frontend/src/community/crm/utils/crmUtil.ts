@@ -1,7 +1,11 @@
 import { ColorOption, DropdownOption } from "@rootcodelabs/skapp-ui";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
-import { CrmContactFormValues } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactFormValues,
+  CrmDealStageCreatePayload,
+  CrmDealStageFormTypes
+} from "~community/crm/types/CommonTypes";
 
 import { STAGE_COLOR_MAP } from "../constants/stageConstants";
 
@@ -32,6 +36,30 @@ export const getChangedContactFields = (
   }
   if (newValues.ownerId !== originalValues.ownerId) {
     changedFields.ownerId = newValues.ownerId;
+  }
+
+  return changedFields;
+};
+
+export const getChangedDealStageFields = (
+  newValues: CrmDealStageFormTypes,
+  originalValues: CrmDealStageFormTypes
+): Partial<CrmDealStageCreatePayload> => {
+  const changedFields: Partial<CrmDealStageCreatePayload> = {};
+
+  const newName = newValues.name.trim();
+  const originalName = originalValues.name.trim();
+  const newDescription = newValues.description.trim() || null;
+  const originalDescription = originalValues.description.trim() || null;
+
+  if (newName !== originalName) {
+    changedFields.name = newName;
+  }
+  if (newDescription !== originalDescription) {
+    changedFields.description = newDescription;
+  }
+  if (newValues.color !== originalValues.color) {
+    changedFields.color = newValues.color;
   }
 
   return changedFields;

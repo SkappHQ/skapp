@@ -24,7 +24,10 @@ import {
   CrmDealStageFormTypes,
   CrmDealStageUpdatePayload
 } from "~community/crm/types/CommonTypes";
-import { dealStageColors } from "~community/crm/utils/crmUtil";
+import {
+  dealStageColors,
+  getChangedDealStageFields
+} from "~community/crm/utils/crmUtil";
 import { dealStageValidations } from "~community/crm/utils/dealStageValidations";
 
 interface DealStageModalFormProps {
@@ -47,9 +50,9 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
   const selectedDealStage = useDealStageById(selectedDealStageId!);
 
   const initialValues: CrmDealStageFormTypes = {
-    name: isEdit ? getStageByName(selectedDealStage.name) : "",
+    name: isEdit ? getStageByName(selectedDealStage!.name) : "",
     description: isEdit ? (selectedDealStage?.description ?? "") : "",
-    color: isEdit ? selectedDealStage.color : CrmDealStageColorsEnum.SKY
+    color: isEdit ? selectedDealStage!.color : CrmDealStageColorsEnum.SKY
   };
 
   const handleSuccess = () => {
@@ -101,11 +104,16 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
 
   const handleSubmit = (values: CrmDealStageFormTypes) => {
     if (isEdit) {
+      const changedFields = getChangedDealStageFields(values, initialValues);
+
+      if (Object.keys(changedFields).length === 0) {
+        handleCloseModal();
+        return;
+      }
+
       const payload: CrmDealStageUpdatePayload = {
-        id: selectedDealStage.id,
-        name: values.name.trim(),
-        description: values.description.trim() || null,
-        color: values.color
+        id: selectedDealStage!.id,
+        ...changedFields
       };
       updateDealStage(payload);
     } else {

@@ -220,7 +220,8 @@ export interface CrmDealStageCreatePayload {
   color: CrmDealStageColorsEnum;
 }
 
-export interface CrmDealStageUpdatePayload extends CrmDealStageCreatePayload {
+export interface CrmDealStageUpdatePayload
+  extends Partial<CrmDealStageCreatePayload> {
   id: number;
 }
 
