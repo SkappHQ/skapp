@@ -288,8 +288,8 @@
       "validations": {
         "nameRequired": "Stage name is required",
         "nameExists": "A stage with this name already exists",
-        "nameLength": "Stage name must be less than 50 characters",
-        "descriptionLength": "Description must be less than 100 characters"
+        "nameLength": "Stage name must be 50 characters or fewer",
+        "descriptionLength": "Description must be 255 characters or fewer"
       }
     },
     "addDealStageModal": {
