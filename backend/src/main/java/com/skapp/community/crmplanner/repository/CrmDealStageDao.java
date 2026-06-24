@@ -20,7 +20,7 @@ public interface CrmDealStageDao extends JpaRepository<CrmDealStage, Long>, CrmD
 	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 
 	boolean existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(String name, Long id);
-  
+
 	long countByIsDeletedFalseAndStageTypeAndNameNotIn(CrmDealStageType stageType, List<String> names);
 
 }
