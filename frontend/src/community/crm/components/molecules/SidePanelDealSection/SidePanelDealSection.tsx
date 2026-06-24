@@ -67,17 +67,15 @@ const SidePanelDealSection: React.FC<Props> = ({
           icon={<SearchIcon />}
           title={translateText(["emptyTitle"])}
           description={translateText(["emptyDescription"])}
-          button={
-            showEmptyStateAddDeal
-              ? {
-                children: translateText(["addDealBtn"]),
-                variant: "tertiary",
-                onClick: handleAddDeal,
-                icon: <PlusIcon />,
-                "aria-label": translateText(["ariaLabels", "addDealBtn"])
-              }
-              : undefined
-          }
+          {...(showEmptyStateAddDeal && {
+            button: {
+              children: translateText(["addDealBtn"]),
+              variant: "tertiary",
+              onClick: handleAddDeal,
+              icon: <PlusIcon />,
+              "aria-label": translateText(["ariaLabels", "addDealBtn"])
+            }
+          })}
           className={{
             wrapper: `${emptyViewHeight} bg-secondary-background rounded-lg`
           }}
