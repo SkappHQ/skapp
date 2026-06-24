@@ -2,12 +2,13 @@ import {
   DeleteButtonIcon,
   EditIcon,
   KebabMenu,
+  MenuItemProps,
   SidePanel,
   SidePanelProps,
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
@@ -29,35 +30,41 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       setCompanyModalType: store.setCompanyModalType
     })
   );
-
-  const openCompanyModal = (type: CrmModalTypes) => {
-    setCompanyModalType(type);
-    setIsCompanyModalOpen(true);
-  };
-
-  const menuItems = [
-    {
-      id: "edit",
-      label: translateText(["editCompany"]),
-      icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: () => openCompanyModal(CrmModalTypes.EDIT_COMPANY_MODAL)
+  const openCompanyModal = useCallback(
+    (type: CrmModalTypes): void => {
+      setCompanyModalType(type);
+      setIsCompanyModalOpen(true);
     },
-    {
-      id: "delete",
-      label: translateText(["deleteCompany"]),
-      icon: {
-        start: (
-          <DeleteButtonIcon
-            width="12px"
-            height="14px"
-            fill="var(--color-semantic-red-text)"
-          />
-        )
+    [setCompanyModalType, setIsCompanyModalOpen]
+  );
+
+  const menuItems: MenuItemProps[] = useMemo(
+    () => [
+      {
+        id: "edit",
+        label: translateText(["editCompany"]),
+        icon: { start: <EditIcon width="16px" height="16px" /> },
+        onClick: () => openCompanyModal(CrmModalTypes.EDIT_COMPANY_MODAL)
       },
-      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: () => openCompanyModal(CrmModalTypes.DELETE_COMPANY_MODAL)
-    }
-  ];
+      {
+        id: "delete",
+        label: translateText(["deleteCompany"]),
+        icon: {
+          start: (
+            <DeleteButtonIcon
+              width="12px"
+              height="14px"
+              fill="var(--color-semantic-red-text)"
+            />
+          )
+        },
+        activeBehavior:
+          "hover:bg-semantic-red-background text-semantic-red-text",
+        onClick: () => openCompanyModal(CrmModalTypes.DELETE_COMPANY_MODAL)
+      }
+    ],
+    [openCompanyModal, translateText]
+  );
 
   const renderTabContent = () => {
     switch (activeTab) {
