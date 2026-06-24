@@ -1,4 +1,4 @@
-package com.skapp.community.crmplanner.payload.response.board;
+package com.skapp.community.crmplanner.payload.response;
 
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import lombok.Getter;
@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CrmDealByStageItemResponseDto {
+public class CrmDealViewResponseDto {
 
 	private Long id;
 
@@ -14,14 +14,14 @@ public class CrmDealByStageItemResponseDto {
 
 	private String amount;
 
-	private Long ownerId;
+	private Long stageId;
 
-	private Long companyId;
+	private String description;
 
-	private Long contactId;
+	private CrmOwnerResponseDto owner;
 
 	private CrmDealPriority priority;
 
-	private Long taskCount;
+	private CrmContactLookupResponseDto contact;
 
 }

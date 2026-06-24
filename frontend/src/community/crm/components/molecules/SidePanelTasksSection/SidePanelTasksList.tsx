@@ -2,12 +2,12 @@ import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 import TaskRow from "../TaskRow/TaskRow";
 
 interface Props {
-  tasks: CrmTaskType[];
+  tasks: TaskRowResponseType[];
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
   onTaskRowClick?: () => void;

@@ -138,7 +138,7 @@ export interface CrmCompanyDomainSearchResponseType {
   companies: CrmCompanyType[];
 }
 
-export interface CrmContactAddFormTypes {
+export interface CrmContactFormValues {
   name: string;
   email: string;
   contactNumber: string;
@@ -152,6 +152,15 @@ export interface CrmContactCreatePayload {
   contactNumber?: string;
   companyId?: number;
   ownerId?: number;
+}
+
+export interface EditContactPayload {
+  id?: number;
+  name?: string;
+  email?: string;
+  contactNumber?: string;
+  companyId?: number | null;
+  ownerId?: number | null;
 }
 
 export interface CrmContactMetricsType {
@@ -335,15 +344,15 @@ export interface UpdateTaskStatusPayload {
   isCompleted: boolean;
 }
 
-export interface DetailPanelTaskResponseType {
+export interface TaskRowResponseType {
   id: number;
   name: string;
   type: string;
   priority: CrmPriorityEnum;
   isCompleted: boolean;
-  isOverdue: boolean;
   dueAt: string | null;
   owner: CrmOwner;
+  contact: CrmContactLookup | null;
 }
 
 export interface DetailPanelDealResponseType {
@@ -368,6 +377,6 @@ export interface CrmContactDetailResponseType {
   activeDealsCount: number;
   totalRevenue: string;
   pipelineRevenue: string;
-  tasks: DetailPanelTaskResponseType[];
+  tasks: TaskRowResponseType[];
   deals: DetailPanelDealResponseType[];
 }
