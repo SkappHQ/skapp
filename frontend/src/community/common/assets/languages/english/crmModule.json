@@ -390,7 +390,8 @@
       "noDealsDescription": "Add a new deal to get started",
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
-      "infiniteScrollLoadingMessage": "Loading more deals..."
+      "infiniteScrollLoadingMessage": "Loading more deals...",
+      "openDealDetails": "Open deal details for {{name}}"
     },
     "deleteDealModal": {
       "areYouSureModalTitle": "Are you sure?",
@@ -426,11 +427,17 @@
         "stage": "Stage",
         "amount": "Amount",
         "saveTitle": "Save title",
-        "discardTitle": "Discard title"
+        "discardTitle": "Discard title",
+        "editTitle": "Edit title",
+        "editDescription": "Edit description"
       },
       "buttons": {
         "save": "Save",
         "discard": "Discard"
+      },
+      "errors": {
+        "dealNotFoundTitle": "Deal not found",
+        "dealNotFoundDescription": "This deal is no longer available."
       }
     },
     "addDealSidePanel": {

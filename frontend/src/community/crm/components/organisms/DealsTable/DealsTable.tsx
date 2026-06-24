@@ -157,10 +157,18 @@ const DealsTable: FC<Props> = ({
         return {
           id: String(deal.id),
           dealName: (
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               className="flex items-center gap-2 bg-transparent border-none p-0 cursor-pointer group"
+              aria-label={translateText(["openDealDetails"], { name: deal.name })}
               onClick={() => onDealClick?.(deal)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onDealClick?.(deal);
+                }
+              }}
             >
               <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
                 <HandshakeIcon
@@ -171,7 +179,7 @@ const DealsTable: FC<Props> = ({
               </div>
               <span className="body2 group-hover:underline">#{deal.id}</span>
               <span className="body2 group-hover:underline">{deal.name}</span>
-            </button>
+            </div>
           ),
           value: (
             <span className="body2 w-full block text-right">

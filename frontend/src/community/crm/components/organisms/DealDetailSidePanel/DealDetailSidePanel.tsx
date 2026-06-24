@@ -15,6 +15,8 @@ import { FC, useEffect, useMemo, useState } from "react";
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetCrmContacts } from "~community/crm/api/ContactApi";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
 import { useGetDealById, useGetDealStages } from "~community/crm/api/crmDealApi";
@@ -43,17 +45,34 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
     }));
 
+  const { setToastMessage } = useToast();
+
   const handleClose = (): void => {
     setIsCrmSidePanelOpen(false);
   };
 
-  const { data: deal } = useGetDealById(
-    selectedDealId ?? 0,
-    isOpen && !!selectedDealId
-  );
+  const handleDealLoadError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: "error",
+      title: translateText(["errors", "dealNotFoundTitle"]),
+      description: translateText(["errors", "dealNotFoundDescription"])
+    });
+    handleClose();
+  };
+
+  const {
+    data: deal,
+    isLoading: isDealLoading,
+    isError: isDealError
+  } = useGetDealById(selectedDealId ?? 0, isOpen && !!selectedDealId);
 
   // Fetch tasks filtered by deal
-  const { data: relatedTasks = [] } = useGetRelatedTasks(
+  const {
+    data: relatedTasks = [],
+    isLoading: isTasksLoading,
+    isError: isTasksError
+  } = useGetRelatedTasks(
     null,
     selectedDealId ?? 0,
     undefined,
@@ -141,6 +160,12 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       setSelectedContact(deal.contact);
     }
   }, [deal]);
+
+  useEffect(() => {
+    if (isDealError || isTasksError) {
+      handleDealLoadError();
+    }
+  }, [isDealError, isTasksError]);
 
   const menuItems = [
     {
@@ -266,13 +291,21 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           ) : (
             <div className="flex gap-6 items-center min-w-0">
               <div className="flex-1 min-w-0">
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   className="text-black h2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
+                  aria-label={translateText(["ariaLabels", "editTitle"])}
                   onClick={handleTitleClick}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleTitleClick();
+                    }
+                  }}
                 >
                   {deal?.name}
-                </button>
+                </div>
               </div>
               <div className="w-1/3 shrink-0">
               </div>
@@ -314,13 +347,21 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
                     </div>
                   </div>
                 ) : (
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     className="subtitle1 text-secondary-text text-left w-full cursor-pointer hover:bg-secondary-background py-1 px-2 rounded bg-transparent border-none"
+                    aria-label={translateText(["ariaLabels", "editDescription"])}
                     onClick={handleDescriptionClick}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleDescriptionClick();
+                      }
+                    }}
                   >
                     {deal?.description ?? translateText(["noDescription"])}
-                  </button>
+                  </div>
                 )}
               </div>
 
