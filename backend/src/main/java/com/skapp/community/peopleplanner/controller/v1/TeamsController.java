@@ -94,7 +94,7 @@ public class TeamsController {
 
 	@Operation(summary = "Get member team memberships",
 			description = "Returns each member of the given team along with the IDs of all active teams they currently belong to")
-	@GetMapping(value = "/{id}/member-teams", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping("/{id}/member-teams")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getTeamMemberTeams(@PathVariable Long id) {
 		ResponseEntityDto response = teamService.getTeamMemberTeams(id);

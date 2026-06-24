@@ -37,6 +37,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_HOLIDAY_CANNOT_BE_DELETED_LEAVES_EXIST("api.error.people.holiday.cannot.delete.leaves.exist"),
 	PEOPLE_ERROR_HOLIDAYS_BULK_CANNOT_ADDED_IN_PAST("api.error.people.holiday-bulk.cannot.add.past.days"),
 	PEOPLE_ERROR_TEAM_NOT_FOUND("api.error.people.people.team.not.found"),
+	PEOPLE_ERROR_TEAM_ID_NOT_FOUND("api.error.people.team.id.not.found"),
 	PEOPLE_ERROR_EMPLOYEE_NOT_FOUND("api.error.people.employee.not.found"),
 	PEOPLE_ERROR_EMPLOYEE_TERMINATED("api.error.people.employee.terminated"),
 	PEOPLE_ERROR_EMPLOYEE_BULK_LIMIT_EXCEEDED("api.error.people.employee.bulk-limit-exceeded"),

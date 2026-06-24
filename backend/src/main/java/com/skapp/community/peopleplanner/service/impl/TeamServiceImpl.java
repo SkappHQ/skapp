@@ -400,29 +400,24 @@ public class TeamServiceImpl implements TeamService {
 		log.info("getTeamMemberTeams: execution started");
 
 		if (teamId == null || teamId <= 0) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_ID_NOT_FOUND);
 		}
 
 		Team team = teamDao.findByTeamIdAndIsActive(teamId, true)
 			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
 
-		List<Long> memberIds = team.getEmployees()
+		List<Long> employeeIds = team.getEmployees()
 			.stream()
 			.map(employeeTeam -> employeeTeam.getEmployee().getEmployeeId())
 			.toList();
 
-		if (memberIds.isEmpty()) {
-			log.info("getTeamMemberTeams: team has no members, execution ended");
-			return new ResponseEntityDto(false, List.of());
-		}
-
-		List<EmployeeTeamIdDto> employeeTeamRecords = employeeTeamDao.findTeamIdsByEmployeeIds(memberIds);
+		List<EmployeeTeamIdDto> employeeTeamRecords = employeeTeamDao.findTeamIdsByEmployeeIds(employeeIds);
 
 		Map<Long, List<Long>> employeeTeamMap = employeeTeamRecords.stream()
 			.collect(Collectors.groupingBy(EmployeeTeamIdDto::getEmployeeId,
 					Collectors.mapping(EmployeeTeamIdDto::getTeamId, Collectors.toList())));
 
-		List<MemberTeamsResponseDto> results = memberIds.stream().map(employeeId -> {
+		List<MemberTeamsResponseDto> results = employeeIds.stream().map(employeeId -> {
 			MemberTeamsResponseDto memberTeamsResponse = new MemberTeamsResponseDto();
 			memberTeamsResponse.setEmployeeId(employeeId);
 			memberTeamsResponse.setTeamIds(employeeTeamMap.getOrDefault(employeeId, List.of()));
