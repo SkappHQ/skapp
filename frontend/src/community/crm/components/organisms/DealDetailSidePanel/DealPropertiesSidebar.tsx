@@ -48,10 +48,10 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   handlers,
   contacts
 }) => {
-  const addDealTranslator = useTranslator(
+  const sidePanelTranslator = useTranslator(
     "crmModule",
     "deals",
-    "addDealSidePanel"
+    "sidePanel"
   );
 
   return (
@@ -66,40 +66,40 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           variant="primary"
           className="rounded-lg"
           width="55%"
-          placeholder={addDealTranslator(["placeholders", "stage"])}
-          ariaLabel={addDealTranslator(["ariaLabels", "stage"])}
+          placeholder={sidePanelTranslator(["placeholders", "stage"])}
+          ariaLabel={sidePanelTranslator(["ariaLabels", "stage"])}
         />
       )}
 
       <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
-        <PropertyRow label={addDealTranslator(["labels", "value"])}>
+        <PropertyRow label={sidePanelTranslator(["value"])}>
           <div className="flex flex-col w-full px-1">
             <input
               value={properties.amount}
               onChange={(e) => handlers.onAmountChange(e.target.value)}
-              placeholder={addDealTranslator(["placeholders", "none"])}
+              placeholder={sidePanelTranslator(["placeholders", "none"])}
               type="text"
               className="w-full bg-transparent outline-none body2 placeholder:text-secondary-text"
-              aria-label={addDealTranslator(["ariaLabels", "amount"])}
+              aria-label={sidePanelTranslator(["ariaLabels", "amount"])}
             />
           </div>
         </PropertyRow>
 
-        <PropertyRow label={addDealTranslator(["labels", "priority"])}>
+        <PropertyRow label={sidePanelTranslator(["priority"])}>
           <PriorityDropdown value={properties.priority} onChange={handlers.onPriorityChange} />
         </PropertyRow>
 
-        <PropertyRow label={addDealTranslator(["labels", "ownedBy"])}>
+        <PropertyRow label={sidePanelTranslator(["ownedBy"])}>
           <div className="flex flex-col w-full">
             <OwnerPopupSearch
               selectedUser={properties.owner}
               onChange={handlers.onOwnerChange}
-              placeholder={addDealTranslator(["placeholders", "none"])}
-              searchPlaceholder={addDealTranslator([
+              placeholder={sidePanelTranslator(["placeholders", "none"])}
+              searchPlaceholder={sidePanelTranslator([
                 "placeholders",
                 "ownerSearch"
               ])}
-              noResultsText={addDealTranslator([
+              noResultsText={sidePanelTranslator([
                 "placeholders",
                 "noResults"
               ])}
@@ -107,19 +107,19 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           </div>
         </PropertyRow>
 
-        <PropertyRow label={addDealTranslator(["labels", "contactName"])}>
+        <PropertyRow label={sidePanelTranslator(["contact"])}>
           <div className="flex flex-col w-full">
             <ContactPopupSearch
               contacts={contacts}
               selectedContact={properties.contact}
               onChange={handlers.onContactChange}
               onSearch={handlers.onContactSearch}
-              placeholder={addDealTranslator(["placeholders", "none"])}
-              searchPlaceholder={addDealTranslator([
+              placeholder={sidePanelTranslator(["placeholders", "none"])}
+              searchPlaceholder={sidePanelTranslator([
                 "placeholders",
                 "contactSearch"
               ])}
-              noResultsText={addDealTranslator([
+              noResultsText={sidePanelTranslator([
                 "placeholders",
                 "noResults"
               ])}

@@ -414,7 +414,24 @@
       "value": "Value",
       "priority": "Priority",
       "ownedBy": "Owned by",
-      "contact": "Contact"
+      "contact": "Contact",
+      "placeholders": {
+        "stage": "Select stage",
+        "none": "None",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "noResults": "No results"
+      },
+      "ariaLabels": {
+        "stage": "Stage",
+        "amount": "Amount",
+        "saveTitle": "Save title",
+        "discardTitle": "Discard title"
+      },
+      "buttons": {
+        "save": "Save",
+        "discard": "Discard"
+      }
     },
     "addDealSidePanel": {
       "title": "Add Deal",

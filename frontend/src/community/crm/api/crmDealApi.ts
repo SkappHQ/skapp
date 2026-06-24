@@ -14,7 +14,7 @@ import {
   CrmDealPaginatedResponse,
   CrmDealStageType,
   CrmDealType,
-  DetailPanelDealResponseType
+  CrmDealDetailResponseType
 } from "~community/crm/types/CommonTypes";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
@@ -105,7 +105,7 @@ export const useGetDealLookup = (
 
 const fetchDealById = async (
   id: number
-): Promise<DetailPanelDealResponseType> => {
+): Promise<CrmDealDetailResponseType> => {
   const response = await authFetch.get(crmDealEndpoints.GET_DEAL_BY_ID(id));
   return response?.data?.results?.[0];
 };
@@ -113,7 +113,7 @@ const fetchDealById = async (
 export const useGetDealById = (
   id: number,
   enabled = true
-): UseQueryResult<DetailPanelDealResponseType> => {
+): UseQueryResult<CrmDealDetailResponseType> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
     queryFn: () => fetchDealById(id),

@@ -364,6 +364,17 @@ export interface DetailPanelDealResponseType {
   stage: CrmDealStageType;
 }
 
+export interface CrmDealDetailResponseType {
+  id: number;
+  name: string;
+  description: string | null;
+  amount: string | null;
+  owner: CrmOwner;
+  stage: CrmDealStageType;
+  priority: CrmPriorityEnum;
+  contact: CrmContactLookup;
+}
+
 export interface CrmContactDetailResponseType {
   id: number;
   name: string;

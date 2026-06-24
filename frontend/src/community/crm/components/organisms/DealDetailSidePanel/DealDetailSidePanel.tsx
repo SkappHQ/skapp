@@ -34,18 +34,16 @@ import {
 
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
 
-const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
+const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const { selectedDealId, setSelectedDealId, setIsCrmSidePanelOpen } =
+  const { selectedDealId, setIsCrmSidePanelOpen } =
     useCrmStore((store) => ({
       selectedDealId: store.selectedDealId,
-      setSelectedDealId: store.setSelectedDealId,
       setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
     }));
 
   const handleClose = (): void => {
-    setSelectedDealId(null);
     setIsCrmSidePanelOpen(false);
   };
 
@@ -135,12 +133,12 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   useEffect(() => {
     if (deal) {
       setAmount(deal.amount ?? "");
-      setSelectedOwner(deal.owner ?? null);
-      if (deal.stage) {
-        setSelectedStageId(String(deal.stage.id));
-      }
-      setEditedTitle(deal.name ?? "");
+      setSelectedOwner(deal.owner);
+      setSelectedStageId(String(deal.stage.id));
+      setEditedTitle(deal.name);
       setEditedDescription(deal.description ?? "");
+      setPriority(deal.priority);
+      setSelectedContact(deal.contact);
     }
   }, [deal]);
 
@@ -169,7 +167,6 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   };
 
   const handleSaveTitle = async () => {
-    // TODO: Add API call to update deal name
     setIsEditingTitle(false);
   };
 
@@ -185,7 +182,6 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   };
 
   const handleSaveDescription = async () => {
-    // TODO: Add API call to update deal description
     setIsEditingDescription(false);
   };
 
@@ -234,8 +230,8 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
         <div className="flex flex-col gap-6">
           {/* Editable Title */}
           {isEditingTitle ? (
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
+            <div className="flex gap-6 items-center min-w-0">
+              <div className="flex-1 min-w-0 p-1">
                 <InputField
                   value={editedTitle}
                   onChange={(e) => setEditedTitle(e.target.value)}
@@ -245,37 +241,42 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
                       handleSaveTitle();
                     }
                   }}
-                  className="w-full"
+                  className="w-full h2"
                   autoFocus
-                  style={{
-                    fontSize: "20px",
-                    fontWeight: 700
-                  }}
                 />
               </div>
-              <div className="flex gap-2">
-                <IconButton
-                  aria-label="Save title"
-                  isRounded={true}
-                  icon={<TickIcon fill="#408ce4" />}
-                  onClick={handleSaveTitle}
-                  variant="outlined"
-                />
-                <IconButton
-                  aria-label="Discard title"
-                  isRounded={true}
-                  icon={<CloseIcon />}
-                  onClick={handleDiscardTitle}
-                />
+              <div className="w-1/3 shrink-0 flex justify-start items-center">
+                <div className="flex gap-2">
+                  <IconButton
+                    aria-label={translateText(["ariaLabels", "saveTitle"])}
+                    isRounded={true}
+                    icon={<TickIcon fill="var(--color-primary-accent)" />}
+                    onClick={handleSaveTitle}
+                    variant="outlined"
+                  />
+                  <IconButton
+                    aria-label={translateText(["ariaLabels", "discardTitle"])}
+                    isRounded={true}
+                    icon={<CloseIcon />}
+                    onClick={handleDiscardTitle}
+                  />
+                </div>
               </div>
             </div>
           ) : (
-            <h2
-              className="h2 cursor-pointer hover:bg-secondary-background py-1 px-2 rounded"
-              onClick={handleTitleClick}
-            >
-              {deal?.name}
-            </h2>
+            <div className="flex gap-6 items-center min-w-0">
+              <div className="flex-1 min-w-0">
+                <button
+                  type="button"
+                  className="text-black h2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
+                  onClick={handleTitleClick}
+                >
+                  {deal?.name}
+                </button>
+              </div>
+              <div className="w-1/3 shrink-0">
+              </div>
+            </div>
           )}
 
           <div className="flex gap-6 items-start">
@@ -300,7 +301,7 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
                         type="button"
                         variant="tertiary"
                       >
-                        Discard
+                        {translateText(["buttons", "discard"])}
                       </ButtonV2>
                       <ButtonV2
                         onClick={handleSaveDescription}
@@ -308,17 +309,18 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
                         type="button"
                         variant="primary"
                       >
-                        Save
+                        {translateText(["buttons", "save"])}
                       </ButtonV2>
                     </div>
                   </div>
                 ) : (
-                  <p
-                    className="subtitle1 text-secondary-text cursor-pointer hover:bg-secondary-background py-1 px-2 rounded"
+                  <button
+                    type="button"
+                    className="subtitle1 text-secondary-text text-left w-full cursor-pointer hover:bg-secondary-background py-1 px-2 rounded bg-transparent border-none"
                     onClick={handleDescriptionClick}
                   >
                     {deal?.description ?? translateText(["noDescription"])}
-                  </p>
+                  </button>
                 )}
               </div>
 
