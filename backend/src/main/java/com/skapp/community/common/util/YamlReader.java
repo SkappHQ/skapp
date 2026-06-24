@@ -13,9 +13,9 @@ public class YamlReader {
 
 	private static final YAMLMapper yamlMapper = YAMLMapper.builder().build();
 
-	public static <T> T read(String path, Class<T> clazz) {
+	public static <T> T read(String path, Class<T> targetClass) {
 		try (InputStream inputStream = new ClassPathResource(path).getInputStream()) {
-			return yamlMapper.readValue(inputStream, clazz);
+			return yamlMapper.readValue(inputStream, targetClass);
 		}
 		catch (Exception e) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_YAML_READ_FAILED,
