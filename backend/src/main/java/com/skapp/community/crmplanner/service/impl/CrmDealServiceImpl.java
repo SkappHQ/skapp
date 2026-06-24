@@ -324,6 +324,20 @@ public class CrmDealServiceImpl implements CrmDealService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getDealById(Long id) {
+		log.info("getDealById: execution started", id);
+
+		CrmDeal deal = crmDealDao.findByIdWithAssociations(id);
+		if (deal == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
+
+		log.info("getDealById: execution ended", id);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealViewResponseDto(deal));
+	}
+
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
 		if (dealId.equals(previousDealId) || dealId.equals(nextDealId)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_INVALID_NEIGHBOUR);
