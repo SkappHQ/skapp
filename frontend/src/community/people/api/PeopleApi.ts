@@ -59,6 +59,7 @@ import {
   AllEmployeeDataResponse,
   L1EmployeeType,
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload,
+  SkillResponseDto,
   SkillType,
   SupervisorRolesData
 } from "../types/PeopleTypes";
@@ -91,6 +92,22 @@ export const useGetSkills = (): UseQueryResult<SkillType[]> => {
           skillType: skill.skillType as SkillTypes
         })
       )
+  });
+};
+
+export const useCreateCustomSkills = () => {
+  return useMutation({
+    mutationFn: async (skills: SkillType[]): Promise<SkillType[]> => {
+      const response = await authFetch.post(
+        peoplesEndpoints.CREATE_CUSTOM_SKILLS,
+        { skills }
+      );
+      return (response?.data?.results ?? []).map((skill: SkillResponseDto) => ({
+        skillId: skill.id,
+        name: skill.name,
+        skillType: skill.skillType
+      }));
+    }
   });
 };
 
@@ -632,14 +649,16 @@ export const useReactivateTerminatedUser = (
       return authFetch.patch(peoplesEndpoints.REACTIVATE_EMPLOYEE(employeeId));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(employeeId) });
+      queryClient.invalidateQueries({
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(employeeId)
+      });
       onSuccess();
     },
     onError
   });
 };
 
-export const useCheckIfUserHasManagers = (): UseQueryResult<boolean> => {  
+export const useCheckIfUserHasManagers = (): UseQueryResult<boolean> => {
   return useQuery({
     queryKey: peopleQueryKeys.CHECK_IF_CURRENT_USER_HAS_MANAGERS,
     queryFn: async () => {

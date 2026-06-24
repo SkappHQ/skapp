@@ -7,7 +7,7 @@ import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.CustomEmployeeSkill;
 import com.skapp.community.peopleplanner.payload.employeeskill.DefaultEmployeeSkill;
 import com.skapp.community.peopleplanner.payload.employeeskill.DefaultEmployeeSkillsYaml;
-import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
+import com.skapp.community.peopleplanner.payload.request.CustomSkillRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeSkillResponseDto;
 import com.skapp.community.peopleplanner.repository.CustomEmployeeSkillDao;
 import com.skapp.community.peopleplanner.repository.EmployeeSkillDao;
@@ -35,20 +35,25 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 
 	@Override
 	@Transactional
-	public Long saveCustomSkill(EmployeeSkillDto skillDto) {
-		log.info("saveCustomSkill: execution started");
+	public ResponseEntityDto saveCustomSkills(CustomSkillRequestDto customSkillRequestDto) {
+		log.info("saveCustomSkills: execution started");
 
-		if (skillDto.getName() == null || skillDto.getName().isBlank()) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
+		if (customSkillRequestDto.getSkills() == null || customSkillRequestDto.getSkills().isEmpty()) {
+			return new ResponseEntityDto(false, List.of());
 		}
 
-		return customEmployeeSkillDao.findByNameIgnoreCase(skillDto.getName())
-			.map(CustomEmployeeSkill::getId)
-			.orElseGet(() -> {
-				CustomEmployeeSkill customSkill = new CustomEmployeeSkill();
-				customSkill.setName(skillDto.getName());
-				return customEmployeeSkillDao.save(customSkill).getId();
-			});
+		List<EmployeeSkillResponseDto> savedSkills = customSkillRequestDto.getSkills().stream().map(skillDto -> {
+			CustomEmployeeSkill customSkill = customEmployeeSkillDao.findByNameIgnoreCase(skillDto.getName())
+				.orElseGet(() -> {
+					CustomEmployeeSkill newSkill = new CustomEmployeeSkill();
+					newSkill.setName(skillDto.getName());
+					return customEmployeeSkillDao.save(newSkill);
+				});
+
+			return new EmployeeSkillResponseDto(customSkill.getId(), customSkill.getName(), EmployeeSkillType.CUSTOM);
+		}).toList();
+
+		return new ResponseEntityDto(false, savedSkills);
 	}
 
 	@Override

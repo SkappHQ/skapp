@@ -134,6 +134,12 @@ export interface SkillType {
   name?: string;
 }
 
+export interface SkillResponseDto {
+  id: number;
+  name: string;
+  skillType: SkillTypes;
+}
+
 export type L3SkillsDetailsType = SkillType[];
 
 export interface SkillUpdatesType {

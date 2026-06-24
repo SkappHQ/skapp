@@ -815,14 +815,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		for (EmployeeSkillDto skillDto : skillsToAdd) {
 			EmployeeSkillType skillType = skillDto.getSkillType();
-
-			Long skillId;
-			if (skillType == EmployeeSkillType.CUSTOM) {
-				skillId = employeeSkillService.saveCustomSkill(skillDto);
-			}
-			else {
-				skillId = skillDto.getSkillId();
-			}
+			Long skillId = skillDto.getSkillId();
 
 			boolean alreadyExists = employee.getEmployeeSkills()
 				.stream()
