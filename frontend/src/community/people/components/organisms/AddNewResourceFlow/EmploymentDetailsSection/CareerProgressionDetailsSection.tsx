@@ -1,13 +1,12 @@
 import {
   Box,
-  Checkbox,
   Grid2 as Grid,
   type SelectChangeEvent,
   Stack,
   Typography,
   useTheme
 } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Checkbox } from "@rootcodelabs/skapp-ui";
 import { rejects } from "assert";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
@@ -654,23 +653,17 @@ const CareerProgressionDetailsSection = ({
               >
                 <Checkbox
                   checked={values.currentPosition}
-                  onChange={handleCheckboxChange}
-                  name="currentPosition"
-                  color="primary"
-                  sx={{
-                    ml: "-0.5rem",
-                    color: theme.palette.primary.main
-                  }}
                   disabled={isInputsDisabled}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: isInputsDisabled ? theme.palette.text.disabled : ""
+                  label={translateText(["currentEmployment"])}
+                  onChange={(checked) => {
+                    handleCheckboxChange({
+                      target: {
+                        name: "currentPosition",
+                        checked: checked
+                      }
+                    } as ChangeEvent<HTMLInputElement>);
                   }}
-                >
-                  {translateText(["currentEmployment"])}
-                </Typography>
+                />
               </Grid>
             </>
           )}
