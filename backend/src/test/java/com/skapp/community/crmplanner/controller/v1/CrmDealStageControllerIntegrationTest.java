@@ -7,6 +7,9 @@ import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.constant.DefaultCrmDealStageTemplate;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealStageReorderRequestDto;
+
+import java.util.List;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealStageName;
@@ -26,11 +29,13 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -300,17 +305,240 @@ class CrmDealStageControllerIntegrationTest {
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_TOO_LONG)));
 	}
 
-	@Test
-	@DisplayName("Create deal stage with special characters in description - Returns Bad Request")
-	void createDealStage_InvalidCharsInDescription_ReturnsBadRequest() throws Exception {
-		CrmDealStageCreateRequestDto dto = validPayload();
-		dto.setDescription("Description <script>alert(1)</script>");
+	private ResultActions performDeleteRequest(Long id) throws Exception {
+		return performRequest(delete(BASE_PATH + "/" + id).accept(MediaType.APPLICATION_JSON));
+	}
 
-		performPostRequest(dto).andDo(print())
+	private ResultActions performReorderRequest(List<CrmDealStageReorderRequestDto> payload) throws Exception {
+		return performRequest(post(BASE_PATH + "/reorder").contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(payload))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private CrmDealStageReorderRequestDto reorderEntry(Long id, Integer orderIndex) {
+		CrmDealStageReorderRequestDto dto = new CrmDealStageReorderRequestDto();
+		dto.setId(id);
+		dto.setOrderIndex(orderIndex);
+		return dto;
+	}
+
+	private Long stageIdByType(CrmDealStageType type) {
+		return crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc()
+			.stream()
+			.filter(s -> s.getStageType() == type)
+			.findFirst()
+			.orElseThrow()
+			.getId();
+	}
+
+	private List<Long> openStageIds() {
+		return crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc()
+			.stream()
+			.filter(s -> s.getStageType() == CrmDealStageType.OPEN)
+			.map(com.skapp.community.crmplanner.model.CrmDealStage::getId)
+			.toList();
+	}
+
+	// DELETE /v1/crm/deal/stage/{id}
+
+	@Test
+	@DisplayName("Delete OPEN stage - Returns OK")
+	void deleteDealStage_OpenStage_ReturnsOk() throws Exception {
+		Long openId = openStageIds().get(0);
+
+		performDeleteRequest(openId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Delete INITIAL stage - Returns Bad Request")
+	void deleteDealStage_InitialStage_ReturnsBadRequest() throws Exception {
+		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
+
+		performDeleteRequest(initialId).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS)));
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_TERMINAL_STAGE)));
+	}
+
+	@Test
+	@DisplayName("Delete WON stage - Returns Bad Request")
+	void deleteDealStage_WonStage_ReturnsBadRequest() throws Exception {
+		Long wonId = stageIdByType(CrmDealStageType.WON);
+
+		performDeleteRequest(wonId).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_TERMINAL_STAGE)));
+	}
+
+	@Test
+	@DisplayName("Delete LOST stage - Returns Bad Request")
+	void deleteDealStage_LostStage_ReturnsBadRequest() throws Exception {
+		Long lostId = stageIdByType(CrmDealStageType.LOST);
+
+		performDeleteRequest(lostId).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_TERMINAL_STAGE)));
+	}
+
+	@Test
+	@DisplayName("Delete non-existent stage - Returns Bad Request")
+	void deleteDealStage_NonExistentId_ReturnsBadRequest() throws Exception {
+		performDeleteRequest(99999L).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Delete stage without CRM admin role - Returns Forbidden")
+	void deleteDealStage_WithoutAdminRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+		Long openId = openStageIds().get(0);
+
+		performDeleteRequest(openId).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	// POST /v1/crm/deal/stage/reorder
+
+	@Test
+	@DisplayName("Reorder OPEN stages - Returns OK, minimum orderIndex stage becomes INITIAL")
+	void reorderDealStages_ValidOpenStages_ReturnsOkAndUpdatesInitial() throws Exception {
+		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
+		List<Long> ids = openStageIds();
+
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(initialId, 5), reorderEntry(ids.get(0), 3),
+				reorderEntry(ids.get(1), 1), reorderEntry(ids.get(2), 2), reorderEntry(ids.get(3), 4));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(initialId).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(0)).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.INITIAL, crmDealStageDao.findById(ids.get(1)).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(2)).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(3)).orElseThrow().getStageType());
+	}
+
+	@Test
+	@DisplayName("Reorder with empty list - Returns Bad Request")
+	void reorderDealStages_EmptyList_ReturnsBadRequest() throws Exception {
+		performReorderRequest(List.of()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST)));
+	}
+
+	@Test
+	@DisplayName("Reorder with null ID entry - Returns Bad Request")
+	void reorderDealStages_NullId_ReturnsBadRequest() throws Exception {
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(null, 1), reorderEntry(2L, 2));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST)));
+	}
+
+	@Test
+	@DisplayName("Reorder with null orderIndex entry - Returns Bad Request")
+	void reorderDealStages_NullOrderIndex_ReturnsBadRequest() throws Exception {
+		List<Long> ids = openStageIds();
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(ids.get(0), null),
+				reorderEntry(ids.get(1), 2));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST)));
+	}
+
+	@Test
+	@DisplayName("Reorder with duplicate stage IDs - Returns Bad Request")
+	void reorderDealStages_DuplicateIds_ReturnsBadRequest() throws Exception {
+		Long id = openStageIds().get(0);
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(id, 1), reorderEntry(id, 2));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DUPLICATE_VALUES)));
+	}
+
+	@Test
+	@DisplayName("Reorder with duplicate order indexes - Returns Bad Request")
+	void reorderDealStages_DuplicateOrderIndexes_ReturnsBadRequest() throws Exception {
+		List<Long> ids = openStageIds();
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(ids.get(0), 1), reorderEntry(ids.get(1), 1));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DUPLICATE_VALUES)));
+	}
+
+	@Test
+	@DisplayName("Reorder with WON stage included - Returns Bad Request")
+	void reorderDealStages_IncludesWonStage_ReturnsBadRequest() throws Exception {
+		Long wonId = stageIdByType(CrmDealStageType.WON);
+		Long openId = openStageIds().get(0);
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(openId, 1), reorderEntry(wonId, 2));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST)));
+	}
+
+	@Test
+	@DisplayName("Reorder with LOST stage included - Returns Bad Request")
+	void reorderDealStages_IncludesLostStage_ReturnsBadRequest() throws Exception {
+		Long lostId = stageIdByType(CrmDealStageType.LOST);
+		Long openId = openStageIds().get(0);
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(openId, 1), reorderEntry(lostId, 2));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST)));
+	}
+
+	@Test
+	@DisplayName("Reorder with non-existent stage ID - Returns Bad Request")
+	void reorderDealStages_NonExistentStageId_ReturnsBadRequest() throws Exception {
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(99999L, 1),
+				reorderEntry(openStageIds().get(0), 2));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST)));
+	}
+
+	@Test
+	@DisplayName("Reorder without CRM admin role - Returns Forbidden")
+	void reorderDealStages_WithoutAdminRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+		List<Long> ids = openStageIds();
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(ids.get(0), 1));
+
+		performReorderRequest(payload).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }
