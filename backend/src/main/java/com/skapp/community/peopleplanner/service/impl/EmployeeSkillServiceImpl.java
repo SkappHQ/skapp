@@ -5,8 +5,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.YamlReader;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.CustomEmployeeSkill;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeSkill;
 import com.skapp.community.peopleplanner.payload.employeeskill.DefaultEmployeeSkill;
 import com.skapp.community.peopleplanner.payload.employeeskill.DefaultEmployeeSkillsYaml;
 import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
@@ -20,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,32 +35,20 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 
 	@Override
 	@Transactional
-	public List<EmployeeSkill> saveEmployeeSkills(Employee employee, List<EmployeeSkillDto> skills) {
-		log.info("saveEmployeeSkills: execution started");
+	public Long saveCustomSkill(EmployeeSkillDto skillDto) {
+		log.info("saveCustomSkill: execution started");
 
-		employeeSkillDao.deleteByEmployeeEmployeeId(employee.getEmployeeId());
-
-		if (skills == null || skills.isEmpty()) {
-			return new ArrayList<>();
+		if (skillDto.getName() == null || skillDto.getName().isBlank()) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
 		}
 
-		List<EmployeeSkill> employeeSkills = new ArrayList<>();
-
-		for (EmployeeSkillDto skillDto : skills) {
-			EmployeeSkill employeeSkill = new EmployeeSkill();
-			employeeSkill.setEmployee(employee);
-			employeeSkill.setSkillType(skillDto.getSkillType());
-
-			employeeSkill.setSkillId(switch (skillDto.getSkillType()) {
-				case DEFAULT -> resolveDefaultSkillId(skillDto);
-				case CUSTOM -> resolveCustomSkillId(skillDto);
+		return customEmployeeSkillDao.findByNameIgnoreCase(skillDto.getName())
+			.map(CustomEmployeeSkill::getId)
+			.orElseGet(() -> {
+				CustomEmployeeSkill customSkill = new CustomEmployeeSkill();
+				customSkill.setName(skillDto.getName());
+				return customEmployeeSkillDao.save(customSkill).getId();
 			});
-
-			employeeSkills.add(employeeSkill);
-		}
-
-		return employeeSkillDao.saveAll(employeeSkills);
-
 	}
 
 	@Override
@@ -114,25 +99,6 @@ public class EmployeeSkillServiceImpl implements EmployeeSkillService {
 		}
 
 		return name;
-	}
-
-	private Long resolveDefaultSkillId(EmployeeSkillDto skillDto) {
-		getDefaultEmployeeSkillName(skillDto.getSkillId());
-		return skillDto.getSkillId();
-	}
-
-	private Long resolveCustomSkillId(EmployeeSkillDto skillDto) {
-		if (skillDto.getName() == null || skillDto.getName().isBlank()) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SKILL_NOT_FOUND);
-		}
-
-		return customEmployeeSkillDao.findByNameIgnoreCase(skillDto.getName())
-			.map(CustomEmployeeSkill::getId)
-			.orElseGet(() -> {
-				CustomEmployeeSkill customSkill = new CustomEmployeeSkill();
-				customSkill.setName(skillDto.getName());
-				return customEmployeeSkillDao.save(customSkill).getId();
-			});
 	}
 
 }

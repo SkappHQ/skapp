@@ -6,6 +6,10 @@ CREATE TABLE IF NOT EXISTS `ppl_employee_skill`
     `employee_id` bigint       NOT NULL,
     `skill_id`    bigint       NOT NULL,
     `skill_type`  varchar(255) NOT NULL,
+    `created_by`         text                  DEFAULT NULL,
+    `created_date`       datetime(6)           DEFAULT NULL,
+    `last_modified_by`   text                  DEFAULT NULL,
+    `last_modified_date` datetime(6)           DEFAULT NULL,
     CONSTRAINT `PK_ppl_employee_skill` PRIMARY KEY (`employee_id`, `skill_id`, `skill_type`),
     CONSTRAINT `FK_ppl_employee_skill_employee_id` FOREIGN KEY (`employee_id`) REFERENCES `employee` (`employee_id`) ON DELETE CASCADE
 );

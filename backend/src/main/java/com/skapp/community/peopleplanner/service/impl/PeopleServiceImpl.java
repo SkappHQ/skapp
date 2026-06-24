@@ -42,6 +42,7 @@ import com.skapp.community.peopleplanner.model.EmployeePeriod;
 import com.skapp.community.peopleplanner.model.EmployeePersonalInfo;
 import com.skapp.community.peopleplanner.model.EmployeeProgression;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.model.EmployeeSkill;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeVisa;
 import com.skapp.community.peopleplanner.model.JobFamily;
@@ -59,6 +60,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
+import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
@@ -110,6 +112,7 @@ import com.skapp.community.peopleplanner.service.EmployeeSkillService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.BulkItemStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
+import com.skapp.community.peopleplanner.type.EmployeeSkillType;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.util.Validations;
 import lombok.NonNull;
@@ -782,7 +785,42 @@ public class PeopleServiceImpl implements PeopleService {
 			return;
 		}
 
-		employeeSkillService.saveEmployeeSkills(employee, requestDto.getSkills());
+		if (employee.getEmployeeSkills() == null) {
+			employee.setEmployeeSkills(new ArrayList<>());
+		}
+
+		List<EmployeeSkillDto> skills = requestDto.getSkills();
+
+		if (skills.isEmpty()) {
+			employee.getEmployeeSkills().clear();
+			return;
+		}
+
+		List<EmployeeSkill> existingSkills = employee.getEmployeeSkills();
+
+		List<EmployeeSkill> result = new ArrayList<>();
+
+		for (EmployeeSkillDto skillDto : skills) {
+			EmployeeSkillType skillType = skillDto.getSkillType();
+
+			Long skillId = skillType == EmployeeSkillType.CUSTOM ? employeeSkillService.saveCustomSkill(skillDto)
+					: skillDto.getSkillId();
+
+			EmployeeSkill employeeSkill = existingSkills.stream()
+				.filter(es -> es.getSkillType() == skillType && skillId.equals(es.getSkillId()))
+				.findFirst()
+				.orElseGet(EmployeeSkill::new);
+
+			employeeSkill.setEmployee(employee);
+			employeeSkill.setSkillType(skillType);
+			employeeSkill.setSkillId(skillId);
+
+			result.add(employeeSkill);
+		}
+
+		employee.getEmployeeSkills().clear();
+		employee.getEmployeeSkills().addAll(result);
+
 	}
 
 	private void processEmployeeManagers(EmployeeEmploymentDetailsDto requestDto, Employee employee) {

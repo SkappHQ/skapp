@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.community.peopleplanner.type.EmployeeSkillType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +22,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @IdClass(EmployeeSkillId.class)
 @Table(name = "ppl_employee_skill")
-public class EmployeeSkill {
+public class EmployeeSkill extends Auditable<String> {
 
 	@Id
 	@ManyToOne(fetch = FetchType.LAZY)

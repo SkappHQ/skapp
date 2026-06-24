@@ -12,6 +12,4 @@ public interface EmployeeSkillDao extends JpaRepository<EmployeeSkill, EmployeeS
 
 	List<EmployeeSkill> findByEmployeeEmployeeId(Long employeeId);
 
-	void deleteByEmployeeEmployeeId(Long employeeId);
-
 }

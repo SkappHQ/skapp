@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.model;
 
+import com.skapp.community.common.model.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +16,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "ppl_custom_skill")
-public class CustomEmployeeSkill {
+public class CustomEmployeeSkill extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
