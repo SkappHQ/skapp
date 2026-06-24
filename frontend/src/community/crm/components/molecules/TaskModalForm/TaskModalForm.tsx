@@ -195,6 +195,14 @@ const TaskModalForm: FC<TaskFormProps> = ({
     setDealSearchText("");
   };
 
+  const parsedDueDate = formik.values.dueDate
+    ? convertUTCStringToLocalDateTime(formik.values.dueDate).toJSDate()
+    : undefined;
+
+  const formattedDueDate = parsedDueDate
+    ? parsedDueDate.toLocaleDateString()
+    : "";
+
   return (
     <div className="flex flex-col w-full h-full justify-between gap-[0.625rem]">
       <InputField
@@ -245,26 +253,14 @@ const TaskModalForm: FC<TaskFormProps> = ({
         <div className="flex-1">
           <DatePicker
             mode="single"
-            selected={
-              formik.values.dueDate
-                ? convertUTCStringToLocalDateTime(
-                    formik.values.dueDate
-                  ).toJSDate()
-                : undefined
-            }
+            selected={parsedDueDate}
             onSelect={handleDueDateSelect}
             popperProps={{ position: "bottom-end" }}
           >
             <div>
               <InputField
                 name="dueDate"
-                value={
-                  formik.values.dueDate
-                    ? convertUTCStringToLocalDateTime(formik.values.dueDate)
-                        .toJSDate()
-                        .toLocaleDateString()
-                    : ""
-                }
+                value={formattedDueDate}
                 label={translateText(["labels", "dueDate"])}
                 placeholder={translateText(["placeholders", "dueDate"])}
                 state={formik.errors.dueDate ? "error" : "default"}
@@ -278,7 +274,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
             </div>
           </DatePicker>
         </div>
-        
+
         <div className="flex-1">
           {selectedOwner ? (
             <SelectedOwnerField
