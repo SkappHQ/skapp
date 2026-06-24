@@ -188,7 +188,7 @@ const DealsTable: FC<Props> = ({
           dealOwner: <OwnerCell owner={deal.owner} />
         };
       }),
-    [allDeals]
+    [allDeals, getStageByName]
   );
 
   const tableData = useMemo(

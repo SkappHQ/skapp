@@ -37,7 +37,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
     if (leadStageId !== undefined && !formik.values.stageId) {
       formik.setFieldValue("stageId", String(leadStageId));
     }
-  }, [leadStageId]);
+  }, [leadStageId, formik.values.stageId]);
 
   return (
     <div className="flex gap-6 items-start">

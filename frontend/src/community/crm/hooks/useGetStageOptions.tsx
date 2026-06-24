@@ -2,18 +2,13 @@ import { useMemo } from "react";
 
 import { useGetDealStages } from "~community/crm/api/crmDealApi";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { CrmDealStageEnum } from "~community/crm/enums/common";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
-import { CrmDealStageType } from "~community/crm/types/CommonTypes";
-
-import { CrmDealStageEnum } from "../enums/common";
 
 const useGetStageOptions = () => {
   const { getStageByName } = useStageNameMapper();
 
   const { data: stages = [], isLoading, isError } = useGetDealStages();
-
-  const getStageById = (id: number): CrmDealStageType | undefined =>
-    stages.find((s) => s.id === id);
 
   const leadStageId = useMemo(
     () => stages.find((s) => s.stageType === CrmDealStageEnum.INITIAL)?.id,
@@ -37,13 +32,12 @@ const useGetStageOptions = () => {
           </div>
         )
       })),
-    [stages]
+    [stages, getStageByName]
   );
 
   return {
     stages,
     options,
-    getStageById,
     leadStageId,
     isLoading,
     isError
