@@ -1,12 +1,9 @@
 import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useEffect, useMemo } from "react";
+import { FC, useEffect } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetDealStages } from "~community/crm/api/crmDealApi";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
-import { CrmDealStageEnum } from "~community/crm/enums/common";
 import useGetStageOptions from "~community/crm/hooks/useGetStageOptions";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
 
@@ -16,13 +13,13 @@ interface DealNameStageSectionProps {
 
 const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
-  const { getStageByName } = useGetStageOptions();
 
   const {
-    data: stages = [],
+    options: stageOptions = [],
     isLoading: isStagesLoading,
-    isError: isStagesError
-  } = useGetDealStages();
+    isError: isStagesError,
+    leadStageId
+  } = useGetStageOptions();
 
   let stageErrorMessage: string | undefined;
   if (isStagesError) {
@@ -36,32 +33,11 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
       ? "primary-error"
       : "primary";
 
-  const stageOptions = useMemo(
-    () =>
-      stages.map((s) => ({
-        id: String(s.id),
-        value: String(s.id),
-        label: (
-          <div className="inline-flex items-center gap-2.5">
-            <div
-              className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: STAGE_COLOR_MAP[s.color] }}
-            />
-            <span className="body2">{getStageByName(s.name)}</span>
-          </div>
-        )
-      })),
-    [stages]
-  );
-
   useEffect(() => {
-    const leadStage = stages.find(
-      (s) => s.stageType === CrmDealStageEnum.INITIAL
-    );
-    if (leadStage) {
-      formik.setFieldValue("stageId", String(leadStage.id));
+    if (leadStageId !== undefined && !formik.values.stageId) {
+      formik.setFieldValue("stageId", String(leadStageId));
     }
-  }, [stages]);
+  }, [leadStageId]);
 
   return (
     <div className="flex gap-6 items-start">

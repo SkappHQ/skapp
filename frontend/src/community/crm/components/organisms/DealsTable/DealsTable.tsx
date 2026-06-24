@@ -14,7 +14,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
-import useGetStageOptions from "~community/crm/hooks/useGetStageOptions";
+import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
@@ -69,7 +69,7 @@ const DealsTable: FC<Props> = ({
   onLoadMore
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
-  const { getStageByName } = useGetStageOptions();
+  const { getStageByName } = useStageNameMapper();
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
