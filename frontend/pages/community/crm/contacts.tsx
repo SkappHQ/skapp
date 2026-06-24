@@ -7,6 +7,7 @@ import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/S
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -58,6 +59,7 @@ const Contacts: NextPage = () => {
         )}
 
         <ContactModalController />
+        <TaskModalController />
         <ContactTable />
       </>
     </ContentLayout>
