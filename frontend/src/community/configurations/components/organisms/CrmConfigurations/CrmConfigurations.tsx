@@ -140,7 +140,17 @@ const CrmConfigurations = () => {
         <div className="flex flex-row items-center gap-3">
           <div>
             <Dropdown
-              options={[{ id: "usd", label: "USD - US Dollar", value: "USD" }]}
+              options={[
+                {
+                  id: "usd",
+                  label: translateText([
+                    "currencySection",
+                    "currencyOptions",
+                    "usd"
+                  ]),
+                  value: "USD"
+                }
+              ]}
               value="USD"
               variant="primary-disabled"
               ariaLabel={translateText([

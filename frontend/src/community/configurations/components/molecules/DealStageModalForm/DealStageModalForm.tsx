@@ -139,7 +139,6 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
     values,
     errors,
     handleChange,
-    isSubmitting,
     setSubmitting,
     setFieldValue,
     submitForm

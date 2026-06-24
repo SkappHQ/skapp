@@ -251,6 +251,9 @@
       "currencyPreferencesTitle": "Currency preferences",
       "currencyPreferencesDescription": "Select the currency for your organization. All deal values, revenue figures, and pipeline tools will be displayed in the selected currency.",
       "currencyInfoNote": "Changing the currency updates all CRM values for all users; existing deals aren't converted, only the display currency changes.",
+      "currencyOptions": {
+        "usd": "USD - US Dollar"
+      },
       "labels": {
         "selectCurrency": "Select currency"
       },
