@@ -1,17 +1,25 @@
 import { useRouter } from "next/router";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useEditEmployee } from "~community/people/api/PeopleApi";
+import {
+  useCreateCustomSkills,
+  useEditEmployee
+} from "~community/people/api/PeopleApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
+import { L1EmployeeType, SkillType } from "~community/people/types/PeopleTypes";
+import {
+  buildResolvedSkillUpdates,
+  getNewCustomSkills
+} from "~community/people/utils/skillsUtils";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 import { handleError } from "../directoryUtils/addNewResourceFlowUtils/addNewResourceUtils";
 import uploadImage from "../image/uploadImage";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 export const useHandlePeopleEdit = () => {
   const { profilePic, thumbnail, setCommonDetails } = usePeopleStore(
@@ -44,7 +52,42 @@ export const useHandlePeopleEdit = () => {
 
   const { mutateAsync: handleUploadImagesAsync } = useUploadImages();
 
+  const { mutate: createCustomSkills } = useCreateCustomSkills();
+
   const translateError = useTranslator("peopleModule", "addResource");
+
+  const editEmployee = (payload: L1EmployeeType) => {
+    const skillUpdates = payload.personal?.skillUpdates;
+
+    if (!skillUpdates) {
+      mutate(payload);
+      return;
+    }
+
+    const submitWithResolvedSkills = (createdCustomSkills: SkillType[]) =>
+      mutate({
+        ...payload,
+        personal: {
+          ...payload.personal,
+          skillUpdates: buildResolvedSkillUpdates(
+            skillUpdates,
+            createdCustomSkills
+          )
+        }
+      });
+
+    const newCustomSkills = getNewCustomSkills(skillUpdates);
+
+    if (newCustomSkills.length === 0) {
+      submitWithResolvedSkills([]);
+      return;
+    }
+
+    createCustomSkills(newCustomSkills, {
+      onSuccess: submitWithResolvedSkills
+    });
+  };
+
   const handleMutate = async () => {
     if (profilePic !== null) {
       const newAuthPicURL = await uploadImage({
@@ -63,12 +106,12 @@ export const useHandlePeopleEdit = () => {
       setCommonDetails({
         authPic: newAuthPicURL ?? ""
       });
-      mutate({
+      editEmployee({
         ...apiPayload,
         common: { authPic: newAuthPicURL }
       });
     } else {
-      mutate(apiPayload);
+      editEmployee(apiPayload);
     }
   };
 
