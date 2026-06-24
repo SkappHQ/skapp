@@ -16,10 +16,10 @@ import DealStagesDraggableContent from "~community/configurations/components/mol
 import DealStageModalController from "~community/configurations/components/organisms/DealStageModalController/DealStageModalController";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import { useReorderDealStages } from "~community/crm/api/crmDealApi";
-import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import useGetDealStageOptions from "~community/crm/hooks/useGetDealStageOptions";
+import { CrmDealStageType } from "~community/crm/types/CommonTypes";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const CrmConfigurations = () => {
   const translateText = useTranslator("configurations", "crm");
@@ -40,25 +40,42 @@ const CrmConfigurations = () => {
   const [stages, setStages] = useState<CrmDealStageType[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const { mutate: reorderStages, isPending: isReordering } = useReorderDealStages(
-    () => {
-      setHasChanges(false);
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["dealsSection", "toastMessages", "reorderSuccessTitle"]),
-        description: translateText(["dealsSection", "toastMessages", "reorderSuccessDescription"])
-      });
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["dealsSection", "toastMessages", "reorderErrorTitle"]),
-        description: translateText(["dealsSection", "toastMessages", "reorderErrorDescription"])
-      });
-    }
-  );
+  const { mutate: reorderStages, isPending: isReordering } =
+    useReorderDealStages(
+      () => {
+        setHasChanges(false);
+        setToastMessage({
+          open: true,
+          toastType: ToastType.SUCCESS,
+          title: translateText([
+            "dealsSection",
+            "toastMessages",
+            "reorderSuccessTitle"
+          ]),
+          description: translateText([
+            "dealsSection",
+            "toastMessages",
+            "reorderSuccessDescription"
+          ])
+        });
+      },
+      () => {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.ERROR,
+          title: translateText([
+            "dealsSection",
+            "toastMessages",
+            "reorderErrorTitle"
+          ]),
+          description: translateText([
+            "dealsSection",
+            "toastMessages",
+            "reorderErrorDescription"
+          ])
+        });
+      }
+    );
 
   useEffect(() => {
     if (dealStages) {
