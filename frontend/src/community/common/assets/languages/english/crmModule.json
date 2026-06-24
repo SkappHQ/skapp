@@ -139,6 +139,13 @@
       "editContact": "Edit contact",
       "deleteContact": "Delete contact",
       "kebabMenuAriaLabel": "Contact actions",
+      "metrics": {
+        "openTasks": "Open tasks",
+        "activeDeals": "No. of active deals",
+        "totalRevenue": "Total revenue",
+        "pipelineRevenue": "Revenue on pipeline",
+        "overdueChipLabel": "{{count}} Overdue"
+      },
       "tasks": {
         "addTaskButtonEmptyView": "Add task",
         "emptyTitle": "No tasks",
