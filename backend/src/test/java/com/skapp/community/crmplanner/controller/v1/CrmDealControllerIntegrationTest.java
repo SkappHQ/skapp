@@ -597,8 +597,8 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Edit deal - non-admin/non-manager representative edit owner - silently assigns self")
-	void editDeal_RepEditOwner_SilentlyAssignsSelf() throws Exception {
+	@DisplayName("Edit deal - non-admin/non-manager representative edit owner - returns bad request")
+	void editDeal_RepEditOwner_ReturnsBadRequest() throws Exception {
 		// Set CRM role for user2
 		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
 		employeeRoleDao.flush();
@@ -618,11 +618,12 @@ class CrmDealControllerIntegrationTest {
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
 		dto.setOwnerId(1L); // attempt to change owner to user1
 
-		// Sales rep cannot reassign - resolveOwner silently assigns self
+		// Sales rep cannot reassign - resolveOwner throws assignment denied exception
 		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].owner.employeeId").value(2L));
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath("$.results[0].message")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED)));
 	}
 
 	@Test
