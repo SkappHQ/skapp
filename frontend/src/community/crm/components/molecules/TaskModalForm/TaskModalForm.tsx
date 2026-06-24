@@ -75,10 +75,14 @@ const TaskModalForm: FC<TaskFormProps> = ({
   );
 
   useEffect(() => {
-    if (initialOwner && !selectedOwner) {
+    if (selectedTask) {
+      setSelectedOwner(selectedTask.owner ?? initialOwner ?? null);
+      setSelectedContactName(selectedTask.contact?.name ?? "");
+      setSelectedDealName(selectedTask.deal?.name ?? "");
+    } else if (initialOwner) {
       setSelectedOwner(initialOwner);
     }
-  }, [initialOwner, selectedOwner]);
+  }, [initialOwner, selectedTask]);
 
   const debouncedOwnerSearchText = useDebounce(
     ownerSearchText.trim(),
