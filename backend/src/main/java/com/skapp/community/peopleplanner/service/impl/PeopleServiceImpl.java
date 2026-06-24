@@ -786,7 +786,7 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		if (employee.getEmployeeSkills() == null) {
-			employee.setEmployeeSkills(new ArrayList<>());
+			employee.setEmployeeSkills(new HashSet<>());
 		}
 
 		List<EmployeeSkillDto> skills = requestDto.getSkills();
@@ -796,15 +796,20 @@ public class PeopleServiceImpl implements PeopleService {
 			return;
 		}
 
-		List<EmployeeSkill> existingSkills = employee.getEmployeeSkills();
+		Set<EmployeeSkill> existingSkills = employee.getEmployeeSkills();
 
-		List<EmployeeSkill> result = new ArrayList<>();
+		Set<EmployeeSkill> result = new HashSet<>();
 
 		for (EmployeeSkillDto skillDto : skills) {
 			EmployeeSkillType skillType = skillDto.getSkillType();
 
-			Long skillId = skillType == EmployeeSkillType.CUSTOM ? employeeSkillService.saveCustomSkill(skillDto)
-					: skillDto.getSkillId();
+			Long skillId;
+			if (skillType == EmployeeSkillType.CUSTOM) {
+				skillId = employeeSkillService.saveCustomSkill(skillDto);
+			}
+			else {
+				skillId = skillDto.getSkillId();
+			}
 
 			EmployeeSkill employeeSkill = existingSkills.stream()
 				.filter(es -> es.getSkillType() == skillType && skillId.equals(es.getSkillId()))
