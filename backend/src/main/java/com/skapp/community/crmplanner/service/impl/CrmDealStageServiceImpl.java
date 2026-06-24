@@ -170,7 +170,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			stage.setOrderIndex(newStage.getOrderIndex());
 		});
 
-		ensureFirstStageIsInitial(existingStages);
+		updateStageTypesAfterReorder(existingStages);
 		crmDealStageDao.saveAll(existingStages);
 
 		log.info("reorderDealStages: execution ended");
@@ -178,7 +178,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existingStages));
 	}
 
-	private void ensureFirstStageIsInitial(List<CrmDealStage> reorderedStages) {
+	private void updateStageTypesAfterReorder(List<CrmDealStage> reorderedStages) {
 		CrmDealStage firstStage = Collections.min(reorderedStages, Comparator.comparing(CrmDealStage::getOrderIndex));
 
 		reorderedStages.forEach(stage -> stage
