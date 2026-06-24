@@ -10,14 +10,14 @@ import ReassignMemberRow from "~community/people/components/molecules/ReassignMe
 import { usePeopleStore } from "~community/people/store/store";
 import {
   TeamModelTypes,
-  TransferableMember
+  TeamType
 } from "~community/people/types/TeamTypes";
 
 interface Props {
-  transferableMembers: TransferableMember[];
+  transferableMembersMap: Map<number, TeamType[]>;
 }
 
-const ReassignMembersModal = ({ transferableMembers }: Props) => {
+const ReassignMembersModal = ({ transferableMembersMap }: Props) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     currentDeletingTeam,
@@ -41,27 +41,18 @@ const ReassignMembersModal = ({ transferableMembers }: Props) => {
     [currentDeletingTeam]
   );
 
-  const transferableMap = useMemo(
-    () =>
-      new Map(
-        transferableMembers.map((team) => [
-          team.employeeId,
-          team.transferableTeams
-        ])
-      ),
-    [transferableMembers]
-  );
-
   const displayedMembers = useMemo(
     () =>
       allMembers
-        .filter((member) => transferableMap.has(Number(member.employeeId)))
+        .filter((member) =>
+          transferableMembersMap.has(Number(member.employeeId))
+        )
         .map((member) => ({
           member,
           transferableTeams:
-            transferableMap.get(Number(member.employeeId)) ?? []
+            transferableMembersMap.get(Number(member.employeeId)) ?? []
         })),
-    [allMembers, transferableMap]
+    [allMembers, transferableMembersMap]
   );
 
   const setTeamId = (employeeId: number, teamId: number) => {

@@ -27,6 +27,7 @@ import {
   AddTeamType,
   TeamModelTypes,
   TeamNamesType,
+  TeamType,
   TransferableMember
 } from "~community/people/types/TeamTypes";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
@@ -76,13 +77,13 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
     isError: memberTeamsError
   } = useGetMemberTeams(Number(currentDeletingTeam?.teamId));
 
-  const transferableMembers = useMemo<TransferableMember[]>(() => {
-    if (!memberTeams || !allTeams) return [];
+  const transferableMembersMap = useMemo<Map<number, TeamType[]>>(() => {
+    if (!memberTeams || !allTeams) return new Map();
     const deletingTeamId = Number(currentDeletingTeam?.teamId);
     const otherTeams = allTeams.filter(
       (team) => Number(team.teamId) !== deletingTeamId
     );
-    return memberTeams
+    const transferableMembers: TransferableMember[] = memberTeams
       .map((member) => ({
         employeeId: member.employeeId,
         transferableTeams: otherTeams.filter(
@@ -90,9 +91,16 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
         )
       }))
       .filter((member) => member.transferableTeams.length > 0);
+
+    return new Map(
+      transferableMembers.map((member) => [
+        member.employeeId,
+        member.transferableTeams
+      ])
+    );
   }, [memberTeams, allTeams, currentDeletingTeam]);
 
-  const hasTransferableMembers = transferableMembers.length > 0;
+  const hasTransferableMembers = transferableMembersMap.size > 0;
   const isLoadingMemberData = memberTeamsLoading || teamsIsLoading;
 
   const getModalTitle = (): string => {
@@ -230,7 +238,9 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
         );
       case TeamModelTypes.REASSIGN_MEMBERS:
         return (
-          <ReassignMembersModal transferableMembers={transferableMembers} />
+          <ReassignMembersModal
+            transferableMembersMap={transferableMembersMap}
+          />
         );
       default:
         return null;
