@@ -13,4 +13,6 @@ public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long>, CrmCompa
 
 	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 
+	long countByIsDeletedFalse();
+
 }

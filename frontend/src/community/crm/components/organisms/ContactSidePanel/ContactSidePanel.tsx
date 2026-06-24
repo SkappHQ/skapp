@@ -12,9 +12,15 @@ import { useGetContactById } from "~community/crm/api/ContactApi";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
+import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
+import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
+import { mapContactToMetricItems } from "~community/crm/utils/contactUtil";
+
+import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
 
 const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator(
@@ -46,10 +52,11 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setSelectedContactId(null);
   };
 
-  const { data: contact, isError } = useGetContactById(
-    selectedContactId ?? 0,
-    isOpen && !!selectedContactId
-  );
+  const {
+    data: contact,
+    isError,
+    isLoading
+  } = useGetContactById(selectedContactId ?? 0, isOpen && !!selectedContactId);
 
   useEffect(() => {
     if (isError) handleContactLoadError();
@@ -60,10 +67,6 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsCrmSidePanelOpen(false);
   };
 
-  const handleCompanyClick = () => {
-    //TODO: Implement company Id page and link it here
-  };
-
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
@@ -72,6 +75,9 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         return (
           <SidePanelTasksSection
             tasks={contact?.tasks ?? []}
+            preselectedContact={
+              contact ? { id: contact.id, name: contact.name } : null
+            }
             emptyDescription={translateText(["tasks", "emptyDescription"])}
           />
         );
@@ -97,29 +103,38 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       onClose={handleClose}
       closeOnBackdropClick
       header={
-        <SidePanelContactHeader
-          name={contact?.name}
-          lastModifiedDate={contact?.lastModifiedDate}
-        />
+        isLoading ? (
+          <SidePanelHeaderSkeleton isShowLastUpdate={true} />
+        ) : (
+          <SidePanelContactHeader
+            name={contact?.name}
+            lastModifiedDate={contact?.lastModifiedDate}
+          />
+        )
       }
+      headerActions={isLoading ? <SidePanelHeaderActionsSkeleton /> : <></>}
     >
       <div className="flex flex-col pb-4 gap-4">
-        {contact && (
-          <SidePanelContactInfo
-            contact={contact}
-            onCompanyClick={handleCompanyClick}
-          />
-        )}
+        {isLoading && !contact ? (
+          <ContactSidePanelSkeleton />
+        ) : (
+          <>
+            <SidePanelContactInfo contact={contact} />
+            <SidePanelMetricCards
+              metrics={mapContactToMetricItems(contact, translateText)}
+            />
 
-        <div className="flex flex-col pt-2 w-full">
-          <Tabs
-            tabs={tabs}
-            activeTabId={activeTab}
-            onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
-          />
-          <hr className="border-secondary-accent" />
-        </div>
-        {renderTabContent()}
+            <div className="flex flex-col pt-2 w-full">
+              <Tabs
+                tabs={tabs}
+                activeTabId={activeTab}
+                onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+              />
+              <hr className="border-secondary-accent" />
+            </div>
+            {renderTabContent()}
+          </>
+        )}
       </div>
     </SidePanel>
   );

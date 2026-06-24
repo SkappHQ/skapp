@@ -22,9 +22,10 @@ const AddTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsTaskModalOpen } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen
-  }));
+  const { setIsTaskModalOpen } =
+    useCrmStore((store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+    }));
 
   const { data: currentUser } = useGetUserPersonalDetails();
   
@@ -44,7 +45,7 @@ const AddTaskModalContent: FC = () => {
       type: null,
       dueDate: null,
       priority: CrmPriorityEnum.MEDIUM,
-      contactId: null,
+      contactId: preselectedContact?.id ?? null,
       dealId: null,
       owner: defaultOwner?.employeeId ? Number(defaultOwner.employeeId) : null,
       notes: ""
@@ -85,7 +86,8 @@ const AddTaskModalContent: FC = () => {
 
   const { mutate: createNewTask, isPending } = useCreateTask(
     handleSuccess,
-    handleError
+    handleError,
+    preselectedContact?.id
   );
 
   const createTask = (formValues: CrmTaskFormTypes) => {
