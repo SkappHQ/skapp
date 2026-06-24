@@ -1,6 +1,7 @@
 import { SearchIcon } from "@rootcodelabs/skapp-ui";
 import { forwardRef, useImperativeHandle } from "react";
 
+import ChipAutocomplete from "~community/common/components/molecules/ChipAutocomplete/ChipAutocomplete";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SKILL_OPTIONS } from "~community/people/constants/skillConstants";
@@ -8,8 +9,6 @@ import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
 import { SkillType } from "~community/people/types/PeopleTypes";
-
-import ChipAutocomplete from "~community/common/components/molecules/ChipAutocomplete/ChipAutocomplete";
 
 interface Props {
   isInputsDisabled?: boolean;
@@ -83,7 +82,11 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
 
     setPersonalDetails({
       ...employee?.personal,
-      skills: updatedSkills
+      skills: updatedSkills,
+      skillUpdates: {
+        add: updatedSkills,
+        remove: []
+      }
     });
   };
 

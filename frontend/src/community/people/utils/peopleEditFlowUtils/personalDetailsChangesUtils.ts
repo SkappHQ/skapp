@@ -6,7 +6,8 @@ import {
   L3GeneralDetailsType,
   L3HealthAndOtherDetailsType,
   L3SkillsDetailsType,
-  L3SocialMediaDetailsType
+  L3SocialMediaDetailsType,
+  SkillUpdatesType
 } from "~community/people/types/PeopleTypes";
 
 export const isFieldDifferentAndValid = (
@@ -361,18 +362,20 @@ export const getHealthAndOtherDetailsChanges = (
   return changes;
 };
 
-export const getSkillsDetailsChanges = (
+export const getSkillUpdates = (
   newSkills: L3SkillsDetailsType,
   previousSkills: L3SkillsDetailsType
-): boolean => {
-  if (newSkills.length !== previousSkills.length) return true;
-
+): SkillUpdatesType => {
   const skillKey = (skill: L3SkillsDetailsType[number]): string =>
     `${skill.skillType}::${skill.skillId ?? skill.name}`;
 
   const previousKeys = new Set(previousSkills.map(skillKey));
+  const newKeys = new Set(newSkills.map(skillKey));
 
-  return newSkills.some((skill) => !previousKeys.has(skillKey(skill)));
+  return {
+    add: newSkills.filter((skill) => !previousKeys.has(skillKey(skill))),
+    remove: previousSkills.filter((skill) => !newKeys.has(skillKey(skill)))
+  };
 };
 
 export const getPersonalDetailsChanges = (
@@ -452,13 +455,13 @@ export const getPersonalDetailsChanges = (
   else Object.assign(changes, healthAndOtherChanges);
 
   // Skills Details
-  const skillsChanged = getSkillsDetailsChanges(
+  const skillUpdates = getSkillUpdates(
     newPersonalDetails.skills ?? [],
     previousPersonalDetails.skills ?? []
   );
 
-  if (skillsChanged)
-    Object.assign(changes, { skills: newPersonalDetails.skills });
+  if (skillUpdates.add.length > 0 || skillUpdates.remove.length > 0)
+    Object.assign(changes, { skillUpdates });
 
   return changes;
 };

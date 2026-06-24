@@ -61,6 +61,7 @@ import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPat
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
+import com.skapp.community.peopleplanner.payload.request.EmployeeSkillUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
@@ -781,7 +782,9 @@ public class PeopleServiceImpl implements PeopleService {
 			return;
 		}
 
-		if (requestDto.getSkills() == null) {
+		EmployeeSkillUpdateDto skillUpdates = requestDto.getSkillUpdates();
+
+		if (skillUpdates == null) {
 			return;
 		}
 
@@ -789,18 +792,28 @@ public class PeopleServiceImpl implements PeopleService {
 			employee.setEmployeeSkills(new HashSet<>());
 		}
 
-		List<EmployeeSkillDto> skills = requestDto.getSkills();
+		removeEmployeeSkills(employee, skillUpdates.getRemove());
+		addEmployeeSkills(employee, skillUpdates.getAdd());
+	}
 
-		if (skills.isEmpty()) {
-			employee.getEmployeeSkills().clear();
+	private void removeEmployeeSkills(Employee employee, List<EmployeeSkillDto> skillsToRemove) {
+		if (skillsToRemove == null || skillsToRemove.isEmpty()) {
 			return;
 		}
 
-		Set<EmployeeSkill> existingSkills = employee.getEmployeeSkills();
+		for (EmployeeSkillDto skillDto : skillsToRemove) {
+			employee.getEmployeeSkills()
+				.removeIf(es -> es.getSkillType() == skillDto.getSkillType()
+						&& es.getSkillId().equals(skillDto.getSkillId()));
+		}
+	}
 
-		Set<EmployeeSkill> result = new HashSet<>();
+	private void addEmployeeSkills(Employee employee, List<EmployeeSkillDto> skillsToAdd) {
+		if (skillsToAdd == null || skillsToAdd.isEmpty()) {
+			return;
+		}
 
-		for (EmployeeSkillDto skillDto : skills) {
+		for (EmployeeSkillDto skillDto : skillsToAdd) {
 			EmployeeSkillType skillType = skillDto.getSkillType();
 
 			Long skillId;
@@ -811,21 +824,20 @@ public class PeopleServiceImpl implements PeopleService {
 				skillId = skillDto.getSkillId();
 			}
 
-			EmployeeSkill employeeSkill = existingSkills.stream()
-				.filter(es -> es.getSkillType() == skillType && skillId.equals(es.getSkillId()))
-				.findFirst()
-				.orElseGet(EmployeeSkill::new);
+			boolean alreadyExists = employee.getEmployeeSkills()
+				.stream()
+				.anyMatch(es -> es.getSkillType() == skillType && skillId.equals(es.getSkillId()));
 
-			employeeSkill.setEmployee(employee);
-			employeeSkill.setSkillType(skillType);
-			employeeSkill.setSkillId(skillId);
+			if (!alreadyExists) {
+				EmployeeSkill employeeSkill = new EmployeeSkill();
 
-			result.add(employeeSkill);
+				employeeSkill.setEmployee(employee);
+				employeeSkill.setSkillType(skillType);
+				employeeSkill.setSkillId(skillId);
+
+				employee.getEmployeeSkills().add(employeeSkill);
+			}
 		}
-
-		employee.getEmployeeSkills().clear();
-		employee.getEmployeeSkills().addAll(result);
-
 	}
 
 	private void processEmployeeManagers(EmployeeEmploymentDetailsDto requestDto, Employee employee) {

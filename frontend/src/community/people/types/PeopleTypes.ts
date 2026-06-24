@@ -35,6 +35,7 @@ export interface L2PersonalDetailsType {
   socialMedia?: L3SocialMediaDetailsType;
   healthAndOther?: L3HealthAndOtherDetailsType;
   skills?: L3SkillsDetailsType;
+  skillUpdates?: SkillUpdatesType;
 }
 
 export interface L2EmergencyDetailsType {
@@ -134,6 +135,11 @@ export interface SkillType {
 }
 
 export type L3SkillsDetailsType = SkillType[];
+
+export interface SkillUpdatesType {
+  add: SkillType[];
+  remove: SkillType[];
+}
 
 export interface L3EmergencyContactType {
   name?: string;
