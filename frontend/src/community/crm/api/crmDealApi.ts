@@ -117,7 +117,7 @@ const createDealStage = async (
 
 export const useCreateDealStage = (
   onSuccess: () => void,
-  onError: (error: unknown) => void
+  onError: () => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -130,20 +130,20 @@ export const useCreateDealStage = (
   });
 };
 
-const updateDealStage = async (
-  payload: CrmDealStageUpdatePayload
-): Promise<CrmDealStageType> => {
-  const { id, ...rest } = payload;
+const updateDealStage = async ({
+  id,
+  ...payload
+}: CrmDealStageUpdatePayload): Promise<CrmDealStageType> => {
   const response = await authFetch.patch(
     crmDealEndpoints.UPDATE_DEAL_STAGE(id),
-    rest
+    payload
   );
   return response?.data?.results?.[0];
 };
 
 export const useUpdateDealStage = (
   onSuccess: () => void,
-  onError: (error: unknown) => void
+  onError: () => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
