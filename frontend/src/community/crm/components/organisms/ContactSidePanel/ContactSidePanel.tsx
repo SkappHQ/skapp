@@ -13,10 +13,14 @@ import SidePanelContactHeader from "~community/crm/components/molecules/SidePane
 import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
+import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
+import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { mapContactToMetricItems } from "~community/crm/utils/contactUtil";
+
+import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
 
 const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator(
@@ -48,10 +52,11 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setSelectedContactId(null);
   };
 
-  const { data: contact, isError } = useGetContactById(
-    selectedContactId ?? 0,
-    isOpen && !!selectedContactId
-  );
+  const {
+    data: contact,
+    isError,
+    isLoading
+  } = useGetContactById(selectedContactId ?? 0, isOpen && !!selectedContactId);
 
   useEffect(() => {
     if (isError) handleContactLoadError();
@@ -98,31 +103,39 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       onClose={handleClose}
       closeOnBackdropClick
       header={
-        <SidePanelContactHeader
-          name={contact?.name}
-          lastModifiedDate={contact?.lastModifiedDate}
-        />
-      }
-    >
-      {contact && (
-        <div className="flex flex-col pb-6 gap-4">
-          <SidePanelContactInfo contact={contact} />
-
-          <SidePanelMetricCards
-            metrics={mapContactToMetricItems(contact, translateText)}
+        isLoading ? (
+          <SidePanelHeaderSkeleton isShowLastUpdate={true} />
+        ) : (
+          <SidePanelContactHeader
+            name={contact?.name}
+            lastModifiedDate={contact?.lastModifiedDate}
           />
-
-          <div className="flex flex-col pt-2 w-full">
-            <Tabs
-              tabs={tabs}
-              activeTabId={activeTab}
-              onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+        )
+      }
+      headerActions={isLoading ? <SidePanelHeaderActionsSkeleton /> : <></>}
+    >
+      <div className="flex flex-col pb-4 gap-4">
+        {isLoading && !contact ? (
+          <ContactSidePanelSkeleton />
+        ) : (
+          <>
+            <SidePanelContactInfo contact={contact} />
+            <SidePanelMetricCards
+              metrics={mapContactToMetricItems(contact, translateText)}
             />
-            <hr className="border-secondary-accent" />
-          </div>
-          {renderTabContent()}
-        </div>
-      )}
+
+            <div className="flex flex-col pt-2 w-full">
+              <Tabs
+                tabs={tabs}
+                activeTabId={activeTab}
+                onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+              />
+              <hr className="border-secondary-accent" />
+            </div>
+            {renderTabContent()}
+          </>
+        )}
+      </div>
     </SidePanel>
   );
 };
