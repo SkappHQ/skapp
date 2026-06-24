@@ -11,7 +11,11 @@ import { DOMAIN_SEARCH_LIMIT } from "../constants/commonConstants";
 import {
   CrmCompanyCreatePayload,
   CrmCompanyDomainSearchResponseType,
-  EditCompanyPayload
+  CrmContactMetricsResponseType,
+  CrmDealListItem,
+  CrmDealPaginatedResponse,
+  EditCompanyPayload,
+  TaskRowResponseType
 } from "../types/CommonTypes";
 import {
   companyEndpoints,
@@ -203,7 +207,9 @@ export const useGetCompletedTasksByCompany = (
   });
 };
 
-const fetchDealsByCompany = async (companyId: number) => {
+const fetchDealsByCompany = async (
+  companyId: number
+): Promise<CrmDealPaginatedResponse> => {
   const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
     params: { companyId }
   });
@@ -218,7 +224,9 @@ export const useGetDealsByCompany = (companyId: number, enabled: boolean) => {
   });
 };
 
-const fetchContactsByCompany = async (companyId: number) => {
+const fetchContactsByCompany = async (
+  companyId: number
+): Promise<CrmContactMetricsResponseType> => {
   const response = await authFetch.get(contactEndpoints.GET_CONTACT_METRICS, {
     params: { companyId }
   });

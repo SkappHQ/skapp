@@ -1,5 +1,4 @@
 import {
-  ButtonV2,
   Label,
   PlusIcon,
   SearchIcon,
@@ -26,7 +25,7 @@ const SidePanelCompanyContacts: React.FC<{
     {
       columnAriaLabel: translateText(["columns", "contact"]),
       header: translateText(["columns", "contact"]),
-      key: "contact",
+      key: "name",
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1">
@@ -52,7 +51,7 @@ const SidePanelCompanyContacts: React.FC<{
     {
       columnAriaLabel: translateText(["columns", "revenue"]),
       header: translateText(["columns", "revenue"]),
-      key: "revenue",
+      key: "closedDealValue",
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
@@ -71,7 +70,7 @@ const SidePanelCompanyContacts: React.FC<{
     {
       columnAriaLabel: translateText(["columns", "openTasks"]),
       header: translateText(["columns", "openTasks"]),
-      key: "openTasks",
+      key: "openTaskCount",
       render(_value, row) {
         if (row.openTaskCount === 0) return "-";
         return (

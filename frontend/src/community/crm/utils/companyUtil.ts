@@ -20,8 +20,8 @@ export const mapCompanyToMetricItems = (
       amount: String(company.openDeals)
     },
     {
-      id: "closeDeals",
-      title: translateText(["metrics", "closeDeals"]),
+      id: "closedDeals",
+      title: translateText(["metrics", "closedDeals"]),
       amount: String(company.closedDeals)
     }
   ];

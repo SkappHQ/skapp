@@ -41,10 +41,13 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     }));
 
   const { data: openTaskData, isLoading: isTaskLoading } =
-    useGetOpenTasksByCompany(selectedCompany?.id, !!selectedCompany?.id);
+    useGetOpenTasksByCompany(selectedCompany?.id ?? 0, !!selectedCompany?.id);
 
   const { data: completedTaskData, isLoading: isCompletedTaskLoading } =
-    useGetCompletedTasksByCompany(selectedCompany?.id, !!selectedCompany?.id);
+    useGetCompletedTasksByCompany(
+      selectedCompany?.id ?? 0,
+      !!selectedCompany?.id
+    );
 
   const taskData = [
     ...(openTaskData?.tasks ?? []),
@@ -52,14 +55,18 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   ];
 
   const { data: dealData, isLoading: isDealLoading } = useGetDealsByCompany(
-    selectedCompany?.id,
+    selectedCompany?.id ?? 0,
     !!selectedCompany?.id
   );
 
   const { data: contactData, isLoading: isContactLoading } =
-    useGetContactsByCompany(selectedCompany?.id, !!selectedCompany?.id);
+    useGetContactsByCompany(selectedCompany?.id ?? 0, !!selectedCompany?.id);
 
-  const isLoading = isTaskLoading || isDealLoading || isContactLoading;
+  const isLoading =
+    isTaskLoading ||
+    isDealLoading ||
+    isContactLoading ||
+    isCompletedTaskLoading;
 
   const openCompanyModal = (type: CrmModalTypes) => {
     setCompanyModalType(type);
@@ -156,8 +163,8 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
               activeTabId={activeTab}
               onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
             />
+            <hr className="border-secondary-accent" />
           </div>
-          <hr className="border-secondary-accent" />
 
           {renderTabContent()}
         </div>

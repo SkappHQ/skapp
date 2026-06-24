@@ -1,3 +1,4 @@
+import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
 
 import { mapCompanyToMetricItems } from "../companyUtil";
@@ -5,6 +6,15 @@ import { mapCompanyToMetricItems } from "../companyUtil";
 const mockTranslateText = (keys: string[]): string => keys.join(".");
 
 const baseCompany: CrmCompanyMetricsType = {
+  id: 1,
+  name: "Test Company",
+  contactNumber: "1234567890",
+  industry: CrmIndustryEnum.ACCOMMODATION_SERVICES,
+  website: "https://www.testcompany.com",
+  address: "123 Test St, Test City, TC 12345",
+  tasks: 5,
+  overdue: 2,
+  openValue: "50000",
   accountValue: "100000",
   openDeals: 4,
   closedDeals: 7
@@ -17,7 +27,7 @@ describe("mapCompanyToMetricItems", () => {
     expect(result).toHaveLength(3);
     expect(result[0].id).toBe("accountValue");
     expect(result[1].id).toBe("openDeals");
-    expect(result[2].id).toBe("closeDeals");
+    expect(result[2].id).toBe("closedDeals");
   });
 
   it("should mark accountValue as currency", () => {

@@ -370,7 +370,7 @@
       "metrics": {
         "accountValue": "Account value",
         "openDeals": "Open deals",
-        "closeDeals": "Closed deals"
+        "closedDeals": "Closed deals"
       }
     }
   },
