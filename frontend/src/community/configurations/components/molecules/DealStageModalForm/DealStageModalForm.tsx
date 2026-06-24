@@ -38,7 +38,7 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
   isEdit = false
 }) => {
   const { setToastMessage } = useToast();
-  const { getStageByName } = useGetDealStageOptions();
+  const { options: dealStages, getStageByName } = useGetDealStageOptions();
   const translateText = useTranslator("configurations", "crm");
 
   const { setIsDealStageModalOpen, selectedDealStageId } =
@@ -129,7 +129,11 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
   const formik = useFormik({
     initialValues,
     onSubmit: handleSubmit,
-    validationSchema: dealStageValidations(translateText),
+    validationSchema: dealStageValidations(
+      translateText,
+      dealStages,
+      selectedDealStage?.id
+    ),
     validateOnChange: false,
     validateOnBlur: false,
     enableReinitialize: true
