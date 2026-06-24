@@ -5,17 +5,12 @@ import {
   ReactNode,
   SetStateAction,
   useEffect,
-  useMemo,
   useState
 } from "react";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  useGetAllTeams,
-  useGetMemberTeams
-} from "~community/people/api/TeamApi";
+import { useGetAllTeams } from "~community/people/api/TeamApi";
 import AddEditTeamModal from "~community/people/components/molecules/TeamModals/AddEditTeamModal/AddEditTeamModal";
 import DeleteConfirmModal from "~community/people/components/molecules/TeamModals/DeleteConfirmModal/DeleteConfirmModal";
 import ReassignMembersModal from "~community/people/components/molecules/TeamModals/ReassignMembersModal/ReassignMembersModal";
@@ -23,13 +18,7 @@ import TeamActionModal from "~community/people/components/molecules/TeamModals/T
 import UnsavedAddTeamModal from "~community/people/components/molecules/TeamModals/UnsavedAddTeamModal/UnsavedAddTeamModal";
 import UnsavedEditTeamModal from "~community/people/components/molecules/TeamModals/UnsavedEditTeamModal/UnsavedEditTeamModal";
 import { usePeopleStore } from "~community/people/store/store";
-import {
-  AddTeamType,
-  TeamModelTypes,
-  TeamNamesType,
-  TeamType,
-  TransferableMember
-} from "~community/people/types/TeamTypes";
+import { AddTeamType, TeamModelTypes, TeamNamesType, TeamType } from "~community/people/types/TeamTypes";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 interface Props {
@@ -64,44 +53,20 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
     stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
   }));
 
-  const { setToastMessage } = useToast();
-
   const [tempTeamDetails, setTempTeamDetails] = useState<AddTeamType>();
   const [currentTeamFormData, setCurrentTeamFormData] = useState<AddTeamType>();
+  const [transferableMembersMap, setTransferableMembersMap] = useState<
+    Map<number, TeamType[]>
+  >(new Map());
 
   const { isLoading: teamsIsLoading, data: allTeams } = useGetAllTeams();
 
-  const {
-    data: memberTeams,
-    isLoading: memberTeamsLoading,
-    isError: memberTeamsError
-  } = useGetMemberTeams(Number(currentDeletingTeam?.teamId));
-
-  const transferableMembersMap = useMemo<Map<number, TeamType[]>>(() => {
-    if (!memberTeams || !allTeams) return new Map();
-    const deletingTeamId = Number(currentDeletingTeam?.teamId);
-    const otherTeams = allTeams.filter(
-      (team) => Number(team.teamId) !== deletingTeamId
-    );
-    const transferableMembers: TransferableMember[] = memberTeams
-      .map((member) => ({
-        employeeId: member.employeeId,
-        transferableTeams: otherTeams.filter(
-          (team) => !member.teamIds.includes(Number(team.teamId))
-        )
-      }))
-      .filter((member) => member.transferableTeams.length > 0);
-
-    return new Map(
-      transferableMembers.map((member) => [
-        member.employeeId,
-        member.transferableTeams
-      ])
-    );
-  }, [memberTeams, allTeams, currentDeletingTeam]);
-
-  const hasTransferableMembers = transferableMembersMap.size > 0;
-  const isLoadingMemberData = memberTeamsLoading || teamsIsLoading;
+  const handleReassign = (
+    transferableMembersMap: Map<number, TeamType[]>
+  ): void => {
+    setTransferableMembersMap(transferableMembersMap);
+    setTeamModalType(TeamModelTypes.REASSIGN_MEMBERS);
+  };
 
   const getModalTitle = (): string => {
     switch (teamModalType) {
@@ -185,19 +150,7 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
   useEffect(() => {
     if (!teamsIsLoading && allTeams)
       setProjectTeamNames(allTeams as TeamNamesType[]);
-  }, [teamsIsLoading, allTeams]);
-
-  useEffect(() => {
-    if (memberTeamsError) {
-      setToastMessage({
-        open: true,
-        toastType: "error",
-        title: translateText(["teamDeleteFailTitle"]),
-        description: translateText(["teamDeleteFailDes"]),
-        isIcon: true
-      });
-    }
-  }, [memberTeamsError]);
+  }, [teamsIsLoading, allTeams, setProjectTeamNames]);
 
   const modalContent = (): ReactNode => {
     switch (teamModalType) {
@@ -230,12 +183,7 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
           />
         );
       case TeamModelTypes.CONFIRM_DELETE:
-        return (
-          <DeleteConfirmModal
-            hasTransferableMembers={hasTransferableMembers}
-            isLoadingMemberData={isLoadingMemberData}
-          />
-        );
+        return <DeleteConfirmModal onReassign={handleReassign} />;
       case TeamModelTypes.REASSIGN_MEMBERS:
         return (
           <ReassignMembersModal

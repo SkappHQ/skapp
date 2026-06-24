@@ -1,32 +1,89 @@
 import { Box, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { FC, useEffect, useMemo } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { useTransferTeamMembers } from "~community/people/api/TeamApi";
+import {
+  useGetAllTeams,
+  useGetMemberTeams,
+  useTransferTeamMembers
+} from "~community/people/api/TeamApi";
 import { usePeopleStore } from "~community/people/store/store";
-import { TeamModelTypes } from "~community/people/types/TeamTypes";
+import {
+  TeamModelTypes,
+  TeamType,
+  TransferableMember
+} from "~community/people/types/TeamTypes";
 
 interface Props {
-  hasTransferableMembers: boolean;
-  isLoadingMemberData: boolean;
+  onReassign: (transferableMembersMap: Map<number, TeamType[]>) => void;
 }
 
-const DeleteConfirmModal = ({
-  hasTransferableMembers,
-  isLoadingMemberData
-}: Props) => {
+const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     setTeamModalType,
     setIsTeamModalOpen,
     setCurrentDeletingTeam,
     currentDeletingTeam
-  } = usePeopleStore((state) => state);
+  } = usePeopleStore((state) => ({
+    setTeamModalType: state.setTeamModalType,
+    setIsTeamModalOpen: state.setIsTeamModalOpen,
+    setCurrentDeletingTeam: state.setCurrentDeletingTeam,
+    currentDeletingTeam: state.currentDeletingTeam
+  }));
 
   const { setToastMessage } = useToast();
+
+  const deletingTeamId = Number(currentDeletingTeam?.teamId);
+
+  const { isLoading: teamsIsLoading, data: allTeams } = useGetAllTeams();
+  const {
+    data: memberTeams,
+    isLoading: memberTeamsLoading,
+    isError: memberTeamsError
+  } = useGetMemberTeams(deletingTeamId);
+
+  const transferableMembersMap = useMemo<Map<number, TeamType[]>>(() => {
+    if (!memberTeams || !allTeams) return new Map();
+
+    const otherTeams = allTeams.filter(
+      (team) => Number(team.teamId) !== deletingTeamId
+    );
+    const transferableMembers: TransferableMember[] = memberTeams
+      .map((member) => ({
+        employeeId: member.employeeId,
+        transferableTeams: otherTeams.filter(
+          (team) => !member.teamIds.includes(Number(team.teamId))
+        )
+      }))
+      .filter((member) => member.transferableTeams.length > 0);
+
+    return new Map(
+      transferableMembers.map((member) => [
+        member.employeeId,
+        member.transferableTeams
+      ])
+    );
+  }, [memberTeams, allTeams, deletingTeamId]);
+
+  const hasTransferableMembers = transferableMembersMap.size > 0;
+  const isLoadingMemberData = memberTeamsLoading || teamsIsLoading;
+
+  useEffect(() => {
+    if (memberTeamsError) {
+      setToastMessage({
+        open: true,
+        toastType: "error",
+        title: translateText(["teamDeleteFailTitle"]),
+        description: translateText(["teamDeleteFailDes"]),
+        isIcon: true
+      });
+    }
+  }, [memberTeamsError, setToastMessage, translateText]);
 
   const handleSuccess = () => {
     setToastMessage({
@@ -51,7 +108,7 @@ const DeleteConfirmModal = ({
   const { mutate } = useTransferTeamMembers(handleSuccess, handleError);
 
   const handleReassignClick = () => {
-    setTeamModalType(TeamModelTypes.REASSIGN_MEMBERS);
+    onReassign(transferableMembersMap);
   };
 
   const handleDeleteClick = async () => {

@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -8,16 +8,13 @@ import { IconName } from "~community/common/types/IconTypes";
 import { useTransferTeamMembers } from "~community/people/api/TeamApi";
 import ReassignMemberRow from "~community/people/components/molecules/ReassignMemberRow/ReassignMemberRow";
 import { usePeopleStore } from "~community/people/store/store";
-import {
-  TeamModelTypes,
-  TeamType
-} from "~community/people/types/TeamTypes";
+import { TeamModelTypes, TeamType } from "~community/people/types/TeamTypes";
 
 interface Props {
   transferableMembersMap: Map<number, TeamType[]>;
 }
 
-const ReassignMembersModal = ({ transferableMembersMap }: Props) => {
+const ReassignMembersModal: FC<Props> = ({ transferableMembersMap }) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     currentDeletingTeam,
