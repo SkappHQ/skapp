@@ -20,11 +20,15 @@ import SidePanelCompanyContacts from "~community/crm/components/molecules/SidePa
 import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
+import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
+import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { mapCompanyToMetricItems } from "~community/crm/utils/companyUtil";
+
+import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
@@ -131,44 +135,55 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       onClose={onClose}
       closeOnBackdropClick
       header={
-        <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
-          {selectedCompany?.name}
-        </h2>
+        isLoading ? (
+          <SidePanelHeaderSkeleton isShowLastUpdate={false} />
+        ) : (
+          <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
+            {selectedCompany?.name}
+          </h2>
+        )
       }
       headerActions={
-        <KebabMenu
-          id={"company-actions"}
-          menuItems={menuItems}
-          anchorButton={{
-            "aria-label": translateText(["kebabMenuAriaLabel"])
-          }}
-          className={{
-            anchorElement:
-              "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-          }}
-        />
+        isLoading ? (
+          <SidePanelHeaderActionsSkeleton count={1} />
+        ) : (
+          <KebabMenu
+            id={"company-actions"}
+            menuItems={menuItems}
+            anchorButton={{
+              "aria-label": translateText(["kebabMenuAriaLabel"])
+            }}
+            className={{
+              anchorElement:
+                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+            }}
+          />
+        )
       }
     >
-      {selectedCompany && (
-        <div className="flex flex-col pb-4 gap-4">
-          <SidePanelCompanyHeader company={selectedCompany} />
+      <div className="flex flex-col pb-4 gap-4">
+        {isLoading && !selectedCompany ? (
+          <CompanySidePanelSkeleton />
+        ) : (
+          <>
+            <SidePanelCompanyHeader company={selectedCompany} />
 
-          <SidePanelMetricCards
-            metrics={mapCompanyToMetricItems(selectedCompany, translateText)}
-          />
-
-          <div className="flex flex-col pt-2 w-full">
-            <Tabs
-              tabs={tabs}
-              activeTabId={activeTab}
-              onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+            <SidePanelMetricCards
+              metrics={mapCompanyToMetricItems(selectedCompany, translateText)}
             />
-            <hr className="border-secondary-accent" />
-          </div>
+            <div className="flex flex-col pt-2 w-full">
+              <Tabs
+                tabs={tabs}
+                activeTabId={activeTab}
+                onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+              />
+              <hr className="border-secondary-accent" />
+            </div>
 
-          {renderTabContent()}
-        </div>
-      )}
+            {renderTabContent()}
+          </>
+        )}
+      </div>
     </SidePanel>
   );
 };
