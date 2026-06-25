@@ -180,35 +180,6 @@ export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
   });
 };
 
-const getCachedTaskById = (queryClient: QueryClient, id: number) => {
-  const openTasks = queryClient
-    .getQueriesData<CrmTaskResponseType>({
-      queryKey: taskQueryKeys.GET_OPEN_TASKS
-    })
-    .flatMap(([, data]) => data?.tasks ?? []);
-
-  const foundOpenTask = openTasks.find((task) => task.id === id);
-  if (foundOpenTask) return foundOpenTask;
-
-  const completedTasks = queryClient
-    .getQueriesData<InfiniteData<CrmCompletedTaskResponseType>>({
-      queryKey: taskQueryKeys.GET_COMPLETED_TASKS
-    })
-    .flatMap(
-      ([, data]) => data?.pages?.flatMap((page) => page.items ?? []) ?? []
-    );
-
-  return completedTasks.find((task) => task.id === id) ?? null;
-};
-
-export const useGetCachedTaskById = (id: number) => {
-  const queryClient = useQueryClient();
-  return useQuery({
-    queryKey: taskQueryKeys.GET_TASK_DATA_BY_ID(id),
-    queryFn: () => getCachedTaskById(queryClient, id)
-  });
-};
-
 export const useGetTaskTypes = () => {
   return useQuery({
     queryKey: taskQueryKeys.GET_TASK_TYPES,
