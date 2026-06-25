@@ -11,11 +11,11 @@ import { DOMAIN_SEARCH_LIMIT } from "../constants/commonConstants";
 import {
   CrmCompanyCreatePayload,
   CrmCompanyDomainSearchResponseType,
+  CrmCompletedTaskResponseType,
   CrmContactMetricsResponseType,
-  CrmDealListItem,
   CrmDealPaginatedResponse,
-  EditCompanyPayload,
-  TaskRowResponseType
+  CrmTaskResponseType,
+  EditCompanyPayload
 } from "../types/CommonTypes";
 import {
   companyEndpoints,
@@ -171,7 +171,9 @@ export const useSearchCompaniesByDomain = (
   });
 };
 
-const fetchOpenTasksByCompany = async (companyId: number) => {
+const fetchOpenTasksByCompany = async (
+  companyId: number
+): Promise<CrmTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_TASKS, {
     params: { companyId }
   });
@@ -189,7 +191,9 @@ export const useGetOpenTasksByCompany = (
   });
 };
 
-const fetchCompletedTasksByCompany = async (companyId: number) => {
+const fetchCompletedTasksByCompany = async (
+  companyId: number
+): Promise<CrmCompletedTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
     params: { companyId }
   });
