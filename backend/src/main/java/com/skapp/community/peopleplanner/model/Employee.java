@@ -3,6 +3,7 @@ package com.skapp.community.peopleplanner.model;
 import com.skapp.community.common.model.Auditable;
 import com.skapp.community.common.model.Notification;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.util.converter.FieldEncryptionConverter;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.EEO;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
@@ -12,6 +13,7 @@ import com.skapp.community.peopleplanner.type.Title;
 import com.skapp.community.common.model.WorkLocation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -64,6 +66,7 @@ public class Employee extends Auditable<String> {
 	private Gender gender;
 
 	@Column(name = "middle_name")
+	@Convert(converter = FieldEncryptionConverter.class)
 	private String middleName;
 
 	@Column(name = "designation")
@@ -79,6 +82,7 @@ public class Employee extends Auditable<String> {
 	private String addressLine1;
 
 	@Column(name = "personal_email")
+	@Convert(converter = FieldEncryptionConverter.class)
 	private String personalEmail;
 
 	@Column(name = "phone", length = 15)
