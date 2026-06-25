@@ -3,7 +3,7 @@ import {
   CrmTaskDetailType,
   PreselectedContact
 } from "./CommonTypes";
-import { DealSidePanelTypes } from "~community/crm/enums/DealSidePanelTypes";
+import { DealSidePanelTypes } from "~community/crm/enums/common";
 import { CrmModalTypes } from "./ModalTypes";
 
 interface ActionTypes {

@@ -3,7 +3,7 @@ import { FC } from "react";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealDetailSidePanel from "~community/crm/components/organisms/DealDetailSidePanel/DealDetailSidePanel";
-import { DealSidePanelTypes } from "~community/crm/enums/DealSidePanelTypes";
+import { DealSidePanelTypes } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 
 const DealsSidePanelController: FC = () => {

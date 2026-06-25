@@ -9,7 +9,7 @@ import {
   DEAL_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum } from "~community/crm/enums/common";
-import { DealSidePanelTypes } from "~community/crm/enums/DealSidePanelTypes";
+import { DealSidePanelTypes } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 

@@ -1,5 +1,5 @@
 import { SetType } from "~community/common/types/CommonTypes";
-import { DealSidePanelTypes } from "~community/crm/enums/DealSidePanelTypes";
+import { DealSidePanelTypes } from "~community/crm/enums/common";
 import { CrmDealSliceTypes } from "~community/crm/types/SliceTypes";
 
 const CrmDealSlice = (set: SetType<CrmDealSliceTypes>) => ({

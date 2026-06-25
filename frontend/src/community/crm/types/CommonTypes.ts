@@ -375,7 +375,7 @@ export interface CrmDealDetailResponseType {
   description: string | null;
   amount: string | null;
   owner: CrmOwner;
-  stage: CrmDealStageType;
+  stageId: number;
   priority: CrmPriorityEnum;
   contact: CrmContactLookup;
 }
