@@ -9,7 +9,7 @@ import {
   useSensor,
   useSensors
 } from "@dnd-kit/core";
-import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useRef, useState } from "react";
 
 import type { StageMap } from "~community/crm/types/BoardTypes";
@@ -20,6 +20,10 @@ import type {
 
 import {
   buildInitialStageState,
+  findDealById,
+  findStageIdByDealId,
+  moveDealBetweenStages,
+  reorderDealsWithinStage,
   resolveTargetStageId
 } from "../utils/kanbanUtil";
 
@@ -56,21 +60,8 @@ export const useKanbanDrag = ({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const findDeal = (id: number): CrmDealBoardType | null => {
-    for (const stage of stageMap) {
-      const deal = stage.deals.find((d) => d.id === id);
-      if (deal) return deal;
-    }
-    return null;
-  };
-
-  const findStageOfDeal = (id: number): number | null => {
-    const stage = stageMap.find((s) => s.deals.some((d) => d.id === id));
-    return stage ? stage.stageId : null;
-  };
-
   const handleDragStart = ({ active }: DragStartEvent): void => {
-    const deal = findDeal(Number(active.id));
+    const deal = findDealById(stageMap, Number(active.id));
 
     if (deal) setActiveDeal(deal);
     dragStartSnapshotRef.current = stageMap;
@@ -84,8 +75,8 @@ export const useKanbanDrag = ({
 
     const activeDealId = Number(active.id);
     const overDealId = Number(over.id);
-    const sourceStageId = findStageOfDeal(activeDealId);
-    const targetStageId = resolveTargetStageId(String(over.id), stageMap);
+    const sourceStageId = findStageIdByDealId(stageMap, activeDealId);
+    const targetStageId = resolveTargetStageId(overDealId, stageMap);
 
     if (sourceStageId === null || targetStageId === null) return;
 
@@ -93,69 +84,20 @@ export const useKanbanDrag = ({
 
     if (sourceStageId === targetStageId) {
       setStageMap((prev) =>
-        prev.map((stage) => {
-          if (stage.stageId !== sourceStageId) return stage;
-
-          const activeIndex = stage.deals.findIndex(
-            (d) => d.id === activeDealId
-          );
-          const overIndex = stage.deals.findIndex((d) => d.id === overDealId);
-
-          if (
-            activeIndex === -1 ||
-            overIndex === -1 ||
-            activeIndex === overIndex
-          ) {
-            return stage;
-          }
-
-          return {
-            ...stage,
-            deals: arrayMove(stage.deals, activeIndex, overIndex)
-          };
-        })
+        reorderDealsWithinStage(prev, sourceStageId, activeDealId, overDealId)
       );
       return;
     }
 
-    setStageMap((prev) => {
-      const sourceStage = prev.find((s) => s.stageId === sourceStageId);
-      const activeIndex = sourceStage?.deals.findIndex(
-        (d) => d.id === activeDealId
-      );
-      if (!sourceStage || activeIndex === undefined || activeIndex === -1) {
-        return prev;
-      }
-
-      const deal = sourceStage.deals[activeIndex];
-
-      return prev.map((stage) => {
-        if (stage.stageId === sourceStageId) {
-          return {
-            ...stage,
-            deals: stage.deals.filter((d) => d.id !== activeDealId),
-            totalCount: Math.max(0, stage.totalCount - 1)
-          };
-        }
-
-        if (stage.stageId === targetStageId) {
-          const overIndex = stage.deals.findIndex((d) => d.id === overDealId);
-          const insertAt = overIndex === -1 ? stage.deals.length : overIndex;
-
-          return {
-            ...stage,
-            deals: [
-              ...stage.deals.slice(0, insertAt),
-              deal,
-              ...stage.deals.slice(insertAt)
-            ],
-            totalCount: stage.totalCount + 1
-          };
-        }
-
-        return stage;
-      });
-    });
+    setStageMap((prev) =>
+      moveDealBetweenStages(
+        prev,
+        sourceStageId,
+        targetStageId,
+        activeDealId,
+        overDealId
+      )
+    );
   };
 
   const handleDragEnd = (): void => {
