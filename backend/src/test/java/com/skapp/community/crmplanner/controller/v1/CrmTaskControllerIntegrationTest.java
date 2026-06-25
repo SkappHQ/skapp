@@ -826,8 +826,8 @@ class CrmTaskControllerIntegrationTest {
 	// --- Cross-entity association validation tests ---
 
 	@Test
-	@DisplayName("Create task with contact belonging to different company - Returns Bad Request")
-	void createTask_ContactCompanyMismatch_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create task with contact from company A but companyId B specified - derives company from contact, ignores companyId")
+	void createTask_ContactCompanyMismatch_ReturnsCreatedWithContactCompany() throws Exception {
 		CrmCompany companyA = savedCompany("Company A");
 		CrmCompany companyB = savedCompany("Company B");
 
@@ -843,15 +843,13 @@ class CrmTaskControllerIntegrationTest {
 		dto.setCompanyId(companyB.getId());
 
 		performCreateRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH)));
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
 	@Test
-	@DisplayName("Create task with contact having no company but company specified - Returns Bad Request")
-	void createTask_ContactNoCompanyButCompanySpecified_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create task with contact having no company but companyId specified - derives no company from contact, ignores companyId")
+	void createTask_ContactNoCompanyButCompanySpecified_ReturnsCreatedWithNoCompany() throws Exception {
 		CrmCompany company = savedCompany("Orphan Company");
 
 		CrmTaskCreateRequestDto dto = validPayload();
@@ -859,15 +857,13 @@ class CrmTaskControllerIntegrationTest {
 		dto.setCompanyId(company.getId());
 
 		performCreateRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_CONTACT_COMPANY_MISMATCH)));
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
 	@Test
-	@DisplayName("Create task with deal belonging to different contact - Returns Bad Request")
-	void createTask_DealContactMismatch_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create task with deal whose contact differs from specified contactId - deal overrides contact")
+	void createTask_DealOverridesContactId_ReturnsCreated() throws Exception {
 		CrmContact contactA = new CrmContact();
 		contactA.setName("Contact A");
 		contactA.setEmail("contact.a@example.com");
@@ -881,15 +877,13 @@ class CrmTaskControllerIntegrationTest {
 		dto.setDealId(deal.getId());
 
 		performCreateRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH)));
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
 	@Test
-	@DisplayName("Create task with deal belonging to different company - Returns Bad Request")
-	void createTask_DealCompanyMismatch_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create task with deal from company A but companyId B specified - deal overrides company, ignores companyId")
+	void createTask_DealOverridesCompanyId_ReturnsCreated() throws Exception {
 		CrmCompany companyA = savedCompany("Deal Company A");
 		CrmCompany companyB = savedCompany("Deal Company B");
 
@@ -908,13 +902,13 @@ class CrmTaskControllerIntegrationTest {
 		dto.setDealId(deal.getId());
 
 		performCreateRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
 	@Test
-	@DisplayName("Create task with deal having no company but company specified - Returns Bad Request")
-	void createTask_DealNoCompanyButCompanySpecified_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create task with deal having no company but companyId specified - deal overrides company to none, ignores companyId")
+	void createTask_DealNoCompanyOverridesSpecifiedCompany_ReturnsCreated() throws Exception {
 		CrmCompany company = savedCompany("Task Company");
 
 		CrmDeal deal = savedDeal("Deal No Company", crmContactDao.getReferenceById(contactId), null);
@@ -925,8 +919,8 @@ class CrmTaskControllerIntegrationTest {
 		dto.setDealId(deal.getId());
 
 		performCreateRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
 	@Test
