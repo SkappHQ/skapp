@@ -729,6 +729,15 @@
       "enterTShirtSize": "Enter T-shirt size",
       "head": "Directory | Skapp"
     },
+    "skillsDetails": {
+      "title": "Skills",
+      "skills": "Skills",
+      "searchSkills": "Search or add skills",
+      "helperText": "Add a custom skill by typing the name and pressing Enter",
+      "head": "Directory | Skapp",
+      "getSkillsErrorTitle": "Failed to Load Skills",
+      "getSkillsErrorDescription": "An error occurred while fetching skills. Please try again."
+    },
     "emergencyDetails": {
       "title": "Emergency Details",
       "primaryTitle": "Primary Emergency Contact",
