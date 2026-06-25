@@ -39,5 +39,8 @@ export interface CrmSidePanelSliceTypes extends Pick<
 
 export interface CrmDealSliceTypes extends Pick<
   CrmStore,
-  "selectedDealId" | "setSelectedDealId"
+  | "selectedDealId"
+  | "setSelectedDealId"
+  | "activeDealSidePanel"
+  | "setActiveDealSidePanel"
 > {}

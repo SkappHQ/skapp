@@ -1,4 +1,4 @@
-import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, SidePanel, SidePanelProps, TextArea } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { FC, useState } from "react";
 
@@ -14,7 +14,6 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
-import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
   CrmCreateDealPayload,
@@ -25,19 +24,12 @@ import { addDealValidations } from "~community/crm/utils/dealValidations";
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
 
-const AddDealSidePanel: FC = () => {
+const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const { setToastMessage } = useToast();
 
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
-
-  const { isCrmSidePanelOpen, setIsCrmSidePanelOpen } = useCrmStore(
-    (store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-    })
-  );
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearch = useDebounce(
@@ -47,7 +39,7 @@ const AddDealSidePanel: FC = () => {
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isCrmSidePanelOpen
+    isOpen
   );
   const contacts = contactLookupData?.items ?? [];
 
@@ -60,7 +52,7 @@ const AddDealSidePanel: FC = () => {
     });
     formik.resetForm();
     setSelectedContact(null);
-    setIsCrmSidePanelOpen(false);
+    onClose?.();
   };
 
   const handleCreateDealError = () => {
@@ -111,13 +103,13 @@ const AddDealSidePanel: FC = () => {
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
-    setIsCrmSidePanelOpen(false);
+    onClose?.();
   };
 
   return (
     <div className="crm-deal-side-panel">
       <SidePanel
-        isOpen={isCrmSidePanelOpen}
+        isOpen={isOpen}
         onClose={handleClose}
         header={
           <span className="pl-2 text-2xl font-bold text-black">

@@ -3,6 +3,7 @@ import {
   CrmTaskDetailType,
   PreselectedContact
 } from "./CommonTypes";
+import { DealSidePanelTypes } from "~community/crm/enums/DealSidePanelTypes";
 import { CrmModalTypes } from "./ModalTypes";
 
 interface ActionTypes {
@@ -18,6 +19,7 @@ interface ActionTypes {
   setSelectedContactId: (contactId: number | null) => void;
   setSelectedTask: (selectedTask: CrmTaskDetailType | null) => void;
   setSelectedDealId: (dealId: number | null) => void;
+  setActiveDealSidePanel: (panel: DealSidePanelTypes | null) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -33,4 +35,5 @@ export interface CrmStore extends ActionTypes {
   selectedContactId: number | null;
   selectedTask: CrmTaskDetailType | null;
   selectedDealId: number | null;
+  activeDealSidePanel: DealSidePanelTypes | null;
 }
