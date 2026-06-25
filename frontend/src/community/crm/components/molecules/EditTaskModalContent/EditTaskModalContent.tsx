@@ -5,7 +5,6 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
-  useGetCachedTaskById,
   useUpdateTask
 } from "~community/crm/api/TaskApi";
 import TaskModalForm from "~community/crm/components/molecules/TaskModalForm/TaskModalForm";
@@ -24,9 +23,10 @@ const EditTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
 
-  const { setIsTaskModalOpen, selectedTaskId } = useCrmStore((store) => ({
+  const { setIsTaskModalOpen, selectedTaskId, getTaskById } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
-    selectedTaskId: store.selectedTaskId
+    selectedTaskId: store.selectedTaskId,
+    getTaskById: store.getTaskById
   }));
 
   const { getCategoryById } = useGetTaskTypeOptions(translateText);
@@ -48,7 +48,7 @@ const EditTaskModalContent: FC = () => {
     editTask(payload);
   };
 
-  const { data: selectedTask } = useGetCachedTaskById(selectedTaskId!);
+  const selectedTask = getTaskById(selectedTaskId!);
 
   const initialValues: CrmTaskFormTypes = useMemo(
     () => ({

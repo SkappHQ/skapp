@@ -4,7 +4,7 @@ import {
   ProjectTableSkeletonLoader,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -15,6 +15,7 @@ import {
   useGetCompletedTasks,
   useGetOpenTasks
 } from "~community/crm/api/TaskApi";
+import { useCrmStore } from "~community/crm/store/store";
 import {
   TASK_PAGE_SIZE,
   TASK_SEARCH_DEBOUNCE_DELAY
@@ -31,6 +32,7 @@ interface TasksTabContentProps {
 
 const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
   const translateText = useTranslator("crmModule", "tasks");
+  const { setTasks } = useCrmStore();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
   const { userId } = useSessionData();
@@ -77,6 +79,10 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
     () => completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? [],
     [completedTaskData]
   );
+
+  useEffect(() => {
+    setTasks([...(openTaskData?.tasks ?? []), ...completedTasks]);
+  }, [openTaskData, completedTasks]);
 
   const renderContent = () => {
     if (isCompletedTasksLoading || isOpenTasksLoading) {

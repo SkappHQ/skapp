@@ -6,11 +6,15 @@ import {
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmTaskSliceTypes } from "~community/crm/types/SliceTypes";
 
-const CrmTaskSlice = (set: SetType<CrmTaskSliceTypes>) => ({
+const CrmTaskSlice = (
+  set: SetType<CrmTaskSliceTypes>,
+  get: () => CrmTaskSliceTypes
+) => ({
   isTaskModalOpen: false,
   taskModalType: CrmModalTypes.ADD_TASK_MODAL,
   preselectedContact: null,
   selectedTaskId: null,
+  tasks: [],
   setIsTaskModalOpen: (isTaskModalOpen: boolean) =>
     set({ isTaskModalOpen: isTaskModalOpen }),
   setTaskModalType: (taskModalType: CrmModalTypes) =>
@@ -18,7 +22,9 @@ const CrmTaskSlice = (set: SetType<CrmTaskSliceTypes>) => ({
   setPreselectedContact: (contact: PreselectedContact | null) =>
     set({ preselectedContact: contact }),
   setSelectedTaskId: (selectedTaskId: number | null) =>
-    set({ selectedTaskId: selectedTaskId })
+    set({ selectedTaskId: selectedTaskId }),
+  setTasks: (tasks: CrmTaskDetailType[]) => set({ tasks }),
+  getTaskById: (id: number) => get().tasks.find((task) => task.id === id)
 });
 
 export default CrmTaskSlice;
