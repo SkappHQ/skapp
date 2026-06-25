@@ -1,5 +1,5 @@
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { DEFAULT_STAGE_NAMES } from "~community/crm/constants/stageConstants";
+import { DefaultStageNameEnum } from "~community/crm/enums/common";
 
 const useStageNameMapper = () => {
   const translateText = useTranslator(
@@ -9,7 +9,9 @@ const useStageNameMapper = () => {
   );
 
   const getStageByName = (name: string): string =>
-    DEFAULT_STAGE_NAMES.has(name) ? translateText([name]) : name;
+    Object.values(DefaultStageNameEnum).includes(name as DefaultStageNameEnum)
+      ? translateText([name])
+      : name;
 
   return { getStageByName };
 };

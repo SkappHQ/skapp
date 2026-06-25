@@ -19,6 +19,7 @@ import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
+import { DefaultStageNameEnum } from "~community/crm/enums/common";
 
 interface OwnerCellProps {
   owner: CrmDealListItem["owner"];
@@ -180,7 +181,7 @@ const DealsTable: FC<Props> = ({
                 className="size-2 rounded-full shrink-0"
                 style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
               />
-              <span className="body2">{getStageByName(deal.stageName)}</span>
+              <span className="body2">{getStageByName(deal.stageName as DefaultStageNameEnum)}</span>
             </div>
           ),
           companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
