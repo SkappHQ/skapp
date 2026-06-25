@@ -15,7 +15,6 @@ import { FC, useEffect, useMemo, useState } from "react";
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetCrmContacts } from "~community/crm/api/ContactApi";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
@@ -30,8 +29,7 @@ import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
-  CrmOwner,
-  TaskRowResponseType
+  CrmOwner
 } from "~community/crm/types/CommonTypes";
 
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -143,10 +141,10 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   }, [deal]);
 
   useEffect(() => {
-    if (isDealError || isTasksError) {
+    if (isDealError) {
       handleDealLoadError();
     }
-  }, [isDealError, isTasksError]);
+  }, [isDealError]);
 
   const menuItems = [
     {

@@ -10,7 +10,6 @@ import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import {
   CrmCompletedTaskResponseType,
   CrmTaskCreatePayload,
-  CrmTaskDetailType,
   CrmTaskResponseType,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
