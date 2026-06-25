@@ -79,3 +79,13 @@ export enum DealViewEnum {
   LIST = "LIST",
   KANBAN = "KANBAN"
 }
+
+export enum DefaultStageNameEnum {
+  LEAD = "LEAD",
+  QUALIFIED = "QUALIFIED",
+  DEMO_SCHEDULED = "DEMO_SCHEDULED",
+  PROPOSAL_SENT = "PROPOSAL_SENT",
+  NEGOTIATION = "NEGOTIATION",
+  WON = "WON",
+  LOST = "LOST"
+}

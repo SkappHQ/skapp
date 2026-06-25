@@ -229,6 +229,18 @@
             <artifactId>caffeine</artifactId>
         </dependency>
 
+        <!-- Bucket4j Rate Limiting -->
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-core</artifactId>
+            <version>8.19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-lettuce</artifactId>
+            <version>8.19.0</version>
+        </dependency>
+
         <!-- Bouncy Castle -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
