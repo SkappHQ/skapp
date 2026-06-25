@@ -50,10 +50,7 @@ export interface BoardMoveBetweenStagesPayload {
   nextDealId: number | null;
 }
 
-export interface StageState {
+export interface KanbanStage {
   stageId: number;
   deals: CrmDealBoardType[];
-  totalCount: number;
 }
-
-export type StageMap = StageState[];

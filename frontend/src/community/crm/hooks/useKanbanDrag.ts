@@ -12,7 +12,7 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useRef, useState } from "react";
 
-import type { StageMap } from "~community/crm/types/BoardTypes";
+import type { KanbanStage } from "~community/crm/types/BoardTypes";
 import type {
   CrmDealBoardType,
   CrmDealStageType
@@ -33,7 +33,7 @@ interface UseKanbanDragProps {
 }
 
 interface UseKanbanDragReturn {
-  stageMap: StageMap;
+  stageMap: KanbanStage[];
   activeDeal: CrmDealBoardType | null;
   overStageId: number | null;
   sensors: SensorDescriptor<SensorOptions>[];
@@ -47,13 +47,13 @@ export const useKanbanDrag = ({
   stages,
   dealsByStage
 }: UseKanbanDragProps): UseKanbanDragReturn => {
-  const [stageMap, setStageMap] = useState<StageMap>(() =>
+  const [stageMap, setStageMap] = useState<KanbanStage[]>(() =>
     buildInitialStageState(stages, dealsByStage)
   );
   const [activeDeal, setActiveDeal] = useState<CrmDealBoardType | null>(null);
   const [overStageId, setOverStageId] = useState<number | null>(null);
 
-  const dragStartSnapshotRef = useRef<StageMap | null>(null);
+  const dragStartSnapshotRef = useRef<KanbanStage[] | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),

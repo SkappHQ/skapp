@@ -1,7 +1,7 @@
 import { arrayMove } from "@dnd-kit/sortable";
 
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
-import type { StageMap, StageState } from "~community/crm/types/BoardTypes";
+import type { KanbanStage } from "~community/crm/types/BoardTypes";
 import type {
   CrmDealBoardType,
   CrmDealStageType
@@ -11,7 +11,7 @@ export const getAccentColor = (color: string): string =>
   STAGE_COLOR_MAP[color?.toUpperCase()];
 
 export const findDealById = (
-  stageMap: StageMap,
+  stageMap: KanbanStage[],
   dealId: number
 ): CrmDealBoardType | null => {
   for (const stage of stageMap) {
@@ -22,7 +22,7 @@ export const findDealById = (
 };
 
 export const findStageIdByDealId = (
-  stageMap: StageMap,
+  stageMap: KanbanStage[],
   dealId: number
 ): number | null => {
   const stage = stageMap.find((s) => s.deals.some((d) => d.id === dealId));
@@ -31,7 +31,7 @@ export const findStageIdByDealId = (
 
 export const resolveTargetStageId = (
   overId: number,
-  stageMap: StageMap
+  stageMap: KanbanStage[]
 ): number | null => {
   if (stageMap.some((s) => s.stageId === overId)) return overId;
   return findStageIdByDealId(stageMap, overId);
@@ -40,17 +40,14 @@ export const resolveTargetStageId = (
 export const buildInitialStageState = (
   stages: CrmDealStageType[],
   dealsByStage: Record<number, CrmDealBoardType[]>
-): StageMap =>
-  stages.map((s) => {
-    const deals = dealsByStage[s.id] ?? [];
-    return { stageId: s.id, deals, totalCount: deals.length };
-  });
+): KanbanStage[] =>
+  stages.map((s) => ({ stageId: s.id, deals: dealsByStage[s.id] ?? [] }));
 
 const reorderStageDeals = (
-  stage: StageState,
+  stage: KanbanStage,
   activeDealId: number,
   overDealId: number
-): StageState => {
+): KanbanStage => {
   const activeIndex = stage.deals.findIndex((d) => d.id === activeDealId);
   const overIndex = stage.deals.findIndex((d) => d.id === overDealId);
 
@@ -62,11 +59,11 @@ const reorderStageDeals = (
 };
 
 export const reorderDealsWithinStage = (
-  stageMap: StageMap,
+  stageMap: KanbanStage[],
   stageId: number,
   activeDealId: number,
   overDealId: number
-): StageMap =>
+): KanbanStage[] =>
   stageMap.map((stage) =>
     stage.stageId === stageId
       ? reorderStageDeals(stage, activeDealId, overDealId)
@@ -74,19 +71,18 @@ export const reorderDealsWithinStage = (
   );
 
 const removeDealFromStage = (
-  stage: StageState,
+  stage: KanbanStage,
   dealId: number
-): StageState => ({
+): KanbanStage => ({
   ...stage,
-  deals: stage.deals.filter((d) => d.id !== dealId),
-  totalCount: Math.max(0, stage.totalCount - 1)
+  deals: stage.deals.filter((d) => d.id !== dealId)
 });
 
 const insertDealIntoStage = (
-  stage: StageState,
+  stage: KanbanStage,
   deal: CrmDealBoardType,
   overDealId: number
-): StageState => {
+): KanbanStage => {
   const overIndex = stage.deals.findIndex((d) => d.id === overDealId);
   const insertAt = overIndex === -1 ? stage.deals.length : overIndex;
 
@@ -96,18 +92,17 @@ const insertDealIntoStage = (
       ...stage.deals.slice(0, insertAt),
       deal,
       ...stage.deals.slice(insertAt)
-    ],
-    totalCount: stage.totalCount + 1
+    ]
   };
 };
 
 export const moveDealBetweenStages = (
-  stageMap: StageMap,
+  stageMap: KanbanStage[],
   sourceStageId: number,
   targetStageId: number,
   activeDealId: number,
   overDealId: number
-): StageMap => {
+): KanbanStage[] => {
   const sourceStage = stageMap.find((s) => s.stageId === sourceStageId);
   const activeIndex = sourceStage?.deals.findIndex(
     (d) => d.id === activeDealId
