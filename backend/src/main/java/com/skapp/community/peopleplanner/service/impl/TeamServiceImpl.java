@@ -403,6 +403,9 @@ public class TeamServiceImpl implements TeamService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_ID_NOT_FOUND);
 		}
 
+		teamDao.findByTeamIdAndIsActive(teamId, true)
+			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
+
 		List<EmployeeTeamIdDto> employeeTeamRecords = employeeTeamDao.findTeamEmployeeTeamIdsByTeamId(teamId);
 
 		List<MemberTeamsResponseDto> results = employeeTeamRecords.stream()

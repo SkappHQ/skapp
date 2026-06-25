@@ -29,12 +29,7 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
     setIsTeamModalOpen,
     setCurrentDeletingTeam,
     currentDeletingTeam
-  } = usePeopleStore((state) => ({
-    setTeamModalType: state.setTeamModalType,
-    setIsTeamModalOpen: state.setIsTeamModalOpen,
-    setCurrentDeletingTeam: state.setCurrentDeletingTeam,
-    currentDeletingTeam: state.currentDeletingTeam
-  }));
+  } = usePeopleStore((state) => state);
 
   const { setToastMessage } = useToast();
 
@@ -42,18 +37,18 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
 
   const { isLoading: teamsIsLoading, data: allTeams } = useGetAllTeams();
   const {
-    data: memberTeams,
-    isLoading: memberTeamsLoading,
-    isError: memberTeamsError
+    data: teamMemberTeams,
+    isLoading: teamMemberTeamsLoading,
+    isError: teamMemberTeamsError
   } = useGetMemberTeams(deletingTeamId);
 
   const transferableMembersMap = useMemo<Map<number, TeamType[]>>(() => {
-    if (!memberTeams || !allTeams) return new Map();
+    if (!teamMemberTeams || !allTeams) return new Map();
 
     const otherTeams = allTeams.filter(
       (team) => Number(team.teamId) !== deletingTeamId
     );
-    const transferableMembers: TransferableMember[] = memberTeams
+    const transferableMembers: TransferableMember[] = teamMemberTeams
       .map((member) => ({
         employeeId: member.employeeId,
         transferableTeams: otherTeams.filter(
@@ -68,13 +63,14 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
         member.transferableTeams
       ])
     );
-  }, [memberTeams, allTeams, deletingTeamId]);
+  }, [teamMemberTeams, allTeams, deletingTeamId]);
 
   const hasTransferableMembers = transferableMembersMap.size > 0;
-  const isLoadingMemberData = memberTeamsLoading || teamsIsLoading;
+  const isLoadingMemberData = teamMemberTeamsLoading || teamsIsLoading;
+  const showReassignOption = isLoadingMemberData || hasTransferableMembers;
 
   useEffect(() => {
-    if (memberTeamsError) {
+    if (teamMemberTeamsError) {
       setToastMessage({
         open: true,
         toastType: "error",
@@ -83,7 +79,7 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
         isIcon: true
       });
     }
-  }, [memberTeamsError, setToastMessage, translateText]);
+  }, [teamMemberTeamsError, setToastMessage, translateText]);
 
   const handleSuccess = () => {
     setToastMessage({
@@ -128,10 +124,16 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
 
   return (
     <Box>
-      <Typography>{translateText(["confirmDeleteModalDes"])}</Typography>
+      <Typography>
+        {translateText([
+          showReassignOption
+            ? "confirmDeleteModalDes"
+            : "confirmDeleteModalDesNoReassign"
+        ])}
+      </Typography>
       <Box>
         <div className="flex flex-row gap-3 mt-4 justify-end">
-          {(isLoadingMemberData || hasTransferableMembers) && (
+          {showReassignOption && (
             <ButtonV2
               variant={"primary"}
               onClick={handleReassignClick}

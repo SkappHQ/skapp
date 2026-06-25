@@ -10,11 +10,11 @@ import ReassignMemberRow from "~community/people/components/molecules/ReassignMe
 import { usePeopleStore } from "~community/people/store/store";
 import { TeamModelTypes, TeamType } from "~community/people/types/TeamTypes";
 
-interface Props {
+interface ReassignMembersModalProps {
   transferableMembersMap: Map<number, TeamType[]>;
 }
 
-const ReassignMembersModal: FC<Props> = ({ transferableMembersMap }) => {
+const ReassignMembersModal: FC<ReassignMembersModalProps> = ({ transferableMembersMap }) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     currentDeletingTeam,
