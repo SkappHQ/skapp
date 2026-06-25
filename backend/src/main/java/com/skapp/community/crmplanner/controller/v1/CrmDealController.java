@@ -53,6 +53,14 @@ public class CrmDealController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get deal by ID", description = "Returns a single CRM deal by its ID.")
+	@GetMapping("/{id}")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getDealById(@PathVariable Long id) {
+		ResponseEntityDto response = crmDealService.getDealById(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Delete a deal by ID",
 			description = "Soft deletes a deal and all tasks linked to that deal. Only accessible by admins and sales managers.")
 	@DeleteMapping("/{id}")

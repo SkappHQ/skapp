@@ -15,6 +15,7 @@ import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseD
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealViewResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
@@ -106,7 +107,10 @@ public interface CrmMapper {
 
 	CrmDealDetailResponseDto crmDealToCrmDealDetailResponseDto(CrmDeal deal);
 
-	@Mapping(target = "type", source = "type.name")
+	@Mapping(target = "stageId", source = "stage.id")
+	CrmDealViewResponseDto crmDealToCrmDealViewResponseDto(CrmDeal deal);
+
+	@Mapping(target = "typeName", source = "type.name")
 	@Mapping(target = "isOverdue", ignore = true)
 	CrmTaskDetailResponseDto crmTaskToCrmTaskDetailResponseDto(CrmTask task);
 
