@@ -19,7 +19,7 @@ import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
 import DealTitleSection from "./DealTitleSection";
 
-const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const { selectedDealId, setIsCrmSidePanelOpen } = useCrmStore((store) => ({
@@ -129,4 +129,4 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   );
 };
 
-export default DealDetailSidePanel;
+export default DealSidePanel;

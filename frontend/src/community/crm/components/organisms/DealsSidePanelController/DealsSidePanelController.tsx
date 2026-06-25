@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
-import DealDetailSidePanel from "~community/crm/components/organisms/DealDetailSidePanel/DealDetailSidePanel";
+import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
 import { DealSidePanelTypes } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 
@@ -18,7 +18,7 @@ const DealsSidePanelController: FC = () => {
 
   return (
     <SidePanelWrapper>
-      <DealDetailSidePanel
+      <DealSidePanel
         isOpen={isCrmSidePanelOpen && activeDealSidePanel === DealSidePanelTypes.DEAL_DETAIL}
         onClose={handleClose}
       />
