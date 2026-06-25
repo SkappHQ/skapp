@@ -62,3 +62,7 @@ export const taskQueryKeys = {
     searchKeyword
   ]
 };
+
+export const crmLimitationQueryKeys = {
+  GET_CRM_LIMITATION: ["crm-limitation"]
+};

@@ -9,9 +9,13 @@ import CompanySidePanel from "~community/crm/components/organisms/CompanySidePan
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import CrmLimitUpgradeModal from "~enterprise/crm/components/molecules/CrmLimitUpgradeModal/CrmLimitUpgradeModal";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
+  const { guardCrmCreate, limitedResource, isLimitModalOpen, closeLimitModal } =
+    useCrmLimitGuard();
 
   const {
     setIsCompanyModalOpen,
@@ -35,8 +39,10 @@ const Companies: NextPage = () => {
   };
 
   const onPrimaryButtonClick = () => {
-    setIsCompanyModalOpen(true);
-    setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL);
+    guardCrmCreate("companies", () => {
+      setIsCompanyModalOpen(true);
+      setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL);
+    });
   };
 
   return (
@@ -57,6 +63,11 @@ const Companies: NextPage = () => {
           </SidePanelWrapper>
         )}
         <CompanyModalController />
+        <CrmLimitUpgradeModal
+          isOpen={isLimitModalOpen}
+          onClose={closeLimitModal}
+          resource={limitedResource}
+        />
         <CompanyTable />
       </>
     </ContentLayout>

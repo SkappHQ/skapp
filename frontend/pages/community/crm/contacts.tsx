@@ -9,9 +9,13 @@ import ContactSidePanel from "~community/crm/components/organisms/ContactSidePan
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import CrmLimitUpgradeModal from "~enterprise/crm/components/molecules/CrmLimitUpgradeModal/CrmLimitUpgradeModal";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 
 const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
+  const { guardCrmCreate, limitedResource, isLimitModalOpen, closeLimitModal } =
+    useCrmLimitGuard();
 
   const {
     isCrmSidePanelOpen,
@@ -35,8 +39,10 @@ const Contacts: NextPage = () => {
   };
 
   const onPrimaryButtonClick = () => {
-    setIsAddContactModalOpen(true);
-    setContactModalType(CrmModalTypes.ADD_CONTACT_MODAL);
+    guardCrmCreate("contacts", () => {
+      setIsAddContactModalOpen(true);
+      setContactModalType(CrmModalTypes.ADD_CONTACT_MODAL);
+    });
   };
 
   return (
@@ -58,6 +64,11 @@ const Contacts: NextPage = () => {
         )}
 
         <ContactModalController />
+        <CrmLimitUpgradeModal
+          isOpen={isLimitModalOpen}
+          onClose={closeLimitModal}
+          resource={limitedResource}
+        />
         <ContactTable />
       </>
     </ContentLayout>

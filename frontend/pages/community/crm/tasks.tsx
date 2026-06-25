@@ -10,10 +10,14 @@ import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/Tas
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import CrmLimitUpgradeModal from "~enterprise/crm/components/molecules/CrmLimitUpgradeModal/CrmLimitUpgradeModal";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 
 const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
   const containerRef = useRef<HTMLDivElement>(null);
+  const { guardCrmCreate, limitedResource, isLimitModalOpen, closeLimitModal } =
+    useCrmLimitGuard();
 
   const {
     setIsTaskModalOpen,
@@ -37,8 +41,10 @@ const Tasks: NextPage = () => {
   };
 
   const onPrimaryButtonClick = () => {
-    setIsTaskModalOpen(true);
-    setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+    guardCrmCreate("tasks", () => {
+      setIsTaskModalOpen(true);
+      setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+    });
   };
 
   useEffect(() => {
@@ -76,6 +82,11 @@ const Tasks: NextPage = () => {
         )}
         <div ref={containerRef} className="flex flex-col w-full gap-4">
           <TaskModalController />
+          <CrmLimitUpgradeModal
+            isOpen={isLimitModalOpen}
+            onClose={closeLimitModal}
+            resource={limitedResource}
+          />
           <TasksTable />
         </div>
       </>
