@@ -13,12 +13,12 @@ export const STAGE_COLOR_MAP: Record<string, string> = {
   INDIGO: "#9366fd"
 };
 
-export const DEFAULT_STAGE_NAME_MAP: Record<string, string> = {
-  LEAD: "Lead",
-  QUALIFIED: "Qualified",
-  DEMO_SCHEDULED: "Demo Scheduled",
-  PROPOSAL_SENT: "Proposal Sent",
-  NEGOTIATION: "Negotiation",
-  WON: "Won",
-  LOST: "Lost"
-};
+export const DEFAULT_STAGE_NAMES = new Set([
+  "LEAD",
+  "QUALIFIED",
+  "DEMO_SCHEDULED",
+  "PROPOSAL_SENT",
+  "NEGOTIATION",
+  "WON",
+  "LOST"
+]);

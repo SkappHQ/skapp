@@ -1,5 +1,5 @@
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { DEFAULT_STAGE_NAME_MAP } from "~community/crm/constants/stageConstants";
+import { DEFAULT_STAGE_NAMES } from "~community/crm/constants/stageConstants";
 
 const useStageNameMapper = () => {
   const translateText = useTranslator(
@@ -9,7 +9,7 @@ const useStageNameMapper = () => {
   );
 
   const getStageByName = (name: string): string =>
-    DEFAULT_STAGE_NAME_MAP[name] ? translateText([name]) : name;
+    DEFAULT_STAGE_NAMES.has(name) ? translateText([name]) : name;
 
   return { getStageByName };
 };
