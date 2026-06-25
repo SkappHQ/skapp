@@ -72,9 +72,9 @@ export const useGetRelatedTasks = (
     },
     enabled: enabled && hasEntity,
     refetchOnWindowFocus: false,
-    select: currentTaskId != null
-      ? (tasks) => tasks.filter((task) => task.id !== currentTaskId)
-      : undefined
+    select: currentTaskId == null
+      ? undefined
+      : (tasks) => tasks.filter((task) => task.id !== currentTaskId)
   });
 };
 
