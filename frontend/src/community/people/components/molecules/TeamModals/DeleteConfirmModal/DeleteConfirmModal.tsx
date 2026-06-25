@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo } from "react";
+import { FC, useMemo } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -36,11 +36,8 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
   const deletingTeamId = Number(currentDeletingTeam?.teamId);
 
   const { isLoading: teamsIsLoading, data: allTeams } = useGetAllTeams();
-  const {
-    data: teamMemberTeams,
-    isLoading: teamMemberTeamsLoading,
-    isError: teamMemberTeamsError
-  } = useGetMemberTeams(deletingTeamId);
+  const { data: teamMemberTeams, isLoading: teamMemberTeamsLoading } =
+    useGetMemberTeams(deletingTeamId);
 
   const transferableMembersMap = useMemo<Map<number, TeamType[]>>(() => {
     if (!teamMemberTeams || !allTeams) return new Map();
@@ -68,18 +65,6 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
   const hasTransferableMembers = transferableMembersMap.size > 0;
   const isLoadingMemberData = teamMemberTeamsLoading || teamsIsLoading;
   const showReassignOption = isLoadingMemberData || hasTransferableMembers;
-
-  useEffect(() => {
-    if (teamMemberTeamsError) {
-      setToastMessage({
-        open: true,
-        toastType: "error",
-        title: translateText(["teamDeleteFailTitle"]),
-        description: translateText(["teamDeleteFailDes"]),
-        isIcon: true
-      });
-    }
-  }, [teamMemberTeamsError, setToastMessage, translateText]);
 
   const handleSuccess = () => {
     setToastMessage({
