@@ -61,5 +61,12 @@ export const taskQueryKeys = {
   GET_COMPLETED_TASKS_BY_SEARCH: (searchKeyword: string) => [
     "get-completed-tasks",
     searchKeyword
-  ]
+  ],
+  RELATED_TASKS: (
+    contactId: number | null,
+    dealId: number | null,
+    currentTaskId: number | undefined
+  ) => ["crm-related-tasks", contactId, dealId, currentTaskId],
+  RELATED_TASKS_ALL: ["crm-related-tasks"],
 };
+

@@ -10,11 +10,59 @@ import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import {
   CrmCompletedTaskResponseType,
   CrmTaskCreatePayload,
+  CrmTaskDetailType,
   CrmTaskResponseType,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 
 import { taskQueryKeys } from "./utils/QueryKeys";
+
+
+
+const fetchRelatedOpenTasks = async (
+  contactId: number | null,
+  dealId: number | null
+): Promise<CrmTaskResponseType> => {
+  const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
+    params: { contactId, dealId }
+  });
+  return response?.data?.results?.[0];
+};
+
+const fetchRelatedCompletedTasks = async (
+  contactId: number | null,
+  dealId: number | null
+): Promise<CrmCompletedTaskResponseType> => {
+  const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
+    params: { contactId, dealId }
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetRelatedTasks = (
+  contactId: number | null,
+  dealId: number | null,
+  currentTaskId: number | undefined,
+  enabled = true
+) => {
+  return useQuery({
+    queryKey: taskQueryKeys.RELATED_TASKS(contactId, dealId, currentTaskId),
+    queryFn: async () => {
+      const openTasksResponse = await fetchRelatedOpenTasks(contactId, dealId);
+      const completedTasksResponse = await fetchRelatedCompletedTasks(
+        contactId,
+        dealId
+      );
+
+      return [
+        ...(openTasksResponse?.tasks ?? []),
+        ...(completedTasksResponse?.items ?? [])
+      ].filter((task) => task.id !== currentTaskId);
+    },
+    enabled: enabled && (contactId != null || dealId != null),
+    refetchOnWindowFocus: false
+  });
+};
 
 const createTask = async (taskDetails: CrmTaskCreatePayload) => {
   const response = await authFetch.post(taskEndpoints.CREATE_TASK, taskDetails);

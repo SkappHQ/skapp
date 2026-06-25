@@ -67,33 +67,14 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     isError: isDealError
   } = useGetDealById(selectedDealId ?? 0, isOpen && !!selectedDealId);
 
-  // Fetch tasks filtered by deal
-  const {
-    data: relatedTasks = [],
-    isLoading: isTasksLoading,
-    isError: isTasksError
-  } = useGetRelatedTasks(
+  const { data: relatedTasks = [] } = useGetRelatedTasks(
     null,
     selectedDealId ?? 0,
     undefined,
     isOpen && !!selectedDealId
   );
 
-  // Convert to TaskRowResponseType format for display
-  const tasks: TaskRowResponseType[] = useMemo(
-    () =>
-      relatedTasks.map((task) => ({
-        id: task.id,
-        name: task.name,
-        type: task.typeName,
-        priority: task.priority,
-        isCompleted: task.isCompleted,
-        dueAt: task.dueAt,
-        owner: task.owner,
-        contact: task.contact
-      })),
-    [relatedTasks]
-  );
+
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -367,7 +348,7 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
               <div className="flex flex-col gap-3">
                 <h3 className="h2">{translateText(["tasks"])}</h3>
-                <SidePanelTasksSection tasks={tasks} />
+                <SidePanelTasksSection tasks={relatedTasks} />
               </div>
             </div>
 
