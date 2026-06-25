@@ -346,7 +346,7 @@ export interface UpdateTaskStatusPayload {
 export interface TaskRowResponseType {
   id: number;
   name: string;
-  type: string;
+  typeName: string;
   priority: CrmPriorityEnum;
   isCompleted: boolean;
   dueAt: string | null;
@@ -390,3 +390,8 @@ export interface CrmContactDetailResponseType {
   tasks: TaskRowResponseType[];
   deals: DetailPanelDealResponseType[];
 }
+
+export type PreselectedContact = {
+  id: number;
+  name: string;
+};

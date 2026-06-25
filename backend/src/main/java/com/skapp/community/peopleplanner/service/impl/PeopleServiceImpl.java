@@ -42,6 +42,7 @@ import com.skapp.community.peopleplanner.model.EmployeePeriod;
 import com.skapp.community.peopleplanner.model.EmployeePersonalInfo;
 import com.skapp.community.peopleplanner.model.EmployeeProgression;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.model.EmployeeSkill;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeVisa;
 import com.skapp.community.peopleplanner.model.JobFamily;
@@ -59,6 +60,8 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
+import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
+import com.skapp.community.peopleplanner.payload.request.EmployeeSkillUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
@@ -106,9 +109,11 @@ import com.skapp.community.peopleplanner.service.EmployeeValidationService;
 import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.service.RolesService;
+import com.skapp.community.peopleplanner.service.EmployeeSkillService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.BulkItemStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
+import com.skapp.community.peopleplanner.type.EmployeeSkillType;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.util.Validations;
 import lombok.NonNull;
@@ -201,6 +206,8 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeValidationService employeeValidationService;
 
 	private final EmployeeExportMapperService employeeExportMapperService;
+
+	private final EmployeeSkillService employeeSkillService;
 
 	@Override
 	@Transactional
@@ -450,6 +457,11 @@ public class PeopleServiceImpl implements PeopleService {
 		// Educations
 		if (requestDto != null && requestDto.getPersonal() != null) {
 			processEmployeeEducations(requestDto, employee);
+		}
+
+		// Skills
+		if (requestDto != null && requestDto.getPersonal() != null) {
+			processEmployeeSkills(requestDto.getPersonal(), employee);
 		}
 
 		// Teams
@@ -774,6 +786,62 @@ public class PeopleServiceImpl implements PeopleService {
 
 		employee.getEmployeeTeams().clear();
 		employee.getEmployeeTeams().addAll(result);
+	}
+
+	private void processEmployeeSkills(EmployeePersonalDetailsDto requestDto, Employee employee) {
+		if (requestDto == null || employee == null) {
+			return;
+		}
+
+		EmployeeSkillUpdateDto skillUpdates = requestDto.getSkillUpdates();
+
+		if (skillUpdates == null) {
+			return;
+		}
+
+		if (employee.getEmployeeSkills() == null) {
+			employee.setEmployeeSkills(new HashSet<>());
+		}
+
+		removeEmployeeSkills(employee, skillUpdates.getRemove());
+		addEmployeeSkills(employee, skillUpdates.getAdd());
+	}
+
+	private void removeEmployeeSkills(Employee employee, List<EmployeeSkillDto> skillsToRemove) {
+		if (skillsToRemove == null || skillsToRemove.isEmpty()) {
+			return;
+		}
+
+		for (EmployeeSkillDto skillDto : skillsToRemove) {
+			employee.getEmployeeSkills()
+				.removeIf(es -> es.getSkillType() == skillDto.getSkillType()
+						&& es.getSkillId().equals(skillDto.getSkillId()));
+		}
+	}
+
+	private void addEmployeeSkills(Employee employee, List<EmployeeSkillDto> skillsToAdd) {
+		if (skillsToAdd == null || skillsToAdd.isEmpty()) {
+			return;
+		}
+
+		for (EmployeeSkillDto skillDto : skillsToAdd) {
+			EmployeeSkillType skillType = skillDto.getSkillType();
+			Long skillId = skillDto.getSkillId();
+
+			boolean alreadyExists = employee.getEmployeeSkills()
+				.stream()
+				.anyMatch(es -> es.getSkillType() == skillType && skillId.equals(es.getSkillId()));
+
+			if (!alreadyExists) {
+				EmployeeSkill employeeSkill = new EmployeeSkill();
+
+				employeeSkill.setEmployee(employee);
+				employeeSkill.setSkillType(skillType);
+				employeeSkill.setSkillId(skillId);
+
+				employee.getEmployeeSkills().add(employeeSkill);
+			}
+		}
 	}
 
 	private void processEmployeeManagers(EmployeeEmploymentDetailsDto requestDto, Employee employee) {
@@ -1160,6 +1228,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		EmployeeDetailedResponseDto employeeDetailedResponseDto = peopleMapper
 			.employeeToEmployeeDetailedResponseDto(employee.get());
+		employeeDetailedResponseDto.setSkills(employeeSkillService.getEmployeeSkills(employee.get().getEmployeeId()));
 		List<EmployeePeriod> period = employeePeriodDao.findEmployeePeriodByEmployee_EmployeeId(
 				employee.get().getEmployeeId(), Sort.by(Sort.Direction.DESC, EmployeePeriodSort.ID.getSortField()));
 
@@ -1746,6 +1815,7 @@ public class PeopleServiceImpl implements PeopleService {
 		for (Employee employee : employees.getContent()) {
 
 			EmployeeDetailedResponseDto responseDto = peopleMapper.employeeToEmployeeDetailedResponseDto(employee);
+			responseDto.setSkills(employeeSkillService.getEmployeeSkills(employee.getEmployeeId()));
 			responseDto.setJobFamily(peopleMapper.jobFamilyToEmployeeJobFamilyDto(employee.getJobFamily()));
 			Optional<EmployeePeriod> period = employeePeriodDao
 				.findEmployeePeriodByEmployee_EmployeeIdAndIsActiveTrue(employee.getEmployeeId());

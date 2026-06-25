@@ -14,7 +14,7 @@ public class CrmTaskDetailResponseDto {
 
 	private String name;
 
-	private String type;
+	private String typeName;
 
 	private CrmTaskPriority priority;
 

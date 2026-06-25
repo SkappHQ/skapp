@@ -15,7 +15,7 @@ import {
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 
-import { taskQueryKeys } from "./utils/QueryKeys";
+import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
 
 
 
@@ -69,7 +69,11 @@ const createTask = async (taskDetails: CrmTaskCreatePayload) => {
   return response?.data?.results?.[0];
 };
 
-export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
+export const useCreateTask = (
+  onSuccess: () => void,
+  onError: () => void,
+  contactId?: number
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createTask,
@@ -80,6 +84,11 @@ export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
+      if (contactId) {
+        queryClient.invalidateQueries({
+          queryKey: contactQueryKeys.CONTACT_BY_ID(contactId)
+        });
+      }
       onSuccess();
     },
     onError
