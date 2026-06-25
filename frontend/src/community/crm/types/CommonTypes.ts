@@ -287,6 +287,12 @@ export interface CrmDealFilterParams {
   priority?: CrmPriorityEnum;
 }
 
+export interface RelatedTasksParams {
+  contactId?: number | null;
+  dealId?: number | null;
+  companyId?: number | null;
+}
+
 export interface CrmDealAddFormTypes {
   name: string;
   stageId: string;

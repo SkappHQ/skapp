@@ -1,4 +1,7 @@
-import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
+import {
+  CrmDealFilterParams,
+  RelatedTasksParams
+} from "~community/crm/types/CommonTypes";
 
 export const crmDealQueryKeys = {
   ALL: ["crm-deals"],
@@ -62,11 +65,7 @@ export const taskQueryKeys = {
     "get-completed-tasks",
     searchKeyword
   ],
-  RELATED_TASKS: (
-    contactId: number | null,
-    dealId: number | null,
-    currentTaskId: number | undefined
-  ) => ["crm-related-tasks", contactId, dealId, currentTaskId],
+  RELATED_TASKS: (params: RelatedTasksParams) => ["crm-related-tasks", params],
   RELATED_TASKS_ALL: ["crm-related-tasks"],
 };
 

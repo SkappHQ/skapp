@@ -11,6 +11,7 @@ import {
   CrmCompletedTaskResponseType,
   CrmTaskCreatePayload,
   CrmTaskResponseType,
+  RelatedTasksParams,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 
@@ -19,47 +20,61 @@ import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
 
 
 const fetchRelatedOpenTasks = async (
-  contactId: number | null,
-  dealId: number | null
+  params: RelatedTasksParams
 ): Promise<CrmTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
-    params: { contactId, dealId }
+    params: {
+      contactId: params.contactId,
+      dealId: params.dealId,
+      companyId: params.companyId
+    }
   });
   return response?.data?.results?.[0];
 };
 
 const fetchRelatedCompletedTasks = async (
-  contactId: number | null,
-  dealId: number | null
+  params: RelatedTasksParams
 ): Promise<CrmCompletedTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
-    params: { contactId, dealId }
+    params: {
+      contactId: params.contactId,
+      dealId: params.dealId,
+      companyId: params.companyId
+    }
   });
   return response?.data?.results?.[0];
 };
 
+interface UseGetRelatedTasksOptions {
+  currentTaskId?: number;
+  enabled?: boolean;
+}
+
 export const useGetRelatedTasks = (
-  contactId: number | null,
-  dealId: number | null,
-  currentTaskId: number | undefined,
-  enabled = true
+  params: RelatedTasksParams,
+  { currentTaskId, enabled = true }: UseGetRelatedTasksOptions = {}
 ) => {
+  const hasEntity =
+    params.contactId != null ||
+    params.dealId != null ||
+    params.companyId != null;
+
   return useQuery({
-    queryKey: taskQueryKeys.RELATED_TASKS(contactId, dealId, currentTaskId),
+    queryKey: taskQueryKeys.RELATED_TASKS(params),
     queryFn: async () => {
-      const openTasksResponse = await fetchRelatedOpenTasks(contactId, dealId);
-      const completedTasksResponse = await fetchRelatedCompletedTasks(
-        contactId,
-        dealId
-      );
+      const openTasksResponse = await fetchRelatedOpenTasks(params);
+      const completedTasksResponse = await fetchRelatedCompletedTasks(params);
 
       return [
         ...(openTasksResponse?.tasks ?? []),
         ...(completedTasksResponse?.items ?? [])
-      ].filter((task) => task.id !== currentTaskId);
+      ];
     },
-    enabled: enabled && (contactId != null || dealId != null),
-    refetchOnWindowFocus: false
+    enabled: enabled && hasEntity,
+    refetchOnWindowFocus: false,
+    select: currentTaskId != null
+      ? (tasks) => tasks.filter((task) => task.id !== currentTaskId)
+      : undefined
   });
 };
 

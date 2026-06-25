@@ -66,10 +66,8 @@ const DealDetailSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   } = useGetDealById(selectedDealId ?? 0, isOpen && !!selectedDealId);
 
   const { data: relatedTasks = [] } = useGetRelatedTasks(
-    null,
-    selectedDealId,
-    undefined,
-    isOpen && !!selectedDealId
+    { dealId: selectedDealId },
+    { enabled: isOpen && !!selectedDealId }
   );
 
 
