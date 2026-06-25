@@ -26,9 +26,9 @@ export interface TeamType {
   teamMembers: EmployeeType[];
 }
 
-export interface TransferableMember {
+export interface EmployeeTransferableTeamsType {
   employeeId: number;
-  transferableTeams: TeamType[];
+  transferableTeams: TeamNamesType[];
 }
 
 export enum TeamModelTypes {
@@ -108,7 +108,3 @@ export interface GetManagerTeamsResponseType {
   totalPages: number;
 }
 
-export interface MemberTeamsType {
-  employeeId: number;
-  teamIds: number[];
-}

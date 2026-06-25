@@ -7,19 +7,17 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import {
-  useGetAllTeams,
-  useGetMemberTeams,
+  useGetEmployeeTransferableTeams,
   useTransferTeamMembers
 } from "~community/people/api/TeamApi";
 import { usePeopleStore } from "~community/people/store/store";
 import {
   TeamModelTypes,
-  TeamType,
-  TransferableMember
+  TeamNamesType
 } from "~community/people/types/TeamTypes";
 
 interface Props {
-  onReassign: (transferableMembersMap: Map<number, TeamType[]>) => void;
+  onReassign: (transferableMembersMap: Map<number, TeamNamesType[]>) => void;
 }
 
 const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
@@ -35,35 +33,22 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
 
   const deletingTeamId = Number(currentDeletingTeam?.teamId);
 
-  const { isLoading: teamsIsLoading, data: allTeams } = useGetAllTeams();
-  const { data: teamMemberTeams, isLoading: teamMemberTeamsLoading } =
-    useGetMemberTeams(deletingTeamId);
+  const { data: employeeTransferableTeams, isLoading: transferableTeamsLoading } =
+    useGetEmployeeTransferableTeams(deletingTeamId);
 
-  const transferableMembersMap = useMemo<Map<number, TeamType[]>>(() => {
-    if (!teamMemberTeams || !allTeams) return new Map();
-
-    const otherTeams = allTeams.filter(
-      (team) => Number(team.teamId) !== deletingTeamId
-    );
-    const transferableMembers: TransferableMember[] = teamMemberTeams
-      .map((member) => ({
-        employeeId: member.employeeId,
-        transferableTeams: otherTeams.filter(
-          (team) => !member.teamIds.includes(Number(team.teamId))
-        )
-      }))
-      .filter((member) => member.transferableTeams.length > 0);
+  const transferableMembersMap = useMemo<Map<number, TeamNamesType[]>>(() => {
+    if (!employeeTransferableTeams) return new Map();
 
     return new Map(
-      transferableMembers.map((member) => [
-        member.employeeId,
-        member.transferableTeams
+      employeeTransferableTeams.map((employeeWithTeams) => [
+        employeeWithTeams.employeeId,
+        employeeWithTeams.transferableTeams
       ])
     );
-  }, [teamMemberTeams, allTeams, deletingTeamId]);
+  }, [employeeTransferableTeams]);
 
   const hasTransferableMembers = transferableMembersMap.size > 0;
-  const isLoadingMemberData = teamMemberTeamsLoading || teamsIsLoading;
+  const isLoadingMemberData = transferableTeamsLoading;
   const showReassignOption = isLoadingMemberData || hasTransferableMembers;
 
   const handleSuccess = () => {

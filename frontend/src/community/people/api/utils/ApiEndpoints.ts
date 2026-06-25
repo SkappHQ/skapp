@@ -59,7 +59,7 @@ export const teamEndpoints = {
   MANAGER_ALL_TEAMS: `teams/manager`,
   TRANSFER_TEAM: (teamId: string): string => `teams/team-transfer/${teamId}`,
   TEAM_BY_ID: (teamId: number) => `/teams/${teamId}`,
-  MEMBER_TEAMS: (teamId: number) => `/teams/${teamId}/member-teams`
+  EMPLOYEE_TRANSFERABLE_TEAMS: (teamId: number) => `/teams/${teamId}/transferable-teams`
 };
 
 export const jobFamilyEndpoints = {

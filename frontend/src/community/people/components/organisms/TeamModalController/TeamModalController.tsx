@@ -18,7 +18,7 @@ import TeamActionModal from "~community/people/components/molecules/TeamModals/T
 import UnsavedAddTeamModal from "~community/people/components/molecules/TeamModals/UnsavedAddTeamModal/UnsavedAddTeamModal";
 import UnsavedEditTeamModal from "~community/people/components/molecules/TeamModals/UnsavedEditTeamModal/UnsavedEditTeamModal";
 import { usePeopleStore } from "~community/people/store/store";
-import { AddTeamType, TeamModelTypes, TeamNamesType, TeamType } from "~community/people/types/TeamTypes";
+import { AddTeamType, TeamModelTypes, TeamNamesType } from "~community/people/types/TeamTypes";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 interface Props {
@@ -56,13 +56,13 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
   const [tempTeamDetails, setTempTeamDetails] = useState<AddTeamType>();
   const [currentTeamFormData, setCurrentTeamFormData] = useState<AddTeamType>();
   const [transferableMembersMap, setTransferableMembersMap] = useState<
-    Map<number, TeamType[]>
+    Map<number, TeamNamesType[]>
   >(new Map());
 
   const { isLoading: teamsIsLoading, data: allTeams } = useGetAllTeams();
 
   const handleReassign = (
-    transferableMembersMap: Map<number, TeamType[]>
+    transferableMembersMap: Map<number, TeamNamesType[]>
   ): void => {
     setTransferableMembersMap(transferableMembersMap);
     setTeamModalType(TeamModelTypes.REASSIGN_MEMBERS);
