@@ -1,4 +1,8 @@
-import { CrmCompanyMetricsType, CrmTaskDetailType } from "./CommonTypes";
+import {
+  CrmCompanyMetricsType,
+  CrmTaskDetailType,
+  PreselectedContact
+} from "./CommonTypes";
 import { CrmModalTypes } from "./ModalTypes";
 
 interface ActionTypes {
@@ -9,6 +13,7 @@ interface ActionTypes {
   setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
+  setPreselectedContact: (contact: PreselectedContact | null) => void;
   setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
   setSelectedContactId: (contactId: number | null) => void;
   setSelectedTask: (selectedTask: CrmTaskDetailType | null) => void;
@@ -22,6 +27,7 @@ export interface CrmStore extends ActionTypes {
   selectedCompany: CrmCompanyMetricsType | null;
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
+  preselectedContact: PreselectedContact | null;
   isCrmSidePanelOpen: boolean;
   selectedContactId: number | null;
   selectedTask: CrmTaskDetailType | null;
