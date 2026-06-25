@@ -17,7 +17,7 @@ import DealStageModalController from "~community/configurations/components/organ
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import { useReorderDealStages } from "~community/crm/api/crmDealApi";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
-import useGetDealStageOptions from "~community/crm/hooks/useGetDealStageOptions";
+import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
@@ -36,7 +36,7 @@ const CrmConfigurations = () => {
 
   const { setToastMessage } = useToast();
 
-  const { options: dealStages, isPending } = useGetDealStageOptions();
+  const { dealStages, isLoading } = useGetMappedDealStages();
   const [stages, setStages] = useState<CrmDealStageType[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -188,7 +188,7 @@ const CrmConfigurations = () => {
           </ButtonV2>
         </div>
 
-        {isPending ? (
+        {isLoading ? (
           <DraggableDealStageCardSkeleton />
         ) : (
           <DealStagesDraggableContent

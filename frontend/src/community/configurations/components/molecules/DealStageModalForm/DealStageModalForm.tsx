@@ -6,7 +6,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import React from "react";
+import { FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -18,7 +18,8 @@ import {
   useUpdateDealStage
 } from "~community/crm/api/crmDealApi";
 import { CrmDealStageColorsEnum } from "~community/crm/enums/common";
-import useGetDealStageOptions from "~community/crm/hooks/useGetDealStageOptions";
+import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
+import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import {
   CrmDealStageCreatePayload,
   CrmDealStageFormTypes,
@@ -34,11 +35,12 @@ interface DealStageModalFormProps {
   isEdit?: boolean;
 }
 
-const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
+const DealStageModalForm: FC<DealStageModalFormProps> = ({
   isEdit = false
 }) => {
   const { setToastMessage } = useToast();
-  const { options: dealStages, getStageByName } = useGetDealStageOptions();
+  const { getStageByName } = useStageNameMapper();
+  const { dealStages } = useGetMappedDealStages();
   const translateText = useTranslator("configurations", "crm");
 
   const { setIsDealStageModalOpen, selectedDealStageId } =
@@ -102,33 +104,32 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
   const { mutate: updateDealStage, isPending: isUpdatePending } =
     useUpdateDealStage(handleSuccess, handleError);
 
-  const handleSubmit = (values: CrmDealStageFormTypes) => {
-    if (isEdit) {
-      const changedFields = getChangedDealStageFields(values, initialValues);
-
-      if (Object.keys(changedFields).length === 0) {
-        handleCloseModal();
-        return;
-      }
-
-      const payload: CrmDealStageUpdatePayload = {
-        id: selectedDealStage!.id,
-        ...changedFields
-      };
-      updateDealStage(payload);
-    } else {
-      const payload: CrmDealStageCreatePayload = {
-        name: values.name.trim(),
-        description: values.description.trim() || null,
-        color: values.color
-      };
-      createDealStage(payload);
+  const handleEdit = (values: CrmDealStageFormTypes) => {
+    const changedFields = getChangedDealStageFields(values, initialValues);
+    if (Object.keys(changedFields).length === 0) {
+      handleCloseModal();
+      return;
     }
+
+    const payload: CrmDealStageUpdatePayload = {
+      id: selectedDealStage!.id,
+      ...changedFields
+    };
+    updateDealStage(payload);
+  };
+
+  const handleCreate = (values: CrmDealStageFormTypes) => {
+    const payload: CrmDealStageCreatePayload = {
+      name: values.name.trim(),
+      description: values.description.trim() || null,
+      color: values.color
+    };
+    createDealStage(payload);
   };
 
   const formik = useFormik({
     initialValues,
-    onSubmit: handleSubmit,
+    onSubmit: isEdit ? handleEdit : handleCreate,
     validationSchema: dealStageValidations(
       translateText,
       dealStages,
@@ -193,7 +194,7 @@ const DealStageModalForm: React.FC<DealStageModalFormProps> = ({
         <ButtonV2
           variant="primary"
           type="button"
-          onClick={() => submitForm()}
+          onClick={submitForm}
           disabled={isPending}
           isLoading={isPending}
         >
