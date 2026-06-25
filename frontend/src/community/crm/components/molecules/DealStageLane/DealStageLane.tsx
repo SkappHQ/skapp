@@ -1,28 +1,28 @@
-import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
+import DealStageLaneHeader from "~community/crm/components/molecules/DealStageLane/DealStageLaneHeader/DealStageLaneHeader";
 import DraggableDealCard from "~community/crm/components/molecules/DraggableDealCard/DraggableDealCard";
 import { CrmDealBoardType, CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
-import { getAccentColor } from "~community/crm/utils/kanbanUtil";
 
 export interface DealStageLaneProps {
   stage: CrmDealStageType;
   deals: CrmDealBoardType[];
   isLoading?: boolean;
   hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
   isOver?: boolean;
   onDealClick: (dealId: string) => void;
   onAddDeal: (stageId: number) => void;
-  onLoadMore: (nextPage: number) => void;
+  onLoadMore: () => void;
 }
 
 const DealStageLane: FC<DealStageLaneProps> = ({
@@ -30,6 +30,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
   deals,
   isLoading = false,
   hasNextPage = false,
+  isFetchingNextPage = false,
   isOver = false,
   onDealClick,
   onAddDeal,
@@ -37,64 +38,23 @@ const DealStageLane: FC<DealStageLaneProps> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "kanban");
 
-  const [page, setPage] = useState(0);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const totalCount = deals.length;
-  const accentColor = getAccentColor(stage.color);
   const totalValue = formatValue(
     String(deals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0))
   );
 
-  const { setNodeRef } = useDroppable({
-    id: stage.id,
-    data: { type: "stage", stageId: stage.id }
-  });
-
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    setIsLoadingMore(true);
-    onLoadMore(nextPage);
-    setIsLoadingMore(false);
-  };
-
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
-    isLoading: isLoadingMore,
-    onLoadMore: handleLoadMore
+    isLoading: isFetchingNextPage,
+    onLoadMore
   });
 
   return (
-    <section
-      ref={setNodeRef}
-      className={`flex h-full w-75 shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow ${
-        isOver
-          ? "outline-primary-accent ring-2 ring-primary-background"
-          : "outline-secondary-accent"
-      }`}
-      aria-labelledby={`crm-stage-${stage.id}`}
+    <DealStageLaneHeader
+      stage={stage}
+      totalValue={totalValue}
+      totalCount={deals.length}
+      isOver={isOver}
     >
-      <div
-        className="h-1.75 rounded-lg m-2"
-        style={{ backgroundColor: accentColor }}
-      />
-
-      <div className="flex items-center justify-between gap-2 px-3 pt-3">
-        <div className="min-w-0">
-          <h2
-            id={`crm-stage-${stage.id}`}
-            className="subtitle1 truncate capitalize"
-          >
-            {stage.name}
-          </h2>
-          <p className="body3 mt-0.5 text-secondary-icon">{totalValue}</p>
-        </div>
-        <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full body3 bg-white px-1.5 text-secondary-text">
-          {totalCount}
-        </span>
-      </div>
-
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-3 pb-3">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, index) => (
@@ -129,7 +89,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               <>
                 {hasNextPage && (
                   <>
-                    {isLoadingMore &&
+                    {isFetchingNextPage &&
                       Array.from({ length: 2 }).map((_, index) => (
                         <DealCardSkeleton key={index} />
                       ))}
@@ -152,7 +112,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
         )}
         <div ref={loadingRef} />
       </div>
-    </section>
+    </DealStageLaneHeader>
   );
 };
 

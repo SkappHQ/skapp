@@ -4,19 +4,21 @@ import {
   DragStartEvent,
   KeyboardSensor,
   PointerSensor,
+  SensorDescriptor,
+  SensorOptions,
   useSensor,
   useSensors
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useRef, useState } from "react";
 
+import type { StageMap } from "~community/crm/types/BoardTypes";
 import type {
   CrmDealBoardType,
   CrmDealStageType
 } from "~community/crm/types/CommonTypes";
 
 import {
-  type StageMap,
   buildInitialStageState,
   resolveTargetStageId
 } from "../utils/kanbanUtil";
@@ -26,11 +28,11 @@ interface UseKanbanDragProps {
   dealsByStage: Record<number, CrmDealBoardType[]>;
 }
 
-export interface UseKanbanDragReturn {
+interface UseKanbanDragReturn {
   stageMap: StageMap;
   activeDeal: CrmDealBoardType | null;
   overStageId: number | null;
-  sensors: ReturnType<typeof useSensors>;
+  sensors: SensorDescriptor<SensorOptions>[];
   handleDragStart: (event: DragStartEvent) => void;
   handleDragOver: (event: DragOverEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
@@ -55,7 +57,7 @@ export const useKanbanDrag = ({
   );
 
   const findDeal = (id: number): CrmDealBoardType | null => {
-    for (const stage of Object.values(stageMap)) {
+    for (const stage of stageMap) {
       const deal = stage.deals.find((d) => d.id === id);
       if (deal) return deal;
     }
@@ -63,12 +65,8 @@ export const useKanbanDrag = ({
   };
 
   const findStageOfDeal = (id: number): number | null => {
-    for (const [stageId, stage] of Object.entries(stageMap)) {
-      if (stage.deals.some((d) => d.id === id)) {
-        return Number(stageId);
-      }
-    }
-    return null;
+    const stage = stageMap.find((s) => s.deals.some((d) => d.id === id));
+    return stage ? stage.stageId : null;
   };
 
   const handleDragStart = ({ active }: DragStartEvent): void => {
@@ -94,61 +92,69 @@ export const useKanbanDrag = ({
     setOverStageId(targetStageId);
 
     if (sourceStageId === targetStageId) {
-      setStageMap((prev) => {
-        const deals = prev[sourceStageId].deals;
-        const activeIndex = deals.findIndex((d) => d.id === activeDealId);
-        const overIndex = deals.findIndex((d) => d.id === overDealId);
+      setStageMap((prev) =>
+        prev.map((stage) => {
+          if (stage.stageId !== sourceStageId) return stage;
 
-        if (
-          activeIndex === -1 ||
-          overIndex === -1 ||
-          activeIndex === overIndex
-        ) {
-          return prev;
-        }
+          const activeIndex = stage.deals.findIndex(
+            (d) => d.id === activeDealId
+          );
+          const overIndex = stage.deals.findIndex((d) => d.id === overDealId);
 
-        return {
-          ...prev,
-          [sourceStageId]: {
-            ...prev[sourceStageId],
-            deals: arrayMove(deals, activeIndex, overIndex)
+          if (
+            activeIndex === -1 ||
+            overIndex === -1 ||
+            activeIndex === overIndex
+          ) {
+            return stage;
           }
-        };
-      });
+
+          return {
+            ...stage,
+            deals: arrayMove(stage.deals, activeIndex, overIndex)
+          };
+        })
+      );
       return;
     }
 
     setStageMap((prev) => {
-      const sourceDeals = prev[sourceStageId].deals;
-      const targetDeals = prev[targetStageId].deals;
+      const sourceStage = prev.find((s) => s.stageId === sourceStageId);
+      const activeIndex = sourceStage?.deals.findIndex(
+        (d) => d.id === activeDealId
+      );
+      if (!sourceStage || activeIndex === undefined || activeIndex === -1) {
+        return prev;
+      }
 
-      const activeIndex = sourceDeals.findIndex((d) => d.id === activeDealId);
-      if (activeIndex === -1) return prev;
+      const deal = sourceStage.deals[activeIndex];
 
-      const deal = sourceDeals[activeIndex];
-      const newSourceDeals = sourceDeals.filter((d) => d.id !== activeDealId);
-
-      const overIndex = targetDeals.findIndex((d) => d.id === overDealId);
-      const insertAt = overIndex === -1 ? targetDeals.length : overIndex;
-      const newTargetDeals = [
-        ...targetDeals.slice(0, insertAt),
-        deal,
-        ...targetDeals.slice(insertAt)
-      ];
-
-      return {
-        ...prev,
-        [sourceStageId]: {
-          ...prev[sourceStageId],
-          deals: newSourceDeals,
-          totalCount: Math.max(0, prev[sourceStageId].totalCount - 1)
-        },
-        [targetStageId]: {
-          ...prev[targetStageId],
-          deals: newTargetDeals,
-          totalCount: prev[targetStageId].totalCount + 1
+      return prev.map((stage) => {
+        if (stage.stageId === sourceStageId) {
+          return {
+            ...stage,
+            deals: stage.deals.filter((d) => d.id !== activeDealId),
+            totalCount: Math.max(0, stage.totalCount - 1)
+          };
         }
-      };
+
+        if (stage.stageId === targetStageId) {
+          const overIndex = stage.deals.findIndex((d) => d.id === overDealId);
+          const insertAt = overIndex === -1 ? stage.deals.length : overIndex;
+
+          return {
+            ...stage,
+            deals: [
+              ...stage.deals.slice(0, insertAt),
+              deal,
+              ...stage.deals.slice(insertAt)
+            ],
+            totalCount: stage.totalCount + 1
+          };
+        }
+
+        return stage;
+      });
     });
   };
 

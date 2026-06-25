@@ -38,7 +38,8 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = () => {
       >
         <div className="flex h-160 items-stretch gap-4 overflow-x-auto py-2">
           {stages.map((stage) => {
-            const { deals } = stageMap[stage.id];
+            const deals =
+              stageMap.find((s) => s.stageId === stage.id)?.deals ?? [];
 
             return (
               <DealStageLane
