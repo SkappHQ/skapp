@@ -21,7 +21,7 @@ export interface DealCardProps {
   companyName?: string;
   owner: CrmOwner;
   amount?: string;
-  priority: CrmPriorityEnum | null;
+  priority: CrmPriorityEnum;
   taskCount?: number;
   ariaLabel?: string;
   onClick?: () => void;
@@ -118,7 +118,7 @@ const DealCard: FC<DealCardProps> = ({
           />
         )}
 
-        {priority && <PriorityLabel priority={priority} />}
+        <PriorityLabel priority={priority} />
       </div>
     </div>
   );

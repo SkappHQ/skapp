@@ -189,7 +189,7 @@ export interface CrmDealType {
   name: string;
   description: string | null;
   stage: CrmDealStageType;
-  priority: CrmPriorityEnum | null;
+  priority: CrmPriorityEnum;
   closingAt: string | null;
   amount: string | null;
   currencyCode: string | null;
@@ -206,7 +206,7 @@ export interface CrmDealBoardType {
   orderIndex: number;
   taskCount?: number;
   stage: CrmDealStageType;
-  priority: CrmPriorityEnum | null;
+  priority: CrmPriorityEnum;
   amount: string | null;
   company: CrmCompanyType | null;
   contact: CrmContactType;
