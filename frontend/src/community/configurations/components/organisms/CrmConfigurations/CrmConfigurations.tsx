@@ -139,29 +139,28 @@ const CrmConfigurations = () => {
           </p>
         </div>
         <div className="flex flex-row items-center gap-3">
-          <div>
-            <Dropdown
-              options={[
-                {
-                  id: "usd",
-                  label: translateText([
-                    "currencySection",
-                    "currencyOptions",
-                    "usd"
-                  ]),
-                  value: "USD"
-                }
-              ]}
-              value="USD"
-              variant="primary-disabled"
-              ariaLabel={translateText([
-                "currencySection",
-                "ariaLabel",
-                "selectCurrency"
-              ])}
-              width="100%"
-            />
-          </div>
+          <Dropdown
+            options={[
+              {
+                id: "usd",
+                label: translateText([
+                  "currencySection",
+                  "currencyOptions",
+                  "usd"
+                ]),
+                value: "USD"
+              }
+            ]}
+            value="USD"
+            variant="primary-disabled"
+            ariaLabel={translateText([
+              "currencySection",
+              "ariaLabel",
+              "selectCurrency"
+            ])}
+            width="100%"
+          />
+
           <div className="flex flex-row items-center gap-2">
             <InfoIcon width={24} height={24} className="shrink-0" />
             <p className="body2">
