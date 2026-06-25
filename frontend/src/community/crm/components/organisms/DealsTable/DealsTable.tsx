@@ -176,9 +176,9 @@ const DealsTable: FC<Props> = ({
             <div className="inline-flex items-center gap-2">
               <div
                 className="size-2 rounded-full shrink-0"
-                style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
+                style={{ backgroundColor: STAGE_COLOR_MAP[deal.stage.color] }}
               />
-              <span className="body2">{deal.stageName}</span>
+              <span className="body2">{deal.stage.name}</span>
             </div>
           ),
           companyName: <span className="body2">{deal.companyName ?? "-"}</span>,

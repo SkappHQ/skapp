@@ -11,9 +11,9 @@ public class CrmDealResponseDto {
 
 	private String name;
 
-	private String stageName;
+	private String description;
 
-	private String stageColor;
+	private CrmDealStageResponseDto stage;
 
 	private String orderIndex;
 

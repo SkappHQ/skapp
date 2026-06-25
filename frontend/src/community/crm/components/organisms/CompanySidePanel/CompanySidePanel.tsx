@@ -7,7 +7,7 @@ import {
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -53,10 +53,10 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       !!selectedCompany?.id
     );
 
-  const taskData = [
-    ...(openTaskData?.tasks ?? []),
-    ...(completedTaskData?.items ?? [])
-  ];
+  const taskData = useMemo(
+    () => [...(openTaskData?.tasks ?? []), ...(completedTaskData?.items ?? [])],
+    [openTaskData, completedTaskData]
+  );
 
   const { data: dealData, isLoading: isDealLoading } = useGetDealsByCompany(
     selectedCompany?.id ?? 0,
@@ -138,7 +138,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         isLoading ? (
           <SidePanelHeaderSkeleton isShowLastUpdate={false} />
         ) : (
-          <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">
+          <h2 className="h1 leading-[24px] tracking-[0.07px] text-primary-text">
             {selectedCompany?.name}
           </h2>
         )

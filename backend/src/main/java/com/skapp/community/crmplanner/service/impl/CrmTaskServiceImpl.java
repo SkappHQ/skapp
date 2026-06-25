@@ -156,24 +156,21 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 			task.setContact(contact);
-			task.setCompany(contact.getCompany());
-		}
-
-		if (requestDto.getCompanyId() != null) {
-			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-			task.setCompany(company);
+			task.setCompany(contact.getCompany()); 
+			company = contact.getCompany();
 		}
 
 		if (requestDto.getDealId() != null) {
 			deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			task.setDeal(deal);
-		}
-
-		CrmValidations.validateContactBelongsToCompany(contact, company);
+			task.setContact(deal.getContact());
+			task.setCompany(deal.getCompany());
+			contact = deal.getContact();
+			company = deal.getCompany();
 		CrmValidations.validateDealBelongsToContact(deal, contact);
 		CrmValidations.validateDealBelongsToCompany(deal, company);
+		}
 
 		CrmTask savedTask = crmTaskDao.save(task);
 

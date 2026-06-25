@@ -264,8 +264,7 @@ export interface CrmTaskCategory {
 export interface CrmDealListItem {
   id: number;
   name: string;
-  stageName: string;
-  stageColor: string;
+  stage: CrmDealStageType;
   amount: string;
   companyName: string | null;
   contactName: string;

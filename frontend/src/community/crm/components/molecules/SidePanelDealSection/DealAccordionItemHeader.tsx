@@ -1,11 +1,11 @@
 import React from "react";
 
 import { concatStrings } from "~community/common/utils/commonUtil";
-import { CrmDealListItem } from "~community/crm/types/CommonTypes";
+import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 interface Props {
-  deal: CrmDealListItem;
+  deal: DetailPanelDealResponseType;
 }
 
 const DealAccordionItemHeader: React.FC<Props> = ({ deal }) => (
