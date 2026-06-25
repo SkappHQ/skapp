@@ -17,8 +17,6 @@ import {
 
 import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
 
-
-
 const fetchRelatedOpenTasks = async (
   params: RelatedTasksParams
 ): Promise<CrmTaskResponseType> => {
@@ -72,9 +70,10 @@ export const useGetRelatedTasks = (
     },
     enabled: enabled && hasEntity,
     refetchOnWindowFocus: false,
-    select: currentTaskId == null
-      ? undefined
-      : (tasks) => tasks.filter((task) => task.id !== currentTaskId)
+    select:
+      currentTaskId == null
+        ? undefined
+        : (tasks) => tasks.filter((task) => task.id !== currentTaskId)
   });
 };
 
