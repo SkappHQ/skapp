@@ -826,8 +826,8 @@ class CrmTaskControllerIntegrationTest {
 	// --- Cross-entity association validation tests ---
 
 	@Test
-	@DisplayName("Create task with deal belonging to different contact - Returns Bad Request")
-	void createTask_DealContactMismatch_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create task with contactId and dealId belonging to different contact - Returns Created")
+	void createTask_DealAndContactProvided_ReturnsCreated() throws Exception {
 		CrmContact contactA = new CrmContact();
 		contactA.setName("Contact A");
 		contactA.setEmail("contact.a@example.com");
@@ -841,10 +841,8 @@ class CrmTaskControllerIntegrationTest {
 		dto.setDealId(deal.getId());
 
 		performCreateRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_DEAL_CONTACT_MISMATCH)));
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
 	@Test
