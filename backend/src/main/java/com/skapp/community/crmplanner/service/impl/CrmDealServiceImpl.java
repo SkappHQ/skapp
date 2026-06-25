@@ -85,7 +85,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto checkDealNameExists(String name) {
 		log.info("checkDealNameExists: execution started");
 		CrmValidations.validateDealName(name);
-		boolean exists = crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
+		boolean exists = crmDealDao.existsByNameAndIsDeletedFalse(name);
 
 		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
 		responseDto.setIsExists(exists);

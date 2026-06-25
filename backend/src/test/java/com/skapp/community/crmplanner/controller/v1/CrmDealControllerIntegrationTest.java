@@ -255,7 +255,7 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Check deal name exists is case-insensitive - Returns OK with true")
+	@DisplayName("Check deal name exists is case-sensitive - Returns OK with false for different casing")
 	void checkDealNameExists_CaseInsensitive_ReturnsOkWithTrue() throws Exception {
 		CrmDeal deal = new CrmDeal();
 		deal.setName("Case Deal");
@@ -269,7 +269,7 @@ class CrmDealControllerIntegrationTest {
 		performGetExistsRequest("case deal").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
 	}
 
 	@Test
