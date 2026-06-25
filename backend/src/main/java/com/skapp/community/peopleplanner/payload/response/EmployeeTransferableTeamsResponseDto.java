@@ -7,10 +7,10 @@ import java.util.List;
 
 @Getter
 @Setter
-public class MemberTeamsResponseDto {
+public class EmployeeTransferableTeamsResponseDto {
 
 	private Long employeeId;
 
-	private List<Long> teamIds;
+	private List<TeamBasicDetailsResponseDto> transferableTeams;
 
 }

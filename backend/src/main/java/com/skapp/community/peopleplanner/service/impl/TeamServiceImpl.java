@@ -16,7 +16,7 @@ import com.skapp.community.peopleplanner.payload.request.TeamRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamsRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TransferTeamMembersDto;
 import com.skapp.community.peopleplanner.payload.EmployeeTeamIdDto;
-import com.skapp.community.peopleplanner.payload.response.MemberTeamsResponseDto;
+import com.skapp.community.peopleplanner.payload.response.EmployeeTransferableTeamsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -396,8 +396,8 @@ public class TeamServiceImpl implements TeamService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getTeamMembersWithTeamIds(Long teamId) {
-		log.info("getTeamMembersWithTeamIds: execution started");
+	public ResponseEntityDto getEmployeeTransferableTeams(Long teamId) {
+		log.info("getEmployeeTransferableTeams: execution started");
 
 		if (teamId == null || teamId <= 0) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_ID_NOT_FOUND);
@@ -406,23 +406,36 @@ public class TeamServiceImpl implements TeamService {
 		teamDao.findByTeamIdAndIsActive(teamId, true)
 			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
 
+		List<Team> otherActiveTeams = teamDao.findAllByIsActiveTrueAndTeamIdNot(teamId);
+
 		List<EmployeeTeamIdDto> employeeTeamRecords = employeeTeamDao.findTeamEmployeeTeamIdsByTeamId(teamId);
 
-		List<MemberTeamsResponseDto> results = employeeTeamRecords.stream()
+		List<EmployeeTransferableTeamsResponseDto> membersWithTransferableTeams = employeeTeamRecords.stream()
 			.collect(Collectors.groupingBy(EmployeeTeamIdDto::getEmployeeId,
 					Collectors.mapping(EmployeeTeamIdDto::getTeamId, Collectors.toList())))
 			.entrySet()
 			.stream()
-			.map(entry -> {
-				MemberTeamsResponseDto memberTeamsResponse = new MemberTeamsResponseDto();
-				memberTeamsResponse.setEmployeeId(entry.getKey());
-				memberTeamsResponse.setTeamIds(entry.getValue());
-				return memberTeamsResponse;
+			.map(employeeCurrentTeams -> {
+				Set<Long> currentTeamIds = new HashSet<>(employeeCurrentTeams.getValue());
+				List<TeamBasicDetailsResponseDto> employeeTransferableTeams = otherActiveTeams.stream()
+					.filter(team -> !currentTeamIds.contains(team.getTeamId()))
+					.map(team -> {
+						TeamBasicDetailsResponseDto teamBasicDetails = new TeamBasicDetailsResponseDto();
+						teamBasicDetails.setTeamId(team.getTeamId());
+						teamBasicDetails.setTeamName(team.getTeamName());
+						return teamBasicDetails;
+					})
+					.toList();
+				EmployeeTransferableTeamsResponseDto memberWithTransferableTeams = new EmployeeTransferableTeamsResponseDto();
+				memberWithTransferableTeams.setEmployeeId(employeeCurrentTeams.getKey());
+				memberWithTransferableTeams.setTransferableTeams(employeeTransferableTeams);
+				return memberWithTransferableTeams;
 			})
+			.filter(memberWithTransferableTeams -> !memberWithTransferableTeams.getTransferableTeams().isEmpty())
 			.toList();
 
-		log.info("getTeamMembersWithTeamIds: execution ended");
-		return new ResponseEntityDto(false, results);
+		log.info("getEmployeeTransferableTeams: execution ended");
+		return new ResponseEntityDto(false, membersWithTransferableTeams);
 	}
 
 }

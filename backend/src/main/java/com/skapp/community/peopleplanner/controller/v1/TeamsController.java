@@ -92,12 +92,12 @@ public class TeamsController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get member team memberships",
-			description = "Returns each member of the given team along with the IDs of all active teams they currently belong to")
-	@GetMapping("/{id}/member-teams")
+	@Operation(summary = "Get transferable teams for each team member",
+			description = "Returns each member of the given team along with the active teams they can be transferred to")
+	@GetMapping("/{id}/transferable-teams")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> getTeamMembersWithTeamIds(@PathVariable Long id) {
-		ResponseEntityDto response = teamService.getTeamMembersWithTeamIds(id);
+	public ResponseEntity<ResponseEntityDto> getEmployeeTransferableTeams(@PathVariable Long id) {
+		ResponseEntityDto response = teamService.getEmployeeTransferableTeams(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
