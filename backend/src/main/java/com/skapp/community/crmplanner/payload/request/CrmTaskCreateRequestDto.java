@@ -24,6 +24,8 @@ public class CrmTaskCreateRequestDto {
 
 	private Long contactId;
 
+	private Long companyId;
+
 	private Long dealId;
 
 }
