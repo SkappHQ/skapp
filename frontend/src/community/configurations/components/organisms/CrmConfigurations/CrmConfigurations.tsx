@@ -40,42 +40,43 @@ const CrmConfigurations = () => {
   const [stages, setStages] = useState<CrmDealStageType[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const handleSuccess = () => {
+    setHasChanges(false);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText([
+        "dealsSection",
+        "toastMessages",
+        "reorderSuccessTitle"
+      ]),
+      description: translateText([
+        "dealsSection",
+        "toastMessages",
+        "reorderSuccessDescription"
+      ])
+    });
+  };
+
+  const handleError = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([
+        "dealsSection",
+        "toastMessages",
+        "reorderErrorTitle"
+      ]),
+      description: translateText([
+        "dealsSection",
+        "toastMessages",
+        "reorderErrorDescription"
+      ])
+    });
+  };
+
   const { mutate: reorderStages, isPending: isReordering } =
-    useReorderDealStages(
-      () => {
-        setHasChanges(false);
-        setToastMessage({
-          open: true,
-          toastType: ToastType.SUCCESS,
-          title: translateText([
-            "dealsSection",
-            "toastMessages",
-            "reorderSuccessTitle"
-          ]),
-          description: translateText([
-            "dealsSection",
-            "toastMessages",
-            "reorderSuccessDescription"
-          ])
-        });
-      },
-      () => {
-        setToastMessage({
-          open: true,
-          toastType: ToastType.ERROR,
-          title: translateText([
-            "dealsSection",
-            "toastMessages",
-            "reorderErrorTitle"
-          ]),
-          description: translateText([
-            "dealsSection",
-            "toastMessages",
-            "reorderErrorDescription"
-          ])
-        });
-      }
-    );
+    useReorderDealStages(handleSuccess, handleError);
 
   useEffect(() => {
     if (dealStages) {
