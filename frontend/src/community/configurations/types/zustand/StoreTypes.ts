@@ -1,6 +1,5 @@
 import { Modules } from "~community/common/enums/CommonEnums";
 
-import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 interface actionTypes {

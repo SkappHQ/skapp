@@ -1,6 +1,5 @@
 import { SetType } from "~community/common/types/storeTypes";
 import { DealStageSliceTypes } from "~community/configurations/types/zustand/SliceTypes";
-import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const DealStageSlice = (set: SetType<DealStageSliceTypes>) => ({
