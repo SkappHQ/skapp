@@ -128,9 +128,9 @@ const CrmConfigurations = () => {
     <div className="flex flex-col gap-6 w-[49rem]">
       <div className="flex flex-col gap-4">
         <div>
-          <h3 className="subtitle2">
+          <h2 className="subtitle2">
             {translateText(["currencySection", "currencyPreferencesTitle"])}
-          </h3>
+          </h2>
           <p className="body1 text-secondary-text mt-4">
             {translateText([
               "currencySection",
@@ -162,7 +162,7 @@ const CrmConfigurations = () => {
           />
 
           <div className="flex flex-row items-center gap-2">
-            <InfoIcon width={24} height={24} className="shrink-0" />
+            <InfoIcon width={32} height={32} />
             <p className="body2">
               {translateText(["currencySection", "currencyInfoNote"])}
             </p>
@@ -172,16 +172,15 @@ const CrmConfigurations = () => {
       <hr className="w-full border-t border-secondary-accent" />
       <div className="flex flex-col gap-4">
         <div className="flex flex-row items-center justify-between mb-4">
-          <h3 className="subtitle2">
+          <h2 className="subtitle2">
             {translateText(["dealsSection", "dealPipelineStatusesTitle"])}
-          </h3>
+          </h2>
           <ButtonV2
             variant="tertiary"
             onClick={handleAddStage}
             icon={<PlusIcon />}
             iconPosition="end"
             size="md"
-            className="w-22 h-9"
           >
             {translateText(["dealsSection", "buttons", "add"])}
           </ButtonV2>

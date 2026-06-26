@@ -60,6 +60,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
   const handleSuccess = () => {
     setSubmitting(false);
     handleCloseModal();
+
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -78,6 +79,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
 
   const handleError = () => {
     setSubmitting(false);
+
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -155,7 +157,6 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
         id="status-name-input-field"
-        required
         name="name"
         label={translateText(["dealStageModal", "nameInputLabel"])}
         value={values.name}
@@ -163,7 +164,9 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
         errorMessage={errors?.name}
         className="w-full"
         onChange={handleChange}
+        required
       />
+
       <TextArea
         id="status-description-textarea"
         name="description"
@@ -173,6 +176,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
         errorMessage={errors?.description}
         onChange={handleChange}
       />
+
       <ColorSelector
         id="status-color-selector"
         label={translateText(["dealStageModal", "colorInputLabel"])}
@@ -180,6 +184,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
         onColorChange={(color) => setFieldValue("color", color.value)}
         colors={dealStageColors}
       />
+
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
           variant="tertiary"
@@ -191,6 +196,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
         >
           {translateText(["dealStageModal", "buttons", "cancel"])}
         </ButtonV2>
+
         <ButtonV2
           variant="primary"
           type="button"

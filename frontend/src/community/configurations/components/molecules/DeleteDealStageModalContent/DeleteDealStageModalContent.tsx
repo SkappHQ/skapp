@@ -9,10 +9,12 @@ import {
   useDealStageById,
   useDeleteDealStage
 } from "~community/crm/api/crmDealApi";
+import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 
 const DeleteDealStageModalContent: FC = () => {
   const translateText = useTranslator("configurations", "crm");
   const { setToastMessage } = useToast();
+  const { getStageByName } = useStageNameMapper();
 
   const { selectedDealStageId, setIsDealStageModalOpen } =
     useConfigurationStore((store) => ({
@@ -74,7 +76,7 @@ const DeleteDealStageModalContent: FC = () => {
     <div className="flex flex-col">
       <div>
         {translateText(["deleteDealStageModal", "description"], {
-          stageName: selectedDealStage?.name
+          stageName: getStageByName(selectedDealStage!.name)
         })}
       </div>
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">

@@ -315,7 +315,7 @@
     },
     "deleteDealStageModal": {
       "title": "Are you sure?",
-      "description": "Are you sure you want to delete the \"{{stageName}}\" stage? This action cannot be undone.",
+      "description": "Are you sure you want to delete the '{{stageName}}' stage? This action cannot be undone.",
       "buttons": {
         "cancel": "Cancel",
         "confirm": "Delete"

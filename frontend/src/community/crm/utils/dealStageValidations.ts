@@ -21,8 +21,6 @@ export const dealStageValidations = (
         "is-deal-stage-name-unique",
         translator(["dealStageModal", "validations", "nameExists"]),
         (value) => {
-          if (!value) return true;
-
           return dealStages.every(
             (stage) =>
               stage.id === currentStageId ||
