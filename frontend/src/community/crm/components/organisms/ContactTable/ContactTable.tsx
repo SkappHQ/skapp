@@ -84,9 +84,9 @@ export const ContactTable: FC = () => {
       key: "name",
       render(value, row) {
         return (
-          <div className="flex flex-col gap-1">
-            <div>{value}</div>
-            <div className="subtitle4 text-secondary-text">
+          <div className="flex flex-col gap-1 min-w-0">
+            <div className="truncate">{value}</div>
+            <div className="subtitle4 text-secondary-text truncate">
               {row.company?.name ?? "-"}
             </div>
           </div>
@@ -98,6 +98,9 @@ export const ContactTable: FC = () => {
       columnAriaLabel: translateText(["table", "columns", "emailAriaLabel"]),
       header: translateText(["table", "columns", "emailHeader"]),
       key: "email",
+      render(value) {
+        return <div className="truncate">{value as string}</div>;
+      },
       width: "21%"
     },
     {

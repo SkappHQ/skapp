@@ -28,9 +28,11 @@ const SidePanelCompanyContacts: React.FC<{
       key: "name",
       render(_value, row) {
         return (
-          <div className="flex flex-col gap-1">
-            <div>{row.name}</div>
-            <div className="body2 text-secondary-text">{row.company?.name}</div>
+          <div className="flex flex-col gap-1 min-w-0">
+            <div className="truncate">{row.name}</div>
+            <div className="body2 text-secondary-text truncate">
+              {row.company?.name}
+            </div>
           </div>
         );
       },
@@ -40,6 +42,9 @@ const SidePanelCompanyContacts: React.FC<{
       columnAriaLabel: translateText(["columns", "email"]),
       header: translateText(["columns", "email"]),
       key: "email",
+      render(_value, row) {
+        return <div className="truncate">{row.email}</div>;
+      },
       width: "25%"
     },
     {
