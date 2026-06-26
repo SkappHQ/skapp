@@ -15,12 +15,12 @@ import {
   useGetCompletedTasks,
   useGetOpenTasks
 } from "~community/crm/api/TaskApi";
-import { useCrmStore } from "~community/crm/store/store";
 import {
   TASK_PAGE_SIZE,
   TASK_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/enums/common";
+import { useCrmStore } from "~community/crm/store/store";
 import { getEmptyStateType } from "~community/crm/utils/crmUtil";
 import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
@@ -63,9 +63,10 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
     tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.TEAM_TASKS
   );
 
-  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } = useMemo(() => {
-    return getTaskGroups(openTaskData?.tasks ?? [], tab, userId);
-  }, [openTaskData, tab, userId]);
+  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
+    useMemo(() => {
+      return getTaskGroups(openTaskData?.tasks ?? [], tab, userId);
+    }, [openTaskData, tab, userId]);
 
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,

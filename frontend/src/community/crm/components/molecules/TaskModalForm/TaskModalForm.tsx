@@ -21,7 +21,6 @@ import {
   useGetCrmContacts,
   useGetOwnerLookup
 } from "~community/crm/api/ContactApi";
-import { useGetCachedTaskById } from "~community/crm/api/TaskApi";
 import { useGetDealLookup } from "~community/crm/api/crmDealApi";
 import OwnerDropdownItem from "~community/crm/components/atoms/OwnerDropdownItem/OwnerDropdownItem";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
@@ -51,16 +50,18 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const {
     setIsTaskModalOpen,
     selectedTaskId,
-    preselectedContact
+    preselectedContact,
+    getTaskById
   } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     selectedTaskId: store.selectedTaskId,
-    preselectedContact: store.preselectedContact
+    preselectedContact: store.preselectedContact,
+    getTaskById: store.getTaskById
   }));
 
-  const { data: selectedTask } = useGetCachedTaskById(selectedTaskId!);
-
   const { isCrmSalesManager } = useSessionData();
+
+  const selectedTask = getTaskById(selectedTaskId!);
 
   const priorityDropdownOptions = useGetPriorityOptions(translateText);
   const { options: taskTypeOptions, getCategoryById } =

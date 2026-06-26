@@ -22,14 +22,13 @@ const AddTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsTaskModalOpen, preselectedContact } =
-    useCrmStore((store) => ({
-      setIsTaskModalOpen: store.setIsTaskModalOpen,
-      preselectedContact: store.preselectedContact
-    }));
+  const { setIsTaskModalOpen, preselectedContact } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    preselectedContact: store.preselectedContact
+  }));
 
   const { data: currentUser } = useGetUserPersonalDetails();
-  
+
   const defaultOwner = useMemo((): CrmOwner | null => {
     if (!currentUser?.employeeId) return null;
     return {

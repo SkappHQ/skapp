@@ -89,7 +89,7 @@ const EditTaskModalContent: FC = () => {
 
   const handleError = () => {
     setSubmitting(false);
-    
+
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
