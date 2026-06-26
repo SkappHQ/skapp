@@ -8,7 +8,7 @@ import {
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -53,14 +53,6 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsContactModalOpen: store.setIsContactModalOpen
   }));
 
-  const openContactModal = useCallback(
-    (type: CrmModalTypes) => {
-      setContactModalType(type);
-      setIsContactModalOpen(true);
-    },
-    [setContactModalType, setIsContactModalOpen]
-  );
-
   const menuItems: MenuItemProps[] = useMemo(
     () => [
       {
@@ -68,7 +60,8 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         label: translateText(["editContact"]),
         icon: { start: <EditIcon width="16px" height="16px" /> },
         onClick: () => {
-          openContactModal(CrmModalTypes.EDIT_CONTACT_MODAL);
+          setContactModalType(CrmModalTypes.EDIT_CONTACT_MODAL);
+          setIsContactModalOpen(true);
         }
       },
       {
@@ -84,13 +77,14 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           )
         },
         onClick: () => {
-          openContactModal(CrmModalTypes.DELETE_CONTACT_MODAL);
+          setContactModalType(CrmModalTypes.DELETE_CONTACT_MODAL);
+          setIsContactModalOpen(true);
         },
         activeBehavior:
           "hover:bg-semantic-red-background text-semantic-red-text"
       }
     ],
-    [openContactModal, translateText]
+    [translateText]
   );
 
   const handleContactLoadError = (): void => {
@@ -169,7 +163,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           <SidePanelHeaderActionsSkeleton />
         ) : (
           <KebabMenu
-            id={"contact-actions"}
+            id="contact-actions"
             menuItems={menuItems}
             anchorButton={{
               "aria-label": translateText(["kebabMenuAriaLabel"])

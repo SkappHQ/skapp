@@ -67,7 +67,6 @@ const DeleteContactModalContent: FC = () => {
   );
 
   const handleDeleteContact = () => {
-    if (selectedContact?.id === undefined) return;
     deleteContact(selectedContact.id);
   };
 

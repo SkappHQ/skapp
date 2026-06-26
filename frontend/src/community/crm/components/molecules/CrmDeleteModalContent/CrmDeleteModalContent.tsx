@@ -20,7 +20,7 @@ const CrmDeleteModalContent: FC<Props> = ({
 }) => {
   return (
     <div className="flex flex-col">
-      <div>{description}</div>
+      <div className="body1">{description}</div>
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
           variant="tertiary"

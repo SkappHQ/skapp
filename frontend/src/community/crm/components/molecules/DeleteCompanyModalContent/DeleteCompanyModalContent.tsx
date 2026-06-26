@@ -62,7 +62,6 @@ const DeleteCompanyModalContent: FC = () => {
   );
 
   const handleDeleteCompany = () => {
-    if (selectedCompany?.id === undefined) return;
     deleteCompany(selectedCompany.id);
   };
 

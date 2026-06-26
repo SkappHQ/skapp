@@ -8,7 +8,7 @@ import {
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
@@ -37,21 +37,16 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       setCompanyModalType: store.setCompanyModalType
     })
   );
-  const openCompanyModal = useCallback(
-    (type: CrmModalTypes) => {
-      setCompanyModalType(type);
-      setIsCompanyModalOpen(true);
-    },
-    [setCompanyModalType, setIsCompanyModalOpen]
-  );
-
   const menuItems: MenuItemProps[] = useMemo(
     () => [
       {
         id: "edit",
         label: translateText(["editCompany"]),
         icon: { start: <EditIcon width="16px" height="16px" /> },
-        onClick: () => openCompanyModal(CrmModalTypes.EDIT_COMPANY_MODAL)
+        onClick: () => {
+          setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
+          setIsCompanyModalOpen(true);
+        }
       },
       {
         id: "delete",
@@ -67,10 +62,13 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         },
         activeBehavior:
           "hover:bg-semantic-red-background text-semantic-red-text",
-        onClick: () => openCompanyModal(CrmModalTypes.DELETE_COMPANY_MODAL)
+        onClick: () => {
+          setCompanyModalType(CrmModalTypes.DELETE_COMPANY_MODAL);
+          setIsCompanyModalOpen(true);
+        }
       }
     ],
-    [openCompanyModal, translateText]
+    [translateText]
   );
 
   const renderTabContent = () => {
@@ -119,7 +117,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           <SidePanelHeaderActionsSkeleton count={1} />
         ) : (
           <KebabMenu
-            id={"company-actions"}
+            id="company-actions"
             menuItems={menuItems}
             anchorButton={{
               "aria-label": translateText(["kebabMenuAriaLabel"])
