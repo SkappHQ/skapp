@@ -27,6 +27,7 @@ const TaskGroup: FC<TaskGroupProps> = ({
               key={task.id}
               task={task}
               isCheckTaskVisible={isCheckTaskVisible}
+              isShowContact={true}
             />
           );
         })}

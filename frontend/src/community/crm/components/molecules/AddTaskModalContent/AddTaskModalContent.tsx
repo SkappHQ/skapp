@@ -200,13 +200,15 @@ const AddTaskModalContent: FC = () => {
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    debouncedContactSearchText.length > 0
+    debouncedContactSearchText.length > 0 || !!values.dealId,
+    values.dealId ?? undefined
   );
 
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    debouncedDealSearchText.length > 0
+    debouncedDealSearchText.length > 0,
+    values.contactId ?? undefined
   );
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(

@@ -4,7 +4,11 @@ export const crmDealQueryKeys = {
   ALL: ["crm-deals"],
   GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
   DEAL_STAGES: ["crm-deal-stages"],
-  DEAL_LOOKUP: (searchKeyword: string) => ["crm-deal-lookup", searchKeyword],
+  DEAL_LOOKUP: (searchKeyword: string, contactId?: number) => [
+    "crm-deal-lookup",
+    searchKeyword,
+    contactId
+  ],
   GET_DEALS_BY_COMPANY: (companyId: number) => [
     "crm-deals",
     "company",
@@ -29,10 +33,11 @@ export const contactQueryKeys = {
     "crm-owners-lookup",
     searchKeyword
   ],
-  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
+  CONTACT_LOOKUP: (searchKeyword: string, size: number, dealId?: number) => [
     "crm-contacts-lookup",
     searchKeyword,
-    size
+    size,
+    dealId
   ],
   OWNER_LOOKUP: (searchKeyword: string, size: number) => [
     "crm-owners-lookup",
