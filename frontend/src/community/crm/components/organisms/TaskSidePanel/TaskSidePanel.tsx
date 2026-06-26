@@ -8,7 +8,7 @@ import { useGetRelatedTasks, useGetTaskById } from "~community/crm/api/TaskApi";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
-import SidePanelTaskNotes from "~community/crm/components/organisms/TaskSidePanel/TaskSidePanelNotes/TaskSidePanelNotes";
+import SidePanelTaskNotes from "~community/crm/components/organisms/TaskSidePanel/TaskSidePanelNotes";
 import { useCrmStore } from "~community/crm/store/store";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
 
@@ -33,15 +33,10 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     selectedTaskId,
     isOpen
   );
-
-  const contactId = task?.contact?.id ?? null;
-  const dealId = task?.deal?.id ?? null;
-
+ 
   const { data: relatedTasks = [] } = useGetRelatedTasks(
-    contactId,
-    dealId,
-    task?.id,
-    isOpen && !!task
+    { contactId: task?.contact?.id ?? null, dealId: task?.deal?.id ?? null },
+    { currentTaskId: task?.id, enabled: isOpen && !!task }
   );
 
   useEffect(() => {
