@@ -1,14 +1,13 @@
+import { Toggle } from "@rootcodelabs/skapp-ui";
 import { Stack, Typography } from "@mui/material";
 import { SxProps, type Theme, useTheme } from "@mui/material/styles";
-import { ChangeEvent, FC, KeyboardEvent } from "react";
+import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
-import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 
-import StyledSwitch from "./StyledSwitch";
 import styles from "./styles";
 
 interface SwitchComponentProps {
@@ -35,7 +34,6 @@ const SwitchRow: FC<SwitchComponentProps> = ({
   disabled = false,
   error,
   wrapperStyles,
-  name,
   icon,
   labelId,
   arialabel,
@@ -70,26 +68,11 @@ const SwitchRow: FC<SwitchComponentProps> = ({
           {!!icon && <Icon name={icon} />}
         </Typography>
       )}
-      <StyledSwitch
-        disableRipple
+      <Toggle
         checked={checked}
-        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-          onChange(e.target.checked, type)
-        }
+        onChange={(val) => onChange(val, type)}
         disabled={disabled}
-        name={name}
-        onKeyDown={(e: KeyboardEvent<HTMLButtonElement>) => {
-          if (shouldActivateButton(e.key)) {
-            onChange?.(!checked, type);
-          }
-        }}
-        slotProps={{
-          input: {
-            "aria-labelledby": labelId,
-            "aria-label": getAriaLabel(),
-            role: "switch"
-          }
-        }}
+        ariaLabel={getAriaLabel()}
       />
       {!!error && (
         <Typography
