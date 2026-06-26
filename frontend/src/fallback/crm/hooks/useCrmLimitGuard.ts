@@ -10,9 +10,6 @@ const useCrmLimitGuard = () => {
 
   return {
     guardCrmCreate,
-    limitedResource: null,
-    isLimitModalOpen: false,
-    closeLimitModal: () => {},
     isCheckingCrmLimit: false
   };
 };

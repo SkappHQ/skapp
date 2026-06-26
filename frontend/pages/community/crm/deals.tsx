@@ -7,13 +7,12 @@ import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/S
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
 import { useCrmStore } from "~community/crm/store/store";
-import CrmLimitUpgradeModal from "~enterprise/crm/components/molecules/CrmLimitUpgradeModal/CrmLimitUpgradeModal";
+import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
-  const { guardCrmCreate, limitedResource, isLimitModalOpen, closeLimitModal } =
-    useCrmLimitGuard();
+  const { guardCrmCreate } = useCrmLimitGuard();
 
   const { setIsCrmSidePanelOpen } = useCrmStore((store) => ({
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
@@ -34,11 +33,7 @@ const Deals: NextPage = () => {
           <AddDealSidePanel />
         </SidePanelWrapper>
 
-        <CrmLimitUpgradeModal
-          isOpen={isLimitModalOpen}
-          onClose={closeLimitModal}
-          resource={limitedResource}
-        />
+        <CrmLimitModalController />
         <DealsSection />
       </>
     </ContentLayout>

@@ -26,6 +26,7 @@ import {
   CrmOwnersResponseType,
   EditContactPayload
 } from "~community/crm/types/CommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 interface ContactMetricsSearchParams {
   page: number;
@@ -113,6 +114,9 @@ export const useCreateNewContact = (
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       onSuccess();
     },

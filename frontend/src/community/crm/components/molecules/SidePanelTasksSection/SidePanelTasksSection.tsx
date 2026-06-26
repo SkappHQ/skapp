@@ -8,6 +8,7 @@ import {
   TaskRowResponseType
 } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 
 import SidePanelTasksList from "./SidePanelTasksList";
 
@@ -28,6 +29,7 @@ const SidePanelTasksSection: FC<Props> = ({
   preselectedContact,
   emptyDescription
 }) => {
+  const { guardCrmCreate } = useCrmLimitGuard();
   const { setIsTaskModalOpen, setTaskModalType, setPreselectedContact } =
     useCrmStore((store) => ({
       setIsTaskModalOpen: store.setIsTaskModalOpen,
@@ -42,9 +44,11 @@ const SidePanelTasksSection: FC<Props> = ({
   );
 
   const handleAddTask = () => {
-    setPreselectedContact(preselectedContact);
-    setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
-    setIsTaskModalOpen(true);
+    guardCrmCreate("tasks", () => {
+      setPreselectedContact(preselectedContact);
+      setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+      setIsTaskModalOpen(true);
+    });
   };
   return tasks.length > 0 ? (
     <SidePanelTasksList

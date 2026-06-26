@@ -10,13 +10,12 @@ import { ContactTable } from "~community/crm/components/organisms/ContactTable/C
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import CrmLimitUpgradeModal from "~enterprise/crm/components/molecules/CrmLimitUpgradeModal/CrmLimitUpgradeModal";
+import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 
 const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
-  const { guardCrmCreate, limitedResource, isLimitModalOpen, closeLimitModal } =
-    useCrmLimitGuard();
+  const { guardCrmCreate } = useCrmLimitGuard();
 
   const {
     isCrmSidePanelOpen,
@@ -65,11 +64,7 @@ const Contacts: NextPage = () => {
         )}
 
         <ContactModalController />
-        <CrmLimitUpgradeModal
-          isOpen={isLimitModalOpen}
-          onClose={closeLimitModal}
-          resource={limitedResource}
-        />
+        <CrmLimitModalController />
         <TaskModalController />
         <ContactTable />
       </>
