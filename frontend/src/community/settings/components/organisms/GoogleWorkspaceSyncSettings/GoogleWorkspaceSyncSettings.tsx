@@ -15,11 +15,9 @@ import {
 import { useState, useEffect, JSX } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
-  GoogleWorkspaceSyncResult,
   GoogleWorkspaceSyncUser
 } from "~community/settings/types/GoogleWorkspaceSyncTypes";
 
@@ -133,9 +131,16 @@ interface FullSyncResult {
 }
 
 const GoogleWorkspaceSyncSettings = (): JSX.Element => {
-  const translateText = useTranslator("settings");
   const { setToastMessage } = useToast();
 
+  // Connection state
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectedByEmail, setConnectedByEmail] = useState<string | null>(null);
+  const [connectedAt, setConnectedAt] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  // Sync state
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<FullSyncResult | null>(null);
@@ -143,8 +148,45 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     employees: Map<string, any>;
   } | null>(null);
 
-  // Take a snapshot on page load so Refresh Results works for webhook syncs too
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const checkStatus = async () => {
+    setIsCheckingStatus(true);
+    try {
+      const resp = await authFetch.get(`${API_BASE}/api/v1/integrations/google/status`);
+      const data = resp.data;
+      setIsConnected(!!data.connected);
+      setConnectedByEmail(data.connectedByEmail ?? null);
+      setConnectedAt(data.connectedAt ?? null);
+    } catch {
+      setIsConnected(false);
+    } finally {
+      setIsCheckingStatus(false);
+    }
+  };
+
   useEffect(() => {
+    checkStatus();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("google") === "connected") {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.SUCCESS,
+          title: "Google Workspace Connected",
+          description:
+            "Your Google Workspace account has been successfully connected."
+        });
+        const url = new URL(window.location.href);
+        url.searchParams.delete("google");
+        window.history.replaceState({}, "", url.toString());
+      }
+    }
+  }, []);
+
+  // Take a snapshot once connected so Refresh Results works for webhook syncs too
+  useEffect(() => {
+    if (!isConnected) return;
     const takeInitialSnapshot = async () => {
       try {
         const { activeList, inactiveList } = await fetchAllEmployees();
@@ -157,7 +199,25 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
       }
     };
     takeInitialSnapshot();
-  }, []);
+  }, [isConnected]);
+
+  const handleConnect = async () => {
+    setIsConnecting(true);
+    try {
+      const resp = await authFetch.get(`${API_BASE}/api/v1/integrations/google/initiate`);
+      window.location.href = resp.data.url;
+    } catch (error: any) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: "Connection Failed",
+        description:
+          error?.response?.data?.message ||
+          "Failed to initiate Google Workspace connection. Please try again."
+      });
+      setIsConnecting(false);
+    }
+  };
 
   const fetchAllEmployees = async () => {
     const [activeRes, inactiveRes] = await Promise.all([
@@ -165,7 +225,11 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         params: { accountStatus: ["ACTIVE"], page: 0, size: 100 }
       }),
       authFetch.get("/people/employees", {
-        params: { accountStatus: ["TERMINATED", "DEACTIVATED"], page: 0, size: 100 }
+        params: {
+          accountStatus: ["TERMINATED", "DEACTIVATED"],
+          page: 0,
+          size: 100
+        }
       })
     ]);
 
@@ -195,11 +259,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     return afterList
       .filter((emp: any) => {
         const before = snapshot.get(emp.email);
-
-        // Brand new user
         if (!before) return true;
-
-        // Check if any field changed
         return (
           before.firstName !== emp.firstName ||
           before.lastName !== emp.lastName ||
@@ -223,7 +283,6 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     setIsLoading(true);
     setIsSyncing(true);
     try {
-      // 1. Snapshot BEFORE sync
       const { activeList: beforeActiveList, inactiveList: beforeInactiveList } =
         await fetchAllEmployees();
 
@@ -232,7 +291,6 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         employees: new Map(allBefore.map((e: any) => [e.email, e]))
       });
 
-      // 2. Trigger sync — returns immediately (async backend)
       await authFetch.post("/people/sync/external-bulk-person-sync");
 
       setToastMessage({
@@ -243,16 +301,14 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
           "Sync is running in the background. Click 'Refresh Results' in a few seconds to see the changes."
       });
     } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to start Google Workspace sync. Please try again.";
-
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
         title: "Sync Failed",
-        description: errorMessage
+        description:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to start Google Workspace sync. Please try again."
       });
     } finally {
       setIsLoading(false);
@@ -267,7 +323,6 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
 
       const allAfter = [...activeList, ...inactiveList];
 
-      // Find new or updated users by comparing with pre-sync snapshot
       const newlyAddedOrUpdatedAccounts: GoogleWorkspaceSyncUser[] =
         beforeSnapshot
           ? detectChanges(allAfter, beforeSnapshot.employees)
@@ -290,16 +345,14 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         description: `${activeList.length} active, ${inactiveList.length} suspended. ${newlyAddedOrUpdatedAccounts.length} new or updated.`
       });
     } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to load results. Please try again.";
-
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
         title: "Error Loading Results",
-        description: errorMessage
+        description:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to load results. Please try again."
       });
     } finally {
       setIsLoading(false);
@@ -312,108 +365,158 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         <Typography variant="h2">Google Workspace Integration</Typography>
       </Box>
 
-      <Card sx={{ p: 3, mb: 4 }}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h3" sx={{ mb: 1 }}>
-            Directory Sync
-          </Typography>
-          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            Sync users from your Google Workspace directory to Skapp. This will
-            automatically create new user accounts and update the status of
-            existing users.
-          </Typography>
+      {isCheckingStatus ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <CircularProgress />
         </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            alignItems: "center",
-            flexWrap: "wrap",
-            mb: 2
-          }}
-        >
+      ) : !isConnected ? (
+        <Card sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h3" sx={{ mb: 1 }}>
+            Connect Google Workspace
+          </Typography>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+            Connect your Google Workspace admin account to enable automatic
+            directory sync. Users from your Google Workspace will be imported
+            and kept in sync with Skapp.
+          </Typography>
           <Button
             variant="contained"
             color="primary"
-            onClick={handleSync}
-            disabled={isLoading}
-            sx={{ minWidth: 120 }}
+            onClick={handleConnect}
+            disabled={isConnecting}
+            sx={{ minWidth: 220 }}
           >
-            {isSyncing && <CircularProgress size={20} sx={{ mr: 1 }} />}
-            {isSyncing ? "Syncing..." : "Sync Now"}
+            {isConnecting && <CircularProgress size={20} sx={{ mr: 1 }} />}
+            {isConnecting ? "Connecting..." : "Connect Google Workspace"}
           </Button>
-
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleRefreshResults}
-            disabled={isLoading}
-            sx={{ minWidth: 120 }}
-          >
-            {isLoading && !isSyncing && (
-              <CircularProgress size={20} sx={{ mr: 1 }} />
+        </Card>
+      ) : (
+        <>
+          <Card sx={{ p: 3, mb: 4 }}>
+            {connectedByEmail && (
+              <Box
+                sx={{
+                  mb: 2,
+                  px: 1.5,
+                  py: 1,
+                  backgroundColor: "#e8f5e9",
+                  borderRadius: 1,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5
+                }}
+              >
+                <Typography variant="body2" sx={{ color: "#2e7d32" }}>
+                  Connected as <strong>{connectedByEmail}</strong>
+                  {connectedAt &&
+                    ` · ${new Date(connectedAt).toLocaleDateString()}`}
+                </Typography>
+              </Box>
             )}
-            {isLoading && !isSyncing ? "Loading..." : "Refresh Results"}
-          </Button>
-        </Box>
 
-        {syncResult && (
-          <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-            <Box>
-              <Typography variant="body2" color="textSecondary">
-                Total Active
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h3" sx={{ mb: 1 }}>
+                Directory Sync
               </Typography>
-              <Typography variant="h4" sx={{ color: "#388e3c" }}>
-                {syncResult.totalActive}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" color="textSecondary">
-                Total Suspended
-              </Typography>
-              <Typography variant="h4" sx={{ color: "#d32f2f" }}>
-                {syncResult.totalSuspended}
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                Sync users from your Google Workspace directory to Skapp. This
+                will automatically create new user accounts and update the
+                status of existing users.
               </Typography>
             </Box>
-            <Box>
-              <Typography variant="body2" color="textSecondary">
-                New / Updated (Last Sync)
-              </Typography>
-              <Typography variant="h4" sx={{ color: "#1565c0" }}>
-                {syncResult.totalNewlyAddedOrUpdated}
-              </Typography>
-            </Box>
-          </Box>
-        )}
-      </Card>
 
-      {syncResult && (
-        <Box>
-          {syncResult.newlyAddedOrUpdatedAccounts.length > 0 && (
-            <SyncTable
-              title="New / Updated Accounts (Last Sync)"
-              description={`${syncResult.totalNewlyAddedOrUpdated} users were added or updated in the last sync`}
-              users={syncResult.newlyAddedOrUpdatedAccounts}
-              isLoading={isLoading}
-              highlightColor="#e3f2fd"
-            />
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                alignItems: "center",
+                flexWrap: "wrap",
+                mb: 2
+              }}
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSync}
+                disabled={isLoading}
+                sx={{ minWidth: 120 }}
+              >
+                {isSyncing && <CircularProgress size={20} sx={{ mr: 1 }} />}
+                {isSyncing ? "Syncing..." : "Sync Now"}
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleRefreshResults}
+                disabled={isLoading}
+                sx={{ minWidth: 120 }}
+              >
+                {isLoading && !isSyncing && (
+                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                )}
+                {isLoading && !isSyncing ? "Loading..." : "Refresh Results"}
+              </Button>
+            </Box>
+
+            {syncResult && (
+              <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                <Box>
+                  <Typography variant="body2" color="textSecondary">
+                    Total Active
+                  </Typography>
+                  <Typography variant="h4" sx={{ color: "#388e3c" }}>
+                    {syncResult.totalActive}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="textSecondary">
+                    Total Suspended
+                  </Typography>
+                  <Typography variant="h4" sx={{ color: "#d32f2f" }}>
+                    {syncResult.totalSuspended}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="textSecondary">
+                    New / Updated (Last Sync)
+                  </Typography>
+                  <Typography variant="h4" sx={{ color: "#1565c0" }}>
+                    {syncResult.totalNewlyAddedOrUpdated}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </Card>
+
+          {syncResult && (
+            <Box>
+              {syncResult.newlyAddedOrUpdatedAccounts.length > 0 && (
+                <SyncTable
+                  title="New / Updated Accounts (Last Sync)"
+                  description={`${syncResult.totalNewlyAddedOrUpdated} users were added or updated in the last sync`}
+                  users={syncResult.newlyAddedOrUpdatedAccounts}
+                  isLoading={isLoading}
+                  highlightColor="#e3f2fd"
+                />
+              )}
+
+              <SyncTable
+                title="All Active Accounts"
+                description={`${syncResult.totalActive} active users in the directory`}
+                users={syncResult.allActiveAccounts}
+                isLoading={isLoading}
+              />
+
+              <SyncTable
+                title="All Suspended Accounts"
+                description={`${syncResult.totalSuspended} terminated or deactivated users`}
+                users={syncResult.allSuspendedAccounts}
+                isLoading={isLoading}
+              />
+            </Box>
           )}
-
-          <SyncTable
-            title="All Active Accounts"
-            description={`${syncResult.totalActive} active users in the directory`}
-            users={syncResult.allActiveAccounts}
-            isLoading={isLoading}
-          />
-
-          <SyncTable
-            title="All Suspended Accounts"
-            description={`${syncResult.totalSuspended} terminated or deactivated users`}
-            users={syncResult.allSuspendedAccounts}
-            isLoading={isLoading}
-          />
-        </Box>
+        </>
       )}
     </Box>
   );

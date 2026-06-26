@@ -48,7 +48,7 @@ public class GoogleWorkspaceOAuthController {
         oAuthService.handleCallback(code, state);
         return ResponseEntity
                 .status(HttpStatus.FOUND)
-                .location(URI.create(frontendUrl + "/settings/integrations?google=connected"))
+                .location(URI.create(frontendUrl + "/settings?google=connected"))
                 .build();
     }
 
