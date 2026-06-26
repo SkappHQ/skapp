@@ -9,6 +9,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
@@ -22,6 +23,7 @@ import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
+  const { isCrmSalesManager: canEdit } = useSessionData();
 
   // TODO: Replace with real isLoading from useGetCompanyById when API is wired
   const isLoading = false;
@@ -43,12 +45,16 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   };
 
   const menuItems = [
-    {
-      id: "edit",
-      label: translateText(["editCompany"]),
-      icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: () => openCompanyModal(CrmModalTypes.EDIT_COMPANY_MODAL)
-    },
+    ...(canEdit
+      ? [
+          {
+            id: "edit",
+            label: translateText(["editCompany"]),
+            icon: { start: <EditIcon width="16px" height="16px" /> },
+            onClick: () => openCompanyModal(CrmModalTypes.EDIT_COMPANY_MODAL)
+          }
+        ]
+      : []),
     {
       id: "delete",
       label: translateText(["deleteCompany"]),
