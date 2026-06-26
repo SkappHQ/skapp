@@ -175,10 +175,10 @@ export const useGetEmployeeTransferableTeams = (
   teamId: number
 ): UseQueryResult<EmployeeTransferableTeamsType[]> => {
   return useQuery({
-    queryKey: teamQueryKeys.EMPLOYEE_TRANSFERABLE_TEAMS(teamId),
+    queryKey: teamQueryKeys.GET_EMPLOYEE_TRANSFERABLE_TEAMS(teamId),
     queryFn: async () => {
       const response = await authFetch.get(
-        teamEndpoints.EMPLOYEE_TRANSFERABLE_TEAMS(teamId)
+        teamEndpoints.GET_EMPLOYEE_TRANSFERABLE_TEAMS(teamId)
       );
       return response?.data?.results;
     }
