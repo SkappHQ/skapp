@@ -1,0 +1,126 @@
+[
+  {
+    "permission": "viewDashboard",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "teamAndOwn"
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "own"
+    }
+  },
+  {
+    "permission": "createAndManageContacts",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "own"
+    }
+  },
+  {
+    "permission": "viewContacts",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "viewCompanies",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageCompanies",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "viewAndCreateDeals",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageDeals",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "createAndManageTasks",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false,
+      "label": "own"
+    }
+  }
+]

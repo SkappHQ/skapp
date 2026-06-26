@@ -1,0 +1,28 @@
+[
+  {
+    "jobRoleId": 1,
+    "name": "Software Engineer",
+    "jobLevels": [
+      {
+        "jobLevelId": 1,
+        "name": "Senior"
+      }
+    ],
+    "employees": []
+  },
+  {
+    "jobRoleId": 2,
+    "name": "SE",
+    "jobLevels": [
+      {
+        "jobLevelId": 2,
+        "name": "Senior"
+      },
+      {
+        "jobLevelId": 3,
+        "name": "Junior"
+      }
+    ],
+    "employees": []
+  }
+]

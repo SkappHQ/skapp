@@ -1,0 +1,27 @@
+[
+  {
+    "jobRoleId": 1,
+    "name": "Software Engineer",
+    "jobLevels": ["Junior", "Mid", "Senior"]
+  },
+  {
+    "jobRoleId": 2,
+    "name": "Product Manager",
+    "jobLevels": ["Associate", "Senior"]
+  },
+  {
+    "jobRoleId": 3,
+    "name": "Designer",
+    "jobLevels": ["Junior", "Lead"]
+  },
+  {
+    "jobRoleId": 1,
+    "name": "Software Engineer",
+    "jobLevels": ["Junior", "Mid", "Senior"]
+  },
+  {
+    "jobRoleId": 2,
+    "name": "Product Manager",
+    "jobLevels": ["Associate", "Senior"]
+  }
+]

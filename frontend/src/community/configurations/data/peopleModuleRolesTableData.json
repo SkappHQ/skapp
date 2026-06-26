@@ -1,0 +1,92 @@
+[
+  {
+    "permission": "addOrTerminateEmployees",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageUserPermissions",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageJobFamilies",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": true
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageTeams",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": true
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageHolidays",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": true
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "accessDirectory",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": true
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": true
+    }
+  }
+]

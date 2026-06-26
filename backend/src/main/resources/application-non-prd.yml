@@ -1,0 +1,72 @@
+server:
+  port: 8008
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    show-sql: true
+
+  liquibase:
+    change-log: classpath:community/db/changelog/db.changelog.yml
+    enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+
+  messages:
+    basename: community/messages/common-messages, community/messages/leave-messages, community/messages/people-messages, community/messages/time-messages, community/messages/okr-messages, community/messages/crm-messages
+
+file:
+  storage:
+    folders:
+      - organization-logos
+      - user-image
+      - leave-attachments
+    base: storage
+    encryption-key: ${FILE_ENCRYPT_KEY}
+
+logging:
+  level:
+    ROOT: INFO
+    org:
+      hibernate:
+        SQL: INFO
+        type: WARN
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+
+jwt:
+  access-token:
+    signing-key: ${SIGN_IN_KEY}
+    expiration-time: 3600000 # Expiration time in milliseconds (1 hour)
+  refresh-token:
+    long-duration:
+      expiration-time: 2592000000 # Expiration time in milliseconds (30 days)
+    short-duration:
+      expiration-time: 21600000 # Expiration time in milliseconds (6 hours)
+
+domain:
+  base: ${DOMAIN_BASE:localhost}
+
+encryptDecryptAlgorithm:
+  secret: ${ENCRYPT_DECRYPT_SECRET}

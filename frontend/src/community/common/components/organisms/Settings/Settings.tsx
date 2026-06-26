@@ -1,0 +1,158 @@
+import DraftsOutlinedIcon from "@mui/icons-material/DraftsOutlined";
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import {
+  Box,
+  Divider,
+  type Theme,
+  Typography,
+  useMediaQuery,
+  useTheme
+} from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { FC, ReactNode } from "react";
+
+import { useAuth } from "~community/auth/providers/AuthProvider";
+import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import { appModes } from "~community/common/constants/configs";
+import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCommonStore } from "~community/common/stores/commonStore";
+import {
+  ManagerTypes,
+  ROLE_SUPER_ADMIN
+} from "~community/common/types/AuthTypes";
+import { IconName } from "~community/common/types/IconTypes";
+import { SettingsModalTypes } from "~community/common/types/SettingsTypes";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+
+import NotificationSettings from "../../molecules/NotificationSettinngs/NotificationSettinngs";
+
+interface SettingsSectionProps {
+  customSettingsComponent?: ReactNode;
+}
+
+const SettingsSection: FC<SettingsSectionProps> = ({
+  customSettingsComponent
+}) => {
+  const translatedText = useTranslator("settings");
+
+  const theme: Theme = useTheme();
+
+  const isLargeScreen: boolean = useMediaQuery(theme.breakpoints.down("lg"));
+
+  const { user } = useAuth();
+
+  const { setModalType, setModalOpen } = useCommonStore((state) => state);
+
+  const isEnterpriseMode = useGetEnvironment() === appModes.ENTERPRISE;
+
+  const { data: config } = useGetEmailServerConfig(isEnterpriseMode);
+
+  const managerRoles = Object.values(ManagerTypes);
+
+  const hasManagerRole = user?.roles
+    ?.filter((role): role is ManagerTypes =>
+      managerRoles.includes(role as ManagerTypes)
+    )
+    .some((role) => managerRoles.includes(role));
+
+  const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
+    globalLoginMethod: state.globalLoginMethod
+  }));
+
+  return (
+    <>
+      {hasManagerRole && (
+        <>
+          <NotificationSettings /> <Divider />
+        </>
+      )}
+
+      {user?.roles?.includes(ROLE_SUPER_ADMIN) && (
+        <>
+          {process.env.NEXT_PUBLIC_MODE !== "enterprise" && (
+            <>
+              <Box sx={{ py: "1.5rem" }}>
+                <Typography variant="h2" sx={{ pb: "0.75rem" }}>
+                  {translatedText(["emailServerSettingsTitle"])}
+                </Typography>
+
+                <Typography variant="body1">
+                  {translatedText(["emailServerSettingsDescription"])}
+                </Typography>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    width: "100%",
+                    flexDirection: isLargeScreen ? "column" : "row",
+                    gap: "0.75rem",
+                    mt: "1.25rem"
+                  }}
+                >
+                  <ButtonV2
+                    variant={"tertiary"}
+                    onClick={() => {
+                      setModalType(SettingsModalTypes.SETUP_EMAIL_SERVER);
+                      setModalOpen(true);
+                    }}
+                    icon={<MailOutlineIcon />}
+                    iconPosition="start"
+                  >
+                    {translatedText(["setupEmailServerButtonText"])}
+                  </ButtonV2>
+                  {config?.emailServiceProvider !== null && (
+                    <ButtonV2
+                      variant={"tertiary"}
+                      onClick={() => {
+                        setModalType(SettingsModalTypes.TEST_EMAIL_SERVER);
+                        setModalOpen(true);
+                      }}
+                      icon={<DraftsOutlinedIcon />}
+                      iconPosition="start"
+                    >
+                      {translatedText(["testEmailServerButtonText"])}
+                    </ButtonV2>
+                  )}
+                </Box>
+              </Box>
+
+              <Divider />
+            </>
+          )}
+
+          {customSettingsComponent && <>{customSettingsComponent}</>}
+        </>
+      )}
+
+      {globalLoginMethod === GlobalLoginMethod.CREDENTIALS && (
+        <Box sx={{ py: "0.5rem" }}>
+          <Typography variant="h2" sx={{ pb: "0.75rem" }}>
+            {translatedText(["securitySettingsTitle"])}
+          </Typography>
+
+          <Typography variant="body1">
+            {translatedText(["securitySettingsDescription"])}
+          </Typography>
+
+          <ButtonV2
+            variant="tertiary"
+            icon={<Icon name={IconName.LOCK_ICON} />}
+            iconPosition="start"
+            className="mt-5"
+            onClick={() => {
+              setModalType(SettingsModalTypes.RESET_PASSWORD);
+              setModalOpen(true);
+            }}
+          >
+            {translatedText(["resetPasswordButtonText"])}
+          </ButtonV2>
+        </Box>
+      )}
+    </>
+  );
+};
+
+export default SettingsSection;

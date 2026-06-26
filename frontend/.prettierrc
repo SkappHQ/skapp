@@ -1,0 +1,21 @@
+{
+  "endOfLine": "auto",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "trailingComma": "none",
+  "singleQuote": false,
+  "semi": true,
+  "importOrder": [
+    "^~(.*)$",
+    "^~community/(.*)$",
+    "^~enterprise/(.*)$",
+    "^~public/(.*)$",
+    "^~styles/(.*)$",
+    "^~i18n/(.*)$",
+    "^[./]",
+    "^~middleware/(.*)$"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "plugins": ["@trivago/prettier-plugin-sort-imports"]
+}

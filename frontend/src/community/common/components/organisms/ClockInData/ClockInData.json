@@ -1,0 +1,24 @@
+[
+  {
+    "employeeId": "2",
+    "name": "Cersei",
+    "clockIn": "08:00 AM",
+    "clockOut": "-",
+    "workedHours": "3hr"
+  },
+  {
+    "employeeId": "2",
+    "name": "Ami",
+    "clockIn": "08:00 AM",
+    "clockOut": "-",
+    "workedHours": "3hr"
+  },
+  {
+    "employeeId": "2",
+    "name": "Shay",
+    "clockIn": "08:00 AM",
+    "clockOut": "-",
+    "workedHours": "3hr",
+    "isLate": true
+  }
+]

@@ -1,0 +1,337 @@
+import {
+  Box,
+  Divider,
+  SelectChangeEvent,
+  Stack,
+  Theme,
+  useTheme
+} from "@mui/material";
+import { ButtonV2, SelectableItemList } from "@rootcodelabs/skapp-ui";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+
+import TableHeaderFill from "~community/attendance/components/molecules/TimesheetTableHeader/TableHeaderFill";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import Pagination from "~community/common/components/atoms/Pagination/Pagination";
+import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
+import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
+import TableEmptyScreen from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
+import useSessionData from "~community/common/hooks/useSessionData";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCommonStore } from "~community/common/stores/commonStore";
+import { IconName } from "~community/common/types/IconTypes";
+import { getRecentYearsInStrings } from "~community/common/utils/dateTimeUtils";
+import {
+  useGetEmployeeLeaveReport,
+  useGetEmployeeLeaveReportCSV
+} from "~community/leave/api/LeaveReportApi";
+import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
+import LeaveReportsTableHeader from "~community/leave/components/molecules/LeaveReportTableHeader/LeaveReportTableHeader";
+import LeaveReportsTableRow from "~community/leave/components/molecules/LeaveReportTableRow/LeaveReportTableRow";
+import TimesheetTableRowFill from "~community/leave/components/molecules/TimesheetTableRow/TimesheetTableRowFill";
+import { SheetType } from "~community/leave/enums/LeaveReportEnums";
+import { useLeaveStore } from "~community/leave/store/store";
+import { ReportTableRowDataType } from "~community/leave/types/LeaveReportTypes";
+import { downloadDataAsCSV } from "~community/leave/utils/leaveReport/exportReportUtils";
+import csvMockData from "~enterprise/leave/data/csvMockData.json";
+import leaveReportsMockData from "~enterprise/leave/data/leaveReportsMockData.json";
+import leaveTypesMockData from "~enterprise/leave/data/leaveTypesMockData.json";
+
+import { styles } from "./styles";
+
+const LeaveEntitlementsReportsTable: FC = () => {
+  const theme: Theme = useTheme();
+  const classes = styles(theme);
+
+  const translateText = useTranslator("leaveModule", "leaveReports");
+
+  const { isProTier } = useSessionData();
+
+  const years = getRecentYearsInStrings();
+
+  const { isDrawerToggled } = useCommonStore((state) => ({
+    isDrawerToggled: state.isDrawerExpanded
+  }));
+
+  const {
+    reportsParams,
+    reportsFilter,
+    reportsFilterOrder,
+    setReportsParams,
+    setReportsFilter,
+    setReportsFilterOrder,
+    setReportsFilterOrderIds,
+    setReportsPagination,
+    resetReportsParams,
+    resetReportsFilter,
+    resetReportsFilterOrder,
+    resetReportsFilterOrderIds
+  } = useLeaveStore();
+
+  const [headerLabels, setHeaderLabels] = useState<string[]>([]);
+  const [selectedLeaveTypes, setSelectedLeaveTypes] = useState<string[]>(
+    reportsFilter.leaveType || []
+  );
+
+  const { data: leaveTypesData } = useGetLeaveTypes(isProTier);
+
+  const leaveTypes = useMemo(() => {
+    return isProTier ? leaveTypesData : leaveTypesMockData;
+  }, [isProTier, leaveTypesData]);
+
+  const employeeLeaveReportData = useGetEmployeeLeaveReport(
+    reportsParams.year,
+    reportsParams.leaveTypeId,
+    reportsParams.teamId,
+    reportsParams.page,
+    reportsParams.size,
+    reportsParams.sortKey,
+    reportsParams.sortOrder,
+    isProTier && !!reportsParams.teamId
+  );
+
+  const reportData = useMemo(() => {
+    return isProTier ? employeeLeaveReportData : leaveReportsMockData;
+  }, [isProTier, employeeLeaveReportData]);
+
+  const allCSVData = useGetEmployeeLeaveReportCSV(
+    reportsParams.year,
+    reportsParams.leaveTypeId,
+    reportsParams.teamId,
+    headerLabels,
+    [],
+    isProTier && !!reportsParams.teamId
+  );
+
+  const CSVdata = useMemo(() => {
+    return isProTier ? allCSVData : csvMockData;
+  }, [isProTier, allCSVData]);
+
+  const leaveTypeButtons = useMemo(() => {
+    return Array.isArray(leaveTypes)
+      ? leaveTypes
+          .filter((leaveType) => leaveType?.isActive)
+          .map((leaveType) => ({
+            id: leaveType?.typeId?.toString(),
+            text: leaveType?.name
+          }))
+      : [];
+  }, [leaveTypes]);
+
+  useEffect(() => {
+    if (reportsFilterOrder?.length === 0) {
+      const sortedLeaveTypes = leaveTypeButtons
+        ?.slice()
+        .sort((a: any, b: any) => a.id - b.id);
+      setHeaderLabels(
+        sortedLeaveTypes?.map((leaveType: any) => leaveType.text)
+      );
+      setReportsFilterOrderIds(
+        sortedLeaveTypes?.map((leaveType: any) => leaveType.id)
+      );
+    } else {
+      setHeaderLabels(reportsFilterOrder);
+      setReportsFilterOrderIds(reportsFilter.leaveType);
+    }
+  }, [
+    reportsFilter,
+    leaveTypes,
+    reportsFilterOrder,
+    leaveTypeButtons,
+    setReportsFilterOrderIds
+  ]);
+
+  useEffect(() => {
+    return () => {
+      resetReportsParams();
+      resetReportsFilter();
+      resetReportsFilterOrder();
+      resetReportsFilterOrderIds();
+    };
+  }, [
+    resetReportsFilter,
+    resetReportsFilterOrder,
+    resetReportsFilterOrderIds,
+    resetReportsParams
+  ]);
+
+  const handleLeaveTypeFilter = (leaveType: { id: string; text: string }) => {
+    const updatedTypes = selectedLeaveTypes.includes(leaveType.text)
+      ? selectedLeaveTypes.filter((type) => type !== leaveType.text)
+      : [...selectedLeaveTypes, leaveType.text];
+
+    setSelectedLeaveTypes(updatedTypes);
+
+    const updatedTypeIds = leaveTypeButtons
+      .filter((button) => updatedTypes.includes(button.text))
+      .map((button) => button.id);
+
+    setReportsFilter("leaveType", updatedTypeIds);
+    setReportsFilterOrderIds(updatedTypeIds);
+  };
+
+  const handleApplyFilters = () => {
+    if (selectedLeaveTypes.length === 1) {
+      const selectedTypeId = leaveTypeButtons.find(
+        (button) => button.text === selectedLeaveTypes[0]
+      )?.id;
+      setReportsParams("leaveTypeId", selectedTypeId || selectedLeaveTypes[0]);
+      setReportsFilterOrder(selectedLeaveTypes);
+    } else {
+      const selectedTypeIds = selectedLeaveTypes
+        .map(
+          (type) => leaveTypeButtons.find((button) => button.text === type)?.id
+        )
+        .filter(Boolean);
+      setReportsParams("leaveTypeId", selectedTypeIds);
+      setReportsFilterOrder(selectedLeaveTypes);
+    }
+    setReportsParams("page", 0);
+  };
+
+  const handleResetFilters = (): void => {
+    setSelectedLeaveTypes([]);
+    resetReportsParams();
+    resetReportsFilter();
+    resetReportsFilterOrder();
+    resetReportsFilterOrderIds();
+  };
+
+  const handleYearClick = (event: SelectChangeEvent): void => {
+    setReportsParams("year", event.target.value);
+  };
+
+  const downloadCSV = (reportType: SheetType) => {
+    if (CSVdata) {
+      downloadDataAsCSV(CSVdata, headerLabels, reportType);
+    }
+  };
+
+  return (
+    <>
+      <Stack sx={classes.headerStack}>
+        <Box>
+          <RoundedSelect
+            id="leave-entitlements-report-table-year-filter"
+            onChange={handleYearClick}
+            value={reportsParams.year}
+            options={years}
+          />
+        </Box>
+        <FilterButton
+          handleApplyBtnClick={handleApplyFilters}
+          handleResetBtnClick={handleResetFilters}
+          selectedFilters={selectedLeaveTypes.map((type) => ({
+            filter: [type]
+          }))}
+          position={"bottom-end"}
+          id={"filter-types"}
+          isResetBtnDisabled={selectedLeaveTypes.length === 0}
+        >
+          <SelectableItemList
+            title={translateText(["filterPopperLeaveTypeTitle"])}
+            items={leaveTypeButtons.map((leaveType) => ({
+              label: leaveType.text,
+              value: leaveType.text
+            }))}
+            selectedValues={selectedLeaveTypes}
+            onChipClick={(leaveTypeText) => {
+              const leaveType = leaveTypeButtons.find(
+                (btn) => btn.text === leaveTypeText
+              );
+              if (leaveType) {
+                handleLeaveTypeFilter(leaveType);
+              }
+            }}
+            className="max-h-full"
+          />
+        </FilterButton>
+      </Stack>
+      <Stack sx={classes.stackContainer}>
+        {reportData?.items?.length === 0 ? (
+          <Box sx={classes.emptyScreenContainer}>
+            <TableEmptyScreen
+              title={translateText(["emptyScreenTitle"])}
+              description={translateText(["emptyScreenDescription"])}
+            />
+          </Box>
+        ) : (
+          <>
+            {!isDrawerToggled ? (
+              <LeaveReportsTableHeader headerLabels={headerLabels} />
+            ) : (
+              <Box sx={classes.boxContainer}>
+                <LeaveReportsTableHeader headerLabels={headerLabels} />
+              </Box>
+            )}
+            <TableHeaderFill />
+            {reportData?.items?.map(
+              (employee: ReportTableRowDataType, index: number) => (
+                <>
+                  {!isDrawerToggled ? (
+                    <>
+                      <TimesheetTableRowFill
+                        noOfRows={reportData.items.length}
+                      />
+                      <LeaveReportsTableRow
+                        key={index}
+                        employee={{
+                          employeeId: employee?.employeeId,
+                          firstName: employee?.firstName,
+                          lastName: employee?.lastName,
+                          avatarUrl: employee?.authPic
+                        }}
+                        allocations={employee.leaveEntitlementReportDtos}
+                      />
+                    </>
+                  ) : (
+                    <Box sx={classes.boxContainer}>
+                      <TimesheetTableRowFill
+                        noOfRows={reportData.items.length}
+                      />
+                      <LeaveReportsTableRow
+                        key={index}
+                        employee={{
+                          employeeId: employee?.employeeId,
+                          firstName: employee?.firstName,
+                          lastName: employee?.lastName,
+                          avatarUrl: employee?.authPic
+                        }}
+                        allocations={employee.leaveEntitlementReportDtos}
+                      />
+                    </Box>
+                  )}
+                </>
+              )
+            )}
+          </>
+        )}
+      </Stack>
+      <Stack sx={classes.paginationContainer}>
+        <Divider sx={classes.divider} />
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Pagination
+            totalPages={reportData?.totalPages ?? 0}
+            currentPage={reportsParams.page}
+            onChange={(_event: ChangeEvent<unknown>, value: number) =>
+              setReportsPagination(value - 1)
+            }
+          />
+          <ButtonV2
+            variant={"tertiary"}
+            onClick={() => downloadCSV(SheetType.LeaveAllocation)}
+            icon={<Icon name={IconName.DOWNLOAD_ICON} />}
+            iconPosition="end"
+          >
+            {translateText(["exportBtnTxt"])}
+          </ButtonV2>
+        </Stack>
+      </Stack>
+    </>
+  );
+};
+
+export default LeaveEntitlementsReportsTable;

@@ -1,0 +1,473 @@
+[
+  {
+    "employeeId": "2",
+    "name": "Cersei",
+    "lastName": "Lannister",
+    "middleName": "Adriana",
+    "address": "Test Street",
+    "addressLine2": "",
+    "designation": null,
+    "authPic": "",
+    "identificationNo": "002",
+    "country": "Anguilla",
+    "permission": null,
+    "phone": "94 2025550190",
+    "timeZone": "Asia/Colombo",
+    "gender": "FEMALE",
+    "joinDate": "2024-06-01",
+    "personalEmail": "hubozapu@givmail.com",
+    "email": "cersei@blondmail.com",
+    "isActive": true,
+    "accountSignIn": "COMPLETED",
+    "jobLevel": null,
+    "currentEmploymentType": null,
+    "jobRole": null,
+    "periodResponseDto": null,
+    "employmentAllocation": "FULL_TIME",
+    "employmentStatus": "ACTIVE",
+    "managers": [
+      {
+        "manager": {
+          "employeeId": "1",
+          "name": "Robert",
+          "lastName": "Baratheon",
+          "middleName": null,
+          "address": null,
+          "addressLine2": null,
+          "designation": null,
+          "authPic": "https://leaveapp-stage.s3.amazonaws.com/leaveapp-stage/profilePictures/got/robert_2024-07-23T07%2018%2036.025Z.jpg",
+          "identificationNo": null,
+          "permission": "SUPER_ADMIN",
+          "email": "robertb@blondmail.com",
+          "jobLevel": null,
+          "jobRole": null,
+          "probationPeriod": null,
+          "employmentAllocation": "FULL_TIME",
+          "employmentStatus": "ACTIVE",
+          "country": null,
+          "personalEmail": null,
+          "phone": "385 12345",
+          "gender": null,
+          "employeeProgressions": [],
+          "eeo": null,
+          "ethnicity": null,
+          "teams": [
+            {
+              "team": {
+                "teamId": 1,
+                "teamName": "The Baratheons"
+              }
+            }
+          ],
+          "employeeVisas": [],
+          "employeeEmergencies": [],
+          "employeePersonalInfo": null,
+          "employeeEducations": [],
+          "employeeFamilies": [],
+          "userRole": "SUPER_ADMIN"
+        },
+        "managerType": "PRIMARY",
+        "primaryManager": true
+      }
+    ],
+    "employeeProgressions": [],
+    "teams": [
+      {
+        "team": {
+          "teamId": 2,
+          "teamName": "The Lannisters"
+        }
+      },
+      {
+        "team": {
+          "teamId": 1,
+          "teamName": "Team 2"
+        }
+      },
+      {
+        "team": {
+          "teamId": 1,
+          "teamName": "Team 3"
+        }
+      }
+    ],
+    "employeeEmergencies": [
+      {
+        "emergencyId": 1,
+        "name": "Sathya Perera",
+        "emergencyRelationship": "FAMILY",
+        "contactNo": "94 7156565",
+        "isPrimary": true
+      }
+    ],
+    "eeo": null,
+    "ethnicity": null,
+    "employeePermission": {
+      "role": "MANAGERS",
+      "assignedPermission": [
+        "EMPLOYEES",
+        "LEAVE_MANAGER",
+        "TIME_MANAGER",
+        "PEOPLE_MANAGER"
+      ]
+    },
+    "employeeVisas": [],
+    "personalInfo": {
+      "personalInfoId": 2,
+      "city": "Houstan",
+      "state": "HJ",
+      "postalCode": "20705",
+      "birthDate": "2003-05-22",
+      "ethnicity": null,
+      "ssn": null,
+      "previousEmploymentDetails": [],
+      "nationality": "American",
+      "nin": "123456",
+      "passportNo": null,
+      "maritalStatus": "MARRIED",
+      "socialMediaDetails": {},
+      "bloodGroup": null,
+      "extraInfo": {}
+    },
+    "employeeEducations": [],
+    "employeeFamilies": []
+  },
+  {
+    "employeeId": "3",
+    "name": "Jamie",
+    "lastName": "Lannister",
+    "middleName": "Tywin",
+    "address": "Test Street",
+    "addressLine2": "",
+    "designation": null,
+    "authPic": "",
+    "identificationNo": "004",
+    "country": "Sri Lanka",
+    "permission": null,
+    "phone": "94 2025550190",
+    "timeZone": "Asia/Colombo",
+    "gender": "MALE",
+    "joinDate": "2024-06-01",
+    "personalEmail": "hubozapu@givmail.com",
+    "email": "jamie@blondmail.com",
+    "isActive": true,
+    "accountSignIn": "COMPLETED",
+    "jobLevel": null,
+    "currentEmploymentType": null,
+    "jobRole": null,
+    "periodResponseDto": null,
+    "employmentAllocation": "FULL_TIME",
+    "employmentStatus": "ACTIVE",
+    "managers": [
+      {
+        "manager": {
+          "employeeId": "1",
+          "name": "Robert",
+          "lastName": "Baratheon",
+          "middleName": null,
+          "address": null,
+          "addressLine2": null,
+          "designation": null,
+          "authPic": "https://leaveapp-stage.s3.amazonaws.com/leaveapp-stage/profilePictures/got/robert_2024-07-23T07%2018%2036.025Z.jpg",
+          "identificationNo": null,
+          "permission": "SUPER_ADMIN",
+          "email": "robertb@blondmail.com",
+          "jobLevel": null,
+          "jobRole": null,
+          "probationPeriod": null,
+          "employmentAllocation": "FULL_TIME",
+          "employmentStatus": "ACTIVE",
+          "country": null,
+          "personalEmail": null,
+          "phone": "385 12345",
+          "gender": null,
+          "employeeProgressions": [],
+          "eeo": null,
+          "ethnicity": null,
+          "teams": [
+            {
+              "team": {
+                "teamId": 1,
+                "teamName": "The Baratheons"
+              }
+            }
+          ],
+          "employeeVisas": [],
+          "employeeEmergencies": [],
+          "employeePersonalInfo": null,
+          "employeeEducations": [],
+          "employeeFamilies": [],
+          "userRole": "SUPER_ADMIN"
+        },
+        "managerType": "PRIMARY",
+        "primaryManager": true
+      }
+    ],
+    "employeeProgressions": [],
+    "teams": [
+      {
+        "team": {
+          "teamId": 2,
+          "teamName": "The Lannisters"
+        }
+      }
+    ],
+    "employeeEmergencies": [
+      {
+        "emergencyId": 2,
+        "name": "Cersei Lannister",
+        "emergencyRelationship": "FAMILY",
+        "contactNo": "94 715906888",
+        "isPrimary": true
+      }
+    ],
+    "eeo": null,
+    "ethnicity": null,
+    "employeePermission": {
+      "role": "MANAGERS",
+      "assignedPermission": [
+        "EMPLOYEES",
+        "PEOPLE_MANAGER",
+        "TIME_MANAGER",
+        "LEAVE_MANAGER"
+      ]
+    },
+    "employeeVisas": [],
+    "personalInfo": {
+      "personalInfoId": 3,
+      "city": "Houstan",
+      "state": "IL",
+      "postalCode": "20705",
+      "birthDate": "1948-01-01",
+      "ethnicity": null,
+      "ssn": null,
+      "previousEmploymentDetails": [],
+      "nationality": "Ålandish",
+      "nin": "123456",
+      "passportNo": null,
+      "maritalStatus": "MARRIED",
+      "socialMediaDetails": {
+        "facebook": "",
+        "linkedIn": "",
+        "x": "",
+        "instagram": ""
+      },
+      "bloodGroup": null,
+      "extraInfo": {
+        "bloodGroup": "",
+        "allergies": "",
+        "dietaryRestrictions": "",
+        "tshirtSize": ""
+      }
+    },
+    "employeeEducations": [],
+    "employeeFamilies": []
+  },
+  {
+    "employeeId": "1",
+    "name": "Robert",
+    "lastName": "Baratheon",
+    "middleName": null,
+    "address": null,
+    "addressLine2": null,
+    "designation": null,
+    "authPic": "https://leaveapp-stage.s3.amazonaws.com/leaveapp-stage/profilePictures/got/robert_2024-07-23T07%2018%2036.025Z.jpg",
+    "identificationNo": null,
+    "country": null,
+    "permission": null,
+    "phone": "385 12345",
+    "timeZone": null,
+    "gender": null,
+    "joinDate": null,
+    "personalEmail": null,
+    "email": "robertb@blondmail.com",
+    "isActive": true,
+    "accountSignIn": "COMPLETED",
+    "jobLevel": null,
+    "currentEmploymentType": null,
+    "jobRole": null,
+    "periodResponseDto": null,
+    "employmentAllocation": "FULL_TIME",
+    "employmentStatus": "ACTIVE",
+    "managers": [],
+    "employeeProgressions": [],
+    "teams": [
+      {
+        "team": {
+          "teamId": 1,
+          "teamName": "The Baratheons"
+        }
+      }
+    ],
+    "employeeEmergencies": [],
+    "eeo": null,
+    "ethnicity": null,
+    "employeePermission": {
+      "role": "SUPER_ADMIN",
+      "assignedPermission": [
+        "SUPER_ADMIN",
+        "PEOPLE_MANAGER",
+        "TIME_MANAGER",
+        "EMPLOYEES",
+        "LEAVE_MANAGER"
+      ]
+    },
+    "employeeVisas": [],
+    "personalInfo": null,
+    "employeeEducations": [],
+    "employeeFamilies": []
+  },
+  {
+    "employeeId": "4",
+    "name": "Tyrion",
+    "lastName": "Lannister",
+    "middleName": "Tywin",
+    "address": "Test Street",
+    "addressLine2": "",
+    "designation": null,
+    "authPic": "",
+    "identificationNo": "005",
+    "country": "Sri Lanka",
+    "permission": null,
+    "phone": "94 715906888",
+    "timeZone": "Asia/Colombo",
+    "gender": "MALE",
+    "joinDate": "2024-06-01",
+    "personalEmail": "hubozapu@givmail.com",
+    "email": "tyrion@blondmail.com",
+    "isActive": true,
+    "accountSignIn": "COMPLETED",
+    "jobLevel": null,
+    "currentEmploymentType": null,
+    "jobRole": null,
+    "periodResponseDto": null,
+    "employmentAllocation": "FULL_TIME",
+    "employmentStatus": "ACTIVE",
+    "managers": [
+      {
+        "manager": {
+          "employeeId": "3",
+          "name": "Jamie",
+          "lastName": "Lannister",
+          "middleName": "Tywin",
+          "address": "Test Street",
+          "addressLine2": "",
+          "designation": null,
+          "authPic": "",
+          "identificationNo": "004",
+          "permission": "MANAGERS",
+          "email": "jamie@blondmail.com",
+          "jobLevel": null,
+          "jobRole": null,
+          "probationPeriod": null,
+          "employmentAllocation": "FULL_TIME",
+          "employmentStatus": "ACTIVE",
+          "country": "Sri Lanka",
+          "personalEmail": "hubozapu@givmail.com",
+          "phone": "94 2025550190",
+          "gender": "MALE",
+          "employeeProgressions": [],
+          "eeo": null,
+          "ethnicity": null,
+          "teams": [
+            {
+              "team": {
+                "teamId": 2,
+                "teamName": "The Lannisters"
+              }
+            }
+          ],
+          "employeeVisas": [],
+          "employeeEmergencies": [
+            {
+              "emergencyId": 2,
+              "name": "Cersei Lannister",
+              "emergencyRelationship": "FAMILY",
+              "contactNo": "94 715906888",
+              "isPrimary": true
+            }
+          ],
+          "employeePersonalInfo": {
+            "personalInfoId": 3,
+            "city": "Houstan",
+            "state": "IL",
+            "postalCode": "20705",
+            "birthDate": "1948-01-01",
+            "ethnicity": null,
+            "ssn": null,
+            "previousEmploymentDetails": [],
+            "nationality": "Ålandish",
+            "nin": "123456",
+            "passportNo": null,
+            "maritalStatus": "MARRIED",
+            "socialMediaDetails": {
+              "facebook": "",
+              "linkedIn": "",
+              "x": "",
+              "instagram": ""
+            },
+            "bloodGroup": null,
+            "extraInfo": {
+              "bloodGroup": "",
+              "allergies": "",
+              "dietaryRestrictions": "",
+              "tshirtSize": ""
+            }
+          },
+          "employeeEducations": [],
+          "employeeFamilies": [],
+          "userRole": "MANAGERS"
+        },
+        "managerType": "PRIMARY",
+        "primaryManager": true
+      }
+    ],
+    "employeeProgressions": [],
+    "teams": [],
+    "employeeEmergencies": [
+      {
+        "emergencyId": 3,
+        "name": "Sathya Perera",
+        "emergencyRelationship": "FRIEND",
+        "contactNo": "94 715906888",
+        "isPrimary": true
+      }
+    ],
+    "eeo": null,
+    "ethnicity": null,
+    "employeePermission": {
+      "role": "EMPLOYEES",
+      "assignedPermission": ["EMPLOYEES"]
+    },
+    "employeeVisas": [],
+    "personalInfo": {
+      "personalInfoId": 4,
+      "city": "Houstan",
+      "state": "IL",
+      "postalCode": "20705",
+      "birthDate": "2004-07-29",
+      "ethnicity": null,
+      "ssn": "",
+      "previousEmploymentDetails": [],
+      "nationality": "Sri Lankan",
+      "nin": "12453",
+      "passportNo": "",
+      "maritalStatus": "SINGLE",
+      "socialMediaDetails": {
+        "facebook": "",
+        "linkedIn": "",
+        "x": "",
+        "instagram": ""
+      },
+      "bloodGroup": null,
+      "extraInfo": {
+        "bloodGroup": "",
+        "allergies": "",
+        "dietaryRestrictions": "",
+        "tshirtSize": ""
+      }
+    },
+    "employeeEducations": [],
+    "employeeFamilies": []
+  }
+]

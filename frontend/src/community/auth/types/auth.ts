@@ -1,0 +1,33 @@
+import { User } from "~community/auth/utils/authUtils";
+import {
+  EnterpriseSignInParams,
+  EnterpriseSignUpParams
+} from "~enterprise/auth/utils/authUtils";
+
+import { SignInStatus } from "../enums/auth";
+
+export interface AuthContextType {
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  user: User | null;
+  signIn: (params: EnterpriseSignInParams) => Promise<AuthResponseType>;
+  signUp: (params: EnterpriseSignUpParams) => Promise<AuthResponseType>;
+  checkAuth: () => Promise<void>;
+}
+
+export interface AuthResponseType {
+  status: SignInStatus;
+  error?: string;
+}
+
+export interface CommunitySignInParams {
+  email?: string;
+  password?: string;
+}
+
+export interface CommunitySignUpParams {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+}

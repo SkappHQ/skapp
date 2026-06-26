@@ -1,0 +1,40 @@
+{
+  "timeWidget": {
+    "widget": "Clock Widget",
+    "clockIn": "Clock in",
+    "startTimer": "Resume timer",
+    "pauseTimer": "Take a break"
+  },
+  "timesheet": {
+    "dailyLogTable": {
+      "holiday": "holiday",
+      "leave": "leave",
+      "previousButton": "Click to go to previous",
+      "nextButton": "Click to go to next"
+    },
+    "timeEntryRequestTable": {
+      "filterButton": "Filter options"
+    }
+  },
+  "dashboards": {
+    "todaysClockInsExtendedView": "Today's clock ins extended view",
+    "todaysLateArrivalsExtendedView": "Today's late arrivals extended view",
+    "clockInTrend": "Clock in trend",
+    "clockOutTrend": "Clock out trend",
+    "date": "Date",
+    "lateArrivalTrendWeekly": "Weekly late arrival trend",
+    "lateArrivalTrendMonthly": "monthly late arrival trend",
+    "previousTimeSlots": "previous time slots",
+    "nextTimeSlots": "next time slots",
+    "lateArrivalTrendWeeklyNext": "next week",
+    "lateArrivalTrendWeeklyPrevious": "previous week",
+    "lateArrivalTrendMonthlyNext": "next month",
+    "lateArrivalTrendMonthlyPrevious": "previous month",
+    "averageHoursWorkedNextMonth": "next month",
+    "averageHoursWorkedPreviousMonth": "previous month",
+    "averageHoursWorkedNextDates": "next dates",
+    "averageHoursWorkedPreviousDates": "previous dates",
+    "clockChart": "{{type}} chart - use arrow keys to navigate",
+    "lateArrivalChart": "{{type}} late arrival trend - use arrow keys to navigate"
+  }
+}

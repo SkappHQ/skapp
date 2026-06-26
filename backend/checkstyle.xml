@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="warning"/>
+    <property name="fileExtensions" value="java, xml"/>
+
+    <module name="SuppressionFilter">
+        <property name="file" value="checkstyle-suppressions.xml"/>
+    </module>
+
+    <module name="FileLength">
+        <property name="fileExtensions" value="java"/>
+        <property name="max" value="5000"/>
+        <property name="severity" value="error"/>
+    </module>
+    <module name="NewlineAtEndOfFile">
+        <property name="severity" value="error"/>
+    </module>
+</module>

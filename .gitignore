@@ -1,0 +1,65 @@
+################# frontend
+
+
+# dependencies
+frontend/node_modules
+
+# testing
+frontend/coverage
+
+# next.js
+frontend/.next/
+frontend/out/
+
+# production
+frontend/build
+
+# local env files
+frontend/.env
+
+# webstorm
+**/.idea/
+
+# vscode
+**/.vscode/
+
+# typescript
+frontend/next-env.d.ts
+
+
+
+##################### backend
+backend/HELP.md
+**/target/
+!backend/.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+backend/.apt_generated
+backend/.classpath
+backend/.factorypath
+backend/.project
+backend/.settings
+backend/.springBeans
+backend/.sts4-cache
+backend/.env
+backend/.env.local
+
+### IntelliJ IDEA ###
+backend/.idea
+backend/*.iws
+backend/*.iml
+backend/*.ipr
+
+### NetBeans ###
+backend/nbproject/private/
+backend/nbbuild/
+backend/dist/
+backend/nbdist/
+backend/.nb-gradle/
+backend/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+.npmrc

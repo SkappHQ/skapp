@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){yellow} %clr([%thread]){magenta} %clr([%X{tenantId}]){cyan} %clr([%X{email}]){green} %clr(%highlight(%-5level)) %clr([%logger{36}]){blue} %clr(-){faint} %clr(%msg){bold} %n"/>
+</configuration>

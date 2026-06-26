@@ -1,0 +1,47 @@
+.full-day-border {
+  border: 0.125rem solid red;
+}
+
+.half-day-morning-border {
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.half-day-morning-border::before,
+.half-day-morning-border::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 0.125rem solid red;
+  clip-path: polygon(0 0, 50% 0, 50% 100%, 0% 100%);
+  box-sizing: border-box;
+}
+
+.half-day-evening-border {
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.half-day-evening-border::before,
+.half-day-evening-border::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 0.125rem solid red; /* Replace with actual color value */
+  clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+  box-sizing: border-box;
+}

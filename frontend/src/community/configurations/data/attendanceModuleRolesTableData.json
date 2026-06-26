@@ -1,0 +1,107 @@
+[
+  {
+    "permission": "manageAttendanceSettings",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageOrganizationTimesheet",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageTeamTimesheets",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageIndividualTimesheets",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "approveOrDeclineTimeRequests",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "submitOrCancelTimeRequests",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "recordClockInAndClockOut",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false
+    }
+  }
+]

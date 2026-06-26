@@ -1,0 +1,322 @@
+{
+  "en": {
+    "people": [
+      {
+        "id": "people-module-new-holiday-declared-employee",
+        "title": "New company holiday declared!",
+        "message": "{{organizationName}} has declared {{holidayDate}} as a company holiday for {{holidayName}}"
+      },
+      {
+        "id": "people-module-holiday-single-day-pending-leave-request-canceled-employee",
+        "title": "Your leave request has been canceled!",
+        "message": "Your leave request for {{leaveStartDate}} has been canceled due to a company holiday. "
+      },
+      {
+        "id": "people-module-holiday-multi-day-pending-leave-request-updated-employee",
+        "title": "Your leave request has been updated!",
+        "message": "Your leave request for {{leaveStartDate}} has been updated due to a company holiday. "
+      },
+      {
+        "id": "people-module-holiday-single-day-approved-leave-request-revoked-employee",
+        "title": "Your leave request has been revoked!",
+        "message": "Your leave request for {{leaveStartDate}} has been revoked due to a company holiday. "
+      },
+      {
+        "id": "people-module-holiday-multi-day-approved-leave-request-updated-employee",
+        "title": "Your leave request has been updated!",
+        "message": "Your leave request for the period from {{leaveStartDate}} to {{leaveEndDate}} has been updated due to a company holiday."
+      },
+      {
+        "id": "people-module-holiday-single-day-pending-leave-request-canceled-manager",
+        "title": "A leave request has been canceled!",
+        "message": "{{employeeName}}'s  leave request for {{leaveStartDate}} has been canceled due to a company holiday."
+      },
+      {
+        "id": "people-module-holiday-multi-day-pending-leave-request-updated-manager",
+        "title": "A leave request has been updated!",
+        "message": "{{employeeName}}'s  leave request for {{leaveStartDate}} has been updated due to a company holiday."
+      },
+      {
+        "id": "people-module-holiday-single-day-approved-leave-request-revoked-manager",
+        "title": "A leave request has been revoked!",
+        "message": "{{employeeName}}'s  leave request for {{leaveStartDate}} has been revoked due to a company holiday."
+      },
+      {
+        "id": "people-module-holiday-multi-day-approved-leave-request-updated-manager",
+        "title": "A leave request has been updated!",
+        "message": "{{employeeName}}'s leave request from {{leaveStartDate}} to {{leaveEndDate}} has been updated due to a company holiday."
+      },
+      {
+        "id": "people-module-password-reset-request-manager",
+        "title": "Password Reset Request",
+        "message": "Password reset requested for {{employeeName}} at {{requestDateTime}}. Review and process as needed."
+      }
+    ],
+    "leave": [
+      {
+        "id": "leave-module-employee-apply-single-day-leave",
+        "title": "Leave request recorded",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request on {{leaveStartDate}} has been recorded and sent for approval."
+      },
+      {
+        "id": "leave-module-employee-apply-multiple-day-leave",
+        "title": "Leave request recorded",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request from {{leaveStartDate}} to {{leaveEndDate}} has been recorded and sent for approval."
+      },
+      {
+        "id": "leave-module-manager-received-single-day-leave",
+        "title": "New leave request",
+        "message": "{{employeesName}} has requested {{leaveDuration}} {{leaveType}} on {{leaveStartDate}}. Please review for approval."
+      },
+      {
+        "id": "leave-module-manager-received-multiple-day-leave",
+        "title": "New leave request",
+        "message": "{{employeesName}} has requested {{leaveDuration}} {{leaveType}} from {{leaveStartDate}} to {{leaveEndDate}}. Please review for approval."
+      },
+      {
+        "id": "leave-module-employee-cancel-single-day-leave",
+        "title": "Leave request canceled",
+        "message": "Your request for a {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been canceled."
+      },
+      {
+        "id": "leave-module-employee-cancel-multiple-day-leave",
+        "title": "Leave request canceled",
+        "message": "Your request for a {{leaveDuration}} {{leaveType}} leave from {{leaveStartDate}} to {{leaveEndDate}} has been canceled."
+      },
+      {
+        "id": "leave-module-manager-cancel-single-day-leave",
+        "title": "Leave request canceled",
+        "message": "Your request for a {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been canceled."
+      },
+      {
+        "id": "leave-module-manager-cancel-multiple-day-leave",
+        "title": "Leave request canceled",
+        "message": "Your request for a {{leaveDuration}} {{leaveType}} leave from {{leaveStartDate}} to {{leaveEndDate}} has been canceled."
+      },
+      {
+        "id": "leave-module-employee-approved-single-day-leave",
+        "title": "Leave request approved",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request on {{leaveStartDate}} has been approved."
+      },
+      {
+        "id": "leave-module-employee-approved-multi-day-leave",
+        "title": "Leave request approved",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request from {{leaveStartDate}} to {{leaveEndDate}} has been approved."
+      },
+      {
+        "id": "leave-module-manager-approved-single-day-leave",
+        "title": "Leave request approved",
+        "message": "{{employeesName}} request for {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been approved."
+      },
+      {
+        "id": "leave-module-manager-approved-multi-day-leave",
+        "title": "Leave request approved",
+        "message": "{{employeesName}} {{leaveDuration}} {{leaveType}} leave request from {{leaveStartDate}} to {{leaveEndDate}} has been approved."
+      },
+      {
+        "id": "leave-module-employee-revoked-single-day-leave",
+        "title": "Leave request revoked",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request on {{leaveStartDate}} has been revoked."
+      },
+      {
+        "id": "leave-module-employee-revoked-multi-day-leave",
+        "title": "Leave request revoked",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request from {{leaveStartDate}} to {{leaveEndDate}} has been revoked."
+      },
+      {
+        "id": "leave-module-manager-revoked-single-day-leave",
+        "title": "Leave request revoked",
+        "message": "{{employeesName}} request for a {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been revoked."
+      },
+      {
+        "id": "leave-module-manager-revoked-multi-day-leave",
+        "title": "Leave request revoked",
+        "message": "{{employeesName}} request for {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been revoked."
+      },
+      {
+        "id": "leave-module-employee-declined-single-day-leave",
+        "title": "Leave request declined",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request on {{leaveStartDate}} has been declined."
+      },
+      {
+        "id": "leave-module-employee-declined-multi-day-leave",
+        "title": "Leave request declined",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request from {{leaveStartDate}} to {{leaveEndDate}} has been declined."
+      },
+      {
+        "id": "leave-module-manager-declined-single-day-leave",
+        "title": "Leave request declined",
+        "message": "{{employeesName}} request for a {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been declined."
+      },
+      {
+        "id": "leave-module-manager-declined-multi-day-leave",
+        "title": "Leave request declined",
+        "message": "{{employeesName}} request for {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been declined."
+      },
+      {
+        "id": "leave-module-manager-nudge-single-day-leave",
+        "title": "Leave request reminder",
+        "message": "You have a leave request reminder from {{employeesName}}."
+      },
+      {
+        "id": "leave-module-manager-nudge-multi-day-leave",
+        "title": "Leave request reminder",
+        "message": "You have a leave request reminder from {{employeesName}}."
+      },
+      {
+        "id": "leave-module-employee-auto-approved-single-day-leave",
+        "title": "Leave request approved",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request on {{leaveStartDate}} has been approved."
+      },
+      {
+        "id": "leave-module-employee-auto-approved-multi-day-leave",
+        "title": "Leave request approved",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave request from {{leaveStartDate}} to {{leaveEndDate}} has been approved."
+      },
+      {
+        "id": "leave-module-manager-auto-approved-single-day-leave",
+        "title": "Leave request approved",
+        "message": "{{employeesName}} request for {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been automatically approved."
+      },
+      {
+        "id": "leave-module-manager-auto-approved-multi-day-leave",
+        "title": "Leave request approved",
+        "message": "{{employeesName}} {{leaveDuration}} {{leaveType}} leave request from {{leaveStartDate}} to {{leaveEndDate}} has been automatically approved."
+      },
+      {
+        "id": "leave-module-employee-leave-carry-forward",
+        "title": "Leave balance update",
+        "message": "Your eligible leave balances have been carried forward!"
+      },
+      {
+        "id": "leave-module-employee-custom-allocation",
+        "title": "Custom allocation added",
+        "message": "{{leaveType}} leave of {{leaveDuration}} days has been added to your account."
+      }
+    ],
+    "attendance": [
+      {
+        "id": "attendance-module-time-entry-request-submitted-employee",
+        "title": "Your time entry request has been submitted!",
+        "message": "Your time entry request for the {{timeEntryDate}} has been submitted."
+      },
+      {
+        "id": "attendance-module-received-time-entry-request-manager",
+        "title": "You have received a time entry request!",
+        "message": "You have received a time entry request from {{employeeName}} for the {{timeEntryDate}}."
+      },
+      {
+        "id": "attendance-module-time-entry-request-approved-employee",
+        "title": "Your supervisor has approved your time entry request!",
+        "message": "Your time entry request for the {{timeEntryDate}} has been approved by your supervisor. "
+      },
+      {
+        "id": "attendance-module-time-entry-request-declined-employee",
+        "title": "Your supervisor has declined your time entry request!",
+        "message": "Your time entry request for the {{timeEntryDate}} has been declined by your supervisor."
+      },
+      {
+        "id": "attendance-module-pending-time-entry-request-cancelled-employee",
+        "title": "Your time entry request has been canceled!",
+        "message": "Your time entry request for the {{timeEntryDate}} has been canceled. "
+      },
+      {
+        "id": "attendance-module-pending-time-entry-request-cancelled-manager",
+        "title": "A pending time entry request has been canceled!",
+        "message": "{{employeeName}} has canceled their time entry request for the date {{timeEntryDate}}."
+      },
+      {
+        "id": "attendance-module-time-entry-request-auto-approved-employee",
+        "title": "Your time entry requests has been approved!",
+        "message": "Your time entry request for the {{timeEntryDate}} has been approved."
+      },
+      {
+        "id": "attendance-module-time-entry-request-auto-approved-manager",
+        "title": "A time entry request has been auto approved!",
+        "message": "Time entry request for {{employeeName}} on {{timeEntryDate}} has been automatically approved."
+      },
+      {
+        "id": "attendance-module-non-working-day-single-day-pending-leave-request-canceled-employee",
+        "title": "Your leave request has been canceled!",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been canceled."
+      },
+      {
+        "id": "attendance-module-non-working-day-multi-day-pending-leave-request-canceled-employee",
+        "title": "Your leave request has been canceled!",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave from {{leaveStartDate}} to {{leaveEndDate}} has been canceled."
+      },
+      {
+        "id": "attendance-module-non-working-day-single-day-approved-leave-request-revoked-employee",
+        "title": "Your leave request has been revoked!",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been revoked."
+      },
+      {
+        "id": "attendance-module-non-working-day-multi-day-approved-leave-request-revoked-employee",
+        "title": "Your leave request has been revoked!",
+        "message": "Your {{leaveDuration}} {{leaveType}} leave from {{leaveStartDate}} to {{leaveEndDate}} has been revoked."
+      },
+      {
+        "id": "attendance-module-non-working-day-single-day-pending-leave-request-canceled-manager",
+        "title": "A leave request has been canceled!",
+        "message": "{{employeeName}}'s {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been canceled."
+      },
+      {
+        "id": "attendance-module-non-working-day-multi-day-pending-leave-request-canceled-manager",
+        "title": "A leave request has been canceled!",
+        "message": "{{employeeName}}'s leave from {{leaveStartDate}} to {{leaveEndDate}} has been canceled."
+      },
+      {
+        "id": "attendance-module-non-working-day-single-day-approved-leave-request-revoked-manager",
+        "title": "A leave request has been revoked!",
+        "message": "{{employeeName}}'s {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been revoked."
+      },
+      {
+        "id": "attendance-module-non-working-day-multi-day-approved-leave-request-revoked-manager",
+        "title": "A leave request has been revoked!",
+        "message": "{{employeeName}}'s {{leaveDuration}} {{leaveType}} leave from {{leaveStartDate}} to {{leaveEndDate}} has been revoked."
+      },
+      {
+        "id": "attendance-module-time-entry-request-approved-other-manager",
+        "title": "A time entry request has been approved!",
+        "message": "Time entry request form {{employeeName}} for the {{timeEntryDate}} has been approved."
+      },
+      {
+        "id": "attendance-module-time-entry-request-declined-other-manager",
+        "title": "A time entry request has been declined!",
+        "message": "Time entry request form {{employeeName}} for the {{timeEntryDate}} has been declined."
+      }
+    ],
+    "esign": [
+      {
+        "id": "esign-document-sign-request",
+        "title": "Document requires your signature",
+        "message": "You are requested to complete the {{documentName}}"
+      },
+      {
+        "id": "esign-document-completed",
+        "title": "Document completed",
+        "message": "{{recipientName}} has completed the {{documentName}}"
+      },
+      {
+        "id": "esign-document-declined",
+        "title": "Document declined",
+        "message": "{{recipientName}} has declined the {{documentName}}"
+      },
+      {
+        "id": "esign-document-voided",
+        "title": "Document voided",
+        "message": "{{senderName}} has voided the {{documentName}}"
+      },
+      {
+        "id": "esign-document-reminder",
+        "title": "Document reminder",
+        "message": "Reminder to complete the {{documentName}}"
+      },
+      {
+        "id": "esign-document-expired",
+        "title": "Document expired",
+        "message": "{{documentName}} is expiring today. Please review and sign."
+      }
+    ]
+  }
+}

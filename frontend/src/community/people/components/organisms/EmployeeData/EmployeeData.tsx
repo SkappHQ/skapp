@@ -1,0 +1,237 @@
+import { Box, Stack } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+
+import { useAuth } from "~community/auth/providers/AuthProvider";
+import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
+import ROUTES from "~community/common/constants/routes";
+import { peopleDirectoryTestId } from "~community/common/constants/testIds";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
+import { IconName } from "~community/common/types/IconTypes";
+import {
+  useGetBannerData,
+  useGetEmployeeData
+} from "~community/people/api/PeopleApi";
+import EmployeeDataBanner from "~community/people/components/molecules/EmployeeDataBanner/EmployeeDataBanner";
+import PeopleTable from "~community/people/components/molecules/PeopleTable/PeopleTable";
+import { usePeopleStore } from "~community/people/store/store";
+import {
+  DataFilterEnums,
+  EmploymentStatusTypes
+} from "~community/people/types/EmployeeTypes";
+import { AllEmployeeDataType } from "~community/people/types/PeopleTypes";
+import RemovePeopleCountBanner from "~enterprise/settings/components/molecules/RemovePeopleCountBanner/RemovePeopleCountBanner";
+
+interface EmployeeDataProps {
+  isRemovePeople: boolean;
+}
+
+const EmployeeData = ({ isRemovePeople = false }: EmployeeDataProps) => {
+  const translateText = useTranslator("peopleModule", "peoples");
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const isPeopleManagerOrSuperAdmin = user?.roles?.includes(
+    ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [employeeDataItems, setEmployeeDataItems] = useState<
+    AllEmployeeDataType[]
+  >([]);
+  const [isConcatenationDone, setIsConcatenationDone] =
+    useState<boolean>(false);
+
+  const {
+    data: employeeData,
+    fetchNextPage,
+    isLoading: isEmployeeDataLoading,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage
+  } = useGetEmployeeData();
+
+  const {
+    isPendingInvitationListOpen,
+    selectedEmployees,
+    employeeDataParams,
+    setSearchKeyword,
+    setEmployeeDataParams,
+    resetEmployeeDataParams
+  } = usePeopleStore((state) => state);
+
+  const { data: bannerData } = useGetBannerData();
+
+  const handleBannerClick = (): void => {
+    resetEmployeeDataParams();
+    router.push(ROUTES.PEOPLE.PENDING);
+  };
+
+  useEffect(() => {
+    if (employeeData?.pages) {
+      const employeeDataItems = employeeData?.pages
+        ?.map((page: any) => page?.items)
+        ?.flat();
+      setEmployeeDataItems(employeeDataItems);
+      setIsConcatenationDone(true);
+    } else if (isFetching && !isEmployeeDataLoading) {
+      setIsConcatenationDone(true);
+    } else {
+      setIsConcatenationDone(false);
+    }
+  }, [
+    employeeData,
+    isEmployeeDataLoading,
+    isFetching,
+    isFetchingNextPage,
+    isPendingInvitationListOpen
+  ]);
+
+  useEffect(() => {
+    setSearchKeyword(searchTerm.trimStart());
+  }, [searchTerm, setSearchKeyword]);
+
+  useEffect(() => {
+    if (
+      searchTerm.length > 0 &&
+      !isRemovePeople &&
+      !isPendingInvitationListOpen
+    ) {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.ACTIVE,
+        EmploymentStatusTypes.TERMINATED
+      ]);
+    } else if (
+      searchTerm.length === 0 &&
+      !isRemovePeople &&
+      !isPendingInvitationListOpen
+    ) {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.ACTIVE
+      ]);
+    } else if (isPendingInvitationListOpen) {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.PENDING
+      ]);
+    } else {
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.ACTIVE
+      ]);
+    }
+  }, [
+    searchTerm,
+    isRemovePeople,
+    isPendingInvitationListOpen,
+    setEmployeeDataParams
+  ]);
+
+  useEffect(() => {
+    setSearchTerm("");
+    if (isPendingInvitationListOpen) {
+      setEmployeeDataParams(DataFilterEnums.PERMISSION, []);
+      setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+        EmploymentStatusTypes.PENDING
+      ]);
+    }
+  }, [
+    isPendingInvitationListOpen,
+    resetEmployeeDataParams,
+    setEmployeeDataParams
+  ]);
+
+  return (
+    <Stack>
+      <SearchBox
+        value={searchTerm}
+        setSearchTerm={setSearchTerm}
+        placeHolder={translateText(["employeeSearchPlaceholder"])}
+        data-testid={peopleDirectoryTestId.searchInput}
+        name="contactSearch"
+      />
+      {bannerData &&
+      !isRemovePeople &&
+      bannerData > 0 &&
+      !isPendingInvitationListOpen &&
+      isPeopleManagerOrSuperAdmin ? (
+        <EmployeeDataBanner
+          startingIcon={IconName.CLOCK_ICON}
+          count={bannerData}
+          title={translateText(["bannerTitle"])}
+          titleForOne={translateText(["bannerTitleForOne"])}
+          prompt={translateText(["bannerPrompt"])}
+          onClick={handleBannerClick}
+          styles={{ mt: "1.5rem" }}
+        />
+      ) : (
+        <Box sx={{ height: "1.5rem" }} />
+      )}
+
+      {isRemovePeople && (
+        <>
+          <Stack direction="row" gap={1} justifyContent="flex-start">
+            <ButtonV2
+              variant={
+                employeeDataParams?.accountStatus?.includes(
+                  EmploymentStatusTypes.ACTIVE
+                )
+                  ? "secondary"
+                  : "tertiary"
+              }
+              size={"md"}
+              onClick={() =>
+                setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+                  EmploymentStatusTypes.ACTIVE
+                ])
+              }
+            >
+              {translateText([
+                "filters",
+                "selectedFiltersFilterItems",
+                "active"
+              ])}
+            </ButtonV2>
+            <ButtonV2
+              variant={
+                employeeDataParams?.accountStatus?.includes(
+                  EmploymentStatusTypes.PENDING
+                )
+                  ? "secondary"
+                  : "tertiary"
+              }
+              size={"md"}
+              onClick={() =>
+                setEmployeeDataParams(DataFilterEnums.ACCOUNT_STATUS, [
+                  EmploymentStatusTypes.PENDING
+                ])
+              }
+            >
+              {translateText([
+                "filters",
+                "selectedFiltersFilterItems",
+                "pending"
+              ])}
+            </ButtonV2>
+          </Stack>
+
+          <RemovePeopleCountBanner
+            startingIcon={IconName.REMOVE_PEOPLE_ICON}
+            selectedCount={selectedEmployees.length}
+          />
+        </>
+      )}
+
+      <PeopleTable
+        employeeData={employeeDataItems}
+        fetchNextPage={fetchNextPage}
+        isFetching={!isConcatenationDone}
+        isFetchingNextPage={isFetchingNextPage}
+        onSearch={searchTerm?.length > 0}
+        hasNextPage={hasNextPage}
+        isRemovePeople={isRemovePeople}
+      />
+    </Stack>
+  );
+};
+
+export default EmployeeData;

@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE}
+
+  web:
+    resources:
+      add-mappings: false
+
+app:
+  version: 1.0.2

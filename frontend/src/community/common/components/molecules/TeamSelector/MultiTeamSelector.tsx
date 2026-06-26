@@ -1,0 +1,216 @@
+import { Box, Chip } from "@mui/material";
+import { type Theme, useTheme } from "@mui/material/styles";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { JSX, MouseEvent, useEffect, useState } from "react";
+
+import { useAuth } from "~community/auth/providers/AuthProvider";
+import CloseIcon from "~community/common/assets/Icons/CloseIcon";
+import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
+import SortRow from "~community/common/components/atoms/SASortRow/SASortRow";
+import Popper from "~community/common/components/molecules/Popper/Popper";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { AdminTypes } from "~community/common/types/AuthTypes";
+import { ManagerTeamType } from "~community/common/types/CommonTypes";
+import { MenuTypes } from "~community/common/types/MoleculeTypes";
+import {
+  useGetAllManagerTeams,
+  useGetAllTeams
+} from "~community/people/api/TeamApi";
+import { TeamType } from "~community/people/types/TeamTypes";
+
+interface Props {
+  setTeamIds: (ids: Array<number | string>) => void;
+  setTeamNames?: (names: string[]) => void;
+  moduleAdminType?: AdminTypes;
+}
+
+const MultiTeamSelector = ({
+  setTeamIds,
+  setTeamNames,
+  moduleAdminType
+}: Props): JSX.Element => {
+  const translateTexts = useTranslator("commonComponents", "multiTeamSelector");
+  const theme: Theme = useTheme();
+
+  const [selectedOptionNames, setSelectedOptionNames] = useState<string[]>([
+    translateTexts(["allLabel"])
+  ]);
+  const [showOverlay, setShowOverlay] = useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([-1]);
+
+  const { data: allTeamsData } = useGetAllTeams();
+  const { data: managerAllTeamsData } = useGetAllManagerTeams();
+  const { user } = useAuth();
+  const [teamsData, setTeamsData] = useState<
+    TeamType[] | undefined | ManagerTeamType[]
+  >([]);
+
+  const isTeamListEmpty = allTeamsData?.length === 0;
+
+  const closeMenu = (): void => {
+    setAnchorEl(null);
+    setShowOverlay(false);
+  };
+
+  useEffect(() => {
+    checkUserRole();
+  }, [user, managerAllTeamsData]);
+
+  const checkUserRole = () => {
+    if (
+      user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+      (moduleAdminType && user?.roles?.includes(moduleAdminType))
+    ) {
+      setTeamsData(allTeamsData);
+    } else {
+      setTeamsData(managerAllTeamsData?.managerTeams);
+    }
+  };
+
+  const toggleSelectOption = (id: number): void => {
+    if (id === 0) {
+      // Select All employees/teams
+      setSelectedOptionIds([-1]);
+      setSelectedOptionNames([translateTexts(["allLabel"])]);
+      setTeamIds([-1]);
+      checkUserRole();
+
+      setTeamNames && setTeamNames([translateTexts(["allLabel"])]);
+    } else {
+      // Toggle Team Selection
+      const isSelected = selectedOptionIds.includes(id);
+      const updatedSelectedIds = isSelected
+        ? selectedOptionIds.filter((teamId) => teamId !== id)
+        : [...selectedOptionIds.filter((teamId) => teamId !== -1), id]; // Remove -1 if selecting other teams
+
+      // If all teams are deselected, reset to "All" label
+      if (updatedSelectedIds.length === 0) {
+        setSelectedOptionIds([-1]);
+        setSelectedOptionNames([translateTexts(["allLabel"])]);
+        setTeamIds([-1]);
+        return;
+      }
+
+      const selectedTeams = updatedSelectedIds.map((teamId) =>
+        teamsData?.find((team) => team.teamId === teamId)
+      );
+
+      const updatedSelectedNames = selectedTeams
+        ?.map((team) => team?.teamName ?? "")
+        .filter((name) => name);
+
+      setSelectedOptionIds(updatedSelectedIds);
+      setSelectedOptionNames(updatedSelectedNames ?? []);
+      setTeamIds(updatedSelectedIds);
+      setTeamNames && setTeamNames(updatedSelectedNames ?? []);
+    }
+  };
+
+  const handleDelete = (teamName: string, teamId: number) => {
+    const updatedSelectedNames = selectedOptionNames.filter(
+      (name) => name !== teamName
+    );
+    const updatedSelectedIds = selectedOptionIds.filter((id) => id !== teamId);
+
+    setSelectedOptionNames(updatedSelectedNames);
+    setSelectedOptionIds(updatedSelectedIds);
+    setTeamIds(updatedSelectedIds);
+    setTeamNames && setTeamNames(updatedSelectedNames);
+
+    // If all teams are deselected, reset to "All" label
+    if (updatedSelectedIds.length === 0) {
+      setSelectedOptionNames([translateTexts(["allLabel"])]);
+      setSelectedOptionIds([-1]);
+      setTeamIds([-1]);
+    }
+  };
+
+  return (
+    <>
+      <Box
+        sx={{
+          paddingLeft: "1rem",
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 1
+        }}
+      >
+        <Box display={"flex"} gap={1} alignItems={"center"}>
+          {selectedOptionNames?.length > 1 &&
+            selectedOptionNames?.map((option, index) => {
+              return (
+                <Chip
+                  key={index}
+                  label={option}
+                  onDelete={() =>
+                    handleDelete(option, selectedOptionIds[index])
+                  }
+                  deleteIcon={
+                    <Box>
+                      <CloseIcon fill={theme.palette.text.blackText} />
+                    </Box>
+                  }
+                />
+              );
+            })}
+        </Box>
+
+        <ButtonV2
+          variant={"tertiary"}
+          disabled={isTeamListEmpty}
+          onClick={(event: MouseEvent<HTMLElement>) => {
+            setAnchorEl(event.currentTarget);
+            setShowOverlay(true);
+          }}
+          icon={<DropDownArrow />}
+          iconPosition="end"
+        >
+          {!isTeamListEmpty
+            ? selectedOptionNames.length > 1
+              ? `${selectedOptionNames.length} ${translateTexts(["selected"])}`
+              : selectedOptionNames[0]
+            : user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+                (moduleAdminType && user?.roles?.includes(moduleAdminType))
+              ? translateTexts(["allLabel"])
+              : translateTexts(["noTeamTxt"])}
+        </ButtonV2>
+      </Box>
+      <Popper
+        anchorEl={anchorEl}
+        open={Boolean(showOverlay)}
+        position={"bottom-end"}
+        handleClose={() => closeMenu()}
+        menuType={MenuTypes.SORT}
+        isManager={true}
+        disablePortal={true}
+        id="popper"
+        isFlip={true}
+        timeout={300}
+        containerStyles={{
+          boxShadow: `0rem .55rem 1.25rem ${theme.palette.grey[300]}`,
+          zIndex: ZIndexEnums.DEFAULT
+        }}
+      >
+        <Box sx={{ backgroundColor: "common.white" }}>
+          <SortRow
+            text={translateTexts(["allLabel"])}
+            selected={selectedOptionIds.includes(-1)}
+            onClick={() => toggleSelectOption(0)}
+          />
+          {teamsData?.map((item) => (
+            <SortRow
+              key={item?.teamId}
+              text={item?.teamName}
+              selected={selectedOptionIds.includes(item?.teamId as number)}
+              onClick={() => toggleSelectOption(item?.teamId as number)}
+            />
+          ))}
+        </Box>
+      </Popper>
+    </>
+  );
+};
+
+export default MultiTeamSelector;

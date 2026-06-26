@@ -1,0 +1,86 @@
+{
+  "dashboard": {
+    "resourceAvailabilityTrendMonthlyNext": "next month",
+    "resourceAvailabilityTrendMonthlyPrevious": "previous month",
+    "leaveUtilizationChart": "Leave utilization chart - use arrow keys to navigate"
+  },
+  "myRequests": {
+    "myLeaveAllocation": {
+      "myLeaveAllocationSection": "My Leave Allocation for the year {{year}}",
+      "selectYear": "Select Year for My Leave Allocation",
+      "currentSelection": "current year selected is"
+    },
+    "myLeaveRequests": {
+      "myLeaveRequestsSection": "Accessing My Leave Requests",
+      "sortGroup": "Sort my leave requests dropdown",
+      "sortBy": "Selected Sort Option is {{sortBy}}",
+      "filterSection": "Filter my leave requests",
+      "statusFilterSection": "Leave Status Filters",
+      "typeFilterSection": "Leave Type Filters",
+      "filterOption": "Filter Option, {{filterName}}",
+      "filterSelected": "{{filterName}} selected",
+      "downloadAttachment": "Download attachment",
+      "sort": "Sort by",
+      "leaveRecordRow": "{{duration}} leave request record for the {{date}} of the leave type {{leaveType}} and the current status of the request is {{leaveStatus}}. Click to open modal"
+    }
+  },
+  "allLeaveRequests": {
+    "allLeaveRequestPage": "All Leave Requests Page",
+    "sortGroup": "Sort all leave requests",
+    "sortBy": "Selected Sort Option is {{sortBy}}",
+    "dateRangeFilter": "Date Range Filter, {{startDate}} to {{endDate}}",
+    "leaveDuration": "{{day}} leave on {{date}}",
+    "searchAllLeaveRequests": "Search All Leave Requests",
+    "allLeaveRequestTable": "Accessing All Leave Requests Table",
+    "employeeName": "Employee name, {{firstName}} {{lastName}}",
+    "leaveType": "Leave type, {{leaveType}}",
+    "sort": "Sort by",
+    "leaveRecordRow": "Leave request record for {{name}}, {{duration}} leave on {{date}} for {{leaveType}} leave, current status is {{leaveStatus}}. Click to open modal"
+  },
+  "applyLeave": {
+    "comment": {
+      "textArea": "Comment",
+      "icon": "Attach a file"
+    },
+    "calendar": {
+      "viewLeaveEntitlementBalance": "View leave entitlement balance",
+      "selectDateForLeave": "select the dates for leave",
+      "back": "Back",
+      "next": "Next",
+      "selectedStartDate": "Selected Date for Start Date, ",
+      "selectedEndDate": "Selected Date for End Date, ",
+      "currentSelectedDate": "Currently Selected Date, "
+    },
+    "teamAvailabilityCard": {
+      "dropdown": "Select team to check team availability"
+    },
+    "confirmApplyLeave": "Confirm and Apply Leave"
+  },
+  "durationSelector": {
+    "selectDuration": "Select duration",
+    "mandatoryField": "Mandatory field",
+    "selectedDurationFullDay": "Selected Duration, Full day",
+    "selectDurationFullDay": "Select Duration, Full day",
+    "selectMorningOrEveningHalf": "Select, morning or evening half",
+    "selectedDurationHalfDay": "Selected Duration, Half day",
+    "selectDurationHalfDay": "Select Duration, Half day",
+    "selectedHalfMorning": "Selected half, Morning",
+    "selectHalfMorning": "Select half, Morning",
+    "selectedHalfEvening": "Selected half, Evening",
+    "selectHalfEvening": "Select half, Evening"
+  },
+  "entitlement": {
+    "leaveEntitlementTable": {
+      "select": "Leave entitlements by year"
+    },
+    "customLeaveAllocationTable": {
+      "selectYear": "Custom leave allocations by year",
+      "filterButton": "Filter options",
+      "filterOption": "{{filterName}} option"
+    }
+  },
+  "leaveTypeCard": {
+    "entitlementOver": "{{name}} entitlements are over, please choose a different leave type",
+    "available": "available"
+  }
+}

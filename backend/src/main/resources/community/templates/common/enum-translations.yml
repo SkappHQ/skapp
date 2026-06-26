@@ -1,0 +1,13 @@
+en:
+  leaveDuration:
+    FULLDAY: "Full Day"
+    HALFDAY_MORNING: "Half Day Morning"
+    HALFDAY_EVENING: "Half Day Evening"
+  buttonText:
+    COMMON_EMAIL_BUTTON_TEXT: "Visit the App"
+
+sv:
+  leaveDuration:
+    FULLDAY: "Journée complète"
+    HALFDAY_MORNING: "Demi-journée matin"
+    HALFDAY_EVENING: "Demi-journée après-midi"

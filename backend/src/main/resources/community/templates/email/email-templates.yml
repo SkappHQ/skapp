@@ -1,0 +1,198 @@
+en:
+  people:
+    - id: people-module-user-invitation
+      subject: You have been invited to Skapp!
+
+    - id: people-module-user-invitation-google-sso
+      subject: You have been invited to Skapp!
+
+    - id: people-module-user-invitation-microsoft-sso
+      subject: You have been invited to Skapp!
+
+    - id: people-module-user-termination
+      subject: Your account has been terminated!
+
+    - id: people-module-new-holiday-declared-employee
+      subject: New company holiday declared!
+
+    - id: people-module-holiday-single-day-pending-leave-request-canceled-employee
+      subject: Your leave request has been canceled!
+
+    - id: people-module-holiday-multi-day-pending-leave-request-updated-employee
+      subject: Your leave request has been updated!
+
+    - id: people-module-holiday-single-day-approved-leave-request-revoked-employee
+      subject: Your leave request has been revoked!
+
+    - id: people-module-holiday-multi-day-approved-leave-request-updated-employee
+      subject: Your leave request has been updated!
+
+    - id: people-module-holiday-single-day-pending-leave-request-canceled-manager
+      subject: A leave request has been canceled!
+
+    - id: people-module-holiday-multi-day-pending-leave-request-updated-manager
+      subject: A leave request has been updated!
+
+    - id: people-module-holiday-single-day-approved-leave-request-revoked-manager
+      subject: A leave request has been revoked!
+
+    - id: people-module-holiday-multi-day-approved-leave-request-updated-manager
+      subject: A leave request has been updated!
+
+    - id: people-module-password-reset-request-manager
+      subject: Password Reset Request
+
+  attendance:
+    - id: attendance-module-non-working-day-single-day-pending-leave-request-canceled-employee
+      subject: Your leave request has been canceled!
+
+    - id: attendance-module-non-working-day-multi-day-pending-leave-request-canceled-employee
+      subject: Your leave request has been canceled!
+
+    - id: attendance-module-non-working-day-single-day-approved-leave-request-revoked-employee
+      subject: Your leave request has been revoked!
+
+    - id: attendance-module-non-working-day-multi-day-approved-leave-request-revoked-employee
+      subject: Your leave request has been revoked!
+
+    - id: attendance-module-non-working-day-single-day-pending-leave-request-canceled-manager
+      subject: A leave request has been canceled!
+
+    - id: attendance-module-non-working-day-multi-day-pending-leave-request-canceled-manager
+      subject: A leave request has been canceled!
+
+    - id: attendance-module-non-working-day-single-day-approved-leave-request-revoked-manager
+      subject: A leave request has been revoked!
+
+    - id: attendance-module-non-working-day-multi-day-approved-leave-request-revoked-manager
+      subject: A leave request has been revoked!
+
+    - id: attendance-module-time-entry-request-submitted-employee
+      subject: Your time entry request has been submitted!
+
+    - id: attendance-module-received-time-entry-request-manager
+      subject: You have received a time entry request!
+
+    - id: attendance-module-time-entry-request-approved-employee
+      subject: Your supervisor has approved your time entry request!
+
+    - id: attendance-module-time-entry-request-declined-employee
+      subject: Your supervisor has declined your time entry request!
+
+    - id: attendance-module-pending-time-entry-request-cancelled-employee
+      subject: Your time entry request has been canceled!
+
+    - id: attendance-module-pending-time-entry-request-cancelled-manager
+      subject: A pending time entry request has been canceled!
+
+    - id: attendance-module-time-entry-request-auto-approved-employee
+      subject: Your time entry requests has been approved!
+
+    - id: attendance-module-time-entry-request-auto-approved-manager
+      subject: A time entry request has been auto approved!
+
+    - id: attendance-module-time-entry-request-approved-other-manager
+      subject: A time entry request has been approved!
+
+    - id: attendance-module-time-entry-request-declined-other-manager
+      subject: A time entry request has been declined!
+
+  leave:
+    - id: leave-module-employee-apply-single-day-leave
+      subject: Your leave request has been recorded!
+
+    - id: leave-module-employee-apply-multiple-day-leave
+      subject: Your leave request has been recorded!
+
+    - id: leave-module-manager-received-single-day-leave
+      subject: You have received a new leave request!
+
+    - id: leave-module-manager-received-multiple-day-leave
+      subject: You have received a new leave request!
+
+    - id: leave-module-employee-cancel-single-day-leave
+      subject: You have canceled your leave request!
+
+    - id: leave-module-employee-cancel-multiple-day-leave
+      subject: You have canceled your leave request!
+
+    - id: leave-module-manager-cancel-single-day-leave
+      subject: A leave request has been canceled!
+
+    - id: leave-module-manager-cancel-multiple-day-leave
+      subject: A leave request has been canceled!
+
+    - id: leave-module-employee-approved-single-day-leave
+      subject: Your leave request has been approved!
+
+    - id: leave-module-employee-approved-multi-day-leave
+      subject: Your leave request has been approved!
+
+    - id: leave-module-manager-approved-single-day-leave
+      subject: A leave request has been approved!
+
+    - id: leave-module-manager-approved-multi-day-leave
+      subject: A leave request has been approved!
+
+    - id: leave-module-employee-revoked-single-day-leave
+      subject: Your supervisor has revoked leave request!
+
+    - id: leave-module-employee-revoked-multi-day-leave
+      subject: Your supervisor has revoked leave request!
+
+    - id: leave-module-manager-revoked-single-day-leave
+      subject: A leave request has been revoked!
+
+    - id: leave-module-manager-revoked-multi-day-leave
+      subject: A leave request has been revoked!
+
+    - id: leave-module-manager-nudge-single-day-leave
+      subject: You have received a reminder for a leave request!
+
+    - id: leave-module-manager-nudge-multi-day-leave
+      subject: You have received a reminder for a leave request!
+
+    - id: leave-module-employee-auto-approved-single-day-leave
+      subject: Your leave request has been approved!
+
+    - id: leave-module-employee-auto-approved-multi-day-leave
+      subject: Your leave request has been approved!
+
+    - id: leave-module-manager-auto-approved-single-day-leave
+      subject: A leave request has been approved!
+
+    - id: leave-module-manager-auto-approved-multi-day-leave
+      subject: A leave request has been approved!
+
+    - id: leave-module-employee-leave-carry-foward
+      subject: Your eligible leave balances have been carried forward!
+
+    - id: leave-module-employee-custom-allocation
+      subject: Custom leave allocation added!
+
+    - id: leave-module-employee-declined-multi-day-leave
+      subject: Your supervisor has declined leave request!
+
+    - id: leave-module-employee-declined-single-day-leave
+      subject: Your supervisor has declined leave request!
+
+    - id: leave-module-manager-declined-multi-day-leave
+      subject: A leave request has been declined!
+
+    - id: leave-module-manager-declined-single-day-leave
+      subject: A leave request has been declined!
+
+  esignature:
+    - id: esignature-module-document-signer-email
+      subject: "Complete via Skapp: "
+
+    - id: esignature-module-document-viewer-email
+      subject: "View via Skapp: "
+
+sv:
+  people:
+    - id: people-module-user-invitation
+      subject: Du har blivit inbjuden till Skapp
+
+    - id: people-module-user-termination
+      subject: Ditt konto har avslutats!

@@ -1,0 +1,397 @@
+import {
+  Divider,
+  IconButton,
+  Stack,
+  Theme,
+  Typography,
+  useTheme
+} from "@mui/material";
+import { type SxProps } from "@mui/system";
+import { BreadcrumbItem, ButtonV2 } from "@rootcodelabs/skapp-ui";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { JSX, memo, useEffect, useMemo } from "react";
+
+import { useAuth } from "~community/auth/providers/AuthProvider";
+import { signOut } from "~community/auth/utils/authUtils";
+import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
+import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import VersionUpgradeBanner from "~community/common/components/molecules/VersionUpgradeBanner/VersionUpgradeBanner";
+import { appModes } from "~community/common/constants/configs";
+import ROUTES from "~community/common/constants/routes";
+import { contentLayoutTestId } from "~community/common/constants/testIds";
+import {
+  MediaQueries,
+  useMediaQuery
+} from "~community/common/hooks/useMediaQuery";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCommonStore } from "~community/common/stores/commonStore";
+import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
+import { themeSelector } from "~community/common/theme/themeSelector";
+import { AdminTypes } from "~community/common/types/AuthTypes";
+import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
+import { IconName } from "~community/common/types/IconTypes";
+import { getBlinkClass, mergeSx } from "~community/common/utils/commonUtil";
+import { EIGHTY_PERCENT } from "~community/common/utils/getConstants";
+import QuickSetupContainer from "~enterprise/common/components/molecules/QuickSetupContainer/QuickSetupContainer";
+import SubscriptionEndedModalController from "~enterprise/common/components/molecules/SubscriptionEndedModalController/SubscriptionEndedModalController";
+import {
+  SubscriptionModalTypeEnums,
+  TenantStatusEnums
+} from "~enterprise/common/enums/Common";
+import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import { shouldUseDefaultTheme } from "~enterprise/common/utils/commonUtil";
+import { useCheckUserLimit } from "~enterprise/people/api/CheckUserLimitApi";
+import UserLimitBanner from "~enterprise/people/components/molecules/UserLimitBanner/UserLimitBanner";
+import { useUserLimitStore } from "~enterprise/people/store/userLimitStore";
+
+import styles from "./styles";
+
+interface Props {
+  pageHead: string;
+  title: string;
+  titleAddon?: JSX.Element | null;
+  containerStyles?: SxProps;
+  dividerStyles?: SxProps;
+  children: JSX.Element;
+  secondaryBtnText?: string;
+  primaryButtonText?: string | boolean;
+  primaryBtnIconName?: IconName;
+  secondaryBtnIconName?: IconName;
+  secondaryBtnIconFill?: string;
+  isBackButtonVisible?: boolean;
+  isDividerVisible?: boolean;
+  onPrimaryButtonClick?: () => void;
+  onSecondaryButtonClick?: () => void;
+  subtitleNextToTitle?: string;
+  onBackClick?: () => void;
+  customRightContent?: JSX.Element;
+  isTitleHidden?: boolean;
+  isPrimaryBtnLoading?: boolean;
+  backIcon?: IconName;
+  isPrimaryBtnDisabled?: boolean;
+  showBackButtonTooltip?: boolean;
+  id?: {
+    btnWrapper?: string;
+    primaryBtn?: string;
+    secondaryBtn?: string;
+  };
+  shouldBlink?: {
+    primaryBtn?: boolean;
+    secondaryBtn?: boolean;
+  };
+  customStyles?: {
+    header?: SxProps<Theme>;
+  };
+  ariaDescribedBy?: {
+    primaryButton?: string;
+    secondaryButton?: string;
+  };
+  isCloseButton?: boolean;
+  breadcrumbs?: BreadcrumbItem[];
+}
+
+const ContentLayout = ({
+  pageHead,
+  title,
+  titleAddon,
+  containerStyles,
+  children,
+  primaryButtonText,
+  secondaryBtnText,
+  primaryBtnIconName = IconName.ADD_ICON,
+  secondaryBtnIconName = IconName.ADD_ICON,
+  secondaryBtnIconFill,
+  isBackButtonVisible = false,
+  isDividerVisible = true,
+  onPrimaryButtonClick,
+  onSecondaryButtonClick,
+  subtitleNextToTitle,
+  onBackClick,
+  dividerStyles,
+  customRightContent,
+  isTitleHidden = false,
+  isPrimaryBtnLoading = false,
+  backIcon = IconName.LEFT_ARROW_ICON,
+  isPrimaryBtnDisabled = false,
+  id,
+  shouldBlink,
+  customStyles,
+  ariaDescribedBy,
+  showBackButtonTooltip = true,
+  isCloseButton = false,
+  breadcrumbs = []
+}: Props): JSX.Element => {
+  const theme: Theme = useTheme();
+  const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
+  const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
+
+  const classes = styles(theme);
+
+  const translateAria = useTranslator("commonAria", "components");
+
+  const router = useRouter();
+
+  const { user } = useAuth();
+  const { asPath } = useRouter();
+
+  const { showInfoBanner, isDailyNotifyDisplayed } = useVersionUpgradeStore(
+    (state) => state
+  );
+
+  const isSuperAdmin = user?.roles?.includes(AdminTypes.SUPER_ADMIN);
+  const tenantStatus = user?.tenantStatus;
+
+  const modalTypeMap = {
+    [TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED]:
+      SubscriptionModalTypeEnums.POST_SUBSCRIPTION_CANCELLATION_MODAL,
+    [TenantStatusEnums.FREE_TRAIL_ENDED]:
+      SubscriptionModalTypeEnums.POST_TRIAL_EXPIRATION_MODAL,
+    [TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED]:
+      SubscriptionModalTypeEnums.POST_TRIAL_EXPIRATION_MODAL_USER_LIMIT_SURPASS_MODAL,
+    [TenantStatusEnums.ACTIVE]: null
+  };
+
+  const { setIsSubscriptionEndedModalOpen, setSubscriptionEndedModalType } =
+    useCommonEnterpriseStore((state) => state);
+
+  useEffect(() => {
+    if (
+      asPath === ROUTES.REMOVE_PEOPLE ||
+      asPath === ROUTES.CHANGE_SUPERVISORS
+    ) {
+      setIsSubscriptionEndedModalOpen(false);
+      return;
+    }
+
+    if (!tenantStatus) return;
+
+    if (
+      !isSuperAdmin &&
+      [
+        TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED,
+        TenantStatusEnums.FREE_TRAIL_ENDED,
+        TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
+      ].includes(tenantStatus)
+    ) {
+      signOut();
+      return;
+    }
+
+    const modalType = modalTypeMap[tenantStatus];
+    if (modalType) {
+      setSubscriptionEndedModalType(modalType);
+      setIsSubscriptionEndedModalOpen(true);
+    } else if (tenantStatus === TenantStatusEnums.ACTIVE) {
+      setIsSubscriptionEndedModalOpen(false);
+    }
+  }, [user?.tenantStatus]);
+
+  const { data: organizationDetails } = useGetOrganization(!!user);
+
+  const themeColor = shouldUseDefaultTheme(asPath)
+    ? ThemeTypes.BLUE_THEME
+    : organizationDetails?.results?.[0]?.themeColor || ThemeTypes.BLUE_THEME;
+
+  const updatedTheme = themeSelector(themeColor);
+
+  theme.palette = updatedTheme.palette;
+
+  const {
+    setShowUserLimitBanner,
+    showUserLimitBanner,
+    setIsUserLimitExceeded
+  } = useUserLimitStore((state) => ({
+    setShowUserLimitBanner: state.setShowUserLimitBanner,
+    showUserLimitBanner: state.showUserLimitBanner,
+    setIsUserLimitExceeded: state.setIsUserLimitExceeded
+  }));
+
+  const { data: storageAvailabilityData } = useStorageAvailability(!!user);
+
+  const usedStoragePercentage = useMemo(() => {
+    return 100 - storageAvailabilityData?.availableSpace;
+  }, [storageAvailabilityData]);
+
+  const setBreadcrumbs = useCommonStore((state) => state.setBreadcrumbs);
+
+  const { data: checkUserLimit, isSuccess: isCheckUserLimitSuccess } =
+    useCheckUserLimit(isEnterpriseMode, !!user);
+
+  useEffect(() => {
+    if (isEnterpriseMode) {
+      if (isCheckUserLimitSuccess && checkUserLimit) {
+        setIsUserLimitExceeded(true);
+        setShowUserLimitBanner(true);
+      }
+    }
+  }, [
+    isEnterpriseMode,
+    isCheckUserLimitSuccess,
+    checkUserLimit,
+    setIsUserLimitExceeded,
+    setShowUserLimitBanner
+  ]);
+
+  useEffect(() => {
+    setBreadcrumbs(breadcrumbs);
+  }, []);
+
+  return (
+    <>
+      <Head>
+        <title>{pageHead}</title>
+      </Head>
+      <Stack sx={mergeSx([classes.container, containerStyles])}>
+        {showInfoBanner &&
+          !isDailyNotifyDisplayed &&
+          user?.roles?.includes(AdminTypes.SUPER_ADMIN) && (
+            <VersionUpgradeBanner />
+          )}
+        {process.env.NEXT_PUBLIC_MODE === appModes.COMMUNITY &&
+          user?.roles?.includes(AdminTypes.SUPER_ADMIN) &&
+          usedStoragePercentage !== undefined &&
+          usedStoragePercentage !== null &&
+          usedStoragePercentage >= EIGHTY_PERCENT && (
+            <VersionUpgradeBanner
+              isStorageBanner
+              usedSpace={usedStoragePercentage}
+            />
+          )}
+
+        {showUserLimitBanner &&
+          (user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+            user?.roles?.includes(AdminTypes.PEOPLE_ADMIN)) && (
+            <UserLimitBanner />
+          )}
+
+        <Stack sx={mergeSx([classes.header, customStyles?.header ?? {}])}>
+          <Stack sx={classes.leftContent}>
+            {isBackButtonVisible && (
+              <IconButton
+                sx={classes.leftArrowIconBtn}
+                onClick={
+                  onBackClick ||
+                  (() => {
+                    router.back();
+                  })
+                }
+                data-testid={contentLayoutTestId.buttons.backButton}
+                aria-label={
+                  isCloseButton
+                    ? translateAria(["closeButton"])
+                    : translateAria(["backButton"])
+                }
+                {...(showBackButtonTooltip && {
+                  title: isCloseButton
+                    ? translateAria(["closeButton"])
+                    : translateAria(["backButton"])
+                })}
+                tabIndex={0}
+              >
+                <Icon name={backIcon} />
+              </IconButton>
+            )}
+            {isTitleHidden && title && (
+              <Typography
+                variant="h1"
+                component="h1"
+                id="page-title"
+                className="sr-only"
+              >
+                {title}
+              </Typography>
+            )}
+            {!isTitleHidden && (
+              <header>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  {title && (
+                    <Typography variant="h1" component="h1" id="page-title">
+                      {title}
+                    </Typography>
+                  )}
+                  {titleAddon && (
+                    <div aria-live="polite" aria-atomic="true">
+                      {titleAddon}
+                    </div>
+                  )}
+                </Stack>
+              </header>
+            )}
+            {subtitleNextToTitle && (
+              <Typography
+                variant="body2"
+                component="h3"
+                id="subtitle-next-to-title"
+                sx={{
+                  color: theme.palette.primary.dark
+                }}
+              >
+                {subtitleNextToTitle}
+              </Typography>
+            )}
+          </Stack>
+          <Stack sx={classes.rightContent} id={id?.btnWrapper}>
+            {secondaryBtnText && (
+              <ButtonV2
+                isFullWidth={isBelow600}
+                variant={"secondary"}
+                size={"md"}
+                onClick={onSecondaryButtonClick}
+                data-testid={contentLayoutTestId.buttons.secondaryButton}
+                id={id?.secondaryBtn}
+                className={getBlinkClass(shouldBlink?.secondaryBtn ?? false)}
+                icon={
+                  secondaryBtnIconName ? (
+                    <Icon
+                      name={secondaryBtnIconName}
+                      fill={secondaryBtnIconFill}
+                    />
+                  ) : undefined
+                }
+                iconPosition="end"
+              >
+                {secondaryBtnText}
+              </ButtonV2>
+            )}
+            {primaryButtonText && (
+              <ButtonV2
+                isFullWidth={isBelow600}
+                variant="primary"
+                size={"md"}
+                isLoading={isPrimaryBtnLoading}
+                onClick={onPrimaryButtonClick}
+                data-testid={contentLayoutTestId.buttons.primaryButton}
+                id={id?.primaryBtn}
+                disabled={isPrimaryBtnDisabled}
+                className={getBlinkClass(shouldBlink?.primaryBtn ?? false)}
+                icon={
+                  primaryBtnIconName ? (
+                    <Icon name={primaryBtnIconName} />
+                  ) : undefined
+                }
+                iconPosition="end"
+              >
+                {primaryButtonText as string}
+              </ButtonV2>
+            )}
+            {customRightContent}
+          </Stack>
+        </Stack>
+
+        {isDividerVisible && (
+          <Stack sx={mergeSx([classes.dividerWrapper, dividerStyles])}>
+            {/* <Divider /> */}
+            {/* with new design, divider is removed but not finalized yet */}
+          </Stack>
+        )}
+        {children}
+        <QuickSetupContainer />
+        <SubscriptionEndedModalController />
+      </Stack>
+    </>
+  );
+};
+
+export default memo(ContentLayout);

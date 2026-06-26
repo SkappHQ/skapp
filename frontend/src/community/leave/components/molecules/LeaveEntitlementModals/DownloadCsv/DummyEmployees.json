@@ -1,0 +1,23 @@
+[
+  {
+    "employeeId": "1",
+    "firstName": "John",
+    "lastName": "Doe",
+    "avatarUrl": null,
+    "email": "john.doe@example.com"
+  },
+  {
+    "employeeId": "2",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "avatarUrl": null,
+    "email": "jane.doe@example.com"
+  },
+  {
+    "employeeId": "3",
+    "firstName": "Philip",
+    "lastName": "Smith",
+    "avatarUrl": null,
+    "email": "philip.smith@example.com"
+  }
+]

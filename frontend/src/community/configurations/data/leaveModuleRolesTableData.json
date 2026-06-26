@@ -1,0 +1,122 @@
+[
+  {
+    "permission": "manageLeaveTypes",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "configureLeaveEntitlements",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageCustomAllocations",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "manageLeaveCarryForward",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": false,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "teamLeaveAnalytics",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "individualLeaveAnalytics",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "approveOrDeclineLeaveRequests",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": false,
+      "viewOnly": false
+    }
+  },
+  {
+    "permission": "applyOrCancelLeaveRequests",
+    "admin": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "manager": {
+      "enabled": true,
+      "viewOnly": false
+    },
+    "employee": {
+      "enabled": true,
+      "viewOnly": false
+    }
+  }
+]

@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "~community/*": ["./src/community/*"],
+      "~enterprise/*": ["./src/enterprise/*", "./src/fallback/*"],
+      "~styles/*": ["./styles/*"],
+      "~public/*": ["./public/*"],
+      "~i18n": ["./i18n"],
+      "~middleware": ["./middleware"],
+      "~firebase": ["./firebase"]
+    },
+    "target": "es6",
+    "forceConsistentCasingInFileNames": true,
+    "allowUmdGlobalAccess": true
+  },
+  "include": [
+    "public/firebase-messaging-sw.js",
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".storybook/**/*",
+    "frontend/pages/api/health.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "husky.config.js",
+    "jest.config.js",
+    "next.config.js"
+  ]
+}

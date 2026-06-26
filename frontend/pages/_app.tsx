@@ -1,0 +1,157 @@
+import { Theme, ThemeProvider } from "@mui/material/styles";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { onValue, ref } from "firebase/database";
+import App, { AppContext } from "next/app";
+import { Inter } from "next/font/google";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import "react-day-picker/dist/style.css";
+import { ErrorBoundary } from "react-error-boundary";
+import { I18nextProvider, useSSR } from "react-i18next";
+
+import { AuthProvider } from "~community/auth/providers/AuthProvider";
+import BaseLayout from "~community/common/components/templates/BaseLayout/BaseLayout";
+import { appModes } from "~community/common/constants/configs";
+import ROUTES from "~community/common/constants/routes";
+import TanStackProvider from "~community/common/providers/TanStackProvider";
+import { ToastProvider } from "~community/common/providers/ToastProvider";
+import { WebSocketProvider } from "~community/common/providers/WebSocketProvider";
+import { theme } from "~community/common/theme/theme";
+import { themeSelector } from "~community/common/theme/themeSelector";
+import { MyAppPropsType } from "~community/common/types/CommonTypes";
+import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
+import "~enterprise/common/components/atoms/driverJsPopover/styles.css";
+import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
+import {
+  isNonProdMaintenanceMode,
+  isProdMaintenanceMode
+} from "~enterprise/common/constants/dbKeys";
+import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
+import { database } from "~enterprise/common/utils/firebase";
+import { initializeHotjar } from "~enterprise/common/utils/monitoring";
+import i18n from "~i18n";
+
+import "../styles/global.css";
+import Error from "./_error";
+
+// Initialize the font
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter"
+});
+
+function MyApp({
+  Component,
+  pageProps,
+  initialI18nStore,
+  initialLanguage
+}: MyAppPropsType) {
+  const [newTheme, setNewTheme] = useState<Theme>(theme);
+  useSSR(initialI18nStore, initialLanguage);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!database) return;
+
+    const isMaintenanceMode =
+      process.env.NEXT_PUBLIC_ENTERPRISE_MODE === "prod"
+        ? isProdMaintenanceMode
+        : isNonProdMaintenanceMode;
+
+    const maintenanceRef = ref(database, isMaintenanceMode);
+
+    const unsubscribe = onValue(maintenanceRef, (snapshot) => {
+      const isMaintenanceMode = snapshot.val();
+
+      if (
+        isMaintenanceMode === true &&
+        router.pathname !== ROUTES.MAINTENANCE
+      ) {
+        router.push(ROUTES.MAINTENANCE);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  useEffect(() => {
+    if (getDataFromLocalStorage("brandingData")) {
+      const selectedTheme = themeSelector(
+        getDataFromLocalStorage("brandingData")?.brand_color?.primary.main ?? ""
+      );
+      setNewTheme(selectedTheme);
+    } else {
+      setNewTheme(theme);
+    }
+
+    if (process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE) {
+      initializeHotjar();
+    }
+  }, []);
+
+  const shouldUseWebSocketProvider =
+    process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE;
+
+  return (
+    <div className={inter.className}>
+      <AuthProvider>
+        {shouldUseWebSocketProvider ? (
+          <WebSocketProvider>
+            <ToastProvider>
+              <TanStackProvider>
+                <ThemeProvider theme={newTheme}>
+                  <I18nextProvider i18n={i18n}>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
+                    <ReactQueryDevtools
+                      initialIsOpen={false}
+                      position="bottom"
+                    />
+                  </I18nextProvider>
+                </ThemeProvider>
+              </TanStackProvider>
+            </ToastProvider>
+          </WebSocketProvider>
+        ) : (
+          <ToastProvider>
+            <TanStackProvider>
+              <ThemeProvider theme={newTheme}>
+                <I18nextProvider i18n={i18n}>
+                  <AnnouncementProvider>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
+                    <AnnouncementWrapper />
+                  </AnnouncementProvider>
+                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+                </I18nextProvider>
+              </ThemeProvider>
+            </TanStackProvider>
+          </ToastProvider>
+        )}
+      </AuthProvider>
+    </div>
+  );
+}
+
+MyApp.getInitialProps = async (appContext: AppContext) => {
+  const appProps = await App.getInitialProps(appContext);
+
+  if (typeof window === "undefined") {
+    return {
+      ...appProps,
+      initialI18nStore: i18n.store.data,
+      initialLanguage: i18n.language
+    };
+  }
+
+  return { ...appProps };
+};
+
+export default MyApp;

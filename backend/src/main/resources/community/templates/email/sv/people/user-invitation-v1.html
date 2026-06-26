@@ -1,0 +1,125 @@
+<div
+  style="
+    font-family: Arial, sans-serif;
+    color: #52525b;
+    max-width: 600px;
+    margin: auto;
+    padding: 10px;
+    box-sizing: border-box;
+  "
+>
+  <p style="font-size: 16px; line-height: 1.5">
+    Vi är glada att välkomna dig till {{organizationName}}. Här är dina
+    inloggningsuppgifter.
+  </p>
+
+  <p style="font-size: 16px; margin-top: 20px; color: #000">Användarnamn</p>
+  <div
+    style="
+      background-color: #f4f4f5;
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 412px;
+      box-sizing: border-box;
+    "
+  >
+    <span
+      id="workEmail"
+      style="font-size: 14px; color: #3f3f46; word-break: break-all; flex: 1"
+      >{{workEmail}}</span
+    >
+    <span
+      onclick="copyToClipboard('workEmail')"
+      style="
+        display: inline-flex;
+        align-items: center;
+        margin-left: 8px;
+        cursor: pointer;
+      "
+    >
+      <svg
+        fill="none"
+        height="23"
+        viewBox="0 0 19 23"
+        width="19"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M14 0.550537H2C0.9 0.550537 0 1.45054 0 2.55054V16.5505H2V2.55054H14V0.550537ZM13 4.55054H6C4.9 4.55054 4.01 5.45054 4.01 6.55054L4 20.5505C4 21.6505 4.89 22.5505 5.99 22.5505H17C18.1 22.5505 19 21.6505 19 20.5505V10.5505L13 4.55054ZM6 20.5505V6.55054H12V11.5505H17V20.5505H6Z"
+          fill="#71717A"
+        />
+      </svg>
+    </span>
+  </div>
+
+  <p style="font-size: 16px; margin-top: 20px; color: #000">
+    Tillfälligt lösenord
+  </p>
+  <div
+    style="
+      background-color: #f4f4f5;
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 412px;
+      box-sizing: border-box;
+    "
+  >
+    <span
+      id="temporaryPassword"
+      style="font-size: 14px; color: #3f3f46; word-break: break-all; flex: 1"
+      >{{temporaryPassword}}</span
+    >
+    <span
+      onclick="copyToClipboard('temporaryPassword')"
+      style="
+        display: inline-flex;
+        align-items: center;
+        margin-left: 8px;
+        cursor: pointer;
+      "
+    >
+      <svg
+        fill="none"
+        height="23"
+        viewBox="0 0 19 23"
+        width="19"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M14 0.550537H2C0.9 0.550537 0 1.45054 0 2.55054V16.5505H2V2.55054H14V0.550537ZM13 4.55054H6C4.9 4.55054 4.01 5.45054 4.01 6.55054L4 20.5505C4 21.6505 4.89 22.5505 5.99 22.5505H17C18.1 22.5505 19 21.6505 19 20.5505V10.5505L13 4.55054ZM6 20.5505V6.55054H12V11.5505H17V20.5505H6Z"
+          fill="#71717A"
+        />
+      </svg>
+    </span>
+  </div>
+
+  <p
+    style="font-size: 16px; line-height: 1.5; color: #52525b; margin-top: 20px"
+  >
+    Av säkerhetsskäl, vänligen återställ ditt lösenord vid första inloggningen.
+  </p>
+
+  <p style="font-size: 16px; color: #52525b">Tack!</p>
+</div>
+
+<script>
+  function copyToClipboard(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        alert("Kopierat till urklipp!");
+      })
+      .catch((err) => {
+        console.error("Kunde inte kopiera texten: ", err);
+      });
+  }
+</script>

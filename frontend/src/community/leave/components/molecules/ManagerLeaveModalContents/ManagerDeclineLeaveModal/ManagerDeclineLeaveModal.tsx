@@ -1,0 +1,113 @@
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
+
+import CloseIcon from "~community/common/assets/Icons/CloseIcon";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useHandelLeaves } from "~community/leave/api/LeaveApi";
+import { useLeaveStore } from "~community/leave/store/store";
+import {
+  LeaveExtraPopupTypes,
+  LeaveStatusTypes
+} from "~community/leave/types/LeaveRequestTypes";
+import { validateDescription } from "~community/leave/utils/LeavePreprocessors";
+import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
+import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
+
+import LeaveStatusPopupColumn from "../LeaveStatusPopupColumn/LeaveStatusPopupColumn";
+
+interface Props {
+  closeModel: () => void;
+  setPopupType: Dispatch<SetStateAction<string>>;
+}
+
+const ManagerDeclineLeaveModal = ({
+  closeModel,
+  setPopupType
+}: Props): JSX.Element => {
+  const translateText = useTranslator(
+    "leaveModule",
+    "leaveRequests",
+    "leaveManagerEmployee"
+  );
+  const { setToastMessage } = useToast();
+
+  const leaveRequestData = useLeaveStore((state) => state.leaveRequestData);
+  const [reason, setReason] = useState<string>("");
+  const [error, setError] = useState<boolean>(false);
+
+  const { mutate, isSuccess, error: leaveCancelError } = useHandelLeaves();
+
+  const { sendEvent } = useGoogleAnalyticsEvent();
+
+  const handelDecline = (): void => {
+    if (validateDescription(reason)) setError(true);
+    else {
+      setError(false);
+      const data = {
+        leaveRequestId: leaveRequestData.leaveId as number,
+        status: LeaveStatusTypes.DENIED.toUpperCase(),
+        reviewerComment: reason
+      };
+      mutate(data);
+    }
+  };
+
+  useEffect(() => {
+    if (leaveCancelError) {
+      setToastMessage({
+        open: true,
+        toastType: "error",
+        title: translateText(["declineLeaveFailTitle"]),
+        description: translateText(["declineLeaveFailDesc"]),
+        isIcon: true
+      });
+    } else if (isSuccess) {
+      setToastMessage({
+        open: true,
+        toastType: "success",
+        title: translateText(["declineLeaveSuccessTitle"]),
+        description: translateText(["declineLeaveSuccessDesc"]),
+        isIcon: true
+      });
+      sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_DECLINED);
+      setPopupType(LeaveExtraPopupTypes.DECLINE_STATUS);
+    }
+  }, [leaveRequestData?.empName, leaveCancelError, isSuccess]);
+
+  return (
+    <div aria-modal={true}>
+      <div className="pb-4">
+        <LeaveStatusPopupColumn
+          id="reason"
+          label={translateText(["reasonToDecline"])}
+          text={reason}
+          setInputText={setReason}
+          error={error}
+          errorMessage={translateText(["EnterWhyDecline"])}
+          required
+        />
+      </div>
+      <div className="flex flex-row gap-4 justify-end">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={closeModel}
+          icon={<CloseIcon />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"error"}
+          onClick={handelDecline}
+          icon={<CloseIcon fill="var(--color-primary-text)" />}
+          iconPosition="end"
+        >
+          {translateText(["declineLeave"])}
+        </ButtonV2>
+      </div>
+    </div>
+  );
+};
+
+export default ManagerDeclineLeaveModal;

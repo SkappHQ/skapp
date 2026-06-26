@@ -1,0 +1,347 @@
+import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
+import { unitConversion } from "~community/common/constants/configs";
+import ROUTES from "~community/common/constants/routes";
+import {
+  AdminTypes,
+  AuthEmployeeType,
+  EmployeeTypes,
+  ManagerTypes,
+  RepresentativeTypes,
+  SenderTypes,
+  SuperAdminType
+} from "~community/common/types/AuthTypes";
+import {
+  getCookieValue,
+  isEnterpriseMode
+} from "~community/common/utils/commonUtil";
+import {
+  EnterpriseSignInParams,
+  EnterpriseSignUpParams,
+  enterpriseSignIn,
+  enterpriseSignUp
+} from "~enterprise/auth/utils/authUtils";
+import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
+import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
+
+import { config } from "../../../../middleware";
+import { COOKIE_EXPIRY_DAYS } from "../constants/authConstants";
+import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
+import { SignInStatus } from "../enums/auth";
+import {
+  AuthResponseType,
+  CommunitySignInParams,
+  CommunitySignUpParams
+} from "../types/auth";
+import authAxios from "./authInterceptor";
+
+export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
+  const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
+    (prefix) => {
+      return asPath.startsWith(prefix);
+    }
+  );
+
+  if (!isADrawerHiddenProtectedRoute) {
+    const formattedProtectedPaths = config.matcher.map((path) =>
+      path.replace(/\/:path\*$/, "")
+    );
+
+    return formattedProtectedPaths.some((path) => {
+      return (
+        asPath.substring(1).split("/")[0].split("?")[0] === path.split("/")[1]
+      );
+    });
+  }
+
+  return false;
+};
+
+export const decodeJWTToken = (token: string) => {
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const decodedToken = JSON.parse(atob(base64));
+  return decodedToken;
+};
+
+export interface User {
+  userId?: number;
+  email?: string;
+  name?: string;
+  roles?: (
+    | AdminTypes
+    | ManagerTypes
+    | EmployeeTypes
+    | SuperAdminType
+    | SenderTypes
+    | RepresentativeTypes
+  )[];
+  accessToken?: string;
+  refreshToken?: string;
+  tokenDuration?: number;
+  isPasswordChangedForTheFirstTime?: boolean;
+  employee?: AuthEmployeeType;
+  tier?: TierEnum;
+  tiers?: TierEnum[];
+  tenantId?: string;
+  tenantStatus?: TenantStatusEnums;
+}
+
+// Flag to prevent recursive token refresh
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+export const getNewAccessToken = async (): Promise<string | null> => {
+  // If already refreshing, wait for the existing refresh to complete
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+
+  refreshPromise = (async () => {
+    try {
+      const response = await authAxios.post(
+        authenticationEndpoints.REFRESH_TOKEN,
+        {},
+        { withCredentials: true }
+      );
+
+      const accessToken = response?.data?.results[0]?.accessToken;
+
+      if (accessToken) {
+        setAccessToken(accessToken);
+        return accessToken;
+      }
+
+      return null;
+    } catch {
+      return null;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+};
+
+export const setAccessToken = (token: string) => {
+  if (typeof window !== "undefined") {
+    const expiryDate = new Date(
+      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
+    );
+
+    document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+  }
+};
+
+export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
+  if (typeof window !== "undefined") {
+    const expiryDate = new Date(
+      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
+    );
+
+    document.cookie = `isPasswordChangedForTheFirstTime=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+  }
+};
+
+export const clearCookies = async (): Promise<void> => {
+  try {
+    await authAxios.post(
+      authenticationEndpoints.SIGNOUT,
+      {},
+      { withCredentials: true }
+    );
+  } catch {
+    console.error("Error calling signout API");
+  }
+
+  if (typeof window !== "undefined") {
+    document.cookie =
+      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
+    document.cookie =
+      "isPasswordChangedForTheFirstTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
+  }
+};
+
+export const getAccessToken = async (): Promise<string | null> => {
+  if (typeof window === "undefined") return null;
+
+  const currentAccessToken = getCookieValue("accessToken");
+
+  if (!currentAccessToken) {
+    return await getNewAccessToken();
+  }
+
+  if (isTokenExpired(currentAccessToken)) {
+    const newToken = await getNewAccessToken();
+    return newToken;
+  }
+
+  return currentAccessToken;
+};
+
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    const claims = extractClaimsFromToken(token);
+
+    return (
+      Date.now() >
+      (claims?.exp as number) * unitConversion.MILLISECONDS_PER_SECOND
+    );
+  } catch (error) {
+    console.error("Failed to parse token:", error);
+    return true;
+  }
+};
+
+export const extractClaimsFromToken = (token: string): Record<string, any> => {
+  try {
+    const claims = decodeJWTToken(token);
+    return claims || {};
+  } catch (error) {
+    console.error("Failed to parse token:", error);
+    return {};
+  }
+};
+
+export const extractUserFromToken = (token: string): User | null => {
+  try {
+    if (isTokenExpired(token)) {
+      return null;
+    }
+
+    const claims = extractClaimsFromToken(token);
+
+    return {
+      userId: claims?.userId,
+      email: claims?.sub,
+      name: claims?.employee
+        ? `${claims.employee.firstName} ${claims.employee.lastName || ""}`
+        : "",
+      roles: claims?.roles as (
+        | AdminTypes
+        | ManagerTypes
+        | EmployeeTypes
+        | SuperAdminType
+        | SenderTypes
+      )[],
+      accessToken: token,
+      tokenDuration: claims?.tokenDuration,
+      isPasswordChangedForTheFirstTime:
+        claims?.isPasswordChangedForTheFirstTime ?? true,
+      employee: claims?.employee,
+      tier: claims?.tier as TierEnum,
+      tiers: claims?.tiers as TierEnum[],
+      tenantId: claims?.tenantId,
+      tenantStatus: claims?.tenantStatus
+    };
+  } catch (error) {
+    console.error("Failed to extract user from token:", error);
+    return null;
+  }
+};
+
+const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
+  const accessToken = response?.data?.results[0]?.accessToken;
+  const isPasswordChangedForTheFirstTime =
+    response?.data?.results[0]?.isPasswordChangedForTheFirstTime;
+
+  if (accessToken) {
+    setAccessToken(accessToken);
+
+    setIsPasswordChangedForTheFirstTime(
+      isPasswordChangedForTheFirstTime ?? true
+    );
+
+    return { status: SignInStatus.SUCCESS };
+  } else {
+    return { status: SignInStatus.FAILURE, error: response?.data?.message };
+  }
+};
+
+export const communitySignIn = async (
+  params: CommunitySignInParams
+): Promise<AuthResponseType> => {
+  const payload = { email: params.email, password: params.password };
+  try {
+    const response = await authAxios.post(
+      communityAuthEndpoints.CREDENTIAL_SIGN_IN,
+      payload
+    );
+    return handleAuthResponse(response);
+  } catch (error: any) {
+    return {
+      status: SignInStatus.FAILURE,
+      error: error?.response?.data?.[0]?.messageKey
+    };
+  }
+};
+
+export const communitySignUp = async (
+  params: CommunitySignUpParams
+): Promise<AuthResponseType> => {
+  const payload = {
+    firstName: params.firstName,
+    lastName: params.lastName,
+    email: params.email,
+    password: params.password
+  };
+  try {
+    const response = await authAxios.post(
+      communityAuthEndpoints.CREDENTIAL_SIGN_UP,
+      payload
+    );
+    return handleAuthResponse(response);
+  } catch (error: any) {
+    return {
+      status: SignInStatus.FAILURE,
+      error: error?.response?.data?.[0]?.messageKey
+    };
+  }
+};
+
+export const handleSignIn = async (
+  params: EnterpriseSignInParams
+): Promise<AuthResponseType> => {
+  if (!isEnterpriseMode()) {
+    return communitySignIn(params);
+  }
+  return enterpriseSignIn(params);
+};
+
+export const handleSignUp = async (
+  params: EnterpriseSignUpParams
+): Promise<AuthResponseType> => {
+  if (!isEnterpriseMode()) {
+    return communitySignUp(params);
+  }
+  return enterpriseSignUp(params);
+};
+
+export const checkUserAuthentication = async (): Promise<User | null> => {
+  const token = await getAccessToken();
+
+  if (!token) {
+    return null;
+  }
+
+  const userData = extractUserFromToken(token);
+
+  return userData;
+};
+
+export const signOut = async (redirect: boolean = true): Promise<void> => {
+  await clearCookies();
+
+  if (redirect === false) return;
+
+  if (typeof window !== "undefined") {
+    const currentPath = window.location.pathname;
+    const urlParams = new URLSearchParams(window.location.search);
+    const existingCallback = urlParams.get("callback");
+
+    const callbackPath = existingCallback || currentPath;
+    window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
+  }
+};
