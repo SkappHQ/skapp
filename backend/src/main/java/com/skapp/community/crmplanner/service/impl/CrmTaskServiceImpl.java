@@ -148,7 +148,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		task.setOwner(owner);
 
 		CrmContact contact = null;
-CrmCompany company = null;
+		CrmCompany company = null;
 		CrmDeal deal = null;
 
 		if (requestDto.getContactId() != null) {
@@ -157,7 +157,6 @@ CrmCompany company = null;
 			task.setContact(contact);
 			company = contact.getCompany();
 			task.setCompany(company);
-
 		}
 
 		if (requestDto.getDealId() != null) {
