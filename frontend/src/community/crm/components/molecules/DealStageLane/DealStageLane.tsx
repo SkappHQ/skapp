@@ -74,9 +74,9 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               ))}
             </SortableContext>
 
-            {hasNextPage && (
+            {hasNextPage && isFetchingNextPage && (
               <>
-                {isFetchingNextPage && <DealCardSkeleton count={2} />}
+                <DealCardSkeleton count={2} />
                 <div className="h-1 w-full" />
               </>
             )}

@@ -39,7 +39,7 @@ const DealCard: FC<DealCardProps> = ({
   ariaLabel,
   onClick
 }) => {
-  const imageUrl = useGetImageUrl(owner.authPic ?? "");
+  const imageUrl = useGetImageUrl(owner?.authPic ?? "");
 
   return (
     <div

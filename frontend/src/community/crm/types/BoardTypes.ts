@@ -28,7 +28,7 @@ export interface CrmBoardStageDeals {
 export interface CrmBoardDealsGroupedRequest {
   stageIds: number[];
   searchKeyword?: string;
-  page?: number | null;
+  page: number;
   limit: number;
 }
 
