@@ -4,7 +4,7 @@ export interface GoogleWorkspaceSyncUser {
   lastName?: string;
   displayName?: string;
   status?: string;
-  changeType?: "NEW" | "UPDATED"; 
+  changeType?: "NEW" | "UPDATED";
 }
 
 export interface GoogleWorkspaceSyncResult {
@@ -22,4 +22,15 @@ export interface GoogleWorkspaceSyncResponse {
   data: GoogleWorkspaceSyncResult;
   message: string;
   success: boolean;
+}
+
+export interface StagingRecord {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  googleStatus: "ACTIVE" | "SUSPENDED";
+  changeType: "NEW" | "UPDATED" | "REMOVED";
+  decision: "PENDING" | "APPROVED" | "REJECTED";
+  syncedAt: string;
 }

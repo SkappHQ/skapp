@@ -50,6 +50,9 @@ import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import org.springframework.transaction.annotation.Transactional;
+import com.skapp.community.peopleplanner.model.GoogleWorkspaceSyncStaging;
+import com.skapp.community.peopleplanner.repository.GoogleWorkspaceSyncStagingDao;
+
 
 
 import java.io.ByteArrayInputStream;
@@ -127,6 +130,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private final EmployeeRoleDao employeeRoleDao;
     private final TeamDao teamDao;
     private final EmployeeTeamDao employeeTeamDao;
+    private final GoogleWorkspaceSyncStagingDao stagingDao;
 
     private Directory directoryService;
     private volatile Long channelExpiration;
@@ -290,14 +294,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             SyncResult result = performFullSync();
             log.info("Resync complete. Synced: {}, Failed: {}", result.synced(), result.failed());
             // All users+employees are persisted — now send invitation emails
-            sendInviteEmailsToNewUsers(result.newUserEmails());
 
             sendSummaryEmail(asyncEmailSender, callerEmail,
                     result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
-            if (!result.removedUserEmails().isEmpty()) {
-                notifySuperAdminsOfRemovedUsers(result.removedUserEmails());
-            }
         } catch (Exception e) {
             log.error("Resync triggered by watch notification failed: {}", e.getMessage(), e);
             sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
@@ -319,16 +319,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         try {
             SyncResult result = performFullSync();
-            log.info("Sync complete. Synced: {}, Failed: {}, New users: {}",
-                    result.synced(), result.failed(), result.newUserEmails().size());
 
-            sendInviteEmailsToNewUsers(result.newUserEmails());
             sendSummaryEmail(asyncEmailSender, callerEmail,
                     result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
-            if (!result.removedUserEmails().isEmpty()) {
-                notifySuperAdminsOfRemovedUsers(result.removedUserEmails());
-            }
         } catch (Exception e) {
             log.error("Sync failed: {}", e.getMessage(), e);
             sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
@@ -344,7 +338,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private void notifySuperAdminsOfSyncResult(int synced, int failed, String fatalError) {
         String message = fatalError != null
                 ? "Google Workspace sync failed: " + fatalError
-                : "Google Workspace sync completed. Synced: " + synced + ", Failed: " + failed;
+                : synced + " user(s) are pending review from the latest Google Workspace sync.";
 
         List<EmployeeRole> superAdminRoles = employeeRoleDao.findByIsSuperAdminTrue();
 
@@ -374,11 +368,13 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // performFullSync() — paginate through all Workspace users and upsert them
     // -------------------------------------------------------------------------
     private SyncResult performFullSync() throws Exception {
+        stagingDao.deleteByDecisionIn(
+                List.of(GoogleWorkspaceSyncStaging.Decision.APPROVED,
+                        GoogleWorkspaceSyncStaging.Decision.REJECTED));
         int totalSynced = 0;
         int totalFailed = 0;
         List<String> failures = new ArrayList<>();
         Set<String> googleEmails = new HashSet<>();
-        List<String> newUserEmails = new ArrayList<>();
 
         authenticate();
 
@@ -408,13 +404,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                     }
 
                     googleEmails.add(email);
-                    boolean isNew = upsertUser(wsUser);
+                    stageUser(wsUser);
                     totalSynced++;
-                    log.debug("Synced: <{}>", email);
-                    if (isNew) {
-                        newUserEmails.add(email);
-                        log.debug("New user queued for invite: <{}>", email);
-                    }
+                    log.debug("Staged: <{}>", email);
                 } catch (Exception e) {
                     String msg = "Failed to persist user: " + wsUser.getPrimaryEmail()
                             + " — " + e.getMessage();
@@ -429,7 +421,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         } while (pageToken != null);
 
-        List<String> removedUserEmails = deactivateUsersMissingFrom(googleEmails);
+        stageRemovals(googleEmails);
 
         // ── Phase 2: sync Google groups → Skapp teams ────────────────────────
         // Runs after all users are committed so every member email resolves
@@ -443,7 +435,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             totalFailed++;
         }
 
-        return new SyncResult(totalSynced, totalFailed, failures, newUserEmails, removedUserEmails);
+        return new SyncResult(totalSynced, totalFailed, failures);
     }
 
     // -------------------------------------------------------------------------
@@ -726,7 +718,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                 "<p>Review their status and decide whether to keep them deactivated or remove them permanently.</p>" +
                 "</body></html>";
     }
-    private record SyncResult(int synced, int failed, List<String> failures, List<String> newUserEmails, List<String> removedUserEmails) {}
+    private record SyncResult(int synced, int failed, List<String> failures) {}
 
     // -------------------------------------------------------------------------
     // upsertUser() — create or update User + Employee from a Workspace user
@@ -909,6 +901,74 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             return fetchPageWithBackoff(pageToken, attempt + 1);
         }
     }
+
+
+    private void stageUser(com.google.api.services.directory.model.User wsUser) {
+        String email      = wsUser.getPrimaryEmail();
+        String firstName  = wsUser.getName() != null ? wsUser.getName().getGivenName()  : "";
+        String lastName   = wsUser.getName() != null ? wsUser.getName().getFamilyName() : "";
+        boolean suspended = Boolean.TRUE.equals(wsUser.getSuspended());
+        String googleStatus = suspended ? "SUSPENDED" : "ACTIVE";
+
+        Employee existing = employeeDao.findEmployeeByEmail(email);
+
+        GoogleWorkspaceSyncStaging.ChangeType changeType;
+
+        if (existing == null) {
+            changeType = GoogleWorkspaceSyncStaging.ChangeType.NEW;
+        } else {
+            boolean nameChanged = !firstName.equals(existing.getFirstName())
+                    || !lastName.equals(existing.getLastName());
+            boolean statusChanged = suspended
+                    ? existing.getAccountStatus() != AccountStatus.DEACTIVATED
+                    : existing.getAccountStatus() == AccountStatus.DEACTIVATED;
+
+            if (!nameChanged && !statusChanged) {
+                return; // nothing changed — skip
+            }
+            changeType = GoogleWorkspaceSyncStaging.ChangeType.UPDATED;
+        }
+
+        GoogleWorkspaceSyncStaging staging = new GoogleWorkspaceSyncStaging();
+        staging.setEmail(email);
+        staging.setFirstName(firstName);
+        staging.setLastName(lastName);
+        staging.setGoogleStatus(googleStatus);
+        staging.setChangeType(changeType);
+        staging.setDecision(GoogleWorkspaceSyncStaging.Decision.PENDING);
+        staging.setSyncedAt(Instant.now());
+        stagingDao.save(staging);
+
+        log.debug("Staged {} for {}", changeType, email);
+    }
+
+    private void stageRemovals(Set<String> googleEmails) {
+        List<User> allUsers = userDao.findAll();
+
+        for (User user : allUsers) {
+            String email = user.getEmail();
+            if (googleEmails.contains(email)) continue;
+
+            Employee employee = employeeDao.findEmployeeByEmail(email);
+            if (employee == null) continue;
+
+            Optional<EmployeeRole> role = employeeRoleDao.findById(employee.getEmployeeId());
+            if (role.isPresent() && Boolean.TRUE.equals(role.get().getIsSuperAdmin())) continue;
+
+            GoogleWorkspaceSyncStaging staging = new GoogleWorkspaceSyncStaging();
+            staging.setEmail(email);
+            staging.setFirstName(employee.getFirstName());
+            staging.setLastName(employee.getLastName());
+            staging.setGoogleStatus("SUSPENDED");
+            staging.setChangeType(GoogleWorkspaceSyncStaging.ChangeType.REMOVED);
+            staging.setDecision(GoogleWorkspaceSyncStaging.Decision.PENDING);
+            staging.setSyncedAt(Instant.now());
+            stagingDao.save(staging);
+
+            log.info("Staged REMOVED for {}", email);
+        }
+    }
+
 
 
 
