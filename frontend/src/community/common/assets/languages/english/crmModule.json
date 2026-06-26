@@ -393,6 +393,15 @@
   "deals": {
     "pageHead": "Deals | Skapp",
     "title": "Deals",
+    "defaultStageNames": {
+      "LEAD": "Lead",
+      "QUALIFIED": "Qualified",
+      "DEMO_SCHEDULED": "Demo Scheduled",
+      "PROPOSAL_SENT": "Proposal Sent",
+      "NEGOTIATION": "Negotiation",
+      "WON": "Won",
+      "LOST": "Lost"
+    },
     "addDealBtn": "Add Deal",
     "detailsPageHead": "Deal Details | Skapp",
     "detailsTitle": "Deal Details",

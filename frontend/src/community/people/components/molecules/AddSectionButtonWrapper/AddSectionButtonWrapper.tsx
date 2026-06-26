@@ -9,11 +9,19 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { useAddEmployee } from "~community/people/api/PeopleApi";
+import {
+  useAddEmployee,
+  useCreateCustomSkills
+} from "~community/people/api/PeopleApi";
 import useStepper from "~community/people/hooks/useStepper";
 import { usePeopleStore } from "~community/people/store/store";
+import { SkillType } from "~community/people/types/PeopleTypes";
 import { handleError } from "~community/people/utils/directoryUtils/addNewResourceFlowUtils/addNewResourceUtils";
 import uploadImage from "~community/people/utils/image/uploadImage";
+import {
+  buildResolvedSkillUpdates,
+  getNewCustomSkills
+} from "~community/people/utils/skillsUtils";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 interface Props {
@@ -63,6 +71,8 @@ const AddSectionButtonWrapper = ({
 
   const { mutateAsync: handleUploadImagesAsync } = useUploadImages();
 
+  const { mutate: createCustomSkills } = useCreateCustomSkills();
+
   const { employee, profilePic, thumbnail, setCommonDetails } = usePeopleStore(
     (state) => state
   );
@@ -89,9 +99,37 @@ const AddSectionButtonWrapper = ({
       authPic: newAuthPicURL ?? ""
     });
 
-    if (employee) {
+    if (!employee) return;
+
+    const skillUpdates = employee.personal?.skillUpdates;
+
+    if (!skillUpdates) {
       mutate(employee);
+      return;
     }
+
+    const submitWithResolvedSkills = (createdCustomSkills: SkillType[]) =>
+      mutate({
+        ...employee,
+        personal: {
+          ...employee.personal,
+          skillUpdates: buildResolvedSkillUpdates(
+            skillUpdates,
+            createdCustomSkills
+          )
+        }
+      });
+
+    const newCustomSkills = getNewCustomSkills(skillUpdates);
+
+    if (newCustomSkills.length === 0) {
+      submitWithResolvedSkills([]);
+      return;
+    }
+
+    createCustomSkills(newCustomSkills, {
+      onSuccess: submitWithResolvedSkills
+    });
   };
 
   return (

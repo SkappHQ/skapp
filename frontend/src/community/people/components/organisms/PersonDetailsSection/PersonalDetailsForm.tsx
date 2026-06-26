@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 
 import { theme } from "~community/common/theme/theme";
 import { scrollToFirstError } from "~community/common/utils/commonUtil";
+import { useGetSkills } from "~community/people/api/PeopleApi";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useStepper from "~community/people/hooks/useStepper";
 import { usePeopleStore } from "~community/people/store/store";
@@ -16,6 +17,7 @@ import EducationalDetailsSection from "./SubSections/EducationalDetailsSection";
 import FamilyDetailsSection from "./SubSections/FamilyDetailsSection";
 import GeneralDetailsSection from "./SubSections/GeneralDetailsSections";
 import HealthAndOtherDetailsSection from "./SubSections/HealthAndOtherDetailsSection";
+import SkillsDetailsSection from "./SubSections/SkillsDetailsSection";
 import SocialMediaDetailsSection from "./SubSections/SocialMediaDetailsSection";
 
 interface Props {
@@ -33,6 +35,7 @@ const PersonalDetailsForm = ({
   const contactDetailsRef = useRef<FormMethods | null>(null);
   const socialMediaDetailsRef = useRef<FormMethods | null>(null);
   const healthAndOtherDetailsRef = useRef<FormMethods | null>(null);
+  const skillsDetailsRef = useRef<FormMethods | null>(null);
 
   const {
     nextStep,
@@ -55,6 +58,8 @@ const PersonalDetailsForm = ({
   const { handleMutate } = useHandlePeopleEdit();
 
   const { handleNext } = useStepper();
+
+  const { data: customSkills = [] } = useGetSkills();
 
   const isTerminatedEmployee =
     employee?.common?.accountStatus === AccountStatusTypes.TERMINATED;
@@ -110,6 +115,7 @@ const PersonalDetailsForm = ({
     contactDetailsRef?.current?.resetForm();
     socialMediaDetailsRef?.current?.resetForm();
     healthAndOtherDetailsRef?.current?.resetForm();
+    skillsDetailsRef?.current?.resetForm();
 
     setEmployee(initialEmployee);
     setIsUnsavedChangesModalOpen(false);
@@ -167,6 +173,12 @@ const PersonalDetailsForm = ({
         ref={healthAndOtherDetailsRef}
         isInputsDisabled={isTerminatedEmployee}
         isReadOnly={isReadOnly}
+      />
+      <SkillsDetailsSection
+        ref={skillsDetailsRef}
+        isInputsDisabled={isTerminatedEmployee}
+        isReadOnly={isReadOnly}
+        customSkills={customSkills}
       />
 
       {!isTerminatedEmployee &&
