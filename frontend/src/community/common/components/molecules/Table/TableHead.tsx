@@ -1,4 +1,5 @@
 import {
+  Checkbox,
   TableHead as MuiTableHead,
   SxProps,
   TableCell,
@@ -7,7 +8,6 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
-import { Checkbox } from "@rootcodelabs/skapp-ui";
 import { FC, MutableRefObject } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -70,7 +70,6 @@ const TableHead: FC<
           checkboxSelection?.isSelectAllVisible && (
             <TableCell
               scope="col"
-              component="th"
               sx={mergeSx([
                 classes.checkboxSelection.cell,
                 classes.tableHead.checkboxSelection.cell,
@@ -79,9 +78,18 @@ const TableHead: FC<
             >
               {checkboxSelection?.isSelectAllEnabled && (
                 <Checkbox
+                  color="primary"
                   checked={checkboxSelection?.isSelectAllChecked}
                   onChange={() => checkboxSelection?.handleSelectAllClick?.()}
-                  ariaLabel={translateAria(["checkbox"])}
+                  sx={mergeSx([
+                    classes.checkboxSelection.checkbox,
+                    checkboxSelection?.customStyles?.checkbox
+                  ])}
+                  slotProps={{
+                    input: {
+                      "aria-label": translateAria(["checkbox"])
+                    }
+                  }}
                 />
               )}
             </TableCell>
@@ -89,13 +97,10 @@ const TableHead: FC<
 
         {headers?.map((header) => (
           <TableCell
-            scope="col"
-            component="th"
             key={header?.id}
             sx={mergeSx([classes.tableHead.cell, customStyles?.cell])}
           >
             <Typography
-              component="span"
               sx={mergeSx([
                 classes.tableHead.typography,
                 customStyles?.typography
@@ -108,15 +113,12 @@ const TableHead: FC<
 
         {actionColumn.isEnabled && (
           <TableCell
-            scope="col"
-            component="th"
             sx={mergeSx([
               classes.tableHead.actionColumn?.cell,
               customStyles?.cell
             ])}
           >
             <Typography
-              component="span"
               sx={mergeSx([
                 classes.tableHead.typography,
                 customStyles?.typography

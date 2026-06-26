@@ -1,5 +1,6 @@
 import {
   Box,
+  Checkbox,
   TableBody as MuiTableBody,
   SxProps,
   TableCell,
@@ -7,7 +8,6 @@ import {
   Theme,
   useTheme
 } from "@mui/material";
-import { Checkbox } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { TableEmptyScreenProps } from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
@@ -96,8 +96,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
             key={row.id}
             tabIndex={onRowClick ? 0 : -1}
             onClick={onRowClick ? () => handleTableRowClick(row) : undefined}
-            aria-label={row?.ariaLabel?.row ?? ""}
-            aria-description={row?.ariaDescription?.row ?? ""}
+            aria-label={onRowClick ? row?.ariaLabel?.row : undefined}
             sx={mergeSx([
               classes.tableBody.row.default,
               classes.tableBody.row?.[
@@ -135,7 +134,6 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
             {checkboxSelection?.isEnabled &&
               checkboxSelection?.isSelectAllVisible && (
                 <TableCell
-                  scope="col"
                   onClick={(e) => e.stopPropagation()}
                   sx={mergeSx([
                     classes.checkboxSelection.cell,
@@ -144,7 +142,24 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                   ])}
                 >
                   {!isRowDisabled(row.id) && (
-                    <span
+                    <Checkbox
+                      color="primary"
+                      checked={selectedRows?.includes(row.id) || false}
+                      onChange={checkboxSelection?.handleIndividualSelectClick?.(
+                        row.id
+                      )}
+                      sx={mergeSx([
+                        classes.checkboxSelection.checkbox,
+                        checkboxSelection?.customStyles?.checkbox
+                      ])}
+                      slotProps={{
+                        input: {
+                          // "aria-label": translateText(["checkbox"], {
+                          //   tableName: tableName,
+                          //   ariaLabel: row?.ariaLabel?.toLowerCase() ?? ""
+                          // })
+                        }
+                      }}
                       onKeyDown={(e) => {
                         if (shouldToggleCheckbox(e.key)) {
                           e.preventDefault();
@@ -153,21 +168,12 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                           )?.();
                         }
                       }}
-                    >
-                      <Checkbox
-                        checked={selectedRows?.includes(row.id) || false}
-                        onChange={checkboxSelection?.handleIndividualSelectClick?.(
-                          row.id
-                        )}
-                        ariaLabel={row?.ariaLabel?.checkbox ?? ""}
-                      />
-                    </span>
+                    />
                   )}
                 </TableCell>
               )}
             {headers?.map((header) => (
               <TableCell
-                scope="col"
                 key={header.id}
                 sx={mergeSx([
                   classes.tableBody.cell.wrapper,
@@ -178,7 +184,6 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                   row[header?.id]()
                 ) : (
                   <Box
-                    component="span"
                     sx={mergeSx([
                       classes.tableBody.cell.container,
                       customStyles?.cell?.container
