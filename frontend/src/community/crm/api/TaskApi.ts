@@ -108,9 +108,7 @@ const fetchRelatedCompletedTasks = async (
   return response?.data?.results?.[0];
 };
 
-export const useGetRelatedTasks = (
-  params: RelatedTasksParams,
-) => {
+export const useGetRelatedTasks = (params: RelatedTasksParams) => {
   return useQuery({
     queryKey: taskQueryKeys.RELATED_TASKS(params),
     queryFn: async () => {

@@ -6,7 +6,7 @@ import {
   PlusIcon,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import React from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
@@ -21,7 +21,7 @@ interface Props {
   emptyViewHeight?: string;
 }
 
-const SidePanelDealSection: React.FC<Props> = ({
+const SidePanelDealSection: FC<Props> = ({
   deals,
   showEmptyStateAddDeal = true,
   emptyViewHeight = "h-auto"
