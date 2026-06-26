@@ -14,11 +14,7 @@ import {
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 
-import {
-  companyQueryKeys,
-  contactQueryKeys,
-  taskQueryKeys
-} from "./utils/QueryKeys";
+import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
 
 const createTask = async (taskDetails: CrmTaskCreatePayload) => {
   const response = await authFetch.post(taskEndpoints.CREATE_TASK, taskDetails);
