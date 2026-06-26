@@ -12,13 +12,3 @@ export const STAGE_COLOR_MAP: Record<string, string> = {
   ROSEWOOD: "#b55253",
   INDIGO: "#9366fd"
 };
-
-export const DEFAULT_STAGE_NAME_MAP: Record<string, string> = {
-  LEAD: "Lead",
-  QUALIFIED: "Qualified",
-  DEMO_SCHEDULED: "Demo Scheduled",
-  PROPOSAL_SENT: "Proposal Sent",
-  NEGOTIATION: "Negotiation",
-  WON: "Won",
-  LOST: "Lost"
-};

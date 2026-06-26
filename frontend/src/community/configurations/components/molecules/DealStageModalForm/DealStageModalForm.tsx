@@ -154,8 +154,8 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
-        required
         id="status-name-input-field"
+        required
         name="name"
         label={translateText(["dealStageModal", "nameInputLabel"])}
         value={values.name}

@@ -5,20 +5,22 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
-import { useDealStageById, useDeleteDealStage } from "~community/crm/api/crmDealApi";
+import {
+  useDealStageById,
+  useDeleteDealStage
+} from "~community/crm/api/crmDealApi";
 
 const DeleteDealStageModalContent: FC = () => {
   const translateText = useTranslator("configurations", "crm");
   const { setToastMessage } = useToast();
 
-  const { selectedDealStageId, setIsDealStageModalOpen } = useConfigurationStore(
-    (store) => ({
+  const { selectedDealStageId, setIsDealStageModalOpen } =
+    useConfigurationStore((store) => ({
       selectedDealStageId: store.selectedDealStageId,
       setIsDealStageModalOpen: store.setIsDealStageModalOpen
-    })
-  );
+    }));
 
-  const selectedDealStage = useDealStageById(selectedDealStageId);
+  const selectedDealStage = useDealStageById(selectedDealStageId!);
 
   const handleCloseModal = () => {
     setIsDealStageModalOpen(false);
@@ -28,7 +30,11 @@ const DeleteDealStageModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["deleteDealStageModal", "toastMessages", "successTitle"]),
+      title: translateText([
+        "deleteDealStageModal",
+        "toastMessages",
+        "successTitle"
+      ]),
       description: translateText([
         "deleteDealStageModal",
         "toastMessages",
@@ -42,7 +48,11 @@ const DeleteDealStageModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["deleteDealStageModal", "toastMessages", "errorTitle"]),
+      title: translateText([
+        "deleteDealStageModal",
+        "toastMessages",
+        "errorTitle"
+      ]),
       description: translateText([
         "deleteDealStageModal",
         "toastMessages",
@@ -57,8 +67,7 @@ const DeleteDealStageModalContent: FC = () => {
   );
 
   const handleDeleteStage = () => {
-    if (selectedDealStage?.id === undefined) return;
-    deleteStage(selectedDealStage.id);
+    deleteStage(selectedDealStage!.id);
   };
 
   return (
@@ -75,7 +84,11 @@ const DeleteDealStageModalContent: FC = () => {
           onClick={handleCloseModal}
           icon={<CloseIcon />}
           iconPosition="end"
-          aria-label={translateText(["deleteDealStageModal", "buttons", "cancel"])}
+          aria-label={translateText([
+            "deleteDealStageModal",
+            "buttons",
+            "cancel"
+          ])}
         >
           {translateText(["deleteDealStageModal", "buttons", "cancel"])}
         </ButtonV2>
@@ -92,7 +105,11 @@ const DeleteDealStageModalContent: FC = () => {
           iconPosition="end"
           onClick={handleDeleteStage}
           disabled={isPending}
-          aria-label={translateText(["deleteDealStageModal", "buttons", "confirm"])}
+          aria-label={translateText([
+            "deleteDealStageModal",
+            "buttons",
+            "confirm"
+          ])}
         >
           {translateText(["deleteDealStageModal", "buttons", "confirm"])}
         </ButtonV2>
