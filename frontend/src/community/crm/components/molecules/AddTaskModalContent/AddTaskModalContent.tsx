@@ -127,6 +127,7 @@ const AddTaskModalContent: FC = () => {
     handleChange,
     isSubmitting,
     setFieldValue,
+    setFieldError,
     setSubmitting,
     submitForm,
     resetForm
@@ -235,6 +236,7 @@ const AddTaskModalContent: FC = () => {
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
     setFieldValue("owner", owner?.employeeId);
+    setFieldError("owner", "");
     setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
@@ -282,7 +284,10 @@ const AddTaskModalContent: FC = () => {
         state={errors.name ? "error" : "default"}
         label={translateText(["labels", "task"])}
         placeholder={translateText(["placeholders", "task"])}
-        onChange={handleChange}
+        onChange={(e) => {
+          handleChange(e);
+          setFieldError("name", "");
+        }}
         aria-label={translateText(["ariaLabels", "task"])}
         fullWidth
         required
@@ -295,9 +300,10 @@ const AddTaskModalContent: FC = () => {
             placeholder={translateText(["placeholders", "type"])}
             options={taskTypeOptions}
             value={values.type?.id?.toString() ?? undefined}
-            onChange={(value) =>
-              setFieldValue("type", getCategoryById(Number(value)) ?? null)
-            }
+            onChange={(value) => {
+              setFieldValue("type", getCategoryById(Number(value)) ?? null);
+              setFieldError("type", "");
+            }}
             errorMessage={errors.type}
             variant={errors.type ? "primary-error" : "primary"}
             width="100%"
@@ -326,9 +332,10 @@ const AddTaskModalContent: FC = () => {
           <DatePicker
             mode="single"
             selected={values.dueDate ? new Date(values.dueDate) : undefined}
-            onSelect={(date) =>
-              setFieldValue("dueDate", date?.toISOString() ?? null)
-            }
+            onSelect={(date) => {
+              setFieldValue("dueDate", date?.toISOString() ?? null);
+              setFieldError("dueDate", "");
+            }}
             popperProps={{ position: "bottom-end" }}
           >
             <div>
