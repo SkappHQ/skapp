@@ -89,23 +89,11 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private volatile Instant lastSyncCompletedAt = null;
     private static final Duration SYNC_DEBOUNCE_WINDOW = Duration.ofSeconds(30);
 
-    @Value("${google.project-id:}")
-    private String projectId;
-
-    @Value("${google.secret-name:}")
-    private String secretName;
-
-    @Value("${google.admin-email:}")
-    private String adminEmail;
-
     @Value("${google.max-results:500}")
     private int maxResults;
 
     @Value("${google.max-backoff-attempts:5}")
     private int maxBackoffAttempts;
-
-    @Value("${google.credentials-path:}")
-    private String credentialsPath;
 
     @Value("${google.webhook-url:}")
     private String webhookUrl;
@@ -138,18 +126,19 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private Directory directoryService;
     private volatile Long channelExpiration;
 
-    // isConfigured() — returns false when required Google env vars are absent.
-    // Allows the app to start without crashing when integration is not configured.
+    // isConfigured() — returns true when an active OAuth connection exists in the DB.
+    // Allows the app to start without crashing when the admin has not yet connected.
     private boolean isConfigured() {
-        boolean configured = adminEmail != null && !adminEmail.isBlank()
-                && webhookUrl != null && !webhookUrl.isBlank()
-                && ((credentialsPath != null && !credentialsPath.isBlank())
-                || (projectId != null && !projectId.isBlank()
-                && secretName != null && !secretName.isBlank()));
-        if (!configured) {
+        try {
+            boolean connected = connectionDao.findFirstByActiveTrue().isPresent();
+            if (!connected) {
+                log.warn("Google Workspace integration is not configured — skipping.");
+            }
+            return connected;
+        } catch (Exception e) {
             log.warn("Google Workspace integration is not configured — skipping.");
+            return false;
         }
-        return configured;
     }
 
     // -------------------------------------------------------------------------
@@ -184,6 +173,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     @Override
     public void registerWatch() throws Exception {
         if (!isConfigured()) { return; }
+        if (webhookUrl == null || webhookUrl.isBlank()) {
+            log.warn("registerWatch: google.webhook-url not set — skipping watch registration.");
+            return;
+        }
         if (directoryService == null) {
             authenticate();
         }
@@ -900,17 +893,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         }
     }
 
-    // -------------------------------------------------------------------------
-    // getSecret() — pull JSON key from GCP Secret Manager
-    // -------------------------------------------------------------------------
-    private String getSecret(String projectId, String secretName) throws Exception {
-        try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
-            SecretVersionName versionName =
-                    SecretVersionName.of(projectId, secretName, SECRET_LATEST_VERSION);
-            AccessSecretVersionResponse response = client.accessSecretVersion(versionName);
-            return response.getPayload().getData().toStringUtf8();
-        }
-    }
 
     private void stageUser(com.google.api.services.directory.model.User wsUser) {
         String email      = wsUser.getPrimaryEmail();
