@@ -19,14 +19,17 @@ import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
 import DealTitleSection from "./DealTitleSection";
 
-const DealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const { selectedDealId } = useCrmStore((store) => ({
-    selectedDealId: store.selectedDealId
+  const { selectedDealId, setIsCrmSidePanelOpen } = useCrmStore((store) => ({
+    selectedDealId: store.selectedDealId,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
   }));
 
   const { setToastMessage } = useToast();
+
+  const handleClose = (): void => setIsCrmSidePanelOpen(false);
 
   const { data: deal, isError: isDealError } = useGetDealById(selectedDealId);
 
@@ -45,7 +48,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         title: translateText(["errors", "dealNotFoundTitle"]),
         description: translateText(["errors", "dealNotFoundDescription"])
       });
-      onClose?.();
+      handleClose();
     }
   }, [isDealError]);
 
@@ -71,15 +74,21 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     <>
       <SidePanel
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={handleClose}
         closeOnBackdropClick
         header={
           <div className="flex flex-col gap-3 pl-2">
             <div className="flex items-center gap-2">
               <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
-                <HandshakeIcon width="14" height="14" fill="var(--color-white)" />
+                <HandshakeIcon
+                  width="14"
+                  height="14"
+                  fill="var(--color-white)"
+                />
               </div>
-              <span className="body1 text-secondary-icon">#{selectedDealId}</span>
+              <span className="body1 text-secondary-icon">
+                #{selectedDealId}
+              </span>
             </div>
           </div>
         }
@@ -108,7 +117,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
                   <SidePanelTasksSection tasks={relatedTasks} />
                 </div>
               </div>
-              <DealPropertiesSidebar deal={deal} isOpen={isOpen} />
+              <DealPropertiesSidebar deal={deal} />
             </div>
           </div>
         )}

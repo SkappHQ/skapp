@@ -19,14 +19,19 @@ import {
   CrmCreateDealPayload,
   CrmDealAddFormTypes
 } from "~community/crm/types/CommonTypes";
+import { useCrmStore } from "~community/crm/store/store";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
 
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
 
-const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const { setToastMessage } = useToast();
+
+  const { setIsCrmSidePanelOpen } = useCrmStore((store) => ({
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+  }));
 
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
@@ -38,7 +43,8 @@ const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   );
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    isOpen
   );
   const contacts = contactLookupData?.items ?? [];
 
@@ -51,7 +57,7 @@ const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     });
     formik.resetForm();
     setSelectedContact(null);
-    onClose?.();
+    setIsCrmSidePanelOpen(false);
   };
 
   const handleCreateDealError = () => {
@@ -102,7 +108,7 @@ const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
-    onClose?.();
+    setIsCrmSidePanelOpen(false);
   };
 
   return (

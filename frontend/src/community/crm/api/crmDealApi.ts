@@ -10,11 +10,11 @@ import {
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmCreateDealPayload,
+  CrmDealDetailResponseType,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
   CrmDealStageType,
-  CrmDealType,
-  CrmDealDetailResponseType
+  CrmDealType
 } from "~community/crm/types/CommonTypes";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
@@ -111,13 +111,12 @@ const fetchDealById = async (
 };
 
 export const useGetDealById = (
-  id: number | null,
-  enabled = true
+  id: number | null
 ): UseQueryResult<CrmDealDetailResponseType> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_BY_ID(id ?? 0),
     queryFn: () => fetchDealById(id!),
     refetchOnWindowFocus: false,
-    enabled: enabled && id !== null
+    enabled: id !== null
   });
 };
