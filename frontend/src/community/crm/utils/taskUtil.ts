@@ -74,8 +74,8 @@ export const getPriorityConfig = (
 };
 
 export const getPriorityDisplayKey = (priority: CrmPriorityEnum): string => {
-  const option = PRIORITY_OPTIONS.find((o) => o.value === priority);
-  return option?.key ?? "";
+  const option = PRIORITY_OPTIONS.find((o) => o.value === priority)!;
+  return option.key;
 };
 
 export interface GroupedTasks {
