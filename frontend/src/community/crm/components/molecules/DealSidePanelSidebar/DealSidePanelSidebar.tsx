@@ -1,11 +1,11 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCrmContacts } from "~community/crm/api/ContactApi";
-import { useGetDealStages } from "~community/crm/api/crmDealApi";
+import useGetStageOptions from "~community/crm/hooks/useGetStageOptions";
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
@@ -54,26 +54,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const { data: stages = [], isLoading: isStagesLoading } =
-    useGetDealStages(isOpen);
-
-  const stageOptions = useMemo(
-    () =>
-      stages.map((s) => ({
-        id: String(s.id),
-        value: String(s.id),
-        label: (
-          <div className="inline-flex items-center gap-2.5">
-            <div
-              className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: s.color }}
-            />
-            <span className="body2">{s.name}</span>
-          </div>
-        )
-      })),
-    [stages]
-  );
+  const { stageOptions, isStagesLoading } = useGetStageOptions(isOpen);
 
   useEffect(() => {
     setAmount(deal.amount ?? "");

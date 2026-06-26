@@ -4,10 +4,10 @@ import { useGetDealStages } from "~community/crm/api/crmDealApi";
 import { CrmDealStageEnum } from "~community/crm/enums/common";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 
-const useGetMappedDealStages = () => {
+const useGetMappedDealStages = (enabled?: boolean) => {
   const { getStageByName } = useStageNameMapper();
 
-  const { data: stages = [], isLoading, isError } = useGetDealStages();
+  const { data: stages = [], isLoading, isError } = useGetDealStages(enabled);
 
   const initialStageId = useMemo(
     () => stages.find((s) => s.stageType === CrmDealStageEnum.INITIAL)?.id,
