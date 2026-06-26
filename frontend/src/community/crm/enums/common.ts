@@ -79,3 +79,13 @@ export enum DealSidePanelTypes {
   ADD_DEAL = "ADD_DEAL",
   DEAL_DETAIL = "DEAL_DETAIL"
 }
+
+export enum DefaultStageNameEnum {
+  LEAD = "LEAD",
+  QUALIFIED = "QUALIFIED",
+  DEMO_SCHEDULED = "DEMO_SCHEDULED",
+  PROPOSAL_SENT = "PROPOSAL_SENT",
+  NEGOTIATION = "NEGOTIATION",
+  WON = "WON",
+  LOST = "LOST"
+}
