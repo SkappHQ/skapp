@@ -379,3 +379,8 @@ export interface CrmContactDetailResponseType {
   tasks: TaskRowResponseType[];
   deals: DetailPanelDealResponseType[];
 }
+
+export type PreselectedContact = {
+  id: number;
+  name: string;
+};

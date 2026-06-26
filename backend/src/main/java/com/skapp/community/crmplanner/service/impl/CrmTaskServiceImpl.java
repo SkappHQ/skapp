@@ -133,6 +133,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 				requestDto.getDealId());
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
 		CrmValidations.validateTaskNotes(requestDto.getNotes());
+		validateTaskCreationLimit();
 
 		User currentUser = userService.getCurrentUser();
 		Employee owner = resolveTaskOwner(requestDto.getOwnerId(), currentUser);
@@ -178,6 +179,10 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		log.info("createTask: execution ended with taskId={}", savedTask.getId());
 		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
+	}
+
+	protected void validateTaskCreationLimit() {
+		// This method is a placeholder for enterprise task creation limit validation
 	}
 
 	@Override

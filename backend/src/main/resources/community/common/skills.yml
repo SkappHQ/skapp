@@ -1,0 +1,2003 @@
+defaultSkills:
+  - id: 1
+    name: "Python Programming"
+  - id: 2
+    name: "JavaScript Development"
+  - id: 3
+    name: "Java Programming"
+  - id: 4
+    name: "C++ Programming"
+  - id: 5
+    name: "C# Programming"
+  - id: 6
+    name: "TypeScript"
+  - id: 7
+    name: "Go (Golang)"
+  - id: 8
+    name: "Rust Programming"
+  - id: 9
+    name: "Ruby on Rails"
+  - id: 10
+    name: "PHP Development"
+  - id: 11
+    name: "Swift Programming"
+  - id: 12
+    name: "Kotlin Development"
+  - id: 13
+    name: "React.js"
+  - id: 14
+    name: "Angular Framework"
+  - id: 15
+    name: "Vue.js"
+  - id: 16
+    name: "Node.js"
+  - id: 17
+    name: "Django Framework"
+  - id: 18
+    name: "Spring Boot"
+  - id: 19
+    name: "RESTful API Design"
+  - id: 20
+    name: "GraphQL"
+  - id: 21
+    name: "Microservices Architecture"
+  - id: 22
+    name: "Docker"
+  - id: 23
+    name: "Kubernetes"
+  - id: 24
+    name: "CI/CD Pipelines"
+  - id: 25
+    name: "Git Version Control"
+  - id: 26
+    name: "Agile Development"
+  - id: 27
+    name: "Test-Driven Development"
+  - id: 28
+    name: "Unit Testing"
+  - id: 29
+    name: "Code Review"
+  - id: 30
+    name: "System Design"
+  - id: 31
+    name: "Software Architecture"
+  - id: 32
+    name: "Object-Oriented Programming"
+  - id: 33
+    name: "Functional Programming"
+  - id: 34
+    name: "Database Design"
+  - id: 35
+    name: "SQL"
+  - id: 36
+    name: "NoSQL Databases"
+  - id: 37
+    name: "Redis"
+  - id: 38
+    name: "PostgreSQL"
+  - id: 39
+    name: "MySQL"
+  - id: 40
+    name: "MongoDB"
+  - id: 41
+    name: "AWS Cloud Services"
+  - id: 42
+    name: "Azure Cloud"
+  - id: 43
+    name: "Google Cloud Platform"
+  - id: 44
+    name: "Terraform"
+  - id: 45
+    name: "Linux Administration"
+  - id: 46
+    name: "Bash Scripting"
+  - id: 47
+    name: "Webpack"
+  - id: 48
+    name: "Performance Optimization"
+  - id: 49
+    name: "Security Best Practices"
+  - id: 50
+    name: "WebSocket Development"
+  - id: 51
+    name: "Flutter Development"
+  - id: 52
+    name: "React Native"
+  - id: 53
+    name: "Electron.js"
+  - id: 54
+    name: "WebAssembly"
+  - id: 55
+    name: "gRPC"
+  - id: 56
+    name: "Apache Kafka"
+  - id: 57
+    name: "RabbitMQ"
+  - id: 58
+    name: "Nginx Configuration"
+  - id: 59
+    name: "Load Balancing"
+  - id: 60
+    name: "OAuth / OpenID Connect"
+  - id: 61
+    name: "Elasticsearch"
+  - id: 62
+    name: "Serverless Architecture"
+  - id: 63
+    name: "Lambda Functions"
+  - id: 64
+    name: "Next.js"
+  - id: 65
+    name: "Nuxt.js"
+  - id: 66
+    name: "Svelte"
+  - id: 67
+    name: "FastAPI"
+  - id: 68
+    name: "Laravel"
+  - id: 69
+    name: "ASP.NET Core"
+  - id: 70
+    name: "Scala"
+  - id: 71
+    name: "Dart Programming"
+  - id: 72
+    name: "MATLAB"
+  - id: 73
+    name: "Blockchain Development"
+  - id: 74
+    name: "Smart Contracts (Solidity)"
+  - id: 75
+    name: "DevSecOps"
+  - id: 76
+    name: "Site Reliability Engineering"
+  - id: 77
+    name: "Chaos Engineering"
+  - id: 78
+    name: "Machine Learning"
+  - id: 79
+    name: "Deep Learning"
+  - id: 80
+    name: "Natural Language Processing"
+  - id: 81
+    name: "Computer Vision"
+  - id: 82
+    name: "Data Analysis"
+  - id: 83
+    name: "Data Visualization"
+  - id: 84
+    name: "Statistical Modeling"
+  - id: 85
+    name: "TensorFlow"
+  - id: 86
+    name: "PyTorch"
+  - id: 87
+    name: "Scikit-learn"
+  - id: 88
+    name: "Pandas"
+  - id: 89
+    name: "NumPy"
+  - id: 90
+    name: "R Programming"
+  - id: 91
+    name: "Tableau"
+  - id: 92
+    name: "Power BI"
+  - id: 93
+    name: "Big Data (Hadoop/Spark)"
+  - id: 94
+    name: "Feature Engineering"
+  - id: 95
+    name: "Model Deployment"
+  - id: 96
+    name: "A/B Testing"
+  - id: 97
+    name: "Predictive Analytics"
+  - id: 98
+    name: "Time Series Analysis"
+  - id: 99
+    name: "Reinforcement Learning"
+  - id: 100
+    name: "Generative AI"
+  - id: 101
+    name: "LLM Fine-tuning"
+  - id: 102
+    name: "ETL Pipelines"
+  - id: 103
+    name: "Data Warehousing"
+  - id: 104
+    name: "dbt (Data Build Tool)"
+  - id: 105
+    name: "Snowflake"
+  - id: 106
+    name: "Apache Airflow"
+  - id: 107
+    name: "MLOps"
+  - id: 108
+    name: "Hugging Face"
+  - id: 109
+    name: "OpenAI API Integration"
+  - id: 110
+    name: "Prompt Engineering"
+  - id: 111
+    name: "Vector Databases"
+  - id: 112
+    name: "RAG Systems"
+  - id: 113
+    name: "Causal Inference"
+  - id: 114
+    name: "Bayesian Statistics"
+  - id: 115
+    name: "Graph Neural Networks"
+  - id: 116
+    name: "Recommender Systems"
+  - id: 117
+    name: "Anomaly Detection"
+  - id: 118
+    name: "Penetration Testing"
+  - id: 119
+    name: "Ethical Hacking"
+  - id: 120
+    name: "Network Security"
+  - id: 121
+    name: "Incident Response"
+  - id: 122
+    name: "Threat Intelligence"
+  - id: 123
+    name: "SIEM Management"
+  - id: 124
+    name: "Vulnerability Assessment"
+  - id: 125
+    name: "Identity & Access Management"
+  - id: 126
+    name: "Zero Trust Architecture"
+  - id: 127
+    name: "Firewall Configuration"
+  - id: 128
+    name: "Cryptography"
+  - id: 129
+    name: "SOC Operations"
+  - id: 130
+    name: "Malware Analysis"
+  - id: 131
+    name: "Digital Forensics"
+  - id: 132
+    name: "Cloud Security"
+  - id: 133
+    name: "Compliance (ISO 27001)"
+  - id: 134
+    name: "Risk Assessment"
+  - id: 135
+    name: "Security Auditing"
+  - id: 136
+    name: "DDoS Mitigation"
+  - id: 137
+    name: "PKI Management"
+  - id: 138
+    name: "Manual Testing"
+  - id: 139
+    name: "Automated Testing"
+  - id: 140
+    name: "Selenium"
+  - id: 141
+    name: "Cypress"
+  - id: 142
+    name: "Playwright"
+  - id: 143
+    name: "API Testing (Postman)"
+  - id: 144
+    name: "Load Testing (JMeter)"
+  - id: 145
+    name: "Performance Testing"
+  - id: 146
+    name: "Security Testing"
+  - id: 147
+    name: "Mobile App Testing"
+  - id: 148
+    name: "Bug Tracking"
+  - id: 149
+    name: "Test Case Design"
+  - id: 150
+    name: "Test Planning"
+  - id: 151
+    name: "Regression Testing"
+  - id: 152
+    name: "Exploratory Testing"
+  - id: 153
+    name: "Accessibility Testing"
+  - id: 154
+    name: "UAT Coordination"
+  - id: 155
+    name: "ISTQB Certification"
+  - id: 156
+    name: "Appium"
+  - id: 157
+    name: "Cucumber BDD"
+  - id: 158
+    name: "AWS Lambda"
+  - id: 159
+    name: "AWS S3"
+  - id: 160
+    name: "AWS EC2"
+  - id: 161
+    name: "AWS RDS"
+  - id: 162
+    name: "Azure DevOps"
+  - id: 163
+    name: "GCP BigQuery"
+  - id: 164
+    name: "Infrastructure as Code"
+  - id: 165
+    name: "Ansible"
+  - id: 166
+    name: "Helm Charts"
+  - id: 167
+    name: "GitOps"
+  - id: 168
+    name: "Prometheus & Grafana"
+  - id: 169
+    name: "ELK Stack"
+  - id: 170
+    name: "Service Mesh (Istio)"
+  - id: 171
+    name: "Cost Optimization (Cloud)"
+  - id: 172
+    name: "Multi-cloud Strategy"
+  - id: 173
+    name: "Product Roadmapping"
+  - id: 174
+    name: "User Story Writing"
+  - id: 175
+    name: "Market Research"
+  - id: 176
+    name: "Competitive Analysis"
+  - id: 177
+    name: "Product Analytics"
+  - id: 178
+    name: "Stakeholder Management"
+  - id: 179
+    name: "Go-to-Market Strategy"
+  - id: 180
+    name: "Prioritization Frameworks"
+  - id: 181
+    name: "OKR Setting"
+  - id: 182
+    name: "Customer Discovery"
+  - id: 183
+    name: "Wireframing"
+  - id: 184
+    name: "Product-Led Growth"
+  - id: 185
+    name: "Agile/Scrum"
+  - id: 186
+    name: "Sprint Planning"
+  - id: 187
+    name: "Backlog Grooming"
+  - id: 188
+    name: "Feature Specification"
+  - id: 189
+    name: "KPI Tracking"
+  - id: 190
+    name: "User Feedback Analysis"
+  - id: 191
+    name: "Pricing Strategy"
+  - id: 192
+    name: "Product Lifecycle Management"
+  - id: 193
+    name: "User Interface Design"
+  - id: 194
+    name: "User Experience Research"
+  - id: 195
+    name: "Figma"
+  - id: 196
+    name: "Adobe XD"
+  - id: 197
+    name: "Sketch"
+  - id: 198
+    name: "Prototyping"
+  - id: 199
+    name: "Usability Testing"
+  - id: 200
+    name: "Design Systems"
+  - id: 201
+    name: "Information Architecture"
+  - id: 202
+    name: "Interaction Design"
+  - id: 203
+    name: "Motion Design"
+  - id: 204
+    name: "Accessibility Design (WCAG)"
+  - id: 205
+    name: "Design Thinking"
+  - id: 206
+    name: "User Journey Mapping"
+  - id: 207
+    name: "Persona Creation"
+  - id: 208
+    name: "A/B Testing (Design)"
+  - id: 209
+    name: "Responsive Design"
+  - id: 210
+    name: "Typography"
+  - id: 211
+    name: "Color Theory"
+  - id: 212
+    name: "InVision"
+  - id: 213
+    name: "Financial Modeling"
+  - id: 214
+    name: "Budgeting & Forecasting"
+  - id: 215
+    name: "Financial Statement Analysis"
+  - id: 216
+    name: "Management Accounting"
+  - id: 217
+    name: "Tax Planning"
+  - id: 218
+    name: "Auditing"
+  - id: 219
+    name: "Cash Flow Management"
+  - id: 220
+    name: "Accounts Payable"
+  - id: 221
+    name: "Accounts Receivable"
+  - id: 222
+    name: "Payroll Processing"
+  - id: 223
+    name: "IFRS/GAAP Compliance"
+  - id: 224
+    name: "Investment Analysis"
+  - id: 225
+    name: "Risk Management"
+  - id: 226
+    name: "Valuation"
+  - id: 227
+    name: "Cost Accounting"
+  - id: 228
+    name: "Revenue Recognition"
+  - id: 229
+    name: "Treasury Management"
+  - id: 230
+    name: "Mergers & Acquisitions"
+  - id: 231
+    name: "Financial Reporting"
+  - id: 232
+    name: "ERP Systems (SAP/Oracle)"
+  - id: 233
+    name: "QuickBooks"
+  - id: 234
+    name: "Excel Financial Analysis"
+  - id: 235
+    name: "Derivatives & Hedging"
+  - id: 236
+    name: "Credit Analysis"
+  - id: 237
+    name: "Portfolio Management"
+  - id: 238
+    name: "Blockchain in Finance"
+  - id: 239
+    name: "ESG Reporting"
+  - id: 240
+    name: "Cryptocurrency Analysis"
+  - id: 241
+    name: "Actuarial Analysis"
+  - id: 242
+    name: "Equity Research"
+  - id: 243
+    name: "Talent Acquisition"
+  - id: 244
+    name: "Employee Onboarding"
+  - id: 245
+    name: "Performance Management"
+  - id: 246
+    name: "Learning & Development"
+  - id: 247
+    name: "HR Policy Development"
+  - id: 248
+    name: "Compensation & Benefits"
+  - id: 249
+    name: "Employee Relations"
+  - id: 250
+    name: "Workforce Planning"
+  - id: 251
+    name: "HRIS Management"
+  - id: 252
+    name: "Diversity & Inclusion"
+  - id: 253
+    name: "Succession Planning"
+  - id: 254
+    name: "Labour Law Compliance"
+  - id: 255
+    name: "Payroll Management"
+  - id: 256
+    name: "Organizational Development"
+  - id: 257
+    name: "Employee Engagement"
+  - id: 258
+    name: "HR Analytics"
+  - id: 259
+    name: "Job Evaluation"
+  - id: 260
+    name: "Conflict Resolution"
+  - id: 261
+    name: "Exit Interviews"
+  - id: 262
+    name: "Employer Branding"
+  - id: 263
+    name: "Remote Work Management"
+  - id: 264
+    name: "Culture Building"
+  - id: 265
+    name: "Psychometric Testing"
+  - id: 266
+    name: "Compensation Benchmarking"
+  - id: 267
+    name: "HR Automation"
+  - id: 268
+    name: "People Analytics"
+  - id: 269
+    name: "Mental Health at Work"
+  - id: 270
+    name: "Talent Retention Strategy"
+  - id: 271
+    name: "Competency Framework Design"
+  - id: 272
+    name: "HR Business Partnering"
+  - id: 273
+    name: "Digital Marketing"
+  - id: 274
+    name: "SEO/SEM"
+  - id: 275
+    name: "Content Marketing"
+  - id: 276
+    name: "Social Media Marketing"
+  - id: 277
+    name: "Email Marketing"
+  - id: 278
+    name: "Brand Management"
+  - id: 279
+    name: "Campaign Management"
+  - id: 280
+    name: "Google Ads"
+  - id: 281
+    name: "Meta Ads"
+  - id: 282
+    name: "Influencer Marketing"
+  - id: 283
+    name: "Marketing Analytics"
+  - id: 284
+    name: "Copywriting"
+  - id: 285
+    name: "Market Segmentation"
+  - id: 286
+    name: "CRM Marketing"
+  - id: 287
+    name: "Conversion Rate Optimization"
+  - id: 288
+    name: "Video Marketing"
+  - id: 289
+    name: "Affiliate Marketing"
+  - id: 290
+    name: "Public Relations"
+  - id: 291
+    name: "Event Marketing"
+  - id: 292
+    name: "Account-Based Marketing"
+  - id: 293
+    name: "Growth Hacking"
+  - id: 294
+    name: "Customer Retention"
+  - id: 295
+    name: "Marketing Automation"
+  - id: 296
+    name: "HubSpot"
+  - id: 297
+    name: "Salesforce Marketing Cloud"
+  - id: 298
+    name: "Performance Marketing"
+  - id: 299
+    name: "Programmatic Advertising"
+  - id: 300
+    name: "TikTok Marketing"
+  - id: 301
+    name: "LinkedIn Marketing"
+  - id: 302
+    name: "YouTube Marketing"
+  - id: 303
+    name: "Customer Lifetime Value (CLV)"
+  - id: 304
+    name: "Marketing Mix Modeling"
+  - id: 305
+    name: "Podcast Marketing"
+  - id: 306
+    name: "App Store Optimization (ASO)"
+  - id: 307
+    name: "Product Marketing"
+  - id: 308
+    name: "B2B Sales"
+  - id: 309
+    name: "B2C Sales"
+  - id: 310
+    name: "Lead Generation"
+  - id: 311
+    name: "Cold Calling"
+  - id: 312
+    name: "Sales Negotiation"
+  - id: 313
+    name: "CRM Management"
+  - id: 314
+    name: "Pipeline Management"
+  - id: 315
+    name: "Account Management"
+  - id: 316
+    name: "Solution Selling"
+  - id: 317
+    name: "Sales Forecasting"
+  - id: 318
+    name: "Customer Acquisition"
+  - id: 319
+    name: "Upselling & Cross-selling"
+  - id: 320
+    name: "SaaS Sales"
+  - id: 321
+    name: "Enterprise Sales"
+  - id: 322
+    name: "Sales Presentations"
+  - id: 323
+    name: "Closing Techniques"
+  - id: 324
+    name: "Territory Management"
+  - id: 325
+    name: "Channel Sales"
+  - id: 326
+    name: "Inside Sales"
+  - id: 327
+    name: "Salesforce CRM"
+  - id: 328
+    name: "Supply Chain Management"
+  - id: 329
+    name: "Inventory Management"
+  - id: 330
+    name: "Procurement"
+  - id: 331
+    name: "Vendor Management"
+  - id: 332
+    name: "Logistics Coordination"
+  - id: 333
+    name: "Warehouse Management"
+  - id: 334
+    name: "Demand Forecasting"
+  - id: 335
+    name: "Process Improvement"
+  - id: 336
+    name: "Lean Manufacturing"
+  - id: 337
+    name: "Six Sigma"
+  - id: 338
+    name: "ERP Systems"
+  - id: 339
+    name: "Quality Assurance"
+  - id: 340
+    name: "Order Fulfillment"
+  - id: 341
+    name: "Import/Export Compliance"
+  - id: 342
+    name: "Fleet Management"
+  - id: 343
+    name: "Production Planning"
+  - id: 344
+    name: "Contract Management"
+  - id: 345
+    name: "Cost Reduction"
+  - id: 346
+    name: "Risk Mitigation"
+  - id: 347
+    name: "Supplier Auditing"
+  - id: 348
+    name: "Patient Care"
+  - id: 349
+    name: "Clinical Assessment"
+  - id: 350
+    name: "Medical Documentation"
+  - id: 351
+    name: "Electronic Health Records (EHR)"
+  - id: 352
+    name: "Medication Administration"
+  - id: 353
+    name: "Infection Control"
+  - id: 354
+    name: "Surgical Assistance"
+  - id: 355
+    name: "Emergency Response"
+  - id: 356
+    name: "Patient Education"
+  - id: 357
+    name: "Diagnostic Imaging"
+  - id: 358
+    name: "Laboratory Testing"
+  - id: 359
+    name: "Physiotherapy"
+  - id: 360
+    name: "Mental Health Counseling"
+  - id: 361
+    name: "Telemedicine"
+  - id: 362
+    name: "Health Informatics"
+  - id: 363
+    name: "Medical Coding (ICD-10)"
+  - id: 364
+    name: "Pharmacy Management"
+  - id: 365
+    name: "Nutrition & Dietetics"
+  - id: 366
+    name: "Occupational Therapy"
+  - id: 367
+    name: "Public Health Promotion"
+  - id: 368
+    name: "Clinical Research"
+  - id: 369
+    name: "Healthcare Compliance (HIPAA)"
+  - id: 370
+    name: "Palliative Care"
+  - id: 371
+    name: "Pediatric Care"
+  - id: 372
+    name: "Geriatric Care"
+  - id: 373
+    name: "Radiology"
+  - id: 374
+    name: "Cardiology Support"
+  - id: 375
+    name: "Surgical Technology"
+  - id: 376
+    name: "Speech Therapy"
+  - id: 377
+    name: "Respiratory Therapy"
+  - id: 378
+    name: "Medical Device Operation"
+  - id: 379
+    name: "Epidemiology"
+  - id: 380
+    name: "Health Policy"
+  - id: 381
+    name: "Biomedical Research"
+  - id: 382
+    name: "Nursing Management"
+  - id: 383
+    name: "Psychiatric Care"
+  - id: 384
+    name: "Wound Care"
+  - id: 385
+    name: "Rehabilitation Services"
+  - id: 386
+    name: "Curriculum Development"
+  - id: 387
+    name: "Lesson Planning"
+  - id: 388
+    name: "Classroom Management"
+  - id: 389
+    name: "E-Learning Development"
+  - id: 390
+    name: "Student Assessment"
+  - id: 391
+    name: "Instructional Design"
+  - id: 392
+    name: "Special Education"
+  - id: 393
+    name: "Early Childhood Education"
+  - id: 394
+    name: "Adult Learning (Andragogy)"
+  - id: 395
+    name: "Educational Technology"
+  - id: 396
+    name: "Learning Management Systems"
+  - id: 397
+    name: "Tutoring"
+  - id: 398
+    name: "Academic Research"
+  - id: 399
+    name: "Grant Writing"
+  - id: 400
+    name: "Student Counseling"
+  - id: 401
+    name: "STEM Education"
+  - id: 402
+    name: "Language Teaching (TEFL/TESOL)"
+  - id: 403
+    name: "School Administration"
+  - id: 404
+    name: "Educational Policy"
+  - id: 405
+    name: "Blended Learning"
+  - id: 406
+    name: "Contract Drafting"
+  - id: 407
+    name: "Legal Research"
+  - id: 408
+    name: "Corporate Law"
+  - id: 409
+    name: "Intellectual Property Law"
+  - id: 410
+    name: "Employment Law"
+  - id: 411
+    name: "Litigation Support"
+  - id: 412
+    name: "Regulatory Compliance"
+  - id: 413
+    name: "Mergers & Acquisitions (Legal)"
+  - id: 414
+    name: "Data Privacy Law (GDPR)"
+  - id: 415
+    name: "Real Estate Law"
+  - id: 416
+    name: "Tax Law"
+  - id: 417
+    name: "Criminal Law"
+  - id: 418
+    name: "Legal Documentation"
+  - id: 419
+    name: "Arbitration & Mediation"
+  - id: 420
+    name: "Legal Project Management"
+  - id: 421
+    name: "Due Diligence"
+  - id: 422
+    name: "Patent Filing"
+  - id: 423
+    name: "Trademark Registration"
+  - id: 424
+    name: "Legal Risk Assessment"
+  - id: 425
+    name: "Court Representation"
+  - id: 426
+    name: "AutoCAD"
+  - id: 427
+    name: "SolidWorks"
+  - id: 428
+    name: "Structural Analysis"
+  - id: 429
+    name: "Finite Element Analysis (FEA)"
+  - id: 430
+    name: "Civil Engineering Design"
+  - id: 431
+    name: "Electrical Circuit Design"
+  - id: 432
+    name: "PLC Programming"
+  - id: 433
+    name: "SCADA Systems"
+  - id: 434
+    name: "Mechanical Design"
+  - id: 435
+    name: "HVAC Systems"
+  - id: 436
+    name: "Project Engineering"
+  - id: 437
+    name: "Environmental Engineering"
+  - id: 438
+    name: "Geotechnical Engineering"
+  - id: 439
+    name: "Construction Management"
+  - id: 440
+    name: "Building Information Modeling (BIM)"
+  - id: 441
+    name: "PCB Design"
+  - id: 442
+    name: "Embedded Systems"
+  - id: 443
+    name: "Robotics"
+  - id: 444
+    name: "Thermodynamics"
+  - id: 445
+    name: "Hydraulics & Pneumatics"
+  - id: 446
+    name: "Quality Control"
+  - id: 447
+    name: "NDT Testing"
+  - id: 448
+    name: "Material Science"
+  - id: 449
+    name: "3D Printing/Additive Manufacturing"
+  - id: 450
+    name: "Energy Auditing"
+  - id: 451
+    name: "Project Planning"
+  - id: 452
+    name: "Risk Management (PM)"
+  - id: 453
+    name: "Stakeholder Communication"
+  - id: 454
+    name: "Budget Management"
+  - id: 455
+    name: "MS Project"
+  - id: 456
+    name: "Jira"
+  - id: 457
+    name: "Asana"
+  - id: 458
+    name: "PMP Methodology"
+  - id: 459
+    name: "PRINCE2"
+  - id: 460
+    name: "Agile Project Management"
+  - id: 461
+    name: "Waterfall Methodology"
+  - id: 462
+    name: "Resource Allocation"
+  - id: 463
+    name: "Change Management"
+  - id: 464
+    name: "Gantt Charts"
+  - id: 465
+    name: "Milestone Tracking"
+  - id: 466
+    name: "Vendor Coordination"
+  - id: 467
+    name: "Quality Management"
+  - id: 468
+    name: "Scope Management"
+  - id: 469
+    name: "Lessons Learned"
+  - id: 470
+    name: "Program Management"
+  - id: 471
+    name: "Customer Support"
+  - id: 472
+    name: "Complaint Handling"
+  - id: 473
+    name: "Help Desk Management"
+  - id: 474
+    name: "Live Chat Support"
+  - id: 475
+    name: "Call Center Operations"
+  - id: 476
+    name: "Customer Retention"
+  - id: 477
+    name: "Ticketing Systems (Zendesk)"
+  - id: 478
+    name: "SLA Management"
+  - id: 479
+    name: "Customer Satisfaction (CSAT)"
+  - id: 480
+    name: "Net Promoter Score (NPS)"
+  - id: 481
+    name: "Upselling in Service"
+  - id: 482
+    name: "Escalation Management"
+  - id: 483
+    name: "Multilingual Support"
+  - id: 484
+    name: "Technical Support"
+  - id: 485
+    name: "Knowledge Base Management"
+  - id: 486
+    name: "Property Valuation"
+  - id: 487
+    name: "Real Estate Sales"
+  - id: 488
+    name: "Property Management"
+  - id: 489
+    name: "Lease Negotiation"
+  - id: 490
+    name: "Real Estate Investment Analysis"
+  - id: 491
+    name: "Commercial Real Estate"
+  - id: 492
+    name: "Residential Real Estate"
+  - id: 493
+    name: "Market Analysis"
+  - id: 494
+    name: "Property Development"
+  - id: 495
+    name: "Facility Management"
+  - id: 496
+    name: "Mortgage Advising"
+  - id: 497
+    name: "Title & Escrow"
+  - id: 498
+    name: "Tenant Relations"
+  - id: 499
+    name: "Building Inspection"
+  - id: 500
+    name: "Hotel Management"
+  - id: 501
+    name: "Front Desk Operations"
+  - id: 502
+    name: "Food & Beverage Management"
+  - id: 503
+    name: "Event Planning"
+  - id: 504
+    name: "Tour Operations"
+  - id: 505
+    name: "Revenue Management"
+  - id: 506
+    name: "Guest Relations"
+  - id: 507
+    name: "Housekeeping Management"
+  - id: 508
+    name: "Catering Management"
+  - id: 509
+    name: "Travel Planning"
+  - id: 510
+    name: "Concierge Services"
+  - id: 511
+    name: "Restaurant Management"
+  - id: 512
+    name: "Spa & Wellness Management"
+  - id: 513
+    name: "Tourism Marketing"
+  - id: 514
+    name: "POS Systems"
+  - id: 515
+    name: "Food Safety & Hygiene"
+  - id: 516
+    name: "Menu Planning"
+  - id: 517
+    name: "Banquet Operations"
+  - id: 518
+    name: "Resort Management"
+  - id: 519
+    name: "Airline Operations"
+  - id: 520
+    name: "Retail Sales"
+  - id: 521
+    name: "Inventory Control"
+  - id: 522
+    name: "Visual Merchandising"
+  - id: 523
+    name: "Store Management"
+  - id: 524
+    name: "Point of Sale (POS) Systems"
+  - id: 525
+    name: "Loss Prevention"
+  - id: 526
+    name: "Category Management"
+  - id: 527
+    name: "E-commerce Management"
+  - id: 528
+    name: "Supply Chain (Retail)"
+  - id: 529
+    name: "Customer Loyalty Programs"
+  - id: 530
+    name: "Planogramming"
+  - id: 531
+    name: "Retail Analytics"
+  - id: 532
+    name: "Product Sourcing"
+  - id: 533
+    name: "Promotional Planning"
+  - id: 534
+    name: "Omnichannel Retail"
+  - id: 535
+    name: "Production Management"
+  - id: 536
+    name: "Quality Control (Manufacturing)"
+  - id: 537
+    name: "Lean Manufacturing (Mfg)"
+  - id: 538
+    name: "Six Sigma (Manufacturing)"
+  - id: 539
+    name: "Equipment Maintenance"
+  - id: 540
+    name: "Safety Management (EHS)"
+  - id: 541
+    name: "CNC Machining"
+  - id: 542
+    name: "Assembly Line Management"
+  - id: 543
+    name: "Welding"
+  - id: 544
+    name: "ISO 9001 Compliance"
+  - id: 545
+    name: "Material Requirements Planning (MRP)"
+  - id: 546
+    name: "Tooling & Fixture Design"
+  - id: 547
+    name: "Statistical Process Control"
+  - id: 548
+    name: "Capacity Planning"
+  - id: 549
+    name: "Root Cause Analysis"
+  - id: 550
+    name: "Journalism"
+  - id: 551
+    name: "Content Writing"
+  - id: 552
+    name: "Video Production"
+  - id: 553
+    name: "Podcast Production"
+  - id: 554
+    name: "Photography"
+  - id: 555
+    name: "Graphic Design"
+  - id: 556
+    name: "Adobe Photoshop"
+  - id: 557
+    name: "Adobe Illustrator"
+  - id: 558
+    name: "Adobe Premiere Pro"
+  - id: 559
+    name: "After Effects"
+  - id: 560
+    name: "Social Media Content Creation"
+  - id: 561
+    name: "Scriptwriting"
+  - id: 562
+    name: "Broadcast Journalism"
+  - id: 563
+    name: "Media Planning"
+  - id: 564
+    name: "Press Release Writing"
+  - id: 565
+    name: "Crisis Communication"
+  - id: 566
+    name: "Proofreading & Editing"
+  - id: 567
+    name: "Translation"
+  - id: 568
+    name: "Subtitling"
+  - id: 569
+    name: "Brand Storytelling"
+  - id: 570
+    name: "Architectural Design"
+  - id: 571
+    name: "Urban Planning"
+  - id: 572
+    name: "Interior Design"
+  - id: 573
+    name: "Landscape Architecture"
+  - id: 574
+    name: "Revit"
+  - id: 575
+    name: "SketchUp"
+  - id: 576
+    name: "3D Rendering"
+  - id: 577
+    name: "Space Planning"
+  - id: 578
+    name: "Sustainable Design"
+  - id: 579
+    name: "Building Regulations Compliance"
+  - id: 580
+    name: "Site Analysis"
+  - id: 581
+    name: "Construction Documentation"
+  - id: 582
+    name: "Project Specification Writing"
+  - id: 583
+    name: "Heritage Conservation"
+  - id: 584
+    name: "Lighting Design"
+  - id: 585
+    name: "Grant Writing (Non-Profit)"
+  - id: 586
+    name: "Community Outreach"
+  - id: 587
+    name: "Fundraising"
+  - id: 588
+    name: "Volunteer Management"
+  - id: 589
+    name: "Program Evaluation"
+  - id: 590
+    name: "Case Management"
+  - id: 591
+    name: "Social Work"
+  - id: 592
+    name: "NGO Management"
+  - id: 593
+    name: "Advocacy & Lobbying"
+  - id: 594
+    name: "Impact Measurement"
+  - id: 595
+    name: "Donor Relations"
+  - id: 596
+    name: "Crisis Intervention"
+  - id: 597
+    name: "Community Development"
+  - id: 598
+    name: "Child Protection"
+  - id: 599
+    name: "Humanitarian Aid Coordination"
+  - id: 600
+    name: "Fleet Management (Transport)"
+  - id: 601
+    name: "Route Optimization"
+  - id: 602
+    name: "Freight Management"
+  - id: 603
+    name: "Customs Brokerage"
+  - id: 604
+    name: "Last-Mile Delivery"
+  - id: 605
+    name: "Cold Chain Logistics"
+  - id: 606
+    name: "Shipping & Receiving"
+  - id: 607
+    name: "Hazmat Handling"
+  - id: 608
+    name: "Transportation Planning"
+  - id: 609
+    name: "Driver Management"
+  - id: 610
+    name: "Cargo Management"
+  - id: 611
+    name: "Logistics Software (SAP TM)"
+  - id: 612
+    name: "Port Operations"
+  - id: 613
+    name: "Air Freight Management"
+  - id: 614
+    name: "Sea Freight Management"
+  - id: 615
+    name: "Power Systems Engineering"
+  - id: 616
+    name: "Renewable Energy"
+  - id: 617
+    name: "Solar Energy Systems"
+  - id: 618
+    name: "Wind Energy"
+  - id: 619
+    name: "Energy Auditing (Utilities)"
+  - id: 620
+    name: "Grid Management"
+  - id: 621
+    name: "Oil & Gas Operations"
+  - id: 622
+    name: "Pipeline Engineering"
+  - id: 623
+    name: "Energy Policy"
+  - id: 624
+    name: "SCADA (Utilities)"
+  - id: 625
+    name: "Utility Billing"
+  - id: 626
+    name: "Environmental Compliance"
+  - id: 627
+    name: "Water Treatment"
+  - id: 628
+    name: "Gas Distribution"
+  - id: 629
+    name: "Nuclear Plant Operations"
+  - id: 630
+    name: "Crop Management"
+  - id: 631
+    name: "Soil Science"
+  - id: 632
+    name: "Irrigation Management"
+  - id: 633
+    name: "Livestock Management"
+  - id: 634
+    name: "Agri-Business Management"
+  - id: 635
+    name: "Precision Agriculture"
+  - id: 636
+    name: "Pest & Disease Control"
+  - id: 637
+    name: "Agricultural Machinery Operation"
+  - id: 638
+    name: "Food Safety Compliance"
+  - id: 639
+    name: "Hydroponics"
+  - id: 640
+    name: "Greenhouse Management"
+  - id: 641
+    name: "Agricultural Extension"
+  - id: 642
+    name: "Seed Technology"
+  - id: 643
+    name: "Agricultural Supply Chain"
+  - id: 644
+    name: "Farm Financial Management"
+  - id: 645
+    name: "Retail Banking"
+  - id: 646
+    name: "Corporate Banking"
+  - id: 647
+    name: "Trade Finance"
+  - id: 648
+    name: "Credit Underwriting"
+  - id: 649
+    name: "KYC/AML Compliance"
+  - id: 650
+    name: "Wealth Management"
+  - id: 651
+    name: "Investment Banking"
+  - id: 652
+    name: "Treasury Operations"
+  - id: 653
+    name: "Loan Processing"
+  - id: 654
+    name: "Financial Risk Management"
+  - id: 655
+    name: "Capital Markets"
+  - id: 656
+    name: "Foreign Exchange (FX)"
+  - id: 657
+    name: "Private Equity"
+  - id: 658
+    name: "Digital Banking"
+  - id: 659
+    name: "Fintech Solutions"
+  - id: 660
+    name: "Business Model Development"
+  - id: 661
+    name: "Startup Strategy"
+  - id: 662
+    name: "Venture Capital"
+  - id: 663
+    name: "Business Development"
+  - id: 664
+    name: "Strategic Partnerships"
+  - id: 665
+    name: "Corporate Strategy"
+  - id: 666
+    name: "Pitch Deck Creation"
+  - id: 667
+    name: "Market Entry Strategy"
+  - id: 668
+    name: "Competitive Intelligence"
+  - id: 669
+    name: "Business Planning"
+  - id: 670
+    name: "Innovation Management"
+  - id: 671
+    name: "Design Sprint Facilitation"
+  - id: 672
+    name: "Digital Transformation"
+  - id: 673
+    name: "P&L Management"
+  - id: 674
+    name: "Growth Strategy"
+  - id: 675
+    name: "Turnaround Management"
+  - id: 676
+    name: "Board Reporting"
+  - id: 677
+    name: "Environmental Impact Assessment"
+  - id: 678
+    name: "Carbon Footprint Analysis"
+  - id: 679
+    name: "ESG Strategy"
+  - id: 680
+    name: "Sustainability Reporting"
+  - id: 681
+    name: "Climate Risk Analysis"
+  - id: 682
+    name: "Waste Management"
+  - id: 683
+    name: "Circular Economy"
+  - id: 684
+    name: "Green Building Certification"
+  - id: 685
+    name: "Biodiversity Management"
+  - id: 686
+    name: "Water Resource Management"
+  - id: 687
+    name: "Environmental Auditing"
+  - id: 688
+    name: "Carbon Trading"
+  - id: 689
+    name: "Renewable Energy Policy"
+  - id: 690
+    name: "Life Cycle Assessment (LCA)"
+  - id: 691
+    name: "Corporate Social Responsibility (CSR)"
+  - id: 692
+    name: "Illustration"
+  - id: 693
+    name: "Animation (2D/3D)"
+  - id: 694
+    name: "Game Design"
+  - id: 695
+    name: "Music Production"
+  - id: 696
+    name: "Sound Design"
+  - id: 697
+    name: "Storyboarding"
+  - id: 698
+    name: "Art Direction"
+  - id: 699
+    name: "Fashion Design"
+  - id: 700
+    name: "Textile Design"
+  - id: 701
+    name: "Industrial Design"
+  - id: 702
+    name: "Creative Writing"
+  - id: 703
+    name: "Blender 3D"
+  - id: 704
+    name: "Cinema 4D"
+  - id: 705
+    name: "Unity Game Engine"
+  - id: 706
+    name: "Unreal Engine"
+  - id: 707
+    name: "Underwriting"
+  - id: 708
+    name: "Claims Management"
+  - id: 709
+    name: "Actuarial Science"
+  - id: 710
+    name: "Insurance Sales"
+  - id: 711
+    name: "Reinsurance"
+  - id: 712
+    name: "Loss Adjustment"
+  - id: 713
+    name: "Policy Administration"
+  - id: 714
+    name: "Insurance Compliance"
+  - id: 715
+    name: "Risk Engineering"
+  - id: 716
+    name: "Health Insurance Management"
+  - id: 717
+    name: "Life Insurance Planning"
+  - id: 718
+    name: "InsurTech"
+  - id: 719
+    name: "Catastrophe Modeling"
+  - id: 720
+    name: "Broker Relations"
+  - id: 721
+    name: "Insurance Analytics"
+  - id: 722
+    name: "Policy Development"
+  - id: 723
+    name: "Public Administration"
+  - id: 724
+    name: "Government Procurement"
+  - id: 725
+    name: "Regulatory Affairs"
+  - id: 726
+    name: "Urban Development Planning"
+  - id: 727
+    name: "Public Finance Management"
+  - id: 728
+    name: "E-Government Services"
+  - id: 729
+    name: "International Relations"
+  - id: 730
+    name: "Diplomatic Protocol"
+  - id: 731
+    name: "Electoral Administration"
+  - id: 732
+    name: "Census & Statistics"
+  - id: 733
+    name: "Immigration Services"
+  - id: 734
+    name: "Judicial Administration"
+  - id: 735
+    name: "Emergency Management"
+  - id: 736
+    name: "Network Engineering"
+  - id: 737
+    name: "5G Technology"
+  - id: 738
+    name: "VoIP Systems"
+  - id: 739
+    name: "Fiber Optic Installation"
+  - id: 740
+    name: "RF Engineering"
+  - id: 741
+    name: "Telecom Project Management"
+  - id: 742
+    name: "OSS/BSS Systems"
+  - id: 743
+    name: "Network Monitoring"
+  - id: 744
+    name: "Satellite Communications"
+  - id: 745
+    name: "Telecom Regulatory Compliance"
+  - id: 746
+    name: "Core Network Architecture"
+  - id: 747
+    name: "IoT Connectivity"
+  - id: 748
+    name: "Telecom Analytics"
+  - id: 749
+    name: "Customer Experience (Telco)"
+  - id: 750
+    name: "Spectrum Management"
+  - id: 751
+    name: "Leadership"
+  - id: 752
+    name: "Communication"
+  - id: 753
+    name: "Critical Thinking"
+  - id: 754
+    name: "Problem Solving"
+  - id: 755
+    name: "Team Collaboration"
+  - id: 756
+    name: "Time Management"
+  - id: 757
+    name: "Adaptability"
+  - id: 758
+    name: "Emotional Intelligence"
+  - id: 759
+    name: "Negotiation"
+  - id: 760
+    name: "Presentation Skills"
+  - id: 761
+    name: "Decision Making"
+  - id: 762
+    name: "Mentoring & Coaching"
+  - id: 763
+    name: "Cross-functional Collaboration"
+  - id: 764
+    name: "Business Writing"
+  - id: 765
+    name: "Data-Driven Decision Making"
+  - id: 766
+    name: "Strategic Thinking"
+  - id: 767
+    name: "Creativity & Innovation"
+  - id: 768
+    name: "Multitasking"
+  - id: 769
+    name: "Customer Focus"
+  - id: 770
+    name: "Attention to Detail"
+  - id: 771
+    name: "Active Listening"
+  - id: 772
+    name: "Stakeholder Engagement"
+  - id: 773
+    name: "Intercultural Communication"
+  - id: 774
+    name: "Resilience"
+  - id: 775
+    name: "Accountability"
+  - id: 776
+    name: "Conflict Management"
+  - id: 777
+    name: "Growth Mindset"
+  - id: 778
+    name: "Executive Presence"
+  - id: 779
+    name: "Facilitation"
+  - id: 780
+    name: "Networking"
+  - id: 781
+    name: "Montessori Teaching"
+  - id: 782
+    name: "Online Course Design"
+  - id: 783
+    name: "Student Motivation Techniques"
+  - id: 784
+    name: "Peer Learning Facilitation"
+  - id: 785
+    name: "Academic Writing"
+  - id: 786
+    name: "Environmental Law"
+  - id: 787
+    name: "Banking Law"
+  - id: 788
+    name: "Competition Law"
+  - id: 789
+    name: "International Trade Law"
+  - id: 790
+    name: "Family Law"
+  - id: 791
+    name: "Anesthesia Assistance"
+  - id: 792
+    name: "Infection Epidemiology"
+  - id: 793
+    name: "Clinical Governance"
+  - id: 794
+    name: "Neonatal Care"
+  - id: 795
+    name: "Dermatology Assistance"
+  - id: 796
+    name: "Internal Audit"
+  - id: 797
+    name: "Xero Accounting"
+  - id: 798
+    name: "Transfer Pricing"
+  - id: 799
+    name: "Forensic Accounting"
+  - id: 800
+    name: "Government Accounting"
+  - id: 801
+    name: "Fire Protection Engineering"
+  - id: 802
+    name: "Acoustical Engineering"
+  - id: 803
+    name: "Corrosion Engineering"
+  - id: 804
+    name: "Reliability Engineering"
+  - id: 805
+    name: "Offshore Engineering"
+  - id: 806
+    name: "Water Supply Engineering"
+  - id: 807
+    name: "Transportation Engineering"
+  - id: 808
+    name: "Pavement Engineering"
+  - id: 809
+    name: "Mine Engineering"
+  - id: 810
+    name: "Surveying & Geomatics"
+  - id: 811
+    name: "5S Methodology"
+  - id: 812
+    name: "Total Productive Maintenance"
+  - id: 813
+    name: "Injection Moulding"
+  - id: 814
+    name: "Casting & Forging"
+  - id: 815
+    name: "Surface Treatment"
+  - id: 816
+    name: "Packaging Engineering"
+  - id: 817
+    name: "Automation & Robotics"
+  - id: 818
+    name: "Industrial Safety"
+  - id: 819
+    name: "Supply Chain Integration"
+  - id: 820
+    name: "Product Compliance (CE/UL)"
+  - id: 821
+    name: "Aquaculture"
+  - id: 822
+    name: "Agroforestry"
+  - id: 823
+    name: "Organic Farming"
+  - id: 824
+    name: "Post-Harvest Management"
+  - id: 825
+    name: "Agricultural Finance"
+  - id: 826
+    name: "Revenue Forecasting"
+  - id: 827
+    name: "Sommelier Skills"
+  - id: 828
+    name: "Culinary Arts"
+  - id: 829
+    name: "Customer Experience Design"
+  - id: 830
+    name: "Heritage Tourism"
+  - id: 831
+    name: "D2C Strategy"
+  - id: 832
+    name: "Retail Technology"
+  - id: 833
+    name: "Franchise Operations"
+  - id: 834
+    name: "Private Label Development"
+  - id: 835
+    name: "Dropshipping"
+  - id: 836
+    name: "Battery Storage Systems"
+  - id: 837
+    name: "Hydrogen Energy"
+  - id: 838
+    name: "Smart Grid Technology"
+  - id: 839
+    name: "Energy Trading"
+  - id: 840
+    name: "Carbon Capture"
+  - id: 841
+    name: "Network Optimization"
+  - id: 842
+    name: "Telecom Software Development"
+  - id: 843
+    name: "LTE/4G Systems"
+  - id: 844
+    name: "Optical Transport Networks"
+  - id: 845
+    name: "Network Virtualization (NFV/SDN)"
+  - id: 846
+    name: "Open Banking"
+  - id: 847
+    name: "Payment Systems"
+  - id: 848
+    name: "Mortgage Lending"
+  - id: 849
+    name: "Regulatory Reporting (Basel)"
+  - id: 850
+    name: "SWIFT Messaging"
+  - id: 851
+    name: "Influencer Strategy"
+  - id: 852
+    name: "Newsletter Marketing"
+  - id: 853
+    name: "Audio Engineering"
+  - id: 854
+    name: "Documentary Filmmaking"
+  - id: 855
+    name: "Brand Identity Design"
+  - id: 856
+    name: "Master Planning"
+  - id: 857
+    name: "Adaptive Reuse Design"
+  - id: 858
+    name: "Parametric Design"
+  - id: 859
+    name: "Acoustic Design"
+  - id: 860
+    name: "Fire Safety Design"
+  - id: 861
+    name: "NFT & Digital Art"
+  - id: 862
+    name: "UI Animation"
+  - id: 863
+    name: "Character Design"
+  - id: 864
+    name: "Set Design"
+  - id: 865
+    name: "Costume Design"
+  - id: 866
+    name: "Concept Art"
+  - id: 867
+    name: "Packaging Design"
+  - id: 868
+    name: "Infographic Design"
+  - id: 869
+    name: "Parliamentary Procedures"
+  - id: 870
+    name: "Public Safety Management"
+  - id: 871
+    name: "Social Policy Development"
+  - id: 872
+    name: "Land Use Planning"
+  - id: 873
+    name: "Public Communication"
+  - id: 874
+    name: "Ecological Restoration"
+  - id: 875
+    name: "Environmental Law Compliance"
+  - id: 876
+    name: "Green Supply Chain"
+  - id: 877
+    name: "Sustainable Agriculture"
+  - id: 878
+    name: "Pollution Control"
+  - id: 879
+    name: "Social Enterprise Management"
+  - id: 880
+    name: "Micro-finance"
+  - id: 881
+    name: "Disaster Relief Operations"
+  - id: 882
+    name: "Refugee Support Services"
+  - id: 883
+    name: "Youth Work"
+  - id: 884
+    name: "Lean Startup Methodology"
+  - id: 885
+    name: "Product-Market Fit"
+  - id: 886
+    name: "Angel Investment"
+  - id: 887
+    name: "Exit Strategy Planning"
+  - id: 888
+    name: "Licensing & Franchising"
+  - id: 889
+    name: "Cyber Insurance"
+  - id: 890
+    name: "Marine Insurance"
+  - id: 891
+    name: "Agricultural Insurance"
+  - id: 892
+    name: "Directors & Officers (D&O) Insurance"
+  - id: 893
+    name: "Takaful / Islamic Insurance"
+  - id: 894
+    name: "Omnichannel Support"
+  - id: 895
+    name: "Customer Journey Optimization"
+  - id: 896
+    name: "AI-Powered Support Tools"
+  - id: 897
+    name: "Voice of Customer (VoC)"
+  - id: 898
+    name: "Community Management"
+  - id: 899
+    name: "Low-Code/No-Code Development"
+  - id: 900
+    name: "API Gateway Management"
+  - id: 901
+    name: "Database Migration"
+  - id: 902
+    name: "Legacy System Modernization"
+  - id: 903
+    name: "Open Source Contribution"
+  - id: 904
+    name: "Bug Bounty Programs"
+  - id: 905
+    name: "Cyber Threat Hunting"
+  - id: 906
+    name: "Application Security (AppSec)"
+  - id: 907
+    name: "IoT Security"
+  - id: 908
+    name: "AI Security"
+  - id: 909
+    name: "Social Selling"
+  - id: 910
+    name: "Sales Enablement"
+  - id: 911
+    name: "Partner Sales"
+  - id: 912
+    name: "Field Sales"
+  - id: 913
+    name: "Sales Analytics"
+  - id: 914
+    name: "Synthetic Data Generation"
+  - id: 915
+    name: "Knowledge Graphs"
+  - id: 916
+    name: "Data Governance"
+  - id: 917
+    name: "Responsible AI"
+  - id: 918
+    name: "Geospatial Analysis"
+  - id: 919
+    name: "Contract Testing"
+  - id: 920
+    name: "Shift-Left Testing"
+  - id: 921
+    name: "Chaos Testing"
+  - id: 922
+    name: "FinOps"
+  - id: 923
+    name: "Platform Engineering"
+  - id: 924
+    name: "Internal Developer Platform"
+  - id: 925
+    name: "Business Process Reengineering"
+  - id: 926
+    name: "Kaizen"
+  - id: 927
+    name: "Sustainability in Supply Chain"
+  - id: 928
+    name: "PropTech"
+  - id: 929
+    name: "Real Estate Portfolio Management"
+  - id: 930
+    name: "Supply Chain Visibility"
+  - id: 931
+    name: "Intermodal Logistics"
+  - id: 932
+    name: "Benefits Realisation Management"
+  - id: 933
+    name: "Portfolio Management (PM)"
+  - id: 934
+    name: "Community-Led Growth"
+  - id: 935
+    name: "Creator Economy Marketing"
+  - id: 936
+    name: "Workforce Automation Strategy"
+  - id: 937
+    name: "Employee Value Proposition"
+  - id: 938
+    name: "Jobs-to-be-Done Framework"
+  - id: 939
+    name: "Dual-Track Agile"
+  - id: 940
+    name: "Voice UX Design"
+  - id: 941
+    name: "Design Ethics"
+  - id: 942
+    name: "WebRTC Development"
+  - id: 943
+    name: "AR/VR Development"
+  - id: 944
+    name: "Game Backend Development"
+  - id: 945
+    name: "SDK Development"
+  - id: 946
+    name: "Desktop App Development"
+  - id: 947
+    name: "Text Mining"
+  - id: 948
+    name: "Speech Recognition"
+  - id: 949
+    name: "Demand Sensing"
+  - id: 950
+    name: "Data Quality Management"
+  - id: 951
+    name: "Endpoint Detection & Response"
+  - id: 952
+    name: "Security Architecture Review"
+  - id: 953
+    name: "Red Team Operations"
+  - id: 954
+    name: "Health Coaching"
+  - id: 955
+    name: "Telehealth Platform Management"
+  - id: 956
+    name: "Medical Sales"
+  - id: 957
+    name: "Financial Controls"
+  - id: 958
+    name: "Crypto Asset Accounting"
+  - id: 959
+    name: "Sustainability Finance"
+  - id: 960
+    name: "B2B Content Marketing"
+  - id: 961
+    name: "Demand Generation"
+  - id: 962
+    name: "Brand Activation"
+  - id: 963
+    name: "Revenue Operations"
+  - id: 964
+    name: "Sales Training"
+  - id: 965
+    name: "Deal Desk Management"
+  - id: 966
+    name: "Skills-Based Organization Design"
+  - id: 967
+    name: "HR Transformation"
+  - id: 968
+    name: "International HR Management"
+  - id: 969
+    name: "Hydrogen Systems Engineering"
+  - id: 970
+    name: "Structural Health Monitoring"
+  - id: 971
+    name: "Traffic Engineering"
+  - id: 972
+    name: "Digital Manufacturing"
+  - id: 973
+    name: "Sustainable Manufacturing"
+  - id: 974
+    name: "Value Stream Mapping"
+  - id: 975
+    name: "Earned Value Management"
+  - id: 976
+    name: "Hybrid Project Management"
+  - id: 977
+    name: "Supply Chain Resilience"
+  - id: 978
+    name: "Digital Operations"
+  - id: 979
+    name: "Retail Media"
+  - id: 980
+    name: "Unified Commerce"
+  - id: 981
+    name: "Sustainable Tourism"
+  - id: 982
+    name: "Digital Guest Experience"
+  - id: 983
+    name: "Smart Building Management"
+  - id: 984
+    name: "Green Building Development"
+  - id: 985
+    name: "Electric Vehicle Fleet Management"
+  - id: 986
+    name: "Autonomous Vehicle Operations"
+  - id: 987
+    name: "Demand Response Management"
+  - id: 988
+    name: "Microgrid Management"
+  - id: 989
+    name: "AgriTech Solutions"
+  - id: 990
+    name: "Vertical Farming"
+  - id: 991
+    name: "Embedded Finance"
+  - id: 992
+    name: "Buy Now Pay Later (BNPL)"
+  - id: 993
+    name: "Usage-Based Insurance"
+  - id: 994
+    name: "Private 5G Networks"
+  - id: 995
+    name: "Motion Graphics"
+  - id: 996
+    name: "Computational Design"
+  - id: 997
+    name: "Net Zero Strategy"
+  - id: 998
+    name: "Social Impact Measurement"
+  - id: 999
+    name: "Smart City Planning"
+  - id: 1000
+    name: "Corporate Innovation"
+  - id: 1001
+    name: "Systems Thinking"

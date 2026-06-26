@@ -95,6 +95,11 @@ export enum EthnicityTypes {
   CUBAN = "CUBAN"
 }
 
+export enum SkillTypes {
+  DEFAULT = "DEFAULT",
+  CUSTOM = "CUSTOM"
+}
+
 export enum Role {
   SUPER_ADMIN = "SUPER_ADMIN",
   PEOPLE_ADMIN = "PEOPLE_ADMIN",
