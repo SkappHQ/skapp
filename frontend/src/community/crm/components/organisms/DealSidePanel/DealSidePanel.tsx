@@ -19,26 +19,20 @@ import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
 import DealTitleSection from "./DealTitleSection";
 
-const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
+const DealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const { selectedDealId, setIsCrmSidePanelOpen } = useCrmStore((store) => ({
-    selectedDealId: store.selectedDealId,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+  const { selectedDealId } = useCrmStore((store) => ({
+    selectedDealId: store.selectedDealId
   }));
 
   const { setToastMessage } = useToast();
 
-  const handleClose = (): void => setIsCrmSidePanelOpen(false);
-
-  const { data: deal, isError: isDealError } = useGetDealById(
-    selectedDealId,
-    isOpen
-  );
+  const { data: deal, isError: isDealError } = useGetDealById(selectedDealId);
 
   const { data: relatedTasks = [] } = useGetRelatedTasks(
     { dealId: selectedDealId },
-    { enabled: isOpen && !!selectedDealId }
+    { enabled: !!selectedDealId }
   );
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -51,7 +45,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
         title: translateText(["errors", "dealNotFoundTitle"]),
         description: translateText(["errors", "dealNotFoundDescription"])
       });
-      handleClose();
+      onClose?.();
     }
   }, [isDealError]);
 
@@ -77,7 +71,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
     <>
       <SidePanel
         isOpen={isOpen}
-        onClose={handleClose}
+        onClose={onClose}
         closeOnBackdropClick
         header={
           <div className="flex flex-col gap-3 pl-2">

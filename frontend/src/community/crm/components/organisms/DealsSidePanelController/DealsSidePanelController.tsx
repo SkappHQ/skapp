@@ -18,14 +18,12 @@ const DealsSidePanelController: FC = () => {
 
   return (
     <SidePanelWrapper>
-      <DealSidePanel
-        isOpen={isCrmSidePanelOpen && activeDealSidePanel === DealSidePanelTypes.DEAL_DETAIL}
-        onClose={handleClose}
-      />
-      <AddDealSidePanel
-        isOpen={isCrmSidePanelOpen && activeDealSidePanel === DealSidePanelTypes.ADD_DEAL}
-        onClose={handleClose}
-      />
+      {activeDealSidePanel === DealSidePanelTypes.DEAL_DETAIL && (
+        <DealSidePanel isOpen={isCrmSidePanelOpen} onClose={handleClose} />
+      )}
+      {activeDealSidePanel === DealSidePanelTypes.ADD_DEAL && (
+        <AddDealSidePanel isOpen={isCrmSidePanelOpen} onClose={handleClose} />
+      )}
     </SidePanelWrapper>
   );
 };

@@ -23,13 +23,10 @@ import {
 
 interface DealPropertiesSidebarProps {
   deal: CrmDealDetailResponseType;
-  isOpen: boolean;
+  isOpen?: boolean;
 }
 
-const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
-  deal,
-  isOpen
-}) => {
+const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({ deal, isOpen }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const [amount, setAmount] = useState(deal.amount ?? "");

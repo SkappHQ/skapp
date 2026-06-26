@@ -38,8 +38,7 @@ const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   );
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
-    isOpen
+    DEFAULT_LOOKUP_PAGE_SIZE
   );
   const contacts = contactLookupData?.items ?? [];
 
