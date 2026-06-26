@@ -29,15 +29,16 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     if (onClose) onClose();
   };
 
-  const { data: task, isError: isTaskLoadError } = useGetTaskById(
-    selectedTaskId,
-    isOpen
+  const { data: task, isLoading: isTaskLoading, isError: isTaskLoadError } = useGetTaskById(selectedTaskId!);
+
+  const contactId = task?.contact?.id ?? null;
+  const dealId = task?.deal?.id ?? null;
+
+  const { data: relatedTasksData = [] } = useGetRelatedTasks(
+    { contactId, dealId },
+    !isTaskLoading && (contactId != null || dealId != null)
   );
- 
-  const { data: relatedTasks = [] } = useGetRelatedTasks(
-    { contactId: task?.contact?.id ?? null, dealId: task?.deal?.id ?? null },
-    { currentTaskId: task?.id, enabled: isOpen && !!task }
-  );
+  const relatedTasks = relatedTasksData.filter((data) => data.id !== task?.id);
 
   useEffect(() => {
     if (!isTaskLoadError) return;

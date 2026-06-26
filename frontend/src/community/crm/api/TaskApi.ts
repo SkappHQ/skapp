@@ -12,8 +12,8 @@ import {
   CrmTaskCreatePayload,
   CrmTaskDetailType,
   CrmTaskResponseType,
-  UpdateTaskStatusPayload,
-  RelatedTasksParams
+  RelatedTasksParams,
+  UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 
 import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
@@ -74,11 +74,10 @@ const fetchTaskById = async (id: number): Promise<CrmTaskDetailType> => {
   return response?.data?.results?.[0];
 };
 
-export const useGetTaskById = (id: number | null, enabled = true) => {
+export const useGetTaskById = (id: number) => {
   return useQuery({
     queryKey: taskQueryKeys.TASK_BY_ID(id),
-    queryFn: () => fetchTaskById(id!),
-    enabled: enabled && id != null,
+    queryFn: () => fetchTaskById(id),
     refetchOnWindowFocus: false
   });
 };
@@ -109,20 +108,9 @@ const fetchRelatedCompletedTasks = async (
   return response?.data?.results?.[0];
 };
 
-interface UseGetRelatedTasksOptions {
-  currentTaskId?: number;
-  enabled?: boolean;
-}
-
 export const useGetRelatedTasks = (
   params: RelatedTasksParams,
-  { currentTaskId, enabled = true }: UseGetRelatedTasksOptions = {}
 ) => {
-  const hasEntity =
-    params.contactId != null ||
-    params.dealId != null ||
-    params.companyId != null;
-
   return useQuery({
     queryKey: taskQueryKeys.RELATED_TASKS(params),
     queryFn: async () => {
@@ -134,12 +122,7 @@ export const useGetRelatedTasks = (
         ...(completedTasksResponse?.items ?? [])
       ];
     },
-    enabled: enabled && hasEntity,
-    refetchOnWindowFocus: false,
-    select:
-      currentTaskId == null
-        ? undefined
-        : (tasks) => tasks.filter((task) => task.id !== currentTaskId)
+    refetchOnWindowFocus: false
   });
 };
 
