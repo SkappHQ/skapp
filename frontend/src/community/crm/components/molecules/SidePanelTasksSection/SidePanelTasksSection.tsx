@@ -1,5 +1,5 @@
 import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, RefObject } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
@@ -18,6 +18,7 @@ interface Props {
   onTaskRowClick?: () => void;
   preselectedContact?: PreselectedContact | null;
   emptyDescription?: string;
+  loadingRef?: RefObject<HTMLDivElement>;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
@@ -26,7 +27,8 @@ const SidePanelTasksSection: FC<Props> = ({
   isShowContact,
   onTaskRowClick,
   preselectedContact,
-  emptyDescription
+  emptyDescription,
+  loadingRef
 }) => {
   const { setIsTaskModalOpen, setTaskModalType, setPreselectedContact } =
     useCrmStore((store) => ({
@@ -53,6 +55,7 @@ const SidePanelTasksSection: FC<Props> = ({
       isShowContact={isShowContact}
       onTaskRowClick={onTaskRowClick}
       onAddTask={handleAddTask}
+      loadingRef={loadingRef}
     />
   ) : (
     <EmptyDataView

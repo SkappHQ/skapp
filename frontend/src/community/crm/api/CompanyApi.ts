@@ -191,22 +191,37 @@ export const useGetOpenTasksByCompany = (
   });
 };
 
-const fetchCompletedTasksByCompany = async (
-  companyId: number
-): Promise<CrmCompletedTaskResponseType> => {
+interface CompletedTasksByCompanyParams {
+  companyId: number;
+  page: number;
+  size: number;
+}
+
+const fetchCompletedTasksByCompany = async ({
+  companyId,
+  page,
+  size
+}: CompletedTasksByCompanyParams): Promise<CrmCompletedTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
-    params: { companyId }
+    params: { companyId, page, size }
   });
   return response?.data?.results?.[0];
 };
 
 export const useGetCompletedTasksByCompany = (
   companyId: number,
+  size: number,
   enabled: boolean
 ) => {
-  return useQuery({
+  return useInfiniteQuery({
+    initialPageParam: 0,
     queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_COMPANY(companyId),
-    queryFn: () => fetchCompletedTasksByCompany(companyId),
+    queryFn: ({ pageParam }) =>
+      fetchCompletedTasksByCompany({ companyId, page: pageParam, size }),
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.currentPage + 1;
+      return nextPage < lastPage.totalPages ? nextPage : undefined;
+    },
     enabled
   });
 };

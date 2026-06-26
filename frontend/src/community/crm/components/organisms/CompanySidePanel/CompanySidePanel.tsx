@@ -9,6 +9,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
 
+import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetCompletedTasksByCompany,
@@ -16,6 +17,7 @@ import {
   useGetDealsByCompany,
   useGetOpenTasksByCompany
 } from "~community/crm/api/CompanyApi";
+import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import SidePanelCompanyContacts from "~community/crm/components/molecules/SidePanelCompanyContacts/SidePanelCompanyContacts";
 import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
@@ -47,16 +49,31 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const { data: openTaskData, isLoading: isTaskLoading } =
     useGetOpenTasksByCompany(selectedCompany?.id ?? 0, !!selectedCompany?.id);
 
-  const { data: completedTaskData, isLoading: isCompletedTaskLoading } =
-    useGetCompletedTasksByCompany(
-      selectedCompany?.id ?? 0,
-      !!selectedCompany?.id
-    );
+  const {
+    data: completedTaskData,
+    isLoading: isCompletedTaskLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetCompletedTasksByCompany(
+    selectedCompany?.id ?? 0,
+    TASK_PAGE_SIZE,
+    !!selectedCompany?.id
+  );
 
   const taskData = useMemo(
-    () => [...(openTaskData?.tasks ?? []), ...(completedTaskData?.items ?? [])],
+    () => [
+      ...(openTaskData?.tasks ?? []),
+      ...(completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? [])
+    ],
     [openTaskData, completedTaskData]
   );
+
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage: hasNextPage ?? false,
+    isLoading: isFetchingNextPage,
+    onLoadMore: fetchNextPage
+  });
 
   const { data: dealData, isLoading: isDealLoading } = useGetDealsByCompany(
     selectedCompany?.id ?? 0,
@@ -106,7 +123,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       case SidePanelTabEnum.DEALS:
         return <SidePanelDealSection deals={dealData?.items ?? []} />;
       case SidePanelTabEnum.TASKS:
-        return <SidePanelTasksSection tasks={taskData} />;
+        return <SidePanelTasksSection tasks={taskData} loadingRef={loadingRef} />;
       case SidePanelTabEnum.CONTACTS:
         return <SidePanelCompanyContacts contacts={contactData?.items ?? []} />;
       default:
