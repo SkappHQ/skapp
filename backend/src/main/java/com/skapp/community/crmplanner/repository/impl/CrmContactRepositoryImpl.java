@@ -129,7 +129,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Root<CrmContact> contact = query.from(CrmContact.class);
 		contact.fetch(CrmContact_.company, JoinType.LEFT);
 
-		List<Predicate> predicates = buildLookupPredicates(cb, contact, filterDto);
+		List<Predicate> predicates = buildLookupPredicates(cb, query, contact, filterDto);
 		query.where(predicates.toArray(new Predicate[0]));
 		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
 
@@ -140,7 +140,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return new PageImpl<>(typedQuery.getResultList(), pageable, getLookupTotalCount(cb, filterDto));
 	}
 
-	private List<Predicate> buildLookupPredicates(CriteriaBuilder cb, Root<CrmContact> contact,
+	private List<Predicate> buildLookupPredicates(CriteriaBuilder cb, CriteriaQuery<?> query, Root<CrmContact> contact,
 			CrmContactFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
@@ -151,6 +151,15 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			predicates.add(cb.like(cb.lower(contact.get(CrmContact_.name)), "%" + escaped + "%", '\\'));
 		}
 
+		if (filterDto.getDealId() != null) {
+			Subquery<Long> dealSub = query.subquery(Long.class);
+			Root<CrmDeal> deal = dealSub.from(CrmDeal.class);
+			dealSub.select(deal.get(CrmDeal_.contact).get(CrmContact_.id))
+				.where(cb.equal(deal.get(CrmDeal_.id), filterDto.getDealId()),
+						cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+			predicates.add(contact.get(CrmContact_.id).in(dealSub));
+		}
+
 		return predicates;
 	}
 
@@ -158,7 +167,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmContact> contact = countQuery.from(CrmContact.class);
 		countQuery.select(cb.count(contact));
-		countQuery.where(buildLookupPredicates(cb, contact, filterDto).toArray(new Predicate[0]));
+		countQuery.where(buildLookupPredicates(cb, countQuery, contact, filterDto).toArray(new Predicate[0]));
 		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 
