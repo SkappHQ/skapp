@@ -170,7 +170,7 @@ export const getAccessToken = async (): Promise<string | null> => {
   const currentAccessToken = getCookieValue("accessToken");
 
   if (!currentAccessToken) {
-    return null;
+    return await getNewAccessToken();
   }
 
   if (isTokenExpired(currentAccessToken)) {

@@ -16,9 +16,15 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
+import {
+  checkRestrictedRoutesAndRedirect,
+  isEnterpriseMode
+} from "~community/common/utils/commonUtil";
 import { TenantStatusEnums } from "~enterprise/common/enums/Common";
-import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
+import {
+  getSubdomain,
+  isCoreOrProTier
+} from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
 const commonRoutes = [
@@ -335,9 +341,25 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(
       new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
     );
-  } else {
-    return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
   }
+
+  const tenantId = getSubdomain(request.nextUrl.hostname) as string;
+  let refreshTokenCookieName: string | null;
+  if (isEnterpriseMode()) {
+    refreshTokenCookieName = tenantId ? `${tenantId}_refreshToken` : null;
+  } else {
+    refreshTokenCookieName = "refreshToken";
+  }
+
+  const hasRefreshToken =
+    refreshTokenCookieName !== null &&
+    Boolean(request.cookies.get(refreshTokenCookieName)?.value);
+
+  if (!token && hasRefreshToken) {
+    return NextResponse.next();
+  }
+
+  return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
 }
 
 // Configure which routes middleware should run on
