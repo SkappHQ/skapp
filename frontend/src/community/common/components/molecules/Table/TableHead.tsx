@@ -1,5 +1,4 @@
 import {
-  Checkbox,
   TableHead as MuiTableHead,
   SxProps,
   TableCell,
@@ -8,6 +7,7 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
+import { Checkbox } from "@rootcodelabs/skapp-ui";
 import { FC, MutableRefObject } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -79,18 +79,9 @@ const TableHead: FC<
             >
               {checkboxSelection?.isSelectAllEnabled && (
                 <Checkbox
-                  color="primary"
                   checked={checkboxSelection?.isSelectAllChecked}
                   onChange={() => checkboxSelection?.handleSelectAllClick?.()}
-                  sx={mergeSx([
-                    classes.checkboxSelection.checkbox,
-                    checkboxSelection?.customStyles?.checkbox
-                  ])}
-                  slotProps={{
-                    input: {
-                      "aria-label": translateAria(["checkbox"])
-                    }
-                  }}
+                  ariaLabel={translateAria(["checkbox"])}
                 />
               )}
             </TableCell>

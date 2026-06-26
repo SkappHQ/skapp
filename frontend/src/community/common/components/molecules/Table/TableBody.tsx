@@ -1,6 +1,5 @@
 import {
   Box,
-  Checkbox,
   TableBody as MuiTableBody,
   SxProps,
   TableCell,
@@ -8,6 +7,7 @@ import {
   Theme,
   useTheme
 } from "@mui/material";
+import { Checkbox } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { TableEmptyScreenProps } from "~community/common/components/molecules/TableEmptyScreen/TableEmptyScreen";
@@ -144,23 +144,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                   ])}
                 >
                   {!isRowDisabled(row.id) && (
-                    <Checkbox
-                      color="primary"
-                      checked={selectedRows?.includes(row.id) || false}
-                      onChange={checkboxSelection?.handleIndividualSelectClick?.(
-                        row.id
-                      )}
-                      sx={mergeSx([
-                        classes.checkboxSelection.checkbox,
-                        checkboxSelection?.customStyles?.checkbox
-                      ])}
-                      slotProps={{
-                        input: {
-                          "aria-label": row?.ariaLabel?.checkbox ?? "",
-                          "aria-description":
-                            row?.ariaDescription?.checkbox ?? ""
-                        }
-                      }}
+                    <span
                       onKeyDown={(e) => {
                         if (shouldToggleCheckbox(e.key)) {
                           e.preventDefault();
@@ -169,7 +153,15 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
                           )?.();
                         }
                       }}
-                    />
+                    >
+                      <Checkbox
+                        checked={selectedRows?.includes(row.id) || false}
+                        onChange={checkboxSelection?.handleIndividualSelectClick?.(
+                          row.id
+                        )}
+                        ariaLabel={row?.ariaLabel?.checkbox ?? ""}
+                      />
+                    </span>
                   )}
                 </TableCell>
               )}
