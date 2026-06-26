@@ -1,3 +1,4 @@
+import { Grid2 as Grid } from "@mui/material";
 import { SearchIcon } from "@rootcodelabs/skapp-ui";
 import { forwardRef, useImperativeHandle } from "react";
 
@@ -96,25 +97,32 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        height: "auto"
+        height: "auto",
+        marginBottom: "2.5rem"
       }}
       dividerStyles={{
         mt: "0.5rem"
       }}
       pageHead={translateText(["head"])}
     >
-      <ChipAutocomplete
-        id="skills"
-        label={translateText(["skills"])}
-        placeholder={translateText(["searchSkills"])}
-        helperText={translateText(["helperText"])}
-        value={getSkillDisplayNames(skills)}
-        onChange={handleSkillsChange}
-        options={allOptions}
-        isDisabled={isInputsDisabled}
-        readOnly={isReadOnly}
-        endIcon={<SearchIcon className="size-6 text-secondary-text shrink-0" />}
-      />
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, md: 12, xl: 8 }}>
+          <ChipAutocomplete
+            id="skills"
+            label={translateText(["skills"])}
+            placeholder={translateText(["searchSkills"])}
+            helperText={translateText(["helperText"])}
+            value={getSkillDisplayNames(skills)}
+            onChange={handleSkillsChange}
+            options={allOptions}
+            isDisabled={isInputsDisabled}
+            readOnly={isReadOnly}
+            endIcon={
+              <SearchIcon className="size-6 text-secondary-text shrink-0" />
+            }
+          />
+        </Grid>
+      </Grid>
     </PeopleLayout>
   );
 });
