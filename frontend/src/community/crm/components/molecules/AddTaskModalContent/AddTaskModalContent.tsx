@@ -197,17 +197,20 @@ const AddTaskModalContent: FC = () => {
     Boolean(isCrmSalesManager) && debouncedOwnerSearchText.length > 0
   );
 
+  const isContactSearchEnabled =
+    debouncedContactSearchText.length > 0 || !!values.dealId;
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    debouncedContactSearchText.length > 0 || !!values.dealId,
+    isContactSearchEnabled,
     values.dealId ?? undefined
   );
 
+  const isDealSearchEnabled = debouncedDealSearchText.length > 0;
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    debouncedDealSearchText.length > 0,
+    isDealSearchEnabled,
     values.contactId ?? undefined
   );
 
@@ -401,6 +404,7 @@ const AddTaskModalContent: FC = () => {
         items={contactDropdownItems}
         onSelect={handleContactSelect}
         emptyMessage={translateText(["emptyStates", "noContacts"])}
+        isOpenOnFocus={isContactSearchEnabled}
       />
 
       <SelectableSearchField
@@ -416,6 +420,7 @@ const AddTaskModalContent: FC = () => {
         items={dealDropdownItems}
         onSelect={handleDealSelect}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
+        isOpenOnFocus={isDealSearchEnabled}
       />
 
       <TextArea
