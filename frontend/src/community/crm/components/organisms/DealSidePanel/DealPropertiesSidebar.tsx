@@ -54,7 +54,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const { stageOptions, isStagesLoading } = useGetStageOptions(isOpen);
+  const { stageOptions, isStagesLoading } = useGetStageOptions();
 
   useEffect(() => {
     setAmount(deal.amount ?? "");

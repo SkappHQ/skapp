@@ -3,9 +3,9 @@ import { useMemo } from "react";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 
-const useGetStageOptions = (enabled?: boolean) => {
+const useGetStageOptions = () => {
   const { dealStages, initialStageId, isLoading: isStagesLoading, isError: isStagesError } =
-    useGetMappedDealStages(enabled);
+    useGetMappedDealStages();
 
   const stageOptions = useMemo(
     () =>
