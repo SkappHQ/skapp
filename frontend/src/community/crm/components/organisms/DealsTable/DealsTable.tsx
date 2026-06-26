@@ -14,6 +14,8 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { DefaultStageNameEnum } from "~community/crm/enums/common";
+import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
@@ -68,6 +70,7 @@ const DealsTable: FC<Props> = ({
   onLoadMore
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const { getStageByName } = useStageNameMapper();
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
@@ -186,7 +189,7 @@ const DealsTable: FC<Props> = ({
           dealOwner: <OwnerCell owner={deal.owner} />
         };
       }),
-    [allDeals]
+    [allDeals, getStageByName]
   );
 
   const tableData = useMemo(
