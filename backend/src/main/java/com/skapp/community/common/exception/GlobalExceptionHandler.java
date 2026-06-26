@@ -107,6 +107,15 @@ public class GlobalExceptionHandler {
 				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
 	}
 
+	@ExceptionHandler(InternalServerException.class)
+	public ResponseEntity<ResponseEntityDto> handleInternalServerException(InternalServerException e) {
+		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+		handleException(e, e.getMessageKey().name(), status);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
+	}
+
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<ResponseEntityDto> handleEntityNotFoundExceptions(EntityNotFoundException e) {
 		HttpStatus status = HttpStatus.NOT_FOUND;
@@ -188,7 +197,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(TooManyRequestsException.class)
-	public ResponseEntity<ResponseEntityDto> handleTooManyRequestException(ServletException e) {
+	public ResponseEntity<ResponseEntityDto> handleTooManyRequestException(TooManyRequestsException e) {
 		HttpStatus status = HttpStatus.TOO_MANY_REQUESTS;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION.name(), status);

@@ -6,6 +6,7 @@ import FullScreenLoader from "~community/common/components/molecules/FullScreenL
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import AppBar from "~community/common/components/organisms/AppBar/AppBar";
 import Drawer from "~community/common/components/organisms/Drawer/Drawer";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import useRouteLoading from "~community/common/hooks/useRouteLoading";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -46,7 +47,7 @@ const ContentWithDrawer = ({ children }: Props) => {
                 minHeight: "100dvh"
               }}
             >
-              <FullScreenLoader fullPage={false} />
+              <FullScreenLoader fullPage={false} zIndex={ZIndexEnums.MODAL} />
             </div>
           ) : (
             <main

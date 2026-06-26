@@ -4,8 +4,8 @@ import { FC, useEffect, useMemo } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetDealStages } from "~community/crm/api/crmDealApi";
-import { CrmDealStageEnum } from "~community/crm/enums/common";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
 
 interface DealNameStageSectionProps {
@@ -16,10 +16,11 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
 
   const {
-    data: stages = [],
+    dealStages,
     isLoading: isStagesLoading,
-    isError: isStagesError
-  } = useGetDealStages();
+    isError: isStagesError,
+    initialStageId
+  } = useGetMappedDealStages();
 
   let stageErrorMessage: string | undefined;
   if (isStagesError) {
@@ -33,33 +34,29 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
       ? "primary-error"
       : "primary";
 
+  useEffect(() => {
+    if (initialStageId !== undefined && !formik.values.stageId) {
+      formik.setFieldValue("stageId", String(initialStageId));
+    }
+  }, [initialStageId, formik.values.stageId]);
+
   const stageOptions = useMemo(
     () =>
-      stages.map((s) => ({
+      dealStages.map((s) => ({
         id: String(s.id),
         value: String(s.id),
         label: (
           <div className="inline-flex items-center gap-2.5">
             <div
               className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: s.color }}
+              style={{ backgroundColor: STAGE_COLOR_MAP[s.color] }}
             />
             <span className="body2">{s.name}</span>
           </div>
         )
       })),
-    [stages]
+    [dealStages]
   );
-
-  useEffect(() => {
-    const leadStage = stages.find(
-      (s) => s.stageType === CrmDealStageEnum.INITIAL
-    );
-    if (leadStage) {
-      formik.setFieldValue("stageId", String(leadStage.id));
-    }
-  }, [stages]);
-
   return (
     <div className="flex gap-6 items-start">
       <div className="w-2/3">

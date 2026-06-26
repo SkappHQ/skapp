@@ -105,6 +105,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealStageId(requestDto.getStageId());
 		CrmValidations.validateDealContactId(requestDto.getContactId());
 		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
+		validateDealCreationLimit();
 
 		if (crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
@@ -150,6 +151,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("createDeal: deal created with id={}", savedDeal.getId());
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	protected void validateDealCreationLimit() {
+		// This method is a placeholder for enterprise deal creation limit validation
 	}
 
 	@Override
@@ -327,6 +332,20 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("updateDealStage: execution ended");
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getDealById(Long id) {
+		log.info("getDealById: execution started", id);
+
+		CrmDeal deal = crmDealDao.findByIdWithAssociations(id);
+		if (deal == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
+
+		log.info("getDealById: execution ended", id);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealViewResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
