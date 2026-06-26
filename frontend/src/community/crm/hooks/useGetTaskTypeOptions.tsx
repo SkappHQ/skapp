@@ -18,8 +18,8 @@ const useGetTaskTypeOptions = (translateText: TranslatorFunctionType) => {
     [translateText, taskCategories]
   );
 
-  const getCategoryById = (id: number): CrmTaskCategory | undefined =>
-    taskCategories?.taskTypes?.find((c) => c.id === id);
+  const getCategoryById = (id: number | null): CrmTaskCategory | null =>
+    taskCategories?.taskTypes?.find((c) => c.id === id) ?? null;
 
   return { options, getCategoryById };
 };

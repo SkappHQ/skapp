@@ -35,7 +35,7 @@ const AddTaskModalContent: FC = () => {
     return {
       employeeId: Number(currentUser.employeeId),
       firstName: currentUser.firstName ?? "",
-      lastName: currentUser.lastName ?? null,
+      lastName: currentUser.lastName ?? "",
       authPic: currentUser.authPic as string | null
     };
   }, [currentUser]);

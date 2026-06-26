@@ -4,9 +4,7 @@ import { FC, useMemo } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  useUpdateTask
-} from "~community/crm/api/TaskApi";
+import { useUpdateTask } from "~community/crm/api/TaskApi";
 import TaskModalForm from "~community/crm/components/molecules/TaskModalForm/TaskModalForm";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
@@ -23,11 +21,13 @@ const EditTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
 
-  const { setIsTaskModalOpen, selectedTaskId, getTaskById } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    selectedTaskId: store.selectedTaskId,
-    getTaskById: store.getTaskById
-  }));
+  const { setIsTaskModalOpen, selectedTaskId, getTaskById } = useCrmStore(
+    (store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      selectedTaskId: store.selectedTaskId,
+      getTaskById: store.getTaskById
+    })
+  );
 
   const { getCategoryById } = useGetTaskTypeOptions(translateText);
 
@@ -53,9 +53,7 @@ const EditTaskModalContent: FC = () => {
   const initialValues: CrmTaskFormTypes = useMemo(
     () => ({
       name: selectedTask?.name ?? "",
-      type: selectedTask?.typeId
-        ? (getCategoryById(selectedTask.typeId) ?? null)
-        : null,
+      type: selectedTask?.typeId ? getCategoryById(selectedTask.typeId) : null,
       dueDate: selectedTask?.dueAt ?? null,
       priority: selectedTask?.priority ?? CrmPriorityEnum.MEDIUM,
       contactId: selectedTask?.contact?.id ?? null,
@@ -80,6 +78,7 @@ const EditTaskModalContent: FC = () => {
   const handleSuccess = () => {
     setSubmitting(false);
     setIsTaskModalOpen(false);
+
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -90,6 +89,7 @@ const EditTaskModalContent: FC = () => {
 
   const handleError = () => {
     setSubmitting(false);
+    
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
