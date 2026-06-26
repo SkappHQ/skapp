@@ -407,35 +407,42 @@ public class TeamServiceImpl implements TeamService {
 			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
 
 		List<Team> otherActiveTeams = teamDao.findAllByIsActiveTrueAndTeamIdNot(teamId);
-
 		List<EmployeeTeamIdDto> employeeTeamRecords = employeeTeamDao.findTeamEmployeeTeamIdsByTeamId(teamId);
 
-		List<EmployeeTransferableTeamsResponseDto> membersWithTransferableTeams = employeeTeamRecords.stream()
-			.collect(Collectors.groupingBy(EmployeeTeamIdDto::getEmployeeId,
-					Collectors.mapping(EmployeeTeamIdDto::getTeamId, Collectors.toList())))
+		List<EmployeeTransferableTeamsResponseDto> membersWithTransferableTeams = groupTeamIdsByEmployee(
+				employeeTeamRecords)
 			.entrySet()
 			.stream()
-			.map(employeeCurrentTeams -> {
-				Set<Long> currentTeamIds = new HashSet<>(employeeCurrentTeams.getValue());
-				List<TeamBasicDetailsResponseDto> employeeTransferableTeams = otherActiveTeams.stream()
-					.filter(team -> !currentTeamIds.contains(team.getTeamId()))
-					.map(team -> {
-						TeamBasicDetailsResponseDto teamBasicDetails = new TeamBasicDetailsResponseDto();
-						teamBasicDetails.setTeamId(team.getTeamId());
-						teamBasicDetails.setTeamName(team.getTeamName());
-						return teamBasicDetails;
-					})
-					.toList();
-				EmployeeTransferableTeamsResponseDto memberWithTransferableTeams = new EmployeeTransferableTeamsResponseDto();
-				memberWithTransferableTeams.setEmployeeId(employeeCurrentTeams.getKey());
-				memberWithTransferableTeams.setTransferableTeams(employeeTransferableTeams);
-				return memberWithTransferableTeams;
-			})
-			.filter(memberWithTransferableTeams -> !memberWithTransferableTeams.getTransferableTeams().isEmpty())
+			.map(entry -> buildMemberWithTransferableTeams(entry.getKey(), entry.getValue(), otherActiveTeams))
+			.filter(member -> !member.getTransferableTeams().isEmpty())
 			.toList();
 
 		log.info("getEmployeeTransferableTeams: execution ended");
 		return new ResponseEntityDto(false, membersWithTransferableTeams);
+	}
+
+	private Map<Long, List<Long>> groupTeamIdsByEmployee(List<EmployeeTeamIdDto> employeeTeamRecords) {
+		return employeeTeamRecords.stream()
+			.collect(Collectors.groupingBy(EmployeeTeamIdDto::getEmployeeId,
+					Collectors.mapping(EmployeeTeamIdDto::getTeamId, Collectors.toList())));
+	}
+
+	private EmployeeTransferableTeamsResponseDto buildMemberWithTransferableTeams(Long employeeId,
+			List<Long> currentTeamIds, List<Team> otherActiveTeams) {
+		Set<Long> currentTeamIdSet = new HashSet<>(currentTeamIds);
+		List<TeamBasicDetailsResponseDto> transferableTeams = otherActiveTeams.stream()
+			.filter(team -> !currentTeamIdSet.contains(team.getTeamId()))
+			.map(team -> {
+				TeamBasicDetailsResponseDto teamBasicDetails = new TeamBasicDetailsResponseDto();
+				teamBasicDetails.setTeamId(team.getTeamId());
+				teamBasicDetails.setTeamName(team.getTeamName());
+				return teamBasicDetails;
+			})
+			.toList();
+		EmployeeTransferableTeamsResponseDto member = new EmployeeTransferableTeamsResponseDto();
+		member.setEmployeeId(employeeId);
+		member.setTransferableTeams(transferableTeams);
+		return member;
 	}
 
 }
