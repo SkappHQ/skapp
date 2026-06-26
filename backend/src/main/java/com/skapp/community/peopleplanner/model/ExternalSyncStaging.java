@@ -18,12 +18,14 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "google_workspace_sync_staging")
-public class GoogleWorkspaceSyncStaging {
+@Table(name = "external_sync_staging")
+public class ExternalSyncStaging {
 
     public enum ChangeType { NEW, UPDATED, REMOVED }
 
     public enum Decision { PENDING, APPROVED, REJECTED }
+
+    public enum SyncChannel { GOOGLE, MICROSOFT }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,6 +44,9 @@ public class GoogleWorkspaceSyncStaging {
     @Column(name = "google_status")
     private String googleStatus;
 
+    @Column(name = "photo_url")
+    private String photoUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "change_type", nullable = false)
     private ChangeType changeType;
@@ -59,4 +64,7 @@ public class GoogleWorkspaceSyncStaging {
     @Column(name = "reviewed_by")
     private String reviewedBy;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sync_channel", nullable = false)
+    private SyncChannel syncChannel;
 }

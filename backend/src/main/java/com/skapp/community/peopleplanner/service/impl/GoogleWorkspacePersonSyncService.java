@@ -4,16 +4,12 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.directory.Directory;
-import com.google.api.services.directory.DirectoryScopes;
 import com.google.api.services.directory.model.Channel;
 import com.google.api.services.directory.model.Group;
 import com.google.api.services.directory.model.Groups;
 import com.google.api.services.directory.model.Member;
 import com.google.api.services.directory.model.Members;
 import com.google.api.services.directory.model.Users;
-import com.google.auth.http.HttpCredentialsAdapter;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.SecretVersionName;
@@ -50,15 +46,10 @@ import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import org.springframework.transaction.annotation.Transactional;
-import com.skapp.community.peopleplanner.model.GoogleWorkspaceSyncStaging;
-import com.skapp.community.peopleplanner.repository.GoogleWorkspaceSyncStagingDao;
+import com.skapp.community.peopleplanner.model.ExternalSyncStaging;
+import com.skapp.community.peopleplanner.repository.ExternalSyncStagingDao;
 
 
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -142,7 +133,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private final EmployeeRoleDao employeeRoleDao;
     private final TeamDao teamDao;
     private final EmployeeTeamDao employeeTeamDao;
-    private final GoogleWorkspaceSyncStagingDao stagingDao;
+    private final ExternalSyncStagingDao stagingDao;
 
     private Directory directoryService;
     private volatile Long channelExpiration;
@@ -376,8 +367,8 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // -------------------------------------------------------------------------
     private SyncResult performFullSync() throws Exception {
         stagingDao.deleteByDecisionIn(
-                List.of(GoogleWorkspaceSyncStaging.Decision.APPROVED,
-                        GoogleWorkspaceSyncStaging.Decision.REJECTED));
+                List.of(ExternalSyncStaging.Decision.APPROVED,
+                        ExternalSyncStaging.Decision.REJECTED));
         int totalSynced = 0;
         int totalFailed = 0;
         List<String> failures = new ArrayList<>();
@@ -930,10 +921,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         Employee existing = employeeDao.findEmployeeByEmail(email);
 
-        GoogleWorkspaceSyncStaging.ChangeType changeType;
+        ExternalSyncStaging.ChangeType changeType;
 
         if (existing == null) {
-            changeType = GoogleWorkspaceSyncStaging.ChangeType.NEW;
+            changeType = ExternalSyncStaging.ChangeType.NEW;
         } else {
             boolean nameChanged = !firstName.equals(existing.getFirstName())
                     || !lastName.equals(existing.getLastName());
@@ -944,16 +935,18 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             if (!nameChanged && !statusChanged) {
                 return; // nothing changed — skip
             }
-            changeType = GoogleWorkspaceSyncStaging.ChangeType.UPDATED;
+            changeType = ExternalSyncStaging.ChangeType.UPDATED;
         }
 
-        GoogleWorkspaceSyncStaging staging = new GoogleWorkspaceSyncStaging();
+        ExternalSyncStaging staging = new ExternalSyncStaging();
         staging.setEmail(email);
         staging.setFirstName(firstName);
         staging.setLastName(lastName);
         staging.setGoogleStatus(googleStatus);
+        staging.setPhotoUrl(wsUser.getThumbnailPhotoUrl());
         staging.setChangeType(changeType);
-        staging.setDecision(GoogleWorkspaceSyncStaging.Decision.PENDING);
+        staging.setDecision(ExternalSyncStaging.Decision.PENDING);
+        staging.setSyncChannel(ExternalSyncStaging.SyncChannel.GOOGLE);
         staging.setSyncedAt(Instant.now());
         stagingDao.save(staging);
 
@@ -973,13 +966,14 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             Optional<EmployeeRole> role = employeeRoleDao.findById(employee.getEmployeeId());
             if (role.isPresent() && Boolean.TRUE.equals(role.get().getIsSuperAdmin())) continue;
 
-            GoogleWorkspaceSyncStaging staging = new GoogleWorkspaceSyncStaging();
+            ExternalSyncStaging staging = new ExternalSyncStaging();
             staging.setEmail(email);
             staging.setFirstName(employee.getFirstName());
             staging.setLastName(employee.getLastName());
             staging.setGoogleStatus("SUSPENDED");
-            staging.setChangeType(GoogleWorkspaceSyncStaging.ChangeType.REMOVED);
-            staging.setDecision(GoogleWorkspaceSyncStaging.Decision.PENDING);
+            staging.setChangeType(ExternalSyncStaging.ChangeType.REMOVED);
+            staging.setDecision(ExternalSyncStaging.Decision.PENDING);
+            staging.setSyncChannel(ExternalSyncStaging.SyncChannel.GOOGLE);
             staging.setSyncedAt(Instant.now());
             stagingDao.save(staging);
 

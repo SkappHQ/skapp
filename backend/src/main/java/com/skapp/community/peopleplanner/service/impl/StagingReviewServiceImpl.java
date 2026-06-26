@@ -15,12 +15,9 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.model.GoogleWorkspaceSyncStaging;
-import com.skapp.community.peopleplanner.model.GoogleWorkspaceSyncStaging.Decision;
 import com.skapp.community.peopleplanner.payload.email.PeopleEmailDynamicFields;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
-import com.skapp.community.peopleplanner.repository.GoogleWorkspaceSyncStagingDao;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.StagingReviewService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -30,6 +27,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.skapp.community.peopleplanner.model.ExternalSyncStaging;
+import com.skapp.community.peopleplanner.model.ExternalSyncStaging.Decision;
+import com.skapp.community.peopleplanner.repository.ExternalSyncStagingDao;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -41,7 +41,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class StagingReviewServiceImpl implements StagingReviewService {
 
-    private final GoogleWorkspaceSyncStagingDao stagingDao;
+    private final ExternalSyncStagingDao stagingDao;
     private final UserDao userDao;
     private final EmployeeDao employeeDao;
     private final EmployeeRoleDao employeeRoleDao;
@@ -53,7 +53,7 @@ public class StagingReviewServiceImpl implements StagingReviewService {
     private final OrganizationConfigDao organizationConfigDao;
 
     @Override
-    public List<GoogleWorkspaceSyncStaging> getPendingRecords() {
+    public List<ExternalSyncStaging> getPendingRecords() {
         return stagingDao.findAllByDecision(Decision.PENDING);
     }
 
@@ -61,9 +61,8 @@ public class StagingReviewServiceImpl implements StagingReviewService {
     @Transactional
     public void approve(List<Long> ids) {
         String reviewer = currentUserEmail();
-        List<GoogleWorkspaceSyncStaging> records = stagingDao.findAllById(ids);
-
-        for (GoogleWorkspaceSyncStaging record : records) {
+        List<ExternalSyncStaging> records = stagingDao.findAllById(ids);
+        for (ExternalSyncStaging record : records) {
             try {
                 switch (record.getChangeType()) {
                     case NEW, UPDATED -> applyUpsert(record);
@@ -74,7 +73,7 @@ public class StagingReviewServiceImpl implements StagingReviewService {
                 record.setReviewedBy(reviewer);
                 stagingDao.save(record);
 
-                if (record.getChangeType() == GoogleWorkspaceSyncStaging.ChangeType.NEW) {
+                if (record.getChangeType() == ExternalSyncStaging.ChangeType.NEW) {
                     sendInviteEmail(record.getEmail());
                 }
             } catch (Exception e) {
@@ -88,9 +87,8 @@ public class StagingReviewServiceImpl implements StagingReviewService {
     @Transactional
     public void reject(List<Long> ids) {
         String reviewer = currentUserEmail();
-        List<GoogleWorkspaceSyncStaging> records = stagingDao.findAllById(ids);
-
-        for (GoogleWorkspaceSyncStaging record : records) {
+        List<ExternalSyncStaging> records = stagingDao.findAllById(ids);
+        for (ExternalSyncStaging record : records) {
             record.setDecision(Decision.REJECTED);
             record.setReviewedAt(Instant.now());
             record.setReviewedBy(reviewer);
@@ -98,7 +96,7 @@ public class StagingReviewServiceImpl implements StagingReviewService {
         stagingDao.saveAll(records);
     }
 
-    private void applyUpsert(GoogleWorkspaceSyncStaging record) {
+    private void applyUpsert(ExternalSyncStaging record) {
         String email = record.getEmail();
         boolean suspended = "SUSPENDED".equals(record.getGoogleStatus());
 
@@ -149,7 +147,7 @@ public class StagingReviewServiceImpl implements StagingReviewService {
         log.info("Approved upsert for {}", email);
     }
 
-    private void applyDeactivation(GoogleWorkspaceSyncStaging record) {
+    private void applyDeactivation(ExternalSyncStaging record) {
         String email = record.getEmail();
 
         userDao.findByEmail(email).ifPresent(user -> {

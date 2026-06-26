@@ -1,8 +1,8 @@
 package com.skapp.community.peopleplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.peopleplanner.model.GoogleWorkspaceSyncStaging;
 import com.skapp.community.peopleplanner.service.StagingReviewService;
+import com.skapp.community.peopleplanner.model.ExternalSyncStaging;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class StagingReviewController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN')")
     public ResponseEntity<ResponseEntityDto> getPendingRecords() {
-        List<GoogleWorkspaceSyncStaging> records = stagingReviewService.getPendingRecords();
+        List<ExternalSyncStaging> records = stagingReviewService.getPendingRecords();
         return new ResponseEntity<>(new ResponseEntityDto(false, records), HttpStatus.OK);
     }
 

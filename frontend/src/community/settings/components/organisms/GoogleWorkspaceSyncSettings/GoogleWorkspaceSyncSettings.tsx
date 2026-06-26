@@ -198,8 +198,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
           open: true,
           toastType: ToastType.SUCCESS,
           title: "Google Workspace Connected",
-          description:
-            "Your Google Workspace account has been successfully connected."
+          description: "Your Google Workspace account has been successfully connected."
         });
         const url = new URL(window.location.href);
         url.searchParams.delete("google");
@@ -207,23 +206,6 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
       }
     }
   }, []);
-
-  useEffect(() => {
-    if (!isConnected) return;
-    const init = async () => {
-      try {
-        const { activeList, inactiveList } = await fetchAllEmployees();
-        const allBefore = [...activeList, ...inactiveList];
-        setBeforeSnapshot({
-          employees: new Map(allBefore.map((e: any) => [e.email, e]))
-        });
-      } catch {
-        // silently ignore
-      }
-      await fetchStagingRecords();
-    };
-    init();
-  }, [isConnected]);
 
   const handleConnect = async () => {
     setIsConnecting(true);
@@ -244,6 +226,23 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
       setIsConnecting(false);
     }
   };
+
+  useEffect(() => {
+    if (!isConnected) return;
+    const init = async () => {
+      try {
+        const { activeList, inactiveList } = await fetchAllEmployees();
+        const allBefore = [...activeList, ...inactiveList];
+        setBeforeSnapshot({
+          employees: new Map(allBefore.map((e: any) => [e.email, e]))
+        });
+      } catch {
+        // silently ignore
+      }
+      await fetchStagingRecords();
+    };
+    init();
+  }, [isConnected]);
 
   const fetchAllEmployees = async () => {
     const [activeRes, inactiveRes] = await Promise.all([
@@ -650,18 +649,18 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
                           onChange={toggleSelectAll}
                         />
                       </TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Photo</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>First Name</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Last Name</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Google Status</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Change</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>
-                        Google Status
-                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {isReviewing ? (
                       <TableRow>
-                        <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                           <CircularProgress size={24} />
                         </TableCell>
                       </TableRow>
@@ -678,18 +677,39 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
                               onChange={() => toggleSelect(record.id)}
                             />
                           </TableCell>
+                          <TableCell>
+                            {record.photoUrl ? (
+                              <img
+                                src={record.photoUrl}
+                                alt={record.email}
+                                style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: "50%",
+                                  objectFit: "cover"
+                                }}
+                              />
+                            ) : (
+                              <Box
+                                sx={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: "50%",
+                                  backgroundColor: "#e0e0e0",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: 14,
+                                  color: "#757575"
+                                }}
+                              >
+                                {record.email.charAt(0).toUpperCase()}
+                              </Box>
+                            )}
+                          </TableCell>
+                          <TableCell>{record.firstName || "—"}</TableCell>
+                          <TableCell>{record.lastName || "—"}</TableCell>
                           <TableCell>{record.email}</TableCell>
-                          <TableCell>
-                            {`${record.firstName || ""} ${record.lastName || ""}`.trim() ||
-                              "—"}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={record.changeType}
-                              color={changeTypeColor(record.changeType) as any}
-                              size="small"
-                            />
-                          </TableCell>
                           <TableCell>
                             <Typography
                               variant="body2"
@@ -701,8 +721,15 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
                                 fontWeight: 500
                               }}
                             >
-                              {record.googleStatus}
+                              {record.googleStatus ?? "—"}
                             </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={record.changeType}
+                              color={changeTypeColor(record.changeType) as any}
+                              size="small"
+                            />
                           </TableCell>
                         </TableRow>
                       ))

@@ -33,4 +33,5 @@ export interface StagingRecord {
   changeType: "NEW" | "UPDATED" | "REMOVED";
   decision: "PENDING" | "APPROVED" | "REJECTED";
   syncedAt: string;
+  photoUrl?: string;
 }

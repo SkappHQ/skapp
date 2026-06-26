@@ -1,15 +1,14 @@
 package com.skapp.community.peopleplanner.service;
 
-import com.skapp.community.peopleplanner.model.GoogleWorkspaceSyncStaging;
+import com.skapp.community.peopleplanner.model.ExternalSyncStaging;
 
 import java.util.List;
 
 public interface StagingReviewService {
 
-    List<GoogleWorkspaceSyncStaging> getPendingRecords();
+    List<ExternalSyncStaging> getPendingRecords();
 
     void approve(List<Long> ids);
 
     void reject(List<Long> ids);
-
 }
