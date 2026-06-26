@@ -2,6 +2,8 @@ import {
   Box,
   Button,
   Card,
+  Checkbox,
+  Chip,
   CircularProgress,
   Paper,
   Table,
@@ -18,8 +20,11 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useToast } from "~community/common/providers/ToastProvider";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
-  GoogleWorkspaceSyncUser
+  GoogleWorkspaceSyncUser,
+  StagingRecord
 } from "~community/settings/types/GoogleWorkspaceSyncTypes";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 interface SyncTableProps {
   title: string;
@@ -35,89 +40,93 @@ const SyncTable = ({
   users,
   isLoading = false,
   highlightColor
-}: SyncTableProps): JSX.Element => {
-  return (
-    <Box sx={{ mb: 3 }}>
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h3" sx={{ mb: 0.5 }}>
-          {title}
-        </Typography>
-        <Typography variant="body2" color="textSecondary">
-          {description}
-        </Typography>
-      </Box>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: highlightColor ?? "#f5f5f5" }}>
-              <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Display Name</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Change</TableCell>
+}: SyncTableProps): JSX.Element => (
+  <Box sx={{ mb: 3 }}>
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="h3" sx={{ mb: 0.5 }}>
+        {title}
+      </Typography>
+      <Typography variant="body2" color="textSecondary">
+        {description}
+      </Typography>
+    </Box>
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow sx={{ backgroundColor: highlightColor ?? "#f5f5f5" }}>
+            <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Display Name</TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Change</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                <CircularProgress size={24} />
+              </TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                  <CircularProgress size={24} />
+          ) : users.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={4} align="center" sx={{ py: 2 }}>
+                <Typography variant="body2" color="textSecondary">
+                  No records found
+                </Typography>
+              </TableCell>
+            </TableRow>
+          ) : (
+            users.map((user, index) => (
+              <TableRow key={index} hover>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  {user.displayName ||
+                    `${user.firstName || ""} ${user.lastName || ""}`.trim()}
                 </TableCell>
-              </TableRow>
-            ) : users.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 2 }}>
-                  <Typography variant="body2" color="textSecondary">
-                    No records found
+                <TableCell>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color:
+                        user.status === "TERMINATED" ||
+                        user.status === "DEACTIVATED"
+                          ? "#d32f2f"
+                          : "#388e3c",
+                      fontWeight: 500
+                    }}
+                  >
+                    {user.status
+                      ? user.status.charAt(0).toUpperCase() +
+                        user.status.slice(1).toLowerCase()
+                      : "Active"}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color:
+                        user.changeType === "NEW" ? "#1565c0" : "#e65100",
+                      fontWeight: 500
+                    }}
+                  >
+                    {user.changeType === "NEW" ? "New" : "Updated"}
                   </Typography>
                 </TableCell>
               </TableRow>
-            ) : (
-              users.map((user, index) => (
-                <TableRow key={index} hover>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    {user.displayName ||
-                      `${user.firstName || ""} ${user.lastName || ""}`.trim()}
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color:
-                          user.status === "TERMINATED" ||
-                          user.status === "DEACTIVATED"
-                            ? "#d32f2f"
-                            : "#388e3c",
-                        fontWeight: 500
-                      }}
-                    >
-                      {user.status
-                        ? user.status.charAt(0).toUpperCase() +
-                          user.status.slice(1).toLowerCase()
-                        : "Active"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color:
-                          user.changeType === "NEW" ? "#1565c0" : "#e65100",
-                        fontWeight: 500
-                      }}
-                    >
-                      {user.changeType === "NEW" ? "New" : "Updated"}
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
-  );
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </Box>
+);
+
+const changeTypeColor = (type: string) => {
+  if (type === "NEW") return "success";
+  if (type === "UPDATED") return "warning";
+  if (type === "REMOVED") return "error";
+  return "default";
 };
 
 interface FullSyncResult {
@@ -148,11 +157,17 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     employees: Map<string, any>;
   } | null>(null);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+  // Staging review state
+  const [stagingRecords, setStagingRecords] = useState<StagingRecord[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [isReviewing, setIsReviewing] = useState(false);
+
   const checkStatus = async () => {
     setIsCheckingStatus(true);
     try {
-      const resp = await authFetch.get(`${API_BASE}/api/v1/integrations/google/status`);
+      const resp = await authFetch.get(
+        `${API_BASE}/api/v1/integrations/google/status`
+      );
       const data = resp.data;
       setIsConnected(!!data.connected);
       setConnectedByEmail(data.connectedByEmail ?? null);
@@ -164,9 +179,18 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     }
   };
 
+  const fetchStagingRecords = async () => {
+    try {
+      const resp = await authFetch.get("/people/sync/staging");
+      const data = resp.data?.results ?? resp.data;
+      setStagingRecords(Array.isArray(data) ? data : []);
+    } catch {
+      setStagingRecords([]);
+    }
+  };
+
   useEffect(() => {
     checkStatus();
-
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("google") === "connected") {
@@ -184,10 +208,9 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     }
   }, []);
 
-  // Take a snapshot once connected so Refresh Results works for webhook syncs too
   useEffect(() => {
     if (!isConnected) return;
-    const takeInitialSnapshot = async () => {
+    const init = async () => {
       try {
         const { activeList, inactiveList } = await fetchAllEmployees();
         const allBefore = [...activeList, ...inactiveList];
@@ -195,16 +218,19 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
           employees: new Map(allBefore.map((e: any) => [e.email, e]))
         });
       } catch {
-        // Silently ignore — snapshot taken on Sync Now if this fails
+        // silently ignore
       }
+      await fetchStagingRecords();
     };
-    takeInitialSnapshot();
+    init();
   }, [isConnected]);
 
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
-      const resp = await authFetch.get(`${API_BASE}/api/v1/integrations/google/initiate`);
+      const resp = await authFetch.get(
+        `${API_BASE}/api/v1/integrations/google/initiate`
+      );
       window.location.href = resp.data.url;
     } catch (error: any) {
       setToastMessage({
@@ -213,7 +239,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         title: "Connection Failed",
         description:
           error?.response?.data?.message ||
-          "Failed to initiate Google Workspace connection. Please try again."
+          "Failed to initiate Google Workspace connection."
       });
       setIsConnecting(false);
     }
@@ -232,10 +258,8 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         }
       })
     ]);
-
     const activeList: any[] = activeRes.data?.results?.[0]?.items ?? [];
     const inactiveList: any[] = inactiveRes.data?.results?.[0]?.items ?? [];
-
     return { activeList, inactiveList };
   };
 
@@ -255,29 +279,21 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
   const detectChanges = (
     afterList: any[],
     snapshot: Map<string, any>
-  ): GoogleWorkspaceSyncUser[] => {
-    return afterList
+  ): GoogleWorkspaceSyncUser[] =>
+    afterList
       .filter((emp: any) => {
         const before = snapshot.get(emp.email);
         if (!before) return true;
         return (
           before.firstName !== emp.firstName ||
           before.lastName !== emp.lastName ||
-          before.middleName !== emp.middleName ||
-          before.accountStatus !== emp.accountStatus ||
-          before.employmentAllocation !== emp.employmentAllocation ||
-          before.jobTitle !== emp.jobTitle ||
-          before.designation !== emp.designation ||
-          before.phone !== emp.phone ||
-          before.country !== emp.country ||
-          before.timeZone !== emp.timeZone
+          before.accountStatus !== emp.accountStatus
         );
       })
       .map((emp: any) => {
         const before = snapshot.get(emp.email);
         return mapToSyncUser(emp, !before ? "NEW" : "UPDATED");
       });
-  };
 
   const handleSync = async () => {
     setIsLoading(true);
@@ -285,7 +301,6 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     try {
       const { activeList: beforeActiveList, inactiveList: beforeInactiveList } =
         await fetchAllEmployees();
-
       const allBefore = [...beforeActiveList, ...beforeInactiveList];
       setBeforeSnapshot({
         employees: new Map(allBefore.map((e: any) => [e.email, e]))
@@ -298,8 +313,12 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         toastType: ToastType.SUCCESS,
         title: "Sync Started",
         description:
-          "Sync is running in the background. Click 'Refresh Results' in a few seconds to see the changes."
+          "Sync is running in the background. Click 'Refresh Results' in a few seconds to see pending changes."
       });
+
+      setTimeout(async () => {
+        await fetchStagingRecords();
+      }, 5000);
     } catch (error: any) {
       setToastMessage({
         open: true,
@@ -307,8 +326,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         title: "Sync Failed",
         description:
           error?.response?.data?.message ||
-          error?.message ||
-          "Failed to start Google Workspace sync. Please try again."
+          "Failed to start Google Workspace sync."
       });
     } finally {
       setIsLoading(false);
@@ -320,9 +338,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     setIsLoading(true);
     try {
       const { activeList, inactiveList } = await fetchAllEmployees();
-
       const allAfter = [...activeList, ...inactiveList];
-
       const newlyAddedOrUpdatedAccounts: GoogleWorkspaceSyncUser[] =
         beforeSnapshot
           ? detectChanges(allAfter, beforeSnapshot.employees)
@@ -338,11 +354,13 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         syncedAt: new Date().toISOString()
       });
 
+      await fetchStagingRecords();
+
       setToastMessage({
         open: true,
         toastType: ToastType.SUCCESS,
         title: "Results Refreshed",
-        description: `${activeList.length} active, ${inactiveList.length} suspended. ${newlyAddedOrUpdatedAccounts.length} new or updated.`
+        description: `${activeList.length} active, ${inactiveList.length} suspended.`
       });
     } catch (error: any) {
       setToastMessage({
@@ -350,13 +368,79 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         toastType: ToastType.ERROR,
         title: "Error Loading Results",
         description:
-          error?.response?.data?.message ||
-          error?.message ||
-          "Failed to load results. Please try again."
+          error?.response?.data?.message || "Failed to load results."
       });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleApprove = async (ids: number[]) => {
+    setIsReviewing(true);
+    try {
+      await authFetch.post("/people/sync/staging/approve", { ids });
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: "Approved",
+        description: `${ids.length} change(s) approved and applied to Skapp.`
+      });
+      setSelectedIds([]);
+      await fetchStagingRecords();
+    } catch (error: any) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: "Approve Failed",
+        description:
+          error?.response?.data?.message || "Failed to approve changes."
+      });
+    } finally {
+      setIsReviewing(false);
+    }
+  };
+
+  const handleReject = async (ids: number[]) => {
+    setIsReviewing(true);
+    try {
+      await authFetch.post("/people/sync/staging/reject", { ids });
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: "Rejected",
+        description: `${ids.length} change(s) rejected.`
+      });
+      setSelectedIds([]);
+      await fetchStagingRecords();
+    } catch (error: any) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: "Reject Failed",
+        description:
+          error?.response?.data?.message || "Failed to reject changes."
+      });
+    } finally {
+      setIsReviewing(false);
+    }
+  };
+
+  const allSelected =
+    stagingRecords.length > 0 &&
+    selectedIds.length === stagingRecords.length;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(stagingRecords.map((r) => r.id));
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
   };
 
   return (
@@ -376,8 +460,8 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
           </Typography>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
             Connect your Google Workspace admin account to enable automatic
-            directory sync. Users from your Google Workspace will be imported
-            and kept in sync with Skapp.
+            directory sync. Users from your Google Workspace will be staged for
+            your review before being imported into Skapp.
           </Typography>
           <Button
             variant="contained"
@@ -392,6 +476,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         </Card>
       ) : (
         <>
+          {/* ── Sync Controls ───────────────────────────────────────────── */}
           <Card sx={{ p: 3, mb: 4 }}>
             {connectedByEmail && (
               <Box
@@ -402,8 +487,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
                   backgroundColor: "#e8f5e9",
                   borderRadius: 1,
                   display: "inline-flex",
-                  alignItems: "center",
-                  gap: 0.5
+                  alignItems: "center"
                 }}
               >
                 <Typography variant="body2" sx={{ color: "#2e7d32" }}>
@@ -414,16 +498,13 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
               </Box>
             )}
 
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="h3" sx={{ mb: 1 }}>
-                Directory Sync
-              </Typography>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Sync users from your Google Workspace directory to Skapp. This
-                will automatically create new user accounts and update the
-                status of existing users.
-              </Typography>
-            </Box>
+            <Typography variant="h3" sx={{ mb: 1 }}>
+              Directory Sync
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              Sync users from your Google Workspace. Changes are staged for
+              review before being applied to Skapp.
+            </Typography>
 
             <Box
               sx={{
@@ -450,7 +531,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
                 color="primary"
                 onClick={handleRefreshResults}
                 disabled={isLoading}
-                sx={{ minWidth: 120 }}
+                sx={{ minWidth: 140 }}
               >
                 {isLoading && !isSyncing && (
                   <CircularProgress size={20} sx={{ mr: 1 }} />
@@ -479,7 +560,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
                 </Box>
                 <Box>
                   <Typography variant="body2" color="textSecondary">
-                    New / Updated (Last Sync)
+                    New / Updated
                   </Typography>
                   <Typography variant="h4" sx={{ color: "#1565c0" }}>
                     {syncResult.totalNewlyAddedOrUpdated}
@@ -489,25 +570,167 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
             )}
           </Card>
 
+          {/* ── Pending Review ──────────────────────────────────────────── */}
+          {stagingRecords.length > 0 && (
+            <Card sx={{ p: 3, mb: 4 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                  flexWrap: "wrap",
+                  gap: 1
+                }}
+              >
+                <Box>
+                  <Typography variant="h3" sx={{ mb: 0.5 }}>
+                    Pending Review
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    {stagingRecords.length} change(s) from the latest sync are
+                    awaiting your approval.
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    disabled={selectedIds.length === 0 || isReviewing}
+                    onClick={() => handleApprove(selectedIds)}
+                  >
+                    Approve Selected ({selectedIds.length})
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="small"
+                    disabled={selectedIds.length === 0 || isReviewing}
+                    onClick={() => handleReject(selectedIds)}
+                  >
+                    Reject Selected ({selectedIds.length})
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    disabled={isReviewing}
+                    onClick={() =>
+                      handleApprove(stagingRecords.map((r) => r.id))
+                    }
+                  >
+                    Approve All
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="small"
+                    disabled={isReviewing}
+                    onClick={() =>
+                      handleReject(stagingRecords.map((r) => r.id))
+                    }
+                  >
+                    Reject All
+                  </Button>
+                </Box>
+              </Box>
+
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: "#fff8e1" }}>
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={allSelected}
+                          indeterminate={
+                            selectedIds.length > 0 && !allSelected
+                          }
+                          onChange={toggleSelectAll}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Change</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        Google Status
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {isReviewing ? (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                          <CircularProgress size={24} />
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      stagingRecords.map((record) => (
+                        <TableRow
+                          key={record.id}
+                          hover
+                          selected={selectedIds.includes(record.id)}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              checked={selectedIds.includes(record.id)}
+                              onChange={() => toggleSelect(record.id)}
+                            />
+                          </TableCell>
+                          <TableCell>{record.email}</TableCell>
+                          <TableCell>
+                            {`${record.firstName || ""} ${record.lastName || ""}`.trim() ||
+                              "—"}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={record.changeType}
+                              color={changeTypeColor(record.changeType) as any}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color:
+                                  record.googleStatus === "SUSPENDED"
+                                    ? "#d32f2f"
+                                    : "#388e3c",
+                                fontWeight: 500
+                              }}
+                            >
+                              {record.googleStatus}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Card>
+          )}
+
+          {/* ── Sync Result Tables ──────────────────────────────────────── */}
           {syncResult && (
             <Box>
               {syncResult.newlyAddedOrUpdatedAccounts.length > 0 && (
                 <SyncTable
                   title="New / Updated Accounts (Last Sync)"
-                  description={`${syncResult.totalNewlyAddedOrUpdated} users were added or updated in the last sync`}
+                  description={`${syncResult.totalNewlyAddedOrUpdated} users were added or updated`}
                   users={syncResult.newlyAddedOrUpdatedAccounts}
                   isLoading={isLoading}
                   highlightColor="#e3f2fd"
                 />
               )}
-
               <SyncTable
                 title="All Active Accounts"
                 description={`${syncResult.totalActive} active users in the directory`}
                 users={syncResult.allActiveAccounts}
                 isLoading={isLoading}
               />
-
               <SyncTable
                 title="All Suspended Accounts"
                 description={`${syncResult.totalSuspended} terminated or deactivated users`}
