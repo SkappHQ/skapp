@@ -12,7 +12,7 @@ import {
   TableRow,
   Typography
 } from "@mui/material";
-import { useState, JSX } from "react";
+import { useState, useEffect, JSX } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -142,6 +142,22 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
   const [beforeSnapshot, setBeforeSnapshot] = useState<{
     employees: Map<string, any>;
   } | null>(null);
+
+  // Take a snapshot on page load so Refresh Results works for webhook syncs too
+  useEffect(() => {
+    const takeInitialSnapshot = async () => {
+      try {
+        const { activeList, inactiveList } = await fetchAllEmployees();
+        const allBefore = [...activeList, ...inactiveList];
+        setBeforeSnapshot({
+          employees: new Map(allBefore.map((e: any) => [e.email, e]))
+        });
+      } catch {
+        // Silently ignore — snapshot taken on Sync Now if this fails
+      }
+    };
+    takeInitialSnapshot();
+  }, []);
 
   const fetchAllEmployees = async () => {
     const [activeRes, inactiveRes] = await Promise.all([
