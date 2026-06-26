@@ -2,7 +2,6 @@ import { Grid2 as Grid } from "@mui/material";
 import { ButtonV2, Checkbox } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { ChangeEvent } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
@@ -413,9 +412,7 @@ const CareerProgressDetailsSection = ({
                   label={translateText(["currentEmployment"])}
                   ariaLabel={translateAria(["selectCurrentEmploymentChecked"])}
                   onChange={(checked) => {
-                    handleCheckboxChange({
-                      target: { name: "isCurrentEmployment", checked }
-                    } as ChangeEvent<HTMLInputElement>);
+                    handleCheckboxChange("isCurrentEmployment", checked);
                   }}
                 />
               </Grid>

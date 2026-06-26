@@ -2,15 +2,13 @@ import {
   Box,
   Grid2 as Grid,
   type SelectChangeEvent,
-  Stack,
-  Typography,
-  useTheme
+  Stack
 } from "@mui/material";
 import { ButtonV2, Checkbox } from "@rootcodelabs/skapp-ui";
 import { rejects } from "assert";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import CustomTable from "~community/common/components/molecules/CustomTable/CustomTable";
@@ -69,12 +67,12 @@ const CareerProgressionDetailsSection = ({
   isProfileView = false,
   isInputsDisabled = false
 }: Props) => {
-  const theme = useTheme();
   const translateText = useTranslator(
     "peopleModule",
     "addResource",
     "careerDetails"
   );
+  const translateAria = useTranslator("peopleAria", "addResource");
   const translateButtonText = useTranslator(
     "peopleModule",
     "addResource",
@@ -396,10 +394,10 @@ const CareerProgressionDetailsSection = ({
     setFieldError(e.target.name, "");
   };
 
-  const handleCheckboxChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    await setFieldValue(e.target.name, e.target.checked);
+  const handleCheckboxChange = async (name: string, checked: boolean) => {
+    await setFieldValue(name, checked);
     await setFieldValue("endDate", "");
-    setFieldError(e.target.name, "");
+    setFieldError(name, "");
   };
 
   const dateOnChange = async (
@@ -655,14 +653,10 @@ const CareerProgressionDetailsSection = ({
                   checked={values.currentPosition}
                   disabled={isInputsDisabled}
                   label={translateText(["currentEmployment"])}
-                  onChange={(checked) => {
-                    handleCheckboxChange({
-                      target: {
-                        name: "currentPosition",
-                        checked: checked
-                      }
-                    } as ChangeEvent<HTMLInputElement>);
-                  }}
+                  ariaLabel={translateAria(["careerProgression", "selectCurrentEmploymentChecked"])}
+                  onChange={(checked) =>
+                    handleCheckboxChange("currentPosition", checked)
+                  }
                 />
               </Grid>
             </>
