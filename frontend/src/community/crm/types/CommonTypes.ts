@@ -384,3 +384,9 @@ export type PreselectedContact = {
   id: number;
   name: string;
 };
+
+export interface RelatedTasksParams {
+  contactId?: number | null;
+  dealId?: number | null;
+  companyId?: number | null;
+}
