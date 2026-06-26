@@ -429,7 +429,9 @@ public class TeamServiceImpl implements TeamService {
 
 	private EmployeeTransferableTeamsResponseDto buildMemberWithTransferableTeams(Long employeeId,
 			List<Long> currentTeamIds, List<Team> otherActiveTeams) {
+
 		Set<Long> currentTeamIdSet = new HashSet<>(currentTeamIds);
+
 		List<TeamBasicDetailsResponseDto> transferableTeams = otherActiveTeams.stream()
 			.filter(team -> !currentTeamIdSet.contains(team.getTeamId()))
 			.map(team -> {
@@ -439,6 +441,7 @@ public class TeamServiceImpl implements TeamService {
 				return teamBasicDetails;
 			})
 			.toList();
+
 		EmployeeTransferableTeamsResponseDto member = new EmployeeTransferableTeamsResponseDto();
 		member.setEmployeeId(employeeId);
 		member.setTransferableTeams(transferableTeams);
