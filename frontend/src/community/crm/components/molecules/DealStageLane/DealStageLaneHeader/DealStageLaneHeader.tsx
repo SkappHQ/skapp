@@ -1,8 +1,8 @@
 import { useDroppable } from "@dnd-kit/core";
 import { FC, ReactNode } from "react";
 
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
-import { getAccentColor } from "~community/crm/utils/kanbanUtil";
 
 export interface DealStageLaneHeaderProps {
   stage: CrmDealStageType;
@@ -19,8 +19,6 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
   isOver = false,
   children
 }) => {
-  const accentColor = getAccentColor(stage.color);
-
   const { setNodeRef } = useDroppable({
     id: stage.id,
     data: { type: "stage", stageId: stage.id }
@@ -38,7 +36,9 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
     >
       <div
         className="h-1.75 rounded-lg m-2"
-        style={{ backgroundColor: accentColor }}
+        style={{
+          backgroundColor: STAGE_COLOR_MAP[stage.color]
+        }}
       />
 
       <div className="flex items-center justify-between gap-2 px-3 pt-3">

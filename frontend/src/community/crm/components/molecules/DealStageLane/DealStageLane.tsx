@@ -2,7 +2,7 @@ import {
   SortableContext,
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
@@ -10,17 +10,18 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import DealStageLaneHeader from "~community/crm/components/molecules/DealStageLane/DealStageLaneHeader/DealStageLaneHeader";
 import DraggableDealCard from "~community/crm/components/molecules/DraggableDealCard/DraggableDealCard";
-import { CrmDealBoardType, CrmDealStageType } from "~community/crm/types/CommonTypes";
+import type { CrmBoardDealType } from "~community/crm/types/BoardTypes";
+import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 export interface DealStageLaneProps {
   stage: CrmDealStageType;
-  deals: CrmDealBoardType[];
+  deals: CrmBoardDealType[];
   isLoading?: boolean;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   isOver?: boolean;
-  onDealClick: (dealId: string) => void;
+  onDealClick: (dealId: number) => void;
   onAddDeal: (stageId: number) => void;
   onLoadMore: () => void;
 }
@@ -57,9 +58,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
     >
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-3 pb-3">
         {isLoading ? (
-          Array.from({ length: 3 }).map((_, index) => (
-            <DealCardSkeleton key={index} />
-          ))
+          <DealCardSkeleton count={3} />
         ) : (
           <>
             <SortableContext
@@ -75,39 +74,24 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               ))}
             </SortableContext>
 
-            {deals.length === 0 ? (
-              <ButtonV2
-                variant="line"
-                type="button"
-                isFullWidth
-                size="sm"
-                onClick={() => onAddDeal(stage.id)}
-              >
-                {translateText(["addDealBtn"])}
-              </ButtonV2>
-            ) : (
+            {hasNextPage && (
               <>
-                {hasNextPage && (
-                  <>
-                    {isFetchingNextPage &&
-                      Array.from({ length: 2 }).map((_, index) => (
-                        <DealCardSkeleton key={index} />
-                      ))}
-                    <div className="h-1 w-full" />
-                  </>
-                )}
-
-                <ButtonV2
-                  variant="line"
-                  type="button"
-                  isFullWidth
-                  size="sm"
-                  onClick={() => onAddDeal(stage.id)}
-                >
-                  {translateText(["addDealBtn"])}
-                </ButtonV2>
+                {isFetchingNextPage && <DealCardSkeleton count={2} />}
+                <div className="h-1 w-full" />
               </>
             )}
+
+            <ButtonV2
+              variant="line"
+              type="button"
+              isFullWidth
+              size="sm"
+              icon={<PlusIcon />}
+              iconPosition="end"
+              onClick={() => onAddDeal(stage.id)}
+            >
+              {translateText(["addDealBtn"])}
+            </ButtonV2>
           </>
         )}
         <div ref={loadingRef} />

@@ -59,12 +59,12 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = () => {
 
         <DragOverlay>
           {activeDeal && (
-            <div className="w-69 opacity-95">
+            <div className="w-69">
               <DealCard
-                id={String(activeDeal.id)}
+                id={activeDeal.id}
                 title={activeDeal.name}
-                contactName={activeDeal.contact.name}
-                companyName={activeDeal.company?.name}
+                contactName={activeDeal.contactName}
+                companyName={activeDeal.companyName ?? undefined}
                 owner={activeDeal.owner}
                 amount={activeDeal.amount ?? ""}
                 priority={activeDeal.priority}

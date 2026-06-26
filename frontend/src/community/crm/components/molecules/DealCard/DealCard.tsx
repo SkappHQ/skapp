@@ -1,6 +1,6 @@
 import {
   Avatar,
-  Chip,
+  Badge,
   ClipboardCheckIcon,
   DealValueIcon,
   HandshakeIcon
@@ -15,7 +15,7 @@ import { CrmOwner } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 export interface DealCardProps {
-  id: string;
+  id: number;
   title: string;
   contactName: string;
   companyName?: string;
@@ -39,7 +39,7 @@ const DealCard: FC<DealCardProps> = ({
   ariaLabel,
   onClick
 }) => {
-  const imageUrl = useGetImageUrl(owner?.authPic ?? "");
+  const imageUrl = useGetImageUrl(owner.authPic ?? "");
 
   return (
     <div
@@ -61,7 +61,6 @@ const DealCard: FC<DealCardProps> = ({
             src={imageUrl ?? ""}
             firstName={owner.firstName}
             lastName={owner.lastName ?? ""}
-            className="h-6 w-6"
           />
         )}
       </div>
@@ -96,26 +95,25 @@ const DealCard: FC<DealCardProps> = ({
           <span className="shrink-0 text-secondary-icon">
             <DealValueIcon className="h-4 w-4" />
           </span>
-          <span className="body3">
-            {amount ? formatValue(String(amount)) : ""}
-          </span>
+          <span className="body3">{amount ? formatValue(amount) : ""}</span>
         </div>
       </div>
 
       <div className="flex items-center justify-end gap-2">
         {taskCount != null && (
-          <Chip
+          <Badge
             size="sm"
-            label={String(taskCount)}
-            prefixIcon={
-              <ClipboardCheckIcon
-                fill="var(--color-label-text-slate)"
-                width={9}
-                height={10}
-              />
-            }
-            className="h-6 w-12 bg-label-bg-slate text-label-text-slate"
-          />
+            backgroundColor="bg-label-bg-slate"
+            textColor="text-label-text-slate"
+            className="flex h-6 w-12 items-center justify-center gap-1"
+          >
+            <ClipboardCheckIcon
+              fill="var(--color-label-text-slate)"
+              width={9}
+              height={10}
+            />
+            {taskCount}
+          </Badge>
         )}
 
         <PriorityLabel priority={priority} />

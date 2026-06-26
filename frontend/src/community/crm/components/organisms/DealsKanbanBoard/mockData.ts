@@ -1,13 +1,10 @@
 import {
   CrmDealStageColorsEnum,
   CrmDealStageEnum,
-  CrmIndustryEnum,
   CrmPriorityEnum
 } from "~community/crm/enums/common";
-import type {
-  CrmDealBoardType,
-  CrmDealStageType
-} from "~community/crm/types/CommonTypes";
+import type { CrmBoardDealType } from "~community/crm/types/BoardTypes";
+import type { CrmDealStageType } from "~community/crm/types/CommonTypes";
 
 export const MOCK_STAGES: CrmDealStageType[] = [
   {
@@ -61,67 +58,27 @@ const MOCK_OWNER = {
   authPic: null
 };
 
-export const MOCK_DEALS: Record<number, CrmDealBoardType[]> = {
+export const MOCK_DEALS: Record<number, CrmBoardDealType[]> = {
   1: [
     {
       id: 101,
       name: "Acme Corp Expansion",
-      description: null,
-      orderIndex: 1,
-      stage: MOCK_STAGES[0],
+      orderIndex: "1",
       priority: CrmPriorityEnum.HIGH,
       amount: "12000",
-      company: {
-        id: 1,
-        name: "Acme Corp",
-        industry: CrmIndustryEnum.TECHNOLOGY_INFORMATION_AND_MEDIA,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 1,
-        name: "John Smith",
-        email: "john@acme.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
+      companyName: "Acme Corp",
+      contactName: "John Smith",
       owner: MOCK_OWNER,
       taskCount: 0
     },
     {
       id: 102,
       name: "Beta Solutions Onboarding",
-      description: null,
-      orderIndex: 2,
-      stage: MOCK_STAGES[0],
+      orderIndex: "2",
       priority: CrmPriorityEnum.LOW,
       amount: "4500",
-      company: {
-        id: 2,
-        name: "Beta Solutions",
-        industry: CrmIndustryEnum.PROFESSIONAL_SERVICES,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 2,
-        name: "Sara Lee",
-        email: "sara@beta.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
+      companyName: "Beta Solutions",
+      contactName: "Sara Lee",
       owner: MOCK_OWNER,
       taskCount: 1
     }
@@ -130,31 +87,11 @@ export const MOCK_DEALS: Record<number, CrmDealBoardType[]> = {
     {
       id: 201,
       name: "Gamma Tech Upgrade",
-      description: null,
-      orderIndex: 1,
-      stage: MOCK_STAGES[1],
+      orderIndex: "1",
       priority: CrmPriorityEnum.MEDIUM,
       amount: "29000",
-      company: {
-        id: 3,
-        name: "Gamma Tech",
-        industry: CrmIndustryEnum.TECHNOLOGY_INFORMATION_AND_MEDIA,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 3,
-        name: "Mike Chan",
-        email: "mike@gamma.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
+      companyName: "Gamma Tech",
+      contactName: "Mike Chan",
       owner: MOCK_OWNER,
       taskCount: 2
     }
@@ -163,31 +100,11 @@ export const MOCK_DEALS: Record<number, CrmDealBoardType[]> = {
     {
       id: 301,
       name: "Delta Finance Suite",
-      description: null,
-      orderIndex: 1,
-      stage: MOCK_STAGES[2],
+      orderIndex: "1",
       priority: CrmPriorityEnum.HIGH,
       amount: "55000",
-      company: {
-        id: 4,
-        name: "Delta Finance",
-        industry: CrmIndustryEnum.FINANCIAL_SERVICES,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 4,
-        name: "Emma Brown",
-        email: "emma@delta.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
+      companyName: "Delta Finance",
+      contactName: "Emma Brown",
       owner: MOCK_OWNER,
       taskCount: 5
     }
@@ -197,31 +114,11 @@ export const MOCK_DEALS: Record<number, CrmDealBoardType[]> = {
     {
       id: 501,
       name: "Omega Retail Deal",
-      description: null,
-      orderIndex: 1,
-      stage: MOCK_STAGES[4],
+      orderIndex: "1",
       priority: CrmPriorityEnum.MEDIUM,
       amount: "18000",
-      company: {
-        id: 5,
-        name: "Omega Retail",
-        industry: CrmIndustryEnum.RETAIL,
-        website: null,
-        address: null,
-        contactNumber: null,
-        isDeleted: false
-      },
-      contact: {
-        id: 5,
-        name: "Tom White",
-        email: "tom@omega.com",
-        contactNumber: null,
-        lastContactAt: null,
-        lastModifiedDate: "",
-        company: null,
-        owner: MOCK_OWNER,
-        isDeleted: false
-      },
+      companyName: "Omega Retail",
+      contactName: "Tom White",
       owner: MOCK_OWNER,
       taskCount: 0
     }

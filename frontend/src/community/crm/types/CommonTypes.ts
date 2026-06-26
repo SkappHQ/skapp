@@ -199,20 +199,6 @@ export interface CrmDealType {
   isDeleted: boolean;
 }
 
-export interface CrmDealBoardType {
-  id: number;
-  name: string;
-  description: string | null;
-  orderIndex: number;
-  taskCount?: number;
-  stage: CrmDealStageType;
-  priority: CrmPriorityEnum;
-  amount: string | null;
-  company: CrmCompanyType | null;
-  contact: CrmContactType;
-  owner: CrmOwner;
-}
-
 export interface CrmDealStageType {
   id: number;
   name: string;

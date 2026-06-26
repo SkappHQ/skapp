@@ -412,7 +412,7 @@
       "switchDealViewAriaLabel": "Switch deal view"
     },
     "kanban": {
-      "addDealBtn": "Add deal +"
+      "addDealBtn": "Add deal"
     },
     "deleteDealModal": {
       "areYouSureModalTitle": "Are you sure?",

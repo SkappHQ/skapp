@@ -12,14 +12,15 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useRef, useState } from "react";
 
-import type { KanbanStage } from "~community/crm/types/BoardTypes";
+import { DRAG_ACTIVATION_DISTANCE } from "~community/crm/constants/boardConstants";
 import type {
-  CrmDealBoardType,
-  CrmDealStageType
-} from "~community/crm/types/CommonTypes";
+  CrmBoardDealType,
+  CrmBoardStage
+} from "~community/crm/types/BoardTypes";
+import type { CrmDealStageType } from "~community/crm/types/CommonTypes";
 
 import {
-  buildInitialStageState,
+  buildInitialBoardStages,
   findDealById,
   findStageIdByDealId,
   moveDealBetweenStages,
@@ -29,12 +30,12 @@ import {
 
 interface UseKanbanDragProps {
   stages: CrmDealStageType[];
-  dealsByStage: Record<number, CrmDealBoardType[]>;
+  dealsByStage: Record<number, CrmBoardDealType[]>;
 }
 
 interface UseKanbanDragReturn {
-  stageMap: KanbanStage[];
-  activeDeal: CrmDealBoardType | null;
+  stageMap: CrmBoardStage[];
+  activeDeal: CrmBoardDealType | null;
   overStageId: number | null;
   sensors: SensorDescriptor<SensorOptions>[];
   handleDragStart: (event: DragStartEvent) => void;
@@ -47,23 +48,25 @@ export const useKanbanDrag = ({
   stages,
   dealsByStage
 }: UseKanbanDragProps): UseKanbanDragReturn => {
-  const [stageMap, setStageMap] = useState<KanbanStage[]>(() =>
-    buildInitialStageState(stages, dealsByStage)
+  const [stageMap, setStageMap] = useState<CrmBoardStage[]>(() =>
+    buildInitialBoardStages(stages, dealsByStage)
   );
-  const [activeDeal, setActiveDeal] = useState<CrmDealBoardType | null>(null);
+  const [activeDeal, setActiveDeal] = useState<CrmBoardDealType | null>(null);
   const [overStageId, setOverStageId] = useState<number | null>(null);
 
-  const dragStartSnapshotRef = useRef<KanbanStage[] | null>(null);
+  const dragStartSnapshotRef = useRef<CrmBoardStage[] | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: DRAG_ACTIVATION_DISTANCE }
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const handleDragStart = ({ active }: DragStartEvent): void => {
     const deal = findDealById(stageMap, Number(active.id));
 
-    if (deal) setActiveDeal(deal);
+    setActiveDeal(deal);
     dragStartSnapshotRef.current = stageMap;
   };
 

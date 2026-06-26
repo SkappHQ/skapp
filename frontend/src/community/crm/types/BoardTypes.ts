@@ -1,18 +1,13 @@
 import { CrmPriorityEnum } from "../enums/common";
-import {
-  CrmContactLookup,
-  CrmDealBoardType,
-  CrmDealStageType,
-  CrmOwner
-} from "./CommonTypes";
+import { CrmContactLookup, CrmDealStageType, CrmOwner } from "./CommonTypes";
 
-export interface BoardInitDataResponse {
+export interface CrmBoardInitDataResponse {
   stages: CrmDealStageType[];
   contacts: CrmContactLookup[];
   owners: CrmOwner[];
 }
 
-export interface BoardDealItem {
+export interface CrmBoardDealType {
   id: number;
   name: string;
   contactName: string;
@@ -24,33 +19,33 @@ export interface BoardDealItem {
   orderIndex: string;
 }
 
-export interface BoardStageDeals {
+export interface CrmBoardStageDeals {
   stageId: number;
-  deals: BoardDealItem[];
+  deals: CrmBoardDealType[];
   totalCount: number;
 }
 
-export interface BoardDealsGroupedRequest {
+export interface CrmBoardDealsGroupedRequest {
   stageIds: number[];
   searchKeyword?: string;
   page?: number | null;
   limit: number;
 }
 
-export interface BoardReorderWithinStagePayload {
+export interface CrmBoardReorderWithinStagePayload {
   dealId: number;
   previousDealId: number | null;
   nextDealId: number | null;
 }
 
-export interface BoardMoveBetweenStagesPayload {
+export interface CrmBoardMoveBetweenStagesPayload {
   dealId: number;
   newStageId: number;
   previousDealId: number | null;
   nextDealId: number | null;
 }
 
-export interface KanbanStage {
+export interface CrmBoardStage {
   stageId: number;
-  deals: CrmDealBoardType[];
+  deals: CrmBoardDealType[];
 }

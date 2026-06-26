@@ -4,11 +4,11 @@ import { FC } from "react";
 
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
-import { CrmDealBoardType } from "~community/crm/types/CommonTypes";
+import { CrmBoardDealType } from "~community/crm/types/BoardTypes";
 
 interface DraggableDealCardProps {
-  deal: CrmDealBoardType;
-  onDealClick: (dealId: string) => void;
+  deal: CrmBoardDealType;
+  onDealClick: (dealId: number) => void;
 }
 
 const DraggableDealCard: FC<DraggableDealCardProps> = ({
@@ -43,15 +43,15 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
       }`}
     >
       <DealCard
-        id={String(deal.id)}
+        id={deal.id}
         title={deal.name}
-        contactName={deal.contact.name}
-        companyName={deal.company?.name}
+        contactName={deal.contactName}
+        companyName={deal.companyName ?? undefined}
         owner={deal.owner}
         amount={deal.amount ?? ""}
         priority={deal.priority}
         taskCount={deal.taskCount}
-        onClick={() => onDealClick(String(deal.id))}
+        onClick={() => onDealClick(deal.id)}
       />
     </div>
   );
