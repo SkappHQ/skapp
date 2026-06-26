@@ -9,7 +9,9 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
@@ -89,6 +91,8 @@ class CrmCompanyControllerIntegrationTest {
 
 	private final EmployeeDao employeeDao;
 
+	private final EmployeeRoleDao employeeRoleDao;
+
 	private String authToken;
 
 	@BeforeEach
@@ -144,6 +148,17 @@ class CrmCompanyControllerIntegrationTest {
 		dto.setAddress("123 Main St");
 		dto.setContactNumber("94771234567");
 		return dto;
+	}
+
+	private CrmCompany savedCompany(String name, Long createdBy) {
+		CrmCompany company = new CrmCompany();
+		company.setName(name);
+		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setWebsite("https://acme.com");
+		company.setAddress("123 Main St");
+		company.setContactNumber("94771234567");
+		company.setCreatedBy(String.valueOf(createdBy));
+		return crmCompanyDao.save(company);
 	}
 
 	// --- Create company tests ---
@@ -378,8 +393,51 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Edit company without CRM manager role - Returns Forbidden")
-	void editCompany_WithoutManagerRole_ReturnsForbidden() throws Exception {
+	@DisplayName("Sales representative editing their own company - Returns OK")
+	void editCompany_RepEditingOwnCompany_ReturnsOk() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		Long companyId = savedCompany("Rep Owned Company", 2L).getId();
+
+		CrmCompanyEditDto editDto = createValidEditPayload();
+		editDto.setName("Rep Owned Company Updated " + companyId);
+
+		performPatchRequest(companyId, editDto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Rep Owned Company Updated " + companyId));
+
+		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
+		assertThat(persisted.getName()).isEqualTo("Rep Owned Company Updated " + companyId);
+	}
+
+	@Test
+	@DisplayName("Sales representative editing another user's company - Returns Bad Request with edit-denied error")
+	void editCompany_RepEditingOtherUsersCompany_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany("Admin Owned Company For Rep Deny", 1L).getId();
+
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		CrmCompanyEditDto editDto = createValidEditPayload();
+		editDto.setName("Blocked Company Update " + companyId);
+
+		performPatchRequest(companyId, editDto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_EDIT_DENIED)));
+
+		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
+		assertThat(persisted.getName()).isEqualTo("Admin Owned Company For Rep Deny");
+	}
+
+	@Test
+	@DisplayName("Edit company without CRM role - Returns Forbidden")
+	void editCompany_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performPatchRequest(1L, createValidEditPayload()).andDo(print()).andExpect(status().isForbidden());

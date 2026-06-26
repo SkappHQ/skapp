@@ -91,7 +91,7 @@ public class CrmCompanyController {
 	@Operation(summary = "Patch a company by ID",
 			description = "Partially update information related to a registered company by ID. Only provided fields are updated.")
 	@PatchMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> editCompany(@PathVariable Long id,
 			@RequestBody CrmCompanyEditDto crmCompany) {
 		ResponseEntityDto responseDto = companyService.editCompany(id, crmCompany);
