@@ -9,6 +9,7 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 import SidePanelTasksList from "./SidePanelTasksList";
 
@@ -44,7 +45,7 @@ const SidePanelTasksSection: FC<Props> = ({
   );
 
   const handleAddTask = () => {
-    guardCrmCreate("tasks", () => {
+    guardCrmCreate(CrmLimitResource.TASKS, () => {
       setPreselectedContact(preselectedContact);
       setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
       setIsTaskModalOpen(true);

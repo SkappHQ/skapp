@@ -9,6 +9,7 @@ import DealsSection from "~community/crm/components/organisms/DealsSection/Deals
 import { useCrmStore } from "~community/crm/store/store";
 import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
@@ -25,7 +26,9 @@ const Deals: NextPage = () => {
       primaryButtonText={translateText(["addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={() =>
-        guardCrmCreate("deals", () => setIsCrmSidePanelOpen(true))
+        guardCrmCreate(CrmLimitResource.DEALS, () =>
+          setIsCrmSidePanelOpen(true)
+        )
       }
     >
       <>

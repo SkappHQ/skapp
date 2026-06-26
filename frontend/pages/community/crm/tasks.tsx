@@ -12,6 +12,7 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
@@ -40,7 +41,7 @@ const Tasks: NextPage = () => {
   };
 
   const onPrimaryButtonClick = () => {
-    guardCrmCreate("tasks", () => {
+    guardCrmCreate(CrmLimitResource.TASKS, () => {
       setIsTaskModalOpen(true);
       setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
     });
