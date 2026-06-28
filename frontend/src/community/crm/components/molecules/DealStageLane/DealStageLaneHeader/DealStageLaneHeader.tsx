@@ -1,8 +1,10 @@
-import { useDroppable } from "@dnd-kit/core";
+import { useDroppable } from "@dnd-kit/react";
 import { FC, ReactNode } from "react";
 
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
+import { getStageDroppableId } from "~community/crm/utils/kanbanUtil";
 
 export interface DealStageLaneHeaderProps {
   stage: CrmDealStageType;
@@ -19,14 +21,18 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
   isOver = false,
   children
 }) => {
-  const { setNodeRef } = useDroppable({
-    id: stage.id,
+  const { ref } = useDroppable({
+    id: getStageDroppableId(stage.id),
+    accept: "deal",
+    type: "stage",
     data: { type: "stage", stageId: stage.id }
   });
 
+  const { getStageByName } = useStageNameMapper();
+
   return (
     <section
-      ref={setNodeRef}
+      ref={ref}
       className={`flex h-full w-75 shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow ${
         isOver
           ? "outline-primary-accent ring-2 ring-primary-background"
@@ -47,7 +53,7 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
             id={`crm-stage-${stage.id}`}
             className="subtitle1 truncate capitalize"
           >
-            {stage.name}
+            {getStageByName(stage.name)}
           </h2>
           <p className="body3 mt-0.5 text-secondary-icon">{totalValue}</p>
         </div>

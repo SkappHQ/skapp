@@ -1,7 +1,3 @@
-import {
-  SortableContext,
-  verticalListSortingStrategy
-} from "@dnd-kit/sortable";
 import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
@@ -61,18 +57,15 @@ const DealStageLane: FC<DealStageLaneProps> = ({
           <DealCardSkeleton count={3} />
         ) : (
           <>
-            <SortableContext
-              items={deals.map((d) => d.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {deals.map((deal) => (
-                <DraggableDealCard
-                  key={deal.id}
-                  deal={deal}
-                  onDealClick={onDealClick}
-                />
-              ))}
-            </SortableContext>
+            {deals.map((deal, index) => (
+              <DraggableDealCard
+                key={deal.id}
+                deal={deal}
+                index={index}
+                stageId={stage.id}
+                onDealClick={onDealClick}
+              />
+            ))}
 
             {hasNextPage && isFetchingNextPage && (
               <>

@@ -1,5 +1,9 @@
+import { CrmBoardStageDealsResponseType } from "./BoardTypes";
 import {
   CrmCompanyMetricsType,
+  CrmContactLookup,
+  CrmDealStageType,
+  CrmOwner,
   CrmTaskDetailType,
   PreselectedContact
 } from "./CommonTypes";
@@ -17,6 +21,14 @@ interface ActionTypes {
   setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
   setSelectedContactId: (contactId: number | null) => void;
   setSelectedTask: (selectedTask: CrmTaskDetailType | null) => void;
+  setBoardStages: (boardStages: CrmDealStageType[]) => void;
+  setBoardContacts: (boardContacts: CrmContactLookup[]) => void;
+  setBoardOwners: (boardOwners: CrmOwner[]) => void;
+  setBoardCrmRoles: (boardCrmRoles: string[]) => void;
+  setBoardStageDeals: (
+    boardStageDeals: CrmBoardStageDealsResponseType[]
+  ) => void;
+  appendBoardStageDeals: (stageDeals: CrmBoardStageDealsResponseType) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -31,4 +43,9 @@ export interface CrmStore extends ActionTypes {
   isCrmSidePanelOpen: boolean;
   selectedContactId: number | null;
   selectedTask: CrmTaskDetailType | null;
+  boardStages: CrmDealStageType[];
+  boardContacts: CrmContactLookup[];
+  boardOwners: CrmOwner[];
+  boardCrmRoles: string[];
+  boardStageDeals: CrmBoardStageDealsResponseType[];
 }

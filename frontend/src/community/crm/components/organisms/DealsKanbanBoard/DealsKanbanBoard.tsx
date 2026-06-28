@@ -1,79 +1,208 @@
-import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
-import { FC } from "react";
+import {
+  KeyboardSensor,
+  PointerActivationConstraints,
+  PointerSensor
+} from "@dnd-kit/dom";
+import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
+import { FC, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
+import {
+  fetchDealsGroupedByStages,
+  useGetBoardInitData,
+  useGetDealsGroupedByStages
+} from "~community/crm/api/crmBoardApi";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
+import {
+  DEFAULT_BOARD_PAGE_SIZE,
+  DRAG_ACTIVATION_DISTANCE
+} from "~community/crm/constants/boardConstants";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
-import type { CrmDealStageType } from "~community/crm/types/CommonTypes";
-
-import { MOCK_DEALS, MOCK_STAGES } from "./mockData";
+import { useCrmStore } from "~community/crm/store/store";
+import {
+  normalizeStageDeals,
+  resolveBoardDeal
+} from "~community/crm/utils/kanbanUtil";
 
 interface DealsKanbanBoardProps {
   searchKeyword?: string;
 }
 
-const DealsKanbanBoard: FC<DealsKanbanBoardProps> = () => {
-  const stages: CrmDealStageType[] = MOCK_STAGES;
+const sensors = [
+  PointerSensor.configure({
+    activationConstraints: [
+      new PointerActivationConstraints.Distance({
+        value: DRAG_ACTIVATION_DISTANCE
+      })
+    ]
+  }),
+  KeyboardSensor
+];
+
+const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
+  searchKeyword = ""
+}) => {
+  const {
+    boardStages,
+    boardOwners,
+    boardContacts,
+    setBoardStages,
+    setBoardContacts,
+    setBoardOwners,
+    setBoardCrmRoles,
+    setBoardStageDeals,
+    appendBoardStageDeals
+  } = useCrmStore(
+    useShallow((store) => ({
+      boardStages: store.boardStages,
+      boardOwners: store.boardOwners,
+      boardContacts: store.boardContacts,
+      setBoardStages: store.setBoardStages,
+      setBoardContacts: store.setBoardContacts,
+      setBoardOwners: store.setBoardOwners,
+      setBoardCrmRoles: store.setBoardCrmRoles,
+      setBoardStageDeals: store.setBoardStageDeals,
+      appendBoardStageDeals: store.appendBoardStageDeals
+    }))
+  );
+
+  const [loadingStageIds, setLoadingStageIds] = useState<number[]>([]);
+
+  const { data: initData, isLoading: isInitDataLoading } =
+    useGetBoardInitData();
+
+  useEffect(() => {
+    if (!initData) return;
+    setBoardStages(initData.stages);
+    setBoardContacts(initData.contacts);
+    setBoardOwners(initData.owners);
+    setBoardCrmRoles(initData.crmRoles);
+  }, [
+    initData,
+    setBoardStages,
+    setBoardContacts,
+    setBoardOwners,
+    setBoardCrmRoles
+  ]);
+
+  const stageIds = boardStages.map((stage) => stage.id);
+
+  const { data: dealsByStages, isLoading: isDealsLoading } =
+    useGetDealsGroupedByStages(
+      { stageIds, searchKeyword, page: 0, limit: DEFAULT_BOARD_PAGE_SIZE },
+      stageIds.length > 0
+    );
+
+  useEffect(() => {
+    if (dealsByStages) {
+      setBoardStageDeals(normalizeStageDeals(boardStages, dealsByStages));
+    }
+  }, [dealsByStages, boardStages, setBoardStageDeals]);
 
   const {
     stageMap,
     activeDeal,
     overStageId,
-    sensors,
     handleDragStart,
     handleDragOver,
-    handleDragEnd,
-    handleDragCancel
-  } = useKanbanDrag({ stages, dealsByStage: MOCK_DEALS });
+    handleDragEnd
+  } = useKanbanDrag();
+
+  const resolvedDealsByStage = useMemo(
+    () =>
+      new Map(
+        stageMap.map((stage) => [
+          stage.stageId,
+          stage.deals.map((deal) =>
+            resolveBoardDeal(deal, boardOwners, boardContacts)
+          )
+        ])
+      ),
+    [stageMap, boardOwners, boardContacts]
+  );
+
+  const resolvedActiveDeal = useMemo(
+    () =>
+      activeDeal
+        ? resolveBoardDeal(activeDeal, boardOwners, boardContacts)
+        : null,
+    [activeDeal, boardOwners, boardContacts]
+  );
+
+  const handleLoadMore = async (stageId: number) => {
+    if (loadingStageIds.includes(stageId)) return;
+
+    const stage = stageMap.find((s) => s.stageId === stageId);
+    if (!stage || !stage.hasNextPage) return;
+
+    setLoadingStageIds((prev) => [...prev, stageId]);
+
+    try {
+      const [result] = await fetchDealsGroupedByStages({
+        stageIds: [stageId],
+        searchKeyword,
+        page: stage.currentPage + 1,
+        limit: DEFAULT_BOARD_PAGE_SIZE
+      });
+
+      if (result) {
+        appendBoardStageDeals(result);
+      }
+    } finally {
+      setLoadingStageIds((prev) => prev.filter((id) => id !== stageId));
+    }
+  };
+
+  const isLoading = isInitDataLoading || isDealsLoading;
 
   return (
     <div className="flex flex-col">
-      <DndContext
+      <DragDropProvider
         sensors={sensors}
-        collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
       >
         <div className="flex h-160 items-stretch gap-4 overflow-x-auto py-2">
-          {stages.map((stage) => {
-            const deals =
-              stageMap.find((s) => s.stageId === stage.id)?.deals ?? [];
+          {boardStages.map((stage) => {
+            const stageDeals = stageMap.find((s) => s.stageId === stage.id);
+            const deals = resolvedDealsByStage.get(stage.id) ?? [];
 
             return (
               <DealStageLane
                 key={stage.id}
                 stage={stage}
                 deals={deals}
-                isLoading={false}
-                hasNextPage={false}
+                isLoading={isLoading}
+                hasNextPage={stageDeals?.hasNextPage ?? false}
+                isFetchingNextPage={loadingStageIds.includes(stage.id)}
                 isOver={overStageId === stage.id}
                 onDealClick={() => {}}
                 onAddDeal={() => {}}
-                onLoadMore={() => {}}
+                onLoadMore={() => handleLoadMore(stage.id)}
               />
             );
           })}
         </div>
 
         <DragOverlay>
-          {activeDeal && (
+          {resolvedActiveDeal && (
             <div className="w-69">
               <DealCard
-                id={activeDeal.id}
-                title={activeDeal.name}
-                contactName={activeDeal.contactName}
-                companyName={activeDeal.companyName ?? undefined}
-                owner={activeDeal.owner}
-                amount={activeDeal.amount ?? ""}
-                priority={activeDeal.priority}
-                taskCount={activeDeal.taskCount}
+                id={resolvedActiveDeal.id}
+                title={resolvedActiveDeal.name}
+                contactName={resolvedActiveDeal.contactName}
+                companyName={resolvedActiveDeal.companyName ?? undefined}
+                owner={resolvedActiveDeal.owner}
+                amount={resolvedActiveDeal.amount ?? ""}
+                priority={resolvedActiveDeal.priority}
+                taskCount={resolvedActiveDeal.taskCount}
               />
             </div>
           )}
         </DragOverlay>
-      </DndContext>
+      </DragDropProvider>
     </div>
   );
 };

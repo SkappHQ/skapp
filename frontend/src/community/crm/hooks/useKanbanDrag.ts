@@ -1,131 +1,140 @@
-import {
+import type {
   DragEndEvent,
   DragOverEvent,
-  DragStartEvent,
-  KeyboardSensor,
-  PointerSensor,
-  SensorDescriptor,
-  SensorOptions,
-  useSensor,
-  useSensors
-} from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+  DragStartEvent
+} from "@dnd-kit/react";
 import { useRef, useState } from "react";
-
-import { DRAG_ACTIVATION_DISTANCE } from "~community/crm/constants/boardConstants";
-import type {
-  CrmBoardDealType,
-  CrmBoardStage
-} from "~community/crm/types/BoardTypes";
-import type { CrmDealStageType } from "~community/crm/types/CommonTypes";
+import { useShallow } from "zustand/react/shallow";
 
 import {
-  buildInitialBoardStages,
+  useMoveDealBetweenStages,
+  useReorderDealWithinStage
+} from "~community/crm/api/crmBoardApi";
+import { useCrmStore } from "~community/crm/store/store";
+import type {
+  CrmBoardDealResponseType,
+  CrmBoardStageDealsResponseType
+} from "~community/crm/types/BoardTypes";
+
+import {
+  applyDealMove,
   findDealById,
   findStageIdByDealId,
-  moveDealBetweenStages,
-  reorderDealsWithinStage,
-  resolveTargetStageId
+  getNeighbourDealIds
 } from "../utils/kanbanUtil";
 
-interface UseKanbanDragProps {
-  stages: CrmDealStageType[];
-  dealsByStage: Record<number, CrmBoardDealType[]>;
-}
-
 interface UseKanbanDragReturn {
-  stageMap: CrmBoardStage[];
-  activeDeal: CrmBoardDealType | null;
+  stageMap: CrmBoardStageDealsResponseType[];
+  activeDeal: CrmBoardDealResponseType | null;
   overStageId: number | null;
-  sensors: SensorDescriptor<SensorOptions>[];
   handleDragStart: (event: DragStartEvent) => void;
   handleDragOver: (event: DragOverEvent) => void;
   handleDragEnd: (event: DragEndEvent) => void;
-  handleDragCancel: () => void;
 }
 
-export const useKanbanDrag = ({
-  stages,
-  dealsByStage
-}: UseKanbanDragProps): UseKanbanDragReturn => {
-  const [stageMap, setStageMap] = useState<CrmBoardStage[]>(() =>
-    buildInitialBoardStages(stages, dealsByStage)
+export const useKanbanDrag = (): UseKanbanDragReturn => {
+  const { boardStageDeals, setBoardStageDeals } = useCrmStore(
+    useShallow((store) => ({
+      boardStageDeals: store.boardStageDeals,
+      setBoardStageDeals: store.setBoardStageDeals
+    }))
   );
-  const [activeDeal, setActiveDeal] = useState<CrmBoardDealType | null>(null);
+
+  const [activeDeal, setActiveDeal] = useState<CrmBoardDealResponseType | null>(
+    null
+  );
   const [overStageId, setOverStageId] = useState<number | null>(null);
 
-  const dragStartSnapshotRef = useRef<CrmBoardStage[] | null>(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: DRAG_ACTIVATION_DISTANCE }
-    }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  const dragStartSnapshotRef = useRef<CrmBoardStageDealsResponseType[] | null>(
+    null
   );
 
-  const handleDragStart = ({ active }: DragStartEvent): void => {
-    const deal = findDealById(stageMap, Number(active.id));
-
-    setActiveDeal(deal);
-    dragStartSnapshotRef.current = stageMap;
+  const rollback = () => {
+    if (dragStartSnapshotRef.current) {
+      setBoardStageDeals(dragStartSnapshotRef.current);
+    }
   };
 
-  const handleDragOver = ({ active, over }: DragOverEvent): void => {
-    if (!over) {
+  const { mutate: reorderDealWithinStage } =
+    useReorderDealWithinStage(rollback);
+  const { mutate: moveDealToStage } = useMoveDealBetweenStages(rollback);
+
+  const handleDragStart = ({ operation }: DragStartEvent): void => {
+    const sourceId = operation.source?.id;
+    if (sourceId == null) return;
+
+    setActiveDeal(findDealById(boardStageDeals, Number(sourceId)));
+    dragStartSnapshotRef.current = boardStageDeals;
+  };
+
+  const handleDragOver = (event: DragOverEvent): void => {
+    const sourceId = event.operation.source?.id;
+    if (sourceId == null) return;
+
+    const next = applyDealMove(boardStageDeals, event);
+    setOverStageId(findStageIdByDealId(next, Number(sourceId)));
+
+    if (next !== boardStageDeals) {
+      setBoardStageDeals(next);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent): void => {
+    const activeDealId = Number(event.operation.source?.id);
+
+    if (event.canceled) {
+      rollback();
+      dragStartSnapshotRef.current = null;
+      setActiveDeal(null);
       setOverStageId(null);
       return;
     }
 
-    const activeDealId = Number(active.id);
-    const overDealId = Number(over.id);
-    const sourceStageId = findStageIdByDealId(stageMap, activeDealId);
-    const targetStageId = resolveTargetStageId(overDealId, stageMap);
+    const sourceStageId = dragStartSnapshotRef.current
+      ? findStageIdByDealId(dragStartSnapshotRef.current, activeDealId)
+      : null;
 
-    if (sourceStageId === null || targetStageId === null) return;
-
-    setOverStageId(targetStageId);
-
-    if (sourceStageId === targetStageId) {
-      setStageMap((prev) =>
-        reorderDealsWithinStage(prev, sourceStageId, activeDealId, overDealId)
-      );
-      return;
+    const finalStageMap = applyDealMove(boardStageDeals, event);
+    if (finalStageMap !== boardStageDeals) {
+      setBoardStageDeals(finalStageMap);
     }
 
-    setStageMap((prev) =>
-      moveDealBetweenStages(
-        prev,
-        sourceStageId,
-        targetStageId,
-        activeDealId,
-        overDealId
-      )
-    );
-  };
+    const targetStageId = findStageIdByDealId(finalStageMap, activeDealId);
 
-  const handleDragEnd = (): void => {
+    if (targetStageId !== null) {
+      const { previousDealId, nextDealId } = getNeighbourDealIds(
+        finalStageMap,
+        targetStageId,
+        activeDealId
+      );
+
+      if (sourceStageId === targetStageId) {
+        reorderDealWithinStage({
+          dealId: activeDealId,
+          previousDealId,
+          nextDealId
+        });
+      } else {
+        moveDealToStage({
+          dealId: activeDealId,
+          newStageId: targetStageId,
+          previousDealId,
+          nextDealId
+        });
+      }
+    }
+
     dragStartSnapshotRef.current = null;
     setActiveDeal(null);
     setOverStageId(null);
   };
 
-  const handleDragCancel = (): void => {
-    if (dragStartSnapshotRef.current) {
-      setStageMap(dragStartSnapshotRef.current);
-      dragStartSnapshotRef.current = null;
-    }
-    setActiveDeal(null);
-    setOverStageId(null);
-  };
-
   return {
-    stageMap,
+    stageMap: boardStageDeals,
     activeDeal,
     overStageId,
-    sensors,
     handleDragStart,
     handleDragOver,
-    handleDragEnd,
-    handleDragCancel
+    handleDragEnd
   };
 };

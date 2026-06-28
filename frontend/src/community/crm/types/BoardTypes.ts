@@ -5,6 +5,18 @@ export interface CrmBoardInitDataResponse {
   stages: CrmDealStageType[];
   contacts: CrmContactLookup[];
   owners: CrmOwner[];
+  crmRoles: string[];
+}
+
+export interface CrmBoardDealResponseType {
+  id: number;
+  name: string;
+  amount: string | null;
+  ownerId: number;
+  companyId: number | null;
+  contactId: number;
+  priority: CrmPriorityEnum;
+  taskCount: number;
 }
 
 export interface CrmBoardDealType {
@@ -16,13 +28,16 @@ export interface CrmBoardDealType {
   amount: string | null;
   priority: CrmPriorityEnum;
   taskCount: number;
-  orderIndex: string;
 }
 
-export interface CrmBoardStageDeals {
+export interface CrmBoardStageDealsResponseType {
   stageId: number;
-  deals: CrmBoardDealType[];
+  deals: CrmBoardDealResponseType[];
   totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  hasNextPage: boolean;
 }
 
 export interface CrmBoardDealsGroupedRequest {
@@ -43,9 +58,4 @@ export interface CrmBoardMoveBetweenStagesPayload {
   newStageId: number;
   previousDealId: number | null;
   nextDealId: number | null;
-}
-
-export interface CrmBoardStage {
-  stageId: number;
-  deals: CrmBoardDealType[];
 }

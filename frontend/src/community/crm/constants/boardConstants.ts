@@ -1,1 +1,2 @@
 export const DRAG_ACTIVATION_DISTANCE = 8;
+export const DEFAULT_BOARD_PAGE_SIZE = 20;
