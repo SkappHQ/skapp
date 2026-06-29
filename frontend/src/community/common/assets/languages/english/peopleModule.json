@@ -36,6 +36,7 @@
     "teamNameDuplicateError": "Team name already exists.",
     "confirmDeleteModalTitle": "Confirm deletion",
     "confirmDeleteModalDes": "Proceeding with this deletion will remove all members from the team. Would you like to reassign the members first or continue with deleting the team?",
+    "confirmDeleteModalDesNoReassign": "Proceeding with this deletion will remove all members from the team.",
     "teamDeleteConfirmBtnText": "Proceed to delete",
     "reassignBtnText": "Reassign members",
     "reassignModalTitle": "Reassign team members",

@@ -9,7 +9,11 @@ import { useTransferTeamMembers } from "~community/people/api/TeamApi";
 import { usePeopleStore } from "~community/people/store/store";
 import { TeamModelTypes } from "~community/people/types/TeamTypes";
 
-const DeleteConfirmModal = () => {
+interface Props {
+  hasTransferableMembers: boolean;
+}
+
+const DeleteConfirmModal = ({ hasTransferableMembers }: Props) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     setTeamModalType,
@@ -28,6 +32,7 @@ const DeleteConfirmModal = () => {
       description: translateText(["teamDeleteSuccessDes"]),
       isIcon: true
     });
+    setCurrentDeletingTeam(undefined);
   };
 
   const handleError = () => {
@@ -46,33 +51,42 @@ const DeleteConfirmModal = () => {
     setTeamModalType(TeamModelTypes.REASSIGN_MEMBERS);
   };
 
-  const handleDeleteClick = async () => {
+  const handleDeleteClick = () => {
+    if (!currentDeletingTeam) return;
+
     setIsTeamModalOpen(false);
     setTeamModalType(TeamModelTypes.CONFIRM_DELETE);
 
     const transferMembers: never[] = [];
 
     const data = {
-      teamId: currentDeletingTeam?.teamId.toString(),
+      teamId: currentDeletingTeam.teamId.toString(),
       transferMembers
     };
 
-    await mutate(data);
-    setCurrentDeletingTeam(undefined);
+    mutate(data);
   };
   return (
     <Box>
-      <Typography>{translateText(["confirmDeleteModalDes"])}</Typography>
+      <Typography>
+        {translateText([
+          hasTransferableMembers
+            ? "confirmDeleteModalDes"
+            : "confirmDeleteModalDesNoReassign"
+        ])}
+      </Typography>
       <Box>
         <div className="flex flex-row gap-3 mt-4 justify-end">
-          <ButtonV2
-            variant={"primary"}
-            onClick={handleReassignClick}
-            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-            iconPosition="end"
-          >
-            {translateText(["reassignBtnText"])}
-          </ButtonV2>
+          {hasTransferableMembers && (
+            <ButtonV2
+              variant={"primary"}
+              onClick={handleReassignClick}
+              icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+              iconPosition="end"
+            >
+              {translateText(["reassignBtnText"])}
+            </ButtonV2>
+          )}
           <ButtonV2
             variant={"error"}
             onClick={handleDeleteClick}

@@ -8,9 +8,18 @@ import { IconName } from "~community/common/types/IconTypes";
 import { useTransferTeamMembers } from "~community/people/api/TeamApi";
 import ReassignMemberRow from "~community/people/components/molecules/ReassignMemberRow/ReassignMemberRow";
 import { usePeopleStore } from "~community/people/store/store";
-import { TeamModelTypes } from "~community/people/types/TeamTypes";
+import { EmployeeType } from "~community/people/types/EmployeeTypes";
+import { TeamModelTypes, TeamType } from "~community/people/types/TeamTypes";
 
-const ReassignMembersModal = () => {
+interface Props {
+  transferableMembers: EmployeeType[];
+  availableTeamsMap: Map<number, TeamType[]>;
+}
+
+const ReassignMembersModal = ({
+  transferableMembers,
+  availableTeamsMap
+}: Props) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     currentDeletingTeam,
@@ -19,7 +28,7 @@ const ReassignMembersModal = () => {
     setCurrentDeletingTeam
   } = usePeopleStore((state) => state);
 
-  const { mutate } = useTransferTeamMembers();
+  const { mutateAsync } = useTransferTeamMembers();
   const { setToastMessage } = useToast();
 
   const [memberTeamAssignments, setMemberTeamAssignments] = useState<
@@ -34,21 +43,22 @@ const ReassignMembersModal = () => {
   };
 
   const reassignAndDeleteClick = async () => {
-    const transferMembers = [
-      ...(currentDeletingTeam?.supervisors || []),
-      ...(currentDeletingTeam?.teamMembers || [])
-    ].map((member) => ({
-      employeeId: +member.employeeId,
-      teamId: memberTeamAssignments[+member.employeeId] || null
-    }));
+    if (!currentDeletingTeam) return;
+
+    const transferMembers = transferableMembers
+      .filter((member) => memberTeamAssignments[Number(member.employeeId)] !== undefined)
+      .map((member) => ({
+        employeeId: Number(member.employeeId),
+        teamId: memberTeamAssignments[Number(member.employeeId)]
+      }));
 
     const data = {
-      teamId: currentDeletingTeam?.teamId,
+      teamId: currentDeletingTeam.teamId.toString(),
       transferMembers
     };
 
     try {
-      await mutate(data);
+      await mutateAsync(data);
       setToastMessage({
         open: true,
         toastType: "success",
@@ -58,7 +68,7 @@ const ReassignMembersModal = () => {
       });
       setIsTeamModalOpen(false);
       setCurrentDeletingTeam(undefined);
-    } catch (error) {
+    } catch {
       setToastMessage({
         open: true,
         toastType: "error",
@@ -79,22 +89,14 @@ const ReassignMembersModal = () => {
     <div>
       <p className="my-4">{translateText(["reassignModalDes"])}</p>
       <div className="flex flex-col gap-2 max-h-56 overflow-auto">
-        {currentDeletingTeam?.supervisors?.map((supervisor) => (
+        {transferableMembers.map((member) => (
           <ReassignMemberRow
-            key={supervisor.employeeId}
-            teamMember={supervisor}
-            setTeamId={(teamId) =>
-              setTeamId(Number(supervisor.employeeId), teamId)
+            key={member.employeeId}
+            teamMember={member}
+            availableTeams={
+              availableTeamsMap.get(Number(member.employeeId)) || []
             }
-          />
-        ))}
-        {currentDeletingTeam?.teamMembers?.map((teamMember) => (
-          <ReassignMemberRow
-            key={teamMember.employeeId}
-            teamMember={teamMember}
-            setTeamId={(teamId) =>
-              setTeamId(Number(teamMember.employeeId), teamId)
-            }
+            setTeamId={(teamId) => setTeamId(Number(member.employeeId), teamId)}
           />
         ))}
       </div>
