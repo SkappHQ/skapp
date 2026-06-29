@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.repository;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import org.springframework.data.domain.Page;
@@ -27,5 +28,7 @@ public interface CrmTaskRepository {
 	Page<CrmTask> findCompletedTasks(Long ownerId, CrmTaskCompletedFilterDto filterDto, Pageable pageable);
 
 	Map<Long, Long> countTasksByDealIds(List<Long> dealIds);
+
+	Page<CrmTask> findRelatedTasksPaginated(CrmTaskRelatedFilterDto filterDto, Pageable pageable);
 
 }

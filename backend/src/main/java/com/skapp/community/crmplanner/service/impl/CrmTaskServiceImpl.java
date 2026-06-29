@@ -18,6 +18,7 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
@@ -117,6 +118,27 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		response.setTotalPages(taskPage.getTotalPages());
 
 		log.info("getCompletedTasks: execution ended");
+
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getRelatedTasks(CrmTaskRelatedFilterDto filterDto) {
+		log.info("getRelatedTasks: execution started");
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasksPaginated(filterDto, pageable);
+
+		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(taskPage.getContent());
+
+		PageDto response = new PageDto();
+		response.setItems(tasks);
+		response.setCurrentPage(taskPage.getNumber());
+		response.setTotalItems(taskPage.getTotalElements());
+		response.setTotalPages(taskPage.getTotalPages());
+
+		log.info("getRelatedTasks: execution ended");
 
 		return new ResponseEntityDto(false, response);
 	}

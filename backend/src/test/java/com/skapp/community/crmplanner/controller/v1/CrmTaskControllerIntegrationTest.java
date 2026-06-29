@@ -426,6 +426,68 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Rep Task"));
 	}
 
+	// --- GET related tasks helpers and tests ---
+
+	private ResultActions performGetRelatedTasksRequest(Long contactId, Long dealId, Long excludeTaskId)
+			throws Exception {
+		var request = get(BASE_PATH + "/related-tasks").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(authToken));
+		if (contactId != null) {
+			request = request.param("contactId", contactId.toString());
+		}
+		if (dealId != null) {
+			request = request.param("dealId", dealId.toString());
+		}
+		if (excludeTaskId != null) {
+			request = request.param("excludeTaskId", excludeTaskId.toString());
+		}
+		return mvc.perform(request);
+	}
+
+	@Test
+	@DisplayName("Get related tasks by contactId - Returns tasks sharing the same contact")
+	void getRelatedTasks_ByContactId_ReturnsMatchingTasks() throws Exception {
+		savedTask("Task A", false, false, contactId);
+		savedTask("Task B", false, false, contactId);
+		savedTask("Task C", false, false, null);
+
+		performGetRelatedTasksRequest(contactId, null, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2));
+	}
+
+	@Test
+	@DisplayName("Get related tasks with excludeTaskId - Excludes the specified task from results")
+	void getRelatedTasks_WithExcludeTaskId_ExcludesTask() throws Exception {
+		CrmTask taskA = savedTask("Task A", false, false, contactId);
+		savedTask("Task B", false, false, contactId);
+
+		performGetRelatedTasksRequest(contactId, null, taskA.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Task B"));
+	}
+
+	@Test
+	@DisplayName("Get related tasks with no matching context - Returns empty list")
+	void getRelatedTasks_NoMatch_ReturnsEmpty() throws Exception {
+		performGetRelatedTasksRequest(contactId, null, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get related tasks without CRM role - Returns Forbidden")
+	void getRelatedTasks_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+		mvc.perform(get(BASE_PATH + "/related-tasks").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(noRoleToken))).andExpect(status().isForbidden());
+	}
+
 	// --- GET completed tasks helpers and tests ---
 
 	private ResultActions performGetCompletedRequest(String token, String page, String size) throws Exception {
