@@ -1,4 +1,4 @@
-import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
+import { Dropdown } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -101,10 +101,12 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
       <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
         <PropertyRow label={translateText(["value"])}>
           <div className="flex flex-col w-full px-1">
-            <InputField
+            <input
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={translateText(["placeholders", "none"])}
+              type="text"
+              className="w-full bg-transparent outline-none body2 placeholder:text-secondary-text"
               aria-label={translateText(["ariaLabels", "amount"])}
             />
           </div>
