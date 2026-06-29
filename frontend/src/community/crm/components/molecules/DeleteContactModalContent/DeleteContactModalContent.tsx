@@ -3,34 +3,39 @@ import { FC } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useDeleteCompany } from "~community/crm/api/CompanyApi";
+import {
+  useDeleteContact,
+  useGetSelectedContactById
+} from "~community/crm/api/ContactApi";
 import CrmDeleteModalContent from "~community/crm/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useCrmStore } from "~community/crm/store/store";
 
-const DeleteCompanyModalContent: FC = () => {
+const DeleteContactModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
   const {
-    selectedCompany,
-    setSelectedCompany,
+    selectedContactId,
+    setSelectedContactId,
     setIsCrmSidePanelOpen,
-    setIsCompanyModalOpen
+    setIsContactModalOpen
   } = useCrmStore((store) => ({
-    selectedCompany: store.selectedCompany,
-    setSelectedCompany: store.setSelectedCompany,
+    selectedContactId: store.selectedContactId,
+    setSelectedContactId: store.setSelectedContactId,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen
+    setIsContactModalOpen: store.setIsContactModalOpen
   }));
 
   const translateText = useTranslator(
     "crmModule",
-    "companies",
-    "deleteCompanyModal"
+    "contacts",
+    "deleteContactModal"
   );
 
   const handleCloseModal = () => {
-    setIsCompanyModalOpen(false);
+    setIsContactModalOpen(false);
   };
+
+  const selectedContact = useGetSelectedContactById(selectedContactId);
 
   const handleSuccess = () => {
     setToastMessage({
@@ -38,13 +43,13 @@ const DeleteCompanyModalContent: FC = () => {
       toastType: ToastType.SUCCESS,
       title: translateText(["toastMessages", "successTitle"]),
       description: translateText(["toastMessages", "successDescription"], {
-        companyName: selectedCompany?.name
+        contactName: selectedContact?.name
       })
     });
 
     handleCloseModal();
     setIsCrmSidePanelOpen(false);
-    setSelectedCompany(null);
+    setSelectedContactId(null);
   };
 
   const handleError = () => {
@@ -56,27 +61,27 @@ const DeleteCompanyModalContent: FC = () => {
     });
   };
 
-  const { mutate: deleteCompany, isPending } = useDeleteCompany(
+  const { mutate: deleteContact, isPending } = useDeleteContact(
     handleSuccess,
     handleError
   );
 
-  const handleDeleteCompany = () => {
-    deleteCompany(selectedCompany.id);
+  const handleDeleteContact = () => {
+    deleteContact(selectedContact.id);
   };
 
   return (
     <CrmDeleteModalContent
       description={translateText(["description"], {
-        companyName: selectedCompany?.name
+        contactName: selectedContact?.name
       })}
       isPending={isPending}
       confirmLabel={translateText(["buttons", "confirm"])}
       cancelLabel={translateText(["buttons", "cancel"])}
-      onConfirm={handleDeleteCompany}
+      onConfirm={handleDeleteContact}
       onClose={handleCloseModal}
     />
   );
 };
 
-export default DeleteCompanyModalContent;
+export default DeleteContactModalContent;

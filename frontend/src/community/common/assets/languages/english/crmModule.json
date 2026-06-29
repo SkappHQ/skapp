@@ -64,6 +64,24 @@
         "errorDescription": "Please try again or contact support"
       }
     },
+    "deleteContactModal": {
+      "title": "Are you sure?",
+      "description": "Are you sure you want to delete '{{contactName}}'? This will permanently remove this contact along with all associated deals and tasks. This action cannot be undone.",
+      "buttons": {
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "ariaLabels": {
+        "confirm": "Confirm Delete Contact",
+        "cancel": "Cancel Delete Contact"
+      },
+      "toastMessages": {
+        "successTitle": "Contact deleted",
+        "successDescription": "{{contactName}} has been successfully deleted.",
+        "errorTitle": "Failed to delete contact",
+        "errorDescription": "Something went wrong. Please try again"
+      }
+    },
     "editContactModal": {
       "title": "Edit Contact",
       "labels": {
@@ -118,6 +136,9 @@
     },
     "contactDetailsPanel": {
       "lastUpdated": "Last updated",
+      "editContact": "Edit contact",
+      "deleteContact": "Delete contact",
+      "kebabMenuAriaLabel": "Contact actions",
       "metrics": {
         "openTasks": "Open tasks",
         "activeDeals": "No. of active deals",
