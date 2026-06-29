@@ -5,8 +5,8 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
-import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/TaskSidePanel";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
@@ -16,29 +16,29 @@ const Tasks: NextPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
-    setIsTaskModalOpen,
-    setTaskModalType,
-    selectedTask,
-    setSelectedTask,
     isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen
+    setIsCrmSidePanelOpen,
+    selectedTaskId,
+    setSelectedTaskId,
+    setIsTaskModalOpen,
+    setTaskModalType
   } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType,
-    selectedTask: store.selectedTask,
-    setSelectedTask: store.setSelectedTask,
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    selectedTaskId: store.selectedTaskId,
+    setSelectedTaskId: store.setSelectedTaskId,
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    setTaskModalType: store.setTaskModalType
   }));
-
-  const handleCloseSidePanel = () => {
-    setIsCrmSidePanelOpen(false);
-    setSelectedTask(null);
-  };
 
   const onPrimaryButtonClick = () => {
     setIsTaskModalOpen(true);
     setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+  };
+
+  const handleCloseTaskSidePanel = () => {
+    setIsCrmSidePanelOpen(false);
+    setSelectedTaskId(null);
   };
 
   useEffect(() => {
@@ -66,14 +66,15 @@ const Tasks: NextPage = () => {
       onPrimaryButtonClick={onPrimaryButtonClick}
     >
       <>
-        {selectedTask && (
+        {selectedTaskId && (
           <SidePanelWrapper>
             <TaskSidePanel
               isOpen={isCrmSidePanelOpen}
-              onClose={handleCloseSidePanel}
+              onClose={handleCloseTaskSidePanel}
             />
           </SidePanelWrapper>
         )}
+
         <div ref={containerRef} className="flex flex-col w-full gap-4">
           <TaskModalController />
           <TasksTable />

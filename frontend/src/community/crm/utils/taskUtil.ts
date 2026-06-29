@@ -13,10 +13,9 @@ import {
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
+import { CrmPriorityEnum, CrmTaskTabEnum } from "~community/crm/enums/common";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 
-import { CrmTaskTabEnum } from "../enums/common";
 import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
 
 export interface TaskDueDateInfo {
@@ -65,12 +64,18 @@ export const getTaskTypeIcon = (typeName: string): ReactElement => {
 
 export const getPriorityConfig = (
   priority: CrmPriorityEnum
-): { icon: ReactElement; bgColor: string } => {
+): { icon: ReactElement; bgColor: string; textColor?: string } => {
   const option = PRIORITY_OPTIONS.find((o) => o.value === priority)!;
   return {
     icon: createElement(option.IconComponent),
-    bgColor: option.backgroundColor
+    bgColor: option.backgroundColor,
+    textColor: option.textColor
   };
+};
+
+export const getPriorityDisplayKey = (priority: CrmPriorityEnum): string => {
+  const option = PRIORITY_OPTIONS.find((o) => o.value === priority)!;
+  return option.key;
 };
 
 export interface GroupedTasks {

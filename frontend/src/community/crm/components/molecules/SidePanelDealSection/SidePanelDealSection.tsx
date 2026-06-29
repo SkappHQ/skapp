@@ -6,7 +6,7 @@ import {
   PlusIcon,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import React from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
@@ -17,9 +17,15 @@ import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
   deals: DetailPanelDealResponseType[];
+  showEmptyStateAddDeal?: boolean;
+  emptyViewHeight?: string;
 }
 
-const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
+const SidePanelDealSection: FC<Props> = ({
+  deals,
+  showEmptyStateAddDeal = true,
+  emptyViewHeight = "h-auto"
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
 
@@ -61,15 +67,17 @@ const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
           icon={<SearchIcon />}
           title={translateText(["emptyTitle"])}
           description={translateText(["emptyDescription"])}
-          button={{
-            children: translateText(["addDealBtn"]),
-            variant: "tertiary",
-            onClick: handleAddDeal,
-            icon: <PlusIcon />,
-            "aria-label": translateText(["ariaLabels", "addDealBtn"])
-          }}
+          {...(showEmptyStateAddDeal && {
+            button: {
+              children: translateText(["addDealBtn"]),
+              variant: "tertiary",
+              onClick: handleAddDeal,
+              icon: <PlusIcon />,
+              "aria-label": translateText(["ariaLabels", "addDealBtn"])
+            }
+          })}
           className={{
-            wrapper: "h-[228px] bg-secondary-background rounded-lg"
+            wrapper: `${emptyViewHeight} bg-secondary-background rounded-lg`
           }}
         />
       )}
