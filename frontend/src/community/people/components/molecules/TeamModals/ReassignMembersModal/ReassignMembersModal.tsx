@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -8,9 +8,13 @@ import { IconName } from "~community/common/types/IconTypes";
 import { useTransferTeamMembers } from "~community/people/api/TeamApi";
 import ReassignMemberRow from "~community/people/components/molecules/ReassignMemberRow/ReassignMemberRow";
 import { usePeopleStore } from "~community/people/store/store";
-import { TeamModelTypes } from "~community/people/types/TeamTypes";
+import { TeamModelTypes, TeamNamesType } from "~community/people/types/TeamTypes";
 
-const ReassignMembersModal = () => {
+interface ReassignMembersModalProps {
+  transferableMembersMap: Map<number, TeamNamesType[]>;
+}
+
+const ReassignMembersModal: FC<ReassignMembersModalProps> = ({ transferableMembersMap }) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     currentDeletingTeam,
@@ -26,6 +30,28 @@ const ReassignMembersModal = () => {
     Record<number, number>
   >({});
 
+  const allMembers = useMemo(
+    () => [
+      ...(currentDeletingTeam?.supervisors || []),
+      ...(currentDeletingTeam?.teamMembers || [])
+    ],
+    [currentDeletingTeam]
+  );
+
+  const displayedMembers = useMemo(
+    () =>
+      allMembers
+        .filter((member) =>
+          transferableMembersMap.has(Number(member.employeeId))
+        )
+        .map((member) => ({
+          member,
+          transferableTeams:
+            transferableMembersMap.get(Number(member.employeeId)) ?? []
+        })),
+    [allMembers, transferableMembersMap]
+  );
+
   const setTeamId = (employeeId: number, teamId: number) => {
     setMemberTeamAssignments((prevAssignments) => ({
       ...prevAssignments,
@@ -34,10 +60,7 @@ const ReassignMembersModal = () => {
   };
 
   const reassignAndDeleteClick = async () => {
-    const transferMembers = [
-      ...(currentDeletingTeam?.supervisors || []),
-      ...(currentDeletingTeam?.teamMembers || [])
-    ].map((member) => ({
+    const transferMembers = displayedMembers.map(({ member }) => ({
       employeeId: +member.employeeId,
       teamId: memberTeamAssignments[+member.employeeId] || null
     }));
@@ -79,22 +102,12 @@ const ReassignMembersModal = () => {
     <div>
       <p className="my-4">{translateText(["reassignModalDes"])}</p>
       <div className="flex flex-col gap-2 max-h-56 overflow-auto">
-        {currentDeletingTeam?.supervisors?.map((supervisor) => (
+        {displayedMembers.map(({ member, transferableTeams }) => (
           <ReassignMemberRow
-            key={supervisor.employeeId}
-            teamMember={supervisor}
-            setTeamId={(teamId) =>
-              setTeamId(Number(supervisor.employeeId), teamId)
-            }
-          />
-        ))}
-        {currentDeletingTeam?.teamMembers?.map((teamMember) => (
-          <ReassignMemberRow
-            key={teamMember.employeeId}
-            teamMember={teamMember}
-            setTeamId={(teamId) =>
-              setTeamId(Number(teamMember.employeeId), teamId)
-            }
+            key={member.employeeId}
+            teamMember={member}
+            transferableTeams={transferableTeams}
+            setTeamId={(teamId) => setTeamId(Number(member.employeeId), teamId)}
           />
         ))}
       </div>
