@@ -250,28 +250,35 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	@Override
 	public Page<CrmTask> findRelatedTasksPaginated(CrmTaskRelatedFilterDto filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId(),
-				filterDto.getExcludeTaskId());
-
 		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
+
 		applyFetchGraph(task);
-		query.select(task).where(buildRelatedTaskPredicates(cb, task, params));
+
+		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId(),
+				filterDto.getExcludeTaskId());
+		List<Predicate> predicates = buildRelatedTaskPredicates(cb, task, params);
+
+		query.select(task).where(predicates.toArray(new Predicate[0]));
 
 		TypedQuery<CrmTask> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
 		typedQuery.setMaxResults(pageable.getPageSize());
+
 		List<CrmTask> content = typedQuery.getResultList();
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
-		countQuery.select(cb.count(countRoot)).where(buildRelatedTaskPredicates(cb, countRoot, params));
+
+		List<Predicate> countPredicates = buildRelatedTaskPredicates(cb, countRoot, params);
+
+		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(content, pageable, total);
 	}
 
-	private Predicate[] buildRelatedTaskPredicates(CriteriaBuilder cb, Root<CrmTask> root,
+	private List<Predicate> buildRelatedTaskPredicates(CriteriaBuilder cb, Root<CrmTask> root,
 			CrmTaskRelatedParams params) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
@@ -289,7 +296,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 			predicates.add(cb.notEqual(root.get(CrmTask_.id), params.getExcludeTaskId()));
 		}
 
-		return predicates.toArray(new Predicate[0]);
+		return predicates;
 	}
 
 	@Override
