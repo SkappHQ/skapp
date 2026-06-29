@@ -12,17 +12,17 @@ import {
 import { crmBoardEndpoints } from "./utils/ApiEndpoints";
 import { crmBoardQueryKeys } from "./utils/QueryKeys";
 
+const fetchBoardInitData = async (): Promise<CrmBoardInitDataResponse> => {
+  const response = await authFetch.get(crmBoardEndpoints.GET_BOARD_INIT_DATA);
+  return response?.data?.results?.[0];
+};
+
 export const useGetBoardInitData = (
   enabled: boolean = true
 ): UseQueryResult<CrmBoardInitDataResponse> => {
   return useQuery({
     queryKey: crmBoardQueryKeys.BOARD_INIT_DATA,
-    queryFn: async (): Promise<CrmBoardInitDataResponse> => {
-      const response = await authFetch.get(
-        crmBoardEndpoints.GET_BOARD_INIT_DATA
-      );
-      return response?.data?.results?.[0];
-    },
+    queryFn: fetchBoardInitData,
     enabled
   });
 };

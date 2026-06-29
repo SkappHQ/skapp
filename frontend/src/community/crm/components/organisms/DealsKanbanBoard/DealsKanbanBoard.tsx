@@ -5,13 +5,12 @@ import {
 } from "@dnd-kit/dom";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { FC, useEffect, useMemo, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import {
   fetchDealsGroupedByStages,
   useGetBoardInitData,
   useGetDealsGroupedByStages
-} from "~community/crm/api/crmBoardApi";
+} from "~community/crm/api/BoardApi";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import {
@@ -43,28 +42,16 @@ const sensors = [
 const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   searchKeyword = ""
 }) => {
-  const {
-    boardStages,
-    boardOwners,
-    boardContacts,
-    setBoardStages,
-    setBoardContacts,
-    setBoardOwners,
-    setBoardCrmRoles,
-    setBoardStageDeals,
-    appendBoardStageDeals
-  } = useCrmStore(
-    useShallow((store) => ({
-      boardStages: store.boardStages,
-      boardOwners: store.boardOwners,
-      boardContacts: store.boardContacts,
-      setBoardStages: store.setBoardStages,
-      setBoardContacts: store.setBoardContacts,
-      setBoardOwners: store.setBoardOwners,
-      setBoardCrmRoles: store.setBoardCrmRoles,
-      setBoardStageDeals: store.setBoardStageDeals,
-      appendBoardStageDeals: store.appendBoardStageDeals
-    }))
+  const boardStages = useCrmStore((store) => store.boardStages);
+  const boardOwners = useCrmStore((store) => store.boardOwners);
+  const boardContacts = useCrmStore((store) => store.boardContacts);
+  const setBoardStages = useCrmStore((store) => store.setBoardStages);
+  const setBoardContacts = useCrmStore((store) => store.setBoardContacts);
+  const setBoardOwners = useCrmStore((store) => store.setBoardOwners);
+  const setBoardCrmRoles = useCrmStore((store) => store.setBoardCrmRoles);
+  const setBoardStageDeals = useCrmStore((store) => store.setBoardStageDeals);
+  const appendBoardStageDeals = useCrmStore(
+    (store) => store.appendBoardStageDeals
   );
 
   const [loadingStageIds, setLoadingStageIds] = useState<number[]>([]);

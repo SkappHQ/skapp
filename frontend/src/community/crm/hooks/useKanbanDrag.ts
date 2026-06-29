@@ -9,7 +9,7 @@ import { useShallow } from "zustand/react/shallow";
 import {
   useMoveDealBetweenStages,
   useReorderDealWithinStage
-} from "~community/crm/api/crmBoardApi";
+} from "~community/crm/api/BoardApi";
 import { useCrmStore } from "~community/crm/store/store";
 import type {
   CrmBoardDealResponseType,
