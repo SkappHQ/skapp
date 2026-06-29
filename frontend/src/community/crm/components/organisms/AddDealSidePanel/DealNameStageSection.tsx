@@ -1,10 +1,11 @@
 import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 
-import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import useGetStageOptions from "~community/crm/hooks/useGetStageOptions";
+import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
 
 interface DealNameStageSectionProps {
@@ -14,8 +15,30 @@ interface DealNameStageSectionProps {
 const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
 
-  const { stageOptions, isStagesLoading, isStagesError, initialStageId } =
-    useGetStageOptions();
+  const {
+    dealStages,
+    initialStageId,
+    isLoading: isStagesLoading,
+    isError: isStagesError
+  } = useGetMappedDealStages();
+
+  const stageOptions = useMemo(
+    () =>
+      dealStages.map((s) => ({
+        id: String(s.id),
+        value: String(s.id),
+        label: (
+          <div className="inline-flex items-center gap-2.5">
+            <div
+              className="size-2 rounded-full shrink-0"
+              style={{ backgroundColor: STAGE_COLOR_MAP[s.color] }}
+            />
+            <span className="body2">{s.name}</span>
+          </div>
+        )
+      })),
+    [dealStages]
+  );
 
   let stageErrorMessage: string | undefined;
   if (isStagesError) {
@@ -34,6 +57,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
       formik.setFieldValue("stageId", String(initialStageId));
     }
   }, [initialStageId, formik.values.stageId]);
+
   return (
     <div className="flex gap-6 items-start">
       <div className="w-2/3">
@@ -55,7 +79,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
       </div>
       <div className="w-1/3 pt-6.5">
         {isStagesLoading ? (
-          <MultipleSkeletons numOfSkeletons={1} height={38} />
+          <SkeletonShape className="h-9 w-full" />
         ) : (
           <Dropdown
             options={stageOptions}
