@@ -5,10 +5,13 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const DealStageSlice = (set: SetType<DealStageSliceTypes>) => ({
   isDealStageModalOpen: false,
   dealStageModalType: CrmModalTypes.ADD_DEAL_STAGE_MODAL,
+  selectedDealStageId: null,
   setIsDealStageModalOpen: (isDealStageModalOpen: boolean) =>
     set({ isDealStageModalOpen: isDealStageModalOpen }),
   setDealStageModalType: (dealStageModalType: CrmModalTypes) =>
-    set({ dealStageModalType: dealStageModalType })
+    set({ dealStageModalType: dealStageModalType }),
+  setSelectedDealStageId: (stageId: number | null) =>
+    set({ selectedDealStageId: stageId })
 });
 
 export default DealStageSlice;

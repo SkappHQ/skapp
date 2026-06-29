@@ -13,13 +13,15 @@ interface DraggableDealStageCardProps {
   onEdit: (stage: CrmDealStageType) => void;
   onDelete?: (stage: CrmDealStageType) => void;
   isTerminalStage: boolean;
+  isDeletable?: boolean;
 }
 
 const DraggableDealStageCard = ({
   stage,
   onEdit,
   onDelete,
-  isTerminalStage
+  isTerminalStage,
+  isDeletable = false
 }: DraggableDealStageCardProps) => {
   const {
     attributes,
@@ -64,8 +66,8 @@ const DraggableDealStageCard = ({
         title={stage.name}
         description={stage.description ?? ""}
         className={{
-          title: "body-2 text-xs w-full md:!w-1/5 flex-shrink-0",
-          description: "text-secondary text-xs"
+          title: "body1 md:!w-[23%] flex-shrink-0",
+          description: "body2 flex-1"
         }}
         iconButtons={{
           edit: {
@@ -76,6 +78,7 @@ const DraggableDealStageCard = ({
             })
           },
           ...(!isTerminalStage &&
+            isDeletable &&
             onDelete && {
               delete: {
                 icon: <Icon name={IconName.DELETE_BUTTON_ICON} />,
