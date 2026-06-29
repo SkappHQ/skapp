@@ -425,7 +425,6 @@
       "deleteDeal": "Delete Deal",
       "kebabMenuAriaLabel": "Deal actions",
       "description": "Description",
-      "noDescription": "No description",
       "tasks": "Tasks",
       "addTask": "Add task",
       "value": "Value",
@@ -437,7 +436,8 @@
         "none": "None",
         "ownerSearch": "Search employees",
         "contactSearch": "Search contacts",
-        "noResults": "No results"
+        "noResults": "No results",
+        "description": "No description"
       },
       "ariaLabels": {
         "stage": "Stage",

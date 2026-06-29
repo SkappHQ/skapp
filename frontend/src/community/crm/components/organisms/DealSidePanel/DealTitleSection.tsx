@@ -18,7 +18,11 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
     setEditedTitle(name);
   };
 
-  const handleSave = () => setIsEditing(false);
+  const handleSave = () => {
+    // Edit API call
+    setIsEditing(false);
+  }
+    
 
   const handleDiscard = () => {
     setEditedTitle(name);

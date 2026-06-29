@@ -4,14 +4,15 @@ import {
   SidePanel,
   SidePanelProps
 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
+import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
 import { useGetDealById } from "~community/crm/api/crmDealApi";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
+import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { useCrmStore } from "~community/crm/store/store";
 
@@ -22,35 +23,37 @@ import DealTitleSection from "./DealTitleSection";
 const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const { selectedDealId, setIsCrmSidePanelOpen } = useCrmStore((store) => ({
-    selectedDealId: store.selectedDealId,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-  }));
+  const { selectedDealId, setSelectedDealId, setIsCrmSidePanelOpen } =
+    useCrmStore((store) => ({
+      selectedDealId: store.selectedDealId,
+      setSelectedDealId: store.setSelectedDealId,
+      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    }));
 
-  const { setToastMessage } = useToast();
+  const handleClose = (): void => {
+    setSelectedDealId(null);
+    setIsCrmSidePanelOpen(false);
+  };
 
-  const handleClose = (): void => setIsCrmSidePanelOpen(false);
+  const { data: deal, isLoading } = useGetDealById(selectedDealId!);
 
-  const { data: deal, isError: isDealError } = useGetDealById(selectedDealId);
+  const {
+    data: relatedTasksData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetRelatedTasks({ dealId: selectedDealId });
 
-  const { data: relatedTasks = [] } = useGetRelatedTasks(
-    { dealId: selectedDealId },
-    { enabled: !!selectedDealId }
-  );
+  const relatedTasks =
+    relatedTasksData?.pages.flatMap((page) => page.items ?? []) ?? [];
+
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: fetchNextPage
+  });
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (isDealError) {
-      setToastMessage({
-        open: true,
-        toastType: "error",
-        title: translateText(["errors", "dealNotFoundTitle"]),
-        description: translateText(["errors", "dealNotFoundDescription"])
-      });
-      handleClose();
-    }
-  }, [isDealError]);
 
   const menuItems = [
     {
@@ -106,18 +109,22 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
           />
         }
       >
-        {deal && (
+        {isLoading && !deal ? (
+          <DealSidePanelSkeleton />
+        ) : (
           <div className="flex flex-col gap-6">
-            <DealTitleSection name={deal.name} />
+            <DealTitleSection name={deal!.name} />
             <div className="flex gap-6 items-start">
               <div className="flex-1 flex flex-col gap-6 min-w-0">
-                <DealDescriptionSection description={deal.description} />
+                <DealDescriptionSection description={deal!.description} />
                 <div className="flex flex-col gap-3">
                   <h3 className="h2">{translateText(["tasks"])}</h3>
+                  <hr className="border-secondary-accent" />
                   <SidePanelTasksSection tasks={relatedTasks} />
+                  <div ref={loadingRef} />
                 </div>
               </div>
-              <DealPropertiesSidebar deal={deal} />
+              <DealPropertiesSidebar deal={deal!} />
             </div>
           </div>
         )}
@@ -126,7 +133,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
       <DeleteDealModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        dealName={deal?.name ?? ""}
+        dealName={deal!.name ?? ""} 
       />
     </>
   );

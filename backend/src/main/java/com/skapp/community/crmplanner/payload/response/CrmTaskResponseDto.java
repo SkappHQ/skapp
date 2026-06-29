@@ -28,6 +28,8 @@ public class CrmTaskResponseDto {
 
 	private Long contactId;
 
+	private String ownerName;
+
 	private CrmOwnerResponseDto owner;
 
 	private CrmContactLookupResponseDto contact;

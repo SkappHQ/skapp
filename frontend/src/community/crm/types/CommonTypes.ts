@@ -290,7 +290,6 @@ export interface CrmDealFilterParams {
 export interface RelatedTasksParams {
   contactId?: number | null;
   dealId?: number | null;
-  companyId?: number | null;
 }
 
 export interface CrmDealAddFormTypes {

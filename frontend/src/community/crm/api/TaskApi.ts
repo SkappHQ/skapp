@@ -7,73 +7,50 @@ import {
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
+import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import {
   CrmCompletedTaskResponseType,
   CrmTaskCreatePayload,
   CrmTaskResponseType,
   RelatedTasksParams,
+  TaskRowResponseType,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 
 import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
 
-const fetchRelatedOpenTasks = async (
-  params: RelatedTasksParams
-): Promise<CrmTaskResponseType> => {
-  const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
-    params: {
-      contactId: params.contactId,
-      dealId: params.dealId,
-      companyId: params.companyId
-    }
-  });
-  return response?.data?.results?.[0];
-};
-
-const fetchRelatedCompletedTasks = async (
-  params: RelatedTasksParams
-): Promise<CrmCompletedTaskResponseType> => {
-  const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
-    params: {
-      contactId: params.contactId,
-      dealId: params.dealId,
-      companyId: params.companyId
-    }
-  });
-  return response?.data?.results?.[0];
-};
-
-interface UseGetRelatedTasksOptions {
-  currentTaskId?: number;
-  enabled?: boolean;
+interface RelatedTasksPage {
+  items: TaskRowResponseType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
 }
 
-export const useGetRelatedTasks = (
+const fetchRelatedTasks = async (
   params: RelatedTasksParams,
-  { currentTaskId, enabled = true }: UseGetRelatedTasksOptions = {}
-) => {
-  const hasEntity =
-    params.contactId != null ||
-    params.dealId != null ||
-    params.companyId != null;
+  page: number
+): Promise<RelatedTasksPage> => {
+  const response = await authFetch.get(taskEndpoints.GET_RELATED_TASKS, {
+    params: {
+      contactId: params.contactId,
+      dealId: params.dealId,
+      page,
+      size: TASK_PAGE_SIZE
+    }
+  });
+  return response?.data?.results?.[0];
+};
 
-  return useQuery({
-    queryKey: taskQueryKeys.RELATED_TASKS(params),
-    queryFn: async () => {
-      const openTasksResponse = await fetchRelatedOpenTasks(params);
-      const completedTasksResponse = await fetchRelatedCompletedTasks(params);
-
-      return [
-        ...(openTasksResponse?.tasks ?? []),
-        ...(completedTasksResponse?.items ?? [])
-      ];
+export const useGetRelatedTasks = (params: RelatedTasksParams) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: taskQueryKeys.RELATED_TASKS,
+    queryFn: ({ pageParam }) => fetchRelatedTasks(params, pageParam),
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.currentPage + 1;
+      return nextPage < lastPage.totalPages ? nextPage : undefined;
     },
-    enabled: enabled && hasEntity,
-    refetchOnWindowFocus: false,
-    select:
-      currentTaskId == null
-        ? undefined
-        : (tasks) => tasks.filter((task) => task.id !== currentTaskId)
+    refetchOnWindowFocus: false
   });
 };
 
@@ -96,6 +73,9 @@ export const useCreateTask = (
       });
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
       });
       if (contactId) {
         queryClient.invalidateQueries({
@@ -144,6 +124,9 @@ export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
+      });
     },
     onError
   });
@@ -202,6 +185,9 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
       });
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
       });
       onSuccess();
     },

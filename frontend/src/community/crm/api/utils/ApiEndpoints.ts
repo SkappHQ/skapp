@@ -23,6 +23,7 @@ export const taskEndpoints = {
   CREATE_TASK: `${moduleAPIPath.CRM}/task`,
   GET_TASKS: `${moduleAPIPath.CRM}/task`,
   GET_COMPLETED_TASKS: `${moduleAPIPath.CRM}/task/completed`,
+  GET_RELATED_TASKS: `${moduleAPIPath.CRM}/task/related-tasks`,
   DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 

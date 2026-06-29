@@ -20,7 +20,10 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
     setEditedDescription(description ?? "");
   };
 
-  const handleSave = () => setIsEditing(false);
+  const handleSave = () => {
+    // Edit API call
+    setIsEditing(false);
+  };
 
   const handleDiscard = () => {
     setEditedDescription(description ?? "");
@@ -72,7 +75,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
             }
           }}
         >
-          {description ?? translateText(["noDescription"])}
+          {description ?? translateText(["placeholders", "description"])}
         </div>
       )}
     </div>

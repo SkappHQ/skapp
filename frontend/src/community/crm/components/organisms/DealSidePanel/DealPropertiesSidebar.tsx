@@ -1,11 +1,9 @@
-import { Dropdown } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useState } from "react";
+import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
+import { FC, useEffect, useMemo, useState } from "react";
 
-import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCrmContacts } from "~community/crm/api/ContactApi";
-import useGetStageOptions from "~community/crm/hooks/useGetStageOptions";
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
@@ -15,6 +13,9 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
+import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import {
   CrmContactLookup,
   CrmDealDetailResponseType,
@@ -26,15 +27,16 @@ interface DealPropertiesSidebarProps {
   isOpen?: boolean;
 }
 
-const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({ deal, isOpen }) => {
+const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
+  deal,
+  isOpen
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const [amount, setAmount] = useState(deal.amount ?? "");
   const [priority, setPriority] = useState<CrmPriorityEnum>(deal.priority);
   const [selectedStageId, setSelectedStageId] = useState(String(deal.stageId));
-  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(
-    deal.owner
-  );
+  const [selectedOwner, setSelectedOwner] = useState<CrmOwner>(deal.owner);
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(deal.contact);
   const [contactSearchTerm, setContactSearchTerm] = useState("");
@@ -47,11 +49,29 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({ deal, isOpen })
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isOpen
+    isOpen && debouncedContactSearch.length > 0
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const { stageOptions, isStagesLoading } = useGetStageOptions();
+  const { dealStages, isLoading: isStagesLoading } = useGetMappedDealStages();
+
+  const stageOptions = useMemo(
+    () =>
+      dealStages.map((s) => ({
+        id: s.id,
+        value: s.id,
+        label: (
+          <div className="inline-flex items-center gap-2.5">
+            <div
+              className="size-2 rounded-full shrink-0"
+              style={{ backgroundColor: STAGE_COLOR_MAP[s.color] }}
+            />
+            <span className="body2">{s.name}</span>
+          </div>
+        )
+      })) as any,
+    [dealStages]
+  );
 
   useEffect(() => {
     setAmount(deal.amount ?? "");
@@ -64,12 +84,12 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({ deal, isOpen })
   return (
     <div className="w-1/3 flex flex-col gap-4 shrink-0">
       {isStagesLoading ? (
-        <MultipleSkeletons numOfSkeletons={1} height={38} />
+        <SkeletonShape className="h-9 w-full" />
       ) : (
         <Dropdown
           options={stageOptions}
           value={selectedStageId}
-          onChange={(v) => setSelectedStageId(String(v))}
+          onChange={(v) => setSelectedStageId(v)}
           variant="primary"
           className="rounded-lg"
           width="55%"
@@ -81,12 +101,10 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({ deal, isOpen })
       <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
         <PropertyRow label={translateText(["value"])}>
           <div className="flex flex-col w-full px-1">
-            <input
+            <InputField
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={translateText(["placeholders", "none"])}
-              type="text"
-              className="w-full bg-transparent outline-none body2 placeholder:text-secondary-text"
               aria-label={translateText(["ariaLabels", "amount"])}
             />
           </div>
