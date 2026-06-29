@@ -1,5 +1,5 @@
-import { Checkbox, Grid2 as Grid, Typography, useTheme } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { Grid2 as Grid } from "@mui/material";
+import { ButtonV2, Checkbox } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 
@@ -37,7 +37,6 @@ const CareerProgressDetailsSection = ({
   isProfileView = false,
   isInputsDisabled = false
 }: Props) => {
-  const theme = useTheme();
   const translateText = useTranslator(
     "peopleModule",
     "addResource",
@@ -409,30 +408,13 @@ const CareerProgressDetailsSection = ({
               >
                 <Checkbox
                   checked={values.isCurrentEmployment}
-                  onChange={handleCheckboxChange}
-                  name="isCurrentEmployment"
-                  color="primary"
-                  sx={{
-                    ml: "-0.5rem",
-                    color: theme.palette.primary.main
-                  }}
                   disabled={isInputsDisabled}
-                  slotProps={{
-                    input: {
-                      "aria-label": translateAria([
-                        "selectCurrentEmploymentChecked"
-                      ])
-                    }
+                  label={translateText(["currentEmployment"])}
+                  ariaLabel={translateAria(["selectCurrentEmploymentChecked"])}
+                  onChange={(checked) => {
+                    handleCheckboxChange("isCurrentEmployment", checked);
                   }}
                 />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: isInputsDisabled ? theme.palette.text.disabled : ""
-                  }}
-                >
-                  {translateText(["currentEmployment"])}
-                </Typography>
               </Grid>
             </>
           )}
