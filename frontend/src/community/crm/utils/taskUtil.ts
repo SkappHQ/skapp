@@ -14,7 +14,11 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
-import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+import {
+  CrmTaskDetailType,
+  CrmTaskFormTypes,
+  CrmTaskUpdatePayload
+} from "~community/crm/types/CommonTypes";
 
 import { CrmTaskTabEnum } from "../enums/common";
 import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
@@ -120,6 +124,39 @@ export const groupTasksByDueDate = (
     upcoming,
     isOpenTasksEmpty
   };
+};
+
+export const getChangedTaskFields = (
+  newValues: CrmTaskFormTypes,
+  originalValues: CrmTaskFormTypes
+): Partial<CrmTaskUpdatePayload> => {
+  const changedFields: Partial<CrmTaskUpdatePayload> = {};
+  if (newValues.name !== originalValues.name) {
+    changedFields.name = newValues.name.trim();
+  }
+  if (newValues.type?.id !== originalValues.type?.id) {
+    changedFields.typeId = newValues.type?.id;
+  }
+  if (newValues.dueDate !== originalValues.dueDate) {
+    changedFields.dueAt = newValues.dueDate;
+  }
+  if (newValues.priority !== originalValues.priority) {
+    changedFields.priority = newValues.priority;
+  }
+  if (newValues.contactId !== originalValues.contactId) {
+    changedFields.contactId = newValues.contactId;
+  }
+  if (newValues.dealId !== originalValues.dealId) {
+    changedFields.dealId = newValues.dealId;
+  }
+  if (newValues.owner !== originalValues.owner) {
+    changedFields.ownerId = newValues.owner;
+  }
+  if (newValues.notes !== originalValues.notes) {
+    changedFields.notes = newValues.notes.trim();
+  }
+
+  return changedFields;
 };
 
 export const getTaskGroups = (

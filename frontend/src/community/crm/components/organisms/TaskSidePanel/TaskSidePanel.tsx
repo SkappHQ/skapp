@@ -1,5 +1,6 @@
 import {
   DeleteButtonIcon,
+  EditIcon,
   KebabMenu,
   SidePanel,
   SidePanelProps
@@ -24,6 +25,12 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   };
 
   const menuItems = [
+    {
+      id: "edit",
+      label: translateText(["editTask"]),
+      icon: { start: <EditIcon width="16px" height="16px" /> },
+      onClick: () => openTaskModal(CrmModalTypes.EDIT_TASK_MODAL)
+    },
     {
       id: "delete",
       label: translateText(["deleteTask"]),

@@ -21,12 +21,12 @@ const AddContactModalContent = () => {
     "addContactModal"
   );
   const { data: currentUser } = useGetUserPersonalDetails();
-  const { setIsAddContactModalOpen } = useCrmStore((store) => ({
-    setIsAddContactModalOpen: store.setIsAddContactModalOpen
+  const { setIsContactModalOpen } = useCrmStore((store) => ({
+    setIsContactModalOpen: store.setIsContactModalOpen
   }));
 
   const handleCloseModal = () => {
-    setIsAddContactModalOpen(false);
+    setIsContactModalOpen(false);
   };
 
   const { mutate: createNewContact, isPending } = useCreateNewContact(

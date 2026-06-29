@@ -1,7 +1,13 @@
-import { CrmContactFormValues } from "~community/crm/types/CommonTypes";
-import { DropdownOption } from "@rootcodelabs/skapp-ui";
+import { ColorOption, DropdownOption } from "@rootcodelabs/skapp-ui";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
+import {
+  CrmContactFormValues,
+  CrmDealStageCreatePayload,
+  CrmDealStageFormTypes
+} from "~community/crm/types/CommonTypes";
+
+import { STAGE_COLOR_MAP } from "../constants/stageConstants";
 
 type NumericValue = string | null;
 
@@ -32,8 +38,32 @@ export const getChangedContactFields = (
     changedFields.ownerId = newValues.ownerId;
   }
 
-  return changedFields;  
-}
+  return changedFields;
+};
+
+export const getChangedDealStageFields = (
+  newValues: CrmDealStageFormTypes,
+  originalValues: CrmDealStageFormTypes
+): Partial<CrmDealStageCreatePayload> => {
+  const changedFields: Partial<CrmDealStageCreatePayload> = {};
+
+  const newName = newValues.name.trim();
+  const originalName = originalValues.name.trim();
+  const newDescription = newValues.description.trim() || null;
+  const originalDescription = originalValues.description.trim() || null;
+
+  if (newName !== originalName) {
+    changedFields.name = newName;
+  }
+  if (newDescription !== originalDescription) {
+    changedFields.description = newDescription;
+  }
+  if (newValues.color !== originalValues.color) {
+    changedFields.color = newValues.color;
+  }
+
+  return changedFields;
+};
 
 interface Id {
   id: number | string;
@@ -79,3 +109,12 @@ export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
   searchTerm.trim() === ""
     ? EmptyStateTypeEnum.NO_DATA
     : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
+
+export const dealStageColors: ColorOption[] = Object.entries(
+  STAGE_COLOR_MAP
+).map(([key, color]) => ({
+  id: key,
+  name: key,
+  value: key,
+  color
+}));
