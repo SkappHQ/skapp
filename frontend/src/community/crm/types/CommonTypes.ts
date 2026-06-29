@@ -261,6 +261,10 @@ export interface CrmTaskCategory {
   orderIndex: number;
 }
 
+export interface CrmTaskCategoryResponseType {
+  taskTypes: CrmTaskCategory[];
+}
+
 export interface CrmDealListItem {
   id: number;
   name: string;
@@ -317,7 +321,7 @@ export interface CrmCompanyEditFormTypes {
   contactNumber: string | null;
 }
 
-export interface CrmTaskAddFormTypes {
+export interface CrmTaskFormTypes {
   name: string;
   type: CrmTaskCategory | null;
   dueDate: string | null;
@@ -342,6 +346,30 @@ export interface CrmTaskCreatePayload {
 export interface UpdateTaskStatusPayload {
   id: number;
   isCompleted: boolean;
+}
+
+export interface CrmTaskUpdatePayload {
+  id: number;
+  name?: string;
+  typeId?: number;
+  dueAt?: string | null;
+  priority?: CrmPriorityEnum;
+  contactId?: number | null;
+  dealId?: number | null;
+  ownerId?: number | null;
+  notes?: string;
+}
+
+export interface CrmTaskUpdatePayload {
+  id: number;
+  name?: string;
+  typeId?: number;
+  dueAt?: string | null;
+  priority?: CrmPriorityEnum;
+  contactId?: number | null;
+  dealId?: number | null;
+  ownerId?: number | null;
+  notes?: string;
 }
 
 export interface TaskRowResponseType {
