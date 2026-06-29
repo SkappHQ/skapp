@@ -66,7 +66,6 @@ public class Employee extends Auditable<String> {
 	private Gender gender;
 
 	@Column(name = "middle_name")
-	@Convert(converter = FieldEncryptionConverter.class)
 	private String middleName;
 
 	@Column(name = "designation")
