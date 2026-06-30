@@ -127,11 +127,12 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 
 export const setAccessToken = (token: string) => {
   if (typeof window !== "undefined") {
-    const expiryDate = new Date(
-      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
-    );
+    const expirySeconds = extractClaimsFromToken(token)?.exp as number | undefined;
+    const expiryAttribute = expirySeconds
+      ? `; expires=${new Date(expirySeconds * unitConversion.MILLISECONDS_PER_SECOND).toUTCString()}`
+      : "";
 
-    document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+    document.cookie = `accessToken=${token}; path=/${expiryAttribute}; Secure; SameSite=Lax`;
   }
 };
 
@@ -169,16 +170,18 @@ export const getAccessToken = async (): Promise<string | null> => {
 
   const currentAccessToken = getCookieValue("accessToken");
 
-  if (!currentAccessToken) {
+  if (currentAccessToken && !isTokenExpired(currentAccessToken)) {
+    return currentAccessToken;
+  }
+
+  const newAccessToken = await getNewAccessToken();
+
+  if (!newAccessToken) {
+    await signOut();
     return null;
   }
 
-  if (isTokenExpired(currentAccessToken)) {
-    const newToken = await getNewAccessToken();
-    return newToken;
-  }
-
-  return currentAccessToken;
+  return newAccessToken;
 };
 
 export const isTokenExpired = (token: string): boolean => {
@@ -338,6 +341,14 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   if (typeof window !== "undefined") {
     const currentPath = window.location.pathname;
+
+    if (
+      currentPath.startsWith(ROUTES.AUTH.SIGNIN) ||
+      currentPath.startsWith(ROUTES.AUTH.ENTERPRISE_SIGNIN)
+    ) {
+      return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const existingCallback = urlParams.get("callback");
 
