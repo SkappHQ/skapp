@@ -9,8 +9,10 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import { taskEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import {
   CrmCompletedTaskResponseType,
+  CrmTaskCategoryResponseType,
   CrmTaskCreatePayload,
   CrmTaskResponseType,
+  CrmTaskUpdatePayload,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 
@@ -151,5 +153,43 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
       onSuccess();
     },
     onError
+  });
+};
+
+const editTask = async ({ id, ...payload }: CrmTaskUpdatePayload) => {
+  const response = await authFetch.patch(
+    taskEndpoints.UPDATE_TASK(id),
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: editTask,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_OPEN_TASKS
+      });
+      await queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_TASK_DATA
+      });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+export const useGetTaskTypes = () => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_TASK_TYPES,
+    queryFn: async (): Promise<CrmTaskCategoryResponseType> => {
+      const response = await authFetch.get(taskEndpoints.GET_TASK_TYPES);
+      return response?.data?.results?.[0];
+    }
   });
 };

@@ -7,9 +7,7 @@ import {
 } from "~community/crm/api/ContactApi";
 import ContactModalForm from "~community/crm/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  CrmContactFormValues
-} from "~community/crm/types/CommonTypes";
+import { CrmContactFormValues } from "~community/crm/types/CommonTypes";
 import { getChangedContactFields } from "~community/crm/utils/crmUtil";
 
 const EditContactModalContent = () => {
@@ -19,18 +17,15 @@ const EditContactModalContent = () => {
     "contacts",
     "editContactModal"
   );
-  const { setIsAddContactModalOpen, selectedContactId, setSelectedContactId } =
-    useCrmStore((store) => ({
-      setIsAddContactModalOpen: store.setIsAddContactModalOpen,
-      selectedContactId: store.selectedContactId,
-      setSelectedContactId: store.setSelectedContactId
-    }));
+  const { setIsContactModalOpen, selectedContactId } = useCrmStore((store) => ({
+    setIsContactModalOpen: store.setIsContactModalOpen,
+    selectedContactId: store.selectedContactId
+  }));
 
   const selectedContact = useGetSelectedContactById(selectedContactId);
 
   const handleCloseModal = () => {
-    setSelectedContactId(null);
-    setIsAddContactModalOpen(false);
+    setIsContactModalOpen(false);
   };
 
   const { mutate: editContact, isPending } = useEditContact(

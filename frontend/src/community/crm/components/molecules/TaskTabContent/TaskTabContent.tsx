@@ -4,7 +4,7 @@ import {
   ProjectTableSkeletonLoader,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -20,6 +20,7 @@ import {
   TASK_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/enums/common";
+import { useCrmStore } from "~community/crm/store/store";
 import { getEmptyStateType } from "~community/crm/utils/crmUtil";
 import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
@@ -31,6 +32,7 @@ interface TasksTabContentProps {
 
 const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
   const translateText = useTranslator("crmModule", "tasks");
+  const { setTasks } = useCrmStore();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
   const { userId } = useSessionData();
@@ -61,9 +63,10 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
     tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.TEAM_TASKS
   );
 
-  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } = useMemo(() => {
-    return getTaskGroups(openTaskData?.tasks ?? [], tab, userId);
-  }, [openTaskData, tab, userId]);
+  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
+    useMemo(() => {
+      return getTaskGroups(openTaskData?.tasks ?? [], tab, userId);
+    }, [openTaskData, tab, userId]);
 
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
@@ -77,6 +80,10 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
     () => completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? [],
     [completedTaskData]
   );
+
+  useEffect(() => {
+    setTasks([...(openTaskData?.tasks ?? []), ...completedTasks]);
+  }, [openTaskData, completedTasks]);
 
   const renderContent = () => {
     if (isCompletedTasksLoading || isOpenTasksLoading) {

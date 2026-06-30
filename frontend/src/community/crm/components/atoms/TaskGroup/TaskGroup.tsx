@@ -1,5 +1,6 @@
 import { FC } from "react";
 
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 
 import TaskRow from "../../molecules/TaskRow/TaskRow";
@@ -15,6 +16,11 @@ const TaskGroup: FC<TaskGroupProps> = ({
   tasks,
   isCheckTaskVisible = true
 }) => {
+  const { setSelectedTaskId, setIsCrmSidePanelOpen } = useCrmStore((store) => ({
+    setSelectedTaskId: store.setSelectedTaskId,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+  }));
+
   return (
     <div className="flex flex-col">
       {label && (
@@ -28,6 +34,10 @@ const TaskGroup: FC<TaskGroupProps> = ({
               task={task}
               isCheckTaskVisible={isCheckTaskVisible}
               isShowContact={true}
+              onRowClick={() => {
+                setSelectedTaskId(task.id);
+                setIsCrmSidePanelOpen(true);
+              }}
             />
           );
         })}

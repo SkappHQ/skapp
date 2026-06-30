@@ -14,7 +14,9 @@ import {
 } from "~community/crm/api/utils/ApiEndpoints";
 import {
   companyQueryKeys,
-  contactQueryKeys
+  contactQueryKeys,
+  crmDealQueryKeys,
+  taskQueryKeys
 } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
@@ -132,9 +134,12 @@ export const useEditContact = (onSuccess: () => void, onError: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editContact,
-    onSuccess: () => {
+    onSuccess: ({ id }) => {
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.CONTACT_BY_ID(id)
       });
       onSuccess();
     },
@@ -232,5 +237,35 @@ export const useGetContactById = (
     queryFn: () => fetchContactById(id),
     refetchOnWindowFocus: false,
     enabled
+  });
+};
+
+const deleteContact = async (id: number): Promise<void> => {
+  await authFetch.delete(contactEndpoints.DELETE_CONTACT(id));
+};
+
+export const useDeleteContact = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteContact,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_OPEN_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.ALL
+      });
+      onSuccess();
+    },
+    onError
   });
 };
