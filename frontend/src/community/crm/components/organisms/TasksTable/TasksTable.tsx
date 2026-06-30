@@ -4,7 +4,7 @@ import { FC, useState } from "react";
 import { CrmTaskTabEnum } from "~community/crm/enums/common";
 import { useGetTasksTabs } from "~community/crm/hooks/useGetTasksTabs";
 
-import TasksTabContent from "../../molecules/TaskTabContent/TaskTabContent";
+import TaskTabContent from "../../molecules/TaskTabContent/TaskTabContent";
 
 const TasksTable: FC = () => {
   const tabs = useGetTasksTabs();
@@ -21,7 +21,7 @@ const TasksTable: FC = () => {
         <hr className="border-secondary-accent" />
       </div>
       <div className="flex-1 min-h-0 overflow-hidden">
-        <TasksTabContent tab={activeTab} />
+        <TaskTabContent tab={activeTab} />
       </div>
     </div>
   );

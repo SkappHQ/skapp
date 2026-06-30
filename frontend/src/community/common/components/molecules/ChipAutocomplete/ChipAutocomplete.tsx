@@ -1,4 +1,4 @@
-import { Chip, Popper } from "@rootcodelabs/skapp-ui";
+import { Chip, Popper, PopperPosition } from "@rootcodelabs/skapp-ui";
 import {
   ChangeEvent,
   FC,
@@ -22,6 +22,7 @@ interface ChipAutocompleteProps {
   isDisabled?: boolean;
   readOnly?: boolean;
   endIcon?: ReactElement;
+  flipThreshold?: number;
 }
 
 const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
@@ -34,12 +35,15 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   options = [],
   isDisabled = false,
   readOnly = false,
-  endIcon
+  endIcon,
+  flipThreshold = 220
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [anchorWidth, setAnchorWidth] = useState(0);
+  const [dropdownPosition, setDropdownPosition] =
+    useState<PopperPosition>("bottom-start");
   const inputBoxRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -56,6 +60,19 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   useEffect(() => {
     setActiveIndex(null);
   }, [inputValue]);
+
+  useEffect(() => {
+    const showingHelperText = helperText && inputValue === "";
+    if (!isOpen || !inputBoxRef.current || showingHelperText) {
+      setDropdownPosition("bottom-start");
+      return;
+    }
+    const spaceBelow =
+      window.innerHeight - inputBoxRef.current.getBoundingClientRect().bottom;
+    setDropdownPosition(
+      spaceBelow < flipThreshold ? "top-start" : "bottom-start"
+    );
+  }, [isOpen, filteredOptions.length, helperText, inputValue, flipThreshold]);
 
   useEffect(() => {
     const node = inputBoxRef.current;
@@ -208,7 +225,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                 onKeyDown={handleKeyDown}
                 disabled={isDisabled}
                 placeholder={value.length === 0 ? placeholder : ""}
-                className="outline-none body1"
+                className="outline-none body1 flex-1 min-w-20 w-full"
                 role="combobox"
                 aria-expanded={isOpen && filteredOptions.length > 0}
                 aria-controls={`${id}-list`}
@@ -233,10 +250,9 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
           isOpen &&
           ((helperText && inputValue === "") || filteredOptions.length > 0)
         }
-        position="bottom-start"
+        position={dropdownPosition}
         handleClose={handleClose}
         ariaRole="presentation"
-        isFlip
         disableAutoFocus
         containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
       >

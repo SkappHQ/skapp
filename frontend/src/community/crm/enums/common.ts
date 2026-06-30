@@ -80,6 +80,11 @@ export enum DealSidePanelTypes {
   DEAL_DETAIL = "DEAL_DETAIL"
 }
 
+export enum DealViewEnum {
+  LIST = "LIST",
+  KANBAN = "KANBAN"
+}
+
 export enum DefaultStageNameEnum {
   LEAD = "LEAD",
   QUALIFIED = "QUALIFIED",
