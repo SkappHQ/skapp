@@ -88,6 +88,17 @@ export interface User {
 
 const REFRESH_TOKEN_FLAG_COOKIE = "hasRefreshToken";
 
+// Set on sign-out so the middleware refuses to silently re-authenticate from a
+// refresh-token cookie that survived a failed backend sign-out call. Cleared once a
+// new access token is issued (sign-in / successful refresh).
+const SIGNED_OUT_COOKIE = "signedOut";
+
+const clearSignedOutMarker = () => {
+  if (typeof window !== "undefined") {
+    document.cookie = `${SIGNED_OUT_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax`;
+  }
+};
+
 // Flag to prevent recursive token refresh
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
@@ -134,6 +145,9 @@ export const setAccessToken = (token: string) => {
     );
 
     document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+    // A fresh access token means the user is authenticated again — drop any
+    // pending sign-out marker so the middleware allows normal token refresh.
+    clearSignedOutMarker();
   }
 };
 
@@ -164,6 +178,10 @@ export const clearCookies = async (): Promise<void> => {
     document.cookie =
       "isPasswordChangedForTheFirstTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
     document.cookie = `${REFRESH_TOKEN_FLAG_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax`;
+    // Mark the session as signed out. The HttpOnly refresh cookie can only be
+    // revoked server-side; if the SIGNOUT call above failed it may survive, so this
+    // marker prevents the middleware from silently re-authenticating the user.
+    document.cookie = `${SIGNED_OUT_COOKIE}=true; path=/; Secure; SameSite=Lax`;
   }
 };
 
@@ -176,8 +194,12 @@ export const getAccessToken = async (): Promise<string | null> => {
     return currentAccessToken;
   }
 
+  // The refresh token is HttpOnly and unreadable here, so rely on the
+  // `hasRefreshToken` flag the middleware exposes. With no refresh token there is no
+  // session: return null (the middleware redirects protected routes to sign-in) rather
+  // than firing a doomed /refresh-token call or an extra sign-out request, which on
+  // public pages could otherwise loop through the response interceptor's signOut().
   if (getCookieValue(REFRESH_TOKEN_FLAG_COOKIE) !== "true") {
-    await signOut();
     return null;
   }
 
