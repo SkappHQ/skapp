@@ -46,7 +46,7 @@ const OnboardingLayout: React.FC<LayoutProps> = ({
   return (
     <Box sx={classes.container}>
       <Head>
-        <title>{pageHead ?? "Skapp"}</title>
+        <title>{pageHead}</title>
       </Head>
       <Image
         src={logo}
