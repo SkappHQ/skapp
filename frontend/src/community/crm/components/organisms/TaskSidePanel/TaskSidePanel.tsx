@@ -8,21 +8,32 @@ import {
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
+import { useGetTaskById, useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
+import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
 
 const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
-  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
+  const { setIsTaskModalOpen, setTaskModalType, selectedTaskId } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType
+    setTaskModalType: store.setTaskModalType,
+    selectedTaskId: store.selectedTaskId
   }));
 
   const openTaskModal = (type: CrmModalTypes) => {
     setTaskModalType(type);
     setIsTaskModalOpen(true);
   };
+
+  const { data: task, isLoading } = useGetTaskById(selectedTaskId!);
+  const { mutate: updateTaskCompletion } = useUpdateTaskCompletion(() => {});
+
+  const taskIcon = task ? getTaskTypeIcon(task.typeName, 24) : null;
 
   const menuItems = [
     {
@@ -48,11 +59,21 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     }
   ];
 
+  const handleMarkAsDone = () => {
+    updateTaskCompletion({ id: task?.id, isCompleted: true }, { onSuccess: onClose });
+  };
+
   return (
     <SidePanel
       isOpen={isOpen}
       onClose={onClose}
       closeOnBackdropClick
+      header={
+        <div className="flex items-center gap-4 pl-2">
+          {taskIcon}
+          <span className="h1 text-black">{task?.name}</span>
+        </div>
+      }
       headerActions={
         <KebabMenu
           id={"task-actions"}
@@ -67,9 +88,42 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         />
       }
     >
-      <div className="flex flex-col pb-4 gap-[16px]">
-        {/* Task details content will be implemented here */}
-      </div>
+      {isLoading ? (
+        <div className="flex flex-col gap-4 p-4">
+          <MultipleSkeletons numOfSkeletons={4} height={40} />
+        </div>
+      ) : (
+        <div className="flex flex-col pb-4 gap-[16px]">
+          <div className="flex gap-6 pb-4">
+            <div className="flex flex-col flex-1 gap-6 min-w-0">
+              <div className="flex flex-col gap-1">
+                <p className="subtitle1">{translateText(["notes"])}</p>
+                <p className="subtitle3">
+                  {task?.notes ?? translateText(["noNotes"])}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <h2 className="h2">{translateText(["dealsTitle"])}</h2>
+                <hr className="border-secondary-accent" />
+                <SidePanelDealSection deals={task?.deal ? [task.deal] : []} />
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <h2 className="h2">{translateText(["relatedTasksTitle"])}</h2>
+                <hr className="border-secondary-accent" />
+                {/* <SidePanelTasksSection tasks={relatedTasks} /> */}
+              </div>
+            </div>
+
+            <div className="w-[18.438rem] shrink-0">
+              {task && (
+                <SidePanelTaskInfo task={task} onMarkAsDone={handleMarkAsDone} />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </SidePanel>
   );
 };

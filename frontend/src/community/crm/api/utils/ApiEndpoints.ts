@@ -28,7 +28,8 @@ export const taskEndpoints = {
   GET_TASKS: `${moduleAPIPath.CRM}/task`,
   GET_COMPLETED_TASKS: `${moduleAPIPath.CRM}/task/completed`,
   DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
-  GET_TASK_TYPES: `${moduleAPIPath.CRM}/task/type`
+  GET_TASK_TYPES: `${moduleAPIPath.CRM}/task/type`,
+  GET_TASK_BY_ID: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
 export const companyEndpoints = {

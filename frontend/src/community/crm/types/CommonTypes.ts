@@ -271,10 +271,9 @@ export interface CrmTaskDetailType {
   dueAt: string | null;
   notes: string | null;
   contactId: number | null;
-  ownerName: string;
   owner: CrmOwner;
   contact: CrmContactLookup | null;
-  deal: CrmDealLookup | null;
+  deal: DetailPanelDealResponseType | null;
 }
 
 export interface CrmTaskCategory {

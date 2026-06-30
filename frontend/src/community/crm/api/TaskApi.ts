@@ -187,3 +187,15 @@ export const useGetTaskTypes = () => {
     }
   });
 };
+
+const fetchTaskById = async (id: number) => {
+  const response = await authFetch.get(taskEndpoints.GET_TASK_BY_ID(id));
+  return response?.data?.results?.[0];
+}
+
+export const useGetTaskById = (id: number) => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_TASK_BY_ID(id),
+    queryFn: () => fetchTaskById(id)
+  });
+};
