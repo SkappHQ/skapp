@@ -267,6 +267,9 @@ export const useDeleteContact = (
       queryClient.invalidateQueries({
         queryKey: crmDealQueryKeys.ALL
       });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError

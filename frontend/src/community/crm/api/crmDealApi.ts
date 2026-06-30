@@ -200,6 +200,9 @@ export const useDeleteDealStage = (
     mutationFn: deleteDealStage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError
