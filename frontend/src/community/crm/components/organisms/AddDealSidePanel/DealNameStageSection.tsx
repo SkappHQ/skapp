@@ -38,13 +38,15 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
       : "primary";
 
   useEffect(() => {
-    if (formik.values.stageId) return;
-
-    const defaultStageId = preselectedStageId ?? initialStageId;
-    if (defaultStageId !== undefined && defaultStageId !== null) {
-      formik.setFieldValue("stageId", String(defaultStageId));
+    if (preselectedStageId !== null) {
+      formik.setFieldValue("stageId", String(preselectedStageId));
+      return;
     }
-  }, [preselectedStageId, initialStageId, formik.values.stageId]);
+
+    if (!formik.values.stageId && initialStageId !== undefined) {
+      formik.setFieldValue("stageId", String(initialStageId));
+    }
+  }, [preselectedStageId, initialStageId]);
 
   const stageOptions = useMemo(
     () =>
