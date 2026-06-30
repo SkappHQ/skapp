@@ -206,6 +206,8 @@ const requestAccessTokenFromRefresh = async (
   refreshToken: string,
   tenantId: string | undefined
 ): Promise<string | null> => {
+  if (!refreshTokenCookieName || !tenantId || !refreshToken) return null;
+
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/session/refresh-token`,
@@ -214,7 +216,7 @@ const requestAccessTokenFromRefresh = async (
         headers: {
           "Content-Type": "application/json",
           cookie: `${refreshTokenCookieName}=${refreshToken}`,
-          ...(tenantId ? { "X-Tenant-ID": tenantId } : {})
+          "X-Tenant-ID": tenantId
         },
         body: "{}"
       }
