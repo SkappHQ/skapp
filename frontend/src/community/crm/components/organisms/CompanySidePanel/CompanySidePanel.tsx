@@ -43,35 +43,35 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     () =>
       canEditAndDelete
         ? [
-      {
-        id: "edit",
-        label: translateText(["editCompany"]),
-        icon: { start: <EditIcon width="16px" height="16px" /> },
-        onClick: () => {
-          setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
-          setIsCompanyModalOpen(true);
-        }
-      },
-      {
-        id: "delete",
-        label: translateText(["deleteCompany"]),
-        icon: {
-          start: (
-            <DeleteButtonIcon
-              width="12px"
-              height="14px"
-              fill="var(--color-semantic-red-text)"
-            />
-          )
-        },
-        activeBehavior:
-          "hover:bg-semantic-red-background text-semantic-red-text",
-        onClick: () => {
-          setCompanyModalType(CrmModalTypes.DELETE_COMPANY_MODAL);
-          setIsCompanyModalOpen(true);
-        }
-      }
-    ]
+            {
+              id: "edit",
+              label: translateText(["editCompany"]),
+              icon: { start: <EditIcon width="16px" height="16px" /> },
+              onClick: () => {
+                setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
+                setIsCompanyModalOpen(true);
+              }
+            },
+            {
+              id: "delete",
+              label: translateText(["deleteCompany"]),
+              icon: {
+                start: (
+                  <DeleteButtonIcon
+                    width="12px"
+                    height="14px"
+                    fill="var(--color-semantic-red-text)"
+                  />
+                )
+              },
+              activeBehavior:
+                "hover:bg-semantic-red-background text-semantic-red-text",
+              onClick: () => {
+                setCompanyModalType(CrmModalTypes.DELETE_COMPANY_MODAL);
+                setIsCompanyModalOpen(true);
+              }
+            }
+          ]
         : [],
     [translateText]
   );
@@ -98,7 +98,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         }}
       />
     );
-  }, [isLoading,translateText]);
+  }, [isLoading, translateText]);
 
   const renderTabContent = () => {
     switch (activeTab) {
