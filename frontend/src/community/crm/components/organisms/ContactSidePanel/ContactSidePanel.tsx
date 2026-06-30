@@ -1,10 +1,14 @@
 import {
+  DeleteButtonIcon,
+  EditIcon,
+  KebabMenu,
+  MenuItemProps,
   SidePanel,
   SidePanelProps,
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -18,6 +22,7 @@ import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePan
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { mapContactToMetricItems } from "~community/crm/utils/contactUtil";
 
 import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
@@ -34,12 +39,53 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     SidePanelTabEnum.TASKS
   );
 
-  const { setIsCrmSidePanelOpen, setSelectedContactId, selectedContactId } =
-    useCrmStore((store) => ({
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-      setSelectedContactId: store.setSelectedContactId,
-      selectedContactId: store.selectedContactId
-    }));
+  const {
+    setIsCrmSidePanelOpen,
+    setSelectedContactId,
+    selectedContactId,
+    setContactModalType,
+    setIsContactModalOpen
+  } = useCrmStore((store) => ({
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    setSelectedContactId: store.setSelectedContactId,
+    selectedContactId: store.selectedContactId,
+    setContactModalType: store.setContactModalType,
+    setIsContactModalOpen: store.setIsContactModalOpen
+  }));
+
+  const menuItems: MenuItemProps[] = useMemo(
+    () => [
+      {
+        id: "edit",
+        label: translateText(["editContact"]),
+        icon: { start: <EditIcon width="16px" height="16px" /> },
+        onClick: () => {
+          setContactModalType(CrmModalTypes.EDIT_CONTACT_MODAL);
+          setIsContactModalOpen(true);
+        }
+      },
+      {
+        id: "delete",
+        label: translateText(["deleteContact"]),
+        icon: {
+          start: (
+            <DeleteButtonIcon
+              width="12px"
+              height="14px"
+              fill="var(--color-semantic-red-text)"
+            />
+          )
+        },
+        onClick: () => {
+          setContactModalType(CrmModalTypes.DELETE_CONTACT_MODAL);
+          setIsContactModalOpen(true);
+        },
+        activeBehavior:
+          "hover:bg-semantic-red-background text-semantic-red-text"
+      }
+    ],
+    [translateText]
+  );
 
   const handleContactLoadError = (): void => {
     setToastMessage({
@@ -112,7 +158,23 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           />
         )
       }
-      headerActions={isLoading ? <SidePanelHeaderActionsSkeleton /> : <></>}
+      headerActions={
+        isLoading ? (
+          <SidePanelHeaderActionsSkeleton />
+        ) : (
+          <KebabMenu
+            id="contact-actions"
+            menuItems={menuItems}
+            anchorButton={{
+              "aria-label": translateText(["kebabMenuAriaLabel"])
+            }}
+            className={{
+              anchorElement:
+                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+            }}
+          />
+        )
+      }
     >
       <div className="flex flex-col pb-4 gap-4">
         {isLoading && !contact ? (

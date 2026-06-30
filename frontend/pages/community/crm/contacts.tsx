@@ -22,14 +22,14 @@ const Contacts: NextPage = () => {
     isCrmSidePanelOpen,
     setIsCrmSidePanelOpen,
     setSelectedContactId,
-    setIsAddContactModalOpen,
+    setIsContactModalOpen,
     setContactModalType,
     selectedContactId
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
     setSelectedContactId: store.setSelectedContactId,
-    setIsAddContactModalOpen: store.setIsAddContactModalOpen,
+    setIsContactModalOpen: store.setIsContactModalOpen,
     setContactModalType: store.setContactModalType,
     selectedContactId: store.selectedContactId
   }));
@@ -41,7 +41,7 @@ const Contacts: NextPage = () => {
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.CONTACTS, () => {
-      setIsAddContactModalOpen(true);
+      setIsContactModalOpen(true);
       setContactModalType(CrmModalTypes.ADD_CONTACT_MODAL);
     });
   };
