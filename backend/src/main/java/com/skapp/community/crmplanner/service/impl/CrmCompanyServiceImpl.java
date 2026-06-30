@@ -1,7 +1,5 @@
 package com.skapp.community.crmplanner.service.impl;
 
-import com.skapp.community.common.model.User;
-import com.skapp.community.common.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -47,8 +45,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	private final CrmMapper crmCompanyMapper;
 
 	private final MessageUtil messageUtil;
-
-	private final UserService userService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -185,13 +181,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		CrmCompany existingCompany = crmCompanyDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-
-		User currentUser = userService.getCurrentUser();
-
-		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser,
-				Long.valueOf(existingCompany.getCreatedBy()))) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EDIT_DENIED);
-		}
 
 		if (crmCompany.getName() != null) {
 			CrmValidations.validateCompanyName(crmCompany.getName());
