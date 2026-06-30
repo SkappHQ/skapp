@@ -208,6 +208,7 @@ public class CrmValidations {
 		}
 	}
 
+
 	public static void validateTaskDueAt(LocalDateTime dueAt) {
 		if (dueAt == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_REQUIRED);

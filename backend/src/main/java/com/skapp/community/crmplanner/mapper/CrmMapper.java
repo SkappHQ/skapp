@@ -111,7 +111,6 @@ public interface CrmMapper {
 	CrmDealViewResponseDto crmDealToCrmDealViewResponseDto(CrmDeal deal);
 
 	@Mapping(target = "typeName", source = "type.name")
-	@Mapping(target = "isOverdue", ignore = true)
 	CrmTaskDetailResponseDto crmTaskToCrmTaskDetailResponseDto(CrmTask task);
 
 }

@@ -40,7 +40,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -132,12 +131,9 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasksPaginated(filterDto, pageable);
 
-		List<CrmTaskDetailResponseDto> tasks = taskPage.getContent().stream().map(task -> {
-			CrmTaskDetailResponseDto dto = crmMapper.crmTaskToCrmTaskDetailResponseDto(task);
-			dto.setIsOverdue(!Boolean.TRUE.equals(task.getIsCompleted()) && task.getDueAt() != null
-					&& task.getDueAt().isBefore(LocalDate.now().atStartOfDay()));
-			return dto;
-		}).toList();
+		List<CrmTaskDetailResponseDto> tasks = taskPage.getContent().stream()
+			.map(crmMapper::crmTaskToCrmTaskDetailResponseDto)
+			.toList();
 
 		PageDto response = new PageDto();
 		response.setItems(tasks);

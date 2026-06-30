@@ -259,7 +259,10 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				filterDto.getExcludeTaskId());
 		List<Predicate> predicates = buildRelatedTaskPredicates(cb, task, params);
 
-		query.select(task).where(predicates.toArray(new Predicate[0]));
+		query.select(task)
+			.where(predicates.toArray(new Predicate[0]))
+			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
+					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
 
 		TypedQuery<CrmTask> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
