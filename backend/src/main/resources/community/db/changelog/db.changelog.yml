@@ -45,4 +45,7 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/common-dd-script-v1-create_google_workspace_connection.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create_external_sync_staging.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create_external_person_sync_log.sql
+
 

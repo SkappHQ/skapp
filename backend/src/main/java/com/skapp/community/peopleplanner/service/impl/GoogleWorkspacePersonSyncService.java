@@ -50,7 +50,8 @@ import com.skapp.community.peopleplanner.model.ExternalSyncStaging;
 import com.skapp.community.peopleplanner.repository.ExternalSyncStagingDao;
 import com.skapp.community.peopleplanner.event.GoogleWorkspaceConnectedEvent;
 import org.springframework.context.event.EventListener;
-
+import com.skapp.community.peopleplanner.model.ExternalPersonSyncLog;
+import com.skapp.community.peopleplanner.repository.ExternalPersonSyncLogDao;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -81,6 +82,7 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     private static final String APPLICATION_NAME = "skapp-integration-poc";
     private final NotificationService notificationService;
     private final GoogleWorkspaceConnectionDao connectionDao;
+    private final ExternalPersonSyncLogDao syncLogDao;
 
 
     private static final Duration WATCH_RENEWAL_THRESHOLD = Duration.ofHours(48);
@@ -283,19 +285,29 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         }
 
         log.info("Propagation delay done — resyncing all users.");
+        Instant startedAt = Instant.now();
         try {
             SyncResult result = performFullSync();
             log.info("Resync complete. Synced: {}, Failed: {}", result.synced(), result.failed());
-            // All users+employees are persisted — now send invitation emails
+
+            saveLog(ExternalPersonSyncLog.SyncChannel.GOOGLE,
+                    ExternalPersonSyncLog.SyncType.WEBHOOK,
+                    ExternalPersonSyncLog.SyncStatus.COMPLETED,
+                    callerEmail, startedAt, result.synced(), result.failed(), null);
 
             sendSummaryEmail(asyncEmailSender, callerEmail,
                     result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
         } catch (Exception e) {
             log.error("Resync triggered by watch notification failed: {}", e.getMessage(), e);
+            saveLog(ExternalPersonSyncLog.SyncChannel.GOOGLE,
+                    ExternalPersonSyncLog.SyncType.WEBHOOK,
+                    ExternalPersonSyncLog.SyncStatus.FAILED,
+                    callerEmail, startedAt, 0, 0, e.getMessage());
             sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
             notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
         }
+
     }
 
     // -------------------------------------------------------------------------
@@ -309,19 +321,30 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             return;
         }
         log.info("bulkSync started for caller: {}", callerEmail);
+        Instant startedAt = Instant.now();
 
         try {
             SyncResult result = performFullSync();
+
+            saveLog(ExternalPersonSyncLog.SyncChannel.GOOGLE,
+                    ExternalPersonSyncLog.SyncType.MANUAL,
+                    ExternalPersonSyncLog.SyncStatus.COMPLETED,
+                    callerEmail, startedAt, result.synced(), result.failed(), null);
 
             sendSummaryEmail(asyncEmailSender, callerEmail,
                     result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
         } catch (Exception e) {
             log.error("Sync failed: {}", e.getMessage(), e);
+            saveLog(ExternalPersonSyncLog.SyncChannel.GOOGLE,
+                    ExternalPersonSyncLog.SyncType.MANUAL,
+                    ExternalPersonSyncLog.SyncStatus.FAILED,
+                    callerEmail, startedAt, 0, 0, e.getMessage());
             sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
             notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
         }
     }
+
 
     @EventListener
     @Async("syncTaskExecutor")
@@ -332,11 +355,23 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         }
         log.info("Initial sync triggered automatically after OAuth connection by {}",
                 event.getConnectedByEmail());
+        Instant startedAt = Instant.now();
+
         try {
             SyncResult result = performFullSync();
+
+            saveLog(ExternalPersonSyncLog.SyncChannel.GOOGLE,
+                    ExternalPersonSyncLog.SyncType.AUTO,
+                    ExternalPersonSyncLog.SyncStatus.COMPLETED,
+                    event.getConnectedByEmail(), startedAt, result.synced(), result.failed(), null);
+
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
         } catch (Exception e) {
             log.error("Initial auto-sync failed: {}", e.getMessage(), e);
+            saveLog(ExternalPersonSyncLog.SyncChannel.GOOGLE,
+                    ExternalPersonSyncLog.SyncType.AUTO,
+                    ExternalPersonSyncLog.SyncStatus.FAILED,
+                    event.getConnectedByEmail(), startedAt, 0, 0, e.getMessage());
             notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
         }
     }
@@ -982,6 +1017,27 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
             log.info("Staged REMOVED for {}", email);
         }
+    }
+
+    private void saveLog(ExternalPersonSyncLog.SyncChannel channel,
+                         ExternalPersonSyncLog.SyncType type,
+                         ExternalPersonSyncLog.SyncStatus status,
+                         String initiatedBy,
+                         Instant startedAt,
+                         int totalStaged,
+                         int totalFailed,
+                         String errorMessage) {
+        ExternalPersonSyncLog log = new ExternalPersonSyncLog();
+        log.setSyncChannel(channel);
+        log.setSyncType(type);
+        log.setStatus(status);
+        log.setInitiatedBy(initiatedBy);
+        log.setStartedAt(startedAt);
+        log.setCompletedAt(Instant.now());
+        log.setTotalStaged(totalStaged);
+        log.setTotalFailed(totalFailed);
+        log.setErrorMessage(errorMessage);
+        syncLogDao.save(log);
     }
 
 
