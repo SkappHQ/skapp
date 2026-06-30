@@ -342,14 +342,6 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   if (typeof window !== "undefined") {
     const currentPath = window.location.pathname;
-
-    if (
-      currentPath.startsWith(ROUTES.AUTH.SIGNIN) ||
-      currentPath.startsWith(ROUTES.AUTH.ENTERPRISE_SIGNIN)
-    ) {
-      return;
-    }
-
     const urlParams = new URLSearchParams(window.location.search);
     const existingCallback = urlParams.get("callback");
 
