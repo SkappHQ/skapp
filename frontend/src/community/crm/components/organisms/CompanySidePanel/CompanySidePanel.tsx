@@ -17,7 +17,6 @@ import {
   useGetDealsByCompany,
   useGetOpenTasksByCompany
 } from "~community/crm/api/CompanyApi";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import SidePanelCompanyContacts from "~community/crm/components/molecules/SidePanelCompanyContacts/SidePanelCompanyContacts";
 import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
@@ -25,6 +24,7 @@ import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelM
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
@@ -123,7 +123,9 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       case SidePanelTabEnum.DEALS:
         return <SidePanelDealSection deals={dealData?.items ?? []} />;
       case SidePanelTabEnum.TASKS:
-        return <SidePanelTasksSection tasks={taskData} loadingRef={loadingRef} />;
+        return (
+          <SidePanelTasksSection tasks={taskData} loadingRef={loadingRef} />
+        );
       case SidePanelTabEnum.CONTACTS:
         return <SidePanelCompanyContacts contacts={contactData?.items ?? []} />;
       default:
@@ -177,7 +179,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       }
     >
       <div className="flex flex-col pb-4 gap-4">
-        {isLoading && !selectedCompany ? (
+        {isLoading || !selectedCompany ? (
           <CompanySidePanelSkeleton />
         ) : (
           <>

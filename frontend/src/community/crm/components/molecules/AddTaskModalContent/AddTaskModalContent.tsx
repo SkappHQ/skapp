@@ -206,7 +206,8 @@ const AddTaskModalContent: FC = () => {
     values.dealId ?? undefined
   );
 
-  const isDealSearchEnabled = debouncedDealSearchText.length > 0;
+  const isDealSearchEnabled =
+    debouncedDealSearchText.length > 0 || !!values.contactId;
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
