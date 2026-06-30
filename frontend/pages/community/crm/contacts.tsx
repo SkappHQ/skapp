@@ -16,7 +16,7 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
-  const { guardCrmCreate } = useCrmLimitGuard();
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const {
     isCrmSidePanelOpen,
@@ -53,6 +53,7 @@ const Contacts: NextPage = () => {
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
+      isPrimaryBtnLoading={isCheckingCrmLimit}
     >
       <>
         {selectedContactId && (

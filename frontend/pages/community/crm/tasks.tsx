@@ -17,7 +17,7 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
   const containerRef = useRef<HTMLDivElement>(null);
-  const { guardCrmCreate } = useCrmLimitGuard();
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const {
     setIsTaskModalOpen,
@@ -71,6 +71,7 @@ const Tasks: NextPage = () => {
         padding: { xs: "1.375rem 2rem 0", lg: "1.375rem 3rem 0" }
       }}
       onPrimaryButtonClick={onPrimaryButtonClick}
+      isPrimaryBtnLoading={isCheckingCrmLimit}
     >
       <>
         {selectedTaskId && (

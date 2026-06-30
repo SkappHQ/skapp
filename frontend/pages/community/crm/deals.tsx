@@ -13,7 +13,7 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
-  const { guardCrmCreate } = useCrmLimitGuard();
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsCrmSidePanelOpen } = useCrmStore((store) => ({
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
@@ -30,6 +30,7 @@ const Deals: NextPage = () => {
           setIsCrmSidePanelOpen(true)
         )
       }
+      isPrimaryBtnLoading={isCheckingCrmLimit}
     >
       <>
         <SidePanelWrapper>

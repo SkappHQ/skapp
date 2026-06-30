@@ -15,7 +15,7 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
-  const { guardCrmCreate } = useCrmLimitGuard();
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const {
     setIsCompanyModalOpen,
@@ -52,6 +52,7 @@ const Companies: NextPage = () => {
       primaryButtonText={translateText(["addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
+      isPrimaryBtnLoading={isCheckingCrmLimit}
     >
       <>
         {selectedCompany && (
