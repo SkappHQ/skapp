@@ -207,7 +207,7 @@ const requestAccessTokenFromRefresh = async (
   refreshToken: string,
   tenantId: string | undefined
 ): Promise<string | null> => {
-  if (!refreshTokenCookieName || !tenantId || !refreshToken) return null;
+  if (!refreshTokenCookieName || !refreshToken) return null;
 
   try {
     const response = await fetch(
@@ -217,7 +217,7 @@ const requestAccessTokenFromRefresh = async (
         headers: {
           "Content-Type": "application/json",
           cookie: `${refreshTokenCookieName}=${refreshToken}`,
-          "X-Tenant-ID": tenantId
+          ...(tenantId ? { "X-Tenant-ID": tenantId } : {})
         },
         body: "{}"
       }
@@ -247,11 +247,12 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!token || isTokenExpired(token)) {
-    const subdomain = getSubdomain(request.nextUrl.hostname);
-    const tenantId = Array.isArray(subdomain) ? subdomain[0] : subdomain;
-
     let refreshTokenCookieName: string | null;
+    let tenantId: string | undefined;
+
     if (isEnterpriseMode()) {
+      const subdomain = getSubdomain(request.nextUrl.hostname);
+      tenantId = Array.isArray(subdomain) ? subdomain[0] : subdomain;
       refreshTokenCookieName = tenantId ? `${tenantId}_refreshToken` : null;
     } else {
       refreshTokenCookieName = "refreshToken";
