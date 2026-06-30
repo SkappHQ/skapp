@@ -127,7 +127,8 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 
 export const setAccessToken = (token: string) => {
   if (typeof window !== "undefined") {
-    const expirySeconds = extractClaimsFromToken(token)?.exp as number | undefined;
+    const claims = extractClaimsFromToken(token);
+    const expirySeconds = typeof claims.exp === "number" ? claims.exp : undefined;
     const expiryAttribute = expirySeconds
       ? `; expires=${new Date(expirySeconds * unitConversion.MILLISECONDS_PER_SECOND).toUTCString()}`
       : "";

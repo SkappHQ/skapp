@@ -23,6 +23,7 @@ import {
   checkRestrictedRoutesAndRedirect,
   isEnterpriseMode
 } from "~community/common/utils/commonUtil";
+import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums } from "~enterprise/common/enums/Common";
 import {
   getSubdomain,
@@ -210,7 +211,7 @@ const requestAccessTokenFromRefresh = async (
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/session/refresh-token`,
+      `${process.env.NEXT_PUBLIC_API_URL}${authenticationEndpoints.REFRESH_TOKEN}`,
       {
         method: "POST",
         headers: {
@@ -245,7 +246,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!token) {
+  if (!token || isTokenExpired(token)) {
     const subdomain = getSubdomain(request.nextUrl.hostname);
     const tenantId = Array.isArray(subdomain) ? subdomain[0] : subdomain;
 
@@ -260,25 +261,24 @@ export async function middleware(request: NextRequest) {
       ? request.cookies.get(refreshTokenCookieName)?.value
       : undefined;
 
+    let minted: string | null = null;
     if (
       refreshTokenCookieName &&
       refreshToken &&
       !isTokenExpired(refreshToken)
     ) {
-      const minted = await requestAccessTokenFromRefresh(
+      minted = await requestAccessTokenFromRefresh(
         refreshTokenCookieName,
         refreshToken,
         tenantId
       );
-
-      if (minted) {
-        token = minted;
-      }
     }
 
-    if (!token) {
+    if (!minted) {
       return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
     }
+
+    token = minted;
   }
 
   const claims = extractClaimsFromToken(token);
