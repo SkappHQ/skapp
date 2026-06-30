@@ -203,12 +203,6 @@ export function middleware(request: NextRequest) {
 
   const currentPath = request.nextUrl.pathname;
 
-  // The backend names the refresh-token cookie `${tenant}_refreshToken` in enterprise
-  // mode (or plain `refreshToken` in community mode) and writes that same tenant value
-  // into a readable `tenant` cookie. Deriving the name from the `tenant` cookie is far
-  // more reliable than `request.nextUrl.hostname`, which behind a reverse proxy (nginx)
-  // does not resolve to the public subdomain. Fall back to the host subdomain if the
-  // tenant cookie is somehow absent.
   const tenantFromCookie = request.cookies.get("tenant")?.value;
   const tenantId =
     tenantFromCookie || (getSubdomain(request.nextUrl.hostname) as string);
