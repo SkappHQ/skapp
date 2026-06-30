@@ -4,16 +4,16 @@ import {
   PointerSensor
 } from "@dnd-kit/dom";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
-import { FC, useEffect, useMemo, useState } from "react";
+import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
+import { FC, useEffect, useMemo } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
-  fetchDealsGroupedByStages,
   useGetBoardInitData,
   useGetDealsGroupedByStages
 } from "~community/crm/api/BoardApi";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
-import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import {
   DEFAULT_BOARD_PAGE_SIZE,
   DRAG_ACTIVATION_DISTANCE
@@ -43,17 +43,15 @@ const sensors = [
 const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   searchKeyword = ""
 }) => {
+  const translateText = useTranslator("crmModule", "deals", "kanban");
+
   const boardStages = useCrmStore((store) => store.boardStages);
   const boardOwners = useCrmStore((store) => store.boardOwners);
   const boardContacts = useCrmStore((store) => store.boardContacts);
   const setBoardStages = useCrmStore((store) => store.setBoardStages);
   const setBoardContacts = useCrmStore((store) => store.setBoardContacts);
   const setBoardOwners = useCrmStore((store) => store.setBoardOwners);
-  const setBoardCrmRoles = useCrmStore((store) => store.setBoardCrmRoles);
   const setBoardStageDeals = useCrmStore((store) => store.setBoardStageDeals);
-  const appendBoardStageDeals = useCrmStore(
-    (store) => store.appendBoardStageDeals
-  );
   const setIsCrmSidePanelOpen = useCrmStore(
     (store) => store.setIsCrmSidePanelOpen
   );
@@ -61,32 +59,31 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     (store) => store.setPreselectedStageId
   );
 
-  const [loadingStageIds, setLoadingStageIds] = useState<number[]>([]);
-
-  const { data: initData, isLoading: isInitDataLoading } =
-    useGetBoardInitData();
+  const {
+    data: initData,
+    isLoading: isInitDataLoading,
+    isError: isInitDataError,
+    refetch: refetchInitData
+  } = useGetBoardInitData();
 
   useEffect(() => {
     if (!initData) return;
     setBoardStages(initData.stages);
     setBoardContacts(initData.contacts);
     setBoardOwners(initData.owners);
-    setBoardCrmRoles(initData.crmRoles);
-  }, [
-    initData,
-    setBoardStages,
-    setBoardContacts,
-    setBoardOwners,
-    setBoardCrmRoles
-  ]);
+  }, [initData, setBoardStages, setBoardContacts, setBoardOwners]);
 
   const stageIds = boardStages.map((stage) => stage.id);
 
-  const { data: dealsByStages, isLoading: isDealsLoading } =
-    useGetDealsGroupedByStages(
-      { stageIds, searchKeyword, page: 0, limit: DEFAULT_BOARD_PAGE_SIZE },
-      stageIds.length > 0
-    );
+  const {
+    data: dealsByStages,
+    isLoading: isDealsLoading,
+    isError: isDealsError,
+    refetch: refetchDeals
+  } = useGetDealsGroupedByStages(
+    { stageIds, searchKeyword, page: 0, limit: DEFAULT_BOARD_PAGE_SIZE },
+    stageIds.length > 0
+  );
 
   useEffect(() => {
     if (dealsByStages) {
@@ -124,36 +121,32 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     [activeDeal, boardOwners, boardContacts]
   );
 
-  const handleLoadMore = async (stageId: number) => {
-    if (loadingStageIds.includes(stageId)) return;
-
-    const stage = stageMap.find((s) => s.stageId === stageId);
-    if (!stage || !stage.hasNextPage) return;
-
-    setLoadingStageIds((prev) => [...prev, stageId]);
-
-    try {
-      const [result] = await fetchDealsGroupedByStages({
-        stageIds: [stageId],
-        searchKeyword,
-        page: stage.currentPage + 1,
-        limit: DEFAULT_BOARD_PAGE_SIZE
-      });
-
-      if (result) {
-        appendBoardStageDeals(result);
-      }
-    } finally {
-      setLoadingStageIds((prev) => prev.filter((id) => id !== stageId));
-    }
-  };
-
   const handleAddDeal = (stageId: number) => {
     setPreselectedStageId(stageId);
     setIsCrmSidePanelOpen(true);
   };
 
   const isLoading = isInitDataLoading || isDealsLoading;
+  const isError = isInitDataError || isDealsError;
+
+  const handleRetry = () => {
+    refetchInitData();
+    refetchDeals();
+  };
+
+  if (isError && !isLoading) {
+    return (
+      <EmptyDataView
+        icon={<SearchIcon />}
+        title={translateText(["errorState", "title"])}
+        description={translateText(["errorState", "description"])}
+        button={{
+          children: translateText(["errorState", "retryBtn"]),
+          onClick: handleRetry
+        }}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col">
@@ -174,12 +167,13 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                 stage={stage}
                 deals={deals}
                 isLoading={isLoading}
+                currentPage={stageDeals?.currentPage ?? 0}
                 hasNextPage={stageDeals?.hasNextPage ?? false}
-                isFetchingNextPage={loadingStageIds.includes(stage.id)}
+                totalCount={stageDeals?.totalCount}
                 isOver={overStageId === stage.id}
+                searchKeyword={searchKeyword}
                 onDealClick={() => {}}
                 onAddDeal={handleAddDeal}
-                onLoadMore={() => handleLoadMore(stage.id)}
               />
             );
           })}
@@ -202,8 +196,6 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
           )}
         </DragOverlay>
       </DragDropProvider>
-
-      <AddDealSidePanel />
     </div>
   );
 };

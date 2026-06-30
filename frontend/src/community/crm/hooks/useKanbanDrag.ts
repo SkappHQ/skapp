@@ -6,6 +6,9 @@ import type {
 import { useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useMoveDealBetweenStages,
   useReorderDealWithinStage
@@ -33,6 +36,9 @@ interface UseKanbanDragReturn {
 }
 
 export const useKanbanDrag = (): UseKanbanDragReturn => {
+  const translateText = useTranslator("crmModule", "deals", "kanban");
+  const { setToastMessage } = useToast();
+
   const { boardStageDeals, setBoardStageDeals } = useCrmStore(
     useShallow((store) => ({
       boardStageDeals: store.boardStageDeals,
@@ -53,6 +59,12 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
     if (dragStartSnapshotRef.current) {
       setBoardStageDeals(dragStartSnapshotRef.current);
     }
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["dragErrorTitle"]),
+      description: translateText(["dragErrorDescription"])
+    });
   };
 
   const { mutate: reorderDealWithinStage } =
@@ -108,19 +120,36 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
         activeDealId
       );
 
-      if (sourceStageId === targetStageId) {
-        reorderDealWithinStage({
-          dealId: activeDealId,
-          previousDealId,
-          nextDealId
-        });
-      } else {
-        moveDealToStage({
-          dealId: activeDealId,
-          newStageId: targetStageId,
-          previousDealId,
-          nextDealId
-        });
+      const original =
+        sourceStageId !== null && dragStartSnapshotRef.current
+          ? getNeighbourDealIds(
+              dragStartSnapshotRef.current,
+              sourceStageId,
+              activeDealId
+            )
+          : null;
+
+      const isUnchanged =
+        sourceStageId === targetStageId &&
+        original !== null &&
+        original.previousDealId === previousDealId &&
+        original.nextDealId === nextDealId;
+
+      if (!isUnchanged) {
+        if (sourceStageId === targetStageId) {
+          reorderDealWithinStage({
+            dealId: activeDealId,
+            previousDealId,
+            nextDealId
+          });
+        } else {
+          moveDealToStage({
+            dealId: activeDealId,
+            newStageId: targetStageId,
+            previousDealId,
+            nextDealId
+          });
+        }
       }
     }
 

@@ -27,7 +27,6 @@ interface ActionTypes {
   setBoardStages: (boardStages: CrmDealStageType[]) => void;
   setBoardContacts: (boardContacts: CrmContactLookup[]) => void;
   setBoardOwners: (boardOwners: CrmOwner[]) => void;
-  setBoardCrmRoles: (boardCrmRoles: string[]) => void;
   setBoardStageDeals: (
     boardStageDeals: CrmBoardStageDealsResponseType[]
   ) => void;
@@ -51,6 +50,5 @@ export interface CrmStore extends ActionTypes {
   boardStages: CrmDealStageType[];
   boardContacts: CrmContactLookup[];
   boardOwners: CrmOwner[];
-  boardCrmRoles: string[];
   boardStageDeals: CrmBoardStageDealsResponseType[];
 }

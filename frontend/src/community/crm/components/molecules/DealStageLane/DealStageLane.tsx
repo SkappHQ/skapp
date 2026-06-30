@@ -6,6 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import DealStageLaneHeader from "~community/crm/components/molecules/DealStageLane/DealStageLaneHeader/DealStageLaneHeader";
 import DraggableDealCard from "~community/crm/components/molecules/DraggableDealCard/DraggableDealCard";
+import { useLoadMoreStageDeals } from "~community/crm/hooks/useLoadMoreStageDeals";
 import type { CrmBoardDealType } from "~community/crm/types/BoardTypes";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
@@ -14,24 +15,26 @@ export interface DealStageLaneProps {
   stage: CrmDealStageType;
   deals: CrmBoardDealType[];
   isLoading?: boolean;
+  currentPage?: number;
   hasNextPage?: boolean;
-  isFetchingNextPage?: boolean;
+  totalCount?: number;
   isOver?: boolean;
+  searchKeyword?: string;
   onDealClick: (dealId: number) => void;
   onAddDeal: (stageId: number) => void;
-  onLoadMore: () => void;
 }
 
 const DealStageLane: FC<DealStageLaneProps> = ({
   stage,
   deals,
   isLoading = false,
+  currentPage = 0,
   hasNextPage = false,
-  isFetchingNextPage = false,
+  totalCount,
   isOver = false,
+  searchKeyword,
   onDealClick,
-  onAddDeal,
-  onLoadMore
+  onAddDeal
 }) => {
   const translateText = useTranslator("crmModule", "deals", "kanban");
 
@@ -39,17 +42,23 @@ const DealStageLane: FC<DealStageLaneProps> = ({
     String(deals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0))
   );
 
+  const { handleLoadMore, isFetchingNextPage } = useLoadMoreStageDeals({
+    stageId: stage.id,
+    currentPage,
+    searchKeyword
+  });
+
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isFetchingNextPage,
-    onLoadMore
+    onLoadMore: handleLoadMore
   });
 
   return (
     <DealStageLaneHeader
       stage={stage}
       totalValue={totalValue}
-      totalCount={deals.length}
+      totalCount={totalCount ?? 0}
       isOver={isOver}
     >
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-3 pb-3">

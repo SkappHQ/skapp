@@ -433,7 +433,14 @@
       "switchDealViewAriaLabel": "Switch deal view"
     },
     "kanban": {
-      "addDealBtn": "Add deal"
+      "addDealBtn": "Add deal",
+      "dragErrorTitle": "Failed to move deal",
+      "dragErrorDescription": "Something went wrong. Please try again.",
+      "errorState": {
+        "title": "Something went wrong",
+        "description": "Failed to load the board. Please try again.",
+        "retryBtn": "Retry"
+      }
     },
     "deleteDealModal": {
       "areYouSureModalTitle": "Are you sure?",

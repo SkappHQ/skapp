@@ -11,13 +11,11 @@ const CrmBoardSlice = (set: SetType<CrmBoardSliceTypes>) => ({
   boardStages: [],
   boardContacts: [],
   boardOwners: [],
-  boardCrmRoles: [],
   boardStageDeals: [],
   setBoardStages: (boardStages: CrmDealStageType[]) => set({ boardStages }),
   setBoardContacts: (boardContacts: CrmContactLookup[]) =>
     set({ boardContacts }),
   setBoardOwners: (boardOwners: CrmOwner[]) => set({ boardOwners }),
-  setBoardCrmRoles: (boardCrmRoles: string[]) => set({ boardCrmRoles }),
   setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsResponseType[]) =>
     set({ boardStageDeals }),
   appendBoardStageDeals: (stageDeals: CrmBoardStageDealsResponseType) =>

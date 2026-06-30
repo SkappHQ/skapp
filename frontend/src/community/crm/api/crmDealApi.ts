@@ -20,7 +20,7 @@ import {
 } from "~community/crm/types/CommonTypes";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { crmDealQueryKeys } from "./utils/QueryKeys";
+import { crmBoardQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
@@ -76,6 +76,12 @@ export const useCreateDeal = (
     mutationFn: createDeal,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
+      queryClient.invalidateQueries({
+        queryKey: crmBoardQueryKeys.BOARD_INIT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES_ALL
+      });
       onSuccess();
     },
     onError

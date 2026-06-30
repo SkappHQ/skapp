@@ -51,8 +51,6 @@ export interface CrmBoardSliceTypes extends Pick<
   | "setBoardContacts"
   | "boardOwners"
   | "setBoardOwners"
-  | "boardCrmRoles"
-  | "setBoardCrmRoles"
   | "boardStageDeals"
   | "setBoardStageDeals"
   | "appendBoardStageDeals"
