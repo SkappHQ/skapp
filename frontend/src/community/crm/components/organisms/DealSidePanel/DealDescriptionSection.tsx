@@ -38,7 +38,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
           <TextArea
             value={editedDescription}
             onChange={(e) => setEditedDescription(e.target.value)}
-            className="w-full"
+            className="w-full body2"
             rows={4}
             autoFocus
           />

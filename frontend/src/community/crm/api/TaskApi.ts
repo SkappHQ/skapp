@@ -27,76 +27,10 @@ interface RelatedTasksPage {
   totalPages: number;
 }
 
-// TODO: remove mock before merging
-const USE_MOCK_RELATED_TASKS = true;
-
-const MOCK_RELATED_TASKS: RelatedTasksPage = {
-  items: [
-    {
-      id: 1,
-      name: "Follow up with the enterprise client regarding the Q3 renewal proposal and outstanding contract amendments",
-      typeName: "Call",
-      priority: "HIGH" as any,
-      isCompleted: false,
-      dueAt: "2026-07-05T10:00:00Z",
-      owner: {
-        employeeId: 1,
-        firstName: "Alice",
-        lastName: "Smith",
-        authPic: null
-      },
-      contact: {
-        id: 10,
-        name: "John Doe",
-        company: { id: 5, name: "Acme Corp" }
-      }
-    },
-    {
-      id: 2,
-      name: "Send proposal document",
-      typeName: "Email",
-      priority: "MEDIUM" as any,
-      isCompleted: false,
-      dueAt: "2026-07-10T09:00:00Z",
-      owner: {
-        employeeId: 2,
-        firstName: "Bob",
-        lastName: "Johnson",
-        authPic: null
-      },
-      contact: {
-        id: 10,
-        name: "John Doe",
-        company: { id: 5, name: "Acme Corp" }
-      }
-    },
-    {
-      id: 3,
-      name: "Schedule product demo",
-      typeName: "Meeting",
-      priority: "LOW" as any,
-      isCompleted: true,
-      dueAt: "2026-06-28T14:00:00Z",
-      owner: {
-        employeeId: 1,
-        firstName: "Alice",
-        lastName: "Smith",
-        authPic: null
-      },
-      contact: null
-    }
-  ],
-  totalItems: 3,
-  currentPage: 0,
-  totalPages: 1
-};
-
 const fetchRelatedTasks = async (
   params: RelatedTasksParams,
   page: number
 ): Promise<RelatedTasksPage> => {
-  if (USE_MOCK_RELATED_TASKS) return Promise.resolve(MOCK_RELATED_TASKS);
-
   const response = await authFetch.get(taskEndpoints.GET_RELATED_TASKS, {
     params
   });
