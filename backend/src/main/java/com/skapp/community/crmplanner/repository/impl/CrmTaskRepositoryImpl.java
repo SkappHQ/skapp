@@ -248,14 +248,15 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public Page<CrmTask> findRelatedTasks(CrmTaskRelatedFilterDto filterDto, Pageable pageable) {
+	public Page<CrmTask> findRelatedTasks(CrmTaskRelatedFilterDto filterDto, Long ownerId, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
 		applyFetchGraph(task);
 
-		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId());
+		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId(),
+				ownerId);
 		List<Predicate> predicates = buildRelatedTaskPredicates(cb, task, params);
 
 		query.select(task)
@@ -284,6 +285,10 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 			CrmTaskRelatedParams params) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
+
+		if (params.getOwnerId() != null) {
+			predicates.add(cb.equal(root.get(CrmTask_.owner).get(Employee_.employeeId), params.getOwnerId()));
+		}
 
 		List<Predicate> contextPredicates = new ArrayList<>();
 		if (params.getContactId() != null) {

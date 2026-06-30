@@ -530,6 +530,33 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Sales rep sees only own related tasks - Returns only tasks owned by the rep")
+	void getRelatedTasks_RepSeesOnlyOwnTasks() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		savedTask("Manager task", false, false, contactId);
+
+		CrmTask repTask = new CrmTask();
+		repTask.setName("Rep task");
+		repTask.setType(taskType);
+		repTask.setPriority(CrmTaskPriority.MEDIUM);
+		repTask.setOwner(employeeDao.getReferenceById(2L));
+		repTask.setContact(crmContactDao.getReferenceById(contactId));
+		crmTaskDao.save(repTask);
+
+		mvc.perform(get(BASE_PATH + "/related").param("contactId", contactId.toString())
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Rep task"));
+	}
+
+	@Test
 	@DisplayName("Get related tasks without CRM role - Returns Forbidden")
 	void getRelatedTasks_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),

@@ -128,8 +128,11 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	public ResponseEntityDto getRelatedTasks(CrmTaskRelatedFilterDto filterDto) {
 		log.info("getRelatedTasks: execution started");
 
+		User currentUser = userService.getCurrentUser();
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasks(filterDto, pageable);
+		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasks(filterDto, ownerId, pageable);
 
 		List<CrmTaskDetailResponseDto> tasks = taskPage.getContent()
 			.stream()

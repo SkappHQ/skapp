@@ -11,4 +11,6 @@ public class CrmTaskRelatedParams {
 
 	private final Long dealId;
 
+	private final Long ownerId;
+
 }
