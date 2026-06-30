@@ -10,6 +10,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
 
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
@@ -23,7 +24,7 @@ import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
-
+  const { isCrmSalesManager } = useSessionData();
   // TODO: Replace with real isLoading from useGetCompanyById when API is wired
   const isLoading = false;
 
@@ -102,6 +103,25 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     }
   ];
 
+  const CompanyHeaderActions = () => {
+    if (!isCrmSalesManager) {
+      return null;
+    }
+
+    return (
+      <KebabMenu
+        id="company-actions"
+        menuItems={menuItems}
+        anchorButton={{
+          "aria-label": translateText(["kebabMenuAriaLabel"])
+        }}
+        className={{
+          anchorElement:
+            "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+        }}
+      />
+    );
+  };
   return (
     <SidePanel
       isOpen={isOpen}
@@ -116,17 +136,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         isLoading ? (
           <SidePanelHeaderActionsSkeleton count={1} />
         ) : (
-          <KebabMenu
-            id="company-actions"
-            menuItems={menuItems}
-            anchorButton={{
-              "aria-label": translateText(["kebabMenuAriaLabel"])
-            }}
-            className={{
-              anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-            }}
-          />
+          <CompanyHeaderActions />
         )
       }
     >
