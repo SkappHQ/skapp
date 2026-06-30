@@ -246,8 +246,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  let mintedAccessToken: string | null = null;
-
   if (!token || isTokenExpired(token)) {
     let refreshTokenCookieName: string | null;
     let tenantId: string | undefined;
@@ -264,41 +262,25 @@ export async function middleware(request: NextRequest) {
       ? request.cookies.get(refreshTokenCookieName)?.value
       : undefined;
 
+    let minted: string | null = null;
     if (
       refreshTokenCookieName &&
       refreshToken &&
       !isTokenExpired(refreshToken)
     ) {
-      mintedAccessToken = await requestAccessTokenFromRefresh(
+      minted = await requestAccessTokenFromRefresh(
         refreshTokenCookieName,
         refreshToken,
         tenantId
       );
     }
 
-    if (!mintedAccessToken) {
+    if (!minted) {
       return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
     }
 
-    token = mintedAccessToken;
+    token = minted;
   }
-
-  // Persist a freshly minted access token on whatever response we return, so the
-  // browser receives it and the client does not have to refresh again.
-  const finalize = (response: NextResponse): NextResponse => {
-    if (mintedAccessToken) {
-      const claims = extractClaimsFromToken(mintedAccessToken);
-      const expirySeconds =
-        typeof claims.exp === "number" ? claims.exp : undefined;
-      response.cookies.set("accessToken", mintedAccessToken, {
-        path: "/",
-        secure: true,
-        sameSite: "lax",
-        ...(expirySeconds ? { expires: new Date(expirySeconds * 1000) } : {})
-      });
-    }
-    return response;
-  };
 
   const claims = extractClaimsFromToken(token);
 
@@ -325,10 +307,10 @@ export async function middleware(request: NextRequest) {
           TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED ||
         tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
       ) {
-        return finalize(NextResponse.next());
+        return NextResponse.next();
       } else {
-        return finalize(
-          NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url))
+        return NextResponse.redirect(
+          new URL(ROUTES.DASHBOARD.BASE, request.url)
         );
       }
     }
@@ -338,16 +320,14 @@ export async function middleware(request: NextRequest) {
     isPasswordChangedForTheFirstTime === "false" &&
     currentPath !== ROUTES.AUTH.RESET_PASSWORD
   ) {
-    return finalize(
-      NextResponse.redirect(new URL(ROUTES.AUTH.RESET_PASSWORD, request.url))
+    return NextResponse.redirect(
+      new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
     );
   } else if (
     isPasswordChangedForTheFirstTime === "true" &&
     currentPath === ROUTES.AUTH.RESET_PASSWORD
   ) {
-    return finalize(
-      NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url))
-    );
+    return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
   }
 
   if (
@@ -355,8 +335,8 @@ export async function middleware(request: NextRequest) {
     !roles.includes(AdminTypes.LEAVE_ADMIN) &&
     currentPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
   ) {
-    return finalize(
-      NextResponse.redirect(new URL(ROUTES.AUTH.UNAUTHORIZED, request.url))
+    return NextResponse.redirect(
+      new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
     );
   }
 
@@ -367,10 +347,8 @@ export async function middleware(request: NextRequest) {
     !roles.includes(ManagerTypes.ATTENDANCE_MANAGER)
   ) {
     if (roles.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)) {
-      return finalize(
-        NextResponse.redirect(
-          new URL(ROUTES.TIMESHEET.MY_TIMESHEET, request.url)
-        )
+      return NextResponse.redirect(
+        new URL(ROUTES.TIMESHEET.MY_TIMESHEET, request.url)
       );
     }
   }
@@ -384,8 +362,8 @@ export async function middleware(request: NextRequest) {
       request.nextUrl.pathname.includes(ROUTES.SIGN.BASE) &&
       !roles.includes(EmployeeTypes.ESIGN_EMPLOYEE)
     ) {
-      return finalize(
-        NextResponse.redirect(new URL(ROUTES.AUTH.UNAUTHORIZED, request.url))
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
       );
     }
 
@@ -393,8 +371,8 @@ export async function middleware(request: NextRequest) {
       request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
       !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
     ) {
-      return finalize(
-        NextResponse.redirect(new URL(ROUTES.AUTH.UNAUTHORIZED, request.url))
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
       );
     }
 
@@ -405,7 +383,7 @@ export async function middleware(request: NextRequest) {
       AdminTypes.PEOPLE_ADMIN,
       roles
     );
-    if (managerRedirect) return finalize(managerRedirect);
+    if (managerRedirect) return managerRedirect;
 
     // Check invoice employee restricted routes
     const invoiceEmployeeRedirect = checkRestrictedRoutesAndRedirect(
@@ -414,7 +392,7 @@ export async function middleware(request: NextRequest) {
       ManagerTypes.INVOICE_MANAGER,
       roles
     );
-    if (invoiceEmployeeRedirect) return finalize(invoiceEmployeeRedirect);
+    if (invoiceEmployeeRedirect) return invoiceEmployeeRedirect;
 
     // Check employee restricted routes
     const employeeRedirect = checkRestrictedRoutesAndRedirect(
@@ -423,18 +401,18 @@ export async function middleware(request: NextRequest) {
       ManagerTypes.PEOPLE_MANAGER,
       roles
     );
-    if (employeeRedirect) return finalize(employeeRedirect);
+    if (employeeRedirect) return employeeRedirect;
 
-    return finalize(NextResponse.next());
+    return NextResponse.next();
   }
 
   if (currentPath !== ROUTES.AUTH.UNAUTHORIZED) {
-    return finalize(
-      NextResponse.redirect(new URL(ROUTES.AUTH.UNAUTHORIZED, request.url))
+    return NextResponse.redirect(
+      new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
     );
   }
 
-  return finalize(NextResponse.next());
+  return NextResponse.next();
 }
 
 // Configure which routes middleware should run on
