@@ -86,6 +86,8 @@ export interface User {
   tenantStatus?: TenantStatusEnums;
 }
 
+const REFRESH_TOKEN_FLAG_COOKIE = "hasRefreshToken";
+
 // Flag to prevent recursive token refresh
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
@@ -161,6 +163,7 @@ export const clearCookies = async (): Promise<void> => {
       "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
     document.cookie =
       "isPasswordChangedForTheFirstTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
+    document.cookie = `${REFRESH_TOKEN_FLAG_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax`;
   }
 };
 
@@ -169,16 +172,16 @@ export const getAccessToken = async (): Promise<string | null> => {
 
   const currentAccessToken = getCookieValue("accessToken");
 
-  if (!currentAccessToken) {
-    return await getNewAccessToken();
+  if (currentAccessToken && !isTokenExpired(currentAccessToken)) {
+    return currentAccessToken;
   }
 
-  if (isTokenExpired(currentAccessToken)) {
-    const newToken = await getNewAccessToken();
-    return newToken;
+  if (getCookieValue(REFRESH_TOKEN_FLAG_COOKIE) !== "true") {
+    await signOut();
+    return null;
   }
 
-  return currentAccessToken;
+  return await getNewAccessToken();
 };
 
 export const isTokenExpired = (token: string): boolean => {
@@ -338,6 +341,14 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   if (typeof window !== "undefined") {
     const currentPath = window.location.pathname;
+
+    if (
+      currentPath.startsWith(ROUTES.AUTH.SIGNIN) ||
+      currentPath.startsWith(ROUTES.AUTH.ENTERPRISE_SIGNIN)
+    ) {
+      return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const existingCallback = urlParams.get("callback");
 

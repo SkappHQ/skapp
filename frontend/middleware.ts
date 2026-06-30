@@ -16,10 +16,7 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import {
-  checkRestrictedRoutesAndRedirect,
-  isEnterpriseMode
-} from "~community/common/utils/commonUtil";
+import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
 import { TenantStatusEnums } from "~enterprise/common/enums/Common";
 import {
   getSubdomain,
@@ -206,6 +203,32 @@ export function middleware(request: NextRequest) {
 
   const currentPath = request.nextUrl.pathname;
 
+  // The backend names the refresh-token cookie `${tenant}_refreshToken` in enterprise
+  // mode (or plain `refreshToken` in community mode) and writes that same tenant value
+  // into a readable `tenant` cookie. Deriving the name from the `tenant` cookie is far
+  // more reliable than `request.nextUrl.hostname`, which behind a reverse proxy (nginx)
+  // does not resolve to the public subdomain. Fall back to the host subdomain if the
+  // tenant cookie is somehow absent.
+  const tenantFromCookie = request.cookies.get("tenant")?.value;
+  const tenantId =
+    tenantFromCookie || (getSubdomain(request.nextUrl.hostname) as string);
+  const refreshTokenCookieName = tenantId
+    ? `${tenantId}_refreshToken`
+    : "refreshToken";
+  const hasRefreshToken =
+    Boolean(request.cookies.get(refreshTokenCookieName)?.value) ||
+    Boolean(request.cookies.get("refreshToken")?.value);
+
+  const withRefreshTokenFlag = (response: NextResponse): NextResponse => {
+    response.cookies.set("hasRefreshToken", hasRefreshToken ? "true" : "false", {
+      httpOnly: false,
+      secure: true,
+      sameSite: "lax",
+      path: "/"
+    });
+    return response;
+  };
+
   if (
     currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
     currentPath.startsWith(ROUTES.SIGN.SIGN) ||
@@ -333,7 +356,7 @@ export function middleware(request: NextRequest) {
     );
     if (employeeRedirect) return employeeRedirect;
 
-    return NextResponse.next();
+    return withRefreshTokenFlag(NextResponse.next());
   }
 
   // Redirect to /unauthorized if no access
@@ -343,23 +366,13 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  const tenantId = getSubdomain(request.nextUrl.hostname) as string;
-  let refreshTokenCookieName: string | null;
-  if (isEnterpriseMode()) {
-    refreshTokenCookieName = tenantId ? `${tenantId}_refreshToken` : null;
-  } else {
-    refreshTokenCookieName = "refreshToken";
-  }
-
-  const hasRefreshToken =
-    refreshTokenCookieName !== null &&
-    Boolean(request.cookies.get(refreshTokenCookieName)?.value);
-
   if (!token && hasRefreshToken) {
-    return NextResponse.next();
+    return withRefreshTokenFlag(NextResponse.next());
   }
 
-  return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
+  return withRefreshTokenFlag(
+    NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url))
+  );
 }
 
 // Configure which routes middleware should run on
