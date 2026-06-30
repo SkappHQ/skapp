@@ -212,9 +212,6 @@ export function middleware(request: NextRequest) {
     ? `${tenantId}_refreshToken`
     : "refreshToken";
 
-  // Sign-out marker set client-side in clearCookies(). The HttpOnly refresh cookie can
-  // only be revoked server-side, so if the SIGNOUT call failed it may survive; this
-  // guard stops the allow-through below from silently re-authenticating the user.
   const signedOut = request.cookies.get("signedOut")?.value === "true";
 
   const hasRefreshToken =
