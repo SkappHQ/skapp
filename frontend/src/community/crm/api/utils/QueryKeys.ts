@@ -67,7 +67,3 @@ export const taskQueryKeys = {
   ],
   GET_TASK_TYPES: ["get-task-types"]
 };
-
-export const crmLimitationQueryKeys = {
-  GET_CRM_LIMITATION: ["crm-limitation"]
-};
