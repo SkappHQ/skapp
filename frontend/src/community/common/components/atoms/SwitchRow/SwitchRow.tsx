@@ -18,7 +18,6 @@ interface SwitchComponentProps {
   disabled?: boolean;
   error?: string;
   wrapperStyles?: SxProps<Theme>;
-  name?: string;
   icon?: IconName;
   labelId: string;
   arialabel?: string;
@@ -48,7 +47,7 @@ const SwitchRow: FC<SwitchComponentProps> = ({
   const getAriaLabel = () => {
     if (checked && arialabelChecked) return arialabelChecked;
     if (!checked && arialabelUnchecked) return arialabelUnchecked;
-    return arialabel ?? translateAria(["ariaLabel"]);
+    return arialabel ?? label ?? translateAria(["ariaLabel"]);
   };
 
   return (
