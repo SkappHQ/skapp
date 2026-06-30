@@ -163,7 +163,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         isLoading ? (
           <SidePanelHeaderSkeleton isShowLastUpdate={false} />
         ) : (
-          <h2 className="h1 text-black">{selectedCompany?.name}</h2>
+          <h2 className="h1 pl-2 text-black">{selectedCompany?.name}</h2>
         )
       }
       headerActions={
