@@ -1,7 +1,6 @@
 import {
   DeleteButtonIcon,
   EditIcon,
-  KebabMenu,
   MenuItemProps,
   SidePanel,
   SidePanelProps,
@@ -20,6 +19,7 @@ import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
+import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
 import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
@@ -103,25 +103,6 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     }
   ];
 
-  const CompanyHeaderActions = () => {
-    if (!isCrmSalesManager) {
-      return null;
-    }
-
-    return (
-      <KebabMenu
-        id="company-actions"
-        menuItems={menuItems}
-        anchorButton={{
-          "aria-label": translateText(["kebabMenuAriaLabel"])
-        }}
-        className={{
-          anchorElement:
-            "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-        }}
-      />
-    );
-  };
   return (
     <SidePanel
       isOpen={isOpen}
@@ -136,7 +117,10 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         isLoading ? (
           <SidePanelHeaderActionsSkeleton count={1} />
         ) : (
-          <CompanyHeaderActions />
+          <CompanySidePanelHeaderActions
+            isCrmSalesManager={Boolean(isCrmSalesManager)}
+            menuItems={menuItems}
+          />
         )
       }
     >
