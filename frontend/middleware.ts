@@ -18,10 +18,7 @@ import {
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
 import { TenantStatusEnums } from "~enterprise/common/enums/Common";
-import {
-  getSubdomain,
-  isCoreOrProTier
-} from "~enterprise/common/utils/commonUtil";
+import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
 const commonRoutes = [
@@ -203,32 +200,6 @@ export function middleware(request: NextRequest) {
 
   const currentPath = request.nextUrl.pathname;
 
-  const tenantFromCookie = request.cookies.get("tenant")?.value;
-  const hostSubdomain = getSubdomain(request.nextUrl.hostname);
-  const tenantId =
-    tenantFromCookie ||
-    (Array.isArray(hostSubdomain) ? hostSubdomain[0] : hostSubdomain);
-  const refreshTokenCookieName = tenantId
-    ? `${tenantId}_refreshToken`
-    : "refreshToken";
-
-  const signedOut = request.cookies.get("signedOut")?.value === "true";
-
-  const hasRefreshToken =
-    !signedOut &&
-    (Boolean(request.cookies.get(refreshTokenCookieName)?.value) ||
-      Boolean(request.cookies.get("refreshToken")?.value));
-
-  const withRefreshTokenFlag = (response: NextResponse): NextResponse => {
-    response.cookies.set("hasRefreshToken", hasRefreshToken ? "true" : "false", {
-      httpOnly: false,
-      secure: true,
-      sameSite: "lax",
-      path: "/"
-    });
-    return response;
-  };
-
   if (
     currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
     currentPath.startsWith(ROUTES.SIGN.SIGN) ||
@@ -356,23 +327,19 @@ export function middleware(request: NextRequest) {
     );
     if (employeeRedirect) return employeeRedirect;
 
-    return withRefreshTokenFlag(NextResponse.next());
+    return NextResponse.next();
   }
 
-  // Redirect to /unauthorized if no access
+  // Redirect to /unauthorized only when a valid session exists but the role can't
+  // access this route. When there is no access token we let the request through and
+  // leave refresh / sign-out to the client AuthProvider.
   if (currentPath !== ROUTES.AUTH.UNAUTHORIZED && token) {
     return NextResponse.redirect(
       new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
     );
   }
 
-  if (!token && hasRefreshToken) {
-    return withRefreshTokenFlag(NextResponse.next());
-  }
-
-  return withRefreshTokenFlag(
-    NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url))
-  );
+  return NextResponse.next();
 }
 
 // Configure which routes middleware should run on
