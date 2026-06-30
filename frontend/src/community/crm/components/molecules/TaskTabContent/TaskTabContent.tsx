@@ -26,11 +26,11 @@ import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
 import TaskGroup from "../../atoms/TaskGroup/TaskGroup";
 
-interface TasksTabContentProps {
+interface TaskTabContentProps {
   tab: CrmTaskTabEnum;
 }
 
-const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
+const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   const translateText = useTranslator("crmModule", "tasks");
   const { setTasks } = useCrmStore();
   const [searchTerm, setSearchTerm] = useState("");
@@ -199,4 +199,4 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
   );
 };
 
-export default TasksTabContent;
+export default TaskTabContent;

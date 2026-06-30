@@ -56,7 +56,7 @@ const DeleteTaskModalContent: FC = () => {
   );
 
   const handleDeleteTask = () => {
-    if (selectedTaskId === null || selectedTaskId === undefined) return;
+    if (selectedTaskId === null) return;
     deleteTask(selectedTaskId);
   };
 
