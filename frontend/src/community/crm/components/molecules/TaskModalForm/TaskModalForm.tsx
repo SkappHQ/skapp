@@ -156,6 +156,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
   const handleTypeSelect = (value: string) => {
     formik.setFieldValue("type", getCategoryById(Number(value)) ?? null);
+    formik.setFieldError("type", undefined);
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
@@ -167,6 +168,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
     formik.setFieldValue("owner", owner?.employeeId);
+    formik.setFieldError("owner", undefined);
     setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
@@ -223,7 +225,10 @@ const TaskModalForm: FC<TaskFormProps> = ({
         state={formik.errors.name ? "error" : "default"}
         label={translateText(["labels", "task"])}
         placeholder={translateText(["placeholders", "task"])}
-        onChange={formik.handleChange}
+        onChange={(e) => {
+          formik.handleChange(e);
+          formik.setFieldError("name", undefined);
+        }}
         aria-label={translateText(["ariaLabels", "task"])}
         fullWidth
         required
