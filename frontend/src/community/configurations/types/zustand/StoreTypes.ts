@@ -7,6 +7,7 @@ interface actionTypes {
   setModuleType: (moduleType: Modules) => void;
   setIsDealStageModalOpen: (isDealStageModalOpen: boolean) => void;
   setDealStageModalType: (dealStageModalType: CrmModalTypes) => void;
+  setSelectedDealStageId: (stageId: number | null) => void;
 }
 
 export interface ConfigurationStoreTypes extends actionTypes {
@@ -14,4 +15,5 @@ export interface ConfigurationStoreTypes extends actionTypes {
   moduleType: Modules;
   isDealStageModalOpen: boolean;
   dealStageModalType: CrmModalTypes;
+  selectedDealStageId: number | null;
 }

@@ -189,7 +189,7 @@ export interface CrmDealType {
   name: string;
   description: string | null;
   stage: CrmDealStageType;
-  priority: CrmPriorityEnum | null;
+  priority: CrmPriorityEnum;
   closingAt: string | null;
   amount: string | null;
   currencyCode: string | null;
@@ -206,6 +206,28 @@ export interface CrmDealStageType {
   color: CrmDealStageColorsEnum;
   orderIndex: number;
   stageType: CrmDealStageEnum;
+}
+
+export interface CrmDealStageFormTypes {
+  name: string;
+  description: string;
+  color: CrmDealStageColorsEnum;
+}
+
+export interface CrmDealStageCreatePayload {
+  name: string;
+  description: string | null;
+  color: CrmDealStageColorsEnum;
+}
+
+export interface CrmDealStageUpdatePayload
+  extends Partial<CrmDealStageCreatePayload> {
+  id: number;
+}
+
+export interface CrmDealStageReorderItem {
+  id: number;
+  orderIndex: number;
 }
 
 export interface CrmTaskType {
@@ -259,6 +281,10 @@ export interface CrmTaskCategory {
   id: number;
   name: string;
   orderIndex: number;
+}
+
+export interface CrmTaskCategoryResponseType {
+  taskTypes: CrmTaskCategory[];
 }
 
 export interface CrmDealListItem {
@@ -317,7 +343,7 @@ export interface CrmCompanyEditFormTypes {
   contactNumber: string | null;
 }
 
-export interface CrmTaskAddFormTypes {
+export interface CrmTaskFormTypes {
   name: string;
   type: CrmTaskCategory | null;
   dueDate: string | null;
@@ -342,6 +368,30 @@ export interface CrmTaskCreatePayload {
 export interface UpdateTaskStatusPayload {
   id: number;
   isCompleted: boolean;
+}
+
+export interface CrmTaskUpdatePayload {
+  id: number;
+  name?: string;
+  typeId?: number;
+  dueAt?: string | null;
+  priority?: CrmPriorityEnum;
+  contactId?: number | null;
+  dealId?: number | null;
+  ownerId?: number | null;
+  notes?: string;
+}
+
+export interface CrmTaskUpdatePayload {
+  id: number;
+  name?: string;
+  typeId?: number;
+  dueAt?: string | null;
+  priority?: CrmPriorityEnum;
+  contactId?: number | null;
+  dealId?: number | null;
+  ownerId?: number | null;
+  notes?: string;
 }
 
 export interface TaskRowResponseType {

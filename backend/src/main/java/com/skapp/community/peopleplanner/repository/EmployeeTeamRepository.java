@@ -2,6 +2,7 @@ package com.skapp.community.peopleplanner.repository;
 
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Team;
+import com.skapp.community.peopleplanner.payload.EmployeeTeamIdDto;
 import com.skapp.community.timeplanner.type.ClockInType;
 import org.springframework.stereotype.Repository;
 
@@ -25,5 +26,7 @@ public interface EmployeeTeamRepository {
 	void deleteEmployeeTeamByTeamId(Long teamId);
 
 	void deleteEmployeeTeamByTeamIdAndEmployeeIds(Long teamId, List<Long> employeeIds);
+
+	List<EmployeeTeamIdDto> findTeamEmployeeTeamIdsByTeamId(Long teamId);
 
 }
