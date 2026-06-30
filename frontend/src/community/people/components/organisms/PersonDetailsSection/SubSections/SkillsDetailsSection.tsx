@@ -106,7 +106,7 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
       pageHead={translateText(["head"])}
     >
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 12, xl: 8 }}>
+        <Grid size={{ xs: 12, xl: 8 }}>
           <ChipAutocomplete
             id="skills"
             label={translateText(["skills"])}

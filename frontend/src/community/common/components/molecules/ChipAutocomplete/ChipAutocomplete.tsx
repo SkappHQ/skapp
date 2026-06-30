@@ -1,4 +1,4 @@
-import { Chip, Popper } from "@rootcodelabs/skapp-ui";
+import { Chip, Popper, PopperPosition } from "@rootcodelabs/skapp-ui";
 import {
   ChangeEvent,
   FC,
@@ -42,9 +42,8 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [anchorWidth, setAnchorWidth] = useState(0);
-  const [dropdownPosition, setDropdownPosition] = useState<
-    "bottom-start" | "top-start"
-  >("bottom-start");
+  const [dropdownPosition, setDropdownPosition] =
+    useState<PopperPosition>("bottom-start");
   const inputBoxRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
