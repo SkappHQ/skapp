@@ -24,7 +24,7 @@ import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
-  const { isCrmSalesManager: canEdit } = useSessionData();
+  const { isCrmSalesManager: canEditandDelete } = useSessionData();
 
   // TODO: Replace with real isLoading from useGetCompanyById when API is wired
   const isLoading = false;
@@ -120,7 +120,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         ) : (
           <KebabMenu
             id="company-actions"
-            menuItems={menuItems}
+            menuItems={canEditandDelete ? menuItems : []}
             anchorButton={{
               "aria-label": translateText(["kebabMenuAriaLabel"])
             }}
