@@ -13,11 +13,11 @@ export const useCrmStore = create<
   [["zustand/devtools", never], ["zustand/persist", CrmStore]]
 >(
   devtools(
-    (set) => ({
+    (set, get) => ({
       ...CrmCompanySlice(set),
       ...CrmContactSlice(set),
       ...CrmDealSlice(set),
-      ...CrmTaskSlice(set),
+      ...CrmTaskSlice(set, get),
       ...CrmSidePanelSlice(set)
     }),
     {

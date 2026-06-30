@@ -26,4 +26,6 @@ public interface TeamService {
 
 	ResponseEntityDto getTeamsForCurrentUser();
 
+	ResponseEntityDto getEmployeeTransferableTeams(Long teamId);
+
 }
