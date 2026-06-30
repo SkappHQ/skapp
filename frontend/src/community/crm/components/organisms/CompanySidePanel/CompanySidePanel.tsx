@@ -48,7 +48,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     }));
 
   const { data: openTaskData, isLoading: isTaskLoading } =
-    useGetOpenTasksByCompany(selectedCompany?.id ?? 0, !!selectedCompany?.id);
+    useGetOpenTasksByCompany(selectedCompany?.id, !!selectedCompany?.id);
 
   const {
     data: completedTaskData,
@@ -57,7 +57,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     hasNextPage,
     isFetchingNextPage
   } = useGetCompletedTasksByCompany(
-    selectedCompany?.id ?? 0,
+    selectedCompany?.id,
     TASK_PAGE_SIZE,
     !!selectedCompany?.id
   );
@@ -77,12 +77,12 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   });
 
   const { data: dealData, isLoading: isDealLoading } = useGetDealsByCompany(
-    selectedCompany?.id ?? 0,
+    selectedCompany?.id,
     !!selectedCompany?.id
   );
 
   const { data: contactData, isLoading: isContactLoading } =
-    useGetContactsByCompany(selectedCompany?.id ?? 0, !!selectedCompany?.id);
+    useGetContactsByCompany(selectedCompany?.id, !!selectedCompany?.id);
 
   const isLoading =
     isTaskLoading ||

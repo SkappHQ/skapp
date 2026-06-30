@@ -331,6 +331,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
         items={contactDropdownItems}
         onSelect={handleContactSelect}
         emptyMessage={translateText(["emptyStates", "noContacts"])}
+        isOpenOnFocus={isContactSearchEnabled}
       />
 
       <SelectableSearchField
@@ -346,6 +347,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
         items={dealDropdownItems}
         onSelect={handleDealSelect}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
+        isOpenOnFocus={isDealSearchEnabled}
       />
 
       <TextArea

@@ -1,5 +1,4 @@
 import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
-import { isObject } from "echarts/types/src/export/api/util.js";
 import { ChangeEvent } from "react";
 
 import SearchableDropdown, {

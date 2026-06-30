@@ -1,7 +1,7 @@
 import {
   BrowserIcon,
-  BuildingIcon,
   LocationIcon,
+  OfficeIcon,
   PhoneIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
@@ -31,7 +31,7 @@ const SidePanelCompanyHeader: FC<Props> = ({ company }) => {
             <BrowserIcon
               width="20"
               height="20"
-              stroke="var(--color-secondary-icon)"
+              fill="var(--color-secondary-icon)"
             />
           }
           value={company.website}
@@ -57,7 +57,7 @@ const SidePanelCompanyHeader: FC<Props> = ({ company }) => {
             <LocationIcon
               width="20"
               height="20"
-              stroke="var(--color-secondary-icon)"
+              fill="var(--color-secondary-icon)"
             />
           }
           value={company.address}
@@ -66,10 +66,10 @@ const SidePanelCompanyHeader: FC<Props> = ({ company }) => {
       {company.industry && (
         <SidePanelHeaderInfoItem
           icon={
-            <BuildingIcon
+            <OfficeIcon
               width="20"
               height="20"
-              stroke="var(--color-secondary-icon)"
+              fill="var(--color-secondary-icon)"
             />
           }
           value={translateText([company.industry])}

@@ -300,7 +300,6 @@
     },
     "companyDetailsSidePanel": {
       "sidePanelCompanyContacts": {
-        "title": "Contacts",
         "columns": {
           "contact": "CONTACT",
           "email": "EMAIL",
