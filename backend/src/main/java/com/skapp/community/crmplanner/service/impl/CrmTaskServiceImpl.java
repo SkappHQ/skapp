@@ -20,6 +20,7 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskViewResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -94,8 +95,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
 		}
 
-		log.info("getTaskById: execution");
-		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(task));
+		log.info("getTaskById: execution ended");
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskViewResponseDto(task));
 	}
 
 	@Override
