@@ -23,4 +23,6 @@ public interface CrmDealStageDao extends JpaRepository<CrmDealStage, Long>, CrmD
 
 	long countByIsDeletedFalseAndStageTypeAndNameNotIn(CrmDealStageType stageType, List<String> names);
 
+	long countByIsDeletedFalseAndStageType(CrmDealStageType stageType);
+
 }
