@@ -19,7 +19,6 @@ import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
-import { DefaultStageNameEnum } from "~community/crm/enums/common";
 
 interface OwnerCellProps {
   owner: CrmDealListItem["owner"];
@@ -167,7 +166,12 @@ const DealsTable: FC<Props> = ({
                 />
               </div>
               <span className="body2">#{deal.id}</span>
-              <span className="body2">{deal.name}</span>
+              <span
+                className="body2 min-w-0 max-w-full truncate"
+                title={deal.name}
+              >
+                {deal.name}
+              </span>
             </div>
           ),
           value: (
@@ -181,11 +185,25 @@ const DealsTable: FC<Props> = ({
                 className="size-2 rounded-full shrink-0"
                 style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
               />
-              <span className="body2">{getStageByName(deal.stageName as DefaultStageNameEnum)}</span>
+              <span className="body2">{getStageByName(deal.stageName)}</span>
             </div>
           ),
-          companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
-          contactName: <span className="body2">{deal.contactName ?? "-"}</span>,
+          companyName: (
+            <span
+              className="body2 block w-full truncate"
+              title={deal.companyName ?? undefined}
+            >
+              {deal.companyName ?? "-"}
+            </span>
+          ),
+          contactName: (
+            <span
+              className="body2 block w-full truncate"
+              title={deal.contactName}
+            >
+              {deal.contactName}
+            </span>
+          ),
           dealOwner: <OwnerCell owner={deal.owner} />
         };
       }),
