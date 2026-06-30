@@ -48,6 +48,8 @@ import com.skapp.community.peopleplanner.model.EmployeeRole;
 import org.springframework.transaction.annotation.Transactional;
 import com.skapp.community.peopleplanner.model.ExternalSyncStaging;
 import com.skapp.community.peopleplanner.repository.ExternalSyncStagingDao;
+import com.skapp.community.peopleplanner.event.GoogleWorkspaceConnectedEvent;
+import org.springframework.context.event.EventListener;
 
 
 import java.time.Duration;
@@ -320,6 +322,25 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
         }
     }
+
+    @EventListener
+    @Async("syncTaskExecutor")
+    public void onGoogleWorkspaceConnected(GoogleWorkspaceConnectedEvent event) {
+        if (!isConfigured()) {
+            log.warn("Initial sync skipped — Google integration not configured.");
+            return;
+        }
+        log.info("Initial sync triggered automatically after OAuth connection by {}",
+                event.getConnectedByEmail());
+        try {
+            SyncResult result = performFullSync();
+            notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
+        } catch (Exception e) {
+            log.error("Initial auto-sync failed: {}", e.getMessage(), e);
+            notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
+        }
+    }
+
 
     // -------------------------------------------------------------------------
     // notifySuperAdminsOfSyncResult() — builds the title/message for a sync

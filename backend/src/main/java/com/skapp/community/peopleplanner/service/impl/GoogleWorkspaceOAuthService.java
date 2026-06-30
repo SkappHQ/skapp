@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import com.skapp.community.peopleplanner.event.GoogleWorkspaceConnectedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -59,6 +61,7 @@ public class GoogleWorkspaceOAuthService {
     private final GoogleWorkspaceConnectionDao connectionDao;
     private final UserService userService;
     private final RestTemplate restTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     // ── Role guard ───────────────────────────────────────────────────────────
 
@@ -139,6 +142,7 @@ public class GoogleWorkspaceOAuthService {
         connectionDao.save(conn);
 
         log.info("Google Workspace connected by {}", adminEmail);
+        eventPublisher.publishEvent(new GoogleWorkspaceConnectedEvent(this, adminEmail));
     }
 
     // ── Token retrieval (called by your sync service) ────────────────────────
