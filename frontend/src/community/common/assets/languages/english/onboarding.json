@@ -55,6 +55,7 @@
     "continueVerifyBtnText": "Continue",
     "pageHeader": "Skapp",
     "signInLinkInitial": "Already have an account?",
+    "signUpLinkInitial": "Don't have an account?",
     "firstNamePlaceholder": "Enter first name",
     "lastNamePlaceholder": "Enter last name",
     "emailPlaceholder": "Enter work email",
