@@ -80,6 +80,7 @@
     "microsoftAuthErrorDescription": "Failed to authenticate with Microsoft. Please try again."
   },
   "signIn": {
+    "pageHead": "Sign In | Skapp",
     "pageHeading": "Log in",
     "pageSubHeading": "Enter your username and password to login to the system",
     "emailLabel": "Username",

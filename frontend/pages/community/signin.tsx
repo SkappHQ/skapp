@@ -210,6 +210,7 @@ const SignIn: NextPage = () => {
       }}
     >
       <OnboardingLayout
+        pageHead={translateText(["pageHead"])}
         heading={translateText(["pageHeading"])}
         subheading={translateText(["pageSubHeading"])}
         onClick={signInFormik.handleSubmit}

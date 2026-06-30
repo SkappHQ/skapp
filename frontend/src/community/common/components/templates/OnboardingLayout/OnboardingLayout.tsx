@@ -23,6 +23,7 @@ type LayoutProps = {
   buttonText?: string;
   centerHeading?: boolean;
   isLoading?: boolean;
+  pageHead?: string;
 };
 
 const OnboardingLayout: React.FC<LayoutProps> = ({
@@ -34,7 +35,8 @@ const OnboardingLayout: React.FC<LayoutProps> = ({
   onClick,
   buttonText,
   centerHeading = false,
-  isLoading = false
+  isLoading = false,
+  pageHead
 }) => {
   const classes = styles();
 
@@ -44,7 +46,7 @@ const OnboardingLayout: React.FC<LayoutProps> = ({
   return (
     <Box sx={classes.container}>
       <Head>
-        <title>Skapp</title>
+        <title>{pageHead ?? "Skapp"}</title>
       </Head>
       <Image
         src={logo}
