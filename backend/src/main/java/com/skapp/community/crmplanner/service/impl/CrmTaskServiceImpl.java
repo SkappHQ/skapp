@@ -20,7 +20,6 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
-import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
@@ -50,8 +49,6 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final CrmContactDao crmContactDao;
-
-	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmDealDao crmDealDao;
 
@@ -163,8 +160,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			task.setDeal(deal);
-			CrmValidations.validateDealBelongsToCompany(deal, company);
 			CrmValidations.validateDealBelongsToContact(deal, contact);
+			CrmValidations.validateDealBelongsToCompany(deal, company);
 		}
 
 		CrmTask savedTask = crmTaskDao.save(task);
@@ -237,7 +234,9 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			task.setDeal(deal);
 		}
 
-		CrmValidations.validateContactBelongsToCompany(task.getContact(), task.getCompany());
+		if (task.getDeal() != null && task.getContact() != null) {
+			CrmValidations.validateDealBelongsToContact(task.getDeal(), task.getContact());
+		}
 
 		CrmTask updatedTask = crmTaskDao.save(task);
 
