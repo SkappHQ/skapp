@@ -191,9 +191,9 @@ const DealsTable: FC<Props> = ({
           companyName: (
             <span
               className="body2 block w-full truncate"
-              title={deal.companyName ?? undefined}
+              title={deal?.companyName ?? undefined}
             >
-              {deal.companyName ?? "-"}
+              {deal?.companyName ?? "-"}
             </span>
           ),
           contactName: (
