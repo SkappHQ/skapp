@@ -1446,8 +1446,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 			predicates.add(cb.equal(employee.get(Employee_.employeeId), employeeId));
 
-			predicates.add(
-					leaveRequest.get(LeaveRequest_.status).in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING));
+			predicates.add(cb.equal(leaveRequest.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
 			predicates.add(cb.equal(user.get(User_.isActive), true));
 
 			if (typeIds != null && !typeIds.isEmpty()) {
