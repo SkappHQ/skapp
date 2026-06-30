@@ -132,6 +132,8 @@ public class StagingReviewServiceImpl implements StagingReviewService {
         if (employee.getJoinDate() == null) {
             employee.setJoinDate(LocalDate.now());
         }
+        employee.setExternalSyncLastSyncedAt(Instant.now());
+        employee.setExternalSyncChannel(record.getSyncChannel().name());
         Employee savedEmployee = employeeDao.save(employee);
 
         if (!employeeRoleDao.existsById(savedEmployee.getEmployeeId())) {
@@ -158,6 +160,8 @@ public class StagingReviewServiceImpl implements StagingReviewService {
         Employee employee = employeeDao.findEmployeeByEmail(email);
         if (employee != null) {
             employee.setAccountStatus(AccountStatus.DEACTIVATED);
+            employee.setExternalSyncLastSyncedAt(Instant.now());
+            employee.setExternalSyncChannel(record.getSyncChannel().name());
             employeeDao.save(employee);
         }
 

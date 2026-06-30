@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -71,6 +72,12 @@ public class Employee extends Auditable<String> {
 
 	@Column(name = "auth_pic", length = 500)
 	private String authPic;
+
+	@Column(name = "external_sync_last_synced_at")
+	private Instant externalSyncLastSyncedAt;
+
+	@Column(name = "external_sync_channel", length = 20)
+	private String externalSyncChannel;
 
 	@Column(name = "country")
 	private String country;

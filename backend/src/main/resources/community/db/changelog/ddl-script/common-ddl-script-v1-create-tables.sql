@@ -120,6 +120,8 @@ CREATE TABLE IF NOT EXISTS `employee`
     `address`               varchar(255) DEFAULT NULL,
     `address_line_2`        varchar(255) DEFAULT NULL,
     `auth_pic`              varchar(500) DEFAULT NULL,
+    `external_sync_last_synced_at` datetime     DEFAULT NULL,
+    `external_sync_channel`        varchar(20)  DEFAULT NULL,
     `country`               varchar(255) DEFAULT NULL,
     `employee_type`         varchar(255) DEFAULT NULL,
     `designation`           varchar(255) DEFAULT NULL,
