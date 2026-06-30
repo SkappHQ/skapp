@@ -22,6 +22,7 @@ interface ActionTypes {
   setTasks: (tasks: CrmTaskDetailType[]) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
   setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
+  setPreselectedStageId: (preselectedStageId: number | null) => void;
   setSelectedContactId: (contactId: number | null) => void;
   setBoardStages: (boardStages: CrmDealStageType[]) => void;
   setBoardContacts: (boardContacts: CrmContactLookup[]) => void;
@@ -45,6 +46,7 @@ export interface CrmStore extends ActionTypes {
   selectedTaskId: number | null;
   tasks: CrmTaskDetailType[];
   isCrmSidePanelOpen: boolean;
+  preselectedStageId: number | null;
   selectedContactId: number | null;
   boardStages: CrmDealStageType[];
   boardContacts: CrmContactLookup[];

@@ -32,12 +32,12 @@ const AddDealSidePanel: FC = () => {
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
 
-  const { isCrmSidePanelOpen, setIsCrmSidePanelOpen } = useCrmStore(
-    (store) => ({
+  const { isCrmSidePanelOpen, setIsCrmSidePanelOpen, setPreselectedStageId } =
+    useCrmStore((store) => ({
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-    })
-  );
+      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+      setPreselectedStageId: store.setPreselectedStageId
+    }));
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearch = useDebounce(
@@ -60,6 +60,7 @@ const AddDealSidePanel: FC = () => {
     });
     formik.resetForm();
     setSelectedContact(null);
+    setPreselectedStageId(null);
     setIsCrmSidePanelOpen(false);
   };
 
@@ -111,6 +112,7 @@ const AddDealSidePanel: FC = () => {
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
+    setPreselectedStageId(null);
     setIsCrmSidePanelOpen(false);
   };
 

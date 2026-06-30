@@ -13,6 +13,7 @@ import {
 } from "~community/crm/api/BoardApi";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
+import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import {
   DEFAULT_BOARD_PAGE_SIZE,
   DRAG_ACTIVATION_DISTANCE
@@ -52,6 +53,12 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   const setBoardStageDeals = useCrmStore((store) => store.setBoardStageDeals);
   const appendBoardStageDeals = useCrmStore(
     (store) => store.appendBoardStageDeals
+  );
+  const setIsCrmSidePanelOpen = useCrmStore(
+    (store) => store.setIsCrmSidePanelOpen
+  );
+  const setPreselectedStageId = useCrmStore(
+    (store) => store.setPreselectedStageId
   );
 
   const [loadingStageIds, setLoadingStageIds] = useState<number[]>([]);
@@ -141,6 +148,11 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     }
   };
 
+  const handleAddDeal = (stageId: number) => {
+    setPreselectedStageId(stageId);
+    setIsCrmSidePanelOpen(true);
+  };
+
   const isLoading = isInitDataLoading || isDealsLoading;
 
   return (
@@ -166,7 +178,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                 isFetchingNextPage={loadingStageIds.includes(stage.id)}
                 isOver={overStageId === stage.id}
                 onDealClick={() => {}}
-                onAddDeal={() => {}}
+                onAddDeal={handleAddDeal}
                 onLoadMore={() => handleLoadMore(stage.id)}
               />
             );
@@ -190,6 +202,8 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
           )}
         </DragOverlay>
       </DragDropProvider>
+
+      <AddDealSidePanel />
     </div>
   );
 };

@@ -37,7 +37,10 @@ export interface CrmTaskSliceTypes extends Pick<
 
 export interface CrmSidePanelSliceTypes extends Pick<
   CrmStore,
-  "isCrmSidePanelOpen" | "setIsCrmSidePanelOpen"
+  | "isCrmSidePanelOpen"
+  | "setIsCrmSidePanelOpen"
+  | "preselectedStageId"
+  | "setPreselectedStageId"
 > {}
 
 export interface CrmBoardSliceTypes extends Pick<
