@@ -65,7 +65,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
         <div
           role="button"
           tabIndex={0}
-          className="subtitle1 text-secondary-text text-left w-full cursor-pointer hover:bg-secondary-background py-1 px-2 rounded bg-transparent border-none"
+          className="body2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 px-2 rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editDescription"])}
           onClick={handleClick}
           onKeyDown={(e) => {

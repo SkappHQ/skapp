@@ -11,6 +11,7 @@ import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
 import { useGetDealById } from "~community/crm/api/crmDealApi";
+import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
 import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
@@ -42,7 +43,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useGetRelatedTasks({ dealId: selectedDealId });
+  } = useGetRelatedTasks({ dealId: selectedDealId, size: TASK_PAGE_SIZE });
 
   const relatedTasks =
     relatedTasksData?.pages.flatMap((page) => page.items ?? []) ?? [];
@@ -109,14 +110,14 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
           />
         }
       >
-        {isLoading && !deal ? (
+        {isLoading ? (
           <DealSidePanelSkeleton />
         ) : (
           <div className="flex flex-col gap-6">
-            <DealTitleSection name={deal!.name} />
+            <DealTitleSection name={deal?.name ?? ""} />
             <div className="flex gap-6 items-start">
               <div className="flex-1 flex flex-col gap-6 min-w-0">
-                <DealDescriptionSection description={deal!.description} />
+                <DealDescriptionSection description={deal?.description ?? ""} />
                 <div className="flex flex-col gap-3">
                   <h3 className="h2">{translateText(["tasks"])}</h3>
                   <hr className="border-secondary-accent" />
@@ -124,7 +125,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
                   <div ref={loadingRef} />
                 </div>
               </div>
-              <DealPropertiesSidebar deal={deal!} />
+              <DealPropertiesSidebar deal={deal!} isOpen={isOpen} />
             </div>
           </div>
         )}
@@ -133,7 +134,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
       <DeleteDealModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        dealName={deal!.name ?? ""} 
+        dealName={deal?.name ?? ""}
       />
     </>
   );

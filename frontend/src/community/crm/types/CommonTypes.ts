@@ -317,6 +317,7 @@ export interface CrmDealFilterParams {
 export interface RelatedTasksParams {
   contactId?: number | null;
   dealId?: number | null;
+  size: number;
 }
 
 export interface CrmDealAddFormTypes {

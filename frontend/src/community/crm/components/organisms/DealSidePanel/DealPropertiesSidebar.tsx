@@ -1,9 +1,10 @@
-import { Dropdown } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo, useState } from "react";
+import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
+import { FC, useMemo, useState } from "react";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCrmContacts } from "~community/crm/api/ContactApi";
+import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
@@ -12,9 +13,8 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
-import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import {
   CrmContactLookup,
@@ -41,15 +41,15 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     useState<CrmContactLookup | null>(deal.contact);
   const [contactSearchTerm, setContactSearchTerm] = useState("");
 
-  const debouncedContactSearch = useDebounce(
+  const debouncedContactSearchTerm = useDebounce(
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
 
   const { data: contactLookupData } = useGetCrmContacts(
-    debouncedContactSearch,
+    debouncedContactSearchTerm,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isOpen && debouncedContactSearch.length > 0
+    isOpen && debouncedContactSearchTerm.length > 0
   );
   const contacts = contactLookupData?.items ?? [];
 
@@ -57,29 +57,21 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   const stageOptions = useMemo(
     () =>
-      dealStages.map((s) => ({
-        id: String(s.id),
-        value: String(s.id),
+      dealStages.map((stage) => ({
+        id: stage.id,
+        value: stage.id,
         label: (
           <div className="inline-flex items-center gap-2.5">
             <div
               className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: STAGE_COLOR_MAP[s.color] }}
+              style={{ backgroundColor: STAGE_COLOR_MAP[stage.color] }}
             />
-            <span className="body2">{s.name}</span>
+            <span className="body2">{stage.name}</span>
           </div>
         )
       })),
     [dealStages]
   );
-
-  useEffect(() => {
-    setAmount(deal.amount ?? "");
-    setPriority(deal.priority);
-    setSelectedStageId(String(deal.stageId));
-    setSelectedOwner(deal.owner);
-    setSelectedContact(deal.contact);
-  }, [deal]);
 
   return (
     <div className="w-1/3 flex flex-col gap-4 shrink-0">
@@ -101,13 +93,19 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
       <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
         <PropertyRow label={translateText(["value"])}>
           <div className="flex flex-col w-full px-1">
-            <input
+            <InputField
+              name="amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={translateText(["placeholders", "none"])}
               type="text"
-              className="w-full bg-transparent outline-none body2 placeholder:text-secondary-text"
+              fullWidth
               aria-label={translateText(["ariaLabels", "amount"])}
+              styleOverrides={{
+                container: "w-full",
+                inputContainer: "self-stretch bg-transparent border-0",
+                inputWrapper: "self-stretch px-1 py-0"
+              }}
             />
           </div>
         </PropertyRow>
