@@ -427,7 +427,13 @@
       "noDealsDescription": "Add a new deal to get started",
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
-      "infiniteScrollLoadingMessage": "Loading more deals..."
+      "infiniteScrollLoadingMessage": "Loading more deals...",
+      "listViewAriaLabel": "List view",
+      "kanbanViewAriaLabel": "Kanban view",
+      "switchDealViewAriaLabel": "Switch deal view"
+    },
+    "kanban": {
+      "addDealBtn": "Add deal"
     },
     "deleteDealModal": {
       "areYouSureModalTitle": "Are you sure?",
