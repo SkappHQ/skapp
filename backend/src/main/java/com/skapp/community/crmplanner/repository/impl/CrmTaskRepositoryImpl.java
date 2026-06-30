@@ -248,15 +248,14 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public Page<CrmTask> findRelatedTasksPaginated(CrmTaskRelatedFilterDto filterDto, Pageable pageable) {
+	public Page<CrmTask> findRelatedTasks(CrmTaskRelatedFilterDto filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
 		applyFetchGraph(task);
 
-		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId(),
-				filterDto.getExcludeTaskId());
+		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId());
 		List<Predicate> predicates = buildRelatedTaskPredicates(cb, task, params);
 
 		query.select(task)
@@ -294,10 +293,6 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 			contextPredicates.add(cb.equal(root.get(CrmTask_.deal).get(CrmDeal_.id), params.getDealId()));
 		}
 		predicates.add(cb.or(contextPredicates.toArray(new Predicate[0])));
-
-		if (params.getExcludeTaskId() != null) {
-			predicates.add(cb.notEqual(root.get(CrmTask_.id), params.getExcludeTaskId()));
-		}
 
 		return predicates;
 	}

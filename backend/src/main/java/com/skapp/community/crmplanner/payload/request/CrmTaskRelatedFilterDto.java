@@ -11,8 +11,6 @@ public class CrmTaskRelatedFilterDto {
 
 	private Long dealId;
 
-	private Long excludeTaskId;
-
 	private int page = 0;
 
 	private int size = 10;

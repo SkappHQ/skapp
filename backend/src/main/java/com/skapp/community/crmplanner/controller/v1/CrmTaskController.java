@@ -87,7 +87,7 @@ public class CrmTaskController {
 
 	@Operation(summary = "Get related tasks",
 			description = "Returns paginated tasks filtered by contactId and/or dealId.")
-	@GetMapping("/related-tasks")
+	@GetMapping("/related")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getRelatedTasks(CrmTaskRelatedFilterDto filterDto) {
 		ResponseEntityDto response = taskService.getRelatedTasks(filterDto);

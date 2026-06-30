@@ -428,18 +428,14 @@ class CrmTaskControllerIntegrationTest {
 
 	// --- GET related tasks helpers and tests ---
 
-	private ResultActions performGetRelatedTasksRequest(Long contactId, Long dealId, Long excludeTaskId)
-			throws Exception {
-		var request = get(BASE_PATH + "/related-tasks").accept(MediaType.APPLICATION_JSON)
+	private ResultActions performGetRelatedTasksRequest(Long contactId, Long dealId) throws Exception {
+		var request = get(BASE_PATH + "/related").accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(authToken));
 		if (contactId != null) {
 			request = request.param("contactId", contactId.toString());
 		}
 		if (dealId != null) {
 			request = request.param("dealId", dealId.toString());
-		}
-		if (excludeTaskId != null) {
-			request = request.param("excludeTaskId", excludeTaskId.toString());
 		}
 		return mvc.perform(request);
 	}
@@ -451,32 +447,86 @@ class CrmTaskControllerIntegrationTest {
 		savedTask("Task B", false, false, contactId);
 		savedTask("Task C", false, false, null);
 
-		performGetRelatedTasksRequest(contactId, null, null).andDo(print())
+		performGetRelatedTasksRequest(contactId, null).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2));
 	}
 
 	@Test
-	@DisplayName("Get related tasks with excludeTaskId - Excludes the specified task from results")
-	void getRelatedTasks_WithExcludeTaskId_ExcludesTask() throws Exception {
-		CrmTask taskA = savedTask("Task A", false, false, contactId);
-		savedTask("Task B", false, false, contactId);
-
-		performGetRelatedTasksRequest(contactId, null, taskA.getId()).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Task B"));
-	}
-
-	@Test
 	@DisplayName("Get related tasks with no matching context - Returns empty list")
 	void getRelatedTasks_NoMatch_ReturnsEmpty() throws Exception {
-		performGetRelatedTasksRequest(contactId, null, null).andDo(print())
+		performGetRelatedTasksRequest(contactId, null).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get related tasks by dealId - Returns tasks sharing the same deal")
+	void getRelatedTasks_ByDealId_ReturnsMatchingTasks() throws Exception {
+		CrmDeal deal = savedDeal("Related Deal", crmContactDao.getReferenceById(contactId), null);
+
+		savedTask("Task with deal", false, false, contactId, deal);
+		savedTask("Task without deal", false, false, contactId);
+
+		performGetRelatedTasksRequest(null, deal.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Task with deal"));
+	}
+
+	@Test
+	@DisplayName("Get related tasks includes completed tasks - Returns completed and open tasks")
+	void getRelatedTasks_IncludesCompletedTasks_ReturnsBoth() throws Exception {
+		savedTask("Open task", false, false, contactId);
+		savedTask("Completed task", false, true, contactId);
+
+		performGetRelatedTasksRequest(contactId, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2));
+	}
+
+	@Test
+	@DisplayName("Get related tasks excludes soft-deleted tasks - Returns only non-deleted")
+	void getRelatedTasks_ExcludesDeletedTasks() throws Exception {
+		savedTask("Active task", false, false, contactId);
+		savedTask("Deleted task", true, false, contactId);
+
+		performGetRelatedTasksRequest(contactId, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Active task"));
+	}
+
+	@Test
+	@DisplayName("Get related tasks returns pagination metadata")
+	void getRelatedTasks_ReturnsPaginationMetadata() throws Exception {
+		savedTask("Task A", false, false, contactId);
+		savedTask("Task B", false, false, contactId);
+
+		performGetRelatedTasksRequest(contactId, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get related tasks returns contact field in each item")
+	void getRelatedTasks_ReturnsContactInItems() throws Exception {
+		savedTask("Task with contact", false, false, contactId);
+
+		performGetRelatedTasksRequest(contactId, null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']").exists())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']['id']").value(contactId));
 	}
 
 	@Test
@@ -484,7 +534,7 @@ class CrmTaskControllerIntegrationTest {
 	void getRelatedTasks_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
 				1L);
-		mvc.perform(get(BASE_PATH + "/related-tasks").accept(MediaType.APPLICATION_JSON)
+		mvc.perform(get(BASE_PATH + "/related").accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(noRoleToken))).andExpect(status().isForbidden());
 	}
 

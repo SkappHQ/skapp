@@ -129,9 +129,10 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		log.info("getRelatedTasks: execution started");
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasksPaginated(filterDto, pageable);
+		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasks(filterDto, pageable);
 
-		List<CrmTaskDetailResponseDto> tasks = taskPage.getContent().stream()
+		List<CrmTaskDetailResponseDto> tasks = taskPage.getContent()
+			.stream()
 			.map(crmMapper::crmTaskToCrmTaskDetailResponseDto)
 			.toList();
 
