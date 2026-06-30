@@ -83,6 +83,7 @@ const DealStagesDraggableContent = ({
                 onEdit={onEdit}
                 onDelete={onDelete}
                 isTerminalStage={isTerminalStage(stage.stageType)}
+                isDeletable={stage.stageType === CrmDealStageEnum.OPEN}
               />
             ))}
           </ul>

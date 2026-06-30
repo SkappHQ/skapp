@@ -197,7 +197,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(TooManyRequestsException.class)
-	public ResponseEntity<ResponseEntityDto> handleTooManyRequestException(ServletException e) {
+	public ResponseEntity<ResponseEntityDto> handleTooManyRequestException(TooManyRequestsException e) {
 		HttpStatus status = HttpStatus.TOO_MANY_REQUESTS;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_TOO_MANY_REQUESTS_EXCEPTION.name(), status);

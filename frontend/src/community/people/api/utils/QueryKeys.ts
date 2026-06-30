@@ -71,6 +71,7 @@ export const teamQueryKeys = {
   MY_TEAMS: ["my-teams"],
   GET_ALL_TEAMS: ["get-all-teams"],
   GET_TEAM_BY_ID: ["get-team-by-id"],
+  GET_EMPLOYEE_TRANSFERABLE_TEAMS: (teamId: number) => ["get-employee-transferable-teams", teamId],
   teams: function () {
     return [...(this?.ALL_TEAMS || []), "get-teams"];
   },
