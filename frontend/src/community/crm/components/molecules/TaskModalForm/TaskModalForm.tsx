@@ -154,13 +154,17 @@ const TaskModalForm: FC<TaskFormProps> = ({
     [dealLookupData]
   );
 
+  const clearError = (field: keyof CrmTaskFormTypes) =>
+    formik.setFieldError(field, undefined);
+
   const handleTypeSelect = (value: string) => {
     formik.setFieldValue("type", getCategoryById(Number(value)) ?? null);
-    formik.setFieldError("type", undefined);
+    clearError("type");
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
     formik.setFieldValue("dueDate", date?.toISOString() ?? null);
+    clearError("dueDate");
   };
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
@@ -168,7 +172,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
     formik.setFieldValue("owner", owner?.employeeId);
-    formik.setFieldError("owner", undefined);
+    clearError("owner");
     setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
@@ -227,7 +231,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
         placeholder={translateText(["placeholders", "task"])}
         onChange={(e) => {
           formik.handleChange(e);
-          formik.setFieldError("name", undefined);
+          clearError("name");
         }}
         aria-label={translateText(["ariaLabels", "task"])}
         fullWidth
@@ -352,7 +356,12 @@ const TaskModalForm: FC<TaskFormProps> = ({
         value={formik.values.notes}
         placeholder={translateText(["placeholders", "notes"])}
         label={translateText(["labels", "notes"])}
-        onChange={formik.handleChange}
+        errorMessage={formik.errors.notes}
+        state={formik.errors.notes ? "error" : "default"}
+        onChange={(e) => {
+          formik.handleChange(e);
+          clearError("notes");
+        }}
         rows={3}
         aria-label={translateText(["ariaLabels", "notes"])}
       />
