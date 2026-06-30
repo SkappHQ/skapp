@@ -1,8 +1,10 @@
 package com.skapp.community.peopleplanner.model;
 
+import com.skapp.community.common.util.converter.FieldEncryptionConverter;
 import com.skapp.community.peopleplanner.type.Gender;
 import com.skapp.community.peopleplanner.type.RelationshipTypes;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -31,9 +33,11 @@ public class EmployeeFamily {
 	private Long familyId;
 
 	@Column(name = "first_name")
+	@Convert(converter = FieldEncryptionConverter.class)
 	private String firstName;
 
 	@Column(name = "last_name")
+	@Convert(converter = FieldEncryptionConverter.class)
 	private String lastName;
 
 	@Enumerated(EnumType.STRING)
@@ -48,6 +52,7 @@ public class EmployeeFamily {
 	private RelationshipTypes familyRelationship;
 
 	@Column(name = "parent_name")
+	@Convert(converter = FieldEncryptionConverter.class)
 	private String parentName;
 
 	@ManyToOne(optional = false)
