@@ -24,7 +24,7 @@ import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
-  const { isCrmSalesManager: canEditandDelete } = useSessionData();
+  const { isCrmSalesManager: canEditAndDelete } = useSessionData();
 
   // TODO: Replace with real isLoading from useGetCompanyById when API is wired
   const isLoading = false;
@@ -40,7 +40,9 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     })
   );
   const menuItems: MenuItemProps[] = useMemo(
-    () => [
+    () =>
+      canEditAndDelete
+        ? [
       {
         id: "edit",
         label: translateText(["editCompany"]),
@@ -69,9 +71,34 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           setIsCompanyModalOpen(true);
         }
       }
-    ],
+    ]
+        : [],
     [translateText]
   );
+
+  const headerActions = useMemo(() => {
+    if (isLoading) {
+      return <SidePanelHeaderActionsSkeleton count={1} />;
+    }
+
+    if (menuItems.length === 0) {
+      return null;
+    }
+
+    return (
+      <KebabMenu
+        id="company-actions"
+        menuItems={menuItems}
+        anchorButton={{
+          "aria-label": translateText(["kebabMenuAriaLabel"])
+        }}
+        className={{
+          anchorElement:
+            "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+        }}
+      />
+    );
+  }, [isLoading,translateText]);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -114,23 +141,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           <SidePanelHeaderSkeleton isShowLastUpdate={false} />
         ) : undefined
       }
-      headerActions={
-        isLoading ? (
-          <SidePanelHeaderActionsSkeleton count={1} />
-        ) : (
-          <KebabMenu
-            id="company-actions"
-            menuItems={canEditandDelete ? menuItems : []}
-            anchorButton={{
-              "aria-label": translateText(["kebabMenuAriaLabel"])
-            }}
-            className={{
-              anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-            }}
-          />
-        )
-      }
+      headerActions={headerActions}
     >
       <div className="flex flex-col pb-4 gap-4">
         {isLoading ? (
