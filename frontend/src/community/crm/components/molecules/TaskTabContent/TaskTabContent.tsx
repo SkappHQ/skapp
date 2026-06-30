@@ -100,7 +100,12 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
       );
     }
 
-    if (isOpenTasksEmpty && completedTasks.length === 0) {
+    const isEmpty =
+      tab === CrmTaskTabEnum.COMPLETED_TASKS
+        ? completedTasks.length === 0
+        : isOpenTasksEmpty;
+
+    if (isEmpty) {
       return (
         <EmptyDataView
           title={
