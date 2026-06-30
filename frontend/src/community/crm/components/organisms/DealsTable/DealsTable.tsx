@@ -166,10 +166,7 @@ const DealsTable: FC<Props> = ({
                 />
               </div>
               <span className="body2">#{deal.id}</span>
-              <span
-                className="body2 block w-full truncate"
-                title={deal.name}
-              >
+              <span className="body2 block w-full truncate" title={deal.name}>
                 {deal.name}
               </span>
             </div>
