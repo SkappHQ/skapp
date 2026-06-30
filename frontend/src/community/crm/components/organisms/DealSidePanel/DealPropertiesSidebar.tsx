@@ -58,8 +58,8 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const stageOptions = useMemo(
     () =>
       dealStages.map((s) => ({
-        id: s.id,
-        value: s.id,
+        id: String(s.id),
+        value: String(s.id),
         label: (
           <div className="inline-flex items-center gap-2.5">
             <div
@@ -69,7 +69,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
             <span className="body2">{s.name}</span>
           </div>
         )
-      })) as any,
+      })),
     [dealStages]
   );
 
