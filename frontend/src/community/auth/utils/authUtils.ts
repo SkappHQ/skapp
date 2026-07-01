@@ -342,8 +342,6 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   const currentPath = globalThis.window.location.pathname;
 
-  // Already on the sign-in page — redirecting there again would remount it,
-  // re-run the failed token refresh, and loop endlessly. Nothing to do.
   if (currentPath.startsWith(ROUTES.AUTH.SIGNIN)) return;
 
   const existingCallback = new URLSearchParams(
