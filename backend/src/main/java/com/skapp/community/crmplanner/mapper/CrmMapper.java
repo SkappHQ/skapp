@@ -86,8 +86,6 @@ public interface CrmMapper {
 	@Mapping(target = "ownerName", source = "owner.fullName")
 	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask crmTask);
 
-	@Mapping(target = "typeId", source = "type.id")
-	@Mapping(target = "typeName", source = "type.name")
 	CrmTaskViewResponseDto crmTaskToCrmTaskViewResponseDto(CrmTask crmTask);
 
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
