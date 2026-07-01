@@ -86,6 +86,14 @@ export interface User {
   tenantStatus?: TenantStatusEnums;
 }
 
+const isProtectedRoute = (pathname: string): boolean => {
+  const protectedFirstSegments = config.matcher.map(
+    (path) => path.replace(/\/:path\*$/, "").split("/")[1]
+  );
+  const firstSegment = pathname.split("/")[1] ?? "";
+  return protectedFirstSegments.some((segment) => segment === firstSegment);
+};
+
 // Flag to prevent recursive token refresh
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
@@ -336,6 +344,13 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
 };
 
 export const signOut = async (redirect: boolean = true): Promise<void> => {
+  if (
+    typeof window !== "undefined" &&
+    !isProtectedRoute(window.location.pathname)
+  ) {
+    return;
+  }
+
   await clearCookies();
 
   if (redirect === false) return;
