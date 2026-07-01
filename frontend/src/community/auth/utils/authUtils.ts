@@ -335,6 +335,23 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   return userData;
 };
 
+// Routes that must stay reachable without a session (incognito, expired/no
+// cookies). signOut clears cookies here but never redirects away from them,
+// otherwise these public pages would bounce to /signin and loop.
+const PUBLIC_AUTH_ROUTES = [
+  ROUTES.AUTH.SIGNIN,
+  ROUTES.AUTH.SIGNUP,
+  ROUTES.AUTH.ENTERPRISE_SIGNIN,
+  ROUTES.AUTH.VERIFY_GUEST,
+  ROUTES.AUTH.VERIFY_GUEST_OTP,
+  ROUTES.AUTH.VERIFY_RESET_PASSWORD
+];
+
+const isPublicAuthRoute = (pathname: string): boolean =>
+  PUBLIC_AUTH_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+
 export const signOut = async (redirect: boolean = true): Promise<void> => {
   await clearCookies();
 
@@ -342,7 +359,7 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   const currentPath = globalThis.window.location.pathname;
 
-  if (currentPath.startsWith(ROUTES.AUTH.SIGNIN)) return;
+  if (isPublicAuthRoute(currentPath)) return;
 
   const existingCallback = new URLSearchParams(
     globalThis.window.location.search
