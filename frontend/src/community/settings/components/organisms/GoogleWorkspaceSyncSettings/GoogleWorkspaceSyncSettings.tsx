@@ -132,10 +132,8 @@ const changeTypeColor = (type: string) => {
 interface FullSyncResult {
   allActiveAccounts: GoogleWorkspaceSyncUser[];
   allSuspendedAccounts: GoogleWorkspaceSyncUser[];
-  newlyAddedOrUpdatedAccounts: GoogleWorkspaceSyncUser[];
   totalActive: number;
   totalSuspended: number;
-  totalNewlyAddedOrUpdated: number;
   syncedAt: string;
 }
 
@@ -153,12 +151,11 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<FullSyncResult | null>(null);
-  const [beforeSnapshot, setBeforeSnapshot] = useState<{
-    employees: Map<string, any>;
-  } | null>(null);
 
   // Staging review state
   const [stagingRecords, setStagingRecords] = useState<StagingRecord[]>([]);
+  const [newlyAddedOrUpdatedAccounts, setNewlyAddedOrUpdatedAccounts] =
+  useState<GoogleWorkspaceSyncUser[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isReviewing, setIsReviewing] = useState(false);
 
@@ -188,6 +185,28 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
       setStagingRecords([]);
     }
   };
+
+  const fetchLastSyncChanges = async () => {
+  try {
+    const resp = await authFetch.get("/people/sync/staging/last-sync-changes");
+    const data = resp.data?.results?.[0] ?? resp.data;
+    const records: any[] = Array.isArray(data?.changes) ? data.changes : [];
+
+    setNewlyAddedOrUpdatedAccounts(
+      records.map((r) => ({
+        email: r.email,
+        firstName: r.firstName,
+        lastName: r.lastName,
+        displayName: `${r.firstName || ""} ${r.lastName || ""}`.trim() || r.email,
+        status: r.googleStatus === "SUSPENDED" ? "DEACTIVATED" : "ACTIVE",
+        changeType: r.changeType
+      }))
+    );
+  } catch {
+    setNewlyAddedOrUpdatedAccounts([]);
+  }
+};
+
 
   useEffect(() => {
     checkStatus();
@@ -229,20 +248,10 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
 
   useEffect(() => {
     if (!isConnected) return;
-    const init = async () => {
-      try {
-        const { activeList, inactiveList } = await fetchAllEmployees();
-        const allBefore = [...activeList, ...inactiveList];
-        setBeforeSnapshot({
-          employees: new Map(allBefore.map((e: any) => [e.email, e]))
-        });
-      } catch {
-        // silently ignore
-      }
-      await fetchStagingRecords();
-    };
-    init();
+    fetchStagingRecords();
+    fetchLastSyncChanges();
   }, [isConnected]);
+
 
   const fetchAllEmployees = async () => {
     const [activeRes, inactiveRes] = await Promise.all([
@@ -298,12 +307,6 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     setIsLoading(true);
     setIsSyncing(true);
     try {
-      const { activeList: beforeActiveList, inactiveList: beforeInactiveList } =
-        await fetchAllEmployees();
-      const allBefore = [...beforeActiveList, ...beforeInactiveList];
-      setBeforeSnapshot({
-        employees: new Map(allBefore.map((e: any) => [e.email, e]))
-      });
 
       await authFetch.post("/people/sync/external-bulk-person-sync");
 
@@ -317,6 +320,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
 
       setTimeout(async () => {
         await fetchStagingRecords();
+        await fetchLastSyncChanges();
       }, 5000);
     } catch (error: any) {
       setToastMessage({
@@ -337,23 +341,17 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     setIsLoading(true);
     try {
       const { activeList, inactiveList } = await fetchAllEmployees();
-      const allAfter = [...activeList, ...inactiveList];
-      const newlyAddedOrUpdatedAccounts: GoogleWorkspaceSyncUser[] =
-        beforeSnapshot
-          ? detectChanges(allAfter, beforeSnapshot.employees)
-          : [];
 
       setSyncResult({
         allActiveAccounts: activeList.map((emp) => mapToSyncUser(emp)),
         allSuspendedAccounts: inactiveList.map((emp) => mapToSyncUser(emp)),
-        newlyAddedOrUpdatedAccounts,
         totalActive: activeList.length,
         totalSuspended: inactiveList.length,
-        totalNewlyAddedOrUpdated: newlyAddedOrUpdatedAccounts.length,
         syncedAt: new Date().toISOString()
       });
 
       await fetchStagingRecords();
+      await fetchLastSyncChanges();
 
       setToastMessage({
         open: true,
@@ -366,13 +364,13 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
         open: true,
         toastType: ToastType.ERROR,
         title: "Error Loading Results",
-        description:
-          error?.response?.data?.message || "Failed to load results."
+        description: error?.response?.data?.message || "Failed to load results."
       });
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleApprove = async (ids: number[]) => {
     setIsReviewing(true);
@@ -386,6 +384,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
       });
       setSelectedIds([]);
       await fetchStagingRecords();
+      await fetchLastSyncChanges()
     } catch (error: any) {
       setToastMessage({
         open: true,
@@ -411,6 +410,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
       });
       setSelectedIds([]);
       await fetchStagingRecords();
+      await fetchLastSyncChanges()
     } catch (error: any) {
       setToastMessage({
         open: true,
@@ -562,7 +562,7 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
                     New / Updated
                   </Typography>
                   <Typography variant="h4" sx={{ color: "#1565c0" }}>
-                    {syncResult.totalNewlyAddedOrUpdated}
+                    {newlyAddedOrUpdatedAccounts.length}   {/* changed from syncResult.totalNewlyAddedOrUpdated */}
                   </Typography>
                 </Box>
               </Box>
@@ -740,18 +740,19 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
             </Card>
           )}
 
+          {newlyAddedOrUpdatedAccounts.length > 0 && (
+            <SyncTable
+              title="New / Updated Accounts (Last Sync)"
+              description={`${newlyAddedOrUpdatedAccounts.length} users were added or updated`}
+              users={newlyAddedOrUpdatedAccounts}
+              isLoading={isLoading}
+              highlightColor="#e3f2fd"
+            />
+          )}
+
           {/* ── Sync Result Tables ──────────────────────────────────────── */}
           {syncResult && (
             <Box>
-              {syncResult.newlyAddedOrUpdatedAccounts.length > 0 && (
-                <SyncTable
-                  title="New / Updated Accounts (Last Sync)"
-                  description={`${syncResult.totalNewlyAddedOrUpdated} users were added or updated`}
-                  users={syncResult.newlyAddedOrUpdatedAccounts}
-                  isLoading={isLoading}
-                  highlightColor="#e3f2fd"
-                />
-              )}
               <SyncTable
                 title="All Active Accounts"
                 description={`${syncResult.totalActive} active users in the directory`}

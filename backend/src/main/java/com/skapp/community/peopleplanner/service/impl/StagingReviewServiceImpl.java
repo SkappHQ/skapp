@@ -30,6 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.skapp.community.peopleplanner.model.ExternalSyncStaging;
 import com.skapp.community.peopleplanner.model.ExternalSyncStaging.Decision;
 import com.skapp.community.peopleplanner.repository.ExternalSyncStagingDao;
+import com.skapp.community.peopleplanner.model.ExternalPersonSyncLog;
+import com.skapp.community.peopleplanner.repository.ExternalPersonSyncLogDao;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,11 +55,30 @@ public class StagingReviewServiceImpl implements StagingReviewService {
     private final EmailService emailService;
     private final OrganizationDao organizationDao;
     private final OrganizationConfigDao organizationConfigDao;
+    private final ExternalPersonSyncLogDao syncLogDao;
 
     @Override
     public List<ExternalSyncStaging> getPendingRecords() {
         return stagingDao.findAllByDecision(Decision.PENDING);
     }
+
+    @Override
+    public Map<String, Object> getLastSyncChanges() {
+        Map<String, Object> result = new HashMap<>();
+
+        List<ExternalSyncStaging> changes = stagingDao.findAllByChangeTypeIn(
+                List.of(ExternalSyncStaging.ChangeType.NEW,
+                        ExternalSyncStaging.ChangeType.UPDATED));
+        result.put("changes", changes);
+
+        syncLogDao.findTopByOrderByStartedAtDesc().ifPresent(log -> {
+            result.put("syncType", log.getSyncType());
+            result.put("syncedAt", log.getStartedAt());
+        });
+
+        return result;
+    }
+
 
     @Override
     @Transactional

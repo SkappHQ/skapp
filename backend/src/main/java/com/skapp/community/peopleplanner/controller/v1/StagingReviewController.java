@@ -38,6 +38,14 @@ public class StagingReviewController {
         return new ResponseEntity<>(new ResponseEntityDto(false, records), HttpStatus.OK);
     }
 
+    @GetMapping(value = "/last-sync-changes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN')")
+    public ResponseEntity<ResponseEntityDto> getLastSyncChanges() {
+        return new ResponseEntity<>(
+                new ResponseEntityDto(false, stagingReviewService.getLastSyncChanges()),
+                HttpStatus.OK);
+    }
+
     @Operation(
             summary = "Approve staged records",
             description = "Applies the selected staged changes to the main Employee/User tables."

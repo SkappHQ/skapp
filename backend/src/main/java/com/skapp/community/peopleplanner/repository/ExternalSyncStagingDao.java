@@ -13,6 +13,8 @@ public interface ExternalSyncStagingDao extends JpaRepository<ExternalSyncStagin
 
     List<ExternalSyncStaging> findAllByDecision(Decision decision);
 
+    List<ExternalSyncStaging> findAllByChangeTypeIn(List<ExternalSyncStaging.ChangeType> changeTypes);
+
     @Transactional
     void deleteByDecisionIn(List<Decision> decisions);
 }
