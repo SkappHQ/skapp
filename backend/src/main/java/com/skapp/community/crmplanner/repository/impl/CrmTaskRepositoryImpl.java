@@ -13,7 +13,9 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.type.CrmTaskFilterParams;
+import com.skapp.community.crmplanner.type.CrmTaskRelatedParams;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -243,6 +245,61 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		root.fetch(CrmTask_.owner);
 		root.fetch(CrmTask_.contact, JoinType.LEFT);
 		root.fetch(CrmTask_.deal, JoinType.LEFT);
+	}
+
+	@Override
+	public Page<CrmTask> findRelatedTasks(CrmTaskRelatedFilterDto filterDto, Long ownerId, Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		applyFetchGraph(task);
+
+		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId(),
+				ownerId);
+		List<Predicate> predicates = buildRelatedTaskPredicates(cb, task, params);
+
+		query.select(task)
+			.where(predicates.toArray(new Predicate[0]))
+			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
+					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
+
+		TypedQuery<CrmTask> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+
+		List<CrmTask> content = typedQuery.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
+
+		List<Predicate> countPredicates = buildRelatedTaskPredicates(cb, countRoot, params);
+
+		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+		Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+		return new PageImpl<>(content, pageable, total);
+	}
+
+	private List<Predicate> buildRelatedTaskPredicates(CriteriaBuilder cb, Root<CrmTask> root,
+			CrmTaskRelatedParams params) {
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
+
+		if (params.getOwnerId() != null) {
+			predicates.add(cb.equal(root.get(CrmTask_.owner).get(Employee_.employeeId), params.getOwnerId()));
+		}
+
+		List<Predicate> contextPredicates = new ArrayList<>();
+		if (params.getContactId() != null) {
+			contextPredicates.add(cb.equal(root.get(CrmTask_.contact).get(CrmContact_.id), params.getContactId()));
+		}
+		if (params.getDealId() != null) {
+			contextPredicates.add(cb.equal(root.get(CrmTask_.deal).get(CrmDeal_.id), params.getDealId()));
+		}
+		predicates.add(cb.or(contextPredicates.toArray(new Predicate[0])));
+
+		return predicates;
 	}
 
 	@Override
