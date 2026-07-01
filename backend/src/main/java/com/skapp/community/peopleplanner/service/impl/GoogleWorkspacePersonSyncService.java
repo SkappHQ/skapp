@@ -231,7 +231,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     // collection changed) — there is no per-user resourceUri to parse out, so we
     // can't know which user changed and must resync the whole directory.
     // -------------------------------------------------------------------------
-    private static final Duration GOOGLE_PROPAGATION_DELAY = Duration.ofSeconds(10);
+
+    @Value("${google.propagation-delay-seconds:60}")
+    private int propagationDelaySeconds;
 
     @Override
     @Async("syncTaskExecutor")
@@ -255,11 +257,11 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         String callerEmail = "sudam.manudith@rootcode.io";
 
         log.info("Watch notification ({}) received — waiting {}s for Google propagation before syncing.",
-                resourceState, GOOGLE_PROPAGATION_DELAY.getSeconds());
+                resourceState, propagationDelaySeconds);
 
         // ← KEY FIX: wait for Google's internal replication to finish
         try {
-            Thread.sleep(GOOGLE_PROPAGATION_DELAY.toMillis());
+            Thread.sleep(Duration.ofSeconds(propagationDelaySeconds).toMillis());
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             log.warn("Propagation delay interrupted — proceeding anyway.");
@@ -443,7 +445,10 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         } while (pageToken != null);
 
-        stageRemovals(googleEmails);
+        List<String> removedEmails = stageRemovals(googleEmails);
+        if (!removedEmails.isEmpty()) {
+            notifySuperAdminsOfRemovedUsers(removedEmails);
+        }
 
         // ── Phase 2: sync Google groups → Skapp teams ────────────────────────
         // Runs after all users are committed so every member email resolves
@@ -675,11 +680,11 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
 
         String emailList = String.join(", ", removedEmails);
         String message = removedEmails.size() == 1
-                ? "The following user has been removed from Google Workspace and deactivated in Skapp: "
-                  + emailList + ". Do you wish to keep or permanently remove this account?"
+                ? "The following user has been removed from Google Workspace and is pending review in Skapp: "
+                  + emailList + ". Approve to deactivate or reject to keep the account."
                 : "The following " + removedEmails.size() + " users have been removed from Google Workspace "
-                  + "and deactivated in Skapp: " + emailList
-                  + ". Do you wish to keep or permanently remove these accounts?";
+                  + "and are pending review in Skapp: " + emailList
+                  + ". Approve to deactivate or reject to keep these accounts.";
 
         List<EmployeeRole> superAdminRoles = employeeRoleDao.findByIsSuperAdminTrue();
 
@@ -817,7 +822,8 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         log.debug("Staged {} for {}", changeType, email);
     }
 
-    private void stageRemovals(Set<String> googleEmails) {
+    private List<String> stageRemovals(Set<String> googleEmails) {
+        List<String> removedEmails = new ArrayList<>();
         List<User> allUsers = userDao.findAll();
 
         for (User user : allUsers) {
@@ -841,9 +847,13 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             staging.setSyncedAt(Instant.now());
             stagingDao.save(staging);
 
+            removedEmails.add(email);
             log.info("Staged REMOVED for {}", email);
         }
+
+        return removedEmails;
     }
+
 
     private void saveLog(ExternalPersonSyncLog.SyncChannel channel,
                          ExternalPersonSyncLog.SyncType type,

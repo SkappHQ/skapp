@@ -83,3 +83,4 @@ google:
   credentials-path: ${GOOGLE_CREDENTIALS_PATH:}
   webhook-url: ${GOOGLE_WEBHOOK_URL:}
   channel-token: ${GOOGLE_CHANNEL_TOKEN:}
+  propagation-delay-seconds: ${GOOGLE_PROPAGATION_DELAY_SECONDS:10}
