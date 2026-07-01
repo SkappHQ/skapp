@@ -28,6 +28,7 @@ import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResp
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskViewResponseDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -85,6 +86,8 @@ public interface CrmMapper {
 	@Mapping(target = "ownerName", source = "owner.fullName")
 	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask crmTask);
 
+	CrmTaskViewResponseDto crmTaskToCrmTaskViewResponseDto(CrmTask crmTask);
+
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
 
 	CrmDealLookupResponseDto crmDealToCrmDealLookupResponseDto(CrmDeal crmDeal);
@@ -111,7 +114,6 @@ public interface CrmMapper {
 	CrmDealViewResponseDto crmDealToCrmDealViewResponseDto(CrmDeal deal);
 
 	@Mapping(target = "typeName", source = "type.name")
-	@Mapping(target = "isOverdue", ignore = true)
 	CrmTaskDetailResponseDto crmTaskToCrmTaskDetailResponseDto(CrmTask task);
 
 }

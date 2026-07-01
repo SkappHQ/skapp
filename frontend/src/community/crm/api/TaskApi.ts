@@ -15,6 +15,7 @@ import {
   CrmTaskUpdatePayload,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
 
@@ -47,6 +48,10 @@ export const useCreateTask = (
           queryKey: contactQueryKeys.GET_CONTACTS_BY_COMPANY(companyId)
         });
       }
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+
       if (contactId) {
         queryClient.invalidateQueries({
           queryKey: contactQueryKeys.CONTACT_BY_ID(contactId)
@@ -152,6 +157,9 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
       });
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       onSuccess();
     },
