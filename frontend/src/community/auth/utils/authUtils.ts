@@ -338,17 +338,17 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
 export const signOut = async (redirect: boolean = true): Promise<void> => {
   await clearCookies();
 
-  if (redirect === false || typeof window === "undefined") return;
+  if (redirect === false || typeof globalThis.window === "undefined") return;
 
-  const currentPath = window.location.pathname;
+  const currentPath = globalThis.window.location.pathname;
 
   // Already on the sign-in page — redirecting there again would remount it,
   // re-run the failed token refresh, and loop endlessly. Nothing to do.
   if (currentPath.startsWith(ROUTES.AUTH.SIGNIN)) return;
 
-  const existingCallback = new URLSearchParams(window.location.search).get(
-    "callback"
-  );
+  const existingCallback = new URLSearchParams(
+    globalThis.window.location.search
+  ).get("callback");
 
-  window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${existingCallback || currentPath}`;
+  globalThis.window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${existingCallback || currentPath}`;
 };
