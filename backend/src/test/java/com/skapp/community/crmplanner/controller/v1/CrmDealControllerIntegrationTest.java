@@ -22,6 +22,7 @@ import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -87,6 +88,8 @@ class CrmDealControllerIntegrationTest {
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final EmployeeDao employeeDao;
+
+	private final EntityManager entityManager;
 
 	private String authToken;
 
@@ -200,6 +203,27 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Deal for company"));
+	}
+
+	@Test
+	@DisplayName("Get deals when linked company is soft-deleted - Deal still listed with null company")
+	void getDeals_LinkedCompanySoftDeleted_DealListedWithNullCompany() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Soft Deleted Deal Company");
+		savedDeal("Deal with deleted company", stage, company);
+
+		// soft-delete the company after the deal already references it (no cascade)
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+		entityManager.flush();
+		entityManager.clear();
+
+		performGetDealsRequest(company.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Deal with deleted company"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyName']").value(nullValue()));
 	}
 
 	// --- Check deal name exists tests ---

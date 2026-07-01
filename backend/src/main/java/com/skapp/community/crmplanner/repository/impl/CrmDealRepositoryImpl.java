@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
@@ -77,7 +78,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Root<CrmDeal> deal = fetchQuery.from(CrmDeal.class);
 
 		deal.fetch(CrmDeal_.stage, JoinType.LEFT);
-		deal.fetch(CrmDeal_.company, JoinType.LEFT);
+		Join<CrmDeal, CrmCompany> companyJoin = (Join<CrmDeal, CrmCompany>) deal.fetch(CrmDeal_.company, JoinType.LEFT);
+		companyJoin.on(cb.isFalse(companyJoin.get(CrmCompany_.isDeleted)));
 		deal.fetch(CrmDeal_.contact, JoinType.LEFT);
 		deal.fetch(CrmDeal_.owner, JoinType.LEFT);
 
@@ -181,7 +183,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Root<CrmDeal> deal = fetchQuery.from(CrmDeal.class);
 
 		deal.fetch(CrmDeal_.stage, JoinType.LEFT);
-		deal.fetch(CrmDeal_.company, JoinType.LEFT);
+		Join<CrmDeal, CrmCompany> companyJoin = (Join<CrmDeal, CrmCompany>) deal.fetch(CrmDeal_.company, JoinType.LEFT);
+		companyJoin.on(cb.isFalse(companyJoin.get(CrmCompany_.isDeleted)));
 		deal.fetch(CrmDeal_.contact, JoinType.LEFT);
 		deal.fetch(CrmDeal_.owner, JoinType.LEFT);
 

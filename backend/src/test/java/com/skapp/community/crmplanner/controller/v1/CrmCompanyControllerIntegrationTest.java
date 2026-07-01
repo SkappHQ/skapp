@@ -22,7 +22,6 @@ import com.skapp.support.SecurityTestUtils;
 import com.skapp.community.crmplanner.model.CrmCompany;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -254,8 +253,8 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Delete company with associated deals - Soft deletes all linked deals")
-	void deleteCompany_WithAssociatedDeals_SoftDeletesDeals() throws Exception {
+	@DisplayName("Delete company with associated deals - Does not cascade, deals remain active")
+	void deleteCompany_WithAssociatedDeals_DoesNotCascadeToDeals() throws Exception {
 		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
 		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
 			.path("results")
@@ -291,8 +290,9 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED)));
 
-		CrmDeal deletedDeal = crmDealDao.findById(dealId).orElseThrow();
-		assertTrue(deletedDeal.getIsDeleted());
+		// Deleting a company must NOT cascade to its deals - the deal stays active.
+		CrmDeal persistedDeal = crmDealDao.findById(dealId).orElseThrow();
+		assertThat(persistedDeal.getIsDeleted()).isFalse();
 	}
 
 	@Test

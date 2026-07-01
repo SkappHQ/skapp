@@ -24,6 +24,7 @@ import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
+import jakarta.persistence.EntityManager;
 
 import java.time.LocalDateTime;
 import com.skapp.support.SecurityTestUtils;
@@ -47,6 +48,7 @@ import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -93,6 +95,8 @@ class CrmContactControllerIntegrationTest {
 	private final EmployeeDao employeeDao;
 
 	private final EmployeeRoleDao employeeRoleDao;
+
+	private final EntityManager entityManager;
 
 	// user1 is CRM_ADMIN + super admin — passes both hasRole(SALES_REPRESENTATIVE) and
 	// hasRole(SALES_MANAGER)
@@ -633,6 +637,25 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get contact metrics when company is soft-deleted - Contact listed with null company")
+	void getContactMetrics_CompanySoftDeleted_ContactListedWithNullCompany() throws Exception {
+		CrmCompany company = savedCompany();
+		savedContact(company.getId(), "softdel.company.contact@example.com");
+
+		// soft-delete the company after the contact already references it (no cascade)
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+		entityManager.flush();
+		entityManager.clear();
+
+		performGetMetricsRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['company']").value(nullValue()));
 	}
 
 	@Test

@@ -54,6 +54,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Join<CrmContact, Employee> owner = (Join<CrmContact, Employee>) ownerFetch;
 		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
 				JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
 		query.where(buildPredicates(cb, contact, owner, company, filterDto));
 		query.orderBy(buildOrderBy(cb, contact, query));
@@ -103,6 +104,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Root<CrmContact> contact = countQuery.from(CrmContact.class);
 		Join<CrmContact, Employee> owner = contact.join(CrmContact_.owner, JoinType.INNER);
 		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
 		countQuery.select(cb.count(contact)).where(buildPredicates(cb, contact, owner, company, filterDto));
 
@@ -114,7 +116,9 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
-		contact.fetch(CrmContact_.company, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
+				JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
 		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
@@ -127,7 +131,9 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
-		contact.fetch(CrmContact_.company, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
+				JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
 		List<Predicate> predicates = buildLookupPredicates(cb, contact, filterDto);
 		query.where(predicates.toArray(new Predicate[0]));
@@ -167,7 +173,9 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
-		contact.fetch(CrmContact_.company, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
+				JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 		contact.fetch(CrmContact_.owner, JoinType.INNER);
 
 		query.where(cb.equal(contact.get(CrmContact_.id), id), cb.isFalse(contact.get(CrmContact_.isDeleted)));
