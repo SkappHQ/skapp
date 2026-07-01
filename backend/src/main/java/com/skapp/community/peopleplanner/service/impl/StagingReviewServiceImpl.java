@@ -6,6 +6,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.service.AsyncEmailSender;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.type.EmailBodyTemplates;
@@ -52,6 +53,7 @@ public class StagingReviewServiceImpl implements StagingReviewService {
     private final RolesService rolesService;
     private final PasswordEncoder passwordEncoder;
     private final EncryptionDecryptionService encryptionDecryptionService;
+    private final AsyncEmailSender asyncEmailSender;
     private final EmailService emailService;
     private final OrganizationDao organizationDao;
     private final OrganizationConfigDao organizationConfigDao;
@@ -85,6 +87,8 @@ public class StagingReviewServiceImpl implements StagingReviewService {
     public void approve(List<Long> ids) {
         String reviewer = currentUserEmail();
         List<ExternalSyncStaging> records = stagingDao.findAllById(ids);
+        int approvedNew = 0, approvedUpdated = 0, approvedRemoved = 0;
+
         for (ExternalSyncStaging record : records) {
             try {
                 switch (record.getChangeType()) {
@@ -96,14 +100,18 @@ public class StagingReviewServiceImpl implements StagingReviewService {
                 record.setReviewedBy(reviewer);
                 stagingDao.save(record);
 
-                if (record.getChangeType() == ExternalSyncStaging.ChangeType.NEW) {
-                    sendInviteEmail(record.getEmail());
+                switch (record.getChangeType()) {
+                    case NEW -> { sendInviteEmail(record.getEmail()); approvedNew++; }
+                    case UPDATED -> approvedUpdated++;
+                    case REMOVED -> approvedRemoved++;
                 }
             } catch (Exception e) {
                 log.error("Failed to approve staging record id={}, email={}: {}",
                         record.getId(), record.getEmail(), e.getMessage(), e);
             }
         }
+
+        sendApprovalSummaryEmail(reviewer, approvedNew, approvedUpdated, approvedRemoved);
     }
 
     @Override
@@ -189,6 +197,58 @@ public class StagingReviewServiceImpl implements StagingReviewService {
         }
 
         log.info("Approved deactivation for {}", email);
+    }
+
+    private void sendApprovalSummaryEmail(String toEmail, int approvedNew, int approvedUpdated, int approvedRemoved) {
+        Optional<OrganizationConfig> emailConfig = organizationConfigDao
+                .findOrganizationConfigByOrganizationConfigType(
+                        OrganizationConfigType.EMAIL_CONFIGS.name());
+        if (emailConfig.isEmpty()) {
+            log.warn("SMTP not configured — skipping approval summary email for {}", toEmail);
+            return;
+        }
+
+        int total = approvedNew + approvedUpdated + approvedRemoved;
+        if (total == 0) return;
+
+        String body = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head>" +
+                "<body style=\"margin:0;padding:0;background:#f4f4f5;font-family:'Inter',Arial,sans-serif;\">" +
+                "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#f4f4f5;padding:40px 0;\">" +
+                "<tr><td align=\"center\">" +
+                "<table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" " +
+                "style=\"background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);max-width:600px;width:100%;\">" +
+                "<tr><td style=\"background:#18181b;padding:28px 36px;\">" +
+                "<p style=\"margin:0;font-size:20px;font-weight:700;color:#ffffff;\">Skapp</p></td></tr>" +
+                "<tr><td style=\"padding:32px 36px 0;\">" +
+                "<p style=\"margin:0 0 4px;font-size:22px;font-weight:700;color:#18181b;\">Google Workspace Sync — Approved</p>" +
+                "<p style=\"margin:0;font-size:14px;color:#71717a;\">The following changes have been approved and applied.</p>" +
+                "</td></tr>" +
+                "<tr><td style=\"padding:24px 36px 0;\">" +
+                "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr>" +
+                "<td width=\"30%\" style=\"background:#f4f4f5;border-radius:10px;padding:18px 20px;\">" +
+                "<p style=\"margin:0 0 6px;font-size:12px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.6px;\">New users invited</p>" +
+                "<p style=\"margin:0;font-size:32px;font-weight:700;color:#18181b;\">" + approvedNew + "</p></td>" +
+                "<td width=\"5%\"></td>" +
+                "<td width=\"30%\" style=\"background:#f4f4f5;border-radius:10px;padding:18px 20px;\">" +
+                "<p style=\"margin:0 0 6px;font-size:12px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.6px;\">Updated</p>" +
+                "<p style=\"margin:0;font-size:32px;font-weight:700;color:#18181b;\">" + approvedUpdated + "</p></td>" +
+                "<td width=\"5%\"></td>" +
+                "<td width=\"30%\" style=\"background:#f4f4f5;border-radius:10px;padding:18px 20px;\">" +
+                "<p style=\"margin:0 0 6px;font-size:12px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.6px;\">Deactivated</p>" +
+                "<p style=\"margin:0;font-size:32px;font-weight:700;color:#18181b;\">" + approvedRemoved + "</p></td>" +
+                "</tr></table></td></tr>" +
+                "<tr><td style=\"padding:32px 36px;\">" +
+                "<hr style=\"border:none;border-top:1px solid #f4f4f5;margin:0 0 24px;\">" +
+                "<p style=\"margin:0;font-size:12px;color:#a1a1aa;\">This is an automated message from Skapp. Please do not reply.</p>" +
+                "</td></tr>" +
+                "</table></td></tr></table></body></html>";
+
+        try {
+            asyncEmailSender.sendMail(toEmail, "Google Workspace Sync — Approved", body, null);
+            log.info("Approval summary email sent to {}", toEmail);
+        } catch (Exception e) {
+            log.error("Failed to send approval summary email to {}: {}", toEmail, e.getMessage());
+        }
     }
 
     private void sendInviteEmail(String email) {

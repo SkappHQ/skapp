@@ -13,24 +13,14 @@ import com.google.api.services.directory.model.Users;
 import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1.SecretVersionName;
-import com.skapp.community.common.model.Organization;
-import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.User;
-import com.skapp.community.common.repository.OrganizationConfigDao;
-import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.*;
-import com.skapp.community.common.type.LoginMethod;
-import com.skapp.community.common.type.OrganizationConfigType;
-import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.Team;
-import com.skapp.community.peopleplanner.payload.email.PeopleEmailDynamicFields;
 import com.skapp.community.peopleplanner.repository.*;
 import com.skapp.community.peopleplanner.service.ExternalPersonSyncService;
-import com.skapp.community.peopleplanner.service.PeopleEmailService;
-import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +28,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
@@ -55,7 +44,6 @@ import com.skapp.community.peopleplanner.repository.ExternalPersonSyncLogDao;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -111,16 +99,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
     @Value("${domain.scheme:https}")
     private String domainScheme;
 
-    private final EmailService emailService;
-    private final OrganizationDao organizationDao;
     private final UserDao userDao;
     private final EmployeeDao employeeDao;
     private final AsyncEmailSender asyncEmailSender;
-    private final PeopleEmailService peopleEmailService;
-    private final EncryptionDecryptionService encryptionDecryptionService;
-    private final PasswordEncoder passwordEncoder;
-    private final RolesService rolesService;
-    private final OrganizationConfigDao organizationConfigDao;
     private final PushNotificationService pushNotificationService;
     private final EmployeeRoleDao employeeRoleDao;
     private final TeamDao teamDao;
@@ -295,8 +276,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                     ExternalPersonSyncLog.SyncStatus.COMPLETED,
                     callerEmail, startedAt, result.synced(), result.failed(), null);
 
-            sendSummaryEmail(asyncEmailSender, callerEmail,
-                    result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
         } catch (Exception e) {
             log.error("Resync triggered by watch notification failed: {}", e.getMessage(), e);
@@ -304,7 +283,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                     ExternalPersonSyncLog.SyncType.WEBHOOK,
                     ExternalPersonSyncLog.SyncStatus.FAILED,
                     callerEmail, startedAt, 0, 0, e.getMessage());
-            sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
             notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
         }
 
@@ -331,8 +309,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                     ExternalPersonSyncLog.SyncStatus.COMPLETED,
                     callerEmail, startedAt, result.synced(), result.failed(), null);
 
-            sendSummaryEmail(asyncEmailSender, callerEmail,
-                    result.synced(), result.failed(), result.failures(), null);
             notifySuperAdminsOfSyncResult(result.synced(), result.failed(), null);
         } catch (Exception e) {
             log.error("Sync failed: {}", e.getMessage(), e);
@@ -340,7 +316,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                     ExternalPersonSyncLog.SyncType.MANUAL,
                     ExternalPersonSyncLog.SyncStatus.FAILED,
                     callerEmail, startedAt, 0, 0, e.getMessage());
-            sendSummaryEmail(asyncEmailSender, callerEmail, 0, 0, new ArrayList<>(), e.getMessage());
             notifySuperAdminsOfSyncResult(0, 0, e.getMessage());
         }
     }
@@ -766,155 +741,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
                 "</body></html>";
     }
     private record SyncResult(int synced, int failed, List<String> failures) {}
-
-    // -------------------------------------------------------------------------
-    // upsertUser() — create or update User + Employee from a Workspace user
-    //
-    // FIX: restored @Transactional (it was present in the earlier working
-    // version but dropped here). Without it, the User save/flush and the
-    // subsequent Employee/EmployeeRole reads+writes run as separate
-    // auto-commits outside one Hibernate session, which is the most likely
-    // cause of LazyInitializationException when role.getEmployee().getUser()
-    // (or similar associations) are accessed later in
-    // notifySuperAdminsOfRemovedUsers() — that exception gets swallowed by
-    // the surrounding catch(Exception) blocks and just logged, which is why
-    // the deletion notification looked like it silently "didn't work".
-    // -------------------------------------------------------------------------
-    @Transactional
-    boolean upsertUser(com.google.api.services.directory.model.User wsUser) {
-        String email     = wsUser.getPrimaryEmail();
-        String firstName = wsUser.getName() != null ? wsUser.getName().getGivenName() : "";
-        String lastName  = wsUser.getName() != null ? wsUser.getName().getFamilyName() : "";
-        boolean suspended = Boolean.TRUE.equals(wsUser.getSuspended());
-
-        Optional<User> existingUser = userDao.findByEmail(email);
-        boolean isNew = existingUser.isEmpty();
-
-        User user = existingUser.orElseGet(User::new);
-        user.setEmail(email);
-        user.setIsActive(!suspended);
-
-        if (isNew) {
-            // Provision with credentials so the standard invitation email
-            // (PEOPLE_MODULE_USER_INVITATION_V1) is sent, which includes the
-            // temporary password. On first login the app detects
-            // isPasswordChangedForTheFirstTime=false and forces a password reset.
-            String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-            CommonModuleUtils.setIfExists(
-                    () -> encryptionDecryptionService.encrypt(tempPassword),
-                    user::setTempPassword);
-            CommonModuleUtils.setIfExists(
-                    () -> passwordEncoder.encode(tempPassword),
-                    user::setPassword);
-            user.setLoginMethod(LoginMethod.CREDENTIALS);
-            user.setIsPasswordChangedForTheFirstTime(false);
-        }
-        // Existing users: never overwrite loginMethod, password, or tempPassword.
-
-        User savedUser = userDao.saveAndFlush(user);
-
-        Employee employee = employeeDao.findEmployeeByEmail(email);
-        if (employee == null) {
-            employee = new Employee();
-        }
-        employee.setUser(savedUser);
-        employee.setFirstName(firstName);
-        employee.setLastName(lastName);
-        employee.setAccountStatus(suspended ? AccountStatus.DEACTIVATED : AccountStatus.ACTIVE);
-        // Sync Google profile photo URL into authPic.
-        // thumbnailPhotoUrl is returned by the Directory API and is a direct
-        // link to the user's profile picture. We only overwrite if Google
-        // provides a value — never blank out an existing pic if it's missing.
-        String photoUrl = wsUser.getThumbnailPhotoUrl();
-        if (photoUrl != null && !photoUrl.isBlank()) {
-            employee.setAuthPic(photoUrl);
-        }
-        // Set joinDate for new employees so they appear in the directory.
-        // The directory query excludes employees with no join date on some views.
-        if (employee.getJoinDate() == null) {
-            employee.setJoinDate(LocalDate.now());
-        }
-        Employee savedEmployee = employeeDao.save(employee);
-
-        // Guard: EmployeeRole shares PK with Employee via @MapsId — skip if
-        // a role row already exists (e.g. existing super admin) to avoid a
-        // duplicate-key INSERT.
-        if (!employeeRoleDao.existsById(savedEmployee.getEmployeeId())) {
-            // setupBulkEmployeeRoles() only sets peopleRole/leaveRole/attendanceRole.
-            // We patch the remaining fields with the same defaults that
-            // getDefaultEmployeeRoles() uses, so the employee_role row is fully
-            // populated (no null columns for okrRole, pmRole, esignRole, etc.)
-            EmployeeRole role = rolesService.setupBulkEmployeeRoles(savedEmployee);
-            role.setEsignRole(com.skapp.community.common.type.Role.ESIGN_EMPLOYEE);
-            role.setOkrRole(com.skapp.community.common.type.Role.OKR_EMPLOYEE);
-            role.setPmRole(com.skapp.community.common.type.Role.PM_EMPLOYEE);
-            role.setInvoiceRole(com.skapp.community.common.type.Role.INVOICE_NONE);
-            role.setCrmRole(com.skapp.community.common.type.Role.CRM_NONE);
-            employeeRoleDao.save(role);
-            savedEmployee.setEmployeeRole(role);
-            log.debug("Roles assigned for {}.", email);
-        } else {
-            log.debug("Skipping role creation for {} — role already exists.", email);
-        }
-
-        return isNew;
-    }
-
-    // -------------------------------------------------------------------------
-    // sendInviteEmailsToNewUsers()
-    // -------------------------------------------------------------------------
-    private void sendInviteEmailsToNewUsers(List<String> newUserEmails) {
-        if (newUserEmails == null || newUserEmails.isEmpty()) {
-            log.info("sendInviteEmailsToNewUsers: no new users to invite.");
-            return;
-        }
-
-        Optional<OrganizationConfig> emailConfig = organizationConfigDao
-                .findOrganizationConfigByOrganizationConfigType(
-                        OrganizationConfigType.EMAIL_CONFIGS.name());
-
-        if (emailConfig.isEmpty()) {
-            log.error("sendInviteEmailsToNewUsers: SMTP not configured — " +
-                    "Fix: POST /api/v1/org/email-server");
-            return;
-        }
-
-        log.info("sendInviteEmailsToNewUsers: sending invites to {} new user(s).", newUserEmails.size());
-
-        for (String email : newUserEmails) {
-            try {
-                userDao.findByEmail(email).ifPresentOrElse(
-                        user -> {
-                            Employee employee = employeeDao.findEmployeeByEmail(email);
-                            if (employee == null) {
-                                log.warn("Skipping {} — employee record not found.", email);
-                                return;
-                            }
-                            user.setEmployee(employee);
-                            sendGoogleSyncInvitationEmail(user);
-                            log.info("Invite sent to {}.", email);
-                        },
-                        () -> log.warn("User not found for {}.", email)
-                );
-            } catch (Exception e) {
-                log.error("Failed to send invite to {}: {}", email, e.getMessage());
-            }
-        }
-
-        log.info("sendInviteEmailsToNewUsers: done.");
-    }
-
-    private void sendGoogleSyncInvitationEmail(User user) {
-        PeopleEmailDynamicFields fields = new PeopleEmailDynamicFields();
-        fields.setEmployeeOrManagerName(user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());
-        fields.setOrganizationName(organizationDao.findTopByOrderByOrganizationIdDesc()
-                .map(Organization::getOrganizationName).orElse(""));
-        fields.setWorkEmail(user.getEmail());
-        fields.setTemporaryPassword(encryptionDecryptionService.decrypt(user.getTempPassword()));
-        fields.setAppUrl("http://localhost:3000/signin");
-
-        emailService.sendEmail(EmailBodyTemplates.PEOPLE_MODULE_GOOGLE_SYNC_INVITATION, fields, user.getEmail());
-    }
 
     // -------------------------------------------------------------------------
     // fetchPageWithBackoff()
