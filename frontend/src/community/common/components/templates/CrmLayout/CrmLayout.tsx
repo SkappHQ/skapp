@@ -1,7 +1,7 @@
-import ContentLayout, {
-  ContentLayoutProps
-} from "~community/common/components/templates/ContentLayout/ContentLayout";
 import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
+
+import ContentLayout from "../ContentLayout/ContentLayout";
+import { ContentLayoutProps } from "../ContentLayout/ContentLayout";
 
 interface CrmLayoutProps extends ContentLayoutProps {}
 
