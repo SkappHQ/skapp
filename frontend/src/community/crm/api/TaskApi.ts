@@ -39,6 +39,9 @@ export const useCreateTask = (
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.ALL
+      });
       if (companyId) {
         queryClient.invalidateQueries({
           queryKey: contactQueryKeys.GET_CONTACTS_BY_COMPANY(companyId)
