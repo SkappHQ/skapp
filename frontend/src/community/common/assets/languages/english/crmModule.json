@@ -464,7 +464,7 @@
         "ownerSearch": "Search employees",
         "contactSearch": "Search contacts",
         "noResults": "No results",
-        "description": "No description"
+        "description": "Add description"
       },
       "ariaLabels": {
         "stage": "Stage",

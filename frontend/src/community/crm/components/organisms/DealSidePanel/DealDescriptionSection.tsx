@@ -12,6 +12,8 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
+  const isDescriptionEmpty = !description?.trim();
+
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
 
@@ -65,7 +67,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
         <div
           role="button"
           tabIndex={0}
-          className="body2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 px-2 rounded bg-transparent border-none"
+          className="body2 text-left w-full cursor-pointer hover:bg-secondary-background rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editDescription"])}
           onClick={handleClick}
           onKeyDown={(e) => {
@@ -75,7 +77,13 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
             }
           }}
         >
-          {description || translateText(["placeholders", "description"])}
+          {isDescriptionEmpty ? (
+            <span className="text-secondary-text body2">
+              {translateText(["placeholders", "description"])}
+            </span>
+          ) : (
+            description
+          )}
         </div>
       )}
     </div>
