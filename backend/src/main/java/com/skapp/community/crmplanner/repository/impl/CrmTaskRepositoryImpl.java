@@ -24,6 +24,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -165,7 +166,9 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		task.fetch(CrmTask_.type, JoinType.INNER);
 		task.fetch(CrmTask_.owner, JoinType.INNER);
 		task.fetch(CrmTask_.contact, JoinType.LEFT);
-		task.fetch(CrmTask_.deal, JoinType.LEFT);
+		Fetch<CrmTask, CrmDeal> dealFetch = task.fetch(CrmTask_.deal, JoinType.LEFT);
+		dealFetch.fetch(CrmDeal_.stage, JoinType.LEFT);
+		dealFetch.fetch(CrmDeal_.owner, JoinType.LEFT);
 
 		query.select(task).where(cb.equal(task.get(CrmTask_.id), id), cb.isFalse(task.get(CrmTask_.isDeleted)));
 
