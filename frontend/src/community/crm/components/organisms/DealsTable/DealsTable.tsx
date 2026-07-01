@@ -180,7 +180,7 @@ const DealsTable: FC<Props> = ({
                 className="size-2 rounded-full shrink-0"
                 style={{ backgroundColor: STAGE_COLOR_MAP[deal.stage.color] }}
               />
-              <span className="body2">{deal.stage.name}</span>
+              <span className="body2">{getStageByName(deal.stage.name)}</span>
             </div>
           ),
           companyName: <span className="body2">{deal.companyName ?? "-"}</span>,

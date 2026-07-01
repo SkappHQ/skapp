@@ -1,5 +1,5 @@
 import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
-import { FC, RefObject } from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
@@ -12,7 +12,6 @@ interface Props {
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
   onAddTask: () => void;
-  loadingRef?: RefObject<HTMLDivElement>;
 }
 
 const SidePanelTasksList: FC<Props> = ({
@@ -20,8 +19,7 @@ const SidePanelTasksList: FC<Props> = ({
   isCheckTaskVisible,
   isShowContact,
   onTaskRowClick,
-  onAddTask,
-  loadingRef
+  onAddTask
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -55,7 +53,6 @@ const SidePanelTasksList: FC<Props> = ({
           {translateText(["addTaskButtonEmptyView"])}
         </ButtonV2>
       </div>
-      <div ref={loadingRef} />
     </>
   );
 };

@@ -85,13 +85,13 @@ export const useCreateDeal = (
 const fetchDealLookup = async (
   searchKeyword: string,
   size: number,
-  contactId?: number
+  contactId?: number | null
 ): Promise<CrmDealPaginatedResponse> => {
   const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
     params: {
       size,
       searchKeyword,
-      contactId
+      ...(contactId != null && { contactId })
     }
   });
   return response?.data?.results?.[0];
@@ -101,7 +101,7 @@ export const useGetDealLookup = (
   searchKeyword: string,
   size: number,
   enabled: boolean = true,
-  contactId?: number
+  contactId?: number | null
 ): UseQueryResult<CrmDealPaginatedResponse> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword, contactId),

@@ -121,7 +121,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     debouncedContactSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isContactSearchEnabled,
-    formik.values.dealId ?? undefined
+    formik.values.dealId
   );
 
   const isDealSearchEnabled =
@@ -130,7 +130,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isDealSearchEnabled,
-    formik.values.contactId ?? undefined
+    formik.values.contactId
   );
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(

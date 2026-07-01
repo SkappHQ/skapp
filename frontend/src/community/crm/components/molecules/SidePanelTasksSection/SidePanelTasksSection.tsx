@@ -18,7 +18,6 @@ interface Props {
   onTaskRowClick?: () => void;
   preselectedContact?: PreselectedContact | null;
   emptyDescription?: string;
-  loadingRef?: RefObject<HTMLDivElement>;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
@@ -27,8 +26,7 @@ const SidePanelTasksSection: FC<Props> = ({
   isShowContact,
   onTaskRowClick,
   preselectedContact,
-  emptyDescription,
-  loadingRef
+  emptyDescription
 }) => {
   const { setIsTaskModalOpen, setTaskModalType, setPreselectedContact } =
     useCrmStore((store) => ({
@@ -55,7 +53,6 @@ const SidePanelTasksSection: FC<Props> = ({
       isShowContact={isShowContact}
       onTaskRowClick={onTaskRowClick}
       onAddTask={handleAddTask}
-      loadingRef={loadingRef}
     />
   ) : (
     <EmptyDataView

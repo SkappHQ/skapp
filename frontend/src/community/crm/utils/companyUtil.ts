@@ -1,11 +1,10 @@
+import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+
 import { CrmCompanyMetricsType, MetricItem } from "../types/CommonTypes";
 
 export const mapCompanyToMetricItems = (
   company: CrmCompanyMetricsType,
-  translateText: (
-    keys: string[],
-    interpolationValues?: Record<string, any>
-  ) => string
+  translateText: TranslatorFunctionType
 ): MetricItem[] => {
   return [
     {

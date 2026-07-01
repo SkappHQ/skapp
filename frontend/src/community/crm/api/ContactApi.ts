@@ -190,13 +190,17 @@ export const useGetCrmContacts = (
   searchKeyword: string,
   size: number,
   enabled: boolean = true,
-  dealId?: number
+  dealId?: number | null
 ): UseQueryResult<CrmContactLookupResponseType> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size, dealId),
     queryFn: async (): Promise<CrmContactLookupResponseType> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
-        params: { searchKeyword, size, dealId }
+        params: {
+          searchKeyword,
+          size,
+          ...(dealId != null && { dealId })
+        }
       });
       return response?.data?.results?.[0];
     },

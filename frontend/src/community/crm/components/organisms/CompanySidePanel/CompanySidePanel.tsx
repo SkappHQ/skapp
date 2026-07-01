@@ -67,7 +67,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const taskData = useMemo(
     () => [
       ...(openTaskData?.tasks ?? []),
-      ...(completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? [])
+      ...(completedTaskData?.pages.flatMap((page) => page.items) ?? [])
     ],
     [openTaskData, completedTaskData]
   );
@@ -180,7 +180,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       }
     >
       <div className="flex flex-col pb-4 gap-4">
-        {isLoading || !selectedCompany ? (
+        {isLoading ? (
           <CompanySidePanelSkeleton />
         ) : (
           <>
