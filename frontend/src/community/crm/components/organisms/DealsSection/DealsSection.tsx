@@ -49,6 +49,12 @@ const DealsSection: FC = () => {
     }
   };
 
+  const handleDealOnClick = (deal: CrmDealListItem) => {
+    setSelectedDealId(deal.id);
+    setActiveDealSidePanel(DealSidePanelTypes.DEAL_DETAIL);
+    setIsCrmSidePanelOpen(true);
+  };
+
   return (
     <div className="flex flex-col gap-6 w-full">
       <DealsHeader
@@ -64,11 +70,7 @@ const DealsSection: FC = () => {
           allDeals={allDeals ?? []}
           hasNextPage={hasNextPage}
           onLoadMore={loadMore}
-          onDealClick={(deal: CrmDealListItem) => {
-            setSelectedDealId(deal.id);
-            setActiveDealSidePanel(DealSidePanelTypes.DEAL_DETAIL);
-            setIsCrmSidePanelOpen(true);
-          }}
+          onDealClick={handleDealOnClick}
         />
       ) : (
         <DealsKanbanBoard searchKeyword={debouncedSearch} />

@@ -1,6 +1,6 @@
 import { FormikProps } from "formik";
 import { FC, useEffect, useMemo, useState } from "react";
-import {InputField} from "@rootcodelabs/skapp-ui";
+
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
@@ -70,23 +70,19 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
     <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
       <PropertyRow label={translateText(["labels", "value"])}>
         <div className="flex flex-col w-full px-1">
-         <InputField
-          name="amount"
-          value={values.amount}
-          onChange={handleChange}
-          placeholder={translateText(["placeholders", "none"])}
-          type="text"
-          state={errors.amount ? "error" : "default"}
-          errorMessage={errors.amount}
-          fullWidth
-          aria-label={translateText(["ariaLabels", "amount"])}
-          styleOverrides={{
-            container: "w-full",
-            inputContainer: "self-stretch bg-transparent border-0",
-            inputWrapper: "self-stretch px-1 py-0"
-          }}
-        />
-        
+          <input
+            name="amount"
+            value={values.amount}
+            onChange={handleChange}
+            placeholder={translateText(["placeholders", "none"])}
+            type="text"
+            className="w-full bg-transparent outline-none body2 placeholder:text-secondary-text"
+            aria-label={translateText(["ariaLabels", "amount"])}
+            aria-invalid={!!errors.amount}
+          />
+          {errors.amount && (
+            <p className="text-semantic-red-text body3 mt-1">{errors.amount}</p>
+          )}
         </div>
       </PropertyRow>
 

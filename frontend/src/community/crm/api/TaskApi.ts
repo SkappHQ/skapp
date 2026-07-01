@@ -28,8 +28,7 @@ interface RelatedTasksPage {
 }
 
 const fetchRelatedTasks = async (
-  params: RelatedTasksParams,
-  page: number
+  params: RelatedTasksParams
 ): Promise<RelatedTasksPage> => {
   const response = await authFetch.get(taskEndpoints.GET_RELATED_TASKS, {
     params
@@ -41,7 +40,7 @@ export const useGetRelatedTasks = (params: RelatedTasksParams) => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: taskQueryKeys.RELATED_TASKS,
-    queryFn: ({ pageParam }) => fetchRelatedTasks(params, pageParam),
+    queryFn: () => fetchRelatedTasks(params),
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;

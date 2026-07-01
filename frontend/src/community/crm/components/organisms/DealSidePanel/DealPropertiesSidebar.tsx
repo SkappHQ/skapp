@@ -1,4 +1,4 @@
-import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
+import { Dropdown } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
 
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -8,6 +8,7 @@ import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/Skeleto
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
+import PropertyField from "~community/crm/components/molecules/PropertyField/PropertyField";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
@@ -91,24 +92,12 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
       )}
 
       <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
-        <PropertyRow label={translateText(["value"])}>
-          <div className="flex flex-col w-full px-1">
-            <InputField
-              name="amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder={translateText(["placeholders", "none"])}
-              type="text"
-              fullWidth
-              aria-label={translateText(["ariaLabels", "amount"])}
-              styleOverrides={{
-                container: "w-full",
-                inputContainer: "self-stretch bg-transparent border-0",
-                inputWrapper: "self-stretch px-1 py-0"
-              }}
-            />
-          </div>
-        </PropertyRow>
+        <PropertyField
+          label={translateText(["value"])}
+          value={amount}
+          placeholder={translateText(["placeholders", "none"])}
+          onChange={setAmount}
+        />
 
         <PropertyRow label={translateText(["priority"])}>
           <PriorityDropdown value={priority} onChange={setPriority} />

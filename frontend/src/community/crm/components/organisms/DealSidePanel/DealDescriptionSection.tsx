@@ -75,7 +75,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
             }
           }}
         >
-          {description ?? translateText(["placeholders", "description"])}
+          {description || translateText(["placeholders", "description"])}
         </div>
       )}
     </div>

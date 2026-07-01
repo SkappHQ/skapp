@@ -42,7 +42,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
                 handleSave();
               }
             }}
-            className="w-full h2"
+            className="w-full"
             autoFocus
           />
         </div>

@@ -110,22 +110,22 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
           />
         }
       >
-        {isLoading || !deal ? (
+        {isLoading ? (
           <DealSidePanelSkeleton />
         ) : (
           <div className="flex flex-col gap-6">
-            <DealTitleSection name={deal.name} />
+            <DealTitleSection name={deal?.name ?? ""} />
             <div className="flex gap-6 items-start">
               <div className="flex-1 flex flex-col gap-6 min-w-0">
-                <DealDescriptionSection description={deal.description} />
+                <DealDescriptionSection description={deal?.description ?? ""} />
                 <div className="flex flex-col gap-3">
-                  <h3 className="h2">{translateText(["tasks"])}</h3>
+                  <h2 className="h2">{translateText(["tasks"])}</h2>
                   <hr className="border-secondary-accent" />
                   <SidePanelTasksSection tasks={relatedTasks} />
-                  <div ref={loadingRef} />
                 </div>
+                <div ref={loadingRef} />
               </div>
-              <DealPropertiesSidebar deal={deal} isOpen={isOpen} />
+              <DealPropertiesSidebar deal={deal!} isOpen={isOpen} />
             </div>
           </div>
         )}
