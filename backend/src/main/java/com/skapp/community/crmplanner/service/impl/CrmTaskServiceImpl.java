@@ -128,6 +128,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	public ResponseEntityDto getRelatedTasks(CrmTaskRelatedFilterDto filterDto) {
 		log.info("getRelatedTasks: execution started");
 
+		CrmValidations.validateRelatedTaskContextFilter(filterDto.getContactId(), filterDto.getDealId());
+
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
