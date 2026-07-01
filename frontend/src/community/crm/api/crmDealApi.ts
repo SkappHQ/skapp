@@ -80,7 +80,7 @@ export const useCreateDeal = (
         queryKey: crmBoardQueryKeys.BOARD_INIT_DATA
       });
       queryClient.invalidateQueries({
-        queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES_ALL
+        queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES
       });
       onSuccess();
     },

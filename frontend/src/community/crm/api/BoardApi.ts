@@ -42,7 +42,7 @@ export const useGetDealsGroupedByStages = (
   enabled: boolean = true
 ): UseQueryResult<CrmBoardStageDealsResponseType[]> => {
   return useQuery({
-    queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES(params),
+    queryKey: crmBoardQueryKeys.GET_DEALS_GROUPED_BY_STAGES(params),
     queryFn: () => fetchDealsGroupedByStages(params),
     enabled
   });

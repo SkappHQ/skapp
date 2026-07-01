@@ -10,8 +10,8 @@ export const crmDealQueryKeys = {
 
 export const crmBoardQueryKeys = {
   BOARD_INIT_DATA: ["crm-board-init-data"],
-  DEALS_GROUPED_BY_STAGES_ALL: ["crm-board-deals-grouped-by-stages"],
-  DEALS_GROUPED_BY_STAGES: (params: CrmBoardDealsGroupedRequest) => [
+  DEALS_GROUPED_BY_STAGES: ["crm-board-deals-grouped-by-stages"],
+  GET_DEALS_GROUPED_BY_STAGES: (params: CrmBoardDealsGroupedRequest) => [
     "crm-board-deals-grouped-by-stages",
     params
   ]

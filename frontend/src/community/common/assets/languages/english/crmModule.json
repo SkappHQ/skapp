@@ -435,12 +435,7 @@
     "kanban": {
       "addDealBtn": "Add deal",
       "dragErrorTitle": "Failed to move deal",
-      "dragErrorDescription": "Something went wrong. Please try again.",
-      "errorState": {
-        "title": "Something went wrong",
-        "description": "Failed to load the board. Please try again.",
-        "retryBtn": "Retry"
-      }
+      "dragErrorDescription": "Something went wrong. Please try again."
     },
     "deleteDealModal": {
       "areYouSureModalTitle": "Are you sure?",

@@ -37,19 +37,17 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "kanban");
 
-  const boardStages = useCrmStore((store) => store.boardStages);
-  const boardOwners = useCrmStore((store) => store.boardOwners);
-  const boardContacts = useCrmStore((store) => store.boardContacts);
-  const setBoardStages = useCrmStore((store) => store.setBoardStages);
-  const setBoardContacts = useCrmStore((store) => store.setBoardContacts);
-  const setBoardOwners = useCrmStore((store) => store.setBoardOwners);
-  const setBoardStageDeals = useCrmStore((store) => store.setBoardStageDeals);
-  const setIsCrmSidePanelOpen = useCrmStore(
-    (store) => store.setIsCrmSidePanelOpen
-  );
-  const setPreselectedStageId = useCrmStore(
-    (store) => store.setPreselectedStageId
-  );
+  const {
+    boardStages,
+    boardOwners,
+    boardContacts,
+    setBoardStages,
+    setBoardContacts,
+    setBoardOwners,
+    setBoardStageDeals,
+    setIsCrmSidePanelOpen,
+    setPreselectedStageId
+  } = useCrmStore();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
