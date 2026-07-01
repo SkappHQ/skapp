@@ -2,6 +2,7 @@ import { NextPage } from "next";
 import { useEffect, useRef } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
@@ -10,7 +11,6 @@ import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/Tas
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -72,6 +72,7 @@ const Tasks: NextPage = () => {
       }}
       onPrimaryButtonClick={onPrimaryButtonClick}
       isPrimaryBtnLoading={isCheckingCrmLimit}
+      module={Modules.CRM}
     >
       <>
         {selectedTaskId && (
@@ -84,7 +85,6 @@ const Tasks: NextPage = () => {
         )}
         <div ref={containerRef} className="flex flex-col w-full gap-4">
           <TaskModalController />
-          <CrmLimitModalController />
           <TasksTable />
         </div>
       </>

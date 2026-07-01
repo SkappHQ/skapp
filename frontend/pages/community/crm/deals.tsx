@@ -1,13 +1,13 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
 import { useCrmStore } from "~community/crm/store/store";
-import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -31,13 +31,12 @@ const Deals: NextPage = () => {
         )
       }
       isPrimaryBtnLoading={isCheckingCrmLimit}
+      module={Modules.CRM}
     >
       <>
         <SidePanelWrapper>
           <AddDealSidePanel />
         </SidePanelWrapper>
-
-        <CrmLimitModalController />
         <DealsSection />
       </>
     </ContentLayout>
