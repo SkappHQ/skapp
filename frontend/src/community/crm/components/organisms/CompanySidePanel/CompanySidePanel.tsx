@@ -1,7 +1,6 @@
 import {
   DeleteButtonIcon,
   EditIcon,
-  KebabMenu,
   MenuItemProps,
   SidePanel,
   SidePanelProps,
@@ -11,6 +10,7 @@ import {
 import { FC, useMemo, useState } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetCompletedTasksByCompany,
@@ -31,10 +31,12 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { mapCompanyToMetricItems } from "~community/crm/utils/companyUtil";
 
+import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
 import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
+  const { isCrmSalesManager } = useSessionData();
 
   const [activeTab, setActiveTab] = useState<SidePanelTabEnum>(
     SidePanelTabEnum.TASKS
@@ -170,16 +172,9 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         isLoading ? (
           <SidePanelHeaderActionsSkeleton count={1} />
         ) : (
-          <KebabMenu
-            id="company-actions"
+          <CompanySidePanelHeaderActions
+            isCrmSalesManager={Boolean(isCrmSalesManager)}
             menuItems={menuItems}
-            anchorButton={{
-              "aria-label": translateText(["kebabMenuAriaLabel"])
-            }}
-            className={{
-              anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-            }}
           />
         )
       }
