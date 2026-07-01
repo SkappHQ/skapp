@@ -20,9 +20,14 @@ import { CrmDealStageEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const CrmConfigurations = () => {
   const translateText = useTranslator("configurations", "crm");
+
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const {
     setIsDealStageModalOpen,
@@ -119,9 +124,11 @@ const CrmConfigurations = () => {
   };
 
   const handleAddStage = () => {
-    setSelectedDealStageId(null);
-    setDealStageModalType(CrmModalTypes.ADD_DEAL_STAGE_MODAL);
-    setIsDealStageModalOpen(true);
+    guardCrmCreate(CrmLimitResource.DEAL_STAGES, () => {
+      setSelectedDealStageId(null);
+      setDealStageModalType(CrmModalTypes.ADD_DEAL_STAGE_MODAL);
+      setIsDealStageModalOpen(true);
+    });
   };
 
   return (
@@ -181,6 +188,7 @@ const CrmConfigurations = () => {
             icon={<PlusIcon />}
             iconPosition="end"
             size="md"
+            isLoading={isCheckingCrmLimit}
           >
             {translateText(["dealsSection", "buttons", "add"])}
           </ButtonV2>
@@ -220,6 +228,7 @@ const CrmConfigurations = () => {
       </div>
 
       <DealStageModalController />
+      <CrmLimitModalController />
     </div>
   );
 };
