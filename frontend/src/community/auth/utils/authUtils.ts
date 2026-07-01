@@ -335,22 +335,20 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   return userData;
 };
 
-// Routes that must stay reachable without a session (incognito, expired/no
-// cookies). signOut clears cookies here but never redirects away from them,
-// otherwise these public pages would bounce to /signin and loop.
-const PUBLIC_AUTH_ROUTES = [
-  ROUTES.AUTH.SIGNIN,
-  ROUTES.AUTH.SIGNUP,
-  ROUTES.AUTH.ENTERPRISE_SIGNIN,
-  ROUTES.AUTH.VERIFY_GUEST,
-  ROUTES.AUTH.VERIFY_GUEST_OTP,
-  ROUTES.AUTH.VERIFY_RESET_PASSWORD
-];
-
-const isPublicAuthRoute = (pathname: string): boolean =>
-  PUBLIC_AUTH_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
-  );
+// A route is protected iff the middleware matcher covers it — the matcher is
+// the single source of truth. Anything it does not match is public and must
+// stay reachable without a session (incognito / no cookies), so signOut clears
+// cookies there but does not redirect to sign-in. Matching mirrors Next.js:
+// "/foo/:path*" is a prefix match, every other entry is an exact match (so the
+// protected "/verify/email" does not swallow the public "/verify/guest-otp").
+const isProtectedRoute = (pathname: string): boolean =>
+  config.matcher.some((pattern) => {
+    if (pattern.endsWith("/:path*")) {
+      const base = pattern.slice(0, -"/:path*".length);
+      return pathname === base || pathname.startsWith(`${base}/`);
+    }
+    return pathname === pattern;
+  });
 
 export const signOut = async (redirect: boolean = true): Promise<void> => {
   await clearCookies();
@@ -359,7 +357,7 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   const currentPath = globalThis.window.location.pathname;
 
-  if (isPublicAuthRoute(currentPath)) return;
+  if (!isProtectedRoute(currentPath)) return;
 
   const existingCallback = new URLSearchParams(
     globalThis.window.location.search
