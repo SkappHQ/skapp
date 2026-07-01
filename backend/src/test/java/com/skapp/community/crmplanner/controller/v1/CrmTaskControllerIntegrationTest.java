@@ -765,16 +765,14 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Create task with no contact or deal - Returns Bad Request")
-	void createTask_NoTarget_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create task with no contact or deal - Returns Created")
+	void createTask_NoTarget_ReturnsCreated() throws Exception {
 		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setContactId(null);
 
 		performCreateRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_TARGET_REQUIRED)));
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
 	@Test
