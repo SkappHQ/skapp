@@ -140,8 +140,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return new PageImpl<>(typedQuery.getResultList(), pageable, getLookupTotalCount(cb, filterDto));
 	}
 
-	private List<Predicate> buildLookupPredicates(CriteriaBuilder cb, CriteriaQuery<?> query, Root<CrmContact> contact,
-			CrmContactFilterDto filterDto) {
+	private <T> List<Predicate> buildLookupPredicates(CriteriaBuilder cb, CriteriaQuery<T> query,
+			Root<CrmContact> contact, CrmContactFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 

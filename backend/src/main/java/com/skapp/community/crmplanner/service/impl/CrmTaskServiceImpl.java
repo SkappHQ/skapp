@@ -125,7 +125,6 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		CrmValidations.validateTaskName(requestDto.getName());
 		CrmValidations.validateTaskTypeId(requestDto.getTypeId());
-		CrmValidations.validateTaskTargets(requestDto.getContactId(), requestDto.getDealId());
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
 		CrmValidations.validateTaskNotes(requestDto.getNotes());
 		validateTaskCreationLimit();
