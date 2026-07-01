@@ -1,4 +1,5 @@
 import {
+  Divider,
   IconButton,
   Stack,
   Theme,
@@ -47,7 +48,7 @@ import { useUserLimitStore } from "~enterprise/people/store/userLimitStore";
 
 import styles from "./styles";
 
-export interface ContentLayoutProps {
+interface Props {
   pageHead: string;
   title: string;
   titleAddon?: JSX.Element | null;
@@ -121,7 +122,7 @@ const ContentLayout = ({
   showBackButtonTooltip = true,
   isCloseButton = false,
   breadcrumbs = []
-}: ContentLayoutProps): JSX.Element => {
+}: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
   const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
