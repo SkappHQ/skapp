@@ -79,9 +79,10 @@ public class EmailServiceImpl implements EmailService {
 			placeholders.replaceAll(this::getLocalizedEnumValue);
 
 			setTemplatePlaceholderData(emailTemplate, placeholders, templateDetails, module);
-
-			String emailBody = buildEmailBody(templateDetails, module, placeholders, emailMainTemplate);
 			String subject = setSubjectPlaceholders(templateDetails.getSubject(), placeholders);
+			placeholders.replace("subject", subject);
+			
+			String emailBody = buildEmailBody(templateDetails, module, placeholders, emailMainTemplate);
 
 			asyncEmailSender.sendMail(recipient, subject, emailBody, placeholders);
 		}
