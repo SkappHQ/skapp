@@ -1,0 +1,307 @@
+import {
+  CrmDealStageColorsEnum,
+  CrmDealStageEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
+import type {
+  CrmBoardDealResponseType,
+  CrmBoardStageDealsResponseType
+} from "~community/crm/types/BoardTypes";
+import type {
+  CrmContactLookup,
+  CrmDealStageType,
+  CrmOwner
+} from "~community/crm/types/CommonTypes";
+
+import {
+  applyMoveToStageMap,
+  computeReorderWithinStage,
+  getNeighbourDealIds,
+  normalizeStageDeals,
+  resolveBoardDeal
+} from "./kanbanUtil";
+
+// ─── Fixtures ─────────────────────────────────────────────────────────────────
+
+const mkRawDeal = (
+  id: number,
+  ownerId = 1,
+  contactId = 10
+): CrmBoardDealResponseType => ({
+  id,
+  name: `Deal ${id}`,
+  amount: "500",
+  ownerId,
+  companyId: null,
+  contactId,
+  priority: CrmPriorityEnum.LOW,
+  taskCount: 0
+});
+
+const mkStageEntry = (
+  stageId: number,
+  deals: CrmBoardDealResponseType[],
+  totalCount = deals.length
+): CrmBoardStageDealsResponseType => ({
+  stageId,
+  deals,
+  totalCount,
+  currentPage: 0,
+  totalPages: 1,
+  pageSize: 20,
+  hasNextPage: false
+});
+
+const mkStageType = (id: number): CrmDealStageType => ({
+  id,
+  name: `Stage ${id}`,
+  color: CrmDealStageColorsEnum.SKY,
+  orderIndex: id,
+  stageType: CrmDealStageEnum.OPEN
+});
+
+const OWNER: CrmOwner = {
+  employeeId: 1,
+  firstName: "Alice",
+  lastName: "Smith",
+  authPic: null
+};
+
+const CONTACT_WITH_COMPANY: CrmContactLookup = {
+  id: 10,
+  name: "Acme Lead",
+  company: { id: 5, name: "Acme Corp" }
+};
+
+const CONTACT_NO_COMPANY: CrmContactLookup = {
+  id: 20,
+  name: "Solo Lead",
+  company: null
+};
+
+// ─── resolveBoardDeal ─────────────────────────────────────────────────────────
+
+describe("resolveBoardDeal", () => {
+  it("should resolve deal with matching owner and contact with company", () => {
+    const raw = mkRawDeal(1, 1, 10);
+    const result = resolveBoardDeal(raw, [OWNER], [CONTACT_WITH_COMPANY]);
+
+    expect(result).toEqual({
+      id: 1,
+      name: "Deal 1",
+      contactName: "Acme Lead",
+      companyName: "Acme Corp",
+      owner: OWNER,
+      amount: "500",
+      priority: CrmPriorityEnum.LOW,
+      taskCount: 0
+    });
+  });
+
+  it("should set companyName to null when contact has no company", () => {
+    const raw = mkRawDeal(2, 1, 20);
+    const result = resolveBoardDeal(raw, [OWNER], [CONTACT_NO_COMPANY]);
+
+    expect(result.companyName).toBeNull();
+    expect(result.contactName).toBe("Solo Lead");
+  });
+
+  it("should set contactName to empty string and companyName to null when contact is not found", () => {
+    const raw = mkRawDeal(3, 1, 999);
+    const result = resolveBoardDeal(raw, [OWNER], [CONTACT_WITH_COMPANY]);
+
+    expect(result.contactName).toBe("");
+    expect(result.companyName).toBeNull();
+  });
+
+  it("should set owner to undefined when ownerId has no match", () => {
+    const raw = mkRawDeal(4, 999, 10);
+    const result = resolveBoardDeal(raw, [OWNER], [CONTACT_WITH_COMPANY]);
+
+    expect(result.owner).toBeUndefined();
+  });
+});
+
+// ─── getNeighbourDealIds ──────────────────────────────────────────────────────
+
+describe("getNeighbourDealIds", () => {
+  const d1 = mkRawDeal(1);
+  const d2 = mkRawDeal(2);
+  const d3 = mkRawDeal(3);
+  const stageMap = [mkStageEntry(10, [d1, d2, d3])];
+
+  it("should return null previousDealId for the first deal", () => {
+    expect(getNeighbourDealIds(stageMap, 10, 1)).toEqual({
+      previousDealId: null,
+      nextDealId: 2
+    });
+  });
+
+  it("should return null nextDealId for the last deal", () => {
+    expect(getNeighbourDealIds(stageMap, 10, 3)).toEqual({
+      previousDealId: 2,
+      nextDealId: null
+    });
+  });
+
+  it("should return both neighbours for a middle deal", () => {
+    expect(getNeighbourDealIds(stageMap, 10, 2)).toEqual({
+      previousDealId: 1,
+      nextDealId: 3
+    });
+  });
+
+  it("should return both null when dealId is not in the stage", () => {
+    expect(getNeighbourDealIds(stageMap, 10, 999)).toEqual({
+      previousDealId: null,
+      nextDealId: null
+    });
+  });
+
+  it("should return both null when stageId is not found", () => {
+    expect(getNeighbourDealIds(stageMap, 999, 1)).toEqual({
+      previousDealId: null,
+      nextDealId: null
+    });
+  });
+});
+
+// ─── normalizeStageDeals ──────────────────────────────────────────────────────
+
+describe("normalizeStageDeals", () => {
+  const d1 = mkRawDeal(1);
+  const populatedEntry = mkStageEntry(1, [d1], 5);
+
+  it("should return existing stage data when the stage is present in stageDeals", () => {
+    const stages = [mkStageType(1)];
+    const result = normalizeStageDeals(stages, [populatedEntry]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toBe(populatedEntry);
+  });
+
+  it("should return an empty skeleton when a stage is missing from stageDeals", () => {
+    const stages = [mkStageType(2)];
+    const result = normalizeStageDeals(stages, [populatedEntry]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      stageId: 2,
+      deals: [],
+      totalCount: 0,
+      currentPage: 0,
+      totalPages: 0,
+      pageSize: 0,
+      hasNextPage: false
+    });
+  });
+
+  it("should handle a mix of present and missing stages in order", () => {
+    const stages = [mkStageType(1), mkStageType(2), mkStageType(3)];
+    const result = normalizeStageDeals(stages, [populatedEntry]);
+
+    expect(result).toHaveLength(3);
+    expect(result[0]).toBe(populatedEntry);
+    expect(result[1].stageId).toBe(2);
+    expect(result[1].deals).toEqual([]);
+    expect(result[2].stageId).toBe(3);
+    expect(result[2].deals).toEqual([]);
+  });
+
+  it("should return an empty array when stages input is empty", () => {
+    expect(normalizeStageDeals([], [populatedEntry])).toEqual([]);
+  });
+});
+
+// ─── applyMoveToStageMap (cross-stage move) ───────────────────────────────────
+
+describe("applyMoveToStageMap", () => {
+  const d1 = mkRawDeal(1);
+  const d2 = mkRawDeal(2);
+  const d3 = mkRawDeal(3);
+  const d4 = mkRawDeal(4);
+  const d5 = mkRawDeal(5);
+
+  const sourceStage = mkStageEntry(1, [d1, d2], 2);
+  const targetStage = mkStageEntry(2, [d3, d4], 2);
+  const otherStage = mkStageEntry(3, [d5], 1);
+  const stageMap = [sourceStage, targetStage, otherStage];
+
+  it("should remove the moved deal from the source stage and decrement its totalCount", () => {
+    const result = applyMoveToStageMap(stageMap, 1, 2, 0, d1, 1);
+    const source = result.find((s) => s.stageId === 1)!;
+
+    expect(source.deals).toEqual([d2]);
+    expect(source.totalCount).toBe(1);
+  });
+
+  it("should insert the deal into the target stage and increment its totalCount", () => {
+    const result = applyMoveToStageMap(stageMap, 1, 2, 1, d1, 1);
+    const target = result.find((s) => s.stageId === 2)!;
+
+    expect(target.deals).toEqual([d3, d1, d4]);
+    expect(target.totalCount).toBe(3);
+  });
+
+  it("should insert at the beginning when insertIndex is 0", () => {
+    const result = applyMoveToStageMap(stageMap, 1, 2, 0, d1, 1);
+    const target = result.find((s) => s.stageId === 2)!;
+
+    expect(target.deals[0]).toBe(d1);
+  });
+
+  it("should insert at the end when insertIndex equals target deals length", () => {
+    const result = applyMoveToStageMap(stageMap, 1, 2, 2, d1, 1);
+    const target = result.find((s) => s.stageId === 2)!;
+
+    expect(target.deals).toEqual([d3, d4, d1]);
+  });
+
+  it("should not modify unrelated stages", () => {
+    const result = applyMoveToStageMap(stageMap, 1, 2, 0, d1, 1);
+    const other = result.find((s) => s.stageId === 3)!;
+
+    expect(other).toBe(otherStage);
+  });
+});
+
+// ─── computeReorderWithinStage (reorder within stage) ────────────────────────
+
+describe("computeReorderWithinStage", () => {
+  const d1 = mkRawDeal(1);
+  const d2 = mkRawDeal(2);
+  const d3 = mkRawDeal(3);
+  const sourceDeals = [d1, d2, d3];
+
+  it("should reorder and return correct neighbours when moving to last position", () => {
+    // arrayMove([d1,d2,d3], 0, 2) → [d2, d3, d1]
+    const result = computeReorderWithinStage(sourceDeals, 1, 3);
+
+    expect(result).not.toBeNull();
+    expect(result!.reorderedDeals).toEqual([d2, d3, d1]);
+    expect(result!.previousDealId).toBe(3);
+    expect(result!.nextDealId).toBeNull();
+  });
+
+  it("should reorder and return correct neighbours when moving to first position", () => {
+    // arrayMove([d1,d2,d3], 2, 0) → [d3, d1, d2]
+    const result = computeReorderWithinStage(sourceDeals, 3, 1);
+
+    expect(result).not.toBeNull();
+    expect(result!.reorderedDeals).toEqual([d3, d1, d2]);
+    expect(result!.previousDealId).toBeNull();
+    expect(result!.nextDealId).toBe(1);
+  });
+
+  it("should return null when activeDealId is not found", () => {
+    expect(computeReorderWithinStage(sourceDeals, 999, 1)).toBeNull();
+  });
+
+  it("should return null when overDealId is not found", () => {
+    expect(computeReorderWithinStage(sourceDeals, 1, 999)).toBeNull();
+  });
+
+  it("should return null when active and over resolve to the same index", () => {
+    expect(computeReorderWithinStage(sourceDeals, 1, 1)).toBeNull();
+  });
+});
