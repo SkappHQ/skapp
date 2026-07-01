@@ -123,6 +123,7 @@ const ResetPassword: NextPage = () => {
         disabled={isSubmitting}
         buttonText={translateText(["resetBtnText"])}
         centerHeading={true}
+        pageHead={translateText(["pageHead"])}
       >
         <ResetPasswordForm
           handleChange={handleChange}

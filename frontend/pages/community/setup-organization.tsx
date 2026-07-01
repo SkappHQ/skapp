@@ -122,6 +122,7 @@ const SetupOrganization: NextPage = () => {
         onClick={handleSubmit}
         disabled={attachmentError}
         isLoading={isPending}
+        pageHead={translateText(["pageHead"])}
       >
         <SetupOrganizationForm
           handleSubmit={handleSubmit}
