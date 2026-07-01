@@ -1,6 +1,6 @@
 import { NextPage } from "next";
+import CrmLayout from "~community/common/components/templates/CrmLayout/CrmLayout";
 
-import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
@@ -47,7 +47,7 @@ const Contacts: NextPage = () => {
   };
 
   return (
-    <ContentLayout
+    <CrmLayout
       pageHead={translateText(["pageHead"])}
       title={translateText(["title"])}
       primaryButtonText={translateText(["addContactBtn"])}
@@ -66,11 +66,10 @@ const Contacts: NextPage = () => {
         )}
 
         <ContactModalController />
-        <CrmLimitModalController />
         <TaskModalController />
         <ContactTable />
       </>
-    </ContentLayout>
+    </CrmLayout>
   );
 };
 

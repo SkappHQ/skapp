@@ -1,13 +1,12 @@
 import { NextPage } from "next";
 
-import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import CrmLayout from "~community/common/components/templates/CrmLayout/CrmLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
 import { useCrmStore } from "~community/crm/store/store";
-import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -20,7 +19,7 @@ const Deals: NextPage = () => {
   }));
 
   return (
-    <ContentLayout
+    <CrmLayout
       pageHead={translateText(["pageHead"])}
       title={translateText(["title"])}
       primaryButtonText={translateText(["addDealBtn"])}
@@ -37,10 +36,9 @@ const Deals: NextPage = () => {
           <AddDealSidePanel />
         </SidePanelWrapper>
 
-        <CrmLimitModalController />
         <DealsSection />
       </>
-    </ContentLayout>
+    </CrmLayout>
   );
 };
 
