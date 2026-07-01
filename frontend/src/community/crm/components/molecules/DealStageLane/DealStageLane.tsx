@@ -1,5 +1,9 @@
+import {
+  SortableContext,
+  verticalListSortingStrategy
+} from "@dnd-kit/sortable";
 import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -54,6 +58,8 @@ const DealStageLane: FC<DealStageLaneProps> = ({
     onLoadMore: handleLoadMore
   });
 
+  const dealIds = useMemo(() => deals.map((d) => d.id), [deals]);
+
   return (
     <DealStageLaneHeader
       stage={stage}
@@ -66,15 +72,19 @@ const DealStageLane: FC<DealStageLaneProps> = ({
           <DealCardSkeleton count={3} />
         ) : (
           <>
-            {deals.map((deal, index) => (
-              <DraggableDealCard
-                key={deal.id}
-                deal={deal}
-                index={index}
-                stageId={stage.id}
-                onDealClick={onDealClick}
-              />
-            ))}
+            <SortableContext
+              items={dealIds}
+              strategy={verticalListSortingStrategy}
+            >
+              {deals.map((deal) => (
+                <DraggableDealCard
+                  key={deal.id}
+                  deal={deal}
+                  stageId={stage.id}
+                  onDealClick={onDealClick}
+                />
+              ))}
+            </SortableContext>
 
             {hasNextPage && isFetchingNextPage && (
               <>

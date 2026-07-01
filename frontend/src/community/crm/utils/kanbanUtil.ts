@@ -1,5 +1,5 @@
-import type { DragEndEvent, DragOverEvent } from "@dnd-kit/dom";
-import { move } from "@dnd-kit/helpers";
+import type { UniqueIdentifier } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 
 import type {
   CrmBoardDealResponseType,
@@ -89,24 +89,63 @@ export const normalizeStageDeals = (
 
 export const applyDealMove = (
   stageMap: CrmBoardStageDealsResponseType[],
-  event: DragOverEvent | DragEndEvent
+  activeId: number,
+  overId: UniqueIdentifier | null,
+  activeStageId: number,
+  overStageId: number
 ): CrmBoardStageDealsResponseType[] => {
-  const dealsByStage: Record<string, CrmBoardDealResponseType[]> = {};
-  for (const stage of stageMap) {
-    dealsByStage[getStageDroppableId(stage.stageId)] = stage.deals;
+  if (activeStageId === overStageId) {
+    if (overId === null) return stageMap;
+
+    const stage = stageMap.find((stage) => stage.stageId === activeStageId);
+    if (!stage) return stageMap;
+
+    const oldIndex = stage.deals.findIndex((deal) => deal.id === activeId);
+    const newIndex = stage.deals.findIndex(
+      (deal) => deal.id === Number(overId)
+    );
+
+    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex)
+      return stageMap;
+
+    const reordered = arrayMove(stage.deals, oldIndex, newIndex);
+    return stageMap.map((stage) =>
+      stage.stageId === activeStageId ? { ...stage, deals: reordered } : stage
+    );
   }
 
-  const movedDealsByStage = move(dealsByStage, event);
-  if (movedDealsByStage === dealsByStage) return stageMap;
+  const deal = stageMap
+    .flatMap((stage) => stage.deals)
+    .find((deal) => deal.id === activeId);
+  if (!deal) return stageMap;
+
+  const overStage = stageMap.find((stage) => stage.stageId === overStageId);
+  if (!overStage) return stageMap;
+
+  const overCardIndex =
+    overId === null
+      ? -1
+      : overStage.deals.findIndex((deal) => deal.id === Number(overId));
+  const insertAt =
+    overCardIndex === -1 ? overStage.deals.length : overCardIndex;
 
   return stageMap.map((stage) => {
-    const nextDeals = movedDealsByStage[getStageDroppableId(stage.stageId)];
-    if (!nextDeals || nextDeals === stage.deals) return stage;
-
-    return {
-      ...stage,
-      deals: nextDeals,
-      totalCount: stage.totalCount + (nextDeals.length - stage.deals.length)
-    };
+    if (stage.stageId === activeStageId)
+      return {
+        ...stage,
+        deals: stage.deals.filter((deal) => deal.id !== activeId),
+        totalCount: stage.totalCount - 1
+      };
+    if (stage.stageId === overStageId)
+      return {
+        ...stage,
+        deals: [
+          ...stage.deals.slice(0, insertAt),
+          deal,
+          ...stage.deals.slice(insertAt)
+        ],
+        totalCount: stage.totalCount + 1
+      };
+    return stage;
   });
 };

@@ -1,11 +1,14 @@
 import {
+  DndContext,
+  DragOverlay,
   KeyboardSensor,
-  PointerActivationConstraints,
-  PointerSensor
-} from "@dnd-kit/dom";
-import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
+  PointerSensor,
+  closestCorners,
+  useSensor,
+  useSensors
+} from "@dnd-kit/core";
 import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -29,17 +32,6 @@ interface DealsKanbanBoardProps {
   searchKeyword?: string;
 }
 
-const sensors = [
-  PointerSensor.configure({
-    activationConstraints: [
-      new PointerActivationConstraints.Distance({
-        value: DRAG_ACTIVATION_DISTANCE
-      })
-    ]
-  }),
-  KeyboardSensor
-];
-
 const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   searchKeyword = ""
 }) => {
@@ -57,6 +49,13 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   );
   const setPreselectedStageId = useCrmStore(
     (store) => store.setPreselectedStageId
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: DRAG_ACTIVATION_DISTANCE }
+    }),
+    useSensor(KeyboardSensor)
   );
 
   const {
@@ -121,10 +120,13 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     [activeDeal, boardOwners, boardContacts]
   );
 
-  const handleAddDeal = (stageId: number) => {
-    setPreselectedStageId(stageId);
-    setIsCrmSidePanelOpen(true);
-  };
+  const handleAddDeal = useCallback(
+    (stageId: number) => {
+      setPreselectedStageId(stageId);
+      setIsCrmSidePanelOpen(true);
+    },
+    [setPreselectedStageId, setIsCrmSidePanelOpen]
+  );
 
   const isLoading = isInitDataLoading || isDealsLoading;
   const isError = isInitDataError || isDealsError;
@@ -150,8 +152,9 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
 
   return (
     <div className="flex flex-col">
-      <DragDropProvider
+      <DndContext
         sensors={sensors}
+        collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -195,7 +198,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
             </div>
           )}
         </DragOverlay>
-      </DragDropProvider>
+      </DndContext>
     </div>
   );
 };

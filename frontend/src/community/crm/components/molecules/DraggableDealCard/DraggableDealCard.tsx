@@ -1,5 +1,6 @@
-import { useSortable } from "@dnd-kit/react/sortable";
-import { FC, useMemo } from "react";
+import { CSS } from "@dnd-kit/utilities";
+import { useSortable } from "@dnd-kit/sortable";
+import { FC } from "react";
 
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
@@ -7,33 +8,31 @@ import { CrmBoardDealType } from "~community/crm/types/BoardTypes";
 
 interface DraggableDealCardProps {
   deal: CrmBoardDealType;
-  index: number;
   stageId: number;
   onDealClick: (dealId: number) => void;
 }
 
 const DraggableDealCard: FC<DraggableDealCardProps> = ({
   deal,
-  index,
   stageId,
   onDealClick
 }) => {
-  const data = useMemo(() => ({ type: "deal" as const, deal }), [deal]);
-
-  const { ref, isDragging } = useSortable({
+  const { setNodeRef, isDragging, attributes, listeners, transform, transition } = useSortable({
     id: deal.id,
-    index,
-    group: stageId,
-    accept: "deal",
-    type: "deal",
-    data
+    data: { type: "deal", stageId, deal }
   });
 
   return (
     <div
-      ref={ref}
+      ref={setNodeRef}
       id={String(deal.id)}
-      style={{ opacity: isDragging ? 0.3 : 1 }}
+      {...attributes}
+      {...listeners}
+      style={{
+        opacity: isDragging ? 0.3 : 1,
+        transform: CSS.Transform.toString(transform),
+        transition
+      }}
       className={`cursor-grab active:cursor-grabbing transform-gpu ${
         isDragging ? `z-[${ZIndexEnums.CRM_SIDE_PANEL}] shadow-lg` : ""
       }`}

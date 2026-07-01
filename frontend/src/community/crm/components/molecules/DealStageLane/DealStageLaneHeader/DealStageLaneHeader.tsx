@@ -1,4 +1,4 @@
-import { useDroppable } from "@dnd-kit/react";
+import { useDroppable } from "@dnd-kit/core";
 import { FC, ReactNode } from "react";
 
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
@@ -21,10 +21,8 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
   isOver = false,
   children
 }) => {
-  const { ref } = useDroppable({
+  const { setNodeRef } = useDroppable({
     id: getStageDroppableId(stage.id),
-    accept: "deal",
-    type: "stage",
     data: { type: "stage", stageId: stage.id }
   });
 
@@ -32,7 +30,7 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
 
   return (
     <section
-      ref={ref}
+      ref={setNodeRef}
       className={`flex h-full w-75 shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow ${
         isOver
           ? "outline-primary-accent ring-2 ring-primary-background"
@@ -49,10 +47,7 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
 
       <div className="flex items-center justify-between gap-2 px-3 pt-3">
         <div className="min-w-0">
-          <h2
-            id={`crm-stage-${stage.id}`}
-            className="subtitle1 truncate capitalize"
-          >
+          <h2 id={String(stage.id)} className="subtitle1 truncate capitalize">
             {getStageByName(stage.name)}
           </h2>
           <p className="body3 mt-0.5 text-secondary-icon">{totalValue}</p>
