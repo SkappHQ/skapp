@@ -47,7 +47,17 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     setBoardStageDeals,
     setIsCrmSidePanelOpen,
     setPreselectedStageId
-  } = useCrmStore();
+  } = useCrmStore((store) => ({
+    boardStages: store.boardStages,
+    boardOwners: store.boardOwners,
+    boardContacts: store.boardContacts,
+    setBoardOwners: store.setBoardOwners,
+    setBoardStages: store.setBoardStages,
+    setBoardContacts: store.setBoardContacts,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    setPreselectedStageId: store.setPreselectedStageId,
+    setBoardStageDeals: store.setBoardStageDeals
+  }));
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

@@ -3,9 +3,7 @@ import type {
   DragOverEvent,
   DragStartEvent
 } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
 import { useRef, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import {
   useMoveDealBetweenStages,
@@ -17,7 +15,15 @@ import type {
   CrmBoardStageDealsResponseType
 } from "~community/crm/types/BoardTypes";
 
-import { findDealById, findStageIdByDealId } from "../utils/kanbanUtil";
+import {
+  applyMoveToStageMap,
+  applyReorderToStageMap,
+  computeInsertIndex,
+  computeMoveNeighbors,
+  computeReorderWithinStage,
+  findDealById,
+  findStageIdByDealId
+} from "../utils/kanbanUtil";
 
 interface UseKanbanDragReturn {
   stageMap: CrmBoardStageDealsResponseType[];
@@ -30,16 +36,15 @@ interface UseKanbanDragReturn {
 
 export const useKanbanDrag = (): UseKanbanDragReturn => {
   
-  const { boardStageDeals, setBoardStageDeals } = useCrmStore(
-    useShallow((store) => ({
-      boardStageDeals: store.boardStageDeals,
-      setBoardStageDeals: store.setBoardStageDeals
-    }))
-  );
+  const { boardStageDeals, setBoardStageDeals } = useCrmStore((store) => ({
+    boardStageDeals: store.boardStageDeals,
+    setBoardStageDeals: store.setBoardStageDeals
+  }));
 
   const [activeDeal, setActiveDeal] = useState<CrmBoardDealResponseType | null>(
     null
   );
+
   const [overStageId, setOverStageId] = useState<number | null>(null);
 
   const dragStartSnapshotRef = useRef<CrmBoardStageDealsResponseType[] | null>(
@@ -68,7 +73,6 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
 
   const handleDragEnd = ({ active, over }: DragEndEvent): void => {
     const activeDealId = Number(active.id);
-
     const cleanup = (): void => {
       setActiveDeal(null);
       setOverStageId(null);
@@ -78,19 +82,16 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
       cleanup();
       return;
     }
-
     const snapshot = dragStartSnapshotRef.current;
     if (!snapshot) {
       cleanup();
       return;
     }
-
     const sourceStageId = findStageIdByDealId(snapshot, activeDealId);
     if (sourceStageId === null) {
       cleanup();
       return;
     }
-
     const targetStageId: number | undefined = over.data.current?.stageId;
     if (!targetStageId) {
       cleanup();
@@ -99,106 +100,72 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
 
     const isOverStageContainer = over.data.current?.type === "stage";
     const sourceDeals =
-      snapshot.find((stage) => stage.stageId === sourceStageId)?.deals ?? [];
+      snapshot.find((s) => s.stageId === sourceStageId)?.deals ?? [];
     const targetDeals =
-      snapshot.find((stage) => stage.stageId === targetStageId)?.deals ?? [];
+      snapshot.find((s) => s.stageId === targetStageId)?.deals ?? [];
 
     if (sourceStageId === targetStageId) {
       if (isOverStageContainer) {
         cleanup();
         return;
       }
-
-      const overDealId = Number(over.id);
-      const activeIndex = sourceDeals.findIndex((deal) => deal.id === activeDealId);
-      const overIndex = sourceDeals.findIndex((deal) => deal.id === overDealId);
-
-      if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex) {
+      const reorder = computeReorderWithinStage(
+        sourceDeals,
+        activeDealId,
+        Number(over.id)
+      );
+      if (!reorder) {
         cleanup();
         return;
       }
-
-      const reorderedDeals = arrayMove(sourceDeals, activeIndex, overIndex);
-      const previousDealId =
-        overIndex > 0 ? reorderedDeals[overIndex - 1].id : null;
-      const nextDealId =
-        overIndex < reorderedDeals.length - 1
-          ? reorderedDeals[overIndex + 1].id
-          : null;
-
-      const finalStageMap = snapshot.map((stage) =>
-        stage.stageId === sourceStageId ? { ...stage, deals: reorderedDeals } : stage
+      setBoardStageDeals(
+        applyReorderToStageMap(snapshot, sourceStageId, reorder.reorderedDeals)
       );
-
-      setBoardStageDeals(finalStageMap);
       reorderDealWithinStage({
         dealId: activeDealId,
-        previousDealId,
-        nextDealId
+        previousDealId: reorder.previousDealId,
+        nextDealId: reorder.nextDealId
       });
     } else {
-      let insertIndex = targetDeals.length;
-
-      if (!isOverStageContainer) {
-        const overDealId = Number(over.id);
-        const overIndex = targetDeals.findIndex((deal) => deal.id === overDealId);
-
-        if (overIndex !== -1) {
-          const activeRect = active.rect.current.translated;
-          const overRect = over.rect;
-
-          if (activeRect && overRect) {
-            const activeCenterY = activeRect.top + activeRect.height / 2;
-            const overCenterY = overRect.top + overRect.height / 2;
-            insertIndex =
-              activeCenterY < overCenterY ? overIndex : overIndex + 1;
-          } else {
-            insertIndex = overIndex;
-          }
-        }
-      }
-
-      const deal = sourceDeals.find((deal) => deal.id === activeDealId) ?? null;
+      const deal = sourceDeals.find((d) => d.id === activeDealId) ?? null;
       if (!deal) {
         cleanup();
         return;
       }
 
-      let previousDealId: number | null = null;
-      let nextDealId: number | null = null;
+      const insertIndex = isOverStageContainer
+        ? targetDeals.length
+        : (() => {
+            const activeRect = active.rect.current.translated;
+            const overRect = over.rect;
+            const activeCenterY = activeRect
+              ? activeRect.top + activeRect.height / 2
+              : null;
+            const overCenterY = overRect
+              ? overRect.top + overRect.height / 2
+              : null;
+            return computeInsertIndex(
+              targetDeals,
+              Number(over.id),
+              activeCenterY,
+              overCenterY
+            );
+          })();
 
-      if (targetDeals.length === 0 || insertIndex === 0) {
-        nextDealId = targetDeals[0]?.id ?? null;
-      } else if (insertIndex >= targetDeals.length) {
-        previousDealId = targetDeals.at(-1)?.id ?? null;
-      } else {
-        previousDealId = targetDeals[insertIndex - 1].id;
-        nextDealId = targetDeals[insertIndex].id;
-      }
-
-      const finalStageMap = snapshot.map((stage) => {
-        if (stage.stageId === sourceStageId) {
-          return {
-            ...stage,
-            deals: stage.deals.filter((deal) => deal.id !== activeDealId),
-            totalCount: stage.totalCount - 1
-          };
-        }
-        if (stage.stageId === targetStageId) {
-          return {
-            ...stage,
-            deals: [
-              ...stage.deals.slice(0, insertIndex),
-              deal,
-              ...stage.deals.slice(insertIndex)
-            ],
-            totalCount: stage.totalCount + 1
-          };
-        }
-        return stage;
-      });
-
-      setBoardStageDeals(finalStageMap);
+      const { previousDealId, nextDealId } = computeMoveNeighbors(
+        targetDeals,
+        insertIndex
+      );
+      setBoardStageDeals(
+        applyMoveToStageMap(
+          snapshot,
+          sourceStageId,
+          targetStageId,
+          insertIndex,
+          deal,
+          activeDealId
+        )
+      );
       moveDealToStage({
         dealId: activeDealId,
         newStageId: targetStageId,
