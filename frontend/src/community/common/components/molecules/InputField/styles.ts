@@ -26,7 +26,8 @@ const styles = (theme: Theme): StyleProps => ({
     }
   },
   requiredSpan: {
-    color: "red"
+    color: "red",
+    fontWeight: 700
   },
   defaultInputStyles: {
     mt: "0.5rem",
