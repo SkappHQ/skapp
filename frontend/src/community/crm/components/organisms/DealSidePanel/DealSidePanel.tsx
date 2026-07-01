@@ -7,7 +7,6 @@ import {
 import { FC, useState } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
-import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
 import { useGetDealById } from "~community/crm/api/crmDealApi";
@@ -47,12 +46,6 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
 
   const relatedTasks =
     relatedTasksData?.pages.flatMap((page) => page.items ?? []) ?? [];
-
-  const { loadingRef } = useInfiniteScroll({
-    hasNextPage,
-    isLoading: isFetchingNextPage,
-    onLoadMore: fetchNextPage
-  });
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -121,9 +114,13 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
                 <div className="flex flex-col gap-3">
                   <h2 className="h2">{translateText(["tasks"])}</h2>
                   <hr className="border-secondary-accent" />
-                  <SidePanelTasksSection tasks={relatedTasks} />
+                  <SidePanelTasksSection
+                    tasks={relatedTasks}
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    onFetchNextPage={fetchNextPage}
+                  />
                 </div>
-                <div ref={loadingRef} />
               </div>
               <DealPropertiesSidebar deal={deal!} isOpen={isOpen} />
             </div>

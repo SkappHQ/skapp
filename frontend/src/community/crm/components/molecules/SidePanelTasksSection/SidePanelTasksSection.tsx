@@ -1,6 +1,7 @@
 import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -18,6 +19,9 @@ interface Props {
   onTaskRowClick?: () => void;
   preselectedContact?: PreselectedContact | null;
   emptyDescription?: string;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  onFetchNextPage?: () => void;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
@@ -26,7 +30,10 @@ const SidePanelTasksSection: FC<Props> = ({
   isShowContact,
   onTaskRowClick,
   preselectedContact,
-  emptyDescription
+  emptyDescription,
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  onFetchNextPage
 }) => {
   const { setIsTaskModalOpen, setTaskModalType, setPreselectedContact } =
     useCrmStore((store) => ({
@@ -41,19 +48,28 @@ const SidePanelTasksSection: FC<Props> = ({
     "contactDetailsPanel"
   );
 
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: onFetchNextPage ?? (() => {}),
+    threshold: 0.8
+  });
+
   const handleAddTask = () => {
     setPreselectedContact(preselectedContact);
     setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
     setIsTaskModalOpen(true);
   };
   return tasks.length > 0 ? (
-    <SidePanelTasksList
-      tasks={tasks}
-      isCheckTaskVisible={isCheckTaskVisible}
-      isShowContact={isShowContact}
-      onTaskRowClick={onTaskRowClick}
-      onAddTask={handleAddTask}
-    />
+    <div ref={loadingRef}>
+      <SidePanelTasksList
+        tasks={tasks}
+        isCheckTaskVisible={isCheckTaskVisible}
+        isShowContact={isShowContact}
+        onTaskRowClick={onTaskRowClick}
+        onAddTask={handleAddTask}
+      />
+    </div>
   ) : (
     <EmptyDataView
       icon={<SearchIcon width="24" height="24" />}
