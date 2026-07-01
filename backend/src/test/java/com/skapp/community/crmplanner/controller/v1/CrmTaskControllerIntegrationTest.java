@@ -557,6 +557,16 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get related tasks with no contactId and no dealId - Returns Bad Request")
+	void getRelatedTasks_NeitherContactIdNorDealId_ReturnsBadRequest() throws Exception {
+		performGetRelatedTasksRequest(null, null).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_CONTEXT_FILTER_REQUIRED)));
+	}
+
+	@Test
 	@DisplayName("Get related tasks without CRM role - Returns Forbidden")
 	void getRelatedTasks_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
