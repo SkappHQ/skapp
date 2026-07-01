@@ -252,6 +252,16 @@ const GoogleWorkspaceSyncSettings = (): JSX.Element => {
     fetchLastSyncChanges();
   }, [isConnected]);
 
+  useEffect(() => {
+    if (!isConnected) return;
+
+    const poll = setInterval(() => {
+      fetchStagingRecords();
+      fetchLastSyncChanges();
+    }, 5000);
+
+    return () => clearInterval(poll);
+  }, [isConnected]);
 
   const fetchAllEmployees = async () => {
     const [activeRes, inactiveRes] = await Promise.all([
