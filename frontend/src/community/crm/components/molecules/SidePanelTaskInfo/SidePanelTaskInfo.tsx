@@ -73,7 +73,7 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
           >
             <span className="flex items-center gap-1">
               {priorityConfig.icon}
-              {translateText(["priorityOptions", task.priority.toLowerCase()])}
+              {translateText(["priorityOptions", task.priority])}
             </span>
           </Label>
         </PropertyRow>
