@@ -435,7 +435,7 @@
     "kanban": {
       "addDealBtn": "Add deal",
       "errorState": {
-        "title": "Unable to load deals",
+        "title": "Oops! Something went wrong",
         "description": "Something went wrong while loading the board. Please try again.",
         "retryBtn": "Retry"
       }

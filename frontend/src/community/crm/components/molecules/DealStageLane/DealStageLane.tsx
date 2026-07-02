@@ -21,7 +21,7 @@ export interface DealStageLaneProps {
   isLoading: boolean;
   currentPage: number;
   hasNextPage: boolean;
-  totalCount?: number;
+  totalCount: number;
   isOver?: boolean;
   searchKeyword?: string;
   onDealClick: (dealId: number) => void;
@@ -64,7 +64,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
     <DealStageLaneHeader
       stage={stage}
       totalValue={totalValue}
-      totalCount={totalCount ?? 0}
+      totalCount={totalCount}
       isOver={isOver}
     >
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-3 pb-3">

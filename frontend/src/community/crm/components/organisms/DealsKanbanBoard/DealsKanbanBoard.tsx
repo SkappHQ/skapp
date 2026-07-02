@@ -98,7 +98,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                 isLoading={isLoading}
                 currentPage={stageDeals?.currentPage ?? 0}
                 hasNextPage={stageDeals?.hasNextPage ?? false}
-                totalCount={stageDeals?.totalCount}
+                totalCount={stageDeals?.totalCount ?? 0}
                 isOver={overStageId === stage.id}
                 searchKeyword={searchKeyword}
                 onDealClick={() => {}}
