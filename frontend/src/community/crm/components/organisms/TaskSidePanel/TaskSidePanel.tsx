@@ -38,10 +38,10 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsTaskModalOpen(true);
   };
 
-  const { data: task, isLoading } = useGetTaskById(selectedTaskId!);
+  const { data: selectedTask, isLoading } = useGetTaskById(selectedTaskId!);
   const { mutate: updateTaskCompletion } = useUpdateTaskCompletion(() => {});
 
-  const taskIcon = task ? getTaskTypeIcon(task.typeName, 24) : null;
+  const taskIcon = selectedTask ? getTaskTypeIcon(selectedTask.typeName, 24) : null;
 
   const menuItems = [
     {
@@ -69,7 +69,7 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   const handleMarkAsDone = () => {
     updateTaskCompletion(
-      { id: task?.id, isCompleted: true },
+      { id: selectedTask?.id, isCompleted: true },
       { onSuccess: onClose }
     );
   };
@@ -88,7 +88,7 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         ) : (
           <div className="flex items-center gap-4 pl-2">
             {taskIcon}
-            <span className="h1 text-black">{task?.name}</span>
+            <span className="h1 text-black">{selectedTask?.name}</span>
           </div>
         )
       }
@@ -119,14 +119,16 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
               <div className="flex flex-col gap-1">
                 <p className="subtitle1">{translateText(["notes"])}</p>
                 <p className="subtitle3">
-                  {task?.notes ?? translateText(["noNotes"])}
+                  {selectedTask?.notes ?? translateText(["noNotes"])}
                 </p>
               </div>
 
               <div className="flex flex-col gap-3">
                 <h2 className="h2">{translateText(["dealsTitle"])}</h2>
                 <hr className="border-secondary-accent" />
-                <SidePanelDealSection deals={task?.deal ? [task.deal] : []} />
+                <SidePanelDealSection
+                  deals={selectedTask?.deal ? [selectedTask.deal] : []}
+                />
               </div>
 
               <div className="flex flex-col gap-3">
@@ -137,12 +139,10 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             </div>
 
             <div className="w-[18.438rem] shrink-0">
-              {task && (
-                <SidePanelTaskInfo
-                  task={task}
-                  onMarkAsDone={handleMarkAsDone}
-                />
-              )}
+              <SidePanelTaskInfo
+                task={selectedTask!}
+                onMarkAsDone={handleMarkAsDone}
+              />
             </div>
           </div>
         </div>
