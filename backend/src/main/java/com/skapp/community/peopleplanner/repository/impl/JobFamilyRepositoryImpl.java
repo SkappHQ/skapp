@@ -29,9 +29,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -75,6 +78,35 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 			.collect(Collectors.toMap(JobFamily::getJobFamilyId, jf -> jf));
 		return orderedIds.stream().map(jobFamilyMap::get).filter(Objects::nonNull).toList();
 	}
+
+	@Override
+	public List<JobFamily> getJobFamiliesWithJobTitles() {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<JobFamily> criteriaQuery = criteriaBuilder.createQuery(JobFamily.class);
+		Root<JobFamily> root = criteriaQuery.from(JobFamily.class);
+		Join<JobFamily, Employee> employeeJoin = root.join(JobFamily_.employees, JoinType.LEFT);
+
+		criteriaQuery.select(root);
+		criteriaQuery.where(criteriaBuilder.equal(root.get(JobFamily_.isActive), true));
+		criteriaQuery.groupBy(root.get(JobFamily_.jobFamilyId), root.get(JobFamily_.name),
+				root.get(JobFamily_.isActive));
+		criteriaQuery.orderBy(criteriaBuilder.desc(criteriaBuilder.count(employeeJoin.get(Employee_.employeeId))));
+
+		List<JobFamily> jobFamilies = entityManager.createQuery(criteriaQuery).getResultList();
+		if (jobFamilies.isEmpty()) {
+			return jobFamilies;
+		}
+
+		List<Long> jobFamilyIds = jobFamilies.stream().map(JobFamily::getJobFamilyId).toList();
+		Map<Long, Set<JobTitle>> activeJobTitlesByFamilyId = getActiveJobTitlesByJobFamilyIds(jobFamilyIds);
+		jobFamilies.forEach(jobFamily -> jobFamily
+			.setJobTitles(activeJobTitlesByFamilyId.getOrDefault(jobFamily.getJobFamilyId(), new HashSet<>())));
+
+		return jobFamilies;
+	}
+
+	
 
 	@Override
 	public List<JobFamilyOverviewDto> getJobFamilyOverview(List<Long> teamIds) {

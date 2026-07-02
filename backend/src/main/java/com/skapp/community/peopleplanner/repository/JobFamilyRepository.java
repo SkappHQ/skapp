@@ -11,6 +11,8 @@ public interface JobFamilyRepository {
 
 	List<JobFamily> getJobFamiliesByEmployeeCount();
 
+	List<JobFamily> getJobFamiliesWithJobTitles();
+
 	List<JobFamilyOverviewDto> getJobFamilyOverview(List<Long> teamIds);
 
 	List<JobTitleOverviewDto> getJobTitlesByJobFamily(Long jobFamilyId);
