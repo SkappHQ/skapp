@@ -4,7 +4,6 @@ import { FC, ReactNode } from "react";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
-import { getStageDroppableId } from "~community/crm/utils/kanbanUtil";
 
 export interface DealStageLaneHeaderProps {
   stage: CrmDealStageType;
@@ -22,7 +21,7 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
   children
 }) => {
   const { setNodeRef } = useDroppable({
-    id: getStageDroppableId(stage.id),
+    id: `stage-${stage.id}`,
     data: { type: "stage", stageId: stage.id }
   });
 

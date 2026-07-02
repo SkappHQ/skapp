@@ -1,3 +1,4 @@
+import type { ClientRect } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 
 import type {
@@ -13,11 +14,11 @@ import type {
 
 export const resolveBoardDeal = (
   deal: CrmBoardDealResponseType,
-  owners: CrmOwner[],
-  contacts: CrmContactLookup[]
+  ownersById: Map<number, CrmOwner>,
+  contactsById: Map<number, CrmContactLookup>
 ): CrmBoardDealType => {
-  const owner = owners.find((owner) => owner.employeeId === deal.ownerId)!;
-  const contact = contacts.find((contact) => contact.id === deal.contactId);
+  const owner = ownersById.get(deal.ownerId)!;
+  const contact = contactsById.get(deal.contactId);
 
   return {
     id: deal.id,
@@ -65,9 +66,6 @@ export const getNeighbourDealIds = (
     nextDealId: deals[index + 1]?.id ?? null
   };
 };
-
-export const getStageDroppableId = (stageId: number): string =>
-  `stage-${stageId}`;
 
 export const normalizeStageDeals = (
   stages: CrmDealStageType[],
@@ -131,6 +129,23 @@ export const computeInsertIndex = (
   if (activeCenterY !== null && overCenterY !== null)
     return activeCenterY < overCenterY ? overIndex : overIndex + 1;
   return overIndex;
+};
+
+export const resolveInsertIndex = (
+  isOverStageContainer: boolean,
+  targetDeals: CrmBoardDealResponseType[],
+  overDealId: number,
+  activeRect: ClientRect | null,
+  overRect: ClientRect | null
+): number => {
+  if (isOverStageContainer) return targetDeals.length;
+
+  const activeCenterY = activeRect
+    ? activeRect.top + activeRect.height / 2
+    : null;
+  const overCenterY = overRect ? overRect.top + overRect.height / 2 : null;
+
+  return computeInsertIndex(targetDeals, overDealId, activeCenterY, overCenterY);
 };
 
 export const computeMoveNeighbors = (

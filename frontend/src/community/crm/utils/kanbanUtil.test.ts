@@ -81,10 +81,22 @@ const CONTACT_NO_COMPANY: CrmContactLookup = {
 
 // ─── resolveBoardDeal ─────────────────────────────────────────────────────────
 
+const ownersById = (...owners: CrmOwner[]): Map<number, CrmOwner> =>
+  new Map(owners.map((owner) => [owner.employeeId, owner]));
+
+const contactsById = (
+  ...contacts: CrmContactLookup[]
+): Map<number, CrmContactLookup> =>
+  new Map(contacts.map((contact) => [contact.id, contact]));
+
 describe("resolveBoardDeal", () => {
   it("should resolve deal with matching owner and contact with company", () => {
     const raw = mkRawDeal(1, 1, 10);
-    const result = resolveBoardDeal(raw, [OWNER], [CONTACT_WITH_COMPANY]);
+    const result = resolveBoardDeal(
+      raw,
+      ownersById(OWNER),
+      contactsById(CONTACT_WITH_COMPANY)
+    );
 
     expect(result).toEqual({
       id: 1,
@@ -100,7 +112,11 @@ describe("resolveBoardDeal", () => {
 
   it("should set companyName to null when contact has no company", () => {
     const raw = mkRawDeal(2, 1, 20);
-    const result = resolveBoardDeal(raw, [OWNER], [CONTACT_NO_COMPANY]);
+    const result = resolveBoardDeal(
+      raw,
+      ownersById(OWNER),
+      contactsById(CONTACT_NO_COMPANY)
+    );
 
     expect(result.companyName).toBeNull();
     expect(result.contactName).toBe("Solo Lead");
@@ -108,7 +124,11 @@ describe("resolveBoardDeal", () => {
 
   it("should set contactName to empty string and companyName to null when contact is not found", () => {
     const raw = mkRawDeal(3, 1, 999);
-    const result = resolveBoardDeal(raw, [OWNER], [CONTACT_WITH_COMPANY]);
+    const result = resolveBoardDeal(
+      raw,
+      ownersById(OWNER),
+      contactsById(CONTACT_WITH_COMPANY)
+    );
 
     expect(result.contactName).toBe("");
     expect(result.companyName).toBeNull();
@@ -116,7 +136,11 @@ describe("resolveBoardDeal", () => {
 
   it("should set owner to undefined when ownerId has no match", () => {
     const raw = mkRawDeal(4, 999, 10);
-    const result = resolveBoardDeal(raw, [OWNER], [CONTACT_WITH_COMPANY]);
+    const result = resolveBoardDeal(
+      raw,
+      ownersById(OWNER),
+      contactsById(CONTACT_WITH_COMPANY)
+    );
 
     expect(result.owner).toBeUndefined();
   });

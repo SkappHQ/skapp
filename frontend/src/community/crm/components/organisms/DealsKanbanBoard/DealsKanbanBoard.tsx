@@ -19,7 +19,8 @@ import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import {
   DEFAULT_BOARD_PAGE_SIZE,
-  DRAG_ACTIVATION_DISTANCE
+  DRAG_ACTIVATION_DISTANCE,
+  INITIAL_BOARD_PAGE
 } from "~community/crm/constants/boardConstants";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
 import { useCrmStore } from "~community/crm/store/store";
@@ -88,7 +89,12 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     isError: isDealsError,
     refetch: refetchDeals
   } = useGetDealsGroupedByStages(
-    { stageIds, searchKeyword, page: 0, limit: DEFAULT_BOARD_PAGE_SIZE },
+    {
+      stageIds,
+      searchKeyword,
+      page: INITIAL_BOARD_PAGE,
+      limit: DEFAULT_BOARD_PAGE_SIZE
+    },
     stageIds.length > 0
   );
 
@@ -107,25 +113,33 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     handleDragEnd
   } = useKanbanDrag();
 
+  const ownersById = useMemo(
+    () => new Map(boardOwners.map((owner) => [owner.employeeId, owner])),
+    [boardOwners]
+  );
+
+  const contactsById = useMemo(
+    () => new Map(boardContacts.map((contact) => [contact.id, contact])),
+    [boardContacts]
+  );
+
   const resolvedDealsByStage = useMemo(
     () =>
       new Map(
         stageMap.map((stage) => [
           stage.stageId,
           stage.deals.map((deal) =>
-            resolveBoardDeal(deal, boardOwners, boardContacts)
+            resolveBoardDeal(deal, ownersById, contactsById)
           )
         ])
       ),
-    [stageMap, boardOwners, boardContacts]
+    [stageMap, ownersById, contactsById]
   );
 
   const resolvedActiveDeal = useMemo(
     () =>
-      activeDeal
-        ? resolveBoardDeal(activeDeal, boardOwners, boardContacts)
-        : null,
-    [activeDeal, boardOwners, boardContacts]
+      activeDeal ? resolveBoardDeal(activeDeal, ownersById, contactsById) : null,
+    [activeDeal, ownersById, contactsById]
   );
 
   const handleAddDeal = useCallback(

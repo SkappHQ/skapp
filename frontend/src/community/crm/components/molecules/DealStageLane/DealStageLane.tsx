@@ -18,9 +18,9 @@ import { formatValue } from "~community/crm/utils/crmUtil";
 export interface DealStageLaneProps {
   stage: CrmDealStageType;
   deals: CrmBoardDealType[];
-  isLoading?: boolean;
-  currentPage?: number;
-  hasNextPage?: boolean;
+  isLoading: boolean;
+  currentPage: number;
+  hasNextPage: boolean;
   totalCount?: number;
   isOver?: boolean;
   searchKeyword?: string;
@@ -31,9 +31,9 @@ export interface DealStageLaneProps {
 const DealStageLane: FC<DealStageLaneProps> = ({
   stage,
   deals,
-  isLoading = false,
-  currentPage = 0,
-  hasNextPage = false,
+  isLoading,
+  currentPage,
+  hasNextPage,
   totalCount,
   isOver = false,
   searchKeyword,

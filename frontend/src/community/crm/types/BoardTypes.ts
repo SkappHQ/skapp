@@ -59,3 +59,8 @@ export interface CrmBoardMoveBetweenStagesPayload {
   previousDealId: number | null;
   nextDealId: number | null;
 }
+
+export interface KanbanDragData {
+  type: "deal" | "stage";
+  stageId: number;
+}

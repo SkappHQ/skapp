@@ -32,12 +32,17 @@ const AddDealSidePanel: FC = () => {
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
 
-  const { isCrmSidePanelOpen, setIsCrmSidePanelOpen, setPreselectedStageId } =
-    useCrmStore((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-      setPreselectedStageId: store.setPreselectedStageId
-    }));
+  const {
+    isCrmSidePanelOpen,
+    setIsCrmSidePanelOpen,
+    preselectedStageId,
+    setPreselectedStageId
+  } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    preselectedStageId: store.preselectedStageId,
+    setPreselectedStageId: store.setPreselectedStageId
+  }));
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearch = useDebounce(
@@ -88,7 +93,7 @@ const AddDealSidePanel: FC = () => {
       amount: values.amount,
       description: values.description
     };
-    createDeal(payload);
+    createDeal({ payload, isFromBoard: preselectedStageId !== null });
   };
 
   const formik = useFormik<CrmDealAddFormTypes>({

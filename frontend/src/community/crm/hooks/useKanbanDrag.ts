@@ -12,17 +12,18 @@ import {
 import { useCrmStore } from "~community/crm/store/store";
 import type {
   CrmBoardDealResponseType,
-  CrmBoardStageDealsResponseType
+  CrmBoardStageDealsResponseType,
+  KanbanDragData
 } from "~community/crm/types/BoardTypes";
 
 import {
   applyMoveToStageMap,
   applyReorderToStageMap,
-  computeInsertIndex,
   computeMoveNeighbors,
   computeReorderWithinStage,
   findDealById,
-  findStageIdByDealId
+  findStageIdByDealId,
+  resolveInsertIndex
 } from "../utils/kanbanUtil";
 
 interface UseKanbanDragReturn {
@@ -67,8 +68,8 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
   };
 
   const handleDragOver = ({ over }: DragOverEvent): void => {
-    const stageId: number | undefined = over?.data.current?.stageId;
-    if (stageId) setOverStageId(stageId);
+    const overData = over?.data.current as KanbanDragData | undefined;
+    setOverStageId(overData?.stageId ?? null);
   };
 
   const handleDragEnd = ({ active, over }: DragEndEvent): void => {
@@ -92,13 +93,13 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
       cleanup();
       return;
     }
-    const targetStageId: number | undefined = over.data.current?.stageId;
-    if (!targetStageId) {
+    const overData = over.data.current as KanbanDragData | undefined;
+    if (!overData) {
       cleanup();
       return;
     }
-
-    const isOverStageContainer = over.data.current?.type === "stage";
+    const targetStageId = overData.stageId;
+    const isOverStageContainer = overData.type === "stage";
     const sourceDeals =
       snapshot.find((s) => s.stageId === sourceStageId)?.deals ?? [];
     const targetDeals =
@@ -133,24 +134,13 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
         return;
       }
 
-      const insertIndex = isOverStageContainer
-        ? targetDeals.length
-        : (() => {
-            const activeRect = active.rect.current.translated;
-            const overRect = over.rect;
-            const activeCenterY = activeRect
-              ? activeRect.top + activeRect.height / 2
-              : null;
-            const overCenterY = overRect
-              ? overRect.top + overRect.height / 2
-              : null;
-            return computeInsertIndex(
-              targetDeals,
-              Number(over.id),
-              activeCenterY,
-              overCenterY
-            );
-          })();
+      const insertIndex = resolveInsertIndex(
+        isOverStageContainer,
+        targetDeals,
+        Number(over.id),
+        active.rect.current.translated,
+        over.rect
+      );
 
       const { previousDealId, nextDealId } = computeMoveNeighbors(
         targetDeals,

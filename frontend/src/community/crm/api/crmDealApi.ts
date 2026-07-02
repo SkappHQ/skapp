@@ -60,9 +60,14 @@ export const useGetDealStages = (
   });
 };
 
-const createDeal = async (
-  payload: CrmCreateDealPayload
-): Promise<CrmDealType> => {
+interface CreateDealVariables {
+  payload: CrmCreateDealPayload;
+  isFromBoard?: boolean;
+}
+
+const createDeal = async ({
+  payload
+}: CreateDealVariables): Promise<CrmDealType> => {
   const response = await authFetch.post(crmDealEndpoints.CREATE_DEAL, payload);
   return response?.data?.results?.[0];
 };
@@ -74,14 +79,16 @@ export const useCreateDeal = (
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createDeal,
-    onSuccess: () => {
+    onSuccess: (_data, { isFromBoard }) => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
-      queryClient.invalidateQueries({
-        queryKey: crmBoardQueryKeys.BOARD_INIT_DATA
-      });
-      queryClient.invalidateQueries({
-        queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES
-      });
+      if (isFromBoard) {
+        queryClient.invalidateQueries({
+          queryKey: crmBoardQueryKeys.BOARD_INIT_DATA
+        });
+        queryClient.invalidateQueries({
+          queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES
+        });
+      }
       onSuccess();
     },
     onError
