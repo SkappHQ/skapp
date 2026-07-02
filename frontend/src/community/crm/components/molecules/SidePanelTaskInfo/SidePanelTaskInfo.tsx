@@ -4,7 +4,7 @@ import { FC } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { capitalizeFirstLetter, concatStrings } from "~community/common/utils/commonUtil";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import { formatDateWithOrdinalSuffix } from "~community/common/utils/dateTimeUtils";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
@@ -19,6 +19,11 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
   const priorityConfig = getPriorityConfig(task.priority);
+
+  const ownerName = concatStrings([
+    task.owner.firstName,
+    task.owner.lastName ?? ""
+  ]);
 
   return (
     <>
@@ -36,7 +41,7 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
               width="16"
               height="16"
             />
-          ) :  undefined
+          ) : undefined
         }
         iconPosition="end"
       >
@@ -48,7 +53,7 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
       <div className="flex flex-col border border-secondary-accent rounded-xl p-3 mt-4">
         <PropertyRow label={translateText(["assignedTo"])}>
           <AvatarChip
-            label={concatStrings([task.owner.firstName, task.owner.lastName ?? ""])}
+            label={ownerName}
             avatarProps={{
               id: String(task.owner.employeeId),
               firstName: task.owner.firstName,
@@ -68,7 +73,7 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
           >
             <span className="flex items-center gap-1">
               {priorityConfig.icon}
-              {capitalizeFirstLetter(task.priority.toLowerCase())}
+              {translateText(["priorityOptions", task.priority.toLowerCase()])}
             </span>
           </Label>
         </PropertyRow>

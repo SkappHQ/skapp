@@ -534,7 +534,12 @@
       "closingDate": "Closing Date",
       "noClosingDate": "No closing date",
       "contactName": "Contact",
-      "noContact": "No contact linked"
+      "noContact": "No contact linked",
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
     },
     "deleteTaskModal": {
       "title": "Delete Task",
