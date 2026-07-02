@@ -112,14 +112,16 @@ describe("Validation Functions", () => {
   test("isValidWebsiteUrl()", () => {
     const regex = isValidWebsiteUrl();
     expect(regex.test("https://example.com")).toBe(true);
-    expect(regex.test("http://example.com")).toBe(true);
-    expect(regex.test("www.example.com")).toBe(true);
-    expect(regex.test("example.com")).toBe(true);
+    expect(regex.test("https://www.example.com")).toBe(true);
     expect(regex.test("https://example.com/path")).toBe(true);
     expect(regex.test("https://example.com?query=123")).toBe(true);
     expect(regex.test("https://example.com#section")).toBe(true);
     expect(regex.test("https://example.com:8080")).toBe(true);
-    expect(regex.test("http://sub.example.co.uk")).toBe(true);
+    expect(regex.test("https://sub.example.co.uk")).toBe(true);
+    expect(regex.test("http://example.com")).toBe(false);
+    expect(regex.test("www.example.com")).toBe(false);
+    expect(regex.test("example.com")).toBe(false);
+    expect(regex.test("http://sub.example.co.uk")).toBe(false);
     expect(regex.test("example")).toBe(false);
     expect(regex.test("http://")).toBe(false);
     expect(regex.test("https://.com")).toBe(false);

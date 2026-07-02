@@ -86,7 +86,7 @@ export function isValidDateInYYYYMMDDFormat(): RegExp {
 }
 
 export function isValidWebsiteUrl(): RegExp {
-  return /^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/[^\s]*)?(\?[^\s]*)?(#[^\s]*)?$/i;
+  return /^https:\/\/(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/[^\s]*)?(\?[^\s]*)?(#[^\s]*)?$/i;
 }
 
 export function isValidUrlPattern(): RegExp {
