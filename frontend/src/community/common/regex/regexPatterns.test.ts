@@ -53,8 +53,10 @@ describe("Validation Functions", () => {
     expect(regex.test("+94712345678")).toBe(true);
     expect(regex.test("(071)2345678")).toBe(true);
     expect(regex.test("+94(71)2345678")).toBe(true);
-    expect(regex.test("071 234 5678")).toBe(false);
-    expect(regex.test("071-234-5678")).toBe(false);
+    expect(regex.test("071 234 5678")).toBe(true);
+    expect(regex.test("071-234-5678")).toBe(true);
+    expect(regex.test("+94 (71) 234-5678")).toBe(true);
+    expect(regex.test("(+94)719696108")).toBe(true);
     expect(regex.test("abc1234567")).toBe(false);
   });
 
