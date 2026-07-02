@@ -18,8 +18,6 @@ import { useCalendarIntegrations } from "~enterprise/common/hooks/useCalendarInt
 import { useCalendarNotifications } from "~enterprise/common/hooks/useCalendarNotifications";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import LanguagePreferenceSection from "~enterprise/settings/components/molecules/LanguagePreference/LanguagePreference";
-import GoogleWorkspaceSyncSettings from "~community/settings/components/organisms/GoogleWorkspaceSyncSettings/GoogleWorkspaceSyncSettings";
-
 
 // Integration metadata for rendering
 const INTEGRATION_METADATA = {
@@ -97,7 +95,6 @@ const AccountSettings = (): JSX.Element => {
         customSettingsComponent={<LanguagePreferenceSection />}
       />
       <SettingsModalController />
-      <GoogleWorkspaceSyncSettings />
 
       {integrationConfigs.length > 0 && (
         <Box sx={{ mb: "6.25rem" }}>

@@ -120,6 +120,14 @@ const nextConfig = {
         destination: "/community/people/directory/edit-all-information/:id"
       },
       {
+        source: "/people/directory/import-google/review",
+        destination: "/community/people/directory/import-google/review"
+      },
+      {
+        source: "/people/directory/sync-changes",
+        destination: "/community/people/directory/sync-changes"
+      },
+      {
         source: "/leave/my-requests",
         destination: "/community/leave/my-requests"
       },

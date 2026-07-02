@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { appModes } from "~community/common/constants/configs";
+import ROUTES from "~community/common/constants/routes";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -70,6 +71,16 @@ const Settings: NextPage = () => {
       setActiveTab(tabParam);
     }
   }, [router.isReady]);
+
+  // Google Workspace OAuth always redirects the browser back to
+  // /settings?google=connected (backend-hardcoded). Bounce straight to the
+  // Directory import review screen instead of showing anything here.
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (router.query.google === "connected") {
+      router.replace(ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW);
+    }
+  }, [router, router.isReady, router.query.google]);
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);

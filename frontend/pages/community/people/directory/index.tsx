@@ -6,7 +6,7 @@ import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
-import { IconName } from "~community/common/types/IconTypes";
+import GoogleWorkspaceSyncBanner from "~community/people/components/molecules/GoogleWorkspaceSyncBanner/GoogleWorkspaceSyncBanner";
 import DirectoryPopupController from "~community/people/components/organisms/DirectoryPopupController/DirectoryPopupController";
 import EmployeeData from "~community/people/components/organisms/EmployeeData/EmployeeData";
 import { usePeopleStore } from "~community/people/store/store";
@@ -53,20 +53,20 @@ const Directory: NextPage = () => {
           isAdmin ? translateText(["peoples.addPeople"]) : undefined
         }
         secondaryBtnText={
-          isAdmin ? translateText(["peoples.addBulkPeople"]) : undefined
+          isAdmin ? translateText(["peoples.importPeople"]) : undefined
         }
-        secondaryBtnIconName={IconName.UP_ARROW_ICON}
         onPrimaryButtonClick={() => {
           setIsDirectoryModalOpen(true);
           setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);
         }}
         onSecondaryButtonClick={() => {
           setIsDirectoryModalOpen(true);
-          setDirectoryModalType(DirectoryModalTypes.DOWNLOAD_CSV);
+          setDirectoryModalType(DirectoryModalTypes.IMPORT_PEOPLE_SELECT);
         }}
         isDividerVisible
       >
         <Box>
+          {isAdmin && <GoogleWorkspaceSyncBanner />}
           <EmployeeData isRemovePeople={false} />
           <DirectoryPopupController />
         </Box>

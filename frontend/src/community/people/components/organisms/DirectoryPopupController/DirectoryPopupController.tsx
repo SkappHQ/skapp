@@ -7,6 +7,8 @@ import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
 import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
 import AddNewResourceModal from "~community/people/components/molecules/AddNewResourceModal/AddNewResourceModal";
 import AddResourceUnsavedChangesModal from "~community/people/components/molecules/AddResourceUnsavedChangesModal/AddResourceUnsavedChangesModal";
+import ConnectGoogleWorkspaceModal from "~community/people/components/molecules/ImportPeopleModal/ConnectGoogleWorkspaceModal";
+import ImportPeopleModal from "~community/people/components/molecules/ImportPeopleModal/ImportPeopleModal";
 import LoginCredentialsModal from "~community/people/components/molecules/LoginCredentialsModal/LoginCredentialsModal";
 import BulkUploadSummary from "~community/people/components/molecules/UserBulkUploadModals/BulkUploadSummary";
 import UserBulkCsvDownload from "~community/people/components/molecules/UserBulkUploadModals/UserBulkCsvDownload";
@@ -56,6 +58,10 @@ const DirectoryPopupController = () => {
         return translatedTexts(["shareCredentials"]);
       case DirectoryModalTypes.UNSAVED_CHANGES:
         return translatedTexts(["unsavedModalTitle"]);
+      case DirectoryModalTypes.IMPORT_PEOPLE_SELECT:
+        return translatedTexts(["googleWorkspaceImport", "selectModalTitle"]);
+      case DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE:
+        return "";
       default:
         return "";
     }
@@ -109,6 +115,12 @@ const DirectoryPopupController = () => {
       )}
       {directoryModalType === DirectoryModalTypes.USER_CREDENTIALS && (
         <LoginCredentialsModal />
+      )}
+      {directoryModalType === DirectoryModalTypes.IMPORT_PEOPLE_SELECT && (
+        <ImportPeopleModal />
+      )}
+      {directoryModalType === DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE && (
+        <ConnectGoogleWorkspaceModal />
       )}
     </>
   );
