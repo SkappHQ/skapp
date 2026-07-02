@@ -16,8 +16,8 @@ import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import DealsHeader from "./DealsHeader/DealsHeader";
 
 const DealsSection: FC = () => {
-  const [inputValue, setInputValue] = useState("");
-  const [activeView, setActiveView] = useState(DealViewEnum.LIST);
+  const [inputValue, setInputValue] = useState<string>("");
+  const [activeView, setActiveView] = useState<DealViewEnum>(DealViewEnum.LIST);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
 
   const { setSelectedDealId, setIsCrmSidePanelOpen, setActiveDealSidePanel } =

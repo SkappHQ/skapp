@@ -10,8 +10,8 @@ interface DealTitleSectionProps {
 const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTitle, setEditedTitle] = useState("");
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editedTitle, setEditedTitle] = useState<string>("");
 
   const handleClick = () => {
     setIsEditing(true);

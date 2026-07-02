@@ -1,8 +1,7 @@
 import {
   DeleteButtonIcon,
   KebabMenu,
-  SidePanel,
-  SidePanelProps
+  SidePanel
 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
@@ -20,15 +19,20 @@ import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
 import DealTitleSection from "./DealTitleSection";
 
-const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
+const DealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const { selectedDealId, setSelectedDealId, setIsCrmSidePanelOpen } =
-    useCrmStore((store) => ({
-      selectedDealId: store.selectedDealId,
-      setSelectedDealId: store.setSelectedDealId,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-    }));
+  const {
+    isCrmSidePanelOpen,
+    selectedDealId,
+    setSelectedDealId,
+    setIsCrmSidePanelOpen
+  } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    selectedDealId: store.selectedDealId,
+    setSelectedDealId: store.setSelectedDealId,
+    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+  }));
 
   const handleClose = (): void => {
     setSelectedDealId(null);
@@ -47,7 +51,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   const relatedTasks =
     relatedTasksData?.pages.flatMap((page) => page.items ?? []) ?? [];
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
   const menuItems = [
     {
@@ -70,7 +74,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   return (
     <>
       <SidePanel
-        isOpen={isOpen}
+        isOpen={isCrmSidePanelOpen}
         onClose={handleClose}
         closeOnBackdropClick
         header={
@@ -122,7 +126,7 @@ const DealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
                   />
                 </div>
               </div>
-              <DealPropertiesSidebar deal={deal!} isOpen={isOpen} />
+              <DealPropertiesSidebar deal={deal!} isOpen={isCrmSidePanelOpen} />
             </div>
           </div>
         )}

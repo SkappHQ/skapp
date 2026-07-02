@@ -14,8 +14,8 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
 
   const isDescriptionEmpty = !description?.trim();
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedDescription, setEditedDescription] = useState("");
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editedDescription, setEditedDescription] = useState<string>("");
 
   const handleClick = () => {
     setIsEditing(true);

@@ -34,13 +34,15 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const [amount, setAmount] = useState(deal.amount ?? "");
+  const [amount, setAmount] = useState<string>(deal.amount ?? "");
   const [priority, setPriority] = useState<CrmPriorityEnum>(deal.priority);
-  const [selectedStageId, setSelectedStageId] = useState(String(deal.stageId));
+  const [selectedStageId, setSelectedStageId] = useState<string>(
+    String(deal.stageId)
+  );
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner>(deal.owner);
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(deal.contact);
-  const [contactSearchTerm, setContactSearchTerm] = useState("");
+  const [contactSearchTerm, setContactSearchTerm] = useState<string>("");
 
   const debouncedContactSearchTerm = useDebounce(
     contactSearchTerm.trim(),

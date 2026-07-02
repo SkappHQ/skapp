@@ -1,4 +1,4 @@
-import { ButtonV2, SidePanel, SidePanelProps, TextArea } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { FC, useState } from "react";
 
@@ -25,18 +25,19 @@ import { addDealValidations } from "~community/crm/utils/dealValidations";
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
 
-const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
+const AddDealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const { setToastMessage } = useToast();
 
-  const { setIsCrmSidePanelOpen } = useCrmStore((store) => ({
+  const { isCrmSidePanelOpen, setIsCrmSidePanelOpen } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
   }));
 
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
 
-  const [contactSearchTerm, setContactSearchTerm] = useState("");
+  const [contactSearchTerm, setContactSearchTerm] = useState<string>("");
   const debouncedContactSearch = useDebounce(
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
@@ -44,7 +45,7 @@ const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isOpen
+    isCrmSidePanelOpen
   );
   const contacts = contactLookupData?.items ?? [];
 
@@ -114,7 +115,7 @@ const AddDealSidePanel: FC<SidePanelProps> = ({ isOpen }) => {
   return (
     <div className="crm-deal-side-panel">
       <SidePanel
-        isOpen={isOpen}
+        isOpen={isCrmSidePanelOpen}
         onClose={handleClose}
         header={
           <span className="pl-2 text-2xl font-bold text-black">

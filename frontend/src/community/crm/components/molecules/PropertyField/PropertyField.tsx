@@ -1,13 +1,24 @@
 'use client';
 
 import { InputField } from '@rootcodelabs/skapp-ui';
-import React, { useEffect, useRef, useState } from 'react';
+import {
+  ChangeEvent,
+  FC,
+  KeyboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+
+import { useTranslator } from '~community/common/hooks/useTranslator';
+
+type PropertyFieldInputType = 'text' | 'number';
 
 interface PropertyFieldProps {
   label: string;
   value?: string;
   placeholder?: string;
-  inputType?: 'text' | 'number';
+  inputType?: PropertyFieldInputType;
   min?: number;
   max?: number;
   errorMessage?: string;
@@ -15,10 +26,10 @@ interface PropertyFieldProps {
   onSave?: (value: string) => void;
 }
 
-const PropertyField: React.FC<PropertyFieldProps> = ({
+const PropertyField: FC<PropertyFieldProps> = ({
   label,
   value = '',
-  placeholder = 'None',
+  placeholder,
   inputType = 'text',
   min,
   max,
@@ -26,8 +37,10 @@ const PropertyField: React.FC<PropertyFieldProps> = ({
   onChange,
   onSave,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [inputValue, setInputValue] = useState(value);
+  const translateText = useTranslator('crmModule', 'deals', 'sidePanel');
+  const resolvedPlaceholder = placeholder ?? translateText(['placeholders', 'none']);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [inputValue, setInputValue] = useState<string>(value);
   const inputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,7 +71,7 @@ const PropertyField: React.FC<PropertyFieldProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isEditing, inputValue, value, onSave, onChange]);
+  }, [isEditing, inputValue, value]);
 
   const handleClick = () => {
     if (!isEditing) {
@@ -67,7 +80,7 @@ const PropertyField: React.FC<PropertyFieldProps> = ({
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
     if (onChange) {
       onChange(e.target.value);
@@ -84,7 +97,7 @@ const PropertyField: React.FC<PropertyFieldProps> = ({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSave();
     } else if (e.key === 'Escape') {
@@ -93,7 +106,7 @@ const PropertyField: React.FC<PropertyFieldProps> = ({
     }
   };
 
-  const displayValue = inputValue || placeholder;
+  const displayValue = inputValue || resolvedPlaceholder;
 
   return (
     <div className="self-stretch h-9 flex justify-start items-center">
@@ -105,11 +118,11 @@ const PropertyField: React.FC<PropertyFieldProps> = ({
         {isEditing ? (
           <div ref={inputRef} className="w-full">
             <InputField
-              customStyles={{ background: 'gray-50' }}
+              customStyles={{ background: 'secondary-background' }}
               value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder={placeholder}
+              placeholder={resolvedPlaceholder}
               className="w-full"
               variant="sm"
               type={inputType}
@@ -122,7 +135,7 @@ const PropertyField: React.FC<PropertyFieldProps> = ({
           <div
             role="button"
             tabIndex={0}
-            className="w-full min-w-0 min-h-[32px] px-3 rounded-lg flex items-center cursor-pointer hover:bg-gray-50 transition-colors"
+            className="w-full min-w-0 min-h-[32px] px-3 rounded-lg flex items-center cursor-pointer hover:bg-secondary-background transition-colors"
             onClick={handleClick}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') handleClick();

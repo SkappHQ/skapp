@@ -55,7 +55,6 @@ const SidePanelTasksSection: FC<Props> = ({
     hasNextPage,
     isLoading: isFetchingNextPage,
     onLoadMore: onFetchNextPage,
-    threshold: 0.8
   });
 
   const handleAddTask = () => {
