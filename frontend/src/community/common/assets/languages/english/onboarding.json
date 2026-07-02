@@ -5,7 +5,7 @@
     "pageSubHeading": "Start your journey with us. Sign up effortlessly for a streamlined experience.",
     "firstNameLabel": "First Name",
     "lastNameLabel": "Last Name",
-    "emailLabel": "Work Email",
+    "emailLabel": "Work email",
     "passwordLabel": "Password",
     "firstNameRequiredError": "Please enter the first name",
     "firstNameCharacterError": "Special characters are not allowed in the first name",
