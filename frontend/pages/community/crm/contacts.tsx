@@ -12,7 +12,6 @@ import { ContactTable } from "~community/crm/components/organisms/ContactTable/C
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -20,28 +19,12 @@ const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const {
-    isCrmSidePanelOpen,
-    crmSidePanelType,
-    closeCrmSidePanel,
-    setSelectedContactId,
-    setIsContactModalOpen,
-    setContactModalType,
-    selectedContactId
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    setSelectedContactId: store.setSelectedContactId,
-    setIsContactModalOpen: store.setIsContactModalOpen,
-    setContactModalType: store.setContactModalType,
-    selectedContactId: store.selectedContactId
-  }));
-
-  const handleCloseSidePanel = () => {
-    closeCrmSidePanel();
-    setSelectedContactId(null);
-  };
+  const { setIsContactModalOpen, setContactModalType, selectedContactId } =
+    useCrmStore((store) => ({
+      setIsContactModalOpen: store.setIsContactModalOpen,
+      setContactModalType: store.setContactModalType,
+      selectedContactId: store.selectedContactId
+    }));
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.CONTACTS, () => {
@@ -63,13 +46,7 @@ const Contacts: NextPage = () => {
       <>
         {selectedContactId && (
           <SidePanelWrapper>
-            <ContactSidePanel
-              isOpen={
-                isCrmSidePanelOpen &&
-                crmSidePanelType === CrmSidePanelTypes.CONTACT_SIDE_PANEL
-              }
-              onClose={handleCloseSidePanel}
-            />
+            <ContactSidePanel />
             <AddDealSidePanel />
           </SidePanelWrapper>
         )}

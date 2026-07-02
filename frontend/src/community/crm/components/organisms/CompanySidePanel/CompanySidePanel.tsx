@@ -3,7 +3,6 @@ import {
   EditIcon,
   MenuItemProps,
   SidePanel,
-  SidePanelProps,
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
@@ -18,11 +17,12 @@ import SidePanelTasksSection from "~community/crm/components/molecules/SidePanel
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
 import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
-const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+const CompanySidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
   const { isCrmSalesManager } = useSessionData();
   // TODO: Replace with real isLoading from useGetCompanyById when API is wired
@@ -32,12 +32,30 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     SidePanelTabEnum.TASKS
   );
 
-  const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(
-    (store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      setCompanyModalType: store.setCompanyModalType
-    })
-  );
+  const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    setSelectedCompany,
+    closeCrmSidePanel,
+    setIsCompanyModalOpen,
+    setCompanyModalType
+  } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
+    setSelectedCompany: store.setSelectedCompany,
+    closeCrmSidePanel: store.closeCrmSidePanel,
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+    setCompanyModalType: store.setCompanyModalType
+  }));
+
+  const isOpen =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL;
+
+  const handleClose = () => {
+    setSelectedCompany(null);
+    closeCrmSidePanel();
+  };
   const menuItems: MenuItemProps[] = useMemo(
     () => [
       {
@@ -106,7 +124,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   return (
     <SidePanel
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       closeOnBackdropClick
       header={
         isLoading ? (

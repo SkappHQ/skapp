@@ -33,21 +33,13 @@ const AddDealSidePanel: FC = () => {
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
 
-  const {
-    isCrmSidePanelOpen,
-    crmSidePanelType,
-    preselectedContact,
-    setPreselectedContact,
-    popCrmSidePanel,
-    closeCrmSidePanel
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    preselectedContact: store.preselectedContact,
-    setPreselectedContact: store.setPreselectedContact,
-    popCrmSidePanel: store.popCrmSidePanel,
-    closeCrmSidePanel: store.closeCrmSidePanel
-  }));
+  const { isCrmSidePanelOpen, crmSidePanelType, preselectedContact, popCrmSidePanel } =
+    useCrmStore((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      preselectedContact: store.preselectedContact,
+      popCrmSidePanel: store.popCrmSidePanel
+    }));
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -78,7 +70,6 @@ const AddDealSidePanel: FC = () => {
     });
     formik.resetForm();
     setSelectedContact(null);
-    setPreselectedContact(null);
     popCrmSidePanel();
   };
 
@@ -136,7 +127,6 @@ const AddDealSidePanel: FC = () => {
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
-    setPreselectedContact(null);
     popCrmSidePanel();
   };
 

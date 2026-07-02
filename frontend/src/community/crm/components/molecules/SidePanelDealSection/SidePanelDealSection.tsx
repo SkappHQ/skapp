@@ -33,7 +33,7 @@ const SidePanelDealSection: FC<Props> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
-  const { guardCrmCreate } = useCrmLimitGuard();
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { pushCrmSidePanel, setPreselectedContact } = useCrmStore((store) => ({
     pushCrmSidePanel: store.pushCrmSidePanel,
@@ -68,6 +68,8 @@ const SidePanelDealSection: FC<Props> = ({
               variant="line"
               size="sm"
               onClick={handleAddDeal}
+              disabled={isCheckingCrmLimit}
+              isLoading={isCheckingCrmLimit}
               aria-label={translateText(["ariaLabels", "addDealBtn"])}
               icon={<PlusIcon />}
               iconPosition="end"
@@ -85,6 +87,8 @@ const SidePanelDealSection: FC<Props> = ({
             children: translateText(["addDealBtn"]),
             variant: "tertiary",
             onClick: handleAddDeal,
+            disabled: isCheckingCrmLimit,
+            isLoading: isCheckingCrmLimit,
             icon: <PlusIcon />,
             "aria-label": translateText(["ariaLabels", "addDealBtn"])
           }}

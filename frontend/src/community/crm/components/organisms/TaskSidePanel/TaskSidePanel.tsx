@@ -2,22 +2,41 @@ import {
   DeleteButtonIcon,
   EditIcon,
   KebabMenu,
-  SidePanel,
-  SidePanelProps
+  SidePanel
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
-const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+const TaskSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
-  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
+  const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    setSelectedTaskId,
+    closeCrmSidePanel,
+    setIsTaskModalOpen,
+    setTaskModalType
+  } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
+    setSelectedTaskId: store.setSelectedTaskId,
+    closeCrmSidePanel: store.closeCrmSidePanel,
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType
   }));
+
+  const isOpen =
+    isCrmSidePanelOpen && crmSidePanelType === CrmSidePanelTypes.TASK_SIDE_PANEL;
+
+  const handleClose = () => {
+    setSelectedTaskId(null);
+    closeCrmSidePanel();
+  };
 
   const openTaskModal = (type: CrmModalTypes) => {
     setTaskModalType(type);
@@ -51,7 +70,7 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   return (
     <SidePanel
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       closeOnBackdropClick
       headerActions={
         <KebabMenu

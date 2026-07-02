@@ -11,7 +11,6 @@ import CompanySidePanel from "~community/crm/components/organisms/CompanySidePan
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -19,28 +18,12 @@ const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const {
-    setIsCompanyModalOpen,
-    setCompanyModalType,
-    isCrmSidePanelOpen,
-    crmSidePanelType,
-    closeCrmSidePanel,
-    setSelectedCompany,
-    selectedCompany
-  } = useCrmStore((store) => ({
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-    setCompanyModalType: store.setCompanyModalType,
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    setSelectedCompany: store.setSelectedCompany,
-    selectedCompany: store.selectedCompany
-  }));
-
-  const handleCloseSidePanel = () => {
-    closeCrmSidePanel();
-    setSelectedCompany(null);
-  };
+  const { setIsCompanyModalOpen, setCompanyModalType, selectedCompany } =
+    useCrmStore((store) => ({
+      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+      setCompanyModalType: store.setCompanyModalType,
+      selectedCompany: store.selectedCompany
+    }));
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.COMPANIES, () => {
@@ -62,13 +45,7 @@ const Companies: NextPage = () => {
       <>
         {selectedCompany && (
           <SidePanelWrapper>
-            <CompanySidePanel
-              isOpen={
-                isCrmSidePanelOpen &&
-                crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL
-              }
-              onClose={handleCloseSidePanel}
-            />
+            <CompanySidePanel />
             <AddDealSidePanel />
           </SidePanelWrapper>
         )}

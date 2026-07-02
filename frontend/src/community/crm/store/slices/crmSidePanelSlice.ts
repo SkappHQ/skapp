@@ -6,8 +6,6 @@ const CrmSidePanelSlice = (set: SetType<CrmStore>) => ({
   isCrmSidePanelOpen: false,
   crmSidePanelType: null,
   previousCrmSidePanelType: null,
-  setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) =>
-    set({ isCrmSidePanelOpen }),
   openCrmSidePanel: (type: CrmSidePanelTypes) =>
     set({
       isCrmSidePanelOpen: true,
@@ -28,7 +26,8 @@ const CrmSidePanelSlice = (set: SetType<CrmStore>) => ({
     set((state) => ({
       crmSidePanelType: state.previousCrmSidePanelType,
       previousCrmSidePanelType: null,
-      isCrmSidePanelOpen: state.previousCrmSidePanelType !== null
+      isCrmSidePanelOpen: state.previousCrmSidePanelType !== null,
+      preselectedContact: null
     })),
   closeCrmSidePanel: () =>
     set({
