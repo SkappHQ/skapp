@@ -8,22 +8,30 @@ import {
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
-import { useGetTaskById, useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
+import {
+  useGetTaskById,
+  useUpdateTaskCompletion
+} from "~community/crm/api/TaskApi";
+import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
 
+import TaskSidePanelSkeleton from "./TaskSidePanelSkeleton";
+
 const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
-  const { setIsTaskModalOpen, setTaskModalType, selectedTaskId } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType,
-    selectedTaskId: store.selectedTaskId
-  }));
+  const { setIsTaskModalOpen, setTaskModalType, selectedTaskId } = useCrmStore(
+    (store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType,
+      selectedTaskId: store.selectedTaskId
+    })
+  );
 
   const openTaskModal = (type: CrmModalTypes) => {
     setTaskModalType(type);
@@ -60,7 +68,10 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   ];
 
   const handleMarkAsDone = () => {
-    updateTaskCompletion({ id: task?.id, isCompleted: true }, { onSuccess: onClose });
+    updateTaskCompletion(
+      { id: task?.id, isCompleted: true },
+      { onSuccess: onClose }
+    );
   };
 
   return (
@@ -69,29 +80,38 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       onClose={onClose}
       closeOnBackdropClick
       header={
-        <div className="flex items-center gap-4 pl-2">
-          {taskIcon}
-          <span className="h1 text-black">{task?.name}</span>
-        </div>
+        isLoading ? (
+          <div className="flex items-center gap-4 pl-2" aria-hidden="true">
+            <SkeletonShape circle className="h-6 w-6 shrink-0" />
+            <SkeletonShape className="h-4 w-40" />
+          </div>
+        ) : (
+          <div className="flex items-center gap-4 pl-2">
+            {taskIcon}
+            <span className="h1 text-black">{task?.name}</span>
+          </div>
+        )
       }
       headerActions={
-        <KebabMenu
-          id={"task-actions"}
-          menuItems={menuItems}
-          anchorButton={{
-            "aria-label": translateText(["kebabMenuAriaLabel"])
-          }}
-          className={{
-            anchorElement:
-              "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-          }}
-        />
+        isLoading ? (
+          <SidePanelHeaderActionsSkeleton />
+        ) : (
+          <KebabMenu
+            id={"task-actions"}
+            menuItems={menuItems}
+            anchorButton={{
+              "aria-label": translateText(["kebabMenuAriaLabel"])
+            }}
+            className={{
+              anchorElement:
+                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+            }}
+          />
+        )
       }
     >
       {isLoading ? (
-        <div className="flex flex-col gap-4 p-4">
-          <MultipleSkeletons numOfSkeletons={4} height={40} />
-        </div>
+        <TaskSidePanelSkeleton />
       ) : (
         <div className="flex flex-col pb-4 gap-[16px]">
           <div className="flex gap-6 pb-4">
@@ -118,7 +138,10 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
             <div className="w-[18.438rem] shrink-0">
               {task && (
-                <SidePanelTaskInfo task={task} onMarkAsDone={handleMarkAsDone} />
+                <SidePanelTaskInfo
+                  task={task}
+                  onMarkAsDone={handleMarkAsDone}
+                />
               )}
             </div>
           </div>

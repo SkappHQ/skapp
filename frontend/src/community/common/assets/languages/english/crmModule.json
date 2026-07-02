@@ -410,6 +410,8 @@
       "emptyTitle": "No deals",
       "emptyDescription": "No deals associated with this company",
       "descriptionLabel": "Description",
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions",
       "ariaLabels": {
         "addDealBtn": "Add Deal"
       }
@@ -446,10 +448,6 @@
         "cancel": "Cancel delete deal",
         "confirm": "Confirm delete deal"
       }
-    },
-    "sidePanel": {
-      "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions"
     },
     "addDealSidePanel": {
       "title": "Add Deal",
