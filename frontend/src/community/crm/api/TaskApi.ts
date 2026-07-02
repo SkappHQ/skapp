@@ -13,20 +13,14 @@ import {
   CrmTaskCreatePayload,
   CrmTaskResponseType,
   CrmTaskUpdatePayload,
+  RelatedTasksPage,
   RelatedTasksParams,
-  TaskRowResponseType,
+  TaskSearchParams,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
-
-interface RelatedTasksPage {
-  items: TaskRowResponseType[];
-  totalItems: number;
-  currentPage: number;
-  totalPages: number;
-}
 
 const fetchRelatedTasks = async (
   params: RelatedTasksParams
@@ -130,12 +124,6 @@ export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
     onError
   });
 };
-
-interface TaskSearchParams {
-  page: number;
-  size: number;
-  searchKeyword: string;
-}
 
 const fetchCompletedTasks = async ({
   page,

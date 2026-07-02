@@ -452,3 +452,16 @@ export type PreselectedContact = {
   id: number;
   name: string;
 };
+
+export interface RelatedTasksPage {
+  items: TaskRowResponseType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface TaskSearchParams {
+  page: number;
+  size: number;
+  searchKeyword: string;
+}
