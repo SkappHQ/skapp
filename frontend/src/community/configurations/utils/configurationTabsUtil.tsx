@@ -1,7 +1,7 @@
 import AttendanceConfiguration from "~community/attendance/components/organisms/AttendanceConfiguration/AttendanceConfiguration";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import UserRolesTable from "~community/configurations/components/molecules/UserRolesTable/UserRolesTable";
-// import CrmConfigurations from "~community/configurations/components/organisms/CrmConfigurations/CrmConfigurations";
+import CrmConfigurations from "~community/configurations/components/organisms/CrmConfigurations/CrmConfigurations";
 import TimeConfigurations from "~community/configurations/components/organisms/TimeConfigurations/TimeConfigurations";
 import WorkLocationsTable from "~community/configurations/components/organisms/WorkLocationsTable/WorkLocationsTable";
 import { ConfigurationTab } from "~community/configurations/types/ConfigurationTabTypes";
@@ -41,13 +41,13 @@ export const getConfigurationTabs = (
       requiredRoles: [AdminTypes.SUPER_ADMIN],
       component: <UserRolesTable />,
       position: 6
+    },
+    {
+      id: "crm",
+      label: translateText(["tabs", "crm"]),
+      requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.CRM_ADMIN],
+      component: <CrmConfigurations />,
+      position: 7
     }
-    // {
-    //   id: "crm",
-    //   label: translateText(["tabs", "crm"]),
-    //   requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.CRM_ADMIN],
-    //   component: <CrmConfigurations />,
-    //   position: 7
-    // }
   ];
 };
