@@ -42,12 +42,12 @@ export const getConfigurationTabs = (
       component: <UserRolesTable />,
       position: 6
     },
-    {
-      id: "crm",
-      label: translateText(["tabs", "crm"]),
-      requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.CRM_ADMIN],
-      component: <CrmConfigurations />,
-      position: 7
-    }
+    // {
+    //   id: "crm",
+    //   label: translateText(["tabs", "crm"]),
+    //   requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.CRM_ADMIN],
+    //   component: <CrmConfigurations />,
+    //   position: 7
+    // }
   ];
 };
