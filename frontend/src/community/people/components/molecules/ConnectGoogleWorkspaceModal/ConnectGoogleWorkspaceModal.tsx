@@ -1,0 +1,148 @@
+import { Box, Stack, Typography, useTheme } from "@mui/material";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { JSX, useState } from "react";
+
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { IconName } from "~community/common/types/IconTypes";
+import authFetch from "~community/common/utils/axiosInterceptor";
+import { getApiUrl } from "~community/common/utils/getConstants";
+import { usePeopleStore } from "~community/people/store/store";
+import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
+
+const ConnectGoogleWorkspaceModal = (): JSX.Element => {
+  const theme = useTheme();
+  const translateText = useTranslator("peopleModule", "peoples");
+  const { setToastMessage } = useToast();
+  const { setDirectoryModalType } = usePeopleStore((state) => state);
+
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const accessItems = [
+    translateText(["googleWorkspaceImport", "connectAccessProfiles"]),
+    translateText(["googleWorkspaceImport", "connectAccessOUs"]),
+    translateText(["googleWorkspaceImport", "connectAccessStatus"])
+  ];
+
+  const handleCancel = (): void => {
+    setDirectoryModalType(DirectoryModalTypes.NONE);
+  };
+
+  const handleContinueWithGoogle = async (): Promise<void> => {
+    setIsConnecting(true);
+    try {
+      // authFetch's baseURL already carries "/v1" for the rest of the app's
+      // routes; the integrations API lives at "/api/v1" instead, so this
+      // must be requested as an absolute URL or it would resolve under
+      // "/v1/api/v1/...".
+      const response = await authFetch.get(
+        `${getApiUrl()}/api/v1/integrations/google/initiate`
+      );
+      if (response?.data?.url) {
+        window.location.href = response.data.url;
+        return;
+      }
+      throw new Error("Missing redirect URL");
+    } catch {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["googleWorkspaceImport", "connectErrorTitle"]),
+        description: translateText([
+          "googleWorkspaceImport",
+          "connectErrorDescription"
+        ])
+      });
+      setIsConnecting(false);
+    }
+  };
+
+  return (
+    <Stack sx={{ gap: "1.25rem", alignItems: "center", textAlign: "center" }}>
+      <Icon name={IconName.GOOGLE_ICON} width="40" height="40" />
+
+      <Typography variant="h3">
+        {translateText(["googleWorkspaceImport", "connectTitle"])}
+      </Typography>
+
+      <Typography
+        variant="body2"
+        sx={{ color: theme.palette.text.secondary }}
+      >
+        {translateText(["googleWorkspaceImport", "connectDescription"])}
+      </Typography>
+
+      <Stack
+        direction="row"
+        sx={{
+          width: "100%",
+          gap: "0.5rem",
+          alignItems: "flex-start",
+          textAlign: "left",
+          backgroundColor: theme.palette.primary.light,
+          borderRadius: "8px",
+          padding: "0.75rem 1rem"
+        }}
+      >
+        <Icon name={IconName.INFO_ICON} />
+        <Typography variant="body2">
+          {translateText([
+            "googleWorkspaceImport",
+            "connectPrivacyNotice"
+          ])}
+        </Typography>
+      </Stack>
+
+      <Stack sx={{ width: "100%", gap: "0.5rem", textAlign: "left" }}>
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 600,
+            letterSpacing: "0.04em",
+            color: theme.palette.text.secondary
+          }}
+        >
+          {translateText(["googleWorkspaceImport", "connectAccessListTitle"])}
+        </Typography>
+        {accessItems.map((item) => (
+          <Stack
+            key={item}
+            direction="row"
+            sx={{ gap: "0.5rem", alignItems: "center" }}
+          >
+            <Icon name={IconName.CHECK_ICON} />
+            <Typography variant="body2">{item}</Typography>
+          </Stack>
+        ))}
+      </Stack>
+
+      <Stack
+        direction="row"
+        sx={{ width: "100%", gap: "0.75rem", justifyContent: "flex-end" }}
+      >
+        <Box sx={{ flex: 1 }} />
+        <ButtonV2
+          variant="secondary"
+          size="md"
+          onClick={handleCancel}
+          disabled={isConnecting}
+        >
+          {translateText(["cancelButton"])}
+        </ButtonV2>
+        <ButtonV2
+          variant="primary"
+          size="md"
+          isLoading={isConnecting}
+          onClick={handleContinueWithGoogle}
+          icon={<Icon name={IconName.GOOGLE_ICON} width="16" height="16" />}
+        >
+          {translateText(["googleWorkspaceImport", "continueWithGoogle"])}
+        </ButtonV2>
+      </Stack>
+    </Stack>
+  );
+};
+
+export default ConnectGoogleWorkspaceModal;

@@ -7,7 +7,9 @@ import { BulkUploadResponse } from "~community/common/types/BulkUploadTypes";
 import { useGetAllJobFamilies } from "~community/people/api/JobFamilyApi";
 import AddNewResourceModal from "~community/people/components/molecules/AddNewResourceModal/AddNewResourceModal";
 import AddResourceUnsavedChangesModal from "~community/people/components/molecules/AddResourceUnsavedChangesModal/AddResourceUnsavedChangesModal";
+import ConnectGoogleWorkspaceModal from "~community/people/components/molecules/ConnectGoogleWorkspaceModal/ConnectGoogleWorkspaceModal";
 import LoginCredentialsModal from "~community/people/components/molecules/LoginCredentialsModal/LoginCredentialsModal";
+import UploadTypeSelectModal from "~community/people/components/molecules/UploadTypeSelectModal/UploadTypeSelectModal";
 import BulkUploadSummary from "~community/people/components/molecules/UserBulkUploadModals/BulkUploadSummary";
 import UserBulkCsvDownload from "~community/people/components/molecules/UserBulkUploadModals/UserBulkCsvDownload";
 import UserBulkCsvUpload from "~community/people/components/molecules/UserBulkUploadModals/UserBulkCsvUpload";
@@ -51,11 +53,13 @@ const DirectoryPopupController = () => {
       case DirectoryModalTypes.ADD_NEW_RESOURCE:
         return "Add people";
       case DirectoryModalTypes.UPLOAD_TYPE_SELECT:
-        return translatedTexts(["uploadTypeSelectorModalTitle"]);
+        return translatedTexts(["googleWorkspaceImport", "chooserTitle"]);
       case DirectoryModalTypes.USER_CREDENTIALS:
         return translatedTexts(["shareCredentials"]);
       case DirectoryModalTypes.UNSAVED_CHANGES:
         return translatedTexts(["unsavedModalTitle"]);
+      case DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE:
+        return "";
       default:
         return "";
     }
@@ -109,6 +113,12 @@ const DirectoryPopupController = () => {
       )}
       {directoryModalType === DirectoryModalTypes.USER_CREDENTIALS && (
         <LoginCredentialsModal />
+      )}
+      {directoryModalType === DirectoryModalTypes.UPLOAD_TYPE_SELECT && (
+        <UploadTypeSelectModal />
+      )}
+      {directoryModalType === DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE && (
+        <ConnectGoogleWorkspaceModal />
       )}
     </>
   );
