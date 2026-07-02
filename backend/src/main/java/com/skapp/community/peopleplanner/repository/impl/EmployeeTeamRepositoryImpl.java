@@ -16,6 +16,7 @@ import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.model.Team_;
+import com.skapp.community.peopleplanner.payload.EmployeeTeamIdDto;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamRepository;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.timeplanner.model.TimeRecord;
@@ -320,6 +321,30 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		delete.where(cb.and(cb.equal(root.get(EmployeeTeam_.team).get(Team_.teamId), teamId),
 				root.get(EmployeeTeam_.employee).get(Employee_.employeeId).in(employeeIds)));
 		entityManager.createQuery(delete).executeUpdate();
+	}
+
+	@Override
+	public List<EmployeeTeamIdDto> findTeamEmployeeTeamIdsByTeamId(Long teamId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<EmployeeTeamIdDto> query = cb.createQuery(EmployeeTeamIdDto.class);
+		Root<EmployeeTeam> teamMemberRoot = query.from(EmployeeTeam.class);
+		Root<EmployeeTeam> employeeTeamRoot = query.from(EmployeeTeam.class);
+
+		query.select(cb.construct(EmployeeTeamIdDto.class,
+				teamMemberRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+				employeeTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId)));
+
+		query.where(
+				cb.equal(teamMemberRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+						employeeTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId)),
+				cb.equal(teamMemberRoot.get(EmployeeTeam_.team).get(Team_.teamId), teamId),
+				cb.isTrue(teamMemberRoot.get(EmployeeTeam_.team).get(Team_.isActive)),
+				cb.isTrue(employeeTeamRoot.get(EmployeeTeam_.team).get(Team_.isActive)));
+
+		query.orderBy(cb.asc(teamMemberRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId)),
+				cb.asc(employeeTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId)));
+
+		return entityManager.createQuery(query).getResultList();
 	}
 
 }

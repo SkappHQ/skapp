@@ -4,21 +4,30 @@ import { ReactNode } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import AddTaskModalContent from "~community/crm/components/molecules/AddTaskModalContent/AddTaskModalContent";
 import DeleteTaskModalContent from "~community/crm/components/molecules/DeleteTaskModalContent/DeleteTaskModalContent";
+import EditTaskModalContent from "~community/crm/components/molecules/EditTaskModalContent/EditTaskModalContent";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 const TaskModalController = () => {
   const translateText = useTranslator("crmModule", "tasks");
 
-  const { isTaskModalOpen, taskModalType, setIsTaskModalOpen } = useCrmStore(
-    (store) => ({
-      isTaskModalOpen: store.isTaskModalOpen,
-      taskModalType: store.taskModalType,
-      setIsTaskModalOpen: store.setIsTaskModalOpen
-    })
-  );
+  const {
+    isTaskModalOpen,
+    taskModalType,
+    setIsTaskModalOpen,
+    setPreselectedContact,
+    setSelectedTaskId
+  } = useCrmStore((store) => ({
+    isTaskModalOpen: store.isTaskModalOpen,
+    taskModalType: store.taskModalType,
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    setPreselectedContact: store.setPreselectedContact,
+    setSelectedTaskId: store.setSelectedTaskId
+  }));
 
   const handleCloseModal = (): void => {
+    setSelectedTaskId(null);
+    setPreselectedContact(null);
     setIsTaskModalOpen(false);
   };
 
@@ -28,6 +37,8 @@ const TaskModalController = () => {
         return translateText(["addTaskModal", "title"]);
       case CrmModalTypes.DELETE_TASK_MODAL:
         return translateText(["deleteTaskModal", "title"]);
+      case CrmModalTypes.EDIT_TASK_MODAL:
+        return translateText(["editTaskModal", "title"]);
       default:
         return "";
     }
@@ -39,6 +50,8 @@ const TaskModalController = () => {
         return <AddTaskModalContent />;
       case CrmModalTypes.DELETE_TASK_MODAL:
         return <DeleteTaskModalContent />;
+      case CrmModalTypes.EDIT_TASK_MODAL:
+        return <EditTaskModalContent />;
       default:
         return null;
     }

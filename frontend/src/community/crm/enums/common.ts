@@ -75,6 +75,11 @@ export enum CrmDealStageColorsEnum {
   INDIGO = "INDIGO"
 }
 
+export enum DealViewEnum {
+  LIST = "LIST",
+  KANBAN = "KANBAN"
+}
+
 export enum DefaultStageNameEnum {
   LEAD = "LEAD",
   QUALIFIED = "QUALIFIED",

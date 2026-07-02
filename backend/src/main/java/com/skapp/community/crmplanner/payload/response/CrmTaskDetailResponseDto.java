@@ -20,10 +20,10 @@ public class CrmTaskDetailResponseDto {
 
 	private LocalDateTime dueAt;
 
-	private Boolean isOverdue;
-
 	private Boolean isCompleted;
 
 	private CrmOwnerResponseDto owner;
+
+	private CrmContactLookupResponseDto contact;
 
 }

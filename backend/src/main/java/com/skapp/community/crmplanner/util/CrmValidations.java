@@ -202,6 +202,12 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateRelatedTaskContextFilter(Long contactId, Long dealId) {
+		if (contactId == null && dealId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_CONTEXT_FILTER_REQUIRED);
+		}
+	}
+
 	public static void validateTaskTargets(Long contactId, Long companyId, Long dealId) {
 		if (contactId == null && companyId == null && dealId == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_TARGET_REQUIRED);

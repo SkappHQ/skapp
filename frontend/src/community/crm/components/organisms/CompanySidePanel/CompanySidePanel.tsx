@@ -1,14 +1,15 @@
 import {
   DeleteButtonIcon,
   EditIcon,
-  KebabMenu,
+  MenuItemProps,
   SidePanel,
   SidePanelProps,
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
@@ -18,11 +19,12 @@ import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
+import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
 import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
 const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
-
+  const { isCrmSalesManager } = useSessionData();
   // TODO: Replace with real isLoading from useGetCompanyById when API is wired
   const isLoading = false;
 
@@ -36,35 +38,39 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       setCompanyModalType: store.setCompanyModalType
     })
   );
-
-  const openCompanyModal = (type: CrmModalTypes) => {
-    setCompanyModalType(type);
-    setIsCompanyModalOpen(true);
-  };
-
-  const menuItems = [
-    {
-      id: "edit",
-      label: translateText(["editCompany"]),
-      icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: () => openCompanyModal(CrmModalTypes.EDIT_COMPANY_MODAL)
-    },
-    {
-      id: "delete",
-      label: translateText(["deleteCompany"]),
-      icon: {
-        start: (
-          <DeleteButtonIcon
-            width="12px"
-            height="14px"
-            fill="var(--color-semantic-red-text)"
-          />
-        )
+  const menuItems: MenuItemProps[] = useMemo(
+    () => [
+      {
+        id: "edit",
+        label: translateText(["editCompany"]),
+        icon: { start: <EditIcon width="16px" height="16px" /> },
+        onClick: () => {
+          setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
+          setIsCompanyModalOpen(true);
+        }
       },
-      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: () => openCompanyModal(CrmModalTypes.DELETE_COMPANY_MODAL)
-    }
-  ];
+      {
+        id: "delete",
+        label: translateText(["deleteCompany"]),
+        icon: {
+          start: (
+            <DeleteButtonIcon
+              width="12px"
+              height="14px"
+              fill="var(--color-semantic-red-text)"
+            />
+          )
+        },
+        activeBehavior:
+          "hover:bg-semantic-red-background text-semantic-red-text",
+        onClick: () => {
+          setCompanyModalType(CrmModalTypes.DELETE_COMPANY_MODAL);
+          setIsCompanyModalOpen(true);
+        }
+      }
+    ],
+    [translateText]
+  );
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -111,16 +117,9 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         isLoading ? (
           <SidePanelHeaderActionsSkeleton count={1} />
         ) : (
-          <KebabMenu
-            id={"company-actions"}
+          <CompanySidePanelHeaderActions
+            isCrmSalesManager={Boolean(isCrmSalesManager)}
             menuItems={menuItems}
-            anchorButton={{
-              "aria-label": translateText(["kebabMenuAriaLabel"])
-            }}
-            className={{
-              anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-            }}
           />
         )
       }

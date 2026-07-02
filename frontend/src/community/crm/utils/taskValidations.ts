@@ -20,8 +20,7 @@ export const isDueToday = (dueAt: string): boolean => isToday(parseISO(dueAt));
 export const isDueTomorrow = (dueAt: string): boolean =>
   isTomorrow(parseISO(dueAt));
 
-export const addTaskValidations = (translator: TranslatorFunctionType) =>
-  Yup.object().shape({
+const baseTaskValidations = (translator: TranslatorFunctionType) =>({
     type: Yup.object()
       .nullable()
       .required(translator(["validations", "type"])),
@@ -38,6 +37,14 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
         characterLengths.TASK_NOTES_LENGTH,
         translator(["validations", "notesLength"])
       ),
+    owner: Yup.number()
+      .nullable()
+      .required(translator(["validations", "owner"]))
+  });
+
+export const addTaskValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    ...baseTaskValidations(translator),
     dueDate: Yup.date()
       .nullable()
       .required(translator(["validations", "dueDate"]))
@@ -50,8 +57,13 @@ export const addTaskValidations = (translator: TranslatorFunctionType) =>
             isToday(value) || isAfter(startOfDay(value), startOfDay(new Date()))
           );
         }
-      ),
-    owner: Yup.number()
+      )
+  });
+
+export const editTaskValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    ...baseTaskValidations(translator),
+    dueDate: Yup.date()
       .nullable()
-      .required(translator(["validations", "owner"]))
+      .required(translator(["validations", "dueDate"])),
   });
