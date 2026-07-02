@@ -9,7 +9,6 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
 
-import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -52,17 +51,12 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const { data: openTaskData, isLoading: isTaskLoading } =
     useGetOpenTasksByCompany(selectedCompany?.id, !!selectedCompany?.id);
 
-  const {
-    data: completedTaskData,
-    isLoading: isCompletedTaskLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage
-  } = useGetCompletedTasksByCompany(
-    selectedCompany?.id,
-    TASK_PAGE_SIZE,
-    !!selectedCompany?.id
-  );
+  const { data: completedTaskData, isLoading: isCompletedTaskLoading } =
+    useGetCompletedTasksByCompany(
+      selectedCompany?.id,
+      TASK_PAGE_SIZE,
+      !!selectedCompany?.id
+    );
 
   const taskData = useMemo(
     () => [
@@ -71,12 +65,6 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     ],
     [openTaskData, completedTaskData]
   );
-
-  const { loadingRef } = useInfiniteScroll({
-    hasNextPage: hasNextPage ?? false,
-    isLoading: isFetchingNextPage,
-    onLoadMore: fetchNextPage
-  });
 
   const { data: dealData, isLoading: isDealLoading } = useGetDealsByCompany(
     selectedCompany?.id,
@@ -131,9 +119,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       case SidePanelTabEnum.DEALS:
         return <SidePanelDealSection deals={dealData?.items ?? []} />;
       case SidePanelTabEnum.TASKS:
-        return (
-          <SidePanelTasksSection tasks={taskData} loadingRef={loadingRef} />
-        );
+        return <SidePanelTasksSection tasks={taskData} />;
       case SidePanelTabEnum.CONTACTS:
         return <SidePanelCompanyContacts contacts={contactData?.items ?? []} />;
       default:
