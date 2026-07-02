@@ -117,11 +117,11 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return <SidePanelDealSection deals={dealData?.items ?? []} />;
+        return <SidePanelDealSection deals={dealData?.items} />;
       case SidePanelTabEnum.TASKS:
         return <SidePanelTasksSection tasks={taskData} />;
       case SidePanelTabEnum.CONTACTS:
-        return <SidePanelCompanyContacts contacts={contactData?.items ?? []} />;
+        return <SidePanelCompanyContacts contacts={contactData?.items} />;
       default:
         return null;
     }

@@ -21,13 +21,12 @@ interface Props {
 
 const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
-  const hasDeals = deals.length > 0;
 
   const handleAddDeal = () => {
     // Open the add deal side panel when clicked
   };
 
-  const accordionItems: AdvancedAccordionItem[] = deals.map((deal) => ({
+  const accordionItems: AdvancedAccordionItem[] = deals?.map((deal) => ({
     id: String(deal.id),
     header: <DealAccordionItemHeader deal={deal} />,
     badge: <DealAccordionItemBadge deal={deal} />,
@@ -36,7 +35,7 @@ const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
 
   return (
     <div className="flex flex-col gap-4">
-      {hasDeals ? (
+      {deals?.length > 0 ? (
         <div className="flex flex-col w-full">
           <AdvancedAccordion
             items={accordionItems}
