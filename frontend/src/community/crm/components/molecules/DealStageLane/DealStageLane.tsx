@@ -11,13 +11,13 @@ import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkelet
 import DealStageLaneHeader from "~community/crm/components/molecules/DealStageLane/DealStageLaneHeader/DealStageLaneHeader";
 import DraggableDealCard from "~community/crm/components/molecules/DraggableDealCard/DraggableDealCard";
 import { useLoadMoreStageDeals } from "~community/crm/hooks/useLoadMoreStageDeals";
-import type { CrmBoardDealType } from "~community/crm/types/BoardTypes";
+import type { CrmBoardDealSliceType } from "~community/crm/types/BoardTypes";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 export interface DealStageLaneProps {
   stage: CrmDealStageType;
-  deals: CrmBoardDealType[];
+  deals: CrmBoardDealSliceType[];
   isLoading: boolean;
   currentPage: number;
   hasNextPage: boolean;
@@ -80,7 +80,6 @@ const DealStageLane: FC<DealStageLaneProps> = ({
                 <DraggableDealCard
                   key={deal.id}
                   deal={deal}
-                  stageId={stage.id}
                   onDealClick={onDealClick}
                 />
               ))}

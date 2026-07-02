@@ -10,17 +10,17 @@ import {
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmCreateDealPayload,
+  CrmDealCreateResponseType,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
   CrmDealStageCreatePayload,
   CrmDealStageReorderItem,
   CrmDealStageType,
-  CrmDealStageUpdatePayload,
-  CrmDealType
+  CrmDealStageUpdatePayload
 } from "~community/crm/types/CommonTypes";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { crmBoardQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
+import { crmDealQueryKeys } from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
@@ -60,36 +60,23 @@ export const useGetDealStages = (
   });
 };
 
-interface CreateDealVariables {
-  payload: CrmCreateDealPayload;
-  isFromBoard?: boolean;
-}
-
-const createDeal = async ({
-  payload
-}: CreateDealVariables): Promise<CrmDealType> => {
+const createDeal = async (
+  payload: CrmCreateDealPayload
+): Promise<CrmDealCreateResponseType> => {
   const response = await authFetch.post(crmDealEndpoints.CREATE_DEAL, payload);
   return response?.data?.results?.[0];
 };
 
 export const useCreateDeal = (
-  onSuccess: () => void,
+  onSuccess: (createdDeal: CrmDealCreateResponseType) => void,
   onError: (error: unknown) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createDeal,
-    onSuccess: (_data, { isFromBoard }) => {
+    onSuccess: (createdDeal) => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
-      if (isFromBoard) {
-        queryClient.invalidateQueries({
-          queryKey: crmBoardQueryKeys.BOARD_INIT_DATA
-        });
-        queryClient.invalidateQueries({
-          queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES
-        });
-      }
-      onSuccess();
+      onSuccess(createdDeal);
     },
     onError
   });

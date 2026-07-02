@@ -5,10 +5,13 @@ import {
 } from "~community/crm/enums/common";
 import type {
   CrmBoardDealResponseType,
-  CrmBoardStageDealsResponseType
+  CrmBoardDealSliceType,
+  CrmBoardStageDealsResponseType,
+  CrmBoardStageDealsType
 } from "~community/crm/types/BoardTypes";
 import type {
   CrmContactLookup,
+  CrmDealCreateResponseType,
   CrmDealStageType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
@@ -17,48 +20,12 @@ import {
   applyMoveToStageMap,
   computeReorderWithinStage,
   getNeighbourDealIds,
+  mapCreatedDealToSlice,
   normalizeStageDeals,
   resolveBoardDeal
 } from "./kanbanUtil";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
-
-const mkRawDeal = (
-  id: number,
-  ownerId = 1,
-  contactId = 10
-): CrmBoardDealResponseType => ({
-  id,
-  name: `Deal ${id}`,
-  amount: "500",
-  ownerId,
-  companyId: null,
-  contactId,
-  priority: CrmPriorityEnum.LOW,
-  taskCount: 0
-});
-
-const mkStageEntry = (
-  stageId: number,
-  deals: CrmBoardDealResponseType[],
-  totalCount = deals.length
-): CrmBoardStageDealsResponseType => ({
-  stageId,
-  deals,
-  totalCount,
-  currentPage: 0,
-  totalPages: 1,
-  pageSize: 20,
-  hasNextPage: false
-});
-
-const mkStageType = (id: number): CrmDealStageType => ({
-  id,
-  name: `Stage ${id}`,
-  color: CrmDealStageColorsEnum.SKY,
-  orderIndex: id,
-  stageType: CrmDealStageEnum.OPEN
-});
 
 const OWNER: CrmOwner = {
   employeeId: 1,
@@ -79,6 +46,69 @@ const CONTACT_NO_COMPANY: CrmContactLookup = {
   company: null
 };
 
+const mkRawDeal = (
+  id: number,
+  ownerId = 1,
+  contactId = 10
+): CrmBoardDealResponseType => ({
+  id,
+  name: `Deal ${id}`,
+  amount: "500",
+  ownerId,
+  companyId: null,
+  contactId,
+  priority: CrmPriorityEnum.LOW,
+  taskCount: 0
+});
+
+const mkSliceDeal = (id: number, stageId = 10): CrmBoardDealSliceType => ({
+  id,
+  name: `Deal ${id}`,
+  contactName: "Acme Lead",
+  companyName: "Acme Corp",
+  owner: OWNER,
+  amount: "500",
+  priority: CrmPriorityEnum.LOW,
+  taskCount: 0,
+  stageId
+});
+
+const mkRawStageEntry = (
+  stageId: number,
+  deals: CrmBoardDealResponseType[],
+  totalCount = deals.length
+): CrmBoardStageDealsResponseType => ({
+  stageId,
+  deals,
+  totalCount,
+  currentPage: 0,
+  totalPages: 1,
+  pageSize: 20,
+  hasNextPage: false
+});
+
+const mkStageEntry = (
+  stageId: number,
+  deals: CrmBoardDealSliceType[],
+  totalCount = deals.length
+): CrmBoardStageDealsType => ({
+  stageId,
+  deals,
+  totalCount,
+  currentPage: 0,
+  totalPages: 1,
+  pageSize: 20,
+  hasNextPage: false
+});
+
+const mkStageType = (id: number): CrmDealStageType => ({
+  id,
+  name: `Stage ${id}`,
+  color: CrmDealStageColorsEnum.SKY,
+  orderIndex: id,
+  stageType: CrmDealStageEnum.OPEN
+});
+
 // ─── resolveBoardDeal ─────────────────────────────────────────────────────────
 
 const ownersById = (...owners: CrmOwner[]): Map<number, CrmOwner> =>
@@ -94,6 +124,7 @@ describe("resolveBoardDeal", () => {
     const raw = mkRawDeal(1, 1, 10);
     const result = resolveBoardDeal(
       raw,
+      7,
       ownersById(OWNER),
       contactsById(CONTACT_WITH_COMPANY)
     );
@@ -106,7 +137,8 @@ describe("resolveBoardDeal", () => {
       owner: OWNER,
       amount: "500",
       priority: CrmPriorityEnum.LOW,
-      taskCount: 0
+      taskCount: 0,
+      stageId: 7
     });
   });
 
@@ -114,6 +146,7 @@ describe("resolveBoardDeal", () => {
     const raw = mkRawDeal(2, 1, 20);
     const result = resolveBoardDeal(
       raw,
+      7,
       ownersById(OWNER),
       contactsById(CONTACT_NO_COMPANY)
     );
@@ -126,6 +159,7 @@ describe("resolveBoardDeal", () => {
     const raw = mkRawDeal(3, 1, 999);
     const result = resolveBoardDeal(
       raw,
+      7,
       ownersById(OWNER),
       contactsById(CONTACT_WITH_COMPANY)
     );
@@ -138,6 +172,7 @@ describe("resolveBoardDeal", () => {
     const raw = mkRawDeal(4, 999, 10);
     const result = resolveBoardDeal(
       raw,
+      7,
       ownersById(OWNER),
       contactsById(CONTACT_WITH_COMPANY)
     );
@@ -149,9 +184,9 @@ describe("resolveBoardDeal", () => {
 // ─── getNeighbourDealIds ──────────────────────────────────────────────────────
 
 describe("getNeighbourDealIds", () => {
-  const d1 = mkRawDeal(1);
-  const d2 = mkRawDeal(2);
-  const d3 = mkRawDeal(3);
+  const d1 = mkSliceDeal(1);
+  const d2 = mkSliceDeal(2);
+  const d3 = mkSliceDeal(3);
   const stageMap = [mkStageEntry(10, [d1, d2, d3])];
 
   it("should return null previousDealId for the first deal", () => {
@@ -193,58 +228,46 @@ describe("getNeighbourDealIds", () => {
 // ─── normalizeStageDeals ──────────────────────────────────────────────────────
 
 describe("normalizeStageDeals", () => {
-  const d1 = mkRawDeal(1);
-  const populatedEntry = mkStageEntry(1, [d1], 5);
+  const owners = [OWNER];
+  const contacts = [CONTACT_WITH_COMPANY];
 
-  it("should return existing stage data when the stage is present in stageDeals", () => {
-    const stages = [mkStageType(1)];
-    const result = normalizeStageDeals(stages, [populatedEntry]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0]).toBe(populatedEntry);
-  });
-
-  it("should return an empty skeleton when a stage is missing from stageDeals", () => {
-    const stages = [mkStageType(2)];
-    const result = normalizeStageDeals(stages, [populatedEntry]);
+  it("should map each stage entry's deals to slice deals", () => {
+    const entry = mkRawStageEntry(1, [mkRawDeal(1)], 5);
+    const result = normalizeStageDeals([entry], owners, contacts);
 
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
-      stageId: 2,
-      deals: [],
-      totalCount: 0,
-      currentPage: 0,
-      totalPages: 0,
-      pageSize: 0,
-      hasNextPage: false
+      ...entry,
+      deals: [mkSliceDeal(1, 1)]
     });
   });
 
-  it("should handle a mix of present and missing stages in order", () => {
-    const stages = [mkStageType(1), mkStageType(2), mkStageType(3)];
-    const result = normalizeStageDeals(stages, [populatedEntry]);
+  it("should preserve pagination fields and entry order, including empty stages", () => {
+    const first = mkRawStageEntry(1, [mkRawDeal(1)], 5);
+    const second = mkRawStageEntry(2, [], 0);
+    const result = normalizeStageDeals([first, second], owners, contacts);
 
-    expect(result).toHaveLength(3);
-    expect(result[0]).toBe(populatedEntry);
+    expect(result).toHaveLength(2);
+    expect(result[0].stageId).toBe(1);
+    expect(result[0].totalCount).toBe(5);
+    expect(result[0].deals).toEqual([mkSliceDeal(1, 1)]);
     expect(result[1].stageId).toBe(2);
     expect(result[1].deals).toEqual([]);
-    expect(result[2].stageId).toBe(3);
-    expect(result[2].deals).toEqual([]);
   });
 
-  it("should return an empty array when stages input is empty", () => {
-    expect(normalizeStageDeals([], [populatedEntry])).toEqual([]);
+  it("should return an empty array when there are no stage entries", () => {
+    expect(normalizeStageDeals([], owners, contacts)).toEqual([]);
   });
 });
 
 // ─── applyMoveToStageMap (cross-stage move) ───────────────────────────────────
 
 describe("applyMoveToStageMap", () => {
-  const d1 = mkRawDeal(1);
-  const d2 = mkRawDeal(2);
-  const d3 = mkRawDeal(3);
-  const d4 = mkRawDeal(4);
-  const d5 = mkRawDeal(5);
+  const d1 = mkSliceDeal(1, 1);
+  const d2 = mkSliceDeal(2, 1);
+  const d3 = mkSliceDeal(3, 2);
+  const d4 = mkSliceDeal(4, 2);
+  const d5 = mkSliceDeal(5, 3);
 
   const sourceStage = mkStageEntry(1, [d1, d2], 2);
   const targetStage = mkStageEntry(2, [d3, d4], 2);
@@ -259,11 +282,11 @@ describe("applyMoveToStageMap", () => {
     expect(source.totalCount).toBe(1);
   });
 
-  it("should insert the deal into the target stage and increment its totalCount", () => {
+  it("should insert the deal into the target stage with its stageId updated and increment totalCount", () => {
     const result = applyMoveToStageMap(stageMap, 1, 2, 1, d1, 1);
     const target = result.find((s) => s.stageId === 2)!;
 
-    expect(target.deals).toEqual([d3, d1, d4]);
+    expect(target.deals).toEqual([d3, { ...d1, stageId: 2 }, d4]);
     expect(target.totalCount).toBe(3);
   });
 
@@ -271,14 +294,14 @@ describe("applyMoveToStageMap", () => {
     const result = applyMoveToStageMap(stageMap, 1, 2, 0, d1, 1);
     const target = result.find((s) => s.stageId === 2)!;
 
-    expect(target.deals[0]).toBe(d1);
+    expect(target.deals[0]).toEqual({ ...d1, stageId: 2 });
   });
 
   it("should insert at the end when insertIndex equals target deals length", () => {
     const result = applyMoveToStageMap(stageMap, 1, 2, 2, d1, 1);
     const target = result.find((s) => s.stageId === 2)!;
 
-    expect(target.deals).toEqual([d3, d4, d1]);
+    expect(target.deals).toEqual([d3, d4, { ...d1, stageId: 2 }]);
   });
 
   it("should not modify unrelated stages", () => {
@@ -292,9 +315,9 @@ describe("applyMoveToStageMap", () => {
 // ─── computeReorderWithinStage (reorder within stage) ────────────────────────
 
 describe("computeReorderWithinStage", () => {
-  const d1 = mkRawDeal(1);
-  const d2 = mkRawDeal(2);
-  const d3 = mkRawDeal(3);
+  const d1 = mkSliceDeal(1);
+  const d2 = mkSliceDeal(2);
+  const d3 = mkSliceDeal(3);
   const sourceDeals = [d1, d2, d3];
 
   it("should reorder and return correct neighbours when moving to last position", () => {
@@ -327,5 +350,56 @@ describe("computeReorderWithinStage", () => {
 
   it("should return null when active and over resolve to the same index", () => {
     expect(computeReorderWithinStage(sourceDeals, 1, 1)).toBeNull();
+  });
+});
+
+// ─── mapCreatedDealToSlice ───────────────────────────────────────────────────
+
+describe("mapCreatedDealToSlice", () => {
+  const response: CrmDealCreateResponseType = {
+    id: 42,
+    name: "New Deal",
+    description: null,
+    stage: mkStageType(7),
+    priority: CrmPriorityEnum.HIGH,
+    orderIndex: "a0",
+    amount: "1500",
+    companyName: "Acme Corp",
+    contactName: "Acme Lead",
+    owner: OWNER
+  };
+
+  it("should build a slice from the created deal response", () => {
+    const result = mapCreatedDealToSlice(response);
+
+    expect(result).toEqual({
+      id: 42,
+      name: "New Deal",
+      contactName: "Acme Lead",
+      companyName: "Acme Corp",
+      owner: OWNER,
+      amount: "1500",
+      priority: CrmPriorityEnum.HIGH,
+      taskCount: 0,
+      stageId: 7
+    });
+  });
+
+  it("should read stageId from the nested stage", () => {
+    const result = mapCreatedDealToSlice({ ...response, stage: mkStageType(3) });
+
+    expect(result.stageId).toBe(3);
+  });
+
+  it("should default contactName to an empty string when absent", () => {
+    const result = mapCreatedDealToSlice({ ...response, contactName: null });
+
+    expect(result.contactName).toBe("");
+  });
+
+  it("should keep companyName null when absent", () => {
+    const result = mapCreatedDealToSlice({ ...response, companyName: null });
+
+    expect(result.companyName).toBeNull();
   });
 });

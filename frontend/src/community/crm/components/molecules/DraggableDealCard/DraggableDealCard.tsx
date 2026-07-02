@@ -4,22 +4,20 @@ import { FC } from "react";
 
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
-import { CrmBoardDealType } from "~community/crm/types/BoardTypes";
+import { CrmBoardDealSliceType } from "~community/crm/types/BoardTypes";
 
 interface DraggableDealCardProps {
-  deal: CrmBoardDealType;
-  stageId: number;
+  deal: CrmBoardDealSliceType;
   onDealClick: (dealId: number) => void;
 }
 
 const DraggableDealCard: FC<DraggableDealCardProps> = ({
   deal,
-  stageId,
   onDealClick
 }) => {
   const { setNodeRef, isDragging, attributes, listeners, transform, transition } = useSortable({
     id: deal.id,
-    data: { type: "deal", stageId, deal }
+    data: { type: "deal", stageId: deal.stageId, deal }
   });
 
   return (

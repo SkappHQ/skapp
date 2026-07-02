@@ -45,13 +45,8 @@ export interface CrmSidePanelSliceTypes extends Pick<
 
 export interface CrmBoardSliceTypes extends Pick<
   CrmStore,
-  | "boardStages"
-  | "setBoardStages"
-  | "boardContacts"
-  | "setBoardContacts"
-  | "boardOwners"
-  | "setBoardOwners"
   | "boardStageDeals"
   | "setBoardStageDeals"
   | "appendBoardStageDeals"
+  | "addDealToStage"
 > {}

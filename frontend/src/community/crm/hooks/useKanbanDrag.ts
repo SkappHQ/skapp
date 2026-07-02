@@ -11,8 +11,8 @@ import {
 } from "~community/crm/api/BoardApi";
 import { useCrmStore } from "~community/crm/store/store";
 import type {
-  CrmBoardDealResponseType,
-  CrmBoardStageDealsResponseType,
+  CrmBoardDealSliceType,
+  CrmBoardStageDealsType,
   KanbanDragData
 } from "~community/crm/types/BoardTypes";
 
@@ -27,8 +27,8 @@ import {
 } from "../utils/kanbanUtil";
 
 interface UseKanbanDragReturn {
-  stageMap: CrmBoardStageDealsResponseType[];
-  activeDeal: CrmBoardDealResponseType | null;
+  stageMap: CrmBoardStageDealsType[];
+  activeDeal: CrmBoardDealSliceType | null;
   overStageId: number | null;
   handleDragStart: (event: DragStartEvent) => void;
   handleDragOver: (event: DragOverEvent) => void;
@@ -36,21 +36,18 @@ interface UseKanbanDragReturn {
 }
 
 export const useKanbanDrag = (): UseKanbanDragReturn => {
-  
   const { boardStageDeals, setBoardStageDeals } = useCrmStore((store) => ({
     boardStageDeals: store.boardStageDeals,
     setBoardStageDeals: store.setBoardStageDeals
   }));
 
-  const [activeDeal, setActiveDeal] = useState<CrmBoardDealResponseType | null>(
+  const [activeDeal, setActiveDeal] = useState<CrmBoardDealSliceType | null>(
     null
   );
 
   const [overStageId, setOverStageId] = useState<number | null>(null);
 
-  const dragStartSnapshotRef = useRef<CrmBoardStageDealsResponseType[] | null>(
-    null
-  );
+  const dragStartSnapshotRef = useRef<CrmBoardStageDealsType[] | null>(null);
 
   const rollback = (): void => {
     if (dragStartSnapshotRef.current) {

@@ -40,6 +40,28 @@ export interface CrmBoardStageDealsResponseType {
   hasNextPage: boolean;
 }
 
+export interface CrmBoardStageDealsType {
+  stageId: number;
+  deals: CrmBoardDealSliceType[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  hasNextPage: boolean;
+}
+
+export interface CrmBoardDealSliceType {
+  id: number;
+  name: string;
+  contactName: string;
+  companyName: string | null;
+  owner: CrmOwner;
+  amount: string | null;
+  priority: CrmPriorityEnum;
+  taskCount: number;
+  stageId: number;
+}
+
 export interface CrmBoardDealsGroupedRequest {
   stageIds: number[];
   searchKeyword?: string;

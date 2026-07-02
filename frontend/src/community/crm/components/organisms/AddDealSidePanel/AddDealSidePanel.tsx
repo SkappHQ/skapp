@@ -18,9 +18,11 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
   CrmCreateDealPayload,
-  CrmDealAddFormTypes
+  CrmDealAddFormTypes,
+  CrmDealCreateResponseType
 } from "~community/crm/types/CommonTypes";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
+import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
 
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
@@ -35,13 +37,13 @@ const AddDealSidePanel: FC = () => {
   const {
     isCrmSidePanelOpen,
     setIsCrmSidePanelOpen,
-    preselectedStageId,
-    setPreselectedStageId
+    setPreselectedStageId,
+    addDealToStage
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    preselectedStageId: store.preselectedStageId,
-    setPreselectedStageId: store.setPreselectedStageId
+    setPreselectedStageId: store.setPreselectedStageId,
+    addDealToStage: store.addDealToStage
   }));
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
@@ -56,7 +58,8 @@ const AddDealSidePanel: FC = () => {
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const handleCreateDealSuccess = () => {
+  const handleCreateDealSuccess = (createdDeal: CrmDealCreateResponseType) => {
+    addDealToStage(mapCreatedDealToSlice(createdDeal));
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -93,7 +96,8 @@ const AddDealSidePanel: FC = () => {
       amount: values.amount,
       description: values.description
     };
-    createDeal({ payload, isFromBoard: preselectedStageId !== null });
+
+    createDeal(payload);
   };
 
   const formik = useFormik<CrmDealAddFormTypes>({
@@ -163,8 +167,16 @@ const AddDealSidePanel: FC = () => {
                 onChange={(e) => setFieldValue("description", e.target.value)}
                 onBlur={formik.handleBlur}
                 className="w-full h-30.25"
-                state={formik.touched.description && formik.errors.description ? "error" : "default"}
-                errorMessage={formik.touched.description ? formik.errors.description : undefined}
+                state={
+                  formik.touched.description && formik.errors.description
+                    ? "error"
+                    : "default"
+                }
+                errorMessage={
+                  formik.touched.description
+                    ? formik.errors.description
+                    : undefined
+                }
                 aria-label={translateText(["ariaLabels", "description"])}
               />
             </div>

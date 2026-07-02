@@ -199,6 +199,19 @@ export interface CrmDealType {
   isDeleted: boolean;
 }
 
+export interface CrmDealCreateResponseType {
+  id: number;
+  name: string;
+  description: string | null;
+  stage: CrmDealStageType;
+  priority: CrmPriorityEnum;
+  orderIndex: string;
+  amount: string | null;
+  companyName: string | null;
+  contactName: string | null;
+  owner: CrmOwner;
+}
+
 export interface CrmDealStageType {
   id: number;
   name: string;
@@ -220,8 +233,7 @@ export interface CrmDealStageCreatePayload {
   color: CrmDealStageColorsEnum;
 }
 
-export interface CrmDealStageUpdatePayload
-  extends Partial<CrmDealStageCreatePayload> {
+export interface CrmDealStageUpdatePayload extends Partial<CrmDealStageCreatePayload> {
   id: number;
 }
 

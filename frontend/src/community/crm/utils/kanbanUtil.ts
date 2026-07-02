@@ -3,20 +3,30 @@ import { arrayMove } from "@dnd-kit/sortable";
 
 import type {
   CrmBoardDealResponseType,
-  CrmBoardDealType,
-  CrmBoardStageDealsResponseType
+  CrmBoardDealSliceType,
+  CrmBoardStageDealsResponseType,
+  CrmBoardStageDealsType
 } from "~community/crm/types/BoardTypes";
 import type {
   CrmContactLookup,
-  CrmDealStageType,
+  CrmDealCreateResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 
+const buildOwnersById = (owners: CrmOwner[]): Map<number, CrmOwner> =>
+  new Map(owners.map((owner) => [owner.employeeId, owner]));
+
+const buildContactsById = (
+  contacts: CrmContactLookup[]
+): Map<number, CrmContactLookup> =>
+  new Map(contacts.map((contact) => [contact.id, contact]));
+
 export const resolveBoardDeal = (
   deal: CrmBoardDealResponseType,
+  stageId: number,
   ownersById: Map<number, CrmOwner>,
   contactsById: Map<number, CrmContactLookup>
-): CrmBoardDealType => {
+): CrmBoardDealSliceType => {
   const owner = ownersById.get(deal.ownerId)!;
   const contact = contactsById.get(deal.contactId);
 
@@ -28,20 +38,51 @@ export const resolveBoardDeal = (
     owner,
     amount: deal.amount,
     priority: deal.priority,
-    taskCount: deal.taskCount
+    taskCount: deal.taskCount,
+    stageId
   };
 };
 
+export const mapStageDealsToSlice = (
+  stageDeals: CrmBoardStageDealsResponseType,
+  owners: CrmOwner[],
+  contacts: CrmContactLookup[]
+): CrmBoardStageDealsType => {
+  const ownersById = buildOwnersById(owners);
+  const contactsById = buildContactsById(contacts);
+
+  return {
+    ...stageDeals,
+    deals: stageDeals.deals.map((deal) =>
+      resolveBoardDeal(deal, stageDeals.stageId, ownersById, contactsById)
+    )
+  };
+};
+
+export const mapCreatedDealToSlice = (
+  deal: CrmDealCreateResponseType
+): CrmBoardDealSliceType => ({
+  id: deal.id,
+  name: deal.name,
+  contactName: deal.contactName ?? "",
+  companyName: deal.companyName,
+  owner: deal.owner,
+  amount: deal.amount,
+  priority: deal.priority,
+  taskCount: 0,
+  stageId: deal.stage.id
+});
+
 export const findDealById = (
-  stageMap: CrmBoardStageDealsResponseType[],
+  stageMap: CrmBoardStageDealsType[],
   dealId: number
-): CrmBoardDealResponseType =>
+): CrmBoardDealSliceType =>
   stageMap
     .flatMap((stage) => stage?.deals)
     .find((deal) => deal?.id === dealId)!;
 
 export const findStageIdByDealId = (
-  stageMap: CrmBoardStageDealsResponseType[],
+  stageMap: CrmBoardStageDealsType[],
   dealId: number
 ): number | null => {
   const stage = stageMap.find((stage) =>
@@ -51,7 +92,7 @@ export const findStageIdByDealId = (
 };
 
 export const getNeighbourDealIds = (
-  stageMap: CrmBoardStageDealsResponseType[],
+  stageMap: CrmBoardStageDealsType[],
   stageId: number,
   dealId: number
 ): { previousDealId: number | null; nextDealId: number | null } => {
@@ -68,28 +109,20 @@ export const getNeighbourDealIds = (
 };
 
 export const normalizeStageDeals = (
-  stages: CrmDealStageType[],
-  stageDeals: CrmBoardStageDealsResponseType[]
-): CrmBoardStageDealsResponseType[] =>
-  stages.map(
-    (stage) =>
-      stageDeals.find((stageDeal) => stageDeal.stageId === stage.id) ?? {
-        stageId: stage.id,
-        deals: [],
-        totalCount: 0,
-        currentPage: 0,
-        totalPages: 0,
-        pageSize: 0,
-        hasNextPage: false
-      }
+  stageDeals: CrmBoardStageDealsResponseType[],
+  owners: CrmOwner[],
+  contacts: CrmContactLookup[]
+): CrmBoardStageDealsType[] =>
+  stageDeals.map((stageDeal) =>
+    mapStageDealsToSlice(stageDeal, owners, contacts)
   );
 
 export const computeReorderWithinStage = (
-  sourceDeals: CrmBoardDealResponseType[],
+  sourceDeals: CrmBoardDealSliceType[],
   activeDealId: number,
   overDealId: number
 ): {
-  reorderedDeals: CrmBoardDealResponseType[];
+  reorderedDeals: CrmBoardDealSliceType[];
   previousDealId: number | null;
   nextDealId: number | null;
 } | null => {
@@ -110,16 +143,16 @@ export const computeReorderWithinStage = (
 };
 
 export const applyReorderToStageMap = (
-  stageMap: CrmBoardStageDealsResponseType[],
+  stageMap: CrmBoardStageDealsType[],
   stageId: number,
-  reorderedDeals: CrmBoardDealResponseType[]
-): CrmBoardStageDealsResponseType[] =>
+  reorderedDeals: CrmBoardDealSliceType[]
+): CrmBoardStageDealsType[] =>
   stageMap.map((stage) =>
     stage.stageId === stageId ? { ...stage, deals: reorderedDeals } : stage
   );
 
 export const computeInsertIndex = (
-  targetDeals: CrmBoardDealResponseType[],
+  targetDeals: CrmBoardDealSliceType[],
   overDealId: number,
   activeCenterY: number | null,
   overCenterY: number | null
@@ -133,7 +166,7 @@ export const computeInsertIndex = (
 
 export const resolveInsertIndex = (
   isOverStageContainer: boolean,
-  targetDeals: CrmBoardDealResponseType[],
+  targetDeals: CrmBoardDealSliceType[],
   overDealId: number,
   activeRect: ClientRect | null,
   overRect: ClientRect | null
@@ -145,11 +178,16 @@ export const resolveInsertIndex = (
     : null;
   const overCenterY = overRect ? overRect.top + overRect.height / 2 : null;
 
-  return computeInsertIndex(targetDeals, overDealId, activeCenterY, overCenterY);
+  return computeInsertIndex(
+    targetDeals,
+    overDealId,
+    activeCenterY,
+    overCenterY
+  );
 };
 
 export const computeMoveNeighbors = (
-  targetDeals: CrmBoardDealResponseType[],
+  targetDeals: CrmBoardDealSliceType[],
   insertIndex: number
 ): { previousDealId: number | null; nextDealId: number | null } => {
   if (targetDeals.length === 0 || insertIndex === 0)
@@ -163,13 +201,13 @@ export const computeMoveNeighbors = (
 };
 
 export const applyMoveToStageMap = (
-  stageMap: CrmBoardStageDealsResponseType[],
+  stageMap: CrmBoardStageDealsType[],
   sourceStageId: number,
   targetStageId: number,
   insertIndex: number,
-  deal: CrmBoardDealResponseType,
+  deal: CrmBoardDealSliceType,
   activeDealId: number
-): CrmBoardStageDealsResponseType[] =>
+): CrmBoardStageDealsType[] =>
   stageMap.map((stage) => {
     if (stage.stageId === sourceStageId)
       return {
@@ -182,7 +220,7 @@ export const applyMoveToStageMap = (
         ...stage,
         deals: [
           ...stage.deals.slice(0, insertIndex),
-          deal,
+          { ...deal, stageId: targetStageId },
           ...stage.deals.slice(insertIndex)
         ],
         totalCount: stage.totalCount + 1
