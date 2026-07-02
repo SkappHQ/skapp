@@ -106,7 +106,22 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 		return jobFamilies;
 	}
 
-	
+	private Map<Long, Set<JobTitle>> getActiveJobTitlesByJobFamilyIds(List<Long> jobFamilyIds) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<JobFamilyTitle> criteriaQuery = criteriaBuilder.createQuery(JobFamilyTitle.class);
+		Root<JobFamilyTitle> root = criteriaQuery.from(JobFamilyTitle.class);
+		root.fetch(JobFamilyTitle_.jobTitle, JoinType.INNER);
+
+		criteriaQuery.where(root.get(JobFamilyTitle_.jobFamily).get(JobFamily_.jobFamilyId).in(jobFamilyIds),
+				criteriaBuilder.equal(root.get(JobFamilyTitle_.jobTitle).get(JobTitle_.isActive), true));
+
+		Map<Long, Set<JobTitle>> activeJobTitlesByFamilyId = new HashMap<>();
+		for (JobFamilyTitle row : entityManager.createQuery(criteriaQuery).getResultList()) {
+			activeJobTitlesByFamilyId.computeIfAbsent(row.getJobFamily().getJobFamilyId(), key -> new HashSet<>())
+				.add(row.getJobTitle());
+		}
+		return activeJobTitlesByFamilyId;
+	}
 
 	@Override
 	public List<JobFamilyOverviewDto> getJobFamilyOverview(List<Long> teamIds) {
