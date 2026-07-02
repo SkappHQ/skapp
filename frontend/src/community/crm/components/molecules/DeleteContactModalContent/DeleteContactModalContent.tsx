@@ -16,12 +16,12 @@ const DeleteContactModalContent: FC = () => {
   const {
     selectedContactId,
     setSelectedContactId,
-    setIsCrmSidePanelOpen,
+    closeCrmSidePanel,
     setIsContactModalOpen
   } = useCrmStore((store) => ({
     selectedContactId: store.selectedContactId,
     setSelectedContactId: store.setSelectedContactId,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    closeCrmSidePanel: store.closeCrmSidePanel,
     setIsContactModalOpen: store.setIsContactModalOpen
   }));
 
@@ -48,7 +48,7 @@ const DeleteContactModalContent: FC = () => {
     });
 
     handleCloseModal();
-    setIsCrmSidePanelOpen(false);
+    closeCrmSidePanel();
     setSelectedContactId(null);
   };
 

@@ -5,12 +5,14 @@ import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
+import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -20,14 +22,16 @@ const Contacts: NextPage = () => {
 
   const {
     isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen,
+    crmSidePanelType,
+    closeCrmSidePanel,
     setSelectedContactId,
     setIsContactModalOpen,
     setContactModalType,
     selectedContactId
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
+    closeCrmSidePanel: store.closeCrmSidePanel,
     setSelectedContactId: store.setSelectedContactId,
     setIsContactModalOpen: store.setIsContactModalOpen,
     setContactModalType: store.setContactModalType,
@@ -35,7 +39,7 @@ const Contacts: NextPage = () => {
   }));
 
   const handleCloseSidePanel = () => {
-    setIsCrmSidePanelOpen(false);
+    closeCrmSidePanel();
     setSelectedContactId(null);
   };
 
@@ -60,9 +64,13 @@ const Contacts: NextPage = () => {
         {selectedContactId && (
           <SidePanelWrapper>
             <ContactSidePanel
-              isOpen={isCrmSidePanelOpen}
+              isOpen={
+                isCrmSidePanelOpen &&
+                crmSidePanelType === CrmSidePanelTypes.CONTACT_SIDE_PANEL
+              }
               onClose={handleCloseSidePanel}
             />
+            <AddDealSidePanel />
           </SidePanelWrapper>
         )}
 

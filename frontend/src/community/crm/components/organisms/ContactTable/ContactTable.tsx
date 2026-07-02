@@ -26,6 +26,7 @@ import {
 } from "~community/crm/constants/contactConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 import {
   formatPhoneNumber,
@@ -51,12 +52,10 @@ export const ContactTable: FC = () => {
 
   const contacts = data?.pages.flatMap((page) => page.items);
 
-  const { setSelectedContactId, setIsCrmSidePanelOpen } = useCrmStore(
-    (store) => ({
-      setSelectedContactId: store.setSelectedContactId,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-    })
-  );
+  const { setSelectedContactId, openCrmSidePanel } = useCrmStore((store) => ({
+    setSelectedContactId: store.setSelectedContactId,
+    openCrmSidePanel: store.openCrmSidePanel
+  }));
 
   const hasActiveFilters =
     debouncedSearch.trim() !== "" || selectedCompany !== undefined;
@@ -248,7 +247,7 @@ export const ContactTable: FC = () => {
         }}
         onRowClick={(row) => {
           setSelectedContactId(row.id);
-          setIsCrmSidePanelOpen(true);
+          openCrmSidePanel(CrmSidePanelTypes.CONTACT_SIDE_PANEL);
         }}
       />
     </div>

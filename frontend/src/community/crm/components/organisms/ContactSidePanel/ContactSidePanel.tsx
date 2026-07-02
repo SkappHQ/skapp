@@ -40,17 +40,19 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   );
 
   const {
-    setIsCrmSidePanelOpen,
+    closeCrmSidePanel,
     setSelectedContactId,
     selectedContactId,
     setContactModalType,
-    setIsContactModalOpen
+    setIsContactModalOpen,
+    setPreselectedContact
   } = useCrmStore((store) => ({
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
+    closeCrmSidePanel: store.closeCrmSidePanel,
     setSelectedContactId: store.setSelectedContactId,
     selectedContactId: store.selectedContactId,
     setContactModalType: store.setContactModalType,
-    setIsContactModalOpen: store.setIsContactModalOpen
+    setIsContactModalOpen: store.setIsContactModalOpen,
+    setPreselectedContact: store.setPreselectedContact
   }));
 
   const menuItems: MenuItemProps[] = useMemo(
@@ -94,8 +96,9 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       title: translateText(["errors", "contactNotFoundTitle"]),
       description: translateText(["errors", "contactNotFoundDescription"])
     });
-    setIsCrmSidePanelOpen(false);
+    closeCrmSidePanel();
     setSelectedContactId(null);
+    setPreselectedContact(null);
   };
 
   const {
@@ -110,13 +113,21 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   const handleClose = (): void => {
     setSelectedContactId(null);
-    setIsCrmSidePanelOpen(false);
+    closeCrmSidePanel();
+    setPreselectedContact(null);
   };
 
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return <SidePanelDealSection deals={contact?.deals ?? []} />;
+        return (
+          <SidePanelDealSection
+            deals={contact?.deals ?? []}
+            preselectedContact={
+              contact ? { id: contact.id, name: contact.name } : null
+            }
+          />
+        );
       case SidePanelTabEnum.TASKS:
         return (
           <SidePanelTasksSection

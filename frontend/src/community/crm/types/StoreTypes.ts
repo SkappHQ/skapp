@@ -4,6 +4,7 @@ import {
   PreselectedContact
 } from "./CommonTypes";
 import { CrmModalTypes } from "./ModalTypes";
+import { CrmSidePanelTypes } from "./SidePanelTypes";
 
 interface ActionTypes {
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
@@ -18,6 +19,10 @@ interface ActionTypes {
   setTasks: (tasks: CrmTaskDetailType[]) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
   setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
+  openCrmSidePanel: (type: CrmSidePanelTypes) => void;
+  pushCrmSidePanel: (type: CrmSidePanelTypes) => void;
+  popCrmSidePanel: () => void;
+  closeCrmSidePanel: () => void;
   setSelectedContactId: (contactId: number | null) => void;
 }
 
@@ -33,5 +38,7 @@ export interface CrmStore extends ActionTypes {
   selectedTaskId: number | null;
   tasks: CrmTaskDetailType[];
   isCrmSidePanelOpen: boolean;
+  crmSidePanelType: CrmSidePanelTypes | null;
+  previousCrmSidePanelType: CrmSidePanelTypes | null;
   selectedContactId: number | null;
 }
