@@ -11,6 +11,7 @@ import {
   CrmCompletedTaskResponseType,
   CrmTaskCategoryResponseType,
   CrmTaskCreatePayload,
+  CrmTaskDetailType,
   CrmTaskResponseType,
   CrmTaskUpdatePayload,
   UpdateTaskStatusPayload
@@ -195,7 +196,7 @@ export const useGetTaskTypes = () => {
   });
 };
 
-const fetchTaskById = async (id: number) => {
+const fetchTaskById = async (id: number): Promise<CrmTaskDetailType> => {
   const response = await authFetch.get(taskEndpoints.GET_TASK_BY_ID(id));
   return response?.data?.results?.[0];
 }
