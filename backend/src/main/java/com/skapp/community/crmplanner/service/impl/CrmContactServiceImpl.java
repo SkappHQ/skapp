@@ -45,7 +45,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -323,12 +322,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 			.toList();
 		dto.setDeals(dealDtos);
 
-		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream().map(task -> {
-			CrmTaskDetailResponseDto taskDto = crmMapper.crmTaskToCrmTaskDetailResponseDto(task);
-			taskDto.setIsOverdue(!Boolean.TRUE.equals(task.getIsCompleted()) && task.getDueAt() != null
-					&& task.getDueAt().isBefore(LocalDate.now().atStartOfDay()));
-			return taskDto;
-		}).toList();
+		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream()
+			.map(crmMapper::crmTaskToCrmTaskDetailResponseDto)
+			.toList();
 		dto.setTasks(taskDtos);
 
 		log.info("getContactById: execution ended");

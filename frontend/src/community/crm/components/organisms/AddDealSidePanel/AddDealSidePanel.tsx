@@ -1,6 +1,6 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { FC, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -14,12 +14,13 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
+import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
   CrmCreateDealPayload,
   CrmDealAddFormTypes
 } from "~community/crm/types/CommonTypes";
-import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
 
 import DealNameStageSection from "./DealNameStageSection";
@@ -29,13 +30,24 @@ const AddDealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const { setToastMessage } = useToast();
 
-  const { isCrmSidePanelOpen, setIsCrmSidePanelOpen } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-  }));
-
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
+
+  const { isCrmSidePanelOpen, crmSidePanelType, preselectedContact, popCrmSidePanel } =
+    useCrmStore((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      preselectedContact: store.preselectedContact,
+      popCrmSidePanel: store.popCrmSidePanel
+    }));
+
+  const isOpen =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL;
+
+  useEffect(() => {
+    setSelectedContact(preselectedContact);
+  }, [preselectedContact]);
 
   const [contactSearchTerm, setContactSearchTerm] = useState<string>("");
   const debouncedContactSearch = useDebounce(
@@ -45,7 +57,7 @@ const AddDealSidePanel: FC = () => {
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isCrmSidePanelOpen
+    isOpen
   );
   const contacts = contactLookupData?.items ?? [];
 
@@ -58,7 +70,7 @@ const AddDealSidePanel: FC = () => {
     });
     formik.resetForm();
     setSelectedContact(null);
-    setIsCrmSidePanelOpen(false);
+    popCrmSidePanel();
   };
 
   const handleCreateDealError = () => {
@@ -88,19 +100,25 @@ const AddDealSidePanel: FC = () => {
     createDeal(payload);
   };
 
-  const formik = useFormik<CrmDealAddFormTypes>({
-    initialValues: {
+  const initialValues: CrmDealAddFormTypes = useMemo(
+    () => ({
       name: "",
       stageId: "",
-      contactId: "",
+      contactId: preselectedContact ? String(preselectedContact.id) : "",
       ownerId: "",
       priority: CrmPriorityEnum.LOW,
       amount: "",
       description: ""
-    },
+    }),
+    [preselectedContact]
+  );
+
+  const formik = useFormik<CrmDealAddFormTypes>({
+    initialValues,
     validationSchema: addDealValidations(translateText),
     validateOnChange: true,
     validateOnBlur: false,
+    enableReinitialize: true,
     onSubmit: handleSubmit
   });
 
@@ -109,13 +127,13 @@ const AddDealSidePanel: FC = () => {
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
-    setIsCrmSidePanelOpen(false);
+    popCrmSidePanel();
   };
 
   return (
     <div className="crm-deal-side-panel">
       <SidePanel
-        isOpen={isCrmSidePanelOpen}
+        isOpen={isOpen}
         onClose={handleClose}
         header={
           <span className="pl-2 text-2xl font-bold text-black">
@@ -154,8 +172,16 @@ const AddDealSidePanel: FC = () => {
                 onChange={(e) => setFieldValue("description", e.target.value)}
                 onBlur={formik.handleBlur}
                 className="w-full h-30.25"
-                state={formik.touched.description && formik.errors.description ? "error" : "default"}
-                errorMessage={formik.touched.description ? formik.errors.description : undefined}
+                state={
+                  formik.touched.description && formik.errors.description
+                    ? "error"
+                    : "default"
+                }
+                errorMessage={
+                  formik.touched.description
+                    ? formik.errors.description
+                    : undefined
+                }
                 aria-label={translateText(["ariaLabels", "description"])}
               />
             </div>

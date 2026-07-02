@@ -4,10 +4,12 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import DealsSidePanelController from "~community/crm/components/organisms/DealsSidePanelController/DealsSidePanelController";
+import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
+import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
+import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
-import { DealSidePanelTypes } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -15,16 +17,15 @@ const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { setIsCrmSidePanelOpen, setSelectedDealId, setActiveDealSidePanel } = useCrmStore((store) => ({
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedDealId: store.setSelectedDealId,
-    setActiveDealSidePanel: store.setActiveDealSidePanel
+  const { openCrmSidePanel, selectedDealId } = useCrmStore((store) => ({
+    openCrmSidePanel: store.openCrmSidePanel,
+    selectedDealId: store.selectedDealId
   }));
 
-  const handleAddDealClick = () => {
-    setSelectedDealId(null);
-    setActiveDealSidePanel(DealSidePanelTypes.ADD_DEAL);
-    setIsCrmSidePanelOpen(true);
+  const handleAddDeal = () => {
+    guardCrmCreate(CrmLimitResource.DEALS, () =>
+      openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL)
+    );
   };
 
   return (
@@ -33,14 +34,15 @@ const Deals: NextPage = () => {
       title={translateText(["title"])}
       primaryButtonText={translateText(["addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
-      onPrimaryButtonClick={() =>
-        guardCrmCreate(CrmLimitResource.DEALS, handleAddDealClick)
-      }
       isPrimaryBtnLoading={isCheckingCrmLimit}
       module={Modules.CRM}
+      onPrimaryButtonClick={handleAddDeal}
     >
       <>
-        <DealsSidePanelController />
+        <SidePanelWrapper>
+          {selectedDealId !== null && <DealSidePanel />}
+          <AddDealSidePanel />
+        </SidePanelWrapper>
         <DealsSection />
       </>
     </ContentLayout>

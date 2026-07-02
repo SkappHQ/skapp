@@ -3,8 +3,8 @@ import {
   CrmTaskDetailType,
   PreselectedContact
 } from "./CommonTypes";
-import { DealSidePanelTypes } from "~community/crm/enums/common";
 import { CrmModalTypes } from "./ModalTypes";
+import { CrmSidePanelTypes } from "./SidePanelTypes";
 
 interface ActionTypes {
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
@@ -18,10 +18,12 @@ interface ActionTypes {
   setSelectedTaskId: (taskId: number | null) => void;
   setTasks: (tasks: CrmTaskDetailType[]) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
-  setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
+  openCrmSidePanel: (type: CrmSidePanelTypes) => void;
+  pushCrmSidePanel: (type: CrmSidePanelTypes) => void;
+  popCrmSidePanel: () => void;
+  closeCrmSidePanel: () => void;
   setSelectedContactId: (contactId: number | null) => void;
   setSelectedDealId: (dealId: number | null) => void;
-  setActiveDealSidePanel: (panel: DealSidePanelTypes | null) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -36,7 +38,8 @@ export interface CrmStore extends ActionTypes {
   selectedTaskId: number | null;
   tasks: CrmTaskDetailType[];
   isCrmSidePanelOpen: boolean;
+  crmSidePanelType: CrmSidePanelTypes | null;
+  previousCrmSidePanelType: CrmSidePanelTypes | null;
   selectedContactId: number | null;
   selectedDealId: number | null;
-  activeDealSidePanel: DealSidePanelTypes | null;
 }

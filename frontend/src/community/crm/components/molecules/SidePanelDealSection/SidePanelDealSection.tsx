@@ -6,10 +6,17 @@ import {
   PlusIcon,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import React from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
+import { useCrmStore } from "~community/crm/store/store";
+import {
+  DetailPanelDealResponseType,
+  PreselectedContact
+} from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 import DealAccordionItemBadge from "./DealAccordionItemBadge";
 import DealAccordionItemContent from "./DealAccordionItemContent";
@@ -17,14 +24,27 @@ import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
   deals: DetailPanelDealResponseType[];
+  preselectedContact?: PreselectedContact | null;
 }
 
-const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
+const SidePanelDealSection: FC<Props> = ({
+  deals,
+  preselectedContact
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
+
+  const { pushCrmSidePanel, setPreselectedContact } = useCrmStore((store) => ({
+    pushCrmSidePanel: store.pushCrmSidePanel,
+    setPreselectedContact: store.setPreselectedContact
+  }));
 
   const handleAddDeal = () => {
-    // Open the add deal side panel when clicked
+    guardCrmCreate(CrmLimitResource.DEALS, () => {
+      setPreselectedContact(preselectedContact ?? null);
+      pushCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
+    });
   };
 
   const accordionItems: AdvancedAccordionItem[] = deals.map((deal) => ({
@@ -48,6 +68,8 @@ const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
               variant="line"
               size="sm"
               onClick={handleAddDeal}
+              disabled={isCheckingCrmLimit}
+              isLoading={isCheckingCrmLimit}
               aria-label={translateText(["ariaLabels", "addDealBtn"])}
               icon={<PlusIcon />}
               iconPosition="end"
@@ -65,6 +87,8 @@ const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
             children: translateText(["addDealBtn"]),
             variant: "tertiary",
             onClick: handleAddDeal,
+            disabled: isCheckingCrmLimit,
+            isLoading: isCheckingCrmLimit,
             icon: <PlusIcon />,
             "aria-label": translateText(["ariaLabels", "addDealBtn"])
           }}

@@ -75,11 +75,6 @@ export enum CrmDealStageColorsEnum {
   INDIGO = "INDIGO"
 }
 
-export enum DealSidePanelTypes {
-  ADD_DEAL = "ADD_DEAL",
-  DEAL_DETAIL = "DEAL_DETAIL"
-}
-
 export enum DealViewEnum {
   LIST = "LIST",
   KANBAN = "KANBAN"

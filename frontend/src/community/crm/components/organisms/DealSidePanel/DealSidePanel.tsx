@@ -14,6 +14,7 @@ import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal
 import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -24,19 +25,25 @@ const DealSidePanel: FC = () => {
 
   const {
     isCrmSidePanelOpen,
+    crmSidePanelType,
     selectedDealId,
     setSelectedDealId,
-    setIsCrmSidePanelOpen
+    closeCrmSidePanel
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
     selectedDealId: store.selectedDealId,
     setSelectedDealId: store.setSelectedDealId,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    closeCrmSidePanel: store.closeCrmSidePanel
   }));
+
+  const isOpen =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL;
 
   const handleClose = (): void => {
     setSelectedDealId(null);
-    setIsCrmSidePanelOpen(false);
+    closeCrmSidePanel();
   };
 
   const { data: deal, isLoading } = useGetDealById(selectedDealId!);
@@ -74,7 +81,7 @@ const DealSidePanel: FC = () => {
   return (
     <>
       <SidePanel
-        isOpen={isCrmSidePanelOpen}
+        isOpen={isOpen}
         onClose={handleClose}
         closeOnBackdropClick
         header={
@@ -126,7 +133,7 @@ const DealSidePanel: FC = () => {
                   />
                 </div>
               </div>
-              <DealPropertiesSidebar deal={deal!} isOpen={isCrmSidePanelOpen} />
+              <DealPropertiesSidebar deal={deal!} isOpen={isOpen} />
             </div>
           </div>
         )}
