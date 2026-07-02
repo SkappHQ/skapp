@@ -137,7 +137,8 @@ const AddDealSidePanel: FC = () => {
     resetForm();
     setSelectedContact(null);
     setPreselectedContact(null);
-    closeCrmSidePanel();
+    // closeCrmSidePanel();
+    popCrmSidePanel();
   };
 
   return (
