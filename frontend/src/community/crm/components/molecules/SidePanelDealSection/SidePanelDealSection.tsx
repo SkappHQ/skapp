@@ -17,9 +17,15 @@ import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
   deals: CrmDealType[];
+  emptyViewHeight?: string;
+  showEmptyViewButton?: boolean;
 }
 
-const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
+const SidePanelDealSection: React.FC<Props> = ({
+  deals,
+  emptyViewHeight = "14.25rem",
+  showEmptyViewButton = true
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
 
@@ -59,21 +65,27 @@ const SidePanelDealSection: React.FC<Props> = ({ deals }) => {
           </div>
         </div>
       ) : (
-        <EmptyDataView
-          icon={<SearchIcon />}
-          title={translateText(["emptyTitle"])}
-          description={translateText(["emptyDescription"])}
-          button={{
-            children: translateText(["addDealBtn"]),
-            variant: "tertiary",
-            onClick: handleAddDeal,
-            icon: <PlusIcon />,
-            "aria-label": translateText(["ariaLabels", "addDealBtn"])
-          }}
-          className={{
-            wrapper: "h-[228px] bg-secondary-background rounded-lg"
-          }}
-        />
+        <div style={{ height: emptyViewHeight }}>
+          <EmptyDataView
+            icon={<SearchIcon />}
+            title={translateText(["emptyTitle"])}
+            description={translateText(["emptyDescription"])}
+            button={
+              showEmptyViewButton
+                ? {
+                    children: translateText(["addDealBtn"]),
+                    variant: "tertiary",
+                    onClick: handleAddDeal,
+                    icon: <PlusIcon />,
+                    "aria-label": translateText(["ariaLabels", "addDealBtn"])
+                  }
+                : undefined
+            }
+            className={{
+              wrapper: "h-full bg-secondary-background rounded-lg"
+            }}
+          />
+        </div>
       )}
     </div>
   );
