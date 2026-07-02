@@ -50,8 +50,12 @@ describe("Validation Functions", () => {
     expect(regex.test("0123456")).toBe(true);
     expect(regex.test("0123456789012345")).toBe(false);
     expect(regex.test("012345678901234")).toBe(true);
-    expect(regex.test("+94712345678")).toBe(false);
-
+    expect(regex.test("+94712345678")).toBe(true);
+    expect(regex.test("(071)2345678")).toBe(true);
+    expect(regex.test("+94(71)2345678")).toBe(true);
+    expect(regex.test("071 234 5678")).toBe(false);
+    expect(regex.test("071-234-5678")).toBe(false);
+    expect(regex.test("abc1234567")).toBe(false);
   });
 
   test("isValidNameWithAccentsAndApostrophes()", () => {
