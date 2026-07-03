@@ -14,14 +14,11 @@ const CrmSidePanelSlice = (set: SetType<CrmStore>) => ({
       preselectedContact: null
     }),
   pushCrmSidePanel: (type: CrmSidePanelTypes) =>
-    set((state) => {
-      if (state.crmSidePanelType === type) return state;
-      return {
-        isCrmSidePanelOpen: true,
-        crmSidePanelType: type,
-        previousCrmSidePanelType: state.crmSidePanelType
-      };
-    }),
+    set((state) => ({
+      isCrmSidePanelOpen: true,
+      crmSidePanelType: type,
+      previousCrmSidePanelType: state.crmSidePanelType
+    })),
   popCrmSidePanel: () =>
     set((state) => ({
       crmSidePanelType: state.previousCrmSidePanelType,
