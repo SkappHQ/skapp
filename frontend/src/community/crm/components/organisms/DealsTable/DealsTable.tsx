@@ -14,12 +14,12 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { DefaultStageNameEnum } from "~community/crm/enums/common";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
-import { DefaultStageNameEnum } from "~community/crm/enums/common";
 
 interface OwnerCellProps {
   owner: CrmDealListItem["owner"];
@@ -181,7 +181,9 @@ const DealsTable: FC<Props> = ({
                 className="size-2 rounded-full shrink-0"
                 style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
               />
-              <span className="body2">{getStageByName(deal.stageName as DefaultStageNameEnum)}</span>
+              <span className="body2">
+                {getStageByName(deal.stageName as DefaultStageNameEnum)}
+              </span>
             </div>
           ),
           companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
@@ -199,14 +201,14 @@ const DealsTable: FC<Props> = ({
 
   if (isLoading) {
     return (
-      <div className="w-fit h-150 rounded-lg shadow-lg overflow-hidden">
+      <div className="w-fit h-full rounded-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="h-150 rounded-lg shadow-lg">
+    <div ref={containerRef} className="rounded-lg h-full overflow-y-auto">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}

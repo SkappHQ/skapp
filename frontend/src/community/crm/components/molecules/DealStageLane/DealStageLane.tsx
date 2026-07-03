@@ -67,7 +67,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
       totalCount={totalCount}
       isOver={isOver}
     >
-      <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-3 pb-3">
+      <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 h-full overflow-y-auto overflow-x-hidden px-3 pb-3">
         {isLoading ? (
           <DealCardSkeleton count={3} />
         ) : (

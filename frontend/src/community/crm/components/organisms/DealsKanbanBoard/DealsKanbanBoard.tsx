@@ -77,7 +77,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full overflow-hidden">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -85,7 +85,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex h-160 items-stretch gap-4 overflow-x-auto py-2">
+        <div className="flex items-stretch gap-4 h-full overflow-x-auto py-2">
           {boardStages.map((stage) => {
             const stageDeals = stageMap.find((s) => s.stageId === stage.id);
             const deals = stageDeals?.deals ?? [];
