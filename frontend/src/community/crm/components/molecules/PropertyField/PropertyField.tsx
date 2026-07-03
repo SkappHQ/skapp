@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { InputField } from '@rootcodelabs/skapp-ui';
+import { InputField } from "@rootcodelabs/skapp-ui";
 import {
   ChangeEvent,
   FC,
   KeyboardEvent,
   useEffect,
   useRef,
-  useState,
-} from 'react';
+  useState
+} from "react";
 
-import { useTranslator } from '~community/common/hooks/useTranslator';
+import { useTranslator } from "~community/common/hooks/useTranslator";
 
-type PropertyFieldInputType = 'text' | 'number';
+type PropertyFieldInputType = "text" | "number";
 
 interface PropertyFieldProps {
   label: string;
@@ -28,17 +28,18 @@ interface PropertyFieldProps {
 
 const PropertyField: FC<PropertyFieldProps> = ({
   label,
-  value = '',
+  value = "",
   placeholder,
-  inputType = 'text',
+  inputType = "text",
   min,
   max,
   errorMessage,
   onChange,
-  onSave,
+  onSave
 }) => {
-  const translateText = useTranslator('crmModule', 'deals', 'sidePanel');
-  const resolvedPlaceholder = placeholder ?? translateText(['placeholders', 'none']);
+  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const resolvedPlaceholder =
+    placeholder ?? translateText(["placeholders", "none"]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>(value);
   const inputRef = useRef<HTMLDivElement>(null);
@@ -65,11 +66,11 @@ const PropertyField: FC<PropertyFieldProps> = ({
     };
 
     if (isEditing) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isEditing, inputValue, value]);
 
@@ -88,8 +89,8 @@ const PropertyField: FC<PropertyFieldProps> = ({
   };
 
   const handleSave = () => {
-    setIsEditing(false);
     if (onSave) {
+      setIsEditing(false);
       onSave(inputValue);
       setInputValue(value);
     } else if (onChange) {
@@ -98,9 +99,9 @@ const PropertyField: FC<PropertyFieldProps> = ({
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSave();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsEditing(false);
       setInputValue(value);
     }
@@ -118,7 +119,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
         {isEditing ? (
           <div ref={inputRef} className="w-full">
             <InputField
-              customStyles={{ background: 'secondary-background' }}
+              customStyles={{ background: "secondary-background" }}
               value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
@@ -138,12 +139,12 @@ const PropertyField: FC<PropertyFieldProps> = ({
             className="w-full min-w-0 min-h-[32px] px-3 rounded-lg flex items-center cursor-pointer hover:bg-secondary-background transition-colors"
             onClick={handleClick}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') handleClick();
+              if (e.key === "Enter" || e.key === " ") handleClick();
             }}
           >
             <div
               className={`body2 tracking-wide truncate ${
-                inputValue ? 'text-black' : 'text-secondary-icon'
+                inputValue ? "text-black" : "text-secondary-icon"
               }`}
               title={displayValue}
             >
