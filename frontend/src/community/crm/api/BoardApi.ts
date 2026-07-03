@@ -49,13 +49,16 @@ export const useGetDealsGroupedByStages = (
   });
 };
 
-export const useFetchMoreStageDeals = (
-  onSuccess: (deals: CrmBoardStageDealsResponseType[]) => void
-) => {
-  return useMutation({
-    mutationFn: fetchDealsGroupedByStages,
-    onSuccess
+export const useFetchMoreStageDeals = () => {
+  const {
+    mutate,
+    isPending,
+    data: results
+  } = useMutation({
+    mutationFn: fetchDealsGroupedByStages
   });
+
+  return { mutate, isPending, results };
 };
 
 const reorderDealWithinStage = async (

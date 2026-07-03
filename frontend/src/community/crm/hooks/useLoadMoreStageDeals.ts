@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import {
   useFetchMoreStageDeals,
@@ -30,17 +30,19 @@ export const useLoadMoreStageDeals = ({
 
   const { data: initData } = useGetBoardInitData();
 
-  const { mutate, isPending } = useFetchMoreStageDeals(([result]) => {
-    if (result) {
+  const { mutate, isPending, results } = useFetchMoreStageDeals();
+
+  useEffect(() => {
+    if (results) {
       appendBoardStageDeals(
         mapStageDealsToSlice(
-          result,
+          results[0],
           initData?.owners ?? [],
           initData?.contacts ?? []
         )
       );
     }
-  });
+  }, [results]);
 
   const handleLoadMore = useCallback(() => {
     mutate({
