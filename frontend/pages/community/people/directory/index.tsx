@@ -61,7 +61,7 @@ const Directory: NextPage = () => {
         }}
         onSecondaryButtonClick={() => {
           setIsDirectoryModalOpen(true);
-          setDirectoryModalType(DirectoryModalTypes.IMPORT_PEOPLE_SELECT);
+          setDirectoryModalType(DirectoryModalTypes.UPLOAD_TYPE_SELECT);
         }}
         isDividerVisible
       >
