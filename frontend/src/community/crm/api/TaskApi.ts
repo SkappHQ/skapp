@@ -84,12 +84,15 @@ export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateTaskStatus,
-    onSuccess: () => {
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_TASK_BY_ID(id)
+      });
     },
     onError
   });
@@ -170,7 +173,7 @@ export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editTask,
-    onSuccess: async () => {
+    onSuccess: async ({ id }) => {
       await queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_OPEN_TASKS
       });
@@ -179,6 +182,9 @@ export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
       });
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_TASK_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_TASK_BY_ID(id)
       });
       onSuccess();
     },

@@ -535,9 +535,9 @@
       "contactName": "Contact",
       "noContact": "No contact linked",
       "priorityOptions": {
-        "HIGH": "High",
-        "MEDIUM": "Medium",
-        "LOW": "Low"
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
       }
     },
     "deleteTaskModal": {

@@ -35,15 +35,14 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
         disabled={task.isCompleted}
         icon={
           task.isCompleted ? (
-            <Icon
-              name={IconName.TICK_ICON}
-              fill="var(--color-secondary-icon)"
-              width="16"
-              height="16"
-            />
+          <Icon
+            name={IconName.TICK_ICON}
+            fill="var(--color-secondary-icon)"
+            width="16"
+            height="16"
+          />
           ) : undefined
         }
-        iconPosition="end"
       >
         {task.isCompleted
           ? translateText(["statusDone"])
@@ -73,7 +72,7 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
           >
             <span className="flex items-center gap-1">
               {priorityConfig.icon}
-              {translateText(["priorityOptions", task.priority])}
+              {translateText(["priorityOptions", task.priority.toLowerCase()])}
             </span>
           </Label>
         </PropertyRow>

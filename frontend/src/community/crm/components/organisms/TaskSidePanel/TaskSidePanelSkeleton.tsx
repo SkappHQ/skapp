@@ -24,10 +24,9 @@ const TaskSidePanelSkeleton: FC = () => (
           <SkeletonShape className="h-3.5 w-24" />
           <hr className="border-secondary-accent" />
           <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent overflow-hidden">
-            <TaskRowSkeleton />
-            <TaskRowSkeleton />
-            <TaskRowSkeleton />
-            <TaskRowSkeleton />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <TaskRowSkeleton key={`task-row-skeleton-${i}`} />
+            ))}
           </div>
         </div>
       </div>

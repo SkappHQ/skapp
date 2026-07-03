@@ -7,7 +7,9 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useGetTaskById,
   useUpdateTaskCompletion
@@ -24,6 +26,9 @@ import TaskSidePanelSkeleton from "./TaskSidePanelSkeleton";
 
 const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
+  const translateTaskText = useTranslator("crmModule", "tasks");
+
+  const { setToastMessage } = useToast();
 
   const { setIsTaskModalOpen, setTaskModalType, selectedTaskId } = useCrmStore(
     (store) => ({
@@ -38,8 +43,19 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setIsTaskModalOpen(true);
   };
 
+  const handleUpdateTaskCompletionError = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateTaskText(["toggleErrorTitle"]),
+      description: translateTaskText(["toggleErrorDescription"])
+    });
+  };
+
   const { data: selectedTask, isLoading } = useGetTaskById(selectedTaskId!);
-  const { mutate: updateTaskCompletion } = useUpdateTaskCompletion(() => {});
+  const { mutate: updateTaskCompletion } = useUpdateTaskCompletion(
+    handleUpdateTaskCompletionError
+  );
 
   const taskIcon = selectedTask ? getTaskTypeIcon(selectedTask.typeName, 24) : null;
 
@@ -69,7 +85,7 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   const handleMarkAsDone = () => {
     updateTaskCompletion(
-      { id: selectedTask?.id, isCompleted: true },
+      { id: selectedTaskId!, isCompleted: true },
       { onSuccess: onClose }
     );
   };
