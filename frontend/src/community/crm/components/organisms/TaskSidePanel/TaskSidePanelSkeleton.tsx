@@ -6,7 +6,7 @@ import TaskRowSkeleton from "~community/crm/components/molecules/TaskRow/TaskRow
 const TaskSidePanelSkeleton: FC = () => (
   <div className="flex flex-col pb-4 gap-[16px]" aria-hidden="true">
     <div className="flex gap-6 pb-4">
-      <div className="flex flex-col flex-1 gap-6 min-w-0">
+      <div className="flex flex-col flex-1 gap-6">
         <div className="flex flex-col gap-1">
           <SkeletonShape className="h-3 w-12" />
           <SkeletonShape className="h-2.5 w-48" />
@@ -24,8 +24,8 @@ const TaskSidePanelSkeleton: FC = () => (
           <SkeletonShape className="h-3.5 w-24" />
           <hr className="border-secondary-accent" />
           <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent overflow-hidden">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <TaskRowSkeleton key={`task-row-skeleton-${i}`} />
+            {Array.from({ length: 4 }).map((_, index) => (
+              <TaskRowSkeleton key={`task-row-skeleton-${index}`} />
             ))}
           </div>
         </div>
@@ -39,7 +39,7 @@ const TaskSidePanelSkeleton: FC = () => (
             <div className="w-30 shrink-0">
               <SkeletonShape className="h-2.5 w-20" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1">
               <div className="flex items-center gap-2 bg-secondary-background rounded-full px-2 py-1 w-fit">
                 <SkeletonShape circle className="h-5 w-5 shrink-0" />
                 <SkeletonShape className="h-2.5 w-20" />
@@ -51,7 +51,7 @@ const TaskSidePanelSkeleton: FC = () => (
             <div className="w-30 shrink-0">
               <SkeletonShape className="h-2.5 w-12" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1">
               <SkeletonShape circle className="h-5 w-16" />
             </div>
           </div>
@@ -60,8 +60,8 @@ const TaskSidePanelSkeleton: FC = () => (
             <div className="w-30 shrink-0">
               <SkeletonShape className="h-2.5 w-20" />
             </div>
-            <div className="flex-1 min-w-0">
-              <SkeletonShape className="h-2.5 w-24" />
+            <div className="flex-1">
+              <SkeletonShape className="h-2.5 w-20" />
             </div>
           </div>
 
@@ -69,7 +69,7 @@ const TaskSidePanelSkeleton: FC = () => (
             <div className="w-30 shrink-0">
               <SkeletonShape className="h-2.5 w-20" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1">
               <SkeletonShape className="h-2.5 w-20" />
             </div>
           </div>
