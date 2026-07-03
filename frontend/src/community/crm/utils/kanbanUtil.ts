@@ -117,6 +117,30 @@ export const normalizeStageDeals = (
     mapStageDealsToSlice(stageDeal, owners, contacts)
   );
 
+export const appendDealsToStageMap = (
+  stageMap: CrmBoardStageDealsType[],
+  stageDeals: CrmBoardStageDealsType
+): CrmBoardStageDealsType[] =>
+  stageMap.map((stage) =>
+    stage.stageId === stageDeals.stageId
+      ? { ...stageDeals, deals: [...stage.deals, ...stageDeals.deals] }
+      : stage
+  );
+
+export const addDealToStageMap = (
+  stageMap: CrmBoardStageDealsType[],
+  deal: CrmBoardDealSliceType
+): CrmBoardStageDealsType[] =>
+  stageMap.map((stage) =>
+    stage.stageId === deal.stageId
+      ? {
+          ...stage,
+          deals: [...stage.deals, deal],
+          totalCount: stage.totalCount + 1
+        }
+      : stage
+  );
+
 export const computeReorderWithinStage = (
   sourceDeals: CrmBoardDealSliceType[],
   activeDealId: number,

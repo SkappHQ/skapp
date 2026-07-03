@@ -19,8 +19,6 @@ interface UseBoardDataParams {
 interface UseBoardDataReturn {
   boardStages: CrmDealStageType[];
   isLoading: boolean;
-  isError: boolean;
-  refetch: () => void;
 }
 
 export const useBoardData = ({
@@ -28,22 +26,14 @@ export const useBoardData = ({
 }: UseBoardDataParams): UseBoardDataReturn => {
   const setBoardStageDeals = useCrmStore((store) => store.setBoardStageDeals);
 
-  const {
-    data: initData,
-    isLoading: isInitDataLoading,
-    isError: isInitDataError,
-    refetch: refetchInitData
-  } = useGetBoardInitData();
+  const { data: initData, isLoading: isInitDataLoading } =
+    useGetBoardInitData();
 
   const boardStages = initData?.stages ?? [];
   const stageIds = boardStages.map((stage) => stage.id);
 
-  const {
-    data: dealsByStages,
-    isLoading: isDealsLoading,
-    isError: isDealsError,
-    refetch: refetchDeals
-  } = useGetDealsGroupedByStages(
+  const { data: dealsByStages, isLoading: isDealsLoading } =
+    useGetDealsGroupedByStages(
     {
       stageIds,
       searchKeyword,
@@ -60,15 +50,8 @@ export const useBoardData = ({
     );
   }, [initData, dealsByStages, setBoardStageDeals]);
 
-  const refetch = (): void => {
-    refetchInitData();
-    refetchDeals();
-  };
-
   return {
     boardStages,
-    isLoading: isInitDataLoading || isDealsLoading,
-    isError: isInitDataError || isDealsError,
-    refetch
+    isLoading: isInitDataLoading || isDealsLoading
   };
 };

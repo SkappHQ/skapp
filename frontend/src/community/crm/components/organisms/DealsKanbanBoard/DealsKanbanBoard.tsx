@@ -7,10 +7,8 @@ import {
   useSensor,
   useSensors
 } from "@dnd-kit/core";
-import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC, useCallback } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { DRAG_ACTIVATION_DISTANCE } from "~community/crm/constants/boardConstants";
@@ -25,8 +23,6 @@ interface DealsKanbanBoardProps {
 const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   searchKeyword = ""
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "kanban");
-
   const { setIsCrmSidePanelOpen, setPreselectedStageId } = useCrmStore(
     (store) => ({
       setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
@@ -41,7 +37,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     useSensor(KeyboardSensor)
   );
 
-  const { boardStages, isLoading, isError, refetch } = useBoardData({
+  const { boardStages, isLoading } = useBoardData({
     searchKeyword
   });
 
@@ -61,20 +57,6 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     },
     [setPreselectedStageId, setIsCrmSidePanelOpen]
   );
-
-  if (isError && !isLoading) {
-    return (
-      <EmptyDataView
-        icon={<SearchIcon />}
-        title={translateText(["errorState", "title"])}
-        description={translateText(["errorState", "description"])}
-        button={{
-          children: translateText(["errorState", "retryBtn"]),
-          onClick: refetch
-        }}
-      />
-    );
-  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
