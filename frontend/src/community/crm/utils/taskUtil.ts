@@ -165,6 +165,12 @@ export const getChangedTaskFields = (
   return changedFields;
 };
 
+export const mergeTaskUpdate = (
+  tasks: CrmTaskDetailType[],
+  update: Partial<CrmTaskDetailType>
+): CrmTaskDetailType[] =>
+  tasks.map((task) => (task.id === update.id ? { ...task, ...update } : task));
+
 export const getTaskGroups = (
   tasks: CrmTaskDetailType[],
   tab: CrmTaskTabEnum,

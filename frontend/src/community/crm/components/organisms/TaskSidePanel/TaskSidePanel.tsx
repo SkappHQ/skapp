@@ -5,7 +5,7 @@ import {
   SidePanel,
   SidePanelProps
 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -30,13 +30,19 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   const { setToastMessage } = useToast();
 
-  const { setIsTaskModalOpen, setTaskModalType, selectedTaskId } = useCrmStore(
-    (store) => ({
-      setIsTaskModalOpen: store.setIsTaskModalOpen,
-      setTaskModalType: store.setTaskModalType,
-      selectedTaskId: store.selectedTaskId
-    })
-  );
+  const {
+    setIsTaskModalOpen,
+    setTaskModalType,
+    selectedTaskId,
+    getTaskById,
+    updateTask
+  } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    setTaskModalType: store.setTaskModalType,
+    selectedTaskId: store.selectedTaskId,
+    getTaskById: store.getTaskById,
+    updateTask: store.updateTask
+  }));
 
   const openTaskModal = (type: CrmModalTypes) => {
     setTaskModalType(type);
@@ -52,10 +58,18 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     });
   };
 
-  const { data: selectedTask, isLoading } = useGetTaskById(selectedTaskId!);
+  const { data: taskDetail, isLoading } = useGetTaskById(selectedTaskId!);
   const { mutate: updateTaskCompletion } = useUpdateTaskCompletion(
     handleUpdateTaskCompletionError
   );
+
+  useEffect(() => {
+    if (taskDetail) {
+      updateTask(taskDetail);
+    }
+  }, [taskDetail, updateTask]);
+
+  const selectedTask = getTaskById(selectedTaskId!);
 
   const taskIcon = selectedTask ? getTaskTypeIcon(selectedTask.typeName, 24) : null;
 

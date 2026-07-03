@@ -25,7 +25,7 @@ const TaskSidePanelSkeleton: FC = () => (
           <hr className="border-secondary-accent" />
           <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent overflow-hidden">
             {Array.from({ length: 4 }).map((_, index) => (
-              <TaskRowSkeleton key={`task-row-skeleton-${index}`} />
+              <TaskRowSkeleton key={index} />
             ))}
           </div>
         </div>

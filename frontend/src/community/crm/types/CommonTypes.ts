@@ -230,21 +230,6 @@ export interface CrmDealStageReorderItem {
   orderIndex: number;
 }
 
-export interface CrmTaskType {
-  id: number;
-  name: string;
-  type: CrmTaskCategory;
-  priority: CrmPriorityEnum;
-  isCompleted: boolean;
-  dueAt: string | null;
-  notes: string | null;
-  owner: CrmOwner;
-  contact: CrmContactType | null;
-  company: CrmCompanyType | null;
-  deal: CrmDealType | null;
-  isDeleted: boolean;
-}
-
 export interface CrmDealLookup {
   id: number;
   name: string;
