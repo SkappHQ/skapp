@@ -18,6 +18,7 @@ import {
   CrmDealStageType,
   CrmDealStageUpdatePayload
 } from "~community/crm/types/CommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
 import { crmDealQueryKeys } from "./utils/QueryKeys";
@@ -76,6 +77,9 @@ export const useCreateDeal = (
     mutationFn: createDeal,
     onSuccess: (createdDeal) => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess(createdDeal);
     },
     onError
@@ -126,6 +130,9 @@ export const useCreateDealStage = (
     mutationFn: createDealStage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError
@@ -196,6 +203,9 @@ export const useDeleteDealStage = (
     mutationFn: deleteDealStage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError

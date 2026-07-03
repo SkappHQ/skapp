@@ -1,6 +1,7 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
@@ -9,9 +10,12 @@ import CompanySidePanel from "~community/crm/components/organisms/CompanySidePan
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const {
     setIsCompanyModalOpen,
@@ -35,8 +39,10 @@ const Companies: NextPage = () => {
   };
 
   const onPrimaryButtonClick = () => {
-    setIsCompanyModalOpen(true);
-    setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL);
+    guardCrmCreate(CrmLimitResource.COMPANIES, () => {
+      setIsCompanyModalOpen(true);
+      setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL);
+    });
   };
 
   return (
@@ -46,6 +52,8 @@ const Companies: NextPage = () => {
       primaryButtonText={translateText(["addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
+      isPrimaryBtnLoading={isCheckingCrmLimit}
+      module={Modules.CRM}
     >
       <>
         {selectedCompany && (

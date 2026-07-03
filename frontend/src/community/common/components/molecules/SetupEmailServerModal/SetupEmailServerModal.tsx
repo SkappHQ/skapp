@@ -163,7 +163,6 @@ const SetupEmailServerModal: React.FC<Props> = ({ isOpen, onClose }) => {
             label={translateText(["enableEmailServerLabel"])}
             checked={formik.values.isEnabled}
             onChange={(checked: boolean) => handleSwitchChange(checked)}
-            name="isEnabled"
           />
           <DropdownList
             label={translateText(["emailServiceProviderLabel"])}
