@@ -1,4 +1,5 @@
 import { UseQueryResult, useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
@@ -48,6 +49,15 @@ export const useGetDealsGroupedByStages = (
   });
 };
 
+export const useFetchMoreStageDeals = (
+  onSuccess: (deals: CrmBoardStageDealsResponseType[]) => void
+) => {
+  return useMutation({
+    mutationFn: fetchDealsGroupedByStages,
+    onSuccess
+  });
+};
+
 const reorderDealWithinStage = async (
   payload: CrmBoardReorderWithinStagePayload
 ): Promise<void> => {
@@ -55,7 +65,7 @@ const reorderDealWithinStage = async (
 };
 
 export const useReorderDealWithinStage = (
-  onError: (error: unknown) => void
+  onError: (error: AxiosError) => void
 ) => {
   return useMutation({
     mutationFn: reorderDealWithinStage,
@@ -69,7 +79,9 @@ const moveDealBetweenStages = async (
   await authFetch.patch(crmBoardEndpoints.MOVE_DEAL_BETWEEN_STAGES, payload);
 };
 
-export const useMoveDealBetweenStages = (onError: (error: unknown) => void) => {
+export const useMoveDealBetweenStages = (
+  onError: (error: AxiosError) => void
+) => {
   return useMutation({
     mutationFn: moveDealBetweenStages,
     onError

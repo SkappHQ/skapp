@@ -48,7 +48,7 @@ export const useBoardData = ({
     setBoardStageDeals(
       normalizeStageDeals(dealsByStages, initData.owners, initData.contacts)
     );
-  }, [initData, dealsByStages, setBoardStageDeals]);
+  }, [initData, dealsByStages]);
 
   return {
     boardStages,

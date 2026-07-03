@@ -69,17 +69,24 @@ export interface CrmBoardDealsGroupedRequest {
   limit: number;
 }
 
-export interface CrmBoardReorderWithinStagePayload {
-  dealId: number;
+export interface CrmBoardDealNeighboursType {
   previousDealId: number | null;
   nextDealId: number | null;
 }
 
-export interface CrmBoardMoveBetweenStagesPayload {
+export interface CrmBoardReorderResultType extends CrmBoardDealNeighboursType {
+  reorderedDeals: CrmBoardDealSliceType[];
+}
+
+export interface CrmBoardReorderWithinStagePayload
+  extends CrmBoardDealNeighboursType {
+  dealId: number;
+}
+
+export interface CrmBoardMoveBetweenStagesPayload
+  extends CrmBoardDealNeighboursType {
   dealId: number;
   newStageId: number;
-  previousDealId: number | null;
-  nextDealId: number | null;
 }
 
 export interface KanbanDragData {

@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient
 } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
@@ -70,7 +71,7 @@ const createDeal = async (
 
 export const useCreateDeal = (
   onSuccess: (createdDeal: CrmDealCreateResponseType) => void,
-  onError: (error: unknown) => void
+  onError: (error: AxiosError) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({

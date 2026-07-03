@@ -1,7 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 import {
-  fetchDealsGroupedByStages,
+  useFetchMoreStageDeals,
   useGetBoardInitData
 } from "~community/crm/api/BoardApi";
 import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/constants/boardConstants";
@@ -15,7 +15,7 @@ interface UseLoadMoreStageDealsParams {
 }
 
 interface UseLoadMoreStageDealsReturn {
-  handleLoadMore: () => Promise<void>;
+  handleLoadMore: () => void;
   isFetchingNextPage: boolean;
 }
 
@@ -30,32 +30,26 @@ export const useLoadMoreStageDeals = ({
 
   const { data: initData } = useGetBoardInitData();
 
-  const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
-
-  const handleLoadMore = useCallback(async () => {
-    setIsFetchingNextPage(true);
-
-    try {
-      const [result] = await fetchDealsGroupedByStages({
-        stageIds: [stageId],
-        searchKeyword,
-        page: currentPage + 1,
-        limit: DEFAULT_BOARD_PAGE_SIZE
-      });
-
-      if (result) {
-        appendBoardStageDeals(
-          mapStageDealsToSlice(
-            result,
-            initData?.owners ?? [],
-            initData?.contacts ?? []
-          )
-        );
-      }
-    } finally {
-      setIsFetchingNextPage(false);
+  const { mutate, isPending } = useFetchMoreStageDeals(([result]) => {
+    if (result) {
+      appendBoardStageDeals(
+        mapStageDealsToSlice(
+          result,
+          initData?.owners ?? [],
+          initData?.contacts ?? []
+        )
+      );
     }
-  }, [stageId, currentPage, searchKeyword, appendBoardStageDeals, initData]);
+  });
 
-  return { handleLoadMore, isFetchingNextPage };
+  const handleLoadMore = useCallback(() => {
+    mutate({
+      stageIds: [stageId],
+      searchKeyword,
+      page: currentPage + 1,
+      limit: DEFAULT_BOARD_PAGE_SIZE
+    });
+  }, [stageId, currentPage, searchKeyword, mutate]);
+
+  return { handleLoadMore, isFetchingNextPage: isPending };
 };

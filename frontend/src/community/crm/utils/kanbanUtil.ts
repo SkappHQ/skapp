@@ -2,8 +2,10 @@ import type { ClientRect } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 
 import type {
+  CrmBoardDealNeighboursType,
   CrmBoardDealResponseType,
   CrmBoardDealSliceType,
+  CrmBoardReorderResultType,
   CrmBoardStageDealsResponseType,
   CrmBoardStageDealsType
 } from "~community/crm/types/BoardTypes";
@@ -13,51 +15,38 @@ import type {
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 
-const buildOwnersById = (owners: CrmOwner[]): Map<number, CrmOwner> =>
-  new Map(owners.map((owner) => [owner.employeeId, owner]));
-
-const buildContactsById = (
-  contacts: CrmContactLookup[]
-): Map<number, CrmContactLookup> =>
-  new Map(contacts.map((contact) => [contact.id, contact]));
-
 export const resolveBoardDeal = (
   deal: CrmBoardDealResponseType,
   stageId: number,
-  ownersById: Map<number, CrmOwner>,
-  contactsById: Map<number, CrmContactLookup>
-): CrmBoardDealSliceType => {
-  const owner = ownersById.get(deal.ownerId)!;
-  const contact = contactsById.get(deal.contactId);
-
-  return {
-    id: deal.id,
-    name: deal.name,
-    contactName: contact?.name ?? "",
-    companyName: contact?.company?.name ?? null,
-    owner,
-    amount: deal.amount,
-    priority: deal.priority,
-    taskCount: deal.taskCount,
-    stageId
-  };
-};
+  owner: CrmOwner,
+  contact: CrmContactLookup | undefined
+): CrmBoardDealSliceType => ({
+  id: deal.id,
+  name: deal.name,
+  contactName: contact?.name ?? "",
+  companyName: contact?.company?.name ?? null,
+  owner,
+  amount: deal.amount,
+  priority: deal.priority,
+  taskCount: deal.taskCount,
+  stageId
+});
 
 export const mapStageDealsToSlice = (
   stageDeals: CrmBoardStageDealsResponseType,
   owners: CrmOwner[],
   contacts: CrmContactLookup[]
-): CrmBoardStageDealsType => {
-  const ownersById = buildOwnersById(owners);
-  const contactsById = buildContactsById(contacts);
-
-  return {
-    ...stageDeals,
-    deals: stageDeals.deals.map((deal) =>
-      resolveBoardDeal(deal, stageDeals.stageId, ownersById, contactsById)
+): CrmBoardStageDealsType => ({
+  ...stageDeals,
+  deals: stageDeals.deals.map((deal) =>
+    resolveBoardDeal(
+      deal,
+      stageDeals.stageId,
+      owners.find((owner) => owner.employeeId === deal.ownerId)!,
+      contacts.find((contact) => contact.id === deal.contactId)
     )
-  };
-};
+  )
+});
 
 export const mapCreatedDealToSlice = (
   deal: CrmDealCreateResponseType
@@ -95,7 +84,7 @@ export const getNeighbourDealIds = (
   stageMap: CrmBoardStageDealsType[],
   stageId: number,
   dealId: number
-): { previousDealId: number | null; nextDealId: number | null } => {
+): CrmBoardDealNeighboursType => {
   const deals =
     stageMap.find((stage) => stage.stageId === stageId)?.deals ?? [];
   const index = deals.findIndex((deal) => deal?.id === dealId);
@@ -145,11 +134,7 @@ export const computeReorderWithinStage = (
   sourceDeals: CrmBoardDealSliceType[],
   activeDealId: number,
   overDealId: number
-): {
-  reorderedDeals: CrmBoardDealSliceType[];
-  previousDealId: number | null;
-  nextDealId: number | null;
-} | null => {
+): CrmBoardReorderResultType | null => {
   const activeIndex = sourceDeals.findIndex((d) => d.id === activeDealId);
   const overIndex = sourceDeals.findIndex((d) => d.id === overDealId);
   if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex)
@@ -213,7 +198,7 @@ export const resolveInsertIndex = (
 export const computeMoveNeighbors = (
   targetDeals: CrmBoardDealSliceType[],
   insertIndex: number
-): { previousDealId: number | null; nextDealId: number | null } => {
+): CrmBoardDealNeighboursType => {
   if (targetDeals.length === 0 || insertIndex === 0)
     return { previousDealId: null, nextDealId: targetDeals[0]?.id ?? null };
   if (insertIndex >= targetDeals.length)
