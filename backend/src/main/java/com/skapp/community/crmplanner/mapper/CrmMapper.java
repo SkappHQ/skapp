@@ -38,8 +38,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CrmMapper {
 
-	@Mapping(target = "stageName", source = "stage.name")
-	@Mapping(target = "stageColor", source = "stage.color")
+	@Mapping(target = "stage", source = "stage")
 	@Mapping(target = "companyName", source = "company.name")
 	@Mapping(target = "contactName", source = "contact.name")
 	@Mapping(target = "owner", source = "owner")
