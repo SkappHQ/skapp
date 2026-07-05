@@ -91,7 +91,9 @@ const DealCard: FC<DealCardProps> = ({
           </div>
         )}
 
-        <div className="flex items-center gap-1.5">
+        <div
+          className={`flex items-center gap-1.5${amount ? "" : " invisible"}`}
+        >
           <span className="shrink-0 text-secondary-icon">
             <DealValueIcon className="h-4 w-4" />
           </span>

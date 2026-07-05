@@ -1,3 +1,4 @@
+import { CrmBoardDealSliceType, CrmBoardStageDealsType } from "./BoardTypes";
 import {
   CrmCompanyMetricsType,
   CrmTaskDetailType,
@@ -18,7 +19,11 @@ interface ActionTypes {
   setTasks: (tasks: CrmTaskDetailType[]) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
   setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
+  setPreselectedStageId: (preselectedStageId: number | null) => void;
   setSelectedContactId: (contactId: number | null) => void;
+  setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;
+  appendBoardStageDeals: (stageDeals: CrmBoardStageDealsType) => void;
+  addDealToStage: (deal: CrmBoardDealSliceType) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -33,5 +38,7 @@ export interface CrmStore extends ActionTypes {
   selectedTaskId: number | null;
   tasks: CrmTaskDetailType[];
   isCrmSidePanelOpen: boolean;
+  preselectedStageId: number | null;
   selectedContactId: number | null;
+  boardStageDeals: CrmBoardStageDealsType[];
 }

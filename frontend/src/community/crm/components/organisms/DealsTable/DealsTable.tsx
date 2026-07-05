@@ -214,14 +214,14 @@ const DealsTable: FC<Props> = ({
 
   if (isLoading) {
     return (
-      <div className="w-fit h-150 rounded-lg shadow-lg overflow-hidden">
+      <div className="w-fit h-full rounded-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="h-150 rounded-lg shadow-lg">
+    <div ref={containerRef} className="rounded-lg h-full overflow-y-auto">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}
