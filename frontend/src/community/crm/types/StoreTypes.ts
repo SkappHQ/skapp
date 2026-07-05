@@ -1,5 +1,6 @@
 import {
   CrmCompanyMetricsType,
+  CrmDealListItem,
   CrmTaskDetailType,
   PreselectedContact
 } from "./CommonTypes";
@@ -24,6 +25,9 @@ interface ActionTypes {
   closeCrmSidePanel: () => void;
   setSelectedContactId: (contactId: number | null) => void;
   setSelectedDealId: (dealId: number | null) => void;
+  setDeals: (deals: CrmDealListItem[]) => void;
+  getDealById: (id: number) => CrmDealListItem | undefined;
+  updateDeal: (deal: Partial<CrmDealListItem>) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -42,4 +46,5 @@ export interface CrmStore extends ActionTypes {
   previousCrmSidePanelType: CrmSidePanelTypes | null;
   selectedContactId: number | null;
   selectedDealId: number | null;
+  deals: CrmDealListItem[];
 }

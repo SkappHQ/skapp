@@ -3,6 +3,7 @@ import { ColorOption, DropdownOption } from "@rootcodelabs/skapp-ui";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import {
   CrmContactFormValues,
+  CrmDealListItem,
   CrmDealStageCreatePayload,
   CrmDealStageFormTypes
 } from "~community/crm/types/CommonTypes";
@@ -15,6 +16,12 @@ export const formatValue = (value: NumericValue): string => {
   if (value == null || value === "") return "-";
   return `$${Number.parseFloat(value).toFixed(2)}`;
 };
+
+export const mergeDealUpdate = (
+  deals: CrmDealListItem[],
+  update: Partial<CrmDealListItem>
+): CrmDealListItem[] =>
+  deals.map((deal) => (deal.id === update.id ? { ...deal, ...update } : deal));
 
 export const getChangedContactFields = (
   newValues: CrmContactFormValues,

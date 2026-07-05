@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
@@ -21,10 +21,13 @@ const DealsSection: FC = () => {
   const [activeView, setActiveView] = useState<DealViewEnum>(DealViewEnum.LIST);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
 
-  const { setSelectedDealId, openCrmSidePanel } = useCrmStore((store) => ({
-    setSelectedDealId: store.setSelectedDealId,
-    openCrmSidePanel: store.openCrmSidePanel
-  }));
+  const { setSelectedDealId, openCrmSidePanel, setDeals } = useCrmStore(
+    (store) => ({
+      setSelectedDealId: store.setSelectedDealId,
+      openCrmSidePanel: store.openCrmSidePanel,
+      setDeals: store.setDeals
+    })
+  );
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useGetDealsInfinite(
@@ -41,6 +44,10 @@ const DealsSection: FC = () => {
     () => data?.pages.flatMap((p) => p?.items ?? []),
     [data]
   );
+
+  useEffect(() => {
+    setDeals(allDeals);
+  }, [allDeals, setDeals]);
 
   const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -65,7 +72,6 @@ const DealsSection: FC = () => {
         <DealsTable
           searchKeyword={debouncedSearch}
           isLoading={isLoading}
-          allDeals={allDeals ?? []}
           hasNextPage={hasNextPage}
           onLoadMore={loadMore}
           onDealClick={handleDealOnClick}
