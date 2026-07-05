@@ -46,8 +46,9 @@ const ContactSidePanel: FC = () => {
     setSelectedContactId,
     setContactModalType,
     setIsContactModalOpen,
-    setPreselectedContact,
-    closeCrmSidePanel
+    updateContact,
+    closeCrmSidePanel,
+    getContactById
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
@@ -55,8 +56,9 @@ const ContactSidePanel: FC = () => {
     setSelectedContactId: store.setSelectedContactId,
     setContactModalType: store.setContactModalType,
     setIsContactModalOpen: store.setIsContactModalOpen,
-    setPreselectedContact: store.setPreselectedContact,
-    closeCrmSidePanel: store.closeCrmSidePanel
+    updateContact: store.updateContact,
+    closeCrmSidePanel: store.closeCrmSidePanel,
+    getContactById: store.getContactById
   }));
 
   const isOpen =
@@ -65,7 +67,6 @@ const ContactSidePanel: FC = () => {
 
   const handleClose = (): void => {
     setSelectedContactId(null);
-    setPreselectedContact(null);
     closeCrmSidePanel();
   };
 
@@ -113,35 +114,29 @@ const ContactSidePanel: FC = () => {
     handleClose();
   };
 
-  const {
-    data: contact,
-    isError,
-    isLoading
-  } = useGetContactById(selectedContactId ?? 0, isOpen && !!selectedContactId);
+  const { data, isError, isLoading } = useGetContactById(
+    selectedContactId ?? 0,
+    isOpen && !!selectedContactId
+  );
 
   useEffect(() => {
-    if (isError) handleContactLoadError();
-  }, [isError]);
+    if (isError && !data) {
+      handleContactLoadError();
+    } else if (data) {
+      updateContact(data);
+    }
+  }, [data, isError]);
 
-  const preselectedContact = useMemo(
-    () => (contact ? { id: contact.id, name: contact.name } : null),
-    [contact]
-  );
+  const contact = getContactById(selectedContactId!);
 
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return (
-          <SidePanelDealSection
-            deals={contact?.deals ?? []}
-            preselectedContact={preselectedContact}
-          />
-        );
+        return <SidePanelDealSection deals={contact?.deals ?? []} />;
       case SidePanelTabEnum.TASKS:
         return (
           <SidePanelTasksSection
             tasks={contact?.tasks ?? []}
-            preselectedContact={preselectedContact}
             emptyDescription={translateText(["tasks", "emptyDescription"])}
           />
         );
@@ -195,7 +190,7 @@ const ContactSidePanel: FC = () => {
       }
     >
       <div className="flex flex-col pb-4 gap-4">
-        {isLoading && !contact ? (
+        {isLoading ? (
           <ContactSidePanelSkeleton />
         ) : (
           <>

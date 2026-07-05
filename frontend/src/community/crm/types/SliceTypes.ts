@@ -18,8 +18,10 @@ export interface CrmContactSliceTypes extends Pick<
   | "setContactModalType"
   | "selectedContactId"
   | "setSelectedContactId"
-  | "preselectedContact"
-  | "setPreselectedContact"
+  | "contacts"
+  | "setContacts"
+  | "updateContact"
+  | "getContactById"
 > {}
 
 export interface CrmTaskSliceTypes extends Pick<

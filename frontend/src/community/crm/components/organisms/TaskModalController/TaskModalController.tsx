@@ -11,23 +11,16 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 const TaskModalController = () => {
   const translateText = useTranslator("crmModule", "tasks");
 
-  const {
-    isTaskModalOpen,
-    taskModalType,
-    setIsTaskModalOpen,
-    setPreselectedContact,
-    setSelectedTaskId
-  } = useCrmStore((store) => ({
-    isTaskModalOpen: store.isTaskModalOpen,
-    taskModalType: store.taskModalType,
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setPreselectedContact: store.setPreselectedContact,
-    setSelectedTaskId: store.setSelectedTaskId
-  }));
+  const { isTaskModalOpen, taskModalType, setIsTaskModalOpen, setSelectedTaskId } =
+    useCrmStore((store) => ({
+      isTaskModalOpen: store.isTaskModalOpen,
+      taskModalType: store.taskModalType,
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setSelectedTaskId: store.setSelectedTaskId
+    }));
 
   const handleCloseModal = (): void => {
     setSelectedTaskId(null);
-    setPreselectedContact(null);
     setIsTaskModalOpen(false);
   };
 
