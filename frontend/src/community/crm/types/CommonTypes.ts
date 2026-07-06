@@ -163,22 +163,8 @@ export interface EditContactPayload {
   ownerId?: number | null;
 }
 
-export interface CrmContactMetricsType {
-  id: number;
-  name: string;
-  email: string;
-  contactNumber: string | null;
-  lastContactAt: string | null;
-  company: CompanyLookup | null;
-  owner: CrmOwner;
-  closedDealValue: number;
-  closedDealCount: number;
-  openTaskCount: number;
-  overdueTaskCount: number;
-}
-
 export interface CrmContactMetricsResponseType {
-  items: CrmContactMetricsType[];
+  items: CrmContact[];
   totalItems: number;
   currentPage: number;
   totalPages: number;
@@ -197,6 +183,19 @@ export interface CrmDealType {
   contact: CrmContactType;
   owner: CrmOwner;
   isDeleted: boolean;
+}
+
+export interface CrmDealCreateResponseType {
+  id: number;
+  name: string;
+  description: string | null;
+  stage: CrmDealStageType;
+  priority: CrmPriorityEnum;
+  orderIndex: string;
+  amount: string | null;
+  companyName: string | null;
+  contactName: string | null;
+  owner: CrmOwner;
 }
 
 export interface CrmDealStageType {
@@ -220,8 +219,7 @@ export interface CrmDealStageCreatePayload {
   color: CrmDealStageColorsEnum;
 }
 
-export interface CrmDealStageUpdatePayload
-  extends Partial<CrmDealStageCreatePayload> {
+export interface CrmDealStageUpdatePayload extends Partial<CrmDealStageCreatePayload> {
   id: number;
 }
 
@@ -382,24 +380,24 @@ export interface DetailPanelDealResponseType {
   stage: CrmDealStageType;
 }
 
-export interface CrmContactDetailResponseType {
+export interface CrmContact {
   id: number;
   name: string;
   email: string;
-  contactNumber: string;
-  lastModifiedDate: string;
+  contactNumber: string | null;
   company: CompanyLookup | null;
   owner: CrmOwner;
-  openTasksCount: number;
-  overdueTasksCount: number;
-  activeDealsCount: number;
-  totalRevenue: string;
-  pipelineRevenue: string;
-  tasks: TaskRowResponseType[];
-  deals: DetailPanelDealResponseType[];
+  lastContactAt?: string | null;
+  closedDealValue?: number;
+  closedDealCount?: number;
+  openTaskCount?: number;
+  overdueTaskCount?: number;
+  lastModifiedDate?: string;
+  openTasksCount?: number;
+  overdueTasksCount?: number;
+  activeDealsCount?: number;
+  totalRevenue?: string;
+  pipelineRevenue?: string;
+  tasks?: TaskRowResponseType[];
+  deals?: DetailPanelDealResponseType[];
 }
-
-export type PreselectedContact = {
-  id: number;
-  name: string;
-};

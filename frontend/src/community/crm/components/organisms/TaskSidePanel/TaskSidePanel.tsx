@@ -2,8 +2,7 @@ import {
   DeleteButtonIcon,
   EditIcon,
   KebabMenu,
-  SidePanel,
-  SidePanelProps
+  SidePanel
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect } from "react";
 
@@ -18,28 +17,45 @@ import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTask
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
 
 import TaskSidePanelSkeleton from "./TaskSidePanelSkeleton";
 
-const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+const TaskSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "tasks");
 
   const { setToastMessage } = useToast();
 
   const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    setSelectedTaskId,
+    closeCrmSidePanel,
     setIsTaskModalOpen,
     setTaskModalType,
     selectedTaskId,
     getTaskById,
     updateTask
   } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
+    setSelectedTaskId: store.setSelectedTaskId,
+    closeCrmSidePanel: store.closeCrmSidePanel,
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType,
     selectedTaskId: store.selectedTaskId,
     getTaskById: store.getTaskById,
     updateTask: store.updateTask
   }));
+
+  const isOpen =
+    isCrmSidePanelOpen && crmSidePanelType === CrmSidePanelTypes.TASK_SIDE_PANEL;
+
+  const handleClose = () => {
+    setSelectedTaskId(null);
+    closeCrmSidePanel();
+  };
 
   const openTaskModal = (type: CrmModalTypes) => {
     setTaskModalType(type);
@@ -97,14 +113,14 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const handleMarkAsDone = () => {
     updateTaskCompletion(
       { id: selectedTaskId!, isCompleted: true },
-      { onSuccess: onClose, onError: handleUpdateTaskCompletionError }
+      { onSuccess: handleClose, onError: handleUpdateTaskCompletionError }
     );
   };
 
   return (
     <SidePanel
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       closeOnBackdropClick
       header={
         isLoading ? (

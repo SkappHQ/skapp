@@ -142,7 +142,7 @@ const AddCompanyModalContent: React.FC = () => {
         placeholder={translateText(["placeholders", "name"])}
         onChange={handleChange}
         aria-label={translateText(["ariaLabels", "companyName"])}
-        maxLength={characterLengths.NAME_LENGTH}
+        maxLength={characterLengths.COMPANY_NAME_LENGTH}
         required
         fullWidth
       />

@@ -27,7 +27,7 @@ const createTask = async (taskDetails: CrmTaskCreatePayload) => {
 export const useCreateTask = (
   onSuccess: () => void,
   onError: () => void,
-  contactId?: number
+  contactId?: number | null
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
