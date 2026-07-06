@@ -98,6 +98,7 @@ const EditableContactOwnerField = ({
       onChange={(event) => setOwnerSearchText(event.target.value)}
       state={errorMessage ? "error" : "default"}
       errorMessage={errorMessage}
+      isOpenOnFocus={!!ownerLookupData?.items?.length}
       emptyMessage={
         isOwnerFetching ? undefined : (
           <p className="px-4 py-2 body2">

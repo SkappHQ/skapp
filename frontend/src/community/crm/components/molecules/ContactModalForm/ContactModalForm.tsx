@@ -149,9 +149,7 @@ const ContactModalForm = ({
           onChange={(event) => setCompanySearchText(event.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearchText("")}
-          isOpenOnFocus={
-            isDomainSearchEnabled && !!domainSearchData?.companies?.length
-          }
+          isOpenOnFocus={isDomainSearchEnabled}
           emptyMessage={
             isCompanyFetching ? undefined : (
               <p className="px-4 py-2 body2">
