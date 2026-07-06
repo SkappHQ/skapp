@@ -67,13 +67,13 @@ export const mapContactToMetricItems = (
     {
       id: "openTasksCount",
       title: translateText(["metrics", "openTasks"]),
-      amount: String(contact.openTasksCount),
+      amount: String(contact.openTasksCount ?? 0),
       chip: overdueChip
     },
     {
       id: "activeDealsCount",
       title: translateText(["metrics", "activeDeals"]),
-      amount: String(contact.activeDealsCount)
+      amount: String(contact.activeDealsCount ?? 0)
     },
     {
       id: "totalRevenue",

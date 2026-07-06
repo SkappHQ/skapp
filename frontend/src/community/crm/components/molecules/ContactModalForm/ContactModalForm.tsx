@@ -28,7 +28,7 @@ import { addContactValidations } from "~community/crm/utils/contactValidations";
 
 const withSuggestedBadge = (
   item: SearchableDropdownItem,
-  translateContactText: TranslatorFunctionType
+  suggestedLabel: string
 ): SearchableDropdownItem => ({
   ...item,
   content: (
@@ -39,7 +39,7 @@ const withSuggestedBadge = (
         backgroundColor="bg-semantic-green-background"
         textColor="text-semantic-green-text"
       >
-        {translateContactText(["labels", "suggested"])}
+        {suggestedLabel}
       </Badge>
     </span>
   )
@@ -103,21 +103,17 @@ const ContactModalForm = ({
   const { data: companyLookupData, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
 
+  const suggestedLabel = translateContactText(["labels", "suggested"]);
+
   const companyDropdownItems: SearchableDropdownItem[] = useMemo(
     () =>
       mergeAndPrioritizeCompanyDropdownItems(
         companyLookupData?.items,
         domainSearchData?.companies
       ).map((item) =>
-        item.isPrioritized
-          ? withSuggestedBadge(item, translateContactText)
-          : item
+        item.isPrioritized ? withSuggestedBadge(item, suggestedLabel) : item
       ),
-    [
-      companyLookupData?.items,
-      domainSearchData?.companies,
-      translateContactText
-    ]
+    [companyLookupData?.items, domainSearchData?.companies, suggestedLabel]
   );
 
   const handleCompanySelect = (item: SearchableDropdownItem) => {
