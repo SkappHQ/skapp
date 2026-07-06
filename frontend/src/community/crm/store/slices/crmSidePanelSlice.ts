@@ -6,6 +6,7 @@ const CrmSidePanelSlice = (set: SetType<CrmStore>) => ({
   isCrmSidePanelOpen: false,
   crmSidePanelType: null,
   previousCrmSidePanelType: null,
+  preselectedStageId: null,
   openCrmSidePanel: (type: CrmSidePanelTypes) =>
     set({
       isCrmSidePanelOpen: true,
@@ -35,7 +36,9 @@ const CrmSidePanelSlice = (set: SetType<CrmStore>) => ({
       crmSidePanelType: null,
       previousCrmSidePanelType: null,
       preselectedContact: null
-    })
+    }),
+  setPreselectedStageId: (preselectedStageId: number | null) =>
+    set({ preselectedStageId })
 });
 
 export default CrmSidePanelSlice;

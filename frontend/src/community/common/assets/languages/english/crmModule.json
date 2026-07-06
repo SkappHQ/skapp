@@ -410,8 +410,39 @@
       "emptyTitle": "No deals",
       "emptyDescription": "No deals associated with this company",
       "descriptionLabel": "Description",
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions",
+      "description": "Description",
+      "tasks": "Tasks",
+      "addTask": "Add task",
+      "value": "Value",
+      "priority": "Priority",
+      "ownedBy": "Owned by",
+      "contact": "Contact",
+      "placeholders": {
+        "stage": "Select stage",
+        "none": "None",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "noResults": "No results",
+        "description": "Add description"
+      },
       "ariaLabels": {
-        "addDealBtn": "Add Deal"
+        "addDealBtn": "Add Deal",
+        "stage": "Stage",
+        "amount": "Amount",
+        "saveTitle": "Save title",
+        "discardTitle": "Discard title",
+        "editTitle": "Edit title",
+        "editDescription": "Edit description"
+      },
+      "buttons": {
+        "save": "Save",
+        "discard": "Discard"
+      },
+      "errors": {
+        "dealNotFoundTitle": "Deal not found",
+        "dealNotFoundDescription": "This deal is no longer available."
       }
     },
     "dealsTable": {
@@ -448,45 +479,10 @@
         "confirm": "Confirm delete deal"
       }
     },
-    "sidePanel": {
-      "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions",
-      "description": "Description",
-      "tasks": "Tasks",
-      "addTask": "Add task",
-      "value": "Value",
-      "priority": "Priority",
-      "ownedBy": "Owned by",
-      "contact": "Contact",
-      "placeholders": {
-        "stage": "Select stage",
-        "none": "None",
-        "ownerSearch": "Search employees",
-        "contactSearch": "Search contacts",
-        "noResults": "No results",
-        "description": "Add description"
-      },
-      "ariaLabels": {
-        "stage": "Stage",
-        "amount": "Amount",
-        "saveTitle": "Save title",
-        "discardTitle": "Discard title",
-        "editTitle": "Edit title",
-        "editDescription": "Edit description"
-      },
-      "buttons": {
-        "save": "Save",
-        "discard": "Discard"
-      },
-      "errors": {
-        "dealNotFoundTitle": "Deal not found",
-        "dealNotFoundDescription": "This deal is no longer available."
-      }
-    },
     "addDealSidePanel": {
-      "title": "Add Deal",
+      "title": "Add deal",
       "labels": {
-        "dealName": "Deal Name",
+        "dealName": "Deal name",
         "stage": "Stage",
         "description": "Description",
         "value": "Value",
@@ -505,7 +501,7 @@
         "noResults": "No results"
       },
       "buttons": {
-        "addDeal": "Add Deal"
+        "addDeal": "Add deal"
       },
       "priorityOptions": {
         "high": "High",
@@ -514,13 +510,13 @@
       },
       "ariaLabels": {
         "closePanel": "Close add deal panel",
-        "addDeal": "Add Deal",
-        "dealName": "Deal Name",
+        "addDeal": "Add deal",
+        "dealName": "Deal name",
         "stage": "Stage",
         "description": "Description",
         "amount": "Amount",
         "priority": "Priority",
-        "owner": "Deal Owner",
+        "owner": "Deal owner",
         "contact": "Contact"
       },
       "validations": {

@@ -44,3 +44,11 @@ export interface CrmDealSliceTypes extends Pick<
   | "getDealById"
   | "updateDeal"
 > {}
+
+export interface CrmBoardSliceTypes extends Pick<
+  CrmStore,
+  | "boardStageDeals"
+  | "setBoardStageDeals"
+  | "appendBoardStageDeals"
+  | "addDealToStage"
+> {}

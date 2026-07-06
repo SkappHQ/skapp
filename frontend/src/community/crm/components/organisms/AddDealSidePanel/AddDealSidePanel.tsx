@@ -18,10 +18,12 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
   CrmCreateDealPayload,
-  CrmDealAddFormTypes
+  CrmDealAddFormTypes,
+  CrmDealCreateResponseType
 } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
+import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
 
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
@@ -33,13 +35,21 @@ const AddDealSidePanel: FC = () => {
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
 
-  const { isCrmSidePanelOpen, crmSidePanelType, preselectedContact, popCrmSidePanel } =
-    useCrmStore((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      preselectedContact: store.preselectedContact,
-      popCrmSidePanel: store.popCrmSidePanel
-    }));
+  const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    preselectedContact,
+    popCrmSidePanel,
+    setPreselectedStageId,
+    addDealToStage
+  } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
+    preselectedContact: store.preselectedContact,
+    popCrmSidePanel: store.popCrmSidePanel,
+    setPreselectedStageId: store.setPreselectedStageId,
+    addDealToStage: store.addDealToStage
+  }));
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -61,7 +71,8 @@ const AddDealSidePanel: FC = () => {
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const handleCreateDealSuccess = () => {
+  const handleCreateDealSuccess = (createdDeal: CrmDealCreateResponseType) => {
+    addDealToStage(mapCreatedDealToSlice(createdDeal));
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -70,6 +81,7 @@ const AddDealSidePanel: FC = () => {
     });
     formik.resetForm();
     setSelectedContact(null);
+    setPreselectedStageId(null);
     popCrmSidePanel();
   };
 
@@ -97,6 +109,7 @@ const AddDealSidePanel: FC = () => {
       amount: values.amount,
       description: values.description
     };
+
     createDeal(payload);
   };
 
@@ -127,6 +140,7 @@ const AddDealSidePanel: FC = () => {
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
+    setPreselectedStageId(null);
     popCrmSidePanel();
   };
 
