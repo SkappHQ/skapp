@@ -1,3 +1,4 @@
+import { CrmBoardDealsGroupedRequest } from "~community/crm/types/BoardTypes";
 import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
 
 export const crmDealQueryKeys = {
@@ -5,6 +6,15 @@ export const crmDealQueryKeys = {
   GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
   DEAL_STAGES: ["crm-deal-stages"],
   DEAL_LOOKUP: (searchKeyword: string) => ["crm-deal-lookup", searchKeyword]
+};
+
+export const crmBoardQueryKeys = {
+  BOARD_INIT_DATA: ["crm-board-init-data"],
+  DEALS_GROUPED_BY_STAGES: ["crm-board-deals-grouped-by-stages"],
+  GET_DEALS_GROUPED_BY_STAGES: (params: CrmBoardDealsGroupedRequest) => [
+    "crm-board-deals-grouped-by-stages",
+    params
+  ]
 };
 
 export const contactQueryKeys = {

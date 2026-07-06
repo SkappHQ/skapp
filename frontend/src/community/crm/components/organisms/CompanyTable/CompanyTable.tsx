@@ -64,6 +64,7 @@ export const CompanyTable: FC = () => {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
       key: "name",
+      className: "truncate",
       width: "25%"
     },
     {

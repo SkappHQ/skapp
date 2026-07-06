@@ -18,10 +18,12 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
   CrmCreateDealPayload,
-  CrmDealAddFormTypes
+  CrmDealAddFormTypes,
+  CrmDealCreateResponseType
 } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
+import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
 
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
@@ -38,13 +40,15 @@ const AddDealSidePanel: FC = () => {
     crmSidePanelType,
     selectedContactId,
     getContactById,
-    popCrmSidePanel
+    popCrmSidePanel,
+    addDealToStage
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
     selectedContactId: store.selectedContactId,
     getContactById: store.getContactById,
-    popCrmSidePanel: store.popCrmSidePanel
+    popCrmSidePanel: store.popCrmSidePanel,
+    addDealToStage: store.addDealToStage
   }));
 
   const isOpen =
@@ -67,7 +71,8 @@ const AddDealSidePanel: FC = () => {
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const handleCreateDealSuccess = () => {
+  const handleCreateDealSuccess = (createdDeal: CrmDealCreateResponseType) => {
+    addDealToStage(mapCreatedDealToSlice(createdDeal));
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -103,6 +108,7 @@ const AddDealSidePanel: FC = () => {
       amount: values.amount,
       description: values.description
     };
+
     createDeal(payload);
   };
 

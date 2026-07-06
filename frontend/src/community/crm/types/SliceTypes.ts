@@ -36,3 +36,11 @@ export interface CrmTaskSliceTypes extends Pick<
   | "setTasks"
   | "getTaskById"
 > {}
+
+export interface CrmBoardSliceTypes extends Pick<
+  CrmStore,
+  | "boardStageDeals"
+  | "setBoardStageDeals"
+  | "appendBoardStageDeals"
+  | "addDealToStage"
+> {}
