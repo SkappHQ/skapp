@@ -50,12 +50,14 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const {
     setIsTaskModalOpen,
     selectedTaskId,
-    preselectedContact,
+    selectedContactId,
+    getContactById,
     getTaskById
   } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     selectedTaskId: store.selectedTaskId,
-    preselectedContact: store.preselectedContact,
+    selectedContactId: store.selectedContactId,
+    getContactById: store.getContactById,
     getTaskById: store.getTaskById
   }));
 
@@ -73,7 +75,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
   const [selectedContactName, setSelectedContactName] = useState(
-    preselectedContact?.name ?? selectedTask?.contact?.name ?? ""
+    getContactById(selectedContactId!)?.name ?? selectedTask?.contact?.name ?? ""
   );
   const [dealSearchText, setDealSearchText] = useState("");
   const [selectedDealName, setSelectedDealName] = useState(
@@ -84,13 +86,15 @@ const TaskModalForm: FC<TaskFormProps> = ({
     if (selectedTask) {
       setSelectedOwner(selectedTask.owner ?? initialOwner ?? null);
       setSelectedContactName(
-        preselectedContact?.name ?? selectedTask?.contact?.name ?? ""
+        getContactById(selectedContactId!)?.name ??
+          selectedTask?.contact?.name ??
+          ""
       );
       setSelectedDealName(selectedTask.deal?.name ?? "");
     } else if (initialOwner) {
       setSelectedOwner(initialOwner);
     }
-  }, [initialOwner, selectedTask, preselectedContact]);
+  }, [initialOwner, selectedTask, selectedContactId, getContactById]);
 
   const debouncedOwnerSearchText = useDebounce(
     ownerSearchText.trim(),
@@ -154,12 +158,17 @@ const TaskModalForm: FC<TaskFormProps> = ({
     [dealLookupData]
   );
 
+  const clearError = (field: keyof CrmTaskFormTypes) =>
+    formik.setFieldError(field, undefined);
+
   const handleTypeSelect = (value: string) => {
     formik.setFieldValue("type", getCategoryById(Number(value)) ?? null);
+    clearError("type");
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
     formik.setFieldValue("dueDate", date?.toISOString() ?? null);
+    clearError("dueDate");
   };
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
@@ -167,6 +176,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
     formik.setFieldValue("owner", owner?.employeeId);
+    clearError("owner");
     setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
@@ -223,7 +233,10 @@ const TaskModalForm: FC<TaskFormProps> = ({
         state={formik.errors.name ? "error" : "default"}
         label={translateText(["labels", "task"])}
         placeholder={translateText(["placeholders", "task"])}
-        onChange={formik.handleChange}
+        onChange={(e) => {
+          formik.handleChange(e);
+          clearError("name");
+        }}
         aria-label={translateText(["ariaLabels", "task"])}
         fullWidth
         required
@@ -347,7 +360,12 @@ const TaskModalForm: FC<TaskFormProps> = ({
         value={formik.values.notes}
         placeholder={translateText(["placeholders", "notes"])}
         label={translateText(["labels", "notes"])}
-        onChange={formik.handleChange}
+        errorMessage={formik.errors.notes}
+        state={formik.errors.notes ? "error" : "default"}
+        onChange={(e) => {
+          formik.handleChange(e);
+          clearError("notes");
+        }}
         rows={3}
         aria-label={translateText(["ariaLabels", "notes"])}
       />

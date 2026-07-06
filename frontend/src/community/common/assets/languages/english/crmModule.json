@@ -410,6 +410,8 @@
       "emptyTitle": "No deals",
       "emptyDescription": "No deals associated with this company",
       "descriptionLabel": "Description",
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions",
       "ariaLabels": {
         "addDealBtn": "Add Deal"
       }
@@ -447,14 +449,10 @@
         "confirm": "Confirm delete deal"
       }
     },
-    "sidePanel": {
-      "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions"
-    },
     "addDealSidePanel": {
-      "title": "Add Deal",
+      "title": "Add deal",
       "labels": {
-        "dealName": "Deal Name",
+        "dealName": "Deal name",
         "stage": "Stage",
         "description": "Description",
         "value": "Value",
@@ -473,7 +471,7 @@
         "noResults": "No results"
       },
       "buttons": {
-        "addDeal": "Add Deal"
+        "addDeal": "Add deal"
       },
       "priorityOptions": {
         "high": "High",
@@ -482,13 +480,13 @@
       },
       "ariaLabels": {
         "closePanel": "Close add deal panel",
-        "addDeal": "Add Deal",
-        "dealName": "Deal Name",
+        "addDeal": "Add deal",
+        "dealName": "Deal name",
         "stage": "Stage",
         "description": "Description",
         "amount": "Amount",
         "priority": "Priority",
-        "owner": "Deal Owner",
+        "owner": "Deal owner",
         "contact": "Contact"
       },
       "validations": {

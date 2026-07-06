@@ -3,11 +3,10 @@ import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  PreselectedContact,
-  TaskRowResponseType
-} from "~community/crm/types/CommonTypes";
+import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 import SidePanelTasksList from "./SidePanelTasksList";
 
@@ -16,7 +15,6 @@ interface Props {
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
-  preselectedContact?: PreselectedContact | null;
   emptyDescription?: string;
 }
 
@@ -25,15 +23,13 @@ const SidePanelTasksSection: FC<Props> = ({
   isCheckTaskVisible,
   isShowContact,
   onTaskRowClick,
-  preselectedContact,
   emptyDescription
 }) => {
-  const { setIsTaskModalOpen, setTaskModalType, setPreselectedContact } =
-    useCrmStore((store) => ({
-      setIsTaskModalOpen: store.setIsTaskModalOpen,
-      setTaskModalType: store.setTaskModalType,
-      setPreselectedContact: store.setPreselectedContact
-    }));
+  const { guardCrmCreate } = useCrmLimitGuard();
+  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
+    setIsTaskModalOpen: store.setIsTaskModalOpen,
+    setTaskModalType: store.setTaskModalType
+  }));
 
   const translateText = useTranslator(
     "crmModule",
@@ -42,9 +38,10 @@ const SidePanelTasksSection: FC<Props> = ({
   );
 
   const handleAddTask = () => {
-    setPreselectedContact(preselectedContact);
-    setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
-    setIsTaskModalOpen(true);
+    guardCrmCreate(CrmLimitResource.TASKS, () => {
+      setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+      setIsTaskModalOpen(true);
+    });
   };
   return tasks.length > 0 ? (
     <SidePanelTasksList

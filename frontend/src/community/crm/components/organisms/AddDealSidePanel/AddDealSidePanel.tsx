@@ -1,6 +1,6 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { FC, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -18,9 +18,12 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
   CrmCreateDealPayload,
-  CrmDealAddFormTypes
+  CrmDealAddFormTypes,
+  CrmDealCreateResponseType
 } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
+import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
 
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
@@ -32,12 +35,29 @@ const AddDealSidePanel: FC = () => {
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(null);
 
-  const { isCrmSidePanelOpen, setIsCrmSidePanelOpen } = useCrmStore(
-    (store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-    })
-  );
+  const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    selectedContactId,
+    getContactById,
+    popCrmSidePanel,
+    addDealToStage
+  } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
+    selectedContactId: store.selectedContactId,
+    getContactById: store.getContactById,
+    popCrmSidePanel: store.popCrmSidePanel,
+    addDealToStage: store.addDealToStage
+  }));
+
+  const isOpen =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL;
+
+  useEffect(() => {
+    setSelectedContact(getContactById(selectedContactId!) ?? null);
+  }, [selectedContactId]);
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearch = useDebounce(
@@ -47,11 +67,12 @@ const AddDealSidePanel: FC = () => {
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isCrmSidePanelOpen
+    isOpen
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const handleCreateDealSuccess = () => {
+  const handleCreateDealSuccess = (createdDeal: CrmDealCreateResponseType) => {
+    addDealToStage(mapCreatedDealToSlice(createdDeal));
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -60,7 +81,7 @@ const AddDealSidePanel: FC = () => {
     });
     formik.resetForm();
     setSelectedContact(null);
-    setIsCrmSidePanelOpen(false);
+    popCrmSidePanel();
   };
 
   const handleCreateDealError = () => {
@@ -87,22 +108,29 @@ const AddDealSidePanel: FC = () => {
       amount: values.amount,
       description: values.description
     };
+
     createDeal(payload);
   };
 
-  const formik = useFormik<CrmDealAddFormTypes>({
-    initialValues: {
+  const initialValues: CrmDealAddFormTypes = useMemo(
+    () => ({
       name: "",
       stageId: "",
-      contactId: "",
+      contactId: selectedContactId ? String(selectedContactId) : "",
       ownerId: "",
       priority: CrmPriorityEnum.LOW,
       amount: "",
       description: ""
-    },
+    }),
+    [selectedContactId]
+  );
+
+  const formik = useFormik<CrmDealAddFormTypes>({
+    initialValues,
     validationSchema: addDealValidations(translateText),
     validateOnChange: true,
     validateOnBlur: false,
+    enableReinitialize: true,
     onSubmit: handleSubmit
   });
 
@@ -111,13 +139,13 @@ const AddDealSidePanel: FC = () => {
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
-    setIsCrmSidePanelOpen(false);
+    popCrmSidePanel();
   };
 
   return (
     <div className="crm-deal-side-panel">
       <SidePanel
-        isOpen={isCrmSidePanelOpen}
+        isOpen={isOpen}
         onClose={handleClose}
         header={
           <span className="pl-2 text-2xl font-bold text-black">
@@ -156,8 +184,16 @@ const AddDealSidePanel: FC = () => {
                 onChange={(e) => setFieldValue("description", e.target.value)}
                 onBlur={formik.handleBlur}
                 className="w-full h-30.25"
-                state={formik.touched.description && formik.errors.description ? "error" : "default"}
-                errorMessage={formik.touched.description ? formik.errors.description : undefined}
+                state={
+                  formik.touched.description && formik.errors.description
+                    ? "error"
+                    : "default"
+                }
+                errorMessage={
+                  formik.touched.description
+                    ? formik.errors.description
+                    : undefined
+                }
                 aria-label={translateText(["ariaLabels", "description"])}
               />
             </div>

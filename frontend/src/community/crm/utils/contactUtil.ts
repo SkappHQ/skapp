@@ -2,7 +2,7 @@ import { SearchableDropdownItem } from "~community/common/components/molecules/S
 import { CrmMetricLabelThemeEnum } from "~community/crm/enums/common";
 import {
   CompanyLookup,
-  CrmContactDetailResponseType,
+  CrmContact,
   MetricItem
 } from "~community/crm/types/CommonTypes";
 import { groupItemsByPriority } from "~community/crm/utils/crmUtil";
@@ -38,7 +38,7 @@ export const mergeAndPrioritizeCompanyDropdownItems = (
 };
 
 export const mapContactToMetricItems = (
-  contact: CrmContactDetailResponseType,
+  contact: CrmContact,
   translateText: (
     keys: string[],
     interpolationValues?: Record<string, any>

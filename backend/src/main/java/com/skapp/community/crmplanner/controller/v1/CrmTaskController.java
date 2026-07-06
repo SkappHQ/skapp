@@ -5,6 +5,7 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.service.CrmTaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -81,6 +82,15 @@ public class CrmTaskController {
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> deleteTask(@PathVariable Long id) {
 		ResponseEntityDto response = taskService.deleteTask(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get related tasks",
+			description = "Returns paginated tasks filtered by contactId and/or dealId.")
+	@GetMapping("/related")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getRelatedTasks(CrmTaskRelatedFilterDto filterDto) {
+		ResponseEntityDto response = taskService.getRelatedTasks(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
