@@ -49,7 +49,7 @@ export const getDueDateStatus = (
   }
 
   if (!isCompleted && isDateTimeSimilar(due, today)) {
-    return { textKey: "dueDateToday", colorClass: "text-semantic-amber-text" };
+    return { textKey: "dueDateToday", colorClass: "text-secondary-text" };
   }
 
   return {

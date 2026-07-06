@@ -9,38 +9,16 @@ interface Props {
 
 const TaskListSkeleton: FC<Props> = ({ rowCount = 2 }) => (
   <div className="flex flex-col gap-4" aria-hidden="true">
-    <div className="flex flex-col">
-      <SkeletonShape circle className="h-3 w-15 mb-2" />
-      <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
-        {Array.from({ length: rowCount }).map((_, rowIndex) => (
-          <TaskRowSkeleton key={rowIndex} />
-        ))}
+    {Array.from({ length: 4 }).map((_, groupIndex) => (
+      <div className="flex flex-col" key={groupIndex}>
+        <SkeletonShape circle className="h-3 w-16 mb-2" />
+        <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
+          {Array.from({ length: rowCount }).map((_, rowIndex) => (
+            <TaskRowSkeleton key={rowIndex} />
+          ))}
+        </div>
       </div>
-    </div>
-    <div className="flex flex-col">
-      <SkeletonShape circle className="h-3 w-15 mb-2" />
-      <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
-        {Array.from({ length: rowCount }).map((_, rowIndex) => (
-          <TaskRowSkeleton key={rowIndex} />
-        ))}
-      </div>
-    </div>
-    <div className="flex flex-col">
-      <SkeletonShape circle className="h-3 w-15 mb-2" />
-      <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
-        {Array.from({ length: rowCount }).map((_, rowIndex) => (
-          <TaskRowSkeleton key={rowIndex} />
-        ))}
-      </div>
-    </div>
-    <div className="flex flex-col">
-      <SkeletonShape circle className="h-3 w-15 mb-2" />
-      <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
-        {Array.from({ length: rowCount }).map((_, rowIndex) => (
-          <TaskRowSkeleton key={rowIndex} />
-        ))}
-      </div>
-    </div>
+    ))}
   </div>
 );
 
