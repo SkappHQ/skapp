@@ -51,10 +51,6 @@ const AddDealSidePanel: FC = () => {
     addDealToStage: store.addDealToStage
   }));
 
-  const isOpen =
-    isCrmSidePanelOpen &&
-    crmSidePanelType === CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL;
-
   useEffect(() => {
     setSelectedContact(getContactById(selectedContactId!) ?? null);
   }, [selectedContactId, getContactById]);
@@ -67,7 +63,8 @@ const AddDealSidePanel: FC = () => {
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isOpen
+    isCrmSidePanelOpen &&
+      crmSidePanelType === CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL
   );
   const contacts = contactLookupData?.items ?? [];
 
