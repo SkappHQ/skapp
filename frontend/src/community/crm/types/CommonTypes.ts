@@ -457,9 +457,3 @@ export interface RelatedTasksPage {
   currentPage: number;
   totalPages: number;
 }
-
-export interface TaskSearchParams {
-  page: number;
-  size: number;
-  searchKeyword: string;
-}

@@ -15,7 +15,6 @@ import {
   CrmTaskUpdatePayload,
   RelatedTasksPage,
   RelatedTasksParams,
-  TaskSearchParams,
   UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
@@ -124,6 +123,12 @@ export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
     onError
   });
 };
+
+interface TaskSearchParams {
+  page: number;
+  size: number;
+  searchKeyword: string;
+}
 
 const fetchCompletedTasks = async ({
   page,
