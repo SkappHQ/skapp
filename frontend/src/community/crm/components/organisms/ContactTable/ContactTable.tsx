@@ -27,7 +27,7 @@ import {
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmContact } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
-import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
+import { formatValue } from "~community/crm/utils/crmUtil";
 import {
   formatPhoneNumber,
   formatTasks
@@ -93,9 +93,14 @@ export const ContactTable: FC = () => {
       key: "name",
       render(value, row) {
         return (
-          <div className="flex flex-col gap-1">
-            <div>{value}</div>
-            <div className="subtitle4 text-secondary-text">
+          <div className="flex flex-col gap-1 min-w-0">
+            <div className="block w-full truncate" title={value}>
+              {value}
+            </div>
+            <div
+              className="subtitle4 text-secondary-text block w-full truncate"
+              title={row.company?.name ?? undefined}
+            >
               {row.company?.name ?? "-"}
             </div>
           </div>
@@ -107,6 +112,13 @@ export const ContactTable: FC = () => {
       columnAriaLabel: translateText(["table", "columns", "emailAriaLabel"]),
       header: translateText(["table", "columns", "emailHeader"]),
       key: "email",
+      render(value) {
+        return (
+          <div className="block w-full truncate" title={value}>
+            {value}
+          </div>
+        );
+      },
       width: "21%"
     },
     {
@@ -133,7 +145,7 @@ export const ContactTable: FC = () => {
       render(value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{formatMonetaryValue(value)}</div>
+            <div>{formatValue(value ? String(value) : null)}</div>
             <div className="subtitle4 text-secondary-text">
               {row.closedDealCount > 0
                 ? `${row.closedDealCount} ${translateText(["table", "closedDealsLabel"], { count: row.closedDealCount })}`
