@@ -148,7 +148,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase());
-			predicates.add(cb.like(cb.lower(contact.get(CrmContact_.name)), "%" + escaped + "%", '\\'));
+			String likePattern = "%" + escaped + "%";
+			Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
+			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), likePattern, '\\'),
+					cb.like(cb.lower(company.get(CrmCompany_.name)), likePattern, '\\')));
 		}
 
 		return predicates;
