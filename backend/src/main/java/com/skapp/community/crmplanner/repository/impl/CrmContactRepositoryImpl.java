@@ -26,7 +26,6 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -127,9 +126,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
-		contact.fetch(CrmContact_.company, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
+				JoinType.LEFT);
 
-		List<Predicate> predicates = buildLookupPredicates(cb, contact, filterDto);
+		List<Predicate> predicates = buildLookupPredicates(cb, contact, company, filterDto);
 		query.where(predicates.toArray(new Predicate[0]));
 		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
 
@@ -141,15 +141,14 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	}
 
 	private List<Predicate> buildLookupPredicates(CriteriaBuilder cb, Root<CrmContact> contact,
-			CrmContactFilterDto filterDto) {
+			Join<CrmContact, CrmCompany> company, CrmContactFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase());
+			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
 			String likePattern = "%" + escaped + "%";
-			Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
 			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), likePattern, '\\'),
 					cb.like(cb.lower(company.get(CrmCompany_.name)), likePattern, '\\')));
 		}
@@ -160,8 +159,9 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	private Long getLookupTotalCount(CriteriaBuilder cb, CrmContactFilterDto filterDto) {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmContact> contact = countQuery.from(CrmContact.class);
+		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
 		countQuery.select(cb.count(contact));
-		countQuery.where(buildLookupPredicates(cb, contact, filterDto).toArray(new Predicate[0]));
+		countQuery.where(buildLookupPredicates(cb, contact, company, filterDto).toArray(new Predicate[0]));
 		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 
