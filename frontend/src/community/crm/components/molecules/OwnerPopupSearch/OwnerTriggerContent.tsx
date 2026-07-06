@@ -2,7 +2,6 @@ import { AvatarChip } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
-import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 
 export interface OwnerTriggerContentProps {
@@ -22,11 +21,10 @@ const OwnerTriggerContent: FC<OwnerTriggerContentProps> = ({
       onClick={onSelect}
     >
       <AvatarChip
-        label={concatStrings([user.firstName, user.lastName ?? ""])}
+        label={user.firstName}
         avatarProps={{
           id: String(user.employeeId),
           firstName: user.firstName,
-          lastName: user.lastName ?? "",
           src: resolvedSrc ?? "",
           size: "sm"
         }}

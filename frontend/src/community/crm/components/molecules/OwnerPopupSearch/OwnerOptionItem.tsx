@@ -25,11 +25,10 @@ const OwnerOptionItem: FC<OwnerOptionItemProps> = ({
       onClick={() => onSelect(option)}
     >
       <AvatarChip
-        label={concatStrings([user.firstName, user.lastName ?? ""])}
+        label={user.firstName}
         avatarProps={{
           id: String(user.employeeId),
           firstName: user.firstName,
-          lastName: user.lastName ?? "",
           src: resolvedSrc ?? "",
           size: "sm"
         }}

@@ -121,7 +121,7 @@ const AddDealSidePanel: FC = () => {
       stageId: "",
       contactId: selectedContactId ? String(selectedContactId) : "",
       ownerId: "",
-      priority: CrmPriorityEnum.LOW,
+      priority: CrmPriorityEnum.MEDIUM,
       amount: "",
       description: ""
     }),
@@ -185,9 +185,17 @@ const AddDealSidePanel: FC = () => {
                 label={translateText(["labels", "description"])}
                 placeholder={translateText(["placeholders", "description"])}
                 value={values.description}
-                onChange={(e) => setFieldValue("description", e.target.value)}
+                onChange={(e) => {
+                  setFieldValue("description", e.target.value);
+                  e.target.style.height = "auto";
+                  e.target.style.height = `${e.target.scrollHeight}px`;
+                }}
                 onBlur={formik.handleBlur}
-                className="w-full h-30.25"
+                className="w-full"
+                style={{
+                  minHeight: "10vh",
+                  overflowY: "auto"
+                }}
                 state={
                   formik.touched.description && formik.errors.description
                     ? "error"
@@ -202,7 +210,7 @@ const AddDealSidePanel: FC = () => {
               />
             </div>
 
-            <div className="w-1/3 flex flex-col gap-4">
+            <div className="w-1/3 min-w-0 flex flex-col gap-4">
               <DealPropertiesSection
                 translateText={translateText}
                 formik={formik}
