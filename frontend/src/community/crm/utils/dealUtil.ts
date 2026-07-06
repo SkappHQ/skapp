@@ -7,6 +7,7 @@ interface OptionSource {
 interface ContactOptionSource {
   id: number;
   name: string;
+  company?: { name: string } | null;
 }
 
 export const buildOwnerOptions = <T extends OptionSource>(
@@ -35,7 +36,7 @@ export const buildContactOptions = <T extends ContactOptionSource>(
   const toOption = (item: T): DropdownOption => ({
     id: item.id,
     value: item.id,
-    label: item.name
+    label: item.company?.name ? `${item.name} ${item.company.name}` : item.name
   });
 
   return items.map(toOption);
