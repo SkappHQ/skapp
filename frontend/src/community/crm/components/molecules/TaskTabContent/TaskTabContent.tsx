@@ -1,9 +1,4 @@
-import {
-  EmptyDataView,
-  InputField,
-  ProjectTableSkeletonLoader,
-  SearchIcon
-} from "@rootcodelabs/skapp-ui";
+import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
@@ -25,6 +20,7 @@ import { getEmptyStateType } from "~community/crm/utils/crmUtil";
 import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
 import TaskGroup from "../../atoms/TaskGroup/TaskGroup";
+import TaskListSkeleton from "./TaskTabSkeleton";
 
 interface TaskTabContentProps {
   tab: CrmTaskTabEnum;
@@ -87,7 +83,7 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
 
   const renderContent = () => {
     if (isCompletedTasksLoading || isOpenTasksLoading) {
-      return <ProjectTableSkeletonLoader rowCount={10} />;
+      return <TaskListSkeleton rowCount={3} />;
     }
 
     if (isCompletedTasksError || isOpenTasksError) {

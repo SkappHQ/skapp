@@ -150,7 +150,8 @@
         "addTaskButtonEmptyView": "Add task",
         "emptyTitle": "No tasks",
         "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
-        "dueDateOverdue": "Overdue",
+        "dueDateOverdue_one": "Overdue by {{count}} day",
+        "dueDateOverdue_other": "Overdue by {{count}} days",
         "dueDateToday": "Due today",
         "dueDateDueOn": "Due on {{date}}"
       },
