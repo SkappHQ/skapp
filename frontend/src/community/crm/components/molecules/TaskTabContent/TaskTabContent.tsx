@@ -20,7 +20,7 @@ import { getEmptyStateType } from "~community/crm/utils/crmUtil";
 import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
 import TaskGroup from "../../atoms/TaskGroup/TaskGroup";
-import TaskListSkeleton from "./TaskListSkeleton";
+import TaskTabSkeleton from "./TaskTabSkeleton";
 
 interface TaskTabContentProps {
   tab: CrmTaskTabEnum;
@@ -84,7 +84,7 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   const renderContent = () => {
     if (isCompletedTasksLoading || isOpenTasksLoading) {
       return (
-        <TaskListSkeleton
+        <TaskTabSkeleton
           rowCount={tab === CrmTaskTabEnum.COMPLETED_TASKS ? 20 : 4}
           groupCount={tab === CrmTaskTabEnum.COMPLETED_TASKS ? 1 : 4}
         />

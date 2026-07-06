@@ -9,7 +9,7 @@ interface Props {
   groupCount?: number;
 }
 
-const TaskListSkeleton: FC<Props> = ({ rowCount = 2, groupCount = 4 }) => {
+const TaskTabSkeleton: FC<Props> = ({ rowCount = 2, groupCount = 4 }) => {
   const translateText = useTranslator("crmModule", "tasks", "table");
 
   return (
@@ -34,4 +34,4 @@ const TaskListSkeleton: FC<Props> = ({ rowCount = 2, groupCount = 4 }) => {
   );
 };
 
-export default TaskListSkeleton;
+export default TaskTabSkeleton;
