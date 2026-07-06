@@ -29,6 +29,7 @@ interface ActionTypes {
   setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;
   appendBoardStageDeals: (stageDeals: CrmBoardStageDealsType) => void;
   addDealToStage: (deal: CrmBoardDealSliceType) => void;
+  setPreselectedStageId: (stageId: number | null) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -47,4 +48,5 @@ export interface CrmStore extends ActionTypes {
   selectedContactId: number | null;
   contacts: Record<number, CrmContact>;
   boardStageDeals: CrmBoardStageDealsType[];
+  preselectedStageId: number | null;
 }

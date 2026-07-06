@@ -15,7 +15,7 @@ import DealsHeader from "./DealsHeader/DealsHeader";
 
 const DealsSection: FC = () => {
   const [inputValue, setInputValue] = useState("");
-  const [activeView, setActiveView] = useState(DealViewEnum.LIST);
+  const [activeView, setActiveView] = useState(DealViewEnum.KANBAN);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +27,7 @@ const DealsSection: FC = () => {
         sortOrder: SortOrderTypes.ASC,
         searchKeyword: debouncedSearch
       },
-      activeView === DealViewEnum.LIST
+      activeView === DealViewEnum.KANBAN
     );
 
   const allDeals = useMemo(

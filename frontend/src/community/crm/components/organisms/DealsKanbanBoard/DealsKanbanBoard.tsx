@@ -15,6 +15,7 @@ import { DRAG_ACTIVATION_DISTANCE } from "~community/crm/constants/boardConstant
 import { useBoardData } from "~community/crm/hooks/useBoardData";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 interface DealsKanbanBoardProps {
   searchKeyword?: string;
@@ -23,11 +24,9 @@ interface DealsKanbanBoardProps {
 const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   searchKeyword = ""
 }) => {
-  const { setIsCrmSidePanelOpen, setPreselectedStageId } = useCrmStore(
-    (store) => ({
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-      setPreselectedStageId: store.setPreselectedStageId
-    })
+  const openCrmSidePanel = useCrmStore((store) => store.openCrmSidePanel);
+  const setPreselectedStageId = useCrmStore(
+    (store) => store.setPreselectedStageId
   );
 
   const sensors = useSensors(
@@ -53,9 +52,9 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   const handleAddDeal = useCallback(
     (stageId: number) => {
       setPreselectedStageId(stageId);
-      setIsCrmSidePanelOpen(true);
+      openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
     },
-    [setPreselectedStageId, setIsCrmSidePanelOpen]
+    [setPreselectedStageId, openCrmSidePanel]
   );
 
   return (

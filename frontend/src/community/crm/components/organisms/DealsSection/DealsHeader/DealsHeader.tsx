@@ -29,14 +29,14 @@ const DealsHeader: FC<Props> = ({
 
   const viewOptions = [
     {
-      value: DealViewEnum.LIST,
-      icon: <ListViewIcon />,
-      ariaLabel: translateText(["listViewAriaLabel"])
-    },
-    {
       value: DealViewEnum.KANBAN,
       icon: <BoardIcon />,
       ariaLabel: translateText(["kanbanViewAriaLabel"])
+    },
+    {
+      value: DealViewEnum.LIST,
+      icon: <ListViewIcon />,
+      ariaLabel: translateText(["listViewAriaLabel"])
     }
   ];
 

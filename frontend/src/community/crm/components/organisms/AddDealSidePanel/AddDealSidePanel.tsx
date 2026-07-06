@@ -41,14 +41,16 @@ const AddDealSidePanel: FC = () => {
     selectedContactId,
     getContactById,
     popCrmSidePanel,
-    addDealToStage
+    addDealToStage,
+    setPreselectedStageId
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
     selectedContactId: store.selectedContactId,
     getContactById: store.getContactById,
     popCrmSidePanel: store.popCrmSidePanel,
-    addDealToStage: store.addDealToStage
+    addDealToStage: store.addDealToStage,
+    setPreselectedStageId: store.setPreselectedStageId
   }));
 
   const isOpen =
@@ -81,6 +83,7 @@ const AddDealSidePanel: FC = () => {
     });
     formik.resetForm();
     setSelectedContact(null);
+    setPreselectedStageId(null);
     popCrmSidePanel();
   };
 
@@ -139,6 +142,7 @@ const AddDealSidePanel: FC = () => {
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
+    setPreselectedStageId(null);
     popCrmSidePanel();
   };
 
