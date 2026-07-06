@@ -10,10 +10,7 @@ import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  DetailPanelDealResponseType,
-  PreselectedContact
-} from "~community/crm/types/CommonTypes";
+import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
@@ -24,25 +21,19 @@ import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
   deals: DetailPanelDealResponseType[];
-  preselectedContact?: PreselectedContact | null;
 }
 
-const SidePanelDealSection: FC<Props> = ({
-  deals,
-  preselectedContact
-}) => {
+const SidePanelDealSection: FC<Props> = ({ deals }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { pushCrmSidePanel, setPreselectedContact } = useCrmStore((store) => ({
-    pushCrmSidePanel: store.pushCrmSidePanel,
-    setPreselectedContact: store.setPreselectedContact
+  const { pushCrmSidePanel } = useCrmStore((store) => ({
+    pushCrmSidePanel: store.pushCrmSidePanel
   }));
 
   const handleAddDeal = () => {
     guardCrmCreate(CrmLimitResource.DEALS, () => {
-      setPreselectedContact(preselectedContact ?? null);
       pushCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
     });
   };

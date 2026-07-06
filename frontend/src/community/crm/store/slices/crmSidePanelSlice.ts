@@ -11,31 +11,25 @@ const CrmSidePanelSlice = (set: SetType<CrmStore>) => ({
     set({
       isCrmSidePanelOpen: true,
       crmSidePanelType: type,
-      previousCrmSidePanelType: null,
-      preselectedContact: null
+      previousCrmSidePanelType: null
     }),
   pushCrmSidePanel: (type: CrmSidePanelTypes) =>
-    set((state) => {
-      if (state.crmSidePanelType === type) return state;
-      return {
-        isCrmSidePanelOpen: true,
-        crmSidePanelType: type,
-        previousCrmSidePanelType: state.crmSidePanelType
-      };
-    }),
+    set((state) => ({
+      isCrmSidePanelOpen: true,
+      crmSidePanelType: type,
+      previousCrmSidePanelType: state.crmSidePanelType
+    })),
   popCrmSidePanel: () =>
     set((state) => ({
       crmSidePanelType: state.previousCrmSidePanelType,
       previousCrmSidePanelType: null,
-      isCrmSidePanelOpen: state.previousCrmSidePanelType !== null,
-      preselectedContact: null
+      isCrmSidePanelOpen: state.previousCrmSidePanelType !== null
     })),
   closeCrmSidePanel: () =>
     set({
       isCrmSidePanelOpen: false,
       crmSidePanelType: null,
-      previousCrmSidePanelType: null,
-      preselectedContact: null
+      previousCrmSidePanelType: null
     }),
   setPreselectedStageId: (preselectedStageId: number | null) =>
     set({ preselectedStageId })

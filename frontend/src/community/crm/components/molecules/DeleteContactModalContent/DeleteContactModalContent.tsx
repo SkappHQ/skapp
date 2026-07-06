@@ -3,10 +3,7 @@ import { FC } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  useDeleteContact,
-  useGetSelectedContactById
-} from "~community/crm/api/ContactApi";
+import { useDeleteContact } from "~community/crm/api/ContactApi";
 import CrmDeleteModalContent from "~community/crm/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useCrmStore } from "~community/crm/store/store";
 
@@ -17,12 +14,14 @@ const DeleteContactModalContent: FC = () => {
     selectedContactId,
     setSelectedContactId,
     closeCrmSidePanel,
-    setIsContactModalOpen
+    setIsContactModalOpen,
+    getContactById
   } = useCrmStore((store) => ({
     selectedContactId: store.selectedContactId,
     setSelectedContactId: store.setSelectedContactId,
     closeCrmSidePanel: store.closeCrmSidePanel,
-    setIsContactModalOpen: store.setIsContactModalOpen
+    setIsContactModalOpen: store.setIsContactModalOpen,
+    getContactById: store.getContactById
   }));
 
   const translateText = useTranslator(
@@ -35,7 +34,7 @@ const DeleteContactModalContent: FC = () => {
     setIsContactModalOpen(false);
   };
 
-  const selectedContact = useGetSelectedContactById(selectedContactId);
+  const selectedContact = getContactById(selectedContactId!);
 
   const handleSuccess = () => {
     setToastMessage({

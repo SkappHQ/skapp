@@ -38,14 +38,16 @@ const AddDealSidePanel: FC = () => {
   const {
     isCrmSidePanelOpen,
     crmSidePanelType,
-    preselectedContact,
+    selectedContactId,
+    getContactById,
     popCrmSidePanel,
     setPreselectedStageId,
     addDealToStage
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
-    preselectedContact: store.preselectedContact,
+    selectedContactId: store.selectedContactId,
+    getContactById: store.getContactById,
     popCrmSidePanel: store.popCrmSidePanel,
     setPreselectedStageId: store.setPreselectedStageId,
     addDealToStage: store.addDealToStage
@@ -56,8 +58,8 @@ const AddDealSidePanel: FC = () => {
     crmSidePanelType === CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL;
 
   useEffect(() => {
-    setSelectedContact(preselectedContact);
-  }, [preselectedContact]);
+    setSelectedContact(getContactById(selectedContactId!) ?? null);
+  }, [selectedContactId, getContactById]);
 
   const [contactSearchTerm, setContactSearchTerm] = useState<string>("");
   const debouncedContactSearch = useDebounce(
@@ -117,13 +119,13 @@ const AddDealSidePanel: FC = () => {
     () => ({
       name: "",
       stageId: "",
-      contactId: preselectedContact ? String(preselectedContact.id) : "",
+      contactId: selectedContactId ? String(selectedContactId) : "",
       ownerId: "",
       priority: CrmPriorityEnum.LOW,
       amount: "",
       description: ""
     }),
-    [preselectedContact]
+    [selectedContactId]
   );
 
   const formik = useFormik<CrmDealAddFormTypes>({
