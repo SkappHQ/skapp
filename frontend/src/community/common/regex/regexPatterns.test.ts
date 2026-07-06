@@ -118,6 +118,8 @@ describe("Validation Functions", () => {
     expect(regex.test("https://example.com#section")).toBe(true);
     expect(regex.test("https://example.com:8080")).toBe(true);
     expect(regex.test("https://sub.example.co.uk")).toBe(true);
+    expect(regex.test("https://example.com/a-b_c.d~e")).toBe(true);
+    expect(regex.test("https://example.com/path%20with%20spaces")).toBe(true);
     expect(regex.test("http://example.com")).toBe(false);
     expect(regex.test("www.example.com")).toBe(false);
     expect(regex.test("example.com")).toBe(false);
@@ -127,6 +129,10 @@ describe("Validation Functions", () => {
     expect(regex.test("https://.com")).toBe(false);
     expect(regex.test("http://example..com")).toBe(false);
     expect(regex.test("ftp://example.com")).toBe(false);
+    expect(regex.test("https://acme.com/a|b")).toBe(false);
+    expect(regex.test("https://acme.com/a{b}")).toBe(false);
+    expect(regex.test("https://acme.com/a^b")).toBe(false);
+    expect(regex.test("https://acme.com/a\\b")).toBe(false);
   });
 
   test("isValidUrlPattern()", () => {

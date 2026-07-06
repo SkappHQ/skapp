@@ -36,8 +36,7 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
       .optional()
       .transform((v) => (v === "" ? null : v))
       .matches(isValidWebsiteUrl(), {
-        message: translator(["validations", "website"]),
-        excludeEmptyString: true
+        message: translator(["validations", "website"])
       })
       .max(
         characterLengths.CHARACTER_LENGTH,
