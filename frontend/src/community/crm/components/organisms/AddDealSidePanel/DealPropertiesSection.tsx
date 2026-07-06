@@ -68,6 +68,26 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
 
   return (
     <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
+      <PropertyRow label={translateText(["labels", "contactName"])} required>
+        <div className="flex flex-col w-full">
+          <ContactPopupSearch
+            contacts={contacts}
+            selectedContact={selectedContact}
+            onChange={handleContactChange}
+            onSearch={setContactSearchTerm}
+            placeholder={translateText(["placeholders", "none"])}
+            searchPlaceholder={translateText(["placeholders", "contactSearch"])}
+            noResultsText={translateText(["placeholders", "noResults"])}
+            ariaInvalid={!!errors.contactId}
+          />
+          {errors.contactId && touched.contactId && (
+            <p className="text-semantic-red-accent body3 mt-1">
+              {errors.contactId}
+            </p>
+          )}
+        </div>
+      </PropertyRow>
+
       <PropertyRow label={translateText(["labels", "value"])}>
         <div className="flex flex-col w-full px-1">
           <input
@@ -106,26 +126,6 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
           {errors.ownerId && (
             <p className="text-semantic-red-text body3 mt-1">
               {errors.ownerId}
-            </p>
-          )}
-        </div>
-      </PropertyRow>
-
-      <PropertyRow label={translateText(["labels", "contactName"])}>
-        <div className="flex flex-col w-full">
-          <ContactPopupSearch
-            contacts={contacts}
-            selectedContact={selectedContact}
-            onChange={handleContactChange}
-            onSearch={setContactSearchTerm}
-            placeholder={translateText(["placeholders", "none"])}
-            searchPlaceholder={translateText(["placeholders", "contactSearch"])}
-            noResultsText={translateText(["placeholders", "noResults"])}
-            ariaInvalid={!!errors.contactId}
-          />
-          {errors.contactId && touched.contactId && (
-            <p className="text-semantic-red-text body3 mt-1">
-              {errors.contactId}
             </p>
           )}
         </div>
