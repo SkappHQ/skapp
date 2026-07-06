@@ -1,6 +1,5 @@
 import { FC } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 import TaskRowSkeleton from "~community/crm/components/molecules/TaskRow/TaskRowSkeleton";
 
@@ -10,14 +9,8 @@ interface Props {
 }
 
 const TaskTabSkeleton: FC<Props> = ({ rowCount = 2, groupCount = 4 }) => {
-  const translateText = useTranslator("crmModule", "tasks", "table");
-
   return (
-    <div
-      role="status"
-      aria-busy="true"
-      aria-label={translateText(["infiniteScrollLoadingMessage"])}
-    >
+    <div role="status" aria-busy={true} aria-live="polite">
       <div className="flex flex-col gap-4" aria-hidden="true">
         {Array.from({ length: groupCount }).map((_, groupIndex) => (
           <div className="flex flex-col" key={groupIndex}>
