@@ -17,18 +17,15 @@ import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import DealsHeader from "./DealsHeader/DealsHeader";
 
 const DealsSection: FC = () => {
-  const [inputValue, setInputValue] = useState<string>("");
-  const [activeView, setActiveView] = useState<DealViewEnum>(DealViewEnum.LIST);
+  const [inputValue, setInputValue] = useState("");
+  const [activeView, setActiveView] = useState(DealViewEnum.LIST);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { setSelectedDealId, openCrmSidePanel, setDeals } = useCrmStore(
-    (store) => ({
-      setSelectedDealId: store.setSelectedDealId,
-      openCrmSidePanel: store.openCrmSidePanel,
-      setDeals: store.setDeals
-    })
-  );
+  const { setSelectedDealId, openCrmSidePanel } = useCrmStore((store) => ({
+    setSelectedDealId: store.setSelectedDealId,
+    openCrmSidePanel: store.openCrmSidePanel
+  }));
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useGetDealsInfinite(
@@ -41,14 +38,10 @@ const DealsSection: FC = () => {
       activeView === DealViewEnum.LIST
     );
 
-   const allDeals = useMemo(
+  const allDeals = useMemo(
     () => data?.pages.flatMap((p) => p?.items ?? []),
     [data]
   );
-
-  useEffect(() => {
-    setDeals(allDeals);
-  }, [allDeals, setDeals]);
 
   const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -95,6 +88,7 @@ const DealsSection: FC = () => {
           <DealsTable
             searchKeyword={debouncedSearch}
             isLoading={isLoading}
+            allDeals={allDeals ?? []}
             hasNextPage={hasNextPage}
             onLoadMore={loadMore}
             onDealClick={handleDealOnClick}

@@ -15,7 +15,6 @@ import { concatStrings } from "~community/common/utils/commonUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
-import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
@@ -57,6 +56,7 @@ interface DealRow extends BaseRowData {
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
+  allDeals: CrmDealListItem[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
   onDealClick?: (deal: CrmDealListItem) => void;
@@ -65,14 +65,13 @@ interface Props {
 const DealsTable: FC<Props> = ({
   searchKeyword,
   isLoading,
+  allDeals,
   hasNextPage,
   onLoadMore,
   onDealClick
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const { getStageByName } = useStageNameMapper();
-
-  const deals = useCrmStore((store) => store.deals);
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
@@ -154,7 +153,7 @@ const DealsTable: FC<Props> = ({
 
   const tableRows = useMemo(
     (): DealRow[] =>
-      deals.map((deal: CrmDealListItem) => {
+      allDeals.map((deal: CrmDealListItem) => {
         const formattedAmount = formatValue(deal.amount);
 
         return {
@@ -222,7 +221,7 @@ const DealsTable: FC<Props> = ({
           dealOwner: <OwnerCell owner={deal.owner} />
         };
       }),
-    [deals, getStageByName]
+    [allDeals, getStageByName]
   );
 
   const tableData = useMemo(

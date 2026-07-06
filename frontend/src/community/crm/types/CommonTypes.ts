@@ -296,6 +296,17 @@ export interface CrmDealListItem {
   owner: CrmOwner;
 }
 
+export interface CrmDealDetailResponseType {
+  id: number;
+  name: string;
+  description: string | null;
+  amount: string | null;
+  owner: CrmOwner;
+  stageId: number;
+  priority: CrmPriorityEnum;
+  contact: CrmContactLookup;
+}
+
 export interface CrmDealPaginatedResponse {
   items: CrmDealListItem[];
   currentPage: number;
@@ -416,17 +427,6 @@ export interface DetailPanelDealResponseType {
   amount: string;
   owner: CrmOwner;
   stage: CrmDealStageType;
-}
-
-export interface CrmDealDetailResponseType {
-  id: number;
-  name: string;
-  description: string | null;
-  amount: string | null;
-  owner: CrmOwner;
-  stageId: number;
-  priority: CrmPriorityEnum;
-  contact: CrmContactLookup;
 }
 
 export interface CrmContact {

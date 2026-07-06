@@ -2,7 +2,11 @@ import { FC } from "react";
 
 import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 
-const TaskRowSkeleton: FC<{ firstRow?: boolean }> = ({ firstRow = false }) => (
+interface Props {
+  firstRow?: boolean;
+}
+
+const TaskRowSkeleton: FC<Props> = ({ firstRow = false }) => (
   <div className="flex items-center justify-between px-3 py-3">
     <div className="flex items-center gap-4">
       <SkeletonShape circle={firstRow} className="h-6 w-6 shrink-0" />

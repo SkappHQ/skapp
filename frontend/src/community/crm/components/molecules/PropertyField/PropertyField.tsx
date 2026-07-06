@@ -55,10 +55,10 @@ const PropertyField: FC<PropertyFieldProps> = ({
         !inputRef.current.contains(event.target as Node) &&
         isEditing
       ) {
-        setIsEditing(false);
         if (onSave) {
           onSave(inputValue);
           setInputValue(value);
+          setIsEditing(false);
         } else if (onChange) {
           onChange(inputValue);
         }
