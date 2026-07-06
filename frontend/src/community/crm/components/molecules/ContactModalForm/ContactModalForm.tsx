@@ -1,4 +1,4 @@
-import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
+import { Badge, ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useMemo, useState } from "react";
 
@@ -25,6 +25,25 @@ import {
 import { extractDomainFromEmail } from "~community/crm/utils/commonHelpers";
 import { mergeAndPrioritizeCompanyDropdownItems } from "~community/crm/utils/contactUtil";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
+
+const withSuggestedBadge = (
+  item: SearchableDropdownItem,
+  translateContactText: TranslatorFunctionType
+): SearchableDropdownItem => ({
+  ...item,
+  content: (
+    <span className="flex items-center gap-2">
+      {item.content}
+      <Badge
+        size="sm"
+        backgroundColor="bg-semantic-green-background"
+        textColor="text-semantic-green-text"
+      >
+        {translateContactText(["labels", "suggested"])}
+      </Badge>
+    </span>
+  )
+});
 
 export interface ContactFormProps {
   translateContactText: TranslatorFunctionType;
@@ -89,17 +108,29 @@ const ContactModalForm = ({
       mergeAndPrioritizeCompanyDropdownItems(
         companyLookupData?.items,
         domainSearchData?.companies
+      ).map((item) =>
+        item.isPrioritized
+          ? withSuggestedBadge(item, translateContactText)
+          : item
       ),
-    [companyLookupData?.items, domainSearchData?.companies]
+    [
+      companyLookupData?.items,
+      domainSearchData?.companies,
+      translateContactText
+    ]
   );
 
   const handleCompanySelect = (item: SearchableDropdownItem) => {
-    const company = companyLookupData?.items?.find(
-      (lookupCompany) => String(lookupCompany.id) === item.id
-    );
+    const company =
+      companyLookupData?.items?.find(
+        (lookupCompany) => String(lookupCompany.id) === item.id
+      ) ??
+      domainSearchData?.companies?.find(
+        (domainCompany) => String(domainCompany.id) === item.id
+      );
 
     setFieldValue("companyId", Number(item.id));
-    setSelectedCompanyName(company?.name ?? String(item.content));
+    setSelectedCompanyName(company?.name ?? "");
     setCompanySearchText("");
   };
 
