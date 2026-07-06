@@ -14,12 +14,12 @@ const DeleteTaskModalContent: FC = () => {
     selectedTaskId,
     setSelectedTaskId,
     setIsTaskModalOpen,
-    setIsCrmSidePanelOpen
+    closeCrmSidePanel
   } = useCrmStore((store) => ({
     selectedTaskId: store.selectedTaskId,
     setSelectedTaskId: store.setSelectedTaskId,
     setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    closeCrmSidePanel: store.closeCrmSidePanel
   }));
 
   const translateText = useTranslator("crmModule", "tasks", "deleteTaskModal");
@@ -37,7 +37,7 @@ const DeleteTaskModalContent: FC = () => {
     });
 
     handleCloseModal();
-    setIsCrmSidePanelOpen(false);
+    closeCrmSidePanel();
     setSelectedTaskId(null);
   };
 

@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -25,7 +25,8 @@ import {
   DEFAULT_PAGE_SIZE
 } from "~community/crm/constants/contactConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmContact } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 import {
   formatPhoneNumber,
@@ -49,14 +50,22 @@ export const ContactTable: FC = () => {
 
   const { data: companies } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
 
-  const contacts = data?.pages.flatMap((page) => page.items);
+  const contacts = useMemo(
+    () => data?.pages.flatMap((page) => page.items),
+    [data]
+  );
 
-  const { setSelectedContactId, setIsCrmSidePanelOpen } = useCrmStore(
+  const { setSelectedContactId, openCrmSidePanel, setContacts } = useCrmStore(
     (store) => ({
       setSelectedContactId: store.setSelectedContactId,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+      openCrmSidePanel: store.openCrmSidePanel,
+      setContacts: store.setContacts
     })
   );
+
+  useEffect(() => {
+    if (contacts) setContacts(contacts);
+  }, [contacts, setContacts]);
 
   const hasActiveFilters =
     debouncedSearch.trim() !== "" || selectedCompany !== undefined;
@@ -77,7 +86,7 @@ export const ContactTable: FC = () => {
     }))
   ];
 
-  const columns: TableColumn<CrmContactMetricsType>[] = [
+  const columns: TableColumn<CrmContact>[] = [
     {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
@@ -248,7 +257,7 @@ export const ContactTable: FC = () => {
         }}
         onRowClick={(row) => {
           setSelectedContactId(row.id);
-          setIsCrmSidePanelOpen(true);
+          openCrmSidePanel(CrmSidePanelTypes.CONTACT_SIDE_PANEL);
         }}
       />
     </div>

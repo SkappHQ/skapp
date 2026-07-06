@@ -5,6 +5,18 @@ export interface CrmBoardInitDataResponse {
   stages: CrmDealStageType[];
   contacts: CrmContactLookup[];
   owners: CrmOwner[];
+  crmRoles: string[];
+}
+
+export interface CrmBoardDealResponseType {
+  id: number;
+  name: string;
+  amount: string | null;
+  ownerId: number;
+  companyId: number | null;
+  contactId: number;
+  priority: CrmPriorityEnum;
+  taskCount: number;
 }
 
 export interface CrmBoardDealType {
@@ -16,13 +28,38 @@ export interface CrmBoardDealType {
   amount: string | null;
   priority: CrmPriorityEnum;
   taskCount: number;
-  orderIndex: string;
 }
 
-export interface CrmBoardStageDeals {
+export interface CrmBoardStageDealsResponseType {
   stageId: number;
-  deals: CrmBoardDealType[];
+  deals: CrmBoardDealResponseType[];
   totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  hasNextPage: boolean;
+}
+
+export interface CrmBoardStageDealsType {
+  stageId: number;
+  deals: CrmBoardDealSliceType[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  hasNextPage: boolean;
+}
+
+export interface CrmBoardDealSliceType {
+  id: number;
+  name: string;
+  contactName: string;
+  companyName: string | null;
+  owner: CrmOwner;
+  amount: string | null;
+  priority: CrmPriorityEnum;
+  taskCount: number;
+  stageId: number;
 }
 
 export interface CrmBoardDealsGroupedRequest {
@@ -32,20 +69,27 @@ export interface CrmBoardDealsGroupedRequest {
   limit: number;
 }
 
-export interface CrmBoardReorderWithinStagePayload {
-  dealId: number;
+export interface CrmBoardDealNeighboursType {
   previousDealId: number | null;
   nextDealId: number | null;
 }
 
-export interface CrmBoardMoveBetweenStagesPayload {
+export interface CrmBoardReorderResultType extends CrmBoardDealNeighboursType {
+  reorderedDeals: CrmBoardDealSliceType[];
+}
+
+export interface CrmBoardReorderWithinStagePayload
+  extends CrmBoardDealNeighboursType {
+  dealId: number;
+}
+
+export interface CrmBoardMoveBetweenStagesPayload
+  extends CrmBoardDealNeighboursType {
   dealId: number;
   newStageId: number;
-  previousDealId: number | null;
-  nextDealId: number | null;
 }
 
-export interface CrmBoardStage {
+export interface KanbanDragData {
+  type: "deal" | "stage";
   stageId: number;
-  deals: CrmBoardDealType[];
 }
