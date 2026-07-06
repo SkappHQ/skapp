@@ -1,10 +1,11 @@
 import { CrmBoardDealSliceType, CrmBoardStageDealsType } from "./BoardTypes";
 import {
   CrmCompanyMetricsType,
-  CrmTaskDetailType,
-  PreselectedContact
+  CrmContact,
+  CrmTaskDetailType
 } from "./CommonTypes";
 import { CrmModalTypes } from "./ModalTypes";
+import { CrmSidePanelTypes } from "./SidePanelTypes";
 
 interface ActionTypes {
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
@@ -14,13 +15,17 @@ interface ActionTypes {
   setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
-  setPreselectedContact: (contact: PreselectedContact | null) => void;
   setSelectedTaskId: (taskId: number | null) => void;
   setTasks: (tasks: CrmTaskDetailType[]) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
-  setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
-  setPreselectedStageId: (preselectedStageId: number | null) => void;
+  openCrmSidePanel: (type: CrmSidePanelTypes) => void;
+  pushCrmSidePanel: (type: CrmSidePanelTypes) => void;
+  popCrmSidePanel: () => void;
+  closeCrmSidePanel: () => void;
   setSelectedContactId: (contactId: number | null) => void;
+  setContacts: (contacts: CrmContact[]) => void;
+  updateContact: (contact: CrmContact) => void;
+  getContactById: (id: number) => CrmContact | undefined;
   setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;
   appendBoardStageDeals: (stageDeals: CrmBoardStageDealsType) => void;
   addDealToStage: (deal: CrmBoardDealSliceType) => void;
@@ -34,11 +39,12 @@ export interface CrmStore extends ActionTypes {
   selectedCompany: CrmCompanyMetricsType | null;
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
-  preselectedContact: PreselectedContact | null;
   selectedTaskId: number | null;
   tasks: CrmTaskDetailType[];
   isCrmSidePanelOpen: boolean;
-  preselectedStageId: number | null;
+  crmSidePanelType: CrmSidePanelTypes | null;
+  previousCrmSidePanelType: CrmSidePanelTypes | null;
   selectedContactId: number | null;
+  contacts: Record<number, CrmContact>;
   boardStageDeals: CrmBoardStageDealsType[];
 }

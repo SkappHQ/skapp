@@ -18,6 +18,10 @@ export interface CrmContactSliceTypes extends Pick<
   | "setContactModalType"
   | "selectedContactId"
   | "setSelectedContactId"
+  | "contacts"
+  | "setContacts"
+  | "updateContact"
+  | "getContactById"
 > {}
 
 export interface CrmTaskSliceTypes extends Pick<
@@ -26,21 +30,11 @@ export interface CrmTaskSliceTypes extends Pick<
   | "setIsTaskModalOpen"
   | "taskModalType"
   | "setTaskModalType"
-  | "preselectedContact"
-  | "setPreselectedContact"
   | "selectedTaskId"
   | "setSelectedTaskId"
   | "tasks"
   | "setTasks"
   | "getTaskById"
-> {}
-
-export interface CrmSidePanelSliceTypes extends Pick<
-  CrmStore,
-  | "isCrmSidePanelOpen"
-  | "setIsCrmSidePanelOpen"
-  | "preselectedStageId"
-  | "setPreselectedStageId"
 > {}
 
 export interface CrmBoardSliceTypes extends Pick<

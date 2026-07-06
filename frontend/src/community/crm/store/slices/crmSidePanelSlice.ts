@@ -1,13 +1,35 @@
 import { SetType } from "~community/common/types/CommonTypes";
-import { CrmSidePanelSliceTypes } from "~community/crm/types/SliceTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { CrmStore } from "~community/crm/types/StoreTypes";
 
-const CrmSidePanelSlice = (set: SetType<CrmSidePanelSliceTypes>) => ({
+const CrmSidePanelSlice = (set: SetType<CrmStore>) => ({
   isCrmSidePanelOpen: false,
-  setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) =>
-    set({ isCrmSidePanelOpen }),
-  preselectedStageId: null,
-  setPreselectedStageId: (preselectedStageId: number | null) =>
-    set({ preselectedStageId })
+  crmSidePanelType: null,
+  previousCrmSidePanelType: null,
+  openCrmSidePanel: (type: CrmSidePanelTypes) =>
+    set({
+      isCrmSidePanelOpen: true,
+      crmSidePanelType: type,
+      previousCrmSidePanelType: null
+    }),
+  pushCrmSidePanel: (type: CrmSidePanelTypes) =>
+    set((state) => ({
+      isCrmSidePanelOpen: true,
+      crmSidePanelType: type,
+      previousCrmSidePanelType: state.crmSidePanelType
+    })),
+  popCrmSidePanel: () =>
+    set((state) => ({
+      crmSidePanelType: state.previousCrmSidePanelType,
+      previousCrmSidePanelType: null,
+      isCrmSidePanelOpen: state.previousCrmSidePanelType !== null
+    })),
+  closeCrmSidePanel: () =>
+    set({
+      isCrmSidePanelOpen: false,
+      crmSidePanelType: null,
+      previousCrmSidePanelType: null
+    })
 });
 
 export default CrmSidePanelSlice;
