@@ -12,7 +12,8 @@ import {
 } from "~community/crm/api/TaskApi";
 import {
   TASK_PAGE_SIZE,
-  TASK_SEARCH_DEBOUNCE_DELAY
+  TASK_SEARCH_DEBOUNCE_DELAY,
+  TASK_SKELETON_CONFIG
 } from "~community/crm/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
@@ -83,12 +84,12 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
 
   const renderContent = () => {
     if (isCompletedTasksLoading || isOpenTasksLoading) {
-      return (
-        <TaskTabSkeleton
-          rowCount={tab === CrmTaskTabEnum.COMPLETED_TASKS ? 20 : 4}
-          groupCount={tab === CrmTaskTabEnum.COMPLETED_TASKS ? 1 : 4}
-        />
-      );
+      const skeletonProps =
+        tab === CrmTaskTabEnum.COMPLETED_TASKS
+          ? TASK_SKELETON_CONFIG.COMPLETED
+          : TASK_SKELETON_CONFIG.OPEN;
+
+      return <TaskTabSkeleton {...skeletonProps} />;
     }
 
     if (isCompletedTasksError || isOpenTasksError) {

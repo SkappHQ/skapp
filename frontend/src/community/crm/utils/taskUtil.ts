@@ -10,6 +10,7 @@ import {
   convertUTCStringToLocalDateTime,
   formatDateTimeWithOrdinalIndicatorWithoutYear,
   getCurrentDateAtMidnight,
+  getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
@@ -40,7 +41,7 @@ export const getDueDateStatus = (
   const today = getCurrentDateAtMidnight();
 
   if (!isCompleted && due < today) {
-    const dayCount = Math.round(today.diff(due.startOf("day"), "days").days);
+    const dayCount = getDayDifference(due, today);
     return {
       textKey: "dueDateOverdue",
       dayCount,
