@@ -1,5 +1,4 @@
 import {
-  InfiniteData,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -20,8 +19,8 @@ import {
 } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
+  CrmContact,
   CrmContactCreatePayload,
-  CrmContactDetailResponseType,
   CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
   CrmOwner,
@@ -72,18 +71,6 @@ export const useGetContactMetrics = (
       return nextPage < lastPage.totalPages ? nextPage : undefined;
     }
   });
-};
-
-export const useGetSelectedContactById = (selectedContactId: number) => {
-  const queryClient = useQueryClient();
-
-  const contacts = queryClient
-    .getQueriesData<InfiniteData<CrmContactMetricsResponseType>>({
-      queryKey: contactQueryKeys.ALL
-    })
-    .flatMap(([, data]) => data?.pages.flatMap((page) => page.items) ?? []);
-
-  return contacts.find((contact) => contact.id === selectedContactId);
 };
 
 export const useGetCrmCompanies = (size: number) => {
@@ -229,9 +216,7 @@ export const useGetCrmOwners = (
   });
 };
 
-const fetchContactById = async (
-  id: number
-): Promise<CrmContactDetailResponseType> => {
+const fetchContactById = async (id: number): Promise<CrmContact> => {
   const response = await authFetch.get(contactEndpoints.CONTACT_BY_ID(id));
   return response?.data?.results?.[0];
 };
@@ -239,7 +224,7 @@ const fetchContactById = async (
 export const useGetContactById = (
   id: number,
   enabled = true
-): UseQueryResult<CrmContactDetailResponseType> => {
+): UseQueryResult<CrmContact> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_BY_ID(id),
     queryFn: () => fetchContactById(id),

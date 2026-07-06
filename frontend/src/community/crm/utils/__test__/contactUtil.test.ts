@@ -1,11 +1,11 @@
 import { CrmMetricLabelThemeEnum } from "~community/crm/enums/common";
-import { CrmContactDetailResponseType } from "~community/crm/types/CommonTypes";
+import { CrmContact } from "~community/crm/types/CommonTypes";
 
 import { mapContactToMetricItems } from "../contactUtil";
 
 const mockTranslateText = (keys: string[]): string => keys.join(".");
 
-const baseContact: CrmContactDetailResponseType = {
+const baseContact: CrmContact = {
   id: 1,
   name: "Test Contact",
   email: "test@example.com",

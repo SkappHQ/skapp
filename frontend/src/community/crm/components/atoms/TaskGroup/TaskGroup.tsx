@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 import TaskRow from "../../molecules/TaskRow/TaskRow";
 
@@ -16,9 +17,9 @@ const TaskGroup: FC<TaskGroupProps> = ({
   tasks,
   isCheckTaskVisible = true
 }) => {
-  const { setSelectedTaskId, setIsCrmSidePanelOpen } = useCrmStore((store) => ({
+  const { setSelectedTaskId, openCrmSidePanel } = useCrmStore((store) => ({
     setSelectedTaskId: store.setSelectedTaskId,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    openCrmSidePanel: store.openCrmSidePanel
   }));
 
   return (
@@ -36,7 +37,7 @@ const TaskGroup: FC<TaskGroupProps> = ({
               isShowContact={true}
               onRowClick={() => {
                 setSelectedTaskId(task.id);
-                setIsCrmSidePanelOpen(true);
+                openCrmSidePanel(CrmSidePanelTypes.TASK_SIDE_PANEL);
               }}
             />
           );

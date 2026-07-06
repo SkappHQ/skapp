@@ -166,7 +166,9 @@ const DealsTable: FC<Props> = ({
                 />
               </div>
               <span className="body2">#{deal.id}</span>
-              <span className="body2">{deal.name}</span>
+              <span className="body2 block w-full truncate" title={deal.name}>
+                {deal.name}
+              </span>
             </div>
           ),
           value: (
@@ -183,8 +185,22 @@ const DealsTable: FC<Props> = ({
               <span className="body2">{getStageByName(deal.stage.name)}</span>
             </div>
           ),
-          companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
-          contactName: <span className="body2">{deal.contactName ?? "-"}</span>,
+          companyName: (
+            <span
+              className="body2 block w-full truncate"
+              title={deal?.companyName ?? undefined}
+            >
+              {deal?.companyName ?? "-"}
+            </span>
+          ),
+          contactName: (
+            <span
+              className="body2 block w-full truncate"
+              title={deal.contactName}
+            >
+              {deal.contactName}
+            </span>
+          ),
           dealOwner: <OwnerCell owner={deal.owner} />
         };
       }),
@@ -198,14 +214,14 @@ const DealsTable: FC<Props> = ({
 
   if (isLoading) {
     return (
-      <div className="w-fit h-150 rounded-lg shadow-lg overflow-hidden">
+      <div className="w-fit h-full rounded-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="h-150 rounded-lg shadow-lg">
+    <div ref={containerRef} className="rounded-lg h-full overflow-y-auto">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}

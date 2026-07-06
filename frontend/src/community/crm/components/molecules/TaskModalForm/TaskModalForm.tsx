@@ -50,12 +50,14 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const {
     setIsTaskModalOpen,
     selectedTaskId,
-    preselectedContact,
+    selectedContactId,
+    getContactById,
     getTaskById
   } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     selectedTaskId: store.selectedTaskId,
-    preselectedContact: store.preselectedContact,
+    selectedContactId: store.selectedContactId,
+    getContactById: store.getContactById,
     getTaskById: store.getTaskById
   }));
 
@@ -73,7 +75,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
   const [selectedContactName, setSelectedContactName] = useState(
-    preselectedContact?.name ?? selectedTask?.contact?.name ?? ""
+    getContactById(selectedContactId!)?.name ?? selectedTask?.contact?.name ?? ""
   );
   const [dealSearchText, setDealSearchText] = useState("");
   const [selectedDealName, setSelectedDealName] = useState(
@@ -84,13 +86,15 @@ const TaskModalForm: FC<TaskFormProps> = ({
     if (selectedTask) {
       setSelectedOwner(selectedTask.owner ?? initialOwner ?? null);
       setSelectedContactName(
-        preselectedContact?.name ?? selectedTask?.contact?.name ?? ""
+        getContactById(selectedContactId!)?.name ??
+          selectedTask?.contact?.name ??
+          ""
       );
       setSelectedDealName(selectedTask.deal?.name ?? "");
     } else if (initialOwner) {
       setSelectedOwner(initialOwner);
     }
-  }, [initialOwner, selectedTask, preselectedContact]);
+  }, [initialOwner, selectedTask, selectedContactId, getContactById]);
 
   const debouncedOwnerSearchText = useDebounce(
     ownerSearchText.trim(),

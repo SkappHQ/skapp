@@ -3,7 +3,6 @@ import {
   EditIcon,
   MenuItemProps,
   SidePanel,
-  SidePanelProps,
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
@@ -28,12 +27,13 @@ import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { mapCompanyToMetricItems } from "~community/crm/utils/companyUtil";
 
 import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
 import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
 
-const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+const CompanySidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
   const { isCrmSalesManager } = useSessionData();
 
@@ -41,12 +41,23 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     SidePanelTabEnum.TASKS
   );
 
-  const { setIsCompanyModalOpen, setCompanyModalType, selectedCompany } =
-    useCrmStore((store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      setCompanyModalType: store.setCompanyModalType,
-      selectedCompany: store.selectedCompany
-    }));
+  const {
+    setIsCompanyModalOpen,
+    setCompanyModalType,
+    selectedCompany,
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    setSelectedCompany,
+    closeCrmSidePanel
+  } = useCrmStore((store) => ({
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+    setCompanyModalType: store.setCompanyModalType,
+    selectedCompany: store.selectedCompany,
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
+    setSelectedCompany: store.setSelectedCompany,
+    closeCrmSidePanel: store.closeCrmSidePanel
+  }));
 
   const { data: openTaskData, isLoading: isTaskLoading } =
     useGetOpenTasksByCompany(selectedCompany?.id, !!selectedCompany?.id);
@@ -79,6 +90,15 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     isDealLoading ||
     isContactLoading ||
     isCompletedTaskLoading;
+
+  const isOpen =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL;
+
+  const handleClose = () => {
+    setSelectedCompany(null);
+    closeCrmSidePanel();
+  };
 
   const menuItems: MenuItemProps[] = useMemo(
     () => [
@@ -145,7 +165,7 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   return (
     <SidePanel
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       closeOnBackdropClick
       header={
         isLoading ? (

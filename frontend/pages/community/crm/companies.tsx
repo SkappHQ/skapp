@@ -5,6 +5,7 @@ import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
+import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
@@ -18,26 +19,12 @@ const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const {
-    setIsCompanyModalOpen,
-    setCompanyModalType,
-    isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen,
-    setSelectedCompany,
-    selectedCompany
-  } = useCrmStore((store) => ({
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-    setCompanyModalType: store.setCompanyModalType,
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedCompany: store.setSelectedCompany,
-    selectedCompany: store.selectedCompany
-  }));
-
-  const handleCloseSidePanel = () => {
-    setIsCrmSidePanelOpen(false);
-    setSelectedCompany(null);
-  };
+  const { setIsCompanyModalOpen, setCompanyModalType, selectedCompany } =
+    useCrmStore((store) => ({
+      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+      setCompanyModalType: store.setCompanyModalType,
+      selectedCompany: store.selectedCompany
+    }));
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.COMPANIES, () => {
@@ -59,12 +46,11 @@ const Companies: NextPage = () => {
       <>
         {selectedCompany && (
           <SidePanelWrapper>
-            <CompanySidePanel
-              isOpen={isCrmSidePanelOpen}
-              onClose={handleCloseSidePanel}
-            />
+            <CompanySidePanel />
+            <AddDealSidePanel />
           </SidePanelWrapper>
         )}
+
         <CompanyModalController />
         <TaskModalController />
         <CompanyTable />
