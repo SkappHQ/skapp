@@ -349,11 +349,6 @@ export interface CrmTaskCreatePayload {
   notes: string;
 }
 
-export interface UpdateTaskStatusPayload {
-  id: number;
-  isCompleted: boolean;
-}
-
 export interface CrmTaskUpdatePayload {
   id: number;
   name?: string;
@@ -364,18 +359,7 @@ export interface CrmTaskUpdatePayload {
   dealId?: number | null;
   ownerId?: number | null;
   notes?: string;
-}
-
-export interface CrmTaskUpdatePayload {
-  id: number;
-  name?: string;
-  typeId?: number;
-  dueAt?: string | null;
-  priority?: CrmPriorityEnum;
-  contactId?: number | null;
-  dealId?: number | null;
-  ownerId?: number | null;
-  notes?: string;
+  isCompleted?: boolean;
 }
 
 export interface TaskRowResponseType {

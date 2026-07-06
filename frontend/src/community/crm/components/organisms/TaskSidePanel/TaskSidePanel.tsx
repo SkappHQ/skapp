@@ -10,14 +10,12 @@ import { FC, useEffect } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  useGetTaskById,
-  useUpdateTaskCompletion
-} from "~community/crm/api/TaskApi";
+import { useGetTaskById, useUpdateTask } from "~community/crm/api/TaskApi";
 import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
+import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
@@ -25,8 +23,7 @@ import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
 import TaskSidePanelSkeleton from "./TaskSidePanelSkeleton";
 
 const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
-  const translateText = useTranslator("crmModule", "tasks", "sidePanel");
-  const translateTaskText = useTranslator("crmModule", "tasks");
+  const translateText = useTranslator("crmModule", "tasks");
 
   const { setToastMessage } = useToast();
 
@@ -53,36 +50,36 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateTaskText(["toggleErrorTitle"]),
-      description: translateTaskText(["toggleErrorDescription"])
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
     });
   };
 
   const { data: taskDetail, isLoading } = useGetTaskById(selectedTaskId!);
-  const { mutate: updateTaskCompletion } = useUpdateTaskCompletion(
-    handleUpdateTaskCompletionError
-  );
+  const { mutate: updateTaskCompletion } = useUpdateTask();
 
   useEffect(() => {
     if (taskDetail) {
       updateTask(taskDetail);
     }
-  }, [taskDetail, updateTask]);
+  }, [taskDetail]);
 
   const selectedTask = getTaskById(selectedTaskId!);
 
-  const taskIcon = selectedTask ? getTaskTypeIcon(selectedTask.typeName, 24) : null;
+  const taskIcon = selectedTask
+    ? getTaskTypeIcon(selectedTask.typeName, TASK_DETAIL_ICON_SIZE)
+    : null;
 
   const menuItems = [
     {
       id: "edit",
-      label: translateText(["editTask"]),
+      label: translateText(["sidePanel", "editTask"]),
       icon: { start: <EditIcon width="16px" height="16px" /> },
       onClick: () => openTaskModal(CrmModalTypes.EDIT_TASK_MODAL)
     },
     {
       id: "delete",
-      label: translateText(["deleteTask"]),
+      label: translateText(["sidePanel", "deleteTask"]),
       icon: {
         start: (
           <DeleteButtonIcon
@@ -100,7 +97,7 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   const handleMarkAsDone = () => {
     updateTaskCompletion(
       { id: selectedTaskId!, isCompleted: true },
-      { onSuccess: onClose }
+      { onSuccess: onClose, onError: handleUpdateTaskCompletionError }
     );
   };
 
@@ -130,7 +127,7 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
             id={"task-actions"}
             menuItems={menuItems}
             anchorButton={{
-              "aria-label": translateText(["kebabMenuAriaLabel"])
+              "aria-label": translateText(["sidePanel", "kebabMenuAriaLabel"])
             }}
             className={{
               anchorElement:
@@ -147,14 +144,19 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
           <div className="flex gap-6 pb-4">
             <div className="flex flex-col flex-1 gap-6 min-w-0">
               <div className="flex flex-col gap-1">
-                <p className="subtitle1">{translateText(["notes"])}</p>
+                <p className="subtitle1">
+                  {translateText(["sidePanel", "notes"])}
+                </p>
                 <p className="subtitle3">
-                  {selectedTask?.notes ?? translateText(["noNotes"])}
+                  {selectedTask?.notes ??
+                    translateText(["sidePanel", "noNotes"])}
                 </p>
               </div>
 
               <div className="flex flex-col gap-3">
-                <h2 className="h2">{translateText(["dealsTitle"])}</h2>
+                <h2 className="h2">
+                  {translateText(["sidePanel", "dealsTitle"])}
+                </h2>
                 <hr className="border-secondary-accent" />
                 <SidePanelDealSection
                   deals={selectedTask?.deal ? [selectedTask.deal] : []}
@@ -162,7 +164,9 @@ const TaskSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <h2 className="h2">{translateText(["relatedTasksTitle"])}</h2>
+                <h2 className="h2">
+                  {translateText(["sidePanel", "relatedTasksTitle"])}
+                </h2>
                 <hr className="border-secondary-accent" />
                 {/* <SidePanelTasksSection tasks={relatedTasks} /> */}
               </div>

@@ -35,12 +35,12 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
         disabled={task.isCompleted}
         icon={
           task.isCompleted ? (
-          <Icon
-            name={IconName.TICK_ICON}
-            fill="var(--color-secondary-icon)"
-            width="16"
-            height="16"
-          />
+            <Icon
+              name={IconName.TICK_ICON}
+              fill="var(--color-secondary-icon)"
+              width="16"
+              height="16"
+            />
           ) : undefined
         }
       >
@@ -60,7 +60,6 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
               src: task.owner.authPic ?? "",
               size: "xs"
             }}
-            backgroundColor="bg-secondary-background"
             showActionButton={false}
           />
         </PropertyRow>

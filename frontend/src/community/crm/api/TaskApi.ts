@@ -13,8 +13,7 @@ import {
   CrmTaskCreatePayload,
   CrmTaskDetailType,
   CrmTaskResponseType,
-  CrmTaskUpdatePayload,
-  UpdateTaskStatusPayload
+  CrmTaskUpdatePayload
 } from "~community/crm/types/CommonTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
@@ -68,33 +67,6 @@ export const useGetOpenTasks = (searchKeyword: string, enabled: boolean) => {
     queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword),
     queryFn: () => fetchOpenTasks(searchKeyword),
     enabled
-  });
-};
-
-const updateTaskStatus = async ({
-  id,
-  isCompleted
-}: UpdateTaskStatusPayload) => {
-  await authFetch.patch(taskEndpoints.UPDATE_TASK(id), {
-    isCompleted
-  });
-};
-
-export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: updateTaskStatus,
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
-      });
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_TASK_BY_ID(id)
-      });
-    },
-    onError
   });
 };
 
@@ -169,7 +141,10 @@ const editTask = async ({ id, ...payload }: CrmTaskUpdatePayload) => {
   return response?.data?.results?.[0];
 };
 
-export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
+export const useUpdateTask = (
+  onSuccess?: () => void,
+  onError?: () => void
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editTask,
@@ -186,7 +161,7 @@ export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_TASK_BY_ID(id)
       });
-      onSuccess();
+      if (onSuccess) onSuccess();
     },
     onError
   });
