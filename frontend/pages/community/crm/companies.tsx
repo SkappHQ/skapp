@@ -19,11 +19,11 @@ const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { setIsCompanyModalOpen, setCompanyModalType, selectedCompany } =
+  const { setIsCompanyModalOpen, setCompanyModalType, selectedCompanyId } =
     useCrmStore((store) => ({
       setIsCompanyModalOpen: store.setIsCompanyModalOpen,
       setCompanyModalType: store.setCompanyModalType,
-      selectedCompany: store.selectedCompany
+      selectedCompanyId: store.selectedCompanyId
     }));
 
   const onPrimaryButtonClick = () => {
@@ -44,7 +44,7 @@ const Companies: NextPage = () => {
       module={Modules.CRM}
     >
       <>
-        {selectedCompany && (
+        {selectedCompanyId && (
           <SidePanelWrapper>
             <CompanySidePanel />
             <AddDealSidePanel />

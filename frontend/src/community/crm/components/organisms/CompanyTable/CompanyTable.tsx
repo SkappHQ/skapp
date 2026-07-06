@@ -40,10 +40,12 @@ export const CompanyTable: FC = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
-  const { setSelectedCompany, openCrmSidePanel } = useCrmStore((store) => ({
-    setSelectedCompany: store.setSelectedCompany,
-    openCrmSidePanel: store.openCrmSidePanel
-  }));
+  const { setSelectedCompanyId, updateCompany, openCrmSidePanel } =
+    useCrmStore((store) => ({
+      setSelectedCompanyId: store.setSelectedCompanyId,
+      updateCompany: store.updateCompany,
+      openCrmSidePanel: store.openCrmSidePanel
+    }));
 
   const companies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
@@ -196,7 +198,9 @@ export const CompanyTable: FC = () => {
           ])
         }}
         onRowClick={(row) => {
-          setSelectedCompany(row);
+          const { tasks: _taskCount, ...companyMetrics } = row;
+          updateCompany(companyMetrics);
+          setSelectedCompanyId(row.id);
           openCrmSidePanel(CrmSidePanelTypes.COMPANY_SIDE_PANEL);
         }}
       />

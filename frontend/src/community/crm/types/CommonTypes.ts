@@ -50,6 +50,13 @@ export interface CrmCompanyMetricsResponseType {
   totalPages: number;
 }
 
+export interface CrmCompanyDetailType
+  extends Omit<CrmCompanyMetricsType, "tasks"> {
+  tasks?: CrmTaskDetailType[];
+  deals?: CrmDealListItem[];
+  contacts?: CrmContact[];
+}
+
 export interface MetricChip {
   label: string;
   icon?: ReactElement;

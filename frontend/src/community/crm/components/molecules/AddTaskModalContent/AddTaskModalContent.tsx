@@ -22,11 +22,11 @@ const AddTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsTaskModalOpen, selectedContactId, selectedCompany } =
+  const { setIsTaskModalOpen, selectedContactId, selectedCompanyId } =
     useCrmStore((store) => ({
       setIsTaskModalOpen: store.setIsTaskModalOpen,
       selectedContactId: store.selectedContactId,
-      selectedCompany: store.selectedCompany
+      selectedCompanyId: store.selectedCompanyId
     }));
 
   const { data: currentUser } = useGetUserPersonalDetails();
@@ -89,7 +89,7 @@ const AddTaskModalContent: FC = () => {
   const { mutate: createNewTask, isPending } = useCreateTask(
     handleSuccess,
     handleError,
-    selectedCompany?.id,
+    selectedCompanyId,
     selectedContactId
   );
 

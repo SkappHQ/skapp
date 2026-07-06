@@ -6,7 +6,7 @@ import {
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -44,46 +44,59 @@ const CompanySidePanel: FC = () => {
   const {
     setIsCompanyModalOpen,
     setCompanyModalType,
-    selectedCompany,
+    selectedCompanyId,
+    getCompanyById,
     isCrmSidePanelOpen,
     crmSidePanelType,
-    setSelectedCompany,
-    closeCrmSidePanel
+    setSelectedCompanyId,
+    closeCrmSidePanel,
+    updateCompany
   } = useCrmStore((store) => ({
     setIsCompanyModalOpen: store.setIsCompanyModalOpen,
     setCompanyModalType: store.setCompanyModalType,
-    selectedCompany: store.selectedCompany,
+    selectedCompanyId: store.selectedCompanyId,
+    getCompanyById: store.getCompanyById,
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
-    setSelectedCompany: store.setSelectedCompany,
-    closeCrmSidePanel: store.closeCrmSidePanel
+    setSelectedCompanyId: store.setSelectedCompanyId,
+    closeCrmSidePanel: store.closeCrmSidePanel,
+    updateCompany: store.updateCompany
   }));
 
-  const { data: openTaskData, isLoading: isTaskLoading } =
-    useGetOpenTasksByCompany(selectedCompany?.id, !!selectedCompany?.id);
+  const selectedCompany = getCompanyById(selectedCompanyId!);
 
-  const { data: completedTaskData, isLoading: isCompletedTaskLoading } =
-    useGetCompletedTasksByCompany(
-      selectedCompany?.id,
-      TASK_PAGE_SIZE,
-      !!selectedCompany?.id
-    );
+  const { data: openTaskData, isLoading: isTaskLoading } =
+    useGetOpenTasksByCompany(selectedCompanyId!, !!selectedCompanyId);
+
+  const {
+    data: completedTaskData,
+    isLoading: isCompletedTaskLoading,
+    fetchNextPage: fetchNextCompletedTasksPage,
+    hasNextPage: hasNextCompletedTasksPage,
+    isFetchingNextPage: isFetchingNextCompletedTasksPage
+  } = useGetCompletedTasksByCompany(
+    selectedCompanyId!,
+    TASK_PAGE_SIZE,
+    !!selectedCompanyId
+  );
+
+  const completedTasks = useMemo(
+    () => completedTaskData?.pages.flatMap((page) => page.items) ?? [],
+    [completedTaskData]
+  );
 
   const taskData = useMemo(
-    () => [
-      ...(openTaskData?.tasks ?? []),
-      ...(completedTaskData?.pages.flatMap((page) => page.items) ?? [])
-    ],
-    [openTaskData, completedTaskData]
+    () => [...(openTaskData?.tasks ?? []), ...completedTasks],
+    [openTaskData, completedTasks]
   );
 
   const { data: dealData, isLoading: isDealLoading } = useGetDealsByCompany(
-    selectedCompany?.id,
-    !!selectedCompany?.id
+    selectedCompanyId!,
+    !!selectedCompanyId
   );
 
   const { data: contactData, isLoading: isContactLoading } =
-    useGetContactsByCompany(selectedCompany?.id, !!selectedCompany?.id);
+    useGetContactsByCompany(selectedCompanyId!, !!selectedCompanyId);
 
   const isLoading =
     isTaskLoading ||
@@ -91,12 +104,23 @@ const CompanySidePanel: FC = () => {
     isContactLoading ||
     isCompletedTaskLoading;
 
+  useEffect(() => {
+    if (!selectedCompanyId) return;
+
+    updateCompany({
+      id: selectedCompanyId,
+      tasks: taskData,
+      deals: dealData?.items,
+      contacts: contactData?.items
+    });
+  }, [selectedCompanyId, taskData, dealData, contactData]);
+
   const isOpen =
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL;
 
   const handleClose = () => {
-    setSelectedCompany(null);
+    setSelectedCompanyId(null);
     closeCrmSidePanel();
   };
 
@@ -137,11 +161,18 @@ const CompanySidePanel: FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return <SidePanelDealSection deals={dealData?.items} />;
+        return <SidePanelDealSection deals={selectedCompany?.deals} />;
       case SidePanelTabEnum.TASKS:
-        return <SidePanelTasksSection tasks={taskData} />;
+        return (
+          <SidePanelTasksSection
+            tasks={selectedCompany?.tasks ?? []}
+            hasNextPage={hasNextCompletedTasksPage}
+            isFetchingNextPage={isFetchingNextCompletedTasksPage}
+            onLoadMoreCompletedTasks={fetchNextCompletedTasksPage}
+          />
+        );
       case SidePanelTabEnum.CONTACTS:
-        return <SidePanelCompanyContacts contacts={contactData?.items} />;
+        return <SidePanelCompanyContacts contacts={selectedCompany?.contacts} />;
       default:
         return null;
     }

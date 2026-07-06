@@ -1,6 +1,7 @@
 import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
@@ -16,6 +17,9 @@ interface Props {
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
   emptyDescription?: string;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  onLoadMoreCompletedTasks?: () => void;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
@@ -23,9 +27,17 @@ const SidePanelTasksSection: FC<Props> = ({
   isCheckTaskVisible,
   isShowContact,
   onTaskRowClick,
-  emptyDescription
+  emptyDescription,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMoreCompletedTasks
 }) => {
   const { guardCrmCreate } = useCrmLimitGuard();
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage: !!hasNextPage,
+    isLoading: !!isFetchingNextPage,
+    onLoadMore: onLoadMoreCompletedTasks ?? (() => {})
+  });
   const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType
@@ -44,13 +56,16 @@ const SidePanelTasksSection: FC<Props> = ({
     });
   };
   return tasks.length > 0 ? (
-    <SidePanelTasksList
-      tasks={tasks}
-      isCheckTaskVisible={isCheckTaskVisible}
-      isShowContact={isShowContact}
-      onTaskRowClick={onTaskRowClick}
-      onAddTask={handleAddTask}
-    />
+    <>
+      <SidePanelTasksList
+        tasks={tasks}
+        isCheckTaskVisible={isCheckTaskVisible}
+        isShowContact={isShowContact}
+        onTaskRowClick={onTaskRowClick}
+        onAddTask={handleAddTask}
+      />
+      {onLoadMoreCompletedTasks && <div ref={loadingRef} />}
+    </>
   ) : (
     <EmptyDataView
       icon={<SearchIcon width="24" height="24" />}

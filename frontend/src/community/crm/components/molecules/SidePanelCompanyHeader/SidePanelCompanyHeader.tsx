@@ -10,10 +10,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { openInNewTab } from "~community/common/utils/commonUtil";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
-import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmCompanyDetailType } from "~community/crm/types/CommonTypes";
 
 interface Props {
-  company: CrmCompanyMetricsType;
+  company: CrmCompanyDetailType;
 }
 
 const SidePanelCompanyHeader: FC<Props> = ({ company }) => {

@@ -1,5 +1,5 @@
 import { Chip } from "@rootcodelabs/skapp-ui";
-import React from "react";
+import { FC } from "react";
 
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
@@ -9,7 +9,7 @@ interface Props {
   deal: DetailPanelDealResponseType;
 }
 
-const DealAccordionItemBadge: React.FC<Props> = ({ deal }) => {
+const DealAccordionItemBadge: FC<Props> = ({ deal }) => {
   const { getStageByName } = useStageNameMapper();
 
   return (
