@@ -94,11 +94,11 @@ export const ContactTable: FC = () => {
       render(value, row) {
         return (
           <div className="flex flex-col gap-1 min-w-0">
-            <div className="block w-full truncate" title={value}>
+            <div className="w-full truncate" title={value}>
               {value}
             </div>
             <div
-              className="subtitle4 text-secondary-text block w-full truncate"
+              className="subtitle4 text-secondary-text w-full truncate"
               title={row.company?.name ?? undefined}
             >
               {row.company?.name ?? "-"}
