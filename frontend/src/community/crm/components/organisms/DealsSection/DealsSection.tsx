@@ -41,7 +41,7 @@ const DealsSection: FC = () => {
       activeView === DealViewEnum.LIST
     );
 
-  const allDeals = useMemo(
+   const allDeals = useMemo(
     () => data?.pages.flatMap((p) => p?.items ?? []),
     [data]
   );
