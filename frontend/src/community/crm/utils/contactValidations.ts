@@ -1,10 +1,14 @@
 import * as Yup from "yup";
 
-import { characterLengths } from "~community/common/constants/stringConstants";
 import {
   isValidEmail,
   isValidPhoneNumber
 } from "~community/common/regex/regexPatterns";
+import {
+  CONTACT_EMAIL_MAX_LENGTH,
+  CONTACT_NAME_MAX_LENGTH
+} from "~community/crm/constants/contactConstants";
+import { isContactNameValid } from "~community/crm/regex/crmRegexPatterns";
 
 type TranslatorFunctionType = (suffixes: string[]) => string;
 
@@ -13,31 +17,37 @@ export const addContactValidations = (translator: TranslatorFunctionType) =>
     name: Yup.string()
       .trim()
       .required(translator(["validations", "name"]))
-      .max(
-        characterLengths.NAME_LENGTH,
-        translator(["validations", "nameLength"])
-      ),
+      .max(CONTACT_NAME_MAX_LENGTH, translator(["validations", "nameLength"]))
+      .matches(isContactNameValid(), {
+        message: translator(["validations", "nameInvalidCharacters"]),
+        excludeEmptyString: true
+      }),
     email: Yup.string()
-      .trim()
-      .required(translator(["validations", "email"]))
-      .matches(isValidEmail(), translator(["validations", "invalidEmail"]))
-      .max(
-        characterLengths.CHARACTER_LENGTH,
-        translator(["validations", "characterLength"])
+      .test(
+        "email-required",
+        translator(["validations", "email"]),
+        (inputEmail) => Boolean(inputEmail?.trim())
+      )
+      .test(
+        "email-format",
+        translator(["validations", "invalidEmail"]),
+        (inputEmail) =>
+          !inputEmail?.trim() || isValidEmail().test(inputEmail.trim())
+      )
+      .test(
+        "email-max-length",
+        translator(["validations", "invalidEmail"]),
+        (inputEmail) =>
+          !inputEmail || inputEmail.length <= CONTACT_EMAIL_MAX_LENGTH
       ),
     contactNumber: Yup.string()
       .nullable()
       .optional()
-      .trim()
-      .max(
-        characterLengths.PHONE_NUMBER_LENGTH_MAX,
-        translator(["validations", "contactNumberLength"])
-      )
       .test(
         "valid-contact-number",
         translator(["validations", "contactNumber"]),
         function (inputContactNumber) {
-          if (!inputContactNumber) {
+          if (!inputContactNumber || inputContactNumber === "") {
             return true;
           }
 
