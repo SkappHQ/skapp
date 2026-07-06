@@ -56,7 +56,7 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
     isError: isOpenTasksError
   } = useGetOpenTasks(
     debouncedSearch,
-    tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.TEAM_TASKS
+    tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.ALL_TASKS
   );
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
@@ -121,7 +121,7 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
 
     switch (tab) {
       case CrmTaskTabEnum.MY_TASKS:
-      case CrmTaskTabEnum.TEAM_TASKS:
+      case CrmTaskTabEnum.ALL_TASKS:
         return renderOpenTasksContent();
       case CrmTaskTabEnum.COMPLETED_TASKS:
         return renderCompletedTasksContent();

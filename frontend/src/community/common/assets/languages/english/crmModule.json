@@ -686,7 +686,7 @@
     },
     "tabs": {
       "myTasks": "My Tasks",
-      "teamTasks": "Team Tasks",
+      "allTasks": "All Tasks",
       "completedTasks": "Completed"
     },
     "table": {
