@@ -194,7 +194,6 @@ const AddDealSidePanel: FC = () => {
                 className="w-full"
                 style={{
                   minHeight: "10vh",
-                  overflowY: "auto"
                 }}
                 state={
                   formik.touched.description && formik.errors.description

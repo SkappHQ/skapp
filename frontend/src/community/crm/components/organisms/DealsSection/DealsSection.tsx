@@ -27,7 +27,7 @@ const DealsSection: FC = () => {
         sortOrder: SortOrderTypes.ASC,
         searchKeyword: debouncedSearch
       },
-      activeView === DealViewEnum.KANBAN
+      activeView === DealViewEnum.LIST
     );
 
   const allDeals = useMemo(

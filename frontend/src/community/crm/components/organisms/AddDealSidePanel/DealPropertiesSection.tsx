@@ -79,6 +79,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
             searchPlaceholder={translateText(["placeholders", "contactSearch"])}
             noResultsText={translateText(["placeholders", "noResults"])}
             ariaInvalid={!!errors.contactId}
+            ariaRequired
           />
           {errors.contactId && touched.contactId && (
             <p className="text-semantic-red-accent body3 mt-1">
@@ -101,7 +102,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
             aria-invalid={!!errors.amount}
           />
           {errors.amount && (
-            <p className="text-semantic-red-text body3 mt-1">{errors.amount}</p>
+            <p className="text-semantic-red-accent body3 mt-1">{errors.amount}</p>
           )}
         </div>
       </PropertyRow>
@@ -124,7 +125,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
             ariaInvalid={!!errors.ownerId}
           />
           {errors.ownerId && (
-            <p className="text-semantic-red-text body3 mt-1">
+            <p className="text-semantic-red-accent body3 mt-1">
               {errors.ownerId}
             </p>
           )}
