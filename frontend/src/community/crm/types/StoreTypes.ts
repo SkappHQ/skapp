@@ -29,7 +29,7 @@ interface ActionTypes {
   closeCrmSidePanel: () => void;
   setSelectedContactId: (contactId: number | null) => void;
   setContacts: (contacts: CrmContact[]) => void;
-  updateContact: (contact: CrmContact) => void;
+  updateContact: (contact: Partial<CrmContact>) => void;
   getContactById: (id: number) => CrmContact | undefined;
   setSelectedDealId: (dealId: number | null) => void;
   setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;
@@ -52,7 +52,7 @@ export interface CrmStore extends ActionTypes {
   crmSidePanelType: CrmSidePanelTypes | null;
   previousCrmSidePanelType: CrmSidePanelTypes | null;
   selectedContactId: number | null;
-  contacts: Record<number, CrmContact>;
+  contacts: CrmContact[];
   selectedDealId: number | null;
   boardStageDeals: CrmBoardStageDealsType[];
 }
