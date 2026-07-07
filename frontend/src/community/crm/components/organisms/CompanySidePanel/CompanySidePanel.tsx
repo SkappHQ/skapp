@@ -10,9 +10,12 @@ import { FC, useEffect, useMemo, useState } from "react";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetContactMetrics } from "~community/crm/api/ContactApi";
 import { useGetDealsByCompany } from "~community/crm/api/CompanyApi";
-import { useGetCompletedTasks, useGetOpenTasks } from "~community/crm/api/TaskApi";
+import { useGetContactMetrics } from "~community/crm/api/ContactApi";
+import {
+  useGetCompletedTasks,
+  useGetOpenTasks
+} from "~community/crm/api/TaskApi";
 import SidePanelCompanyContacts from "~community/crm/components/molecules/SidePanelCompanyContacts/SidePanelCompanyContacts";
 import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
@@ -62,10 +65,11 @@ const CompanySidePanel: FC = () => {
   }));
 
   const selectedCompany = getCompanyById(selectedCompanyId!);
+  const hasSelectedCompany = !!selectedCompanyId;
 
   const { data: openTaskData, isLoading: isTaskLoading } = useGetOpenTasks(
     "",
-    !!selectedCompanyId,
+    hasSelectedCompany,
     selectedCompanyId
   );
 
@@ -78,7 +82,7 @@ const CompanySidePanel: FC = () => {
   } = useGetCompletedTasks(
     "",
     TASK_PAGE_SIZE,
-    !!selectedCompanyId,
+    hasSelectedCompany,
     selectedCompanyId
   );
 
@@ -94,7 +98,7 @@ const CompanySidePanel: FC = () => {
 
   const { data: dealData, isLoading: isDealLoading } = useGetDealsByCompany(
     selectedCompanyId!,
-    !!selectedCompanyId
+    hasSelectedCompany
   );
 
   const { data: contactPages, isLoading: isContactLoading } =
@@ -102,7 +106,7 @@ const CompanySidePanel: FC = () => {
       "",
       CONTACTS_PAGE_SIZE,
       selectedCompanyId,
-      !!selectedCompanyId
+      hasSelectedCompany
     );
 
   const contactItems = useMemo(
@@ -180,11 +184,14 @@ const CompanySidePanel: FC = () => {
             tasks={selectedCompany?.tasks ?? []}
             hasNextPage={hasNextCompletedTasksPage}
             isFetchingNextPage={isFetchingNextCompletedTasksPage}
-            onLoadMoreCompletedTasks={fetchNextCompletedTasksPage}
+            onFetchNextPage={fetchNextCompletedTasksPage}
           />
         );
       case SidePanelTabEnum.CONTACTS:
-        return <SidePanelCompanyContacts contacts={selectedCompany?.contacts} />;
+        return (
+          <SidePanelCompanyContacts contacts={selectedCompany?.contacts} />
+        );
+
       default:
         return null;
     }

@@ -15,7 +15,7 @@ interface ActionTypes {
   setContactModalType: (contactModalType: CrmModalTypes) => void;
   setSelectedCompanyId: (selectedCompanyId: number | null) => void;
   setCompanies: (companies: CrmCompanyMetricsType[]) => void;
-  updateCompany: (company: Partial<CrmCompanyDetailType> & { id: number }) => void;
+  updateCompany: (company: Partial<CrmCompanyDetailType>) => void;
   getCompanyById: (id: number) => CrmCompanyDetailType | undefined;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
@@ -43,7 +43,7 @@ export interface CrmStore extends ActionTypes {
   isContactModalOpen: boolean;
   contactModalType: CrmModalTypes;
   selectedCompanyId: number | null;
-  companies: Record<number, CrmCompanyDetailType>;
+  companies: CrmCompanyDetailType[];
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
   selectedTaskId: number | null;

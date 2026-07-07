@@ -9,10 +9,10 @@ import React from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmContact } from "~community/crm/types/CommonTypes";
 
 const SidePanelCompanyContacts: React.FC<{
-  contacts: CrmContactMetricsType[];
+  contacts: CrmContact[];
 }> = ({ contacts }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -21,7 +21,7 @@ const SidePanelCompanyContacts: React.FC<{
     "sidePanelCompanyContacts"
   );
 
-  const columns: TableColumn<CrmContactMetricsType>[] = [
+  const columns: TableColumn<CrmContact>[] = [
     {
       columnAriaLabel: translateText(["columns", "contact"]),
       header: translateText(["columns", "contact"]),

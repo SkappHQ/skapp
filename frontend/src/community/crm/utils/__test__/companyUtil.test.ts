@@ -12,6 +12,7 @@ const baseCompany: CrmCompanyDetailType = {
   industry: CrmIndustryEnum.ACCOMMODATION_SERVICES,
   website: "https://www.testcompany.com",
   address: "123 Test St, Test City, TC 12345",
+  openTaskCount: 5,
   overdue: 2,
   openValue: "50000",
   accountValue: "100000",

@@ -35,7 +35,7 @@ export interface CrmCompanyMetricsType {
   industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
-  tasks: number;
+  openTaskCount: number;
   overdue: number;
   openValue: string;
   accountValue: string;
@@ -50,8 +50,7 @@ export interface CrmCompanyMetricsResponseType {
   totalPages: number;
 }
 
-export interface CrmCompanyDetailType
-  extends Omit<CrmCompanyMetricsType, "tasks"> {
+export interface CrmCompanyDetailType extends CrmCompanyMetricsType {
   tasks?: CrmTaskDetailType[];
   deals?: CrmDealListItem[];
   contacts?: CrmContact[];

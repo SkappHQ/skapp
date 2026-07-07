@@ -40,12 +40,13 @@ export const CompanyTable: FC = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
-  const { setSelectedCompanyId, setCompanies, openCrmSidePanel } =
-    useCrmStore((store) => ({
+  const { setSelectedCompanyId, setCompanies, openCrmSidePanel } = useCrmStore(
+    (store) => ({
       setSelectedCompanyId: store.setSelectedCompanyId,
       setCompanies: store.setCompanies,
       openCrmSidePanel: store.openCrmSidePanel
-    }));
+    })
+  );
 
   const companies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
@@ -53,7 +54,7 @@ export const CompanyTable: FC = () => {
 
   useEffect(() => {
     if (companies) setCompanies(companies);
-  }, [companies, setCompanies]);
+  }, [companies]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -82,7 +83,7 @@ export const CompanyTable: FC = () => {
     {
       columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
       header: translateText(["table", "columns", "tasksHeader"]),
-      key: "tasks",
+      key: "openTaskCount",
       render(value, row) {
         return (
           <div className="flex flex-row items-center gap-2">
