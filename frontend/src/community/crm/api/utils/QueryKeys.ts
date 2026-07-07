@@ -1,5 +1,8 @@
 import { CrmBoardDealsGroupedRequest } from "~community/crm/types/BoardTypes";
-import { CrmDealFilterParams } from "~community/crm/types/CommonTypes";
+import {
+  CrmDealFilterParams,
+  RelatedTasksParams
+} from "~community/crm/types/CommonTypes";
 
 export const crmDealQueryKeys = {
   ALL: ["crm-deals"],
@@ -77,6 +80,10 @@ export const taskQueryKeys = {
     searchKeyword
   ],
   RELATED_TASKS: ["crm-related-tasks"],
+  RELATED_TASKS_BY_PARAMS: (params: RelatedTasksParams) => [
+    "crm-related-tasks",
+    params
+  ],
   GET_TASK_TYPES: ["get-task-types"],
   GET_TASK_BY_ID: (id: number) => ["get-task-by-id", id]
 };

@@ -106,8 +106,9 @@ const TaskSidePanel: FC = () => {
     isOpen && !!(dealId || contactId)
   );
 
-  const relatedTasks =
-    relatedTasksData?.pages.flatMap((page) => page.items) ?? [];
+  const relatedTasks = (
+    relatedTasksData?.pages.flatMap((page) => page.items) ?? []
+  ).filter((task) => task.id !== selectedTaskId);
 
   const taskIcon = selectedTask
     ? getTaskTypeIcon(selectedTask.typeName, TASK_DETAIL_ICON_SIZE)

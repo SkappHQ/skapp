@@ -36,8 +36,14 @@ export const useGetRelatedTasks = (
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: taskQueryKeys.RELATED_TASKS,
-    queryFn: () => fetchRelatedTasks(params),
+    queryKey: taskQueryKeys.RELATED_TASKS_BY_PARAMS(params),
+    queryFn: ({ pageParam }) =>
+      fetchRelatedTasks({
+        page: pageParam,
+        contactId: params.contactId,
+        dealId: params.dealId,
+        size: params.size
+      }),
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
