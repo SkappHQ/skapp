@@ -36,9 +36,10 @@ export const addContactValidations = (translator: TranslatorFunctionType) =>
       )
       .test(
         "email-max-length",
-        translator(["validations", "invalidEmail"]),
+        translator(["validations", "emailLength"]),
         (inputEmail) =>
-          !inputEmail || inputEmail.length <= CONTACT_EMAIL_MAX_LENGTH
+          !inputEmail?.trim() ||
+          inputEmail.trim().length <= CONTACT_EMAIL_MAX_LENGTH
       ),
     contactNumber: Yup.string()
       .nullable()
@@ -46,13 +47,9 @@ export const addContactValidations = (translator: TranslatorFunctionType) =>
       .test(
         "valid-contact-number",
         translator(["validations", "contactNumber"]),
-        function (inputContactNumber) {
-          if (!inputContactNumber || inputContactNumber === "") {
-            return true;
-          }
-
-          return isValidPhoneNumber().test(inputContactNumber);
-        }
+        (inputContactNumber) =>
+          !inputContactNumber?.trim() ||
+          isValidPhoneNumber().test(inputContactNumber.trim())
       ),
     companyId: Yup.number().nullable().optional(),
     ownerId: Yup.number()

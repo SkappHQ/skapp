@@ -53,6 +53,7 @@
         "nameInvalidCharacters": "Contact name contains invalid characters",
         "email": "Email is required",
         "invalidEmail": "Invalid email address",
+        "emailLength": "Email is too long",
         "contactNumber": "Invalid contact number",
         "owner": "Owner is required"
       },
@@ -122,6 +123,7 @@
         "nameInvalidCharacters": "Contact name contains invalid characters",
         "email": "Email is required",
         "invalidEmail": "Invalid email address",
+        "emailLength": "Email is too long",
         "contactNumber": "Invalid contact number",
         "owner": "Owner is required"
       },
