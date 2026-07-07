@@ -38,6 +38,11 @@ export interface CrmTaskSliceTypes extends Pick<
   | "updateTask"
 > {}
 
+export interface CrmDealSliceTypes extends Pick<
+  CrmStore,
+  "selectedDealId" | "setSelectedDealId"
+> {}
+
 export interface CrmBoardSliceTypes extends Pick<
   CrmStore,
   | "boardStageDeals"

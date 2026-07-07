@@ -366,6 +366,10 @@ export const getCurrentDateAtMidnight = () => {
   return DateTime.now().startOf("day");
 };
 
+export const getDayDifference = (from: DateTime, to: DateTime): number => {
+  return to.startOf("day").diff(from.startOf("day"), "days").days;
+};
+
 /**
  * Parses a date string with the current year and converts it to a DateTime object.
  * The input date string should contain a day and a month, separated by a space.
