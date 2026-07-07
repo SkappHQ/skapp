@@ -5,6 +5,7 @@ import { CrmStore } from "../types/StoreTypes";
 import CrmBoardSlice from "./slices/crmBoardSlice";
 import CrmCompanySlice from "./slices/crmCompanySlice";
 import CrmContactSlice from "./slices/crmContactSlice";
+import CrmDealSlice from "./slices/crmDealSlice";
 import CrmSidePanelSlice from "./slices/crmSidePanelSlice";
 import CrmTaskSlice from "./slices/crmTaskSlice";
 
@@ -16,6 +17,7 @@ export const useCrmStore = create<
     (set, get) => ({
       ...CrmCompanySlice(set, get),
       ...CrmContactSlice(set, get),
+      ...CrmDealSlice(set),
       ...CrmTaskSlice(set, get),
       ...CrmSidePanelSlice(set),
       ...CrmBoardSlice(set)

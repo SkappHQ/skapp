@@ -19,7 +19,7 @@ interface Props {
   emptyDescription?: string;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
-  onLoadMoreCompletedTasks?: () => void;
+  onFetchNextPage?: () => void;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
@@ -28,16 +28,12 @@ const SidePanelTasksSection: FC<Props> = ({
   isShowContact,
   onTaskRowClick,
   emptyDescription,
-  hasNextPage,
-  isFetchingNextPage,
-  onLoadMoreCompletedTasks
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  onFetchNextPage = () => {}
 }) => {
   const { guardCrmCreate } = useCrmLimitGuard();
-  const { loadingRef } = useInfiniteScroll({
-    hasNextPage: !!hasNextPage,
-    isLoading: !!isFetchingNextPage,
-    onLoadMore: onLoadMoreCompletedTasks ?? (() => {})
-  });
+
   const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType
@@ -49,6 +45,12 @@ const SidePanelTasksSection: FC<Props> = ({
     "contactDetailsPanel"
   );
 
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: onFetchNextPage
+  });
+
   const handleAddTask = () => {
     guardCrmCreate(CrmLimitResource.TASKS, () => {
       setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
@@ -56,7 +58,7 @@ const SidePanelTasksSection: FC<Props> = ({
     });
   };
   return tasks.length > 0 ? (
-    <>
+    <div ref={loadingRef}>
       <SidePanelTasksList
         tasks={tasks}
         isCheckTaskVisible={isCheckTaskVisible}
@@ -64,8 +66,7 @@ const SidePanelTasksSection: FC<Props> = ({
         onTaskRowClick={onTaskRowClick}
         onAddTask={handleAddTask}
       />
-      {onLoadMoreCompletedTasks && <div ref={loadingRef} />}
-    </>
+    </div>
   ) : (
     <EmptyDataView
       icon={<SearchIcon width="24" height="24" />}

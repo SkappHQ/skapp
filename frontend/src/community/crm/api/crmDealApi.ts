@@ -12,6 +12,7 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmCreateDealPayload,
   CrmDealCreateResponseType,
+  CrmDealDetailResponseType,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
   CrmDealStageCreatePayload,
@@ -112,6 +113,23 @@ export const useGetDealLookup = (
     queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword, contactId),
     queryFn: () => fetchDealLookup(searchKeyword, size, contactId),
     enabled
+  });
+};
+
+const fetchDealById = async (
+  id: number
+): Promise<CrmDealDetailResponseType> => {
+  const response = await authFetch.get(crmDealEndpoints.GET_DEAL_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealById = (
+  id: number
+): UseQueryResult<CrmDealDetailResponseType> => {
+  return useQuery({
+    queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
+    queryFn: () => fetchDealById(id),
+    refetchOnWindowFocus: false
   });
 };
 

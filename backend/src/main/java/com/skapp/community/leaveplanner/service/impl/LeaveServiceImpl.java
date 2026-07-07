@@ -340,22 +340,8 @@ public class LeaveServiceImpl implements LeaveService {
 
 		leaveRequest = leaveRequestDao.save(leaveRequest);
 
-		boolean isSingleDay = leaveRequest.getStartDate().equals(leaveRequest.getEndDate());
-		List<EmployeeManager> employeeManagers = employeeManagerDao.findByEmployee(currentUser.getEmployee());
-
 		if (leavePatchRequestDto.getLeaveRequestStatus().equals(LeaveRequestStatus.CANCELLED)) {
-			leaveEmailService.sendCancelLeaveRequestEmployeeEmail(currentUser.getEmail(),
-					currentUser.getEmployee().getFirstName(), currentUser.getEmployee().getLastName(),
-					leaveRequest.getLeaveState().toString(), leaveRequest.getLeaveType().getName(),
-					leaveRequest.getStartDate(), leaveRequest.getEndDate(), isSingleDay);
-			leaveEmailService.sendCancelLeaveRequestManagerEmail(employeeManagers,
-					currentUser.getEmployee().getFirstName(), currentUser.getEmployee().getLastName(),
-					leaveRequest.getLeaveState().toString(), leaveRequest.getLeaveType().getName(),
-					leaveRequest.getStartDate(), leaveRequest.getEndDate(), isSingleDay);
-			leaveNotificationService.sendCancelLeaveRequestEmployeeNotification(currentUser.getEmployee(),
-					employeeManagers, leaveRequest, isSingleDay);
-			leaveNotificationService.sendCancelLeaveRequestManagerNotification(currentUser.getEmployee(),
-					employeeManagers, leaveRequest, isSingleDay);
+			sendCancelLeaveRequestEmailsAndNotifications(currentUser, leaveRequest);
 		}
 
 		LeaveRequestByIdResponseDto leaveRequestResponseDto = leaveMapper
@@ -442,11 +428,31 @@ public class LeaveServiceImpl implements LeaveService {
 
 		leaveRequest = leaveRequestDao.save(leaveRequest);
 
+		sendCancelLeaveRequestEmailsAndNotifications(currentUser, leaveRequest);
+
 		LeaveRequestResponseDto leaveRequestResDto = leaveMapper.leaveRequestToLeaveRequestResponseDto(leaveRequest);
 
 		log.info("deleteLeaveRequestById: execution ended successfully for Leave Request: {}",
 				leaveRequest.getLeaveRequestId());
 		return new ResponseEntityDto(false, leaveRequestResDto);
+	}
+
+	private void sendCancelLeaveRequestEmailsAndNotifications(User currentUser, LeaveRequest leaveRequest) {
+		boolean isSingleDay = leaveRequest.getStartDate().equals(leaveRequest.getEndDate());
+		List<EmployeeManager> employeeManagers = employeeManagerDao.findByEmployee(currentUser.getEmployee());
+
+		leaveEmailService.sendCancelLeaveRequestEmployeeEmail(currentUser.getEmail(),
+				currentUser.getEmployee().getFirstName(), currentUser.getEmployee().getLastName(),
+				leaveRequest.getLeaveState().toString(), leaveRequest.getLeaveType().getName(),
+				leaveRequest.getStartDate(), leaveRequest.getEndDate(), isSingleDay);
+		leaveEmailService.sendCancelLeaveRequestManagerEmail(employeeManagers, currentUser.getEmployee().getFirstName(),
+				currentUser.getEmployee().getLastName(), leaveRequest.getLeaveState().toString(),
+				leaveRequest.getLeaveType().getName(), leaveRequest.getStartDate(), leaveRequest.getEndDate(),
+				isSingleDay);
+		leaveNotificationService.sendCancelLeaveRequestEmployeeNotification(currentUser.getEmployee(), employeeManagers,
+				leaveRequest, isSingleDay);
+		leaveNotificationService.sendCancelLeaveRequestManagerNotification(currentUser.getEmployee(), employeeManagers,
+				leaveRequest, isSingleDay);
 	}
 
 	@Override

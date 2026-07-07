@@ -25,7 +25,6 @@ interface Props {
 
 const SidePanelDealSection: FC<Props> = ({ deals }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
-  const hasDeals = deals.length > 0;
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { pushCrmSidePanel } = useCrmStore((store) => ({

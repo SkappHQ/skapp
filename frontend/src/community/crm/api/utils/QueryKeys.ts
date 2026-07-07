@@ -14,7 +14,8 @@ export const crmDealQueryKeys = {
     "crm-deals",
     "company",
     companyId
-  ]
+  ],
+  DEAL_BY_ID: (id: number) => ["crm-deal", id]
 };
 
 export const crmBoardQueryKeys = {
@@ -46,12 +47,7 @@ export const contactQueryKeys = {
     searchKeyword: string,
     size: number,
     dealId?: number | null
-  ) => [
-    "crm-contacts-lookup",
-    searchKeyword,
-    size,
-    dealId
-  ],
+  ) => ["crm-contacts-lookup", searchKeyword, size, dealId],
   OWNER_LOOKUP: (searchKeyword: string, size: number) => [
     "crm-owners-lookup",
     searchKeyword,
@@ -88,5 +84,7 @@ export const taskQueryKeys = {
     searchKeyword: string,
     companyId?: number | null
   ) => ["get-completed-tasks", searchKeyword, companyId],
-  GET_TASK_TYPES: ["get-task-types"]
+  GET_TASK_TYPES: ["get-task-types"],
+  RELATED_TASKS: ["crm-related-tasks"],
+  GET_TASK_BY_ID: (id: number) => ["get-task-by-id", id]
 };

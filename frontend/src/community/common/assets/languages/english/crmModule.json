@@ -150,7 +150,8 @@
         "addTaskButtonEmptyView": "Add task",
         "emptyTitle": "No tasks",
         "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
-        "dueDateOverdue": "Overdue",
+        "dueDateOverdue_one": "Overdue by {{count}} day",
+        "dueDateOverdue_other": "Overdue by {{count}} days",
         "dueDateToday": "Due today",
         "dueDateDueOn": "Due on {{date}}"
       },
@@ -416,8 +417,37 @@
       "descriptionLabel": "Description",
       "deleteDeal": "Delete Deal",
       "kebabMenuAriaLabel": "Deal actions",
+      "description": "Description",
+      "tasks": "Tasks",
+      "addTask": "Add task",
+      "value": "Value",
+      "priority": "Priority",
+      "ownedBy": "Owned by",
+      "contact": "Contact",
+      "placeholders": {
+        "stage": "Select stage",
+        "none": "None",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "noResults": "No results",
+        "description": "Add description"
+      },
       "ariaLabels": {
-        "addDealBtn": "Add Deal"
+        "addDealBtn": "Add Deal",
+        "stage": "Stage",
+        "amount": "Amount",
+        "saveTitle": "Save title",
+        "discardTitle": "Discard title",
+        "editTitle": "Edit title",
+        "editDescription": "Edit description"
+      },
+      "buttons": {
+        "save": "Save",
+        "discard": "Discard"
+      },
+      "errors": {
+        "dealNotFoundTitle": "Deal not found",
+        "dealNotFoundDescription": "This deal is no longer available."
       }
     },
     "dealsTable": {
@@ -434,6 +464,7 @@
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
       "infiniteScrollLoadingMessage": "Loading more deals...",
+      "openDealDetails": "Open deal details for {{name}}",
       "listViewAriaLabel": "List view",
       "kanbanViewAriaLabel": "Kanban view",
       "switchDealViewAriaLabel": "Switch deal view"
@@ -525,7 +556,24 @@
     "sidePanel": {
       "deleteTask": "Delete task",
       "editTask": "Edit task",
-      "kebabMenuAriaLabel": "Task actions"
+      "kebabMenuAriaLabel": "Task actions",
+      "notes": "Notes",
+      "noNotes": "No notes added",
+      "dealsTitle": "Deals",
+      "relatedTasksTitle": "Related Tasks",
+      "markAsDone": "Mark as Done",
+      "statusDone": "Done",
+      "assignedTo": "Assigned To",
+      "priority": "Priority",
+      "closingDate": "Closing Date",
+      "noClosingDate": "No closing date",
+      "contactName": "Contact",
+      "noContact": "No contact linked",
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
     },
     "deleteTaskModal": {
       "title": "Delete Task",
@@ -689,7 +737,7 @@
     },
     "tabs": {
       "myTasks": "My Tasks",
-      "teamTasks": "Team Tasks",
+      "allTasks": "All Tasks",
       "completedTasks": "Completed"
     },
     "table": {

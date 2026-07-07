@@ -4,6 +4,7 @@ export const crmDealEndpoints = {
   GET_DEALS: `${moduleAPIPath.CRM}/deal`,
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
   DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
+  GET_DEAL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
   CREATE_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`,
   UPDATE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
   REORDER_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage/reorder`,
@@ -34,8 +35,10 @@ export const taskEndpoints = {
   CREATE_TASK: `${moduleAPIPath.CRM}/task`,
   GET_TASKS: `${moduleAPIPath.CRM}/task`,
   GET_COMPLETED_TASKS: `${moduleAPIPath.CRM}/task/completed`,
+  GET_RELATED_TASKS: `${moduleAPIPath.CRM}/task/related`,
   DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
-  GET_TASK_TYPES: `${moduleAPIPath.CRM}/task/type`
+  GET_TASK_TYPES: `${moduleAPIPath.CRM}/task/type`,
+  GET_TASK_BY_ID: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
 export const companyEndpoints = {
