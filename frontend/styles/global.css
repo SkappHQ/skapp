@@ -327,30 +327,6 @@ thead .sticky-col {
   background-color: var(--hover-bg-color) !important;
   border-color: var(--hover-border-color) !important;
 }
-
-.import-chooser-modal > div:nth-child(2) > div {
-  padding: 24px 20px !important;
-}
-
-.import-chooser-modal > div:nth-child(2) > div > div:first-child {
-  gap: 16px !important;
-}
-
-.import-option-card {
-  background-color: #ffffff !important;
-}
-
-.import-people-btn > span:last-child {
-  display: none;
-}
-
-.import-option-card:hover {
-  background-color: #fafafa !important;
-}
-
-.import-option-card:active {
-  background-color: #f4f4f5 !important;
-}
 /* Apply focus styles when the focus-active class is present */
 .focus-active {
   border-color: var(--focus-border-color) !important;

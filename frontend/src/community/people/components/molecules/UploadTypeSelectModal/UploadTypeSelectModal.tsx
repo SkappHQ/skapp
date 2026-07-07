@@ -37,7 +37,7 @@ const OptionCard = ({
           onClick();
         }
       }}
-      className="cursor-pointer import-option-card"
+      className="cursor-pointer"
       style={{
         width: "379.5px",
         height: "368px",
@@ -114,7 +114,7 @@ const UploadTypeSelectModal = (): JSX.Element => {
         <OptionCard
           icon={
             <Icon
-              name={IconName.UPLOAD_DOCUMENT_ICON}
+              name={IconName.SCAN_DOCUMENT_ICON}
               width="64"
               height="64"
             />

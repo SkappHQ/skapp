@@ -130,7 +130,7 @@ const DirectoryPopupController = () => {
         isOpen={isDirectoryModalOpen}
         onClose={onClose}
         modalHeader={getModalTitle()}
-        className="import-chooser-modal w-[831px] h-[468px]"
+        className="relative w-[831px] h-fit max-h-[85vh] overflow-hidden"
         content={modalContent}
       />
     );
