@@ -1,4 +1,4 @@
-import { Badge, ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useMemo, useState } from "react";
 
@@ -12,6 +12,7 @@ import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
 import { useGetCompanyLookup } from "~community/crm/api/ContactApi";
+import SuggestedBadge from "~community/crm/components/atoms/SuggestedBadge/SuggestedBadge";
 import EditableContactOwnerField from "~community/crm/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import {
@@ -25,25 +26,6 @@ import {
 import { extractDomainFromEmail } from "~community/crm/utils/commonHelpers";
 import { mergeAndPrioritizeCompanyDropdownItems } from "~community/crm/utils/contactUtil";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
-
-const withSuggestedBadge = (
-  item: SearchableDropdownItem,
-  suggestedLabel: string
-): SearchableDropdownItem => ({
-  ...item,
-  content: (
-    <span className="flex items-center gap-2">
-      {item.content}
-      <Badge
-        size="sm"
-        backgroundColor="bg-semantic-green-background"
-        textColor="text-semantic-green-text"
-      >
-        {suggestedLabel}
-      </Badge>
-    </span>
-  )
-});
 
 export interface ContactFormProps {
   translateContactText: TranslatorFunctionType;
@@ -103,7 +85,16 @@ const ContactModalForm = ({
   const { data: companyLookupData, isFetching: isCompanyFetching } =
     useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
 
-  const suggestedLabel = translateContactText(["labels", "suggested"]);
+  const addSuggestedLabel = (
+    item: SearchableDropdownItem
+  ): SearchableDropdownItem => ({
+    ...item,
+    content: (
+      <SuggestedBadge label={translateContactText(["labels", "suggested"])}>
+        {item.content}
+      </SuggestedBadge>
+    )
+  });
 
   const companyDropdownItems: SearchableDropdownItem[] = useMemo(
     () =>
@@ -111,9 +102,13 @@ const ContactModalForm = ({
         companyLookupData?.items,
         domainSearchData?.companies
       ).map((item) =>
-        item.isPrioritized ? withSuggestedBadge(item, suggestedLabel) : item
+        item.isPrioritized ? addSuggestedLabel(item) : item
       ),
-    [companyLookupData?.items, domainSearchData?.companies, suggestedLabel]
+    [
+      companyLookupData?.items,
+      domainSearchData?.companies,
+      translateContactText
+    ]
   );
 
   const handleCompanySelect = (item: SearchableDropdownItem) => {
