@@ -15,7 +15,7 @@ import {
   CrmTaskResponseType,
   CrmTaskUpdatePayload,
   RelatedTasksPage,
-  RelatedTasksParams,
+  RelatedTasksParams
 } from "~community/crm/types/CommonTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
@@ -94,33 +94,6 @@ export const useGetOpenTasks = (searchKeyword: string, enabled: boolean) => {
     queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword),
     queryFn: () => fetchOpenTasks(searchKeyword),
     enabled
-  });
-};
-
-const updateTaskStatus = async ({
-  id,
-  isCompleted
-}: UpdateTaskStatusPayload) => {
-  await authFetch.patch(taskEndpoints.UPDATE_TASK(id), {
-    isCompleted
-  });
-};
-
-export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: updateTaskStatus,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
-      });
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.RELATED_TASKS
-      });
-    },
-    onError
   });
 };
 
@@ -217,6 +190,9 @@ export const useUpdateTask = (
       });
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_TASK_BY_ID(id)
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
       });
       if (onSuccess) onSuccess();
     },

@@ -58,10 +58,10 @@ const PropertyField: FC<PropertyFieldProps> = ({
         if (onSave) {
           onSave(inputValue);
           setInputValue(value);
-          setIsEditing(false);
         } else if (onChange) {
           onChange(inputValue);
         }
+        setIsEditing(false);
       }
     };
 
@@ -90,12 +90,12 @@ const PropertyField: FC<PropertyFieldProps> = ({
 
   const handleSave = () => {
     if (onSave) {
-      setIsEditing(false);
       onSave(inputValue);
       setInputValue(value);
     } else if (onChange) {
       onChange(inputValue);
     }
+    setIsEditing(false);
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
