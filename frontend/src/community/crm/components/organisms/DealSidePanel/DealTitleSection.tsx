@@ -1,5 +1,10 @@
-import { CloseIcon, IconButton, InputField, TickIcon } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import {
+  CloseIcon,
+  IconButton,
+  InputField,
+  TickIcon
+} from "@rootcodelabs/skapp-ui";
+import { FC, KeyboardEventHandler, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
@@ -21,12 +26,25 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
   const handleSave = () => {
     // Edit API call
     setIsEditing(false);
-  }
-    
+  };
 
   const handleDiscard = () => {
     setEditedTitle(name);
     setIsEditing(false);
+  };
+
+  const handleInputKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSave();
+    }
+  };
+
+  const handleTitleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleClick();
+    }
   };
 
   if (isEditing) {
@@ -36,12 +54,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
           <InputField
             value={editedTitle}
             onChange={(e) => setEditedTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleSave();
-              }
-            }}
+            onKeyDown={handleInputKeyDown}
             className="w-full"
             autoFocus
           />
@@ -76,12 +89,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
           className="h2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editTitle"])}
           onClick={handleClick}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              handleClick();
-            }
-          }}
+          onKeyDown={handleTitleKeyDown}
         >
           {name}
         </div>

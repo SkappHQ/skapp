@@ -1,5 +1,5 @@
 import { ButtonV2, TextArea } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC, KeyboardEventHandler, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
@@ -30,6 +30,15 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
   const handleDiscard = () => {
     setEditedDescription(description ?? "");
     setIsEditing(false);
+  };
+
+  const handlekeyDown: KeyboardEventHandler<HTMLDivElement> = (
+    e
+  ) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleClick();
+    }
   };
 
   return (
@@ -70,12 +79,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
           className="body2 text-left w-full cursor-pointer hover:bg-secondary-background rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editDescription"])}
           onClick={handleClick}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              handleClick();
-            }
-          }}
+          onKeyDown={handlekeyDown}
         >
           {isDescriptionEmpty ? (
             <span className="text-secondary-text body2">

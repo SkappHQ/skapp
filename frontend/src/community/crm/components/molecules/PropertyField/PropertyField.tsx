@@ -107,6 +107,10 @@ const PropertyField: FC<PropertyFieldProps> = ({
     }
   };
 
+  const handleDisplayKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") handleClick();
+  };
+
   const displayValue = inputValue || resolvedPlaceholder;
 
   return (
@@ -119,7 +123,6 @@ const PropertyField: FC<PropertyFieldProps> = ({
         {isEditing ? (
           <div ref={inputRef} className="w-full">
             <InputField
-              customStyles={{ background: "secondary-background" }}
               value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
@@ -138,9 +141,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
             tabIndex={0}
             className="w-full min-w-0 min-h-[32px] px-3 rounded-lg flex items-center cursor-pointer hover:bg-secondary-background transition-colors"
             onClick={handleClick}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") handleClick();
-            }}
+            onKeyDown={handleDisplayKeyDown}
           >
             <div
               className={`body2 tracking-wide truncate ${
