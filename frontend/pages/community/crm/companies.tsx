@@ -5,7 +5,6 @@ import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
-import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
@@ -46,7 +45,6 @@ const Companies: NextPage = () => {
         {selectedCompany && (
           <SidePanelWrapper>
             <CompanySidePanel />
-            <AddDealSidePanel />
           </SidePanelWrapper>
         )}
 

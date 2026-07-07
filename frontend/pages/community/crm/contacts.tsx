@@ -5,7 +5,6 @@ import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
-import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
@@ -47,7 +46,6 @@ const Contacts: NextPage = () => {
         {selectedContactId && (
           <SidePanelWrapper>
             <ContactSidePanel />
-            <AddDealSidePanel />
           </SidePanelWrapper>
         )}
 

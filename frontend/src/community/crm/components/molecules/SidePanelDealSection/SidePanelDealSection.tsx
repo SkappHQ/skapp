@@ -6,12 +6,11 @@ import {
   PlusIcon,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useCrmStore } from "~community/crm/store/store";
+import SidePanelAddDeal from "~community/crm/components/molecules/SidePanelAddDeal/SidePanelAddDeal";
 import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
-import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -28,14 +27,16 @@ const SidePanelDealSection: FC<Props> = ({ deals }) => {
   const hasDeals = deals.length > 0;
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { pushCrmSidePanel } = useCrmStore((store) => ({
-    pushCrmSidePanel: store.pushCrmSidePanel
-  }));
+  const [isAddingDeal, setIsAddingDeal] = useState(false);
 
   const handleAddDeal = () => {
     guardCrmCreate(CrmLimitResource.DEALS, () => {
-      pushCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
+      setIsAddingDeal(true);
     });
+  };
+
+  const handleCloseAddDeal = () => {
+    setIsAddingDeal(false);
   };
 
   const accordionItems: AdvancedAccordionItem[] = deals.map((deal) => ({
@@ -44,6 +45,27 @@ const SidePanelDealSection: FC<Props> = ({ deals }) => {
     badge: <DealAccordionItemBadge deal={deal} />,
     content: <DealAccordionItemContent deal={deal} />
   }));
+
+  const renderAddDealAction = () => {
+    if (isAddingDeal) {
+      return <SidePanelAddDeal onClose={handleCloseAddDeal} />;
+    }
+
+    return (
+      <ButtonV2
+        variant="line"
+        size="sm"
+        onClick={handleAddDeal}
+        disabled={isCheckingCrmLimit}
+        isLoading={isCheckingCrmLimit}
+        aria-label={translateText(["ariaLabels", "addDealBtn"])}
+        icon={<PlusIcon />}
+        iconPosition="end"
+      >
+        {translateText(["addDealBtn"])}
+      </ButtonV2>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -54,21 +76,10 @@ const SidePanelDealSection: FC<Props> = ({ deals }) => {
             allowMultiple={true}
             className="gap-4"
           />
-          <div className="mt-2">
-            <ButtonV2
-              variant="line"
-              size="sm"
-              onClick={handleAddDeal}
-              disabled={isCheckingCrmLimit}
-              isLoading={isCheckingCrmLimit}
-              aria-label={translateText(["ariaLabels", "addDealBtn"])}
-              icon={<PlusIcon />}
-              iconPosition="end"
-            >
-              {translateText(["addDealBtn"])}
-            </ButtonV2>
-          </div>
+          <div className="mt-2">{renderAddDealAction()}</div>
         </div>
+      ) : isAddingDeal ? (
+        <SidePanelAddDeal onClose={handleCloseAddDeal} />
       ) : (
         <EmptyDataView
           icon={<SearchIcon />}
