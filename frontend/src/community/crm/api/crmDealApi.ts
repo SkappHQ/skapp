@@ -122,12 +122,14 @@ const fetchDealById = async (
 };
 
 export const useGetDealById = (
-  id: number
+  id: number,
+  enabled: boolean = true
 ): UseQueryResult<CrmDealDetailResponseType> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
     queryFn: () => fetchDealById(id),
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    enabled
   });
 };
 

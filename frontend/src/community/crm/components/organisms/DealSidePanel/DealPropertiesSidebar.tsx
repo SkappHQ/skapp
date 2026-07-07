@@ -95,9 +95,11 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         <Dropdown
           options={stageOptions}
           value={selectedStageId}
-          onChange={(v) => {
-            setSelectedStageId(v);
-            onStageChange(Number(v));
+          onChange={(value) => {
+            if (value !== selectedStageId) {
+              setSelectedStageId(value);
+              onStageChange(Number(value));
+            }
           }}
           variant="primary"
           className="rounded-lg"
@@ -113,7 +115,6 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           value={amount}
           placeholder={translateText(["placeholders", "none"])}
           validate={(value) => validateDealAmount(value, translateText)}
-          onChange={setAmount}
           onSave={(value) => {
             setAmount(value);
             onAmountChange(value);
@@ -124,8 +125,10 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           <PriorityDropdown
             value={priority}
             onChange={(value) => {
-              setPriority(value);
-              onPriorityChange(value);
+              if (value !== priority) {
+                setPriority(value);
+                onPriorityChange(value);
+              }
             }}
           />
         </PropertyRow>
@@ -135,8 +138,10 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
             <OwnerPopupSearch
               selectedUser={selectedOwner}
               onChange={(owner) => {
-                setSelectedOwner(owner);
-                if (owner) onOwnerChange(owner);
+                if (owner && owner.employeeId !== selectedOwner.employeeId) {
+                  setSelectedOwner(owner);
+                  onOwnerChange(owner);
+                }
               }}
               placeholder={translateText(["placeholders", "none"])}
               searchPlaceholder={translateText(["placeholders", "ownerSearch"])}
@@ -151,8 +156,10 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
               contacts={contacts}
               selectedContact={selectedContact}
               onChange={(contact) => {
-                setSelectedContact(contact);
-                if (contact) onContactChange(contact);
+                if (contact && contact.id !== selectedContact?.id) {
+                  setSelectedContact(contact);
+                  onContactChange(contact);
+                }
               }}
               onSearch={setContactSearchTerm}
               placeholder={translateText(["placeholders", "none"])}

@@ -413,7 +413,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		if (requestDto.getAmount() != null) {
 			CrmValidations.validateDealAmount(requestDto.getAmount());
-			deal.setAmount(requestDto.getAmount());
+			deal.setAmount(requestDto.getAmount().isBlank() ? null : requestDto.getAmount());
 		}
 
 		if (requestDto.getPriority() != null) {

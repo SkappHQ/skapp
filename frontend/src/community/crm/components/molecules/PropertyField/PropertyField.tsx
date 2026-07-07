@@ -21,7 +21,6 @@ interface PropertyFieldProps {
   inputType?: PropertyFieldInputType;
   min?: number;
   max?: number;
-  errorMessage?: string;
   validate?: (value: string) => string | undefined;
   onChange?: (value: string) => void;
   onSave?: (value: string) => void;
@@ -34,7 +33,6 @@ const PropertyField: FC<PropertyFieldProps> = ({
   inputType = "text",
   min,
   max,
-  errorMessage,
   validate,
   onChange,
   onSave
@@ -49,14 +47,10 @@ const PropertyField: FC<PropertyFieldProps> = ({
   );
   const inputRef = useRef<HTMLDivElement>(null);
 
-  const displayedError = validationError ?? errorMessage;
-
   useEffect(() => {
     setInputValue(value);
   }, [value]);
 
-  // Commits the current input via onSave/onChange, unless it fails validation.
-  // Returns true when the value was committed (and editing can close).
   const commit = (nextValue: string): boolean => {
     if (validate) {
       const error = validate(nextValue);
@@ -66,11 +60,13 @@ const PropertyField: FC<PropertyFieldProps> = ({
       }
     }
     setValidationError(undefined);
-    if (onSave) {
-      onSave(nextValue);
-      setInputValue(value);
-    } else if (onChange) {
-      onChange(nextValue);
+    if (nextValue !== value) {
+      if (onSave) {
+        onSave(nextValue);
+        setInputValue(value);
+      } else if (onChange) {
+        onChange(nextValue);
+      }
     }
     return true;
   };
@@ -157,8 +153,8 @@ const PropertyField: FC<PropertyFieldProps> = ({
               type={inputType}
               min={min}
               max={max}
-              state={displayedError ? "error" : "default"}
-              errorMessage={displayedError}
+              state={validationError ? "error" : "default"}
+              errorMessage={validationError}
               autoFocus
             />
           </div>
