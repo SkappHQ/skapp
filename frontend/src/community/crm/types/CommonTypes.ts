@@ -280,6 +280,17 @@ export interface CrmDealListItem {
   owner: CrmOwner;
 }
 
+export interface CrmDealDetailResponseType {
+  id: number;
+  name: string;
+  description: string | null;
+  amount: string | null;
+  owner: CrmOwner;
+  stageId: number;
+  priority: CrmPriorityEnum;
+  contact: CrmContactLookup;
+}
+
 export interface CrmDealPaginatedResponse {
   items: CrmDealListItem[];
   currentPage: number;
@@ -294,6 +305,12 @@ export interface CrmDealFilterParams {
   searchKeyword?: string;
   stageId?: number;
   priority?: CrmPriorityEnum;
+}
+
+export interface RelatedTasksParams {
+  contactId?: number | null;
+  dealId?: number | null;
+  size: number;
 }
 
 export interface CrmDealAddFormTypes {
@@ -400,4 +417,11 @@ export interface CrmContact {
   pipelineRevenue?: string;
   tasks?: TaskRowResponseType[];
   deals?: DetailPanelDealResponseType[];
+}
+
+export interface RelatedTasksPage {
+  items: TaskRowResponseType[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
 }

@@ -412,8 +412,37 @@
       "descriptionLabel": "Description",
       "deleteDeal": "Delete Deal",
       "kebabMenuAriaLabel": "Deal actions",
+      "description": "Description",
+      "tasks": "Tasks",
+      "addTask": "Add task",
+      "value": "Value",
+      "priority": "Priority",
+      "ownedBy": "Owned by",
+      "contact": "Contact",
+      "placeholders": {
+        "stage": "Select stage",
+        "none": "None",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "noResults": "No results",
+        "description": "Add description"
+      },
       "ariaLabels": {
-        "addDealBtn": "Add Deal"
+        "addDealBtn": "Add Deal",
+        "stage": "Stage",
+        "amount": "Amount",
+        "saveTitle": "Save title",
+        "discardTitle": "Discard title",
+        "editTitle": "Edit title",
+        "editDescription": "Edit description"
+      },
+      "buttons": {
+        "save": "Save",
+        "discard": "Discard"
+      },
+      "errors": {
+        "dealNotFoundTitle": "Deal not found",
+        "dealNotFoundDescription": "This deal is no longer available."
       }
     },
     "dealsTable": {
@@ -430,6 +459,7 @@
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
       "infiniteScrollLoadingMessage": "Loading more deals...",
+      "openDealDetails": "Open deal details for {{name}}",
       "listViewAriaLabel": "List view",
       "kanbanViewAriaLabel": "Kanban view",
       "switchDealViewAriaLabel": "Switch deal view"
