@@ -1,6 +1,6 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { FC, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -139,6 +139,12 @@ const AddDealSidePanel: FC = () => {
 
   const { values, setFieldValue, resetForm, isSubmitting, submitForm } = formik;
 
+  const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setFieldValue("description", e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
@@ -185,16 +191,9 @@ const AddDealSidePanel: FC = () => {
                 label={translateText(["labels", "description"])}
                 placeholder={translateText(["placeholders", "description"])}
                 value={values.description}
-                onChange={(e) => {
-                  setFieldValue("description", e.target.value);
-                  e.target.style.height = "auto";
-                  e.target.style.height = `${e.target.scrollHeight}px`;
-                }}
+                onChange={handleDescriptionChange}
                 onBlur={formik.handleBlur}
-                className="w-full"
-                style={{
-                  minHeight: "10vh",
-                }}
+                className="w-full min-h-[10vh]"
                 state={
                   formik.touched.description && formik.errors.description
                     ? "error"

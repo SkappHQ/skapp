@@ -28,6 +28,7 @@ const OwnerOptionItem: FC<OwnerOptionItemProps> = ({
         avatarProps={{
           id: String(user.employeeId),
           firstName: user.firstName,
+          lastName: user.lastName ?? "",
           src: resolvedSrc ?? "",
           size: "sm"
         }}

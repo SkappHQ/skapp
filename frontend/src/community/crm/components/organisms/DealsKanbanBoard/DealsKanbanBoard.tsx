@@ -24,11 +24,6 @@ interface DealsKanbanBoardProps {
 const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   searchKeyword = ""
 }) => {
-  const openCrmSidePanel = useCrmStore((store) => store.openCrmSidePanel);
-  const setPreselectedStageId = useCrmStore(
-    (store) => store.setPreselectedStageId
-  );
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: DRAG_ACTIVATION_DISTANCE }
@@ -49,13 +44,11 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     handleDragEnd
   } = useKanbanDrag();
 
-  const handleAddDeal = useCallback(
-    (stageId: number) => {
-      setPreselectedStageId(stageId);
-      openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
-    },
-    [setPreselectedStageId, openCrmSidePanel]
-  );
+  const handleAddDeal = useCallback((stageId: number) => {
+    const { setPreselectedStageId, openCrmSidePanel } = useCrmStore.getState();
+    setPreselectedStageId(stageId);
+    openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
+  }, []);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

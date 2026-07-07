@@ -88,7 +88,6 @@ const OwnerPopupSearch: FC<Props> = ({
     option: DropdownOption,
     triggerProps: TriggerProps
   ) => {
-    const { onClick, ...restTriggerProps } = triggerProps;
     const user =
       findById(users, Number(option?.id), (u) => u.employeeId) ??
       (selectedUser?.employeeId === Number(option?.id) ? selectedUser : null);
@@ -97,12 +96,8 @@ const OwnerPopupSearch: FC<Props> = ({
       <OwnerTriggerContent
         key={option.id}
         user={user}
-        onSelect={() => {
-          if (isCrmSalesManager) {
-            onClick();
-          }
-        }}
-        triggerProps={restTriggerProps}
+        triggerProps={triggerProps}
+        disabled={!isCrmSalesManager}
       />
     ) : null;
   };

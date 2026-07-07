@@ -65,7 +65,6 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption | null,
     triggerProps: TriggerProps
   ) => {
-    const { onClick, ...restTriggerProps } = triggerProps;
     const contact = findById(contacts, Number(option?.id), getContactId);
 
     if (contact && option) {
@@ -73,8 +72,7 @@ const ContactPopupSearch: FC<Props> = ({
         <ContactTriggerContent
           key={option.id}
           contact={contact}
-          onSelect={onClick}
-          triggerProps={restTriggerProps}
+          triggerProps={triggerProps}
         />
       );
     }
@@ -82,8 +80,7 @@ const ContactPopupSearch: FC<Props> = ({
     return (
       <ContactTriggerContent
         placeholder={placeholder}
-        onSelect={onClick}
-        triggerProps={restTriggerProps}
+        triggerProps={triggerProps}
       />
     );
   };

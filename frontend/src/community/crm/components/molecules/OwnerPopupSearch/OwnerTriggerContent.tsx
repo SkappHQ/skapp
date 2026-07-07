@@ -6,30 +6,30 @@ import { CrmOwner } from "~community/crm/types/CommonTypes";
 
 export interface OwnerTriggerContentProps {
   user: CrmOwner;
-  onSelect?: () => void;
-  triggerProps?: Omit<TriggerProps, "onClick">;
+  triggerProps?: TriggerProps;
+  disabled?: boolean;
 }
 
 const OwnerTriggerContent: FC<OwnerTriggerContentProps> = ({
   user,
-  onSelect,
-  triggerProps
+  triggerProps,
+  disabled = false
 }) => {
   const resolvedSrc = useGetImageUrl(user?.authPic ?? "");
-  const { ref, ...triggerAriaProps } = triggerProps ?? {};
 
   return (
     <button
-      ref={ref as RefObject<HTMLButtonElement> | undefined}
       className={`flex items-center w-full min-h-8 cursor-pointer rounded-lg`}
-      onClick={onSelect}
-      {...triggerAriaProps}
+      {...triggerProps}
+      ref={triggerProps?.ref as RefObject<HTMLButtonElement> | undefined}
+      onClick={disabled ? undefined : triggerProps?.onClick}
     >
       <AvatarChip
         label={user.firstName}
         avatarProps={{
           id: String(user.employeeId),
           firstName: user.firstName,
+          lastName: user.lastName ?? "",
           src: resolvedSrc ?? "",
           size: "sm"
         }}
