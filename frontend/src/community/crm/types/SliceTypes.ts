@@ -53,4 +53,6 @@ export interface CrmBoardSliceTypes extends Pick<
   | "setBoardStageDeals"
   | "appendBoardStageDeals"
   | "addDealToStage"
+  | "preselectedStageId"
+  | "setPreselectedStageId"
 > {}
