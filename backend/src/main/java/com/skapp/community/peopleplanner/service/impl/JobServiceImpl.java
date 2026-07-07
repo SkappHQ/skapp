@@ -64,8 +64,14 @@ public class JobServiceImpl implements JobService {
 		List<JobFamily> jobFamilies = jobFamilyDao.getJobFamiliesWithJobTitles();
 
 		List<Long> jobFamilyIds = jobFamilies.stream().map(JobFamily::getJobFamilyId).toList();
-		Map<Long, Set<JobTitle>> activeJobTitlesByFamilyId = jobFamilyIds.isEmpty() ? Collections.emptyMap()
-				: jobFamilyDao.getActiveJobTitlesByJobFamilyIds(jobFamilyIds);
+		Map<Long, Set<JobTitle>> activeJobTitlesByFamilyId;
+		
+		if (jobFamilyIds.isEmpty()) {
+			activeJobTitlesByFamilyId = Collections.emptyMap();
+		}
+		else {
+			activeJobTitlesByFamilyId = jobFamilyDao.getActiveJobTitlesByJobFamilyIds(jobFamilyIds);
+		}
 
 		List<JobFamilyResponseDetailDto> jobFamilyResponseDetailDtos = jobFamilies.stream()
 			.map(jobFamily -> buildJobFamilyResponseDetailDto(jobFamily, activeJobTitlesByFamilyId))
