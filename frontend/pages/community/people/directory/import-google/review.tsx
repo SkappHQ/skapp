@@ -1,10 +1,12 @@
-import { Box, Checkbox, Divider, IconButton, Stack, Tooltip, Typography } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { Box, IconButton, Stack, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { ButtonV2, StatusComponent, Toggle, Tooltip } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import Checkbox from "~community/common/components/atoms/Checkbox/Checkbox";
+import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
@@ -26,144 +28,11 @@ import {
 } from "~community/people/types/GoogleWorkspaceSyncTypes";
 
 const STAGING_POLL_INTERVAL_MS = 4000;
-const OU_DOT_COLORS = [
-  "#6366F1",
-  "#10B981",
-  "#F59E0B",
-  "#EF4444",
-  "#3B82F6",
-  "#8B5CF6",
-  "#EC4899",
-  "#14B8A6"
-];
 
 const ouDisplayName = (path?: string): string => {
   if (!path) return "Unknown";
   const parts = path.split("/").filter(Boolean);
   return parts.length > 0 ? parts[parts.length - 1] : "Unknown";
-};
-
-const StepIndicator = ({ current }: { current: 0 | 1 | 2 }) => {
-  const theme = useTheme();
-  const translateText = useTranslator("peopleModule", "peoples");
-  const steps = [
-    translateText(["googleWorkspaceImport", "stepConnect"]),
-    translateText(["googleWorkspaceImport", "stepReview"]),
-    translateText(["googleWorkspaceImport", "stepImport"])
-  ];
-
-  return (
-    <Stack direction="row" alignItems="center">
-      {steps.map((label, i) => {
-        const isDone = i < current;
-        const isActive = i === current;
-
-        return (
-          <Stack key={label} direction="row" alignItems="center">
-            <Stack direction="row" alignItems="center" gap="0.5rem">
-              <Box
-                sx={{
-                  width: "1.75rem",
-                  height: "1.75rem",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "0.8125rem",
-                  fontWeight: 700,
-                  flexShrink: 0,
-                  border: isActive
-                    ? "none"
-                    : `0.0938rem solid ${theme.palette.grey[300]}`,
-                  backgroundColor: isActive
-                    ? theme.palette.primary.main
-                    : theme.palette.common.white,
-                  color: isActive
-                    ? theme.palette.common.white
-                    : theme.palette.grey[500]
-                }}
-              >
-                {isDone ? (
-                  <Icon
-                    name={IconName.CHECK_ICON}
-                    fill={theme.palette.grey[500]}
-                    svgProps={{ style: { width: "0.75rem", height: "0.75rem" } }}
-                  />
-                ) : (
-                  i + 1
-                )}
-              </Box>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive
-                    ? theme.palette.primary.main
-                    : theme.palette.grey[500],
-                  whiteSpace: "nowrap",
-                  fontSize: "0.85rem"
-                }}
-              >
-                {label}
-              </Typography>
-            </Stack>
-            {i < steps.length - 1 && (
-              <Box
-                sx={{
-                  width: "2.5rem",
-                  height: 0,
-                  mx: "0.625rem",
-                  flexShrink: 0,
-                  borderTop: `0.125rem dashed ${theme.palette.grey[300]}`
-                }}
-              />
-            )}
-          </Stack>
-        );
-      })}
-    </Stack>
-  );
-};
-
-const ToggleSwitch = ({
-  on,
-  onChange
-}: {
-  on: boolean;
-  onChange: (v: boolean) => void;
-}) => {
-  const theme = useTheme();
-  return (
-    <Box
-      role="switch"
-      aria-checked={on}
-      onClick={() => onChange(!on)}
-      sx={{
-        flexShrink: 0,
-        width: "2.5rem",
-        height: "1.375rem",
-        borderRadius: "999px",
-        backgroundColor: on ? theme.palette.greens.midDark : theme.palette.grey[300],
-        position: "relative",
-        cursor: "pointer",
-        transition: "background-color 0.2s"
-      }}
-    >
-      <Box
-        sx={{
-          position: "absolute",
-          top: "0.1875rem",
-          left: on ? "calc(100% - 1.1875rem)" : "0.1875rem",
-          width: "1rem",
-          height: "1rem",
-          borderRadius: "50%",
-          backgroundColor: theme.palette.common.white,
-          transition: "left 0.2s",
-          boxShadow: "0 0.0625rem 0.1875rem rgba(0,0,0,.25)"
-        }}
-      />
-    </Box>
-  );
 };
 
 const ReviewPage: NextPage = () => {
@@ -209,6 +78,17 @@ const ReviewPage: NextPage = () => {
     [stagingRecords]
   );
 
+  // This page takes over the viewport via a fixed overlay, but that alone
+  // doesn't stop the underlying page from scrolling — on shorter screens the
+  // page behind it can still be tall enough to show its own scrollbar.
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   // If the table is genuinely empty on the very first load, kick off a sync
   // once — but this never gates what's rendered, it just fills the table in
   // once the poll above picks up the result.
@@ -220,10 +100,13 @@ const ReviewPage: NextPage = () => {
     }
   }, [isLoading, allRecords.length, hasTriggeredSync, triggerBulkSync]);
 
+  // OU filter checkboxes control which rows are *visible*; row selection is
+  // an entirely separate concern that never gets touched by filtering, so a
+  // person's checked state survives toggling OUs off and back on, or typing
+  // and clearing a search — only explicit row/select-all clicks change it.
   useEffect(() => {
     const ouSet = new Set(allRecords.map((r) => r.orgUnitPath ?? "Unknown"));
     setCheckedOus(ouSet);
-    setSelected(new Set(allRecords.map((r) => r.id)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allRecords.length]);
 
@@ -245,21 +128,8 @@ const ReviewPage: NextPage = () => {
     });
   }, [allRecords, checkedOus, search]);
 
-  const ouCounts = useMemo((): Record<string, number> => {
-    const map: Record<string, number> = {};
-    for (const r of allRecords) {
-      const ou = r.orgUnitPath ?? "Unknown";
-      map[ou] = (map[ou] ?? 0) + 1;
-    }
-    return map;
-  }, [allRecords]);
-
   const totalCount = allRecords.length;
   const selectedCount = selected.size;
-
-  const allOusChecked =
-    allOus.length > 0 && allOus.every((ou) => checkedOus.has(ou));
-  const someOusChecked = allOus.some((ou) => checkedOus.has(ou));
 
   const allVisibleSelected =
     visibleRecords.length > 0 && visibleRecords.every((r) => selected.has(r.id));
@@ -267,36 +137,13 @@ const ReviewPage: NextPage = () => {
   const toggleOu = (ou: string) => {
     setCheckedOus((prev) => {
       const next = new Set(prev);
-      const membersOfOu = allRecords.filter(
-        (r) => (r.orgUnitPath ?? "Unknown") === ou
-      );
-      if (next.has(ou)) {
-        next.delete(ou);
-        setSelected((sel) => {
-          const ns = new Set(sel);
-          membersOfOu.forEach((r) => ns.delete(r.id));
-          return ns;
-        });
-      } else {
-        next.add(ou);
-        setSelected((sel) => {
-          const ns = new Set(sel);
-          membersOfOu.forEach((r) => ns.add(r.id));
-          return ns;
-        });
-      }
+      next.has(ou) ? next.delete(ou) : next.add(ou);
       return next;
     });
   };
 
   const toggleAllOus = () => {
-    if (allOusChecked) {
-      setCheckedOus(new Set());
-      setSelected(new Set());
-    } else {
-      setCheckedOus(new Set(allOus));
-      setSelected(new Set(allRecords.map((r) => r.id)));
-    }
+    setCheckedOus(checkedOus.size === allOus.length ? new Set() : new Set(allOus));
   };
 
   const toggleSelectAll = () => {
@@ -315,17 +162,6 @@ const ReviewPage: NextPage = () => {
     setSelected(next);
   };
 
-  const selectedByOu = useMemo((): Record<string, number> => {
-    const map: Record<string, number> = {};
-    for (const r of allRecords) {
-      if (selected.has(r.id)) {
-        const ou = ouDisplayName(r.orgUnitPath);
-        map[ou] = (map[ou] ?? 0) + 1;
-      }
-    }
-    return map;
-  }, [allRecords, selected]);
-
   const handleConfirmImport = () => {
     const ids = Array.from(selected);
     approveStaging(ids, {
@@ -342,7 +178,8 @@ const ReviewPage: NextPage = () => {
           description: translateText([
             "googleWorkspaceImport",
             "importErrorDescription"
-          ])
+          ]),
+          autoHideDuration: null
         });
       }
     });
@@ -361,164 +198,126 @@ const ReviewPage: NextPage = () => {
           overflow: "hidden"
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            px: "1.5rem",
-            py: "0.875rem",
-            borderBottom: `0.0625rem solid ${theme.palette.grey[200]}`,
-            flexShrink: 0
-          }}
-        >
-          <Tooltip title={translateText(["googleWorkspaceImport", "exitTooltip"])}>
-            <IconButton
-              onClick={() => setShowExitDialog(true)}
-              aria-label={translateText(["googleWorkspaceImport", "exitTooltip"])}
-              sx={{ padding: 0, borderRadius: "0.25rem" }}
+        {showSuccessDialog ? (
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            gap="1rem"
+            sx={{ flex: 1, textAlign: "center", px: "1.5rem" }}
+          >
+            <Typography sx={{ fontSize: "5rem", lineHeight: 1 }}>🎉</Typography>
+            <Typography sx={{ fontSize: "1.25rem", fontWeight: 700, color: theme.palette.grey[700] }}>
+              {translateText(["googleWorkspaceImport", "importSuccessTitle"])}
+            </Typography>
+            <Typography variant="body1" sx={{ maxWidth: "25rem" }}>
+              {translateText(["googleWorkspaceImport", "importSuccessDescription"], {
+                count: importedCount
+              })}
+            </Typography>
+            <ButtonV2
+              variant="tertiary"
+              size="md"
+              isFullWidth
+              style={{ width: "18rem" }}
+              onClick={() => router.push(ROUTES.PEOPLE.DIRECTORY)}
             >
-              <Icon name={IconName.CLOSE_STATUS_POPUP_ICON} />
-            </IconButton>
-          </Tooltip>
+              {translateText(["googleWorkspaceImport", "viewDirectoryButton"])}
+            </ButtonV2>
+          </Stack>
+        ) : (
+          <>
+            <Stack
+              direction="row"
+              alignItems="center"
+              gap="0.875rem"
+              sx={{
+                px: "1.5rem",
+                py: "0.875rem",
+                borderBottom: `0.0625rem solid ${theme.palette.grey[200]}`,
+                flexShrink: 0
+              }}
+            >
+              <Tooltip
+                content={translateText(["googleWorkspaceImport", "exitTooltip"])}
+                position="bottom"
+              >
+                <IconButton
+                  onClick={() => setShowExitDialog(true)}
+                  aria-label={translateText(["googleWorkspaceImport", "exitTooltip"])}
+                  sx={{ padding: 0 }}
+                >
+                  <Icon name={IconName.CLOSE_STATUS_POPUP_ICON} />
+                </IconButton>
+              </Tooltip>
 
-          <Box sx={{ position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
-            <StepIndicator current={1} />
-          </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                {translateText(["googleWorkspaceImport", "reviewTitle"])}
+              </Typography>
+            </Stack>
 
-          <Box sx={{ width: "2.25rem" }} />
-        </Box>
-
-        <Box
-          sx={{
-            px: "1.5rem",
-            py: "1rem",
-            borderBottom: `0.0625rem solid ${theme.palette.grey[200]}`,
-            flexShrink: 0
-          }}
-        >
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: "0.25rem" }}>
-            {translateText(["googleWorkspaceImport", "reviewTitle"])}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {translateText(["googleWorkspaceImport", "reviewSubtitlePrefix"])}{" "}
-            <Box component="span" sx={{ fontWeight: 700, color: theme.palette.text.textDarkGrey }}>
-              {totalCount}
-            </Box>{" "}
-            {translateText(["googleWorkspaceImport", "reviewSubtitleMiddle"])}{" "}
-            <Box component="span" sx={{ fontWeight: 700, color: theme.palette.text.textDarkGrey }}>
-              {allOus.length}
-            </Box>{" "}
-            {translateText(["googleWorkspaceImport", "reviewSubtitleSuffix"])}
-          </Typography>
-        </Box>
-
-        <Box sx={{ flex: 1, display: "flex", overflow: "hidden" }}>
+            <Box sx={{ flex: 1, display: "flex", overflow: "hidden", gap: "3rem" }}>
           <Box
             sx={{
-              width: "16.25rem",
+              width: "13rem",
               flexShrink: 0,
               borderRight: `0.0625rem solid ${theme.palette.grey[200]}`,
               display: "flex",
               flexDirection: "column",
-              overflowY: "auto"
+              overflowY: "auto",
+              py: "1.5rem"
             }}
           >
-            <Box sx={{ px: "1rem", py: "0.75rem", borderBottom: `0.0625rem solid ${theme.palette.grey[100]}` }}>
-              <Typography
-                variant="caption"
-                sx={{
-                  fontWeight: 700,
-                  color: theme.palette.text.secondary,
-                  letterSpacing: "0.07em",
-                  textTransform: "uppercase"
-                }}
-              >
-                {translateText(["googleWorkspaceImport", "organizationalUnits"])}
-              </Typography>
-            </Box>
-
             <Box
-              onClick={toggleAllOus}
               sx={{
                 display: "flex",
                 alignItems: "center",
                 gap: "0.75rem",
-                px: "1rem",
-                py: "0.625rem",
-                cursor: "pointer",
-                "&:hover": { backgroundColor: theme.palette.grey[100] },
-                borderBottom: `0.0625rem solid ${theme.palette.grey[100]}`
+                px: "1.25rem",
+                py: "0.375rem"
               }}
             >
               <Checkbox
-                size="small"
-                checked={allOusChecked}
-                indeterminate={someOusChecked && !allOusChecked}
+                name="select-all-units"
+                checked={checkedOus.size === allOus.length && allOus.length > 0}
                 onChange={toggleAllOus}
-                onClick={(e) => e.stopPropagation()}
-                sx={{ p: 0, color: theme.palette.primary.main }}
-              />
-              <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>
-                {translateText(["googleWorkspaceImport", "allMembers"])}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  backgroundColor: theme.palette.grey[100],
-                  px: "0.5rem",
-                  py: "0.15rem",
-                  borderRadius: "999px",
-                  fontWeight: 600
+                ariaLabel={translateText(["googleWorkspaceImport", "selectAllUnits"])}
+                label={translateText(["googleWorkspaceImport", "selectAllUnits"])}
+                size="small"
+                customStyles={{ padding: "0.25rem" }}
+                labelStyles={{
+                  marginLeft: 0,
+                  gap: "0.5rem",
+                  "& .MuiFormControlLabel-label": { fontSize: "0.8125rem" }
                 }}
-              >
-                {totalCount}
-              </Typography>
+              />
             </Box>
 
             {allOus.map((ou) => (
               <Box
                 key={ou}
-                onClick={() => toggleOu(ou)}
                 sx={{
                   display: "flex",
                   alignItems: "center",
                   gap: "0.75rem",
-                  px: "1rem",
-                  py: "0.5rem",
-                  cursor: "pointer",
-                  "&:hover": { backgroundColor: theme.palette.grey[100] },
-                  borderBottom: `0.0625rem solid ${theme.palette.grey[100]}`
+                  px: "1.25rem",
+                  py: "0.375rem",
+                  "&:hover": { backgroundColor: theme.palette.grey[100] }
                 }}
               >
                 <Checkbox
-                  size="small"
+                  name={`ou-${ou}`}
                   checked={checkedOus.has(ou)}
                   onChange={() => toggleOu(ou)}
-                  onClick={(e) => e.stopPropagation()}
-                  sx={{ p: 0, color: theme.palette.primary.main }}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{ flex: 1, color: checkedOus.has(ou) ? theme.palette.text.textDarkGrey : theme.palette.grey[500] }}
-                >
-                  {ouDisplayName(ou)}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    backgroundColor: theme.palette.grey[100],
-                    px: "0.5rem",
-                    py: "0.15rem",
-                    borderRadius: "999px",
-                    fontWeight: 600,
-                    flexShrink: 0
+                  ariaLabel={ouDisplayName(ou)}
+                  label={ouDisplayName(ou)}
+                  size="small"
+                  customStyles={{ padding: "0.25rem" }}
+                  labelStyles={{
+                    marginLeft: 0,
+                    gap: "0.5rem",
+                    "& .MuiFormControlLabel-label": { fontSize: "0.8125rem" }
                   }}
-                >
-                  {ouCounts[ou] ?? 0}
-                </Typography>
+                />
               </Box>
             ))}
           </Box>
@@ -526,31 +325,61 @@ const ReviewPage: NextPage = () => {
           <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <Box
               sx={{
-                px: "1.25rem",
-                py: "0.875rem",
-                borderBottom: `0.0625rem solid ${theme.palette.grey[200]}`,
+                px: "1.5rem",
+                pt: "1.5rem",
+                pb: "0.875rem",
                 flexShrink: 0
               }}
             >
-              <SearchBox
-                value={search}
-                setSearchTerm={setSearch}
-                placeHolder={translateText([
-                  "googleWorkspaceImport",
-                  "searchPlaceholder"
-                ])}
-                name="googleImportMemberSearch"
-              />
+              <Typography variant="body2" sx={{ display: "block", mb: "1rem" }}>
+                {translateText(["googleWorkspaceImport", "reviewSubtitlePrefix"])}{" "}
+                {totalCount}{" "}
+                {translateText(["googleWorkspaceImport", "reviewSubtitleMiddle"])}{" "}
+                {allOus.length}{" "}
+                {translateText(["googleWorkspaceImport", "reviewSubtitleSuffix"])}
+              </Typography>
+
+              <Stack direction="row" alignItems="center" justifyContent="space-between" gap="1rem">
+                <Box sx={{ width: "24rem" }}>
+                  <SearchBox
+                    value={search}
+                    setSearchTerm={setSearch}
+                    placeHolder={translateText([
+                      "googleWorkspaceImport",
+                      "searchPlaceholder"
+                    ])}
+                    name="googleImportMemberSearch"
+                    searchBoxStyles={{ borderRadius: "999px", padding: "0.5rem 1.5rem" }}
+                  />
+                </Box>
+
+                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, whiteSpace: "nowrap" }}>
+                  {selectedCount} {translateText(["googleWorkspaceImport", "ofLabel"])}{" "}
+                  {totalCount} {translateText(["googleWorkspaceImport", "selectedLabel"])}
+                </Typography>
+              </Stack>
             </Box>
 
-            <Box sx={{ flex: 1, overflowY: "auto", p: "1rem" }}>
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                px: "1.5rem",
+                py: "1rem"
+              }}
+            >
               <Box
                 sx={{
                   backgroundColor: theme.palette.grey[100],
                   display: "flex",
                   flexDirection: "column",
                   borderRadius: "0.5rem",
-                  gap: "0.125rem"
+                  gap: "0.125rem",
+                  flex: 1,
+                  minHeight: 0
                 }}
               >
                 <Table
@@ -578,72 +407,47 @@ const ReviewPage: NextPage = () => {
                           maxWidth: "14.75rem",
                           minWidth: 0,
                           width: "fit-content",
-                          "& .MuiChip-label": { pr: "0.3rem" },
                           justifyContent: "flex-start"
                         }}
                       />
                     ),
-                    email: (
-                      <Typography variant="body2" color="text.secondary">
-                        {record.email}
-                      </Typography>
-                    ),
+                    email: <Typography variant="body2">{record.email}</Typography>,
                     unit: (
-                      <Box
-                        sx={{
-                          display: "inline-block",
-                          px: "0.5rem",
-                          py: "0.2rem",
-                          borderRadius: "999px",
-                          backgroundColor: alpha(theme.palette.info.main, 0.12),
-                          color: theme.palette.info.dark,
-                          fontSize: "0.7rem",
-                          fontWeight: 600,
-                          whiteSpace: "nowrap",
+                      <ReadOnlyChip
+                        label={ouDisplayName(record.orgUnitPath)}
+                        chipStyles={{
+                          border: `0.0625rem solid ${theme.palette.grey[200]}`,
+                          py: "0.25rem",
+                          px: "0.75rem",
+                          fontSize: "0.875rem",
                           width: "fit-content"
                         }}
-                      >
-                        {ouDisplayName(record.orgUnitPath)}
-                      </Box>
+                      />
                     ),
                     status: (
-                      <Box
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.375rem",
-                          px: "0.5rem",
-                          py: "0.2rem",
-                          borderRadius: "999px",
-                          width: "fit-content",
-                          backgroundColor:
-                            record.googleStatus === "ACTIVE"
-                              ? theme.palette.greens.lightBackground
-                              : theme.palette.amber.mid,
-                          color:
-                            record.googleStatus === "ACTIVE"
-                              ? theme.palette.greens.midDark
-                              : theme.palette.amber.dark,
-                          fontSize: "0.7rem",
-                          fontWeight: 700
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: "0.375rem",
-                            height: "0.375rem",
-                            borderRadius: "50%",
-                            flexShrink: 0,
-                            backgroundColor:
-                              record.googleStatus === "ACTIVE"
-                                ? theme.palette.greens.midDark
-                                : theme.palette.amber.main
-                          }}
-                        />
-                        {record.googleStatus === "ACTIVE"
-                          ? translateText(["googleWorkspaceSync", "statusActive"])
-                          : translateText(["googleWorkspaceSync", "statusSuspended"])}
-                      </Box>
+                      <StatusComponent
+                        text={
+                          record.googleStatus === "ACTIVE"
+                            ? translateText(["googleWorkspaceSync", "statusActive"])
+                            : translateText(["googleWorkspaceSync", "statusSuspended"])
+                        }
+                        iconColor={
+                          record.googleStatus === "ACTIVE"
+                            ? theme.palette.greens.midDark
+                            : theme.palette.amber.main
+                        }
+                        backgroundColor={
+                          record.googleStatus === "ACTIVE"
+                            ? "bg-semantic-green-background"
+                            : "bg-semantic-amber-background"
+                        }
+                        textColor={
+                          record.googleStatus === "ACTIVE"
+                            ? "text-semantic-green-text"
+                            : "text-semantic-amber-text"
+                        }
+                        className="w-32 justify-center"
+                      />
                     )
                   }))}
                   selectedRows={Array.from(selected)}
@@ -656,8 +460,14 @@ const ReviewPage: NextPage = () => {
                     handleSelectAllClick: toggleSelectAll
                   }}
                   customStyles={{
-                    wrapper: { overflow: "hidden" },
-                    container: { borderRadius: "0.625rem", overflow: "auto" }
+                    wrapper: { overflow: "hidden", flex: 1, minHeight: 0 },
+                    container: {
+                      borderRadius: "0.625rem",
+                      overflow: "auto",
+                      maxHeight: "none",
+                      flex: 1,
+                      minHeight: 0
+                    }
                   }}
                   tableHead={{
                     customStyles: {
@@ -665,11 +475,26 @@ const ReviewPage: NextPage = () => {
                         borderTopLeftRadius: "0.625rem",
                         borderTopRightRadius: "0.625rem"
                       },
-                      cell: { border: "none" }
+                      cell: {
+                        border: "none",
+                        padding: "0.5rem 1rem",
+                        "& .MuiTypography-root": { fontSize: "0.875rem", fontWeight: 400 }
+                      }
                     }
                   }}
                   tableBody={{
                     onRowClick: (row: { id: number }) => toggleOne(row.id),
+                    customStyles: {
+                      cell: {
+                        wrapper: { padding: "0.5rem 1rem" }
+                      },
+                      row: {
+                        active: {
+                          "&:focus": { outline: "none" },
+                          "&:focus-visible": { outline: "none" }
+                        }
+                      }
+                    },
                     emptyState: {
                       noData: isStagingError
                         ? {
@@ -694,6 +519,9 @@ const ReviewPage: NextPage = () => {
                           }
                     }
                   }}
+                  tableFoot={{
+                    pagination: { isEnabled: false }
+                  }}
                 />
               </Box>
             </Box>
@@ -704,29 +532,18 @@ const ReviewPage: NextPage = () => {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             px: "1.5rem",
             py: "1rem",
-            borderTop: `0.0625rem solid ${theme.palette.grey[200]}`,
-            backgroundColor: theme.palette.common.white,
             flexShrink: 0
           }}
         >
-          <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-            <Box component="span" sx={{ fontWeight: 700, color: theme.palette.text.textDarkGrey }}>
-              {selectedCount}
-            </Box>{" "}
-            {translateText(["googleWorkspaceImport", "ofLabel"])}{" "}
-            <Box component="span" sx={{ fontWeight: 700, color: theme.palette.text.textDarkGrey }}>
-              {totalCount}
-            </Box>{" "}
-            {translateText(["googleWorkspaceImport", "selectedLabel"])}
-          </Typography>
-
           <Stack direction="row" gap="0.75rem">
             <ButtonV2
               variant="tertiary"
               size="md"
+              icon={<Icon name={IconName.CLOSE_ICON} />}
+              iconPosition="end"
               onClick={() => setShowExitDialog(true)}
             >
               {translateText(["cancelButton"])}
@@ -737,12 +554,12 @@ const ReviewPage: NextPage = () => {
               disabled={selectedCount === 0}
               onClick={() => setShowConfirmDialog(true)}
             >
-              {translateText(["googleWorkspaceImport", "importSelected"], {
-                count: selectedCount
-              })}
+              {translateText(["googleWorkspaceImport", "importSelected"])}
             </ButtonV2>
           </Stack>
         </Box>
+          </>
+        )}
       </Box>
 
       <Modal
@@ -782,135 +599,78 @@ const ReviewPage: NextPage = () => {
         <Stack gap="1.25rem">
           <Box
             sx={{
-              border: `0.0625rem solid ${theme.palette.grey[200]}`,
-              borderRadius: "0.75rem",
-              p: "1.5rem",
+              border: `0.0625rem solid ${theme.palette.secondary.main}`,
+              borderRadius: "0.5rem",
+              py: "1rem",
               textAlign: "center"
             }}
           >
-            <Typography sx={{ fontSize: "3rem", fontWeight: 800, lineHeight: 1, color: theme.palette.text.textDarkGrey }}>
+            <Typography sx={{ fontSize: "1.875rem", fontWeight: 600, lineHeight: 1, color: theme.palette.text.primary }}>
               {selectedCount}
             </Typography>
-            <Typography variant="body1" sx={{ color: theme.palette.info.dark, fontWeight: 500, mt: "0.5rem" }}>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: "0.5rem" }}>
               {translateText(["googleWorkspaceImport", "willBeAddedLabel"])}
             </Typography>
-
-            {Object.keys(selectedByOu).length > 0 && (
-              <>
-                <Divider sx={{ my: "1rem" }} />
-                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem 1.5rem", textAlign: "left" }}>
-                  {Object.entries(selectedByOu).map(([ou, count], i) => (
-                    <Stack key={ou} direction="row" alignItems="center" gap="0.5rem">
-                      <Box
-                        sx={{
-                          width: "0.625rem",
-                          height: "0.625rem",
-                          borderRadius: "50%",
-                          backgroundColor: OU_DOT_COLORS[i % OU_DOT_COLORS.length],
-                          flexShrink: 0
-                        }}
-                      />
-                      <Typography variant="body2" sx={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {ou}
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 700, flexShrink: 0 }}>
-                        {count}
-                      </Typography>
-                    </Stack>
-                  ))}
-                </Box>
-              </>
-            )}
           </Box>
 
-          <Box sx={{ border: `0.0625rem solid ${theme.palette.grey[200]}`, borderRadius: "0.75rem", p: "1.25rem" }}>
-            <Typography
-              variant="caption"
-              sx={{ fontWeight: 700, color: theme.palette.text.secondary, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", mb: "0.75rem" }}
-            >
+          <Box>
+            <Typography variant="body1" sx={{ fontWeight: 600, mb: "1rem" }}>
               {translateText(["googleWorkspaceImport", "autoSyncHeading"])}
             </Typography>
 
-            <Stack gap="0.875rem">
-              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap="1rem">
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {translateText(["googleWorkspaceImport", "autoSyncNewLabel"])}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {translateText(["googleWorkspaceImport", "autoSyncNewDescription"])}
-                  </Typography>
-                </Box>
-                <ToggleSwitch on={autoSyncNew} onChange={setAutoSyncNew} />
+            <Stack gap="1.25rem">
+              <Stack direction="row" justifyContent="space-between" alignItems="center" gap="1rem">
+                <Typography variant="body1">
+                  {translateText(["googleWorkspaceImport", "autoSyncNewLabel"])}
+                </Typography>
+                <Toggle
+                  checked={autoSyncNew}
+                  onChange={setAutoSyncNew}
+                  ariaLabel={translateText(["googleWorkspaceImport", "autoSyncNewLabel"])}
+                />
               </Stack>
 
-              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap="1rem">
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {translateText(["googleWorkspaceImport", "notifyRemovalsLabel"])}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {translateText(["googleWorkspaceImport", "notifyRemovalsDescription"])}
-                  </Typography>
-                </Box>
-                <ToggleSwitch on={notifyRemovals} onChange={setNotifyRemovals} />
+              <Stack direction="row" justifyContent="space-between" alignItems="center" gap="1rem">
+                <Typography variant="body1">
+                  {translateText(["googleWorkspaceImport", "notifyRemovalsLabel"])}
+                </Typography>
+                <Toggle
+                  checked={notifyRemovals}
+                  onChange={setNotifyRemovals}
+                  ariaLabel={translateText(["googleWorkspaceImport", "notifyRemovalsLabel"])}
+                />
               </Stack>
             </Stack>
-
-            <Typography variant="caption" sx={{ color: theme.palette.grey[500], display: "block", mt: "0.75rem" }}>
-              {translateText(["googleWorkspaceImport", "autoSyncFootnote"])}
-            </Typography>
           </Box>
 
-          <Stack direction="row" gap="0.75rem" justifyContent="flex-end">
+          <Stack
+            direction="row"
+            gap="1rem"
+            justifyContent="flex-end"
+            sx={{ width: "20rem", alignSelf: "flex-end" }}
+          >
             <ButtonV2
               variant="tertiary"
               size="md"
+              isFullWidth
               disabled={isImporting}
               onClick={() => setShowConfirmDialog(false)}
+              style={{ flex: 1 }}
             >
               {translateText(["backButton"])}
             </ButtonV2>
             <ButtonV2
               variant="primary"
               size="md"
+              isFullWidth
               isLoading={isImporting}
+              disabled={isImporting}
               onClick={handleConfirmImport}
+              style={{ flex: 1 }}
             >
               {translateText(["googleWorkspaceImport", "confirmImportButton"])}
             </ButtonV2>
           </Stack>
-        </Stack>
-      </Modal>
-
-      <Modal
-        isModalOpen={showSuccessDialog}
-        onCloseModal={() => router.push(ROUTES.PEOPLE.DIRECTORY)}
-        isClosable={false}
-        title=""
-      >
-        <Stack alignItems="center" gap="1rem" sx={{ textAlign: "center", py: "0.5rem" }}>
-          <Icon
-            name={IconName.CHECK_CIRCLE_ICON}
-            width="64"
-            height="64"
-            fill={theme.palette.greens.midDark}
-          />
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            {translateText(["googleWorkspaceImport", "importSuccessTitle"])}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: "25rem" }}>
-            {translateText(["googleWorkspaceImport", "importSuccessDescription"], {
-              count: importedCount
-            })}
-          </Typography>
-          <ButtonV2
-            variant="primary"
-            size="lg"
-            onClick={() => router.push(ROUTES.PEOPLE.DIRECTORY)}
-          >
-            {translateText(["googleWorkspaceImport", "viewDirectoryButton"])}
-          </ButtonV2>
         </Stack>
       </Modal>
     </>
