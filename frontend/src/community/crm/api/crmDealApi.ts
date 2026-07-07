@@ -231,6 +231,25 @@ export const useDeleteDealStage = (
   });
 };
 
+const deleteDeal = async (id: number): Promise<void> => {
+  await authFetch.delete(crmDealEndpoints.DELETE_DEAL(id));
+};
+
+export const useDeleteDeal = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess();
+    },
+    onError
+  });
+};
+
 export const useDealStageById = (id: number) => {
   return useQueryClient()
     .getQueryData<CrmDealStageType[]>(crmDealQueryKeys.DEAL_STAGES)

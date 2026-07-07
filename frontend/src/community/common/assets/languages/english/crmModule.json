@@ -477,6 +477,12 @@
       "ariaLabels": {
         "cancel": "Cancel delete deal",
         "confirm": "Confirm delete deal"
+      },
+      "toastMessages": {
+        "successTitle": "Deal deleted",
+        "successDescription": "{{dealName}} has been deleted successfully.",
+        "errorTitle": "Failed to delete deal",
+        "errorDescription": "Something went wrong. Please try again."
       }
     },
     "addDealSidePanel": {

@@ -142,6 +142,7 @@ const DealSidePanel: FC = () => {
       <DeleteDealModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
+        dealId={selectedDealId!}
         dealName={deal?.name ?? ""}
       />
     </>
