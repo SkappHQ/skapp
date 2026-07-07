@@ -37,18 +37,40 @@ public class GoogleWorkspaceOAuthController {
     }
 
     /**
-     * Step 2 — Google redirects back here after admin approves.
-     * We exchange the code for tokens, save them, then redirect
-     * the admin back to the Skapp settings page.
+     * Step 2 — Google redirects back here after the admin approves or
+     * cancels. On cancel/deny, Google omits "code" and sends "error"
+     * instead (e.g. access_denied) — send the admin back to the People
+     * directory (flagged so the frontend can show a failure toast)
+     * rather than exchanging a code that was never issued. If the token
+     * exchange itself fails (invalid/expired code, Google-side error),
+     * fail the same way instead of letting the request 500.
      */
     @GetMapping("/callback")
     public ResponseEntity<Void> handleCallback(
-            @RequestParam String code,
-            @RequestParam String state) {
-        oAuthService.handleCallback(code, state);
+            @RequestParam(required = false) String code,
+            @RequestParam String state,
+            @RequestParam(required = false) String error) {
+        if (error != null || code == null) {
+            log.warn("Google OAuth callback did not return a code (error={})", error);
+            return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(URI.create(frontendUrl + "/people/directory?google=error"))
+                    .build();
+        }
+
+        try {
+            oAuthService.handleCallback(code, state);
+        } catch (Exception e) {
+            log.error("Google OAuth callback processing failed", e);
+            return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(URI.create(frontendUrl + "/people/directory?google=error"))
+                    .build();
+        }
+
         return ResponseEntity
                 .status(HttpStatus.FOUND)
-                .location(URI.create(frontendUrl + "/settings?google=connected"))
+                .location(URI.create(frontendUrl + "/people/directory/import-google/syncing"))
                 .build();
     }
 

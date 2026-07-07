@@ -981,7 +981,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             changeType = ExternalSyncStaging.ChangeType.UPDATED;
         }
 
-        ExternalSyncStaging staging = new ExternalSyncStaging();
+        ExternalSyncStaging staging = stagingDao
+                .findByEmailAndDecision(email, ExternalSyncStaging.Decision.PENDING)
+                .orElseGet(ExternalSyncStaging::new);
         staging.setEmail(email);
         staging.setFirstName(firstName);
         staging.setLastName(lastName);
@@ -1010,7 +1012,9 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
             Optional<EmployeeRole> role = employeeRoleDao.findById(employee.getEmployeeId());
             if (role.isPresent() && Boolean.TRUE.equals(role.get().getIsSuperAdmin())) continue;
 
-            ExternalSyncStaging staging = new ExternalSyncStaging();
+            ExternalSyncStaging staging = stagingDao
+                    .findByEmailAndDecision(email, ExternalSyncStaging.Decision.PENDING)
+                    .orElseGet(ExternalSyncStaging::new);
             staging.setEmail(email);
             staging.setFirstName(employee.getFirstName());
             staging.setLastName(employee.getLastName());

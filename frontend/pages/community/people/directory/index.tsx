@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -46,9 +46,16 @@ const Directory: NextPage = () => {
   // Forwarded from the Settings OAuth-callback shim when the Google
   // Workspace connection attempt failed — surface it here, where the admin
   // actually lands, then strip the query param so it doesn't re-fire on
-  // refresh.
+  // refresh. Guarded by a ref (not just the query param) because this
+  // component also calls useToast(), so it re-renders — and this effect can
+  // re-run — every time the toast's own close button fires setToastMessage;
+  // without the ref, that re-run could re-open the toast right after the
+  // admin closes it.
+  const hasShownConnectError = useRef(false);
   useEffect(() => {
     if (!router.isReady || router.query.google !== "error") return;
+    if (hasShownConnectError.current) return;
+    hasShownConnectError.current = true;
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -61,7 +68,8 @@ const Directory: NextPage = () => {
       onClose: () => setToastMessage((prev) => ({ ...prev, open: false }))
     });
     router.replace(ROUTES.PEOPLE.DIRECTORY, undefined, { shallow: true });
-  }, [router, router.isReady, router.query.google, setToastMessage, translatePeople]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady, router.query.google]);
 
   return (
     <>

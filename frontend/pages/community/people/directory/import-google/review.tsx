@@ -554,7 +554,9 @@ const ReviewPage: NextPage = () => {
               disabled={selectedCount === 0}
               onClick={() => setShowConfirmDialog(true)}
             >
-              {translateText(["googleWorkspaceImport", "importSelected"])}
+              {translateText(["googleWorkspaceImport", "importSelected"], {
+                count: selectedCount
+              })}
             </ButtonV2>
           </Stack>
         </Box>

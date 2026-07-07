@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
@@ -86,6 +87,13 @@ const Settings: NextPage = () => {
     setActiveTab(id);
     replaceTabQueryParam(router.asPath, id);
   };
+
+  // Avoid a flash of this page's real content while the redirect above is
+  // about to fire — the effect only runs after the first paint, so without
+  // this the admin briefly sees the Settings tabs before bouncing away.
+  if (!router.isReady || router.query.google === "connected") {
+    return <FullScreenLoader />;
+  }
 
   return (
     <ContentLayout
