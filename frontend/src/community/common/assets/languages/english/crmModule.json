@@ -19,7 +19,8 @@
         "email": "Email",
         "contactNumber": "Contact no.",
         "company": "Company",
-        "owner": "Contact owner"
+        "owner": "Contact owner",
+        "suggested": "Suggested"
       },
       "placeholders": {
         "name": "Enter name",
@@ -89,7 +90,8 @@
         "email": "Email",
         "contactNumber": "Contact no.",
         "company": "Company",
-        "owner": "Contact owner"
+        "owner": "Contact owner",
+        "suggested": "Suggested"
       },
       "placeholders": {
         "name": "Enter name",
