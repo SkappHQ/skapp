@@ -367,7 +367,7 @@ export const getCurrentDateAtMidnight = () => {
 };
 
 export const getDayDifference = (from: DateTime, to: DateTime): number => {
-  return Math.round(to.startOf("day").diff(from.startOf("day"), "days").days);
+  return to.startOf("day").diff(from.startOf("day"), "days").days;
 };
 
 /**
