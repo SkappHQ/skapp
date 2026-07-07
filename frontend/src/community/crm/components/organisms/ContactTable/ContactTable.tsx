@@ -145,7 +145,7 @@ export const ContactTable: FC = () => {
       render(value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{formatValue(value ? String(value) : null)}</div>
+            <div>{formatValue(String(value))}</div>
             <div className="subtitle4 text-secondary-text">
               {row.closedDealCount > 0
                 ? `${row.closedDealCount} ${translateText(["table", "closedDealsLabel"], { count: row.closedDealCount })}`
