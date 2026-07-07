@@ -80,7 +80,10 @@ const TaskSidePanel: FC = () => {
     }
   }, [taskDetail]);
 
-  const selectedTask = getTaskById(selectedTaskId!);
+  const storedTask = getTaskById(selectedTaskId!);
+  const selectedTask = taskDetail
+    ? { ...storedTask, ...taskDetail }
+    : storedTask;
 
   const taskIcon = selectedTask
     ? getTaskTypeIcon(selectedTask.typeName, TASK_DETAIL_ICON_SIZE)
