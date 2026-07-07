@@ -30,7 +30,10 @@ const fetchRelatedTasks = async (
   return response?.data?.results?.[0];
 };
 
-export const useGetRelatedTasks = (params: RelatedTasksParams) => {
+export const useGetRelatedTasks = (
+  params: RelatedTasksParams,
+  enabled?: boolean
+) => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: taskQueryKeys.RELATED_TASKS,
@@ -39,6 +42,7 @@ export const useGetRelatedTasks = (params: RelatedTasksParams) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
     },
+    enabled,
     refetchOnWindowFocus: false
   });
 };
