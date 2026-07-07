@@ -7,7 +7,7 @@ import {
   useSensor,
   useSensors
 } from "@dnd-kit/core";
-import { FC, useCallback } from "react";
+import { FC } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
@@ -44,11 +44,11 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     handleDragEnd
   } = useKanbanDrag();
 
-  const handleAddDeal = useCallback((stageId: number) => {
+  const handleAddDeal = (stageId: number) => {
     const { setPreselectedStageId, openCrmSidePanel } = useCrmStore.getState();
     setPreselectedStageId(stageId);
     openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
-  }, []);
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
