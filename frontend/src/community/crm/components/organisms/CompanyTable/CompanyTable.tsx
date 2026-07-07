@@ -66,6 +66,13 @@ export const CompanyTable: FC = () => {
       header: translateText(["table", "columns", "nameHeader"]),
       key: "name",
       className: "truncate",
+      render(_value, row) {
+        return (
+          <span className="truncate" title={row.name}>
+            {row.name}
+          </span>
+        );
+      },
       width: "25%"
     },
     {
