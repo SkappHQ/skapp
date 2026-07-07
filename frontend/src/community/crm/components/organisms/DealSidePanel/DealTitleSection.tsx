@@ -10,9 +10,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface DealTitleSectionProps {
   name: string;
+  onSave: (name: string) => void;
 }
 
-const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
+const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -24,7 +25,10 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
   };
 
   const handleSave = () => {
-    // Edit API call
+    const trimmedTitle = editedTitle.trim();
+    if (trimmedTitle && trimmedTitle !== name) {
+      onSave(trimmedTitle);
+    }
     setIsEditing(false);
   };
 

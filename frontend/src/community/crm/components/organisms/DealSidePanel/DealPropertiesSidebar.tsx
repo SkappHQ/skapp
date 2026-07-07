@@ -20,17 +20,20 @@ import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages"
 import {
   CrmContactLookup,
   CrmDealDetailResponseType,
+  CrmDealEditPayload,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 
 interface DealPropertiesSidebarProps {
   deal: CrmDealDetailResponseType;
   isOpen?: boolean;
+  onEditDeal: (payload: Omit<CrmDealEditPayload, "id">) => void;
 }
 
 const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   deal,
-  isOpen
+  isOpen,
+  onEditDeal
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
@@ -84,7 +87,10 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         <Dropdown
           options={stageOptions}
           value={selectedStageId}
-          onChange={(v) => setSelectedStageId(v)}
+          onChange={(v) => {
+            setSelectedStageId(v);
+            onEditDeal({ stageId: Number(v) });
+          }}
           variant="primary"
           className="rounded-lg"
           width="55%"
@@ -99,17 +105,30 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           value={amount}
           placeholder={translateText(["placeholders", "none"])}
           onChange={setAmount}
+          onSave={(value) => {
+            setAmount(value);
+            onEditDeal({ amount: value });
+          }}
         />
 
         <PropertyRow label={translateText(["priority"])}>
-          <PriorityDropdown value={priority} onChange={setPriority} />
+          <PriorityDropdown
+            value={priority}
+            onChange={(value) => {
+              setPriority(value);
+              onEditDeal({ priority: value });
+            }}
+          />
         </PropertyRow>
 
         <PropertyRow label={translateText(["ownedBy"])}>
           <div className="flex flex-col w-full">
             <OwnerPopupSearch
               selectedUser={selectedOwner}
-              onChange={setSelectedOwner}
+              onChange={(owner) => {
+                setSelectedOwner(owner);
+                if (owner) onEditDeal({ ownerId: owner.employeeId });
+              }}
               placeholder={translateText(["placeholders", "none"])}
               searchPlaceholder={translateText(["placeholders", "ownerSearch"])}
               noResultsText={translateText(["placeholders", "noResults"])}
@@ -122,7 +141,10 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
             <ContactPopupSearch
               contacts={contacts}
               selectedContact={selectedContact}
-              onChange={setSelectedContact}
+              onChange={(contact) => {
+                setSelectedContact(contact);
+                if (contact) onEditDeal({ contactId: contact.id });
+              }}
               onSearch={setContactSearchTerm}
               placeholder={translateText(["placeholders", "none"])}
               searchPlaceholder={translateText([

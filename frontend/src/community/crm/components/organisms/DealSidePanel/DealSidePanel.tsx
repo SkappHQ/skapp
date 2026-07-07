@@ -6,10 +6,13 @@ import {
 import { FC, useState } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
-import { useGetDealById } from "~community/crm/api/crmDealApi";
+import { useEditDeal, useGetDealById } from "~community/crm/api/crmDealApi";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
+import { CrmDealEditPayload } from "~community/crm/types/CommonTypes";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
 import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
@@ -46,7 +49,32 @@ const DealSidePanel: FC = () => {
     closeCrmSidePanel();
   };
 
+  const { setToastMessage } = useToast();
+
   const { data: deal, isLoading } = useGetDealById(selectedDealId!);
+
+  const { mutate: editDeal } = useEditDeal(
+    () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText(["toastMessages", "editSuccessTitle"]),
+        description: translateText(["toastMessages", "editSuccessDescription"])
+      });
+    },
+    () => {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["toastMessages", "editErrorTitle"]),
+        description: translateText(["toastMessages", "editErrorDescription"])
+      });
+    }
+  );
+
+  const handleEditDeal = (payload: Omit<CrmDealEditPayload, "id">): void => {
+    editDeal({ id: selectedDealId!, ...payload });
+  };
 
   const {
     data: relatedTasksData,
@@ -118,10 +146,16 @@ const DealSidePanel: FC = () => {
           <DealSidePanelSkeleton />
         ) : (
           <div className="flex flex-col gap-6">
-            <DealTitleSection name={deal?.name ?? ""} />
+            <DealTitleSection
+              name={deal?.name ?? ""}
+              onSave={(name) => handleEditDeal({ name })}
+            />
             <div className="flex gap-6 items-start">
               <div className="flex-1 flex flex-col gap-6 min-w-0">
-                <DealDescriptionSection description={deal?.description ?? ""} />
+                <DealDescriptionSection
+                  description={deal?.description ?? ""}
+                  onSave={(description) => handleEditDeal({ description })}
+                />
                 <div className="flex flex-col gap-3">
                   <h2 className="h2">{translateText(["tasks"])}</h2>
                   <hr className="border-secondary-accent" />
@@ -133,7 +167,11 @@ const DealSidePanel: FC = () => {
                   />
                 </div>
               </div>
-              <DealPropertiesSidebar deal={deal!} isOpen={isOpen} />
+              <DealPropertiesSidebar
+                deal={deal!}
+                isOpen={isOpen}
+                onEditDeal={handleEditDeal}
+              />
             </div>
           </div>
         )}

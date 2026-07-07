@@ -5,10 +5,12 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface DealDescriptionSectionProps {
   description: string | null;
+  onSave: (description: string) => void;
 }
 
 const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
-  description
+  description,
+  onSave
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
@@ -23,7 +25,10 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
   };
 
   const handleSave = () => {
-    // Edit API call
+    const trimmedDescription = editedDescription.trim();
+    if (trimmedDescription !== (description ?? "").trim()) {
+      onSave(trimmedDescription);
+    }
     setIsEditing(false);
   };
 

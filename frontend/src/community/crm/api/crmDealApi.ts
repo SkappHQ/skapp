@@ -13,6 +13,7 @@ import {
   CrmCreateDealPayload,
   CrmDealCreateResponseType,
   CrmDealDetailResponseType,
+  CrmDealEditPayload,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
   CrmDealStageCreatePayload,
@@ -23,7 +24,7 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { crmDealQueryKeys } from "./utils/QueryKeys";
+import { crmBoardQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
@@ -127,6 +128,38 @@ export const useGetDealById = (
     queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
     queryFn: () => fetchDealById(id),
     refetchOnWindowFocus: false
+  });
+};
+
+const editDeal = async ({
+  id,
+  ...payload
+}: CrmDealEditPayload): Promise<CrmDealDetailResponseType> => {
+  const response = await authFetch.patch(
+    crmDealEndpoints.EDIT_DEAL(id),
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useEditDeal = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: editDeal,
+    onSuccess: ({ id }) => {
+      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.DEAL_BY_ID(id)
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES
+      });
+      onSuccess();
+    },
+    onError
   });
 };
 

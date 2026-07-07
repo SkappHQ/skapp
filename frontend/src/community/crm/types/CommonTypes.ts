@@ -291,6 +291,17 @@ export interface CrmDealDetailResponseType {
   contact: CrmContactLookup;
 }
 
+export interface CrmDealEditPayload {
+  id: number;
+  name?: string;
+  description?: string | null;
+  stageId?: number;
+  priority?: CrmPriorityEnum;
+  amount?: string | null;
+  contactId?: number;
+  ownerId?: number;
+}
+
 export interface CrmDealPaginatedResponse {
   items: CrmDealListItem[];
   currentPage: number;

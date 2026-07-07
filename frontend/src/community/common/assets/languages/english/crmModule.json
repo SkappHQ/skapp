@@ -444,6 +444,12 @@
       "errors": {
         "dealNotFoundTitle": "Deal not found",
         "dealNotFoundDescription": "This deal is no longer available."
+      },
+      "toastMessages": {
+        "editSuccessTitle": "Deal updated",
+        "editSuccessDescription": "Your changes have been saved.",
+        "editErrorTitle": "Failed to update deal",
+        "editErrorDescription": "Something went wrong. Please try again"
       }
     },
     "dealsTable": {
