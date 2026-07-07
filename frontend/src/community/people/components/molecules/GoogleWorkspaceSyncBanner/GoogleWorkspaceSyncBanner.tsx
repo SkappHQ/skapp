@@ -1,10 +1,9 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Label } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
-import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -91,75 +90,71 @@ const GoogleWorkspaceSyncBanner = () => {
         // Always the org's chosen brand color — not a semantic status color —
         // so this banner looks the same whether or not anything is pending.
         backgroundColor: theme.palette.secondary.main,
-        border: `0.0625rem solid ${theme.palette.grey[300]}`,
+        border: `0.0625rem solid ${theme.palette.secondary.dark}`,
         borderRadius: "0.5rem",
         padding: "0.75rem 1rem",
         marginBottom: "1.5rem"
       }}
     >
-      <Stack direction="row" alignItems="center" gap="0.75rem" flexWrap="wrap">
-        <Icon name={IconName.INFO_ICON} fill={theme.palette.primary.dark} />
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 600, color: theme.palette.primary.dark }}
-        >
-          {translateText([
-            "googleWorkspaceSync",
-            isUpToDate ? "connectedTitle" : "changesDetectedTitle"
-          ])}
-        </Typography>
-
-        {!isUpToDate && (
-          <Stack direction="row" gap="0.375rem" flexWrap="wrap">
-            {counts.newCount > 0 && (
-              <ReadOnlyChip
-                label={translateText(
-                  ["googleWorkspaceSync", "newCountChip"],
-                  { count: counts.newCount }
-                )}
-                chipStyles={{
-                  backgroundColor: theme.palette.greens.lightBackground,
-                  color: theme.palette.greens.midDark,
-                  fontWeight: 600
-                }}
-              />
-            )}
-            {counts.suspendedCount > 0 && (
-              <ReadOnlyChip
-                label={translateText(
-                  ["googleWorkspaceSync", "suspendedCountChip"],
-                  { count: counts.suspendedCount }
-                )}
-                chipStyles={{
-                  backgroundColor: theme.palette.amber.mid,
-                  color: theme.palette.amber.dark,
-                  fontWeight: 600
-                }}
-              />
-            )}
-            {counts.removedCount > 0 && (
-              <ReadOnlyChip
-                label={translateText(
-                  ["googleWorkspaceSync", "removedCountChip"],
-                  { count: counts.removedCount }
-                )}
-                chipStyles={{
-                  backgroundColor: theme.palette.error.main,
-                  color: theme.palette.text.darkerText,
-                  fontWeight: 600
-                }}
-              />
-            )}
-          </Stack>
-        )}
-
-        {lastSyncedAt && (
-          <Typography variant="body2" color="text.secondary">
-            {translateText(["googleWorkspaceSync", "lastSyncedLabel"], {
-              time: formatLastSynced(lastSyncedAt, translateText as any)
-            })}
+      <Stack gap="0.375rem">
+        <Stack direction="row" alignItems="center" gap="0.75rem">
+          <Icon name={IconName.INFO_ICON} fill={theme.palette.primary.dark} />
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 600, color: theme.palette.primary.dark }}
+          >
+            {translateText([
+              "googleWorkspaceSync",
+              isUpToDate ? "connectedTitle" : "changesDetectedTitle"
+            ])}
           </Typography>
-        )}
+        </Stack>
+
+        <Stack direction="row" alignItems="center" gap="0.75rem" flexWrap="wrap">
+          {!isUpToDate && (
+            <Stack direction="row" gap="0.375rem" flexWrap="wrap">
+              {counts.newCount > 0 && (
+                <Label
+                  backgroundColor="bg-semantic-green-background"
+                  textColor="text-semantic-green-text"
+                >
+                  {translateText(["googleWorkspaceSync", "newCountChip"], {
+                    count: counts.newCount
+                  })}
+                </Label>
+              )}
+              {counts.suspendedCount > 0 && (
+                <Label
+                  backgroundColor="bg-semantic-amber-background"
+                  textColor="text-semantic-amber-text"
+                >
+                  {translateText(
+                    ["googleWorkspaceSync", "suspendedCountChip"],
+                    { count: counts.suspendedCount }
+                  )}
+                </Label>
+              )}
+              {counts.removedCount > 0 && (
+                <Label
+                  backgroundColor="bg-semantic-red-background"
+                  textColor="text-semantic-red-text"
+                >
+                  {translateText(["googleWorkspaceSync", "removedCountChip"], {
+                    count: counts.removedCount
+                  })}
+                </Label>
+              )}
+            </Stack>
+          )}
+
+          {lastSyncedAt && (
+            <Typography variant="body2" color="text.secondary">
+              {translateText(["googleWorkspaceSync", "lastSyncedLabel"], {
+                time: formatLastSynced(lastSyncedAt, translateText as any)
+              })}
+            </Typography>
+          )}
+        </Stack>
       </Stack>
 
       <ButtonV2

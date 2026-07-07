@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { ArrowRightIcon } from "@rootcodelabs/skapp-ui";
+import { ArrowRightIcon, ProgressBar } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
@@ -115,25 +115,16 @@ const SyncingPage: NextPage = () => {
               {Math.round(progress)}%
             </Typography>
           </Stack>
-          <Box
-            sx={{
-              width: "100%",
-              height: "0.5rem",
-              borderRadius: "999px",
-              backgroundColor: theme.palette.grey[200],
-              overflow: "hidden"
-            }}
-          >
-            <Box
-              sx={{
-                width: `${progress}%`,
-                height: "100%",
-                borderRadius: "999px",
-                backgroundColor: theme.palette.primary.main,
-                transition: "width 0.1s linear"
-              }}
-            />
-          </Box>
+          <ProgressBar
+            mode="single"
+            progress={progress}
+            max={100}
+            color="bg-primary"
+            backgroundColor="bg-gray-200"
+            height="h-2"
+            width="w-full"
+            screenReaderText={`${Math.round(progress)}%`}
+          />
         </Box>
       </Stack>
     </Box>

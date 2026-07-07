@@ -359,7 +359,7 @@
       "importErrorTitle": "Import failed",
       "importErrorDescription": "Something went wrong while importing your members. Please try again.",
       "syncingTitle": "Syncing your Google Workspace",
-      "syncingProgressLabel": "Fetching members",
+      "syncingProgressLabel": "Progress",
       "connectingLabel": "Connecting to Google…",
       "importingLabel": "Importing selected members…",
       "noUsersSelectedHint": "No users selected",
