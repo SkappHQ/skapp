@@ -129,7 +129,6 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
 				JoinType.LEFT);
 
-
 		List<Predicate> predicates = buildLookupPredicates(cb, query, contact, company, filterDto);
 
 		query.where(predicates.toArray(new Predicate[0]));
@@ -142,9 +141,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return new PageImpl<>(typedQuery.getResultList(), pageable, getLookupTotalCount(cb, filterDto));
 	}
 
-
-	private<T> List<Predicate> buildLookupPredicates(CriteriaBuilder cb,CriteriaQuery<T> query, Root<CrmContact> contact,
-			Join<CrmContact, CrmCompany> company, CrmContactFilterDto filterDto) {
+	private <T> List<Predicate> buildLookupPredicates(CriteriaBuilder cb, CriteriaQuery<T> query,
+			Root<CrmContact> contact, Join<CrmContact, CrmCompany> company, CrmContactFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
