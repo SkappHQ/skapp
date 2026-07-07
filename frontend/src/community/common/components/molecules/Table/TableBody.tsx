@@ -94,7 +94,11 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
         rows.map((row) => (
           <TableRow
             key={row.id}
-            tabIndex={onRowClick ? 0 : -1}
+            // When a checkbox column is also present it already provides an
+            // equivalent, independently-focusable way to trigger onRowClick's
+            // action — without this, keyboard users hit two consecutive tab
+            // stops per row (row, then checkbox) that both do the same thing.
+            tabIndex={onRowClick && !checkboxSelection?.isEnabled ? 0 : -1}
             onClick={onRowClick ? () => handleTableRowClick(row) : undefined}
             aria-label={row?.ariaLabel?.row ?? ""}
             aria-description={row?.ariaDescription?.row ?? ""}

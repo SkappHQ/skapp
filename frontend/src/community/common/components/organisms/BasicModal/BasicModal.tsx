@@ -14,6 +14,7 @@ interface Props {
     description?: string;
     closeButton?: string;
   };
+  disableEscapeKeyDown?: boolean;
 }
 
 const BasicModal: FC<Props> = ({
@@ -21,7 +22,8 @@ const BasicModal: FC<Props> = ({
   onClose,
   children,
   sx,
-  ids
+  ids,
+  disableEscapeKeyDown = true
 }) => {
   return (
     <Modal
@@ -33,7 +35,7 @@ const BasicModal: FC<Props> = ({
         if (reason === "backdropClick") return;
         onClose(event as MouseEvent<HTMLButtonElement>, reason);
       }}
-      disableEscapeKeyDown
+      disableEscapeKeyDown={disableEscapeKeyDown}
       slotProps={{ backdrop: { timeout: 100 } }}
       sx={mergeSx([
         {
