@@ -54,8 +54,8 @@ public class StagingReviewController {
     @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN')")
     public ResponseEntity<ResponseEntityDto> approve(@RequestBody Map<String, List<Long>> body) {
         List<Long> ids = body.get("ids");
-        stagingReviewService.approve(ids);
-        return new ResponseEntity<>(new ResponseEntityDto(false, "Changes approved successfully"), HttpStatus.OK);
+        Map<String, Integer> counts = stagingReviewService.approve(ids);
+        return new ResponseEntity<>(new ResponseEntityDto(false, counts), HttpStatus.OK);
     }
 
     @Operation(

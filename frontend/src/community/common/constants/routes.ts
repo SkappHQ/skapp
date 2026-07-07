@@ -184,4 +184,8 @@ export const employeeRestrictedRoutes = [
   ROUTES.PEOPLE.ADD
 ];
 
-export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
+export const managerRestrictedRoutes = [
+  ROUTES.PEOPLE.ADD,
+  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+  ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING
+];
