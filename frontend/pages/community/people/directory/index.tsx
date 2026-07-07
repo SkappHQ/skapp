@@ -6,6 +6,8 @@ import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
+import { IconName } from "~community/common/types/IconTypes";
+import { useGetGoogleConnectionStatus } from "~community/people/api/GoogleWorkspaceSyncApi";
 import GoogleWorkspaceSyncBanner from "~community/people/components/molecules/GoogleWorkspaceSyncBanner/GoogleWorkspaceSyncBanner";
 import DirectoryPopupController from "~community/people/components/organisms/DirectoryPopupController/DirectoryPopupController";
 import EmployeeData from "~community/people/components/organisms/EmployeeData/EmployeeData";
@@ -17,6 +19,17 @@ const Directory: NextPage = () => {
   const { user } = useAuth();
 
   const isAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
+
+  // Once the org has connected to Google Workspace, the chooser (CSV vs
+  // Google Workspace) has done its job — the secondary button reverts to
+  // exactly what it was before this feature existed: a plain bulk-CSV
+  // upload trigger, since Google Workspace imports are already surfaced
+  // via the sync banner + review flow at that point.
+  // Reuses the same query (and cache) GoogleWorkspaceSyncBanner already
+  // fires below, rather than firing a second, separate status fetch.
+  const { data: googleConnectionStatus } =
+    useGetGoogleConnectionStatus(!!isAdmin);
+  const isGoogleConnected = !!googleConnectionStatus?.connected;
 
   const {
     setDirectoryModalType,
@@ -53,16 +66,28 @@ const Directory: NextPage = () => {
           isAdmin ? translateText(["peoples.addPeople"]) : undefined
         }
         secondaryBtnText={
-          isAdmin ? translateText(["peoples.importPeople"]) : undefined
+          isAdmin
+            ? translateText([
+                isGoogleConnected
+                  ? "peoples.addBulkPeople"
+                  : "peoples.importPeople"
+              ])
+            : undefined
         }
-        secondaryBtnClassName="import-people-btn"
+        {...(isGoogleConnected
+          ? { secondaryBtnIconName: IconName.UP_ARROW_ICON }
+          : { secondaryBtnClassName: "import-people-btn" })}
         onPrimaryButtonClick={() => {
           setIsDirectoryModalOpen(true);
           setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);
         }}
         onSecondaryButtonClick={() => {
           setIsDirectoryModalOpen(true);
-          setDirectoryModalType(DirectoryModalTypes.UPLOAD_TYPE_SELECT);
+          setDirectoryModalType(
+            isGoogleConnected
+              ? DirectoryModalTypes.DOWNLOAD_CSV
+              : DirectoryModalTypes.UPLOAD_TYPE_SELECT
+          );
         }}
         isDividerVisible
       >
