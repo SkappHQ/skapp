@@ -10,6 +10,7 @@ import {
   convertUTCStringToLocalDateTime,
   formatDateTimeWithOrdinalIndicatorWithoutYear,
   getCurrentDateAtMidnight,
+  getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
@@ -26,6 +27,7 @@ import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
 export interface TaskDueDateInfo {
   textKey: string;
   dateValue?: string;
+  dayCount?: number;
   colorClass: string;
 }
 
@@ -39,11 +41,16 @@ export const getDueDateStatus = (
   const today = getCurrentDateAtMidnight();
 
   if (!isCompleted && due < today) {
-    return { textKey: "dueDateOverdue", colorClass: "text-semantic-red-text" };
+    const dayCount = getDayDifference(due, today);
+    return {
+      textKey: "dueDateOverdue",
+      dayCount,
+      colorClass: "text-semantic-red-text"
+    };
   }
 
   if (!isCompleted && isDateTimeSimilar(due, today)) {
-    return { textKey: "dueDateToday", colorClass: "text-semantic-amber-text" };
+    return { textKey: "dueDateToday", colorClass: "text-secondary-text" };
   }
 
   return {

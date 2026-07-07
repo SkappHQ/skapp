@@ -65,11 +65,11 @@ describe("buildContactOptions", () => {
     { id: 20, name: "Beta Lead", company: null }
   ];
 
-  it("should build contact dropdown options", () => {
+  it("should build contact dropdown options with company name in the label", () => {
     const result = buildContactOptions(contacts);
 
     expect(result).toEqual([
-      { id: 10, value: 10, label: "Acme Buyer" },
+      { id: 10, value: 10, label: "Acme Buyer Acme" },
       { id: 20, value: 20, label: "Beta Lead" }
     ]);
   });

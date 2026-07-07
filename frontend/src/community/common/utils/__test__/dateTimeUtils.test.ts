@@ -21,6 +21,7 @@ import {
   getAdjacentYearsWithCurrent,
   getCurrentMonth,
   getDateFromTimeStamp,
+  getDayDifference,
   getFirstDateOfYear,
   getFormattedDate,
   getFormattedMonth,
@@ -423,6 +424,36 @@ describe("generateTimezoneList", () => {
     expect(result).toEqual([]);
 
     global.Intl.supportedValuesOf = originalSupportedValuesOf;
+  });
+});
+
+describe("getDayDifference", () => {
+  it("returns the number of whole days between two dates", () => {
+    const from = DateTime.local(2024, 1, 1);
+    const to = DateTime.local(2024, 1, 4);
+
+    expect(getDayDifference(from, to)).toBe(3);
+  });
+
+  it("returns 0 for two date times on the same day", () => {
+    const from = DateTime.local(2024, 1, 1, 8, 30);
+    const to = DateTime.local(2024, 1, 1, 22, 15);
+
+    expect(getDayDifference(from, to)).toBe(0);
+  });
+
+  it("ignores the time of day when calculating the difference", () => {
+    const from = DateTime.local(2024, 1, 1, 23, 59);
+    const to = DateTime.local(2024, 1, 2, 0, 1);
+
+    expect(getDayDifference(from, to)).toBe(1);
+  });
+
+  it("returns a negative value when 'to' is before 'from'", () => {
+    const from = DateTime.local(2024, 1, 5);
+    const to = DateTime.local(2024, 1, 2);
+
+    expect(getDayDifference(from, to)).toBe(-3);
   });
 });
 

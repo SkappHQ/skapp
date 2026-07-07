@@ -6,6 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
+import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
@@ -16,8 +17,9 @@ const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { openCrmSidePanel } = useCrmStore((store) => ({
-    openCrmSidePanel: store.openCrmSidePanel
+  const { openCrmSidePanel, selectedDealId } = useCrmStore((store) => ({
+    openCrmSidePanel: store.openCrmSidePanel,
+    selectedDealId: store.selectedDealId
   }));
 
   const handleAddDeal = () => {
@@ -38,6 +40,7 @@ const Deals: NextPage = () => {
     >
       <>
         <SidePanelWrapper>
+          {selectedDealId !== null && <DealSidePanel />}
           <AddDealSidePanel />
         </SidePanelWrapper>
         <DealsSection />

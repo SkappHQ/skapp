@@ -17,15 +17,20 @@ interface TestUser {
   lastName: string;
 }
 
+const getId = (item: TestItem) => item.id;
+const getUserId = (user: TestUser) => user.employeeId;
+
 describe("formatValue", () => {
   it("should format numeric strings as currency", () => {
     expect(formatValue("1200")).toBe("$1200.00");
     expect(formatValue("99.9")).toBe("$99.90");
   });
 
-  it("should return a placeholder for null and empty values", () => {
+  it("should return a placeholder for null, empty and zero values", () => {
     expect(formatValue(null)).toBe("-");
     expect(formatValue("")).toBe("-");
+    expect(formatValue("0")).toBe("-");
+    expect(formatValue("0.00")).toBe("-");
   });
 });
 

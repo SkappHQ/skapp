@@ -6,7 +6,7 @@ export enum CrmPriorityEnum {
 
 export enum CrmTaskTabEnum {
   MY_TASKS = "my-tasks",
-  TEAM_TASKS = "team-tasks",
+  ALL_TASKS = "all-tasks",
   COMPLETED_TASKS = "completed-tasks"
 }
 

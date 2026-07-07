@@ -13,11 +13,35 @@ import {
   CrmTaskCreatePayload,
   CrmTaskDetailType,
   CrmTaskResponseType,
-  CrmTaskUpdatePayload
+  CrmTaskUpdatePayload,
+  RelatedTasksPage,
+  RelatedTasksParams
 } from "~community/crm/types/CommonTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
+
+const fetchRelatedTasks = async (
+  params: RelatedTasksParams
+): Promise<RelatedTasksPage> => {
+  const response = await authFetch.get(taskEndpoints.GET_RELATED_TASKS, {
+    params
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetRelatedTasks = (params: RelatedTasksParams) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: taskQueryKeys.RELATED_TASKS,
+    queryFn: () => fetchRelatedTasks(params),
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.currentPage + 1;
+      return nextPage < lastPage.totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false
+  });
+};
 
 const createTask = async (taskDetails: CrmTaskCreatePayload) => {
   const response = await authFetch.post(taskEndpoints.CREATE_TASK, taskDetails);
@@ -38,6 +62,9 @@ export const useCreateTask = (
       });
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
       });
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
@@ -125,6 +152,9 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
       queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
+      });
+      queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       onSuccess();
@@ -160,6 +190,9 @@ export const useUpdateTask = (
       });
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_TASK_BY_ID(id)
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
       });
       if (onSuccess) onSuccess();
     },
