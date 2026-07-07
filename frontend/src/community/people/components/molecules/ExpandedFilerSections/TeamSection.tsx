@@ -59,12 +59,15 @@ const TeamSection = ({
         </p>
 
         <div>
-          {teams && teams?.length > 8 ? (
+          {!teams || teams.length === 0 ? (
+            <p className="body2">{translateText(["noTeamsAvailable"])}</p>
+          ) : teams.length > 8 ? (
             <div>
               <FilterSearch
                 id="search-team-input"
                 setIsPopperOpen={setIsPopperOpen}
                 isPopperOpen={isPopperOpen}
+                placeHolder={translateText(["searchTeamsPlaceholder"])}
                 labelStyles={{ mb: "0.25rem" }}
                 componentStyles={{ mr: "1.25rem", my: 2 }}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -106,12 +109,10 @@ const TeamSection = ({
             </div>
           ) : (
             <SelectableItemList<string | number>
-              items={
-                teams?.map((team) => ({
-                  label: team.text,
-                  value: team.id ?? ""
-                })) ?? []
-              }
+              items={teams.map((team) => ({
+                label: team.text,
+                value: team.id ?? ""
+              }))}
               selectedValues={employeeDataFilter.team.map(
                 (team) => team.id ?? ""
               )}

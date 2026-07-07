@@ -59,12 +59,17 @@ const JobFamiliesSection = ({
         </p>
 
         <div>
-          {jobFamilies && jobFamilies.length > 8 ? (
+          {!jobFamilies || jobFamilies.length === 0 ? (
+            <p className="body2">
+              {translateText(["noJobFamiliesAvailable"])}
+            </p>
+          ) : jobFamilies.length > 8 ? (
             <div>
               <FilterSearch
                 id="search-job-families-input"
                 setIsPopperOpen={setIsPopperOpen}
                 isPopperOpen={isPopperOpen}
+                placeHolder={translateText(["searchJobFamiliesPlaceholder"])}
                 labelStyles={{ mb: "0.25rem" }}
                 componentStyles={{ mr: "1.25rem", my: 2 }}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -106,12 +111,10 @@ const JobFamiliesSection = ({
             </div>
           ) : (
             <SelectableItemList<string | number>
-              items={
-                jobFamilies?.map((jobFamily) => ({
-                  label: jobFamily.text,
-                  value: jobFamily.id ?? ""
-                })) ?? []
-              }
+              items={jobFamilies.map((jobFamily) => ({
+                label: jobFamily.text,
+                value: jobFamily.id ?? ""
+              }))}
               selectedValues={employeeDataFilter.role.map(
                 (role) => role.id ?? ""
               )}
