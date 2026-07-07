@@ -26,8 +26,6 @@ public class CrmTaskViewResponseDto {
 
 	private String notes;
 
-	private Long contactId;
-
 	private CrmOwnerResponseDto owner;
 
 	private CrmContactLookupResponseDto contact;
