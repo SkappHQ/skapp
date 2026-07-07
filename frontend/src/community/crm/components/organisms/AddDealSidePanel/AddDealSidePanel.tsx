@@ -51,11 +51,15 @@ const AddDealSidePanel: FC = () => {
     addDealToStage: store.addDealToStage
   }));
 
+  const isOpen =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL;
+
   useEffect(() => {
     setSelectedContact(getContactById(selectedContactId!) ?? null);
-  }, [selectedContactId, getContactById]);
+  }, [selectedContactId]);
 
-  const [contactSearchTerm, setContactSearchTerm] = useState<string>("");
+  const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearch = useDebounce(
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
@@ -63,8 +67,7 @@ const AddDealSidePanel: FC = () => {
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isCrmSidePanelOpen &&
-      crmSidePanelType === CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL
+    isOpen
   );
   const contacts = contactLookupData?.items ?? [];
 
