@@ -3,7 +3,7 @@ import { useTheme } from "@mui/material/styles";
 import { ButtonV2, StatusComponent, Toggle, Tooltip } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Checkbox from "~community/common/components/atoms/Checkbox/Checkbox";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
@@ -54,6 +54,13 @@ const ReviewPage: NextPage = () => {
   const [notifyRemovals, setNotifyRemovals] = useState(true);
 
   const [hasTriggeredSync, setHasTriggeredSync] = useState(false);
+
+  const successHeadingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (showSuccessDialog) {
+      successHeadingRef.current?.focus();
+    }
+  }, [showSuccessDialog]);
 
   // Never block the page behind a loading screen — the table below shows
   // its own lightweight loading/empty state. Poll continuously in the
@@ -133,6 +140,7 @@ const ReviewPage: NextPage = () => {
 
   const allVisibleSelected =
     visibleRecords.length > 0 && visibleRecords.every((r) => selected.has(r.id));
+  const someVisibleSelected = visibleRecords.some((r) => selected.has(r.id));
 
   const toggleOu = (ou: string) => {
     setCheckedOus((prev) => {
@@ -198,6 +206,25 @@ const ReviewPage: NextPage = () => {
           overflow: "hidden"
         }}
       >
+        <Box
+          component="a"
+          href="#main-content"
+          sx={{
+            position: "absolute",
+            left: "1rem",
+            top: "-3rem",
+            zIndex: 1400,
+            padding: "0.5rem 1rem",
+            borderRadius: "0.25rem",
+            backgroundColor: theme.palette.common.white,
+            color: theme.palette.text.primary,
+            boxShadow: 2,
+            transition: "top 0.15s ease-in-out",
+            "&:focus": { top: "1rem" }
+          }}
+        >
+          {translateText(["googleWorkspaceImport", "skipToMainContent"])}
+        </Box>
         {showSuccessDialog ? (
           <Stack
             alignItems="center"
@@ -205,8 +232,13 @@ const ReviewPage: NextPage = () => {
             gap="1rem"
             sx={{ flex: 1, textAlign: "center", px: "1.5rem" }}
           >
-            <Typography sx={{ fontSize: "5rem", lineHeight: 1 }}>🎉</Typography>
-            <Typography sx={{ fontSize: "1.25rem", fontWeight: 700, color: theme.palette.grey[700] }}>
+            <Typography sx={{ fontSize: "5rem", lineHeight: 1 }} aria-hidden="true">🎉</Typography>
+            <Typography
+              ref={successHeadingRef}
+              tabIndex={-1}
+              component="h1"
+              sx={{ fontSize: "1.25rem", fontWeight: 700, color: theme.palette.grey[700], outline: "none" }}
+            >
               {translateText(["googleWorkspaceImport", "importSuccessTitle"])}
             </Typography>
             <Typography variant="body1" sx={{ maxWidth: "25rem" }}>
@@ -255,7 +287,11 @@ const ReviewPage: NextPage = () => {
               </Typography>
             </Stack>
 
-            <Box sx={{ flex: 1, display: "flex", overflow: "hidden", gap: "3rem" }}>
+            <Box
+              id="main-content"
+              tabIndex={-1}
+              sx={{ flex: 1, display: "flex", overflow: "hidden", gap: "3rem", outline: "none" }}
+            >
           <Box
             sx={{
               width: "13rem",
@@ -353,7 +389,12 @@ const ReviewPage: NextPage = () => {
                   />
                 </Box>
 
-                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, whiteSpace: "nowrap" }}>
+                <Typography
+                  variant="body2"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  sx={{ color: theme.palette.text.secondary, whiteSpace: "nowrap" }}
+                >
                   {selectedCount} {translateText(["googleWorkspaceImport", "ofLabel"])}{" "}
                   {totalCount} {translateText(["googleWorkspaceImport", "selectedLabel"])}
                 </Typography>
@@ -395,7 +436,7 @@ const ReviewPage: NextPage = () => {
                     id: record.id,
                     ariaLabel: {
                       row: `${record.firstName} ${record.lastName}`,
-                      checkbox: `${record.firstName} ${record.lastName}`
+                      checkbox: `${record.firstName} ${record.lastName} — ${record.email}`
                     },
                     name: (
                       <AvatarChip
@@ -456,6 +497,11 @@ const ReviewPage: NextPage = () => {
                     isSelectAllEnabled: true,
                     isSelectAllVisible: true,
                     isSelectAllChecked: allVisibleSelected && visibleRecords.length > 0,
+                    isSelectAllIndeterminate: someVisibleSelected && !allVisibleSelected,
+                    selectAllAriaLabel: translateText(
+                      ["googleWorkspaceImport", "selectAllUsersAriaLabel"],
+                      { count: visibleRecords.length }
+                    ),
                     handleIndividualSelectClick: (id) => () => toggleOne(id),
                     handleSelectAllClick: toggleSelectAll
                   }}
@@ -551,13 +597,34 @@ const ReviewPage: NextPage = () => {
             <ButtonV2
               variant="primary"
               size="md"
-              disabled={selectedCount === 0}
-              onClick={() => setShowConfirmDialog(true)}
+              aria-disabled={selectedCount === 0}
+              aria-describedby="import-selected-hint"
+              style={
+                selectedCount === 0
+                  ? { opacity: 0.5, cursor: "not-allowed" }
+                  : undefined
+              }
+              onClick={() => {
+                if (selectedCount === 0) return;
+                setShowConfirmDialog(true);
+              }}
             >
               {translateText(["googleWorkspaceImport", "importSelected"], {
                 count: selectedCount
               })}
             </ButtonV2>
+            <Box
+              id="import-selected-hint"
+              sx={{
+                position: "absolute",
+                width: "1px",
+                height: "1px",
+                overflow: "hidden",
+                clip: "rect(0 0 0 0)"
+              }}
+            >
+              {translateText(["googleWorkspaceImport", "noUsersSelectedHint"])}
+            </Box>
           </Stack>
         </Box>
           </>
@@ -567,6 +634,7 @@ const ReviewPage: NextPage = () => {
       <Modal
         isModalOpen={showExitDialog}
         onCloseModal={() => setShowExitDialog(false)}
+        disableEscapeKeyDown={false}
         title={translateText(["googleWorkspaceImport", "exitConfirmTitle"])}
       >
         <Stack gap="1.5rem">
@@ -596,6 +664,7 @@ const ReviewPage: NextPage = () => {
         isModalOpen={showConfirmDialog}
         onCloseModal={() => !isImporting && setShowConfirmDialog(false)}
         isClosable={!isImporting}
+        disableEscapeKeyDown={false}
         title={translateText(["googleWorkspaceImport", "readyToImportTitle"])}
       >
         <Stack gap="1.25rem">
@@ -667,12 +736,28 @@ const ReviewPage: NextPage = () => {
               isFullWidth
               isLoading={isImporting}
               disabled={isImporting}
+              aria-busy={isImporting}
               onClick={handleConfirmImport}
               style={{ flex: 1 }}
             >
               {translateText(["googleWorkspaceImport", "confirmImportButton"])}
             </ButtonV2>
           </Stack>
+          {isImporting && (
+            <Box
+              role="status"
+              aria-live="assertive"
+              sx={{
+                position: "absolute",
+                width: "1px",
+                height: "1px",
+                overflow: "hidden",
+                clip: "rect(0 0 0 0)"
+              }}
+            >
+              {translateText(["googleWorkspaceImport", "importingLabel"])}
+            </Box>
+          )}
         </Stack>
       </Modal>
     </>

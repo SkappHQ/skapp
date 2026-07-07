@@ -81,6 +81,7 @@ const TableHead: FC<
                 <Checkbox
                   color="primary"
                   checked={checkboxSelection?.isSelectAllChecked}
+                  indeterminate={checkboxSelection?.isSelectAllIndeterminate}
                   onChange={() => checkboxSelection?.handleSelectAllClick?.()}
                   sx={mergeSx([
                     classes.checkboxSelection.checkbox,
@@ -88,7 +89,9 @@ const TableHead: FC<
                   ])}
                   slotProps={{
                     input: {
-                      "aria-label": translateAria(["checkbox"])
+                      "aria-label":
+                        checkboxSelection?.selectAllAriaLabel ??
+                        translateAria(["checkbox"])
                     }
                   }}
                 />

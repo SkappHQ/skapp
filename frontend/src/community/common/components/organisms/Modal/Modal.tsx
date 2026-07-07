@@ -38,7 +38,7 @@ interface Props {
     description?: string;
     closeButton?: string;
   };
-  role?: string;
+  disableEscapeKeyDown?: boolean;
 }
 
 const Modal: FC<Props> = ({
@@ -62,7 +62,8 @@ const Modal: FC<Props> = ({
     description: "modal-description",
     closeButton: "modal-close-button"
   },
-  role = "modal"
+  role = "dialog",
+  disableEscapeKeyDown = true
 }) => {
   const translateAria = useTranslator("commonAria", "components", "modal");
 
@@ -73,12 +74,14 @@ const Modal: FC<Props> = ({
       ids={ids}
       open={isModalOpen}
       onClose={onCloseModal}
+      disableEscapeKeyDown={disableEscapeKeyDown}
       sx={mergeSx([classes.modalWrapper, modalWrapperStyles])}
     >
       <Stack
         sx={mergeSx([classes.modelContentWrapper, modalContentStyles])}
         role={role}
-        aria-label={translateAria(["modal"], { title })}
+        aria-modal="true"
+        aria-labelledby={ids?.title}
       >
         <Stack sx={mergeSx([classes.modalHeader, modalHeaderStyles])}>
           <Stack sx={classes.modalHeaderIconContainer}>
@@ -94,7 +97,6 @@ const Modal: FC<Props> = ({
               sx={classes.closeIconBtn}
               onClick={(event) => onCloseModal(event, "backdropClick")}
               aria-label={translateAria(["closeIconBtn"], { title })}
-              aria-hidden={true}
               id={ids?.closeButton}
             >
               {customCloseIcon ? (

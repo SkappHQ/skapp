@@ -61,7 +61,7 @@ const ConnectGoogleWorkspaceModal = (): JSX.Element => {
 
   return (
     <Stack sx={{ gap: "1.25rem", alignItems: "center", textAlign: "center" }}>
-      <Icon name={IconName.GOOGLE_ICON} width="48" height="48" />
+      <Icon name={IconName.GOOGLE_ICON} width="48" height="48" ariaLabel="Google" />
 
       <Typography
         variant="body2"
@@ -143,11 +143,27 @@ const ConnectGoogleWorkspaceModal = (): JSX.Element => {
           variant="primary"
           size="md"
           isLoading={isConnecting}
+          aria-busy={isConnecting}
           onClick={handleContinueWithGoogle}
         >
           {translateText(["googleWorkspaceImport", "continueWithGoogle"])}
         </ButtonV2>
       </Stack>
+      {isConnecting && (
+        <Box
+          role="status"
+          aria-live="assertive"
+          sx={{
+            position: "absolute",
+            width: "1px",
+            height: "1px",
+            overflow: "hidden",
+            clip: "rect(0 0 0 0)"
+          }}
+        >
+          {translateText(["googleWorkspaceImport", "connectingLabel"])}
+        </Box>
+      )}
     </Stack>
   );
 };

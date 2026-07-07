@@ -51,6 +51,8 @@ export interface CommonTableProps {
     isSelectAllEnabled?: boolean;
     isSelectAllVisible?: boolean;
     isSelectAllChecked?: boolean;
+    isSelectAllIndeterminate?: boolean;
+    selectAllAriaLabel?: string;
     handleIndividualSelectClick?: (id: number) => () => void;
     handleSelectAllClick?: () => void;
     customStyles?: { cell?: SxProps<Theme>; checkbox?: SxProps<Theme> };

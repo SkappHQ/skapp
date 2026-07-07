@@ -102,7 +102,13 @@ const ToastMessage = ({
         cursor: handleToastClick ? "pointer" : "default"
       }}
       action={
-        <Box onClick={handleToastClick} sx={classes.toastContainer(bgColor)}>
+        <Box
+          onClick={handleToastClick}
+          role={toastType === ToastType.ERROR ? "alert" : "status"}
+          aria-live={toastType === ToastType.ERROR ? "assertive" : "polite"}
+          aria-atomic="true"
+          sx={classes.toastContainer(bgColor)}
+        >
           {/* Vertical Divider */}
           <Divider
             orientation="vertical"
