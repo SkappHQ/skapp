@@ -64,8 +64,8 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const stageOptions = useMemo(
     () =>
       dealStages.map((stage) => ({
-        id: stage.id,
-        value: stage.id,
+        id: String(stage.id),
+        value: String(stage.id),
         label: (
           <div className="inline-flex items-center gap-2.5">
             <div
