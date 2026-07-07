@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { ArrowRightIcon } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
@@ -84,10 +85,7 @@ const SyncingPage: NextPage = () => {
       >
         <Stack direction="row" alignItems="center" gap="0.75rem">
           <Icon name={IconName.GOOGLE_ICON} width="40" height="40" />
-          <Icon
-            name={IconName.RIGHT_ARROW_ICON}
-            fill={theme.palette.grey[500]}
-          />
+          <ArrowRightIcon />
           <Icon name={IconName.SKAPP_ICON} width="40" height="40" />
         </Stack>
 
