@@ -104,7 +104,13 @@ public enum EmailBodyTemplates implements EmailTemplates {
 	// E-Sign Templates
 	ESIGN_DOCUMENT_SIGN_REQUEST("esign-document-sign-request"), ESIGN_DOCUMENT_COMPLETED("esign-document-completed"),
 	ESIGN_DOCUMENT_DECLINED("esign-document-declined"), ESIGN_DOCUMENT_VOIDED("esign-document-voided"),
-	ESIGN_DOCUMENT_REMINDER("esign-document-reminder"), ESIGN_DOCUMENT_EXPIRED("esign-document-expired");
+	ESIGN_DOCUMENT_REMINDER("esign-document-reminder"), ESIGN_DOCUMENT_EXPIRED("esign-document-expired"),
+
+	// People Module — External Sync Templates (notification-content lookup keys only; no
+	// HTML
+	// email is sent for these, see NotificationServiceImpl.createNotification)
+	PEOPLE_MODULE_EXTERNAL_SYNC_COMPLETED("people-module-external-sync-completed"),
+	PEOPLE_MODULE_GOOGLE_WORKSPACE_USER_REMOVED("people-module-google-workspace-user-removed");
 
 	private final String templateId;
 
