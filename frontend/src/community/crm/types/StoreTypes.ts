@@ -1,6 +1,7 @@
 import { CrmBoardDealSliceType, CrmBoardStageDealsType } from "./BoardTypes";
 import {
   CrmCompanyDetailType,
+  CrmCompanyMetricsType,
   CrmContact,
   CrmTaskDetailType
 } from "./CommonTypes";
@@ -13,6 +14,7 @@ interface ActionTypes {
   setIsContactModalOpen: (isContactModalOpen: boolean) => void;
   setContactModalType: (contactModalType: CrmModalTypes) => void;
   setSelectedCompanyId: (selectedCompanyId: number | null) => void;
+  setCompanies: (companies: CrmCompanyMetricsType[]) => void;
   updateCompany: (company: Partial<CrmCompanyDetailType> & { id: number }) => void;
   getCompanyById: (id: number) => CrmCompanyDetailType | undefined;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;

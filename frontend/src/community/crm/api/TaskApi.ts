@@ -27,7 +27,6 @@ const createTask = async (taskDetails: CrmTaskCreatePayload) => {
 export const useCreateTask = (
   onSuccess: () => void,
   onError: () => void,
-  companyId?: number | null,
   contactId?: number | null
 ) => {
   const queryClient = useQueryClient();
@@ -43,11 +42,6 @@ export const useCreateTask = (
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.ALL
       });
-      if (companyId) {
-        queryClient.invalidateQueries({
-          queryKey: contactQueryKeys.GET_CONTACTS_BY_COMPANY(companyId)
-        });
-      }
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
@@ -63,19 +57,32 @@ export const useCreateTask = (
   });
 };
 
-const fetchOpenTasks = async (
-  searchKeyword?: string
-): Promise<CrmTaskResponseType> => {
+interface OpenTasksParams {
+  searchKeyword?: string;
+  companyId?: number | null;
+}
+
+const fetchOpenTasks = async ({
+  searchKeyword,
+  companyId
+}: OpenTasksParams): Promise<CrmTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
-    params: { searchKeyword }
+    params: {
+      searchKeyword,
+      ...(companyId != null && { companyId })
+    }
   });
   return response?.data?.results?.[0];
 };
 
-export const useGetOpenTasks = (searchKeyword: string, enabled: boolean) => {
+export const useGetOpenTasks = (
+  searchKeyword: string,
+  enabled: boolean,
+  companyId?: number | null
+) => {
   return useQuery({
-    queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword),
-    queryFn: () => fetchOpenTasks(searchKeyword),
+    queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword, companyId),
+    queryFn: () => fetchOpenTasks({ searchKeyword, companyId }),
     enabled
   });
 };
@@ -108,15 +115,22 @@ interface TaskSearchParams {
   page: number;
   size: number;
   searchKeyword: string;
+  companyId?: number | null;
 }
 
 const fetchCompletedTasks = async ({
   page,
   size,
-  searchKeyword
+  searchKeyword,
+  companyId
 }: TaskSearchParams): Promise<CrmCompletedTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
-    params: { page, size, searchKeyword }
+    params: {
+      page,
+      size,
+      searchKeyword,
+      ...(companyId != null && { companyId })
+    }
   });
   return response?.data?.results?.[0];
 };
@@ -124,16 +138,21 @@ const fetchCompletedTasks = async ({
 export const useGetCompletedTasks = (
   searchKeyword: string,
   size: number,
-  enabled: boolean
+  enabled: boolean,
+  companyId?: number | null
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_SEARCH(searchKeyword),
+    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_SEARCH(
+      searchKeyword,
+      companyId
+    ),
     queryFn: ({ pageParam }) =>
       fetchCompletedTasks({
         page: pageParam,
         size,
-        searchKeyword
+        searchKeyword,
+        companyId
       }),
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;

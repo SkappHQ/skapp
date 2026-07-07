@@ -1,5 +1,8 @@
 import { SetType } from "~community/common/types/CommonTypes";
-import { CrmCompanyDetailType } from "~community/crm/types/CommonTypes";
+import {
+  CrmCompanyDetailType,
+  CrmCompanyMetricsType
+} from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmCompanySliceTypes } from "~community/crm/types/SliceTypes";
 
@@ -17,6 +20,15 @@ const CrmCompanySlice = (
     set({ companyModalType: companyModalType }),
   setSelectedCompanyId: (selectedCompanyId: number | null) =>
     set({ selectedCompanyId }),
+  setCompanies: (companies: CrmCompanyMetricsType[]) =>
+    set({
+      companies: Object.fromEntries(
+        companies.map(({ tasks: _taskCount, ...company }) => [
+          company.id,
+          company
+        ])
+      )
+    }),
   updateCompany: (company: Partial<CrmCompanyDetailType> & { id: number }) =>
     set((state) => ({
       companies: {

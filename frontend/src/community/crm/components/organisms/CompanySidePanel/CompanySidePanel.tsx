@@ -10,12 +10,9 @@ import { FC, useEffect, useMemo, useState } from "react";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import {
-  useGetCompletedTasksByCompany,
-  useGetContactsByCompany,
-  useGetDealsByCompany,
-  useGetOpenTasksByCompany
-} from "~community/crm/api/CompanyApi";
+import { useGetContactMetrics } from "~community/crm/api/ContactApi";
+import { useGetDealsByCompany } from "~community/crm/api/CompanyApi";
+import { useGetCompletedTasks, useGetOpenTasks } from "~community/crm/api/TaskApi";
 import SidePanelCompanyContacts from "~community/crm/components/molecules/SidePanelCompanyContacts/SidePanelCompanyContacts";
 import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
@@ -23,6 +20,7 @@ import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelM
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { DEFAULT_PAGE_SIZE as CONTACTS_PAGE_SIZE } from "~community/crm/constants/contactConstants";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
@@ -65,8 +63,11 @@ const CompanySidePanel: FC = () => {
 
   const selectedCompany = getCompanyById(selectedCompanyId!);
 
-  const { data: openTaskData, isLoading: isTaskLoading } =
-    useGetOpenTasksByCompany(selectedCompanyId!, !!selectedCompanyId);
+  const { data: openTaskData, isLoading: isTaskLoading } = useGetOpenTasks(
+    "",
+    !!selectedCompanyId,
+    selectedCompanyId
+  );
 
   const {
     data: completedTaskData,
@@ -74,10 +75,11 @@ const CompanySidePanel: FC = () => {
     fetchNextPage: fetchNextCompletedTasksPage,
     hasNextPage: hasNextCompletedTasksPage,
     isFetchingNextPage: isFetchingNextCompletedTasksPage
-  } = useGetCompletedTasksByCompany(
-    selectedCompanyId!,
+  } = useGetCompletedTasks(
+    "",
     TASK_PAGE_SIZE,
-    !!selectedCompanyId
+    !!selectedCompanyId,
+    selectedCompanyId
   );
 
   const completedTasks = useMemo(
@@ -95,8 +97,18 @@ const CompanySidePanel: FC = () => {
     !!selectedCompanyId
   );
 
-  const { data: contactData, isLoading: isContactLoading } =
-    useGetContactsByCompany(selectedCompanyId!, !!selectedCompanyId);
+  const { data: contactPages, isLoading: isContactLoading } =
+    useGetContactMetrics(
+      "",
+      CONTACTS_PAGE_SIZE,
+      selectedCompanyId,
+      !!selectedCompanyId
+    );
+
+  const contactItems = useMemo(
+    () => contactPages?.pages.flatMap((page) => page.items) ?? [],
+    [contactPages]
+  );
 
   const isLoading =
     isTaskLoading ||
@@ -111,9 +123,9 @@ const CompanySidePanel: FC = () => {
       id: selectedCompanyId,
       tasks: taskData,
       deals: dealData?.items,
-      contacts: contactData?.items
+      contacts: contactItems
     });
-  }, [selectedCompanyId, taskData, dealData, contactData]);
+  }, [selectedCompanyId, taskData, dealData, contactItems]);
 
   const isOpen =
     isCrmSidePanelOpen &&

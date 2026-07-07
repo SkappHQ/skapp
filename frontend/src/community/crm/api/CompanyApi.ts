@@ -12,24 +12,11 @@ import { DOMAIN_SEARCH_LIMIT } from "../constants/commonConstants";
 import {
   CrmCompanyCreatePayload,
   CrmCompanyDomainSearchResponseType,
-  CrmCompletedTaskResponseType,
-  CrmContactMetricsResponseType,
   CrmDealPaginatedResponse,
-  CrmTaskResponseType,
   EditCompanyPayload
 } from "../types/CommonTypes";
-import {
-  companyEndpoints,
-  contactEndpoints,
-  crmDealEndpoints,
-  taskEndpoints
-} from "./utils/ApiEndpoints";
-import {
-  companyQueryKeys,
-  contactQueryKeys,
-  crmDealQueryKeys,
-  taskQueryKeys
-} from "./utils/QueryKeys";
+import { companyEndpoints, crmDealEndpoints } from "./utils/ApiEndpoints";
+import { companyQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
 
 interface CompanyMetricSearchParams {
   page: number;
@@ -178,61 +165,6 @@ export const useSearchCompaniesByDomain = (
   });
 };
 
-const fetchOpenTasksByCompany = async (
-  companyId: number
-): Promise<CrmTaskResponseType> => {
-  const response = await authFetch.get(taskEndpoints.GET_TASKS, {
-    params: { companyId }
-  });
-  return response?.data?.results?.[0];
-};
-
-export const useGetOpenTasksByCompany = (
-  companyId: number,
-  enabled: boolean
-) => {
-  return useQuery({
-    queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_COMPANY(companyId),
-    queryFn: () => fetchOpenTasksByCompany(companyId),
-    enabled
-  });
-};
-
-interface CompletedTasksByCompanyParams {
-  companyId: number;
-  page: number;
-  size: number;
-}
-
-const fetchCompletedTasksByCompany = async ({
-  companyId,
-  page,
-  size
-}: CompletedTasksByCompanyParams): Promise<CrmCompletedTaskResponseType> => {
-  const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
-    params: { companyId, page, size }
-  });
-  return response?.data?.results?.[0];
-};
-
-export const useGetCompletedTasksByCompany = (
-  companyId: number,
-  size: number,
-  enabled: boolean
-) => {
-  return useInfiniteQuery({
-    initialPageParam: 0,
-    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_COMPANY(companyId),
-    queryFn: ({ pageParam }) =>
-      fetchCompletedTasksByCompany({ companyId, page: pageParam, size }),
-    getNextPageParam: (lastPage) => {
-      const nextPage = lastPage.currentPage + 1;
-      return nextPage < lastPage.totalPages ? nextPage : undefined;
-    },
-    enabled
-  });
-};
-
 const fetchDealsByCompany = async (
   companyId: number
 ): Promise<CrmDealPaginatedResponse> => {
@@ -246,26 +178,6 @@ export const useGetDealsByCompany = (companyId: number, enabled: boolean) => {
   return useQuery({
     queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(companyId),
     queryFn: () => fetchDealsByCompany(companyId),
-    enabled
-  });
-};
-
-const fetchContactsByCompany = async (
-  companyId: number
-): Promise<CrmContactMetricsResponseType> => {
-  const response = await authFetch.get(contactEndpoints.GET_CONTACT_METRICS, {
-    params: { companyId }
-  });
-  return response?.data?.results?.[0];
-};
-
-export const useGetContactsByCompany = (
-  companyId: number,
-  enabled: boolean
-) => {
-  return useQuery({
-    queryKey: contactQueryKeys.GET_CONTACTS_BY_COMPANY(companyId),
-    queryFn: () => fetchContactsByCompany(companyId),
     enabled
   });
 };

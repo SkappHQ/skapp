@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -40,16 +40,20 @@ export const CompanyTable: FC = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
-  const { setSelectedCompanyId, updateCompany, openCrmSidePanel } =
+  const { setSelectedCompanyId, setCompanies, openCrmSidePanel } =
     useCrmStore((store) => ({
       setSelectedCompanyId: store.setSelectedCompanyId,
-      updateCompany: store.updateCompany,
+      setCompanies: store.setCompanies,
       openCrmSidePanel: store.openCrmSidePanel
     }));
 
   const companies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
   }, [data]);
+
+  useEffect(() => {
+    if (companies) setCompanies(companies);
+  }, [companies, setCompanies]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -198,8 +202,6 @@ export const CompanyTable: FC = () => {
           ])
         }}
         onRowClick={(row) => {
-          const { tasks: _taskCount, ...companyMetrics } = row;
-          updateCompany(companyMetrics);
           setSelectedCompanyId(row.id);
           openCrmSidePanel(CrmSidePanelTypes.COMPANY_SIDE_PANEL);
         }}
