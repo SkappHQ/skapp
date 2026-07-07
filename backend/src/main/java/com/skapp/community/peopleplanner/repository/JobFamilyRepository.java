@@ -6,12 +6,16 @@ import com.skapp.community.peopleplanner.payload.response.JobFamilyOverviewDto;
 import com.skapp.community.peopleplanner.payload.response.JobTitleOverviewDto;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface JobFamilyRepository {
 
 	List<JobFamily> getJobFamiliesByEmployeeCount();
 
 	List<JobFamily> getJobFamiliesWithJobTitles();
+
+	Map<Long, Set<JobTitle>> getActiveJobTitlesByJobFamilyIds(List<Long> jobFamilyIds);
 
 	List<JobFamilyOverviewDto> getJobFamilyOverview(List<Long> teamIds);
 

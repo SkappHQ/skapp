@@ -30,9 +30,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -61,8 +63,13 @@ public class JobServiceImpl implements JobService {
 
 		List<JobFamily> jobFamilies = jobFamilyDao.getJobFamiliesWithJobTitles();
 
-		List<JobFamilyResponseDetailDto> jobFamilyResponseDetailDtos = peopleMapper
-			.jobFamilyListToJobFamilyResponseDetailDtoList(jobFamilies);
+		List<Long> jobFamilyIds = jobFamilies.stream().map(JobFamily::getJobFamilyId).toList();
+		Map<Long, Set<JobTitle>> activeJobTitlesByFamilyId = jobFamilyIds.isEmpty() ? Collections.emptyMap()
+				: jobFamilyDao.getActiveJobTitlesByJobFamilyIds(jobFamilyIds);
+
+		List<JobFamilyResponseDetailDto> jobFamilyResponseDetailDtos = jobFamilies.stream()
+			.map(jobFamily -> buildJobFamilyResponseDetailDto(jobFamily, activeJobTitlesByFamilyId))
+			.toList();
 
 		log.info("getAllJobFamilies: execution ended");
 		return new ResponseEntityDto(false, jobFamilyResponseDetailDtos);
@@ -328,6 +335,19 @@ public class JobServiceImpl implements JobService {
 
 	protected void invalidateJobsCache() {
 		// This method is a placeholder for enterprise cache invalidation logic
+	}
+
+	private JobFamilyResponseDetailDto buildJobFamilyResponseDetailDto(JobFamily jobFamily,
+			Map<Long, Set<JobTitle>> activeJobTitlesByFamilyId) {
+		JobFamilyResponseDetailDto jobFamilyResponseDetailDto = peopleMapper
+			.jobFamilyToJobFamilyDetailWithoutTitles(jobFamily);
+		List<JobTitleDto> activeJobTitles = activeJobTitlesByFamilyId
+			.getOrDefault(jobFamily.getJobFamilyId(), Collections.emptySet())
+			.stream()
+			.map(peopleMapper::jobTitleToJobTitleDto)
+			.toList();
+		jobFamilyResponseDetailDto.setJobTitles(activeJobTitles);
+		return jobFamilyResponseDetailDto;
 	}
 
 	private boolean isJobFamilyNameORTitleNameValid(String roleOrLevel) {

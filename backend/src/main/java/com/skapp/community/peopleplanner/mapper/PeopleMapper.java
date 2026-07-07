@@ -95,7 +95,8 @@ public interface PeopleMapper {
 	List<HolidayWorkLocationResponseDto> workLocationsToHolidayWorkLocationResponseDtoList(
 			Set<WorkLocation> workLocations);
 
-	List<JobFamilyResponseDetailDto> jobFamilyListToJobFamilyResponseDetailDtoList(List<JobFamily> jobFamilies);
+	@Mapping(target = "jobTitles", ignore = true)
+	JobFamilyResponseDetailDto jobFamilyToJobFamilyDetailWithoutTitles(JobFamily jobFamily);
 
 	JobFamilyResponseDetailDto jobFamilyToJobFamilyResponseDetailDto(JobFamily jobFamily);
 

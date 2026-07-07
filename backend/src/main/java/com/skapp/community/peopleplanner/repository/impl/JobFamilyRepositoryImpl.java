@@ -93,20 +93,11 @@ public class JobFamilyRepositoryImpl implements JobFamilyRepository {
 				root.get(JobFamily_.isActive));
 		criteriaQuery.orderBy(criteriaBuilder.desc(criteriaBuilder.count(employeeJoin.get(Employee_.employeeId))));
 
-		List<JobFamily> jobFamilies = entityManager.createQuery(criteriaQuery).getResultList();
-		if (jobFamilies.isEmpty()) {
-			return jobFamilies;
-		}
-
-		List<Long> jobFamilyIds = jobFamilies.stream().map(JobFamily::getJobFamilyId).toList();
-		Map<Long, Set<JobTitle>> activeJobTitlesByFamilyId = getActiveJobTitlesByJobFamilyIds(jobFamilyIds);
-		jobFamilies.forEach(jobFamily -> jobFamily
-			.setJobTitles(activeJobTitlesByFamilyId.getOrDefault(jobFamily.getJobFamilyId(), new HashSet<>())));
-
-		return jobFamilies;
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
-	private Map<Long, Set<JobTitle>> getActiveJobTitlesByJobFamilyIds(List<Long> jobFamilyIds) {
+	@Override
+	public Map<Long, Set<JobTitle>> getActiveJobTitlesByJobFamilyIds(List<Long> jobFamilyIds) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<JobFamilyTitle> criteriaQuery = criteriaBuilder.createQuery(JobFamilyTitle.class);
 		Root<JobFamilyTitle> root = criteriaQuery.from(JobFamilyTitle.class);
