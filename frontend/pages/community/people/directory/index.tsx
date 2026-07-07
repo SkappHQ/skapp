@@ -109,9 +109,8 @@ const Directory: NextPage = () => {
               ])
             : undefined
         }
-        {...(isGoogleConnected
-          ? { secondaryBtnIconName: IconName.UP_ARROW_ICON }
-          : { secondaryBtnClassName: "import-people-btn" })}
+        secondaryBtnIconName={IconName.DOWNLOAD_ICON}
+        secondaryBtnIconFill="var(--color-primary-text)"
         onPrimaryButtonClick={() => {
           setIsDirectoryModalOpen(true);
           setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);
