@@ -49,14 +49,14 @@
         "cancel": "Cancel Add Contact"
       },
       "validations": {
-        "name": "Name is required",
-        "nameLength": "Name must be less than 50 characters",
+        "name": "Contact name is required",
+        "nameLength": "Contact name is too long",
+        "nameInvalidCharacters": "Contact name contains invalid characters",
         "email": "Email is required",
-        "invalidEmail": "Please enter a valid email address",
-        "contactNumber": "Contact number is invalid",
-        "contactNumberLength": "Contact number is too long",
-        "characterLength": "Entry must be less than 50 characters",
-        "owner": "Contact owner is required"
+        "invalidEmail": "Invalid email address",
+        "emailLength": "Email is too long",
+        "contactNumber": "Invalid contact number",
+        "owner": "Owner is required"
       },
       "contactToastMessages": {
         "successTitle": "Contact added successfully",
@@ -120,14 +120,14 @@
         "cancel": "Cancel Edit Contact"
       },
       "validations": {
-        "name": "Name is required",
-        "nameLength": "Name must be less than 50 characters",
+        "name": "Contact name is required",
+        "nameLength": "Contact name is too long",
+        "nameInvalidCharacters": "Contact name contains invalid characters",
         "email": "Email is required",
-        "invalidEmail": "Please enter a valid email address",
-        "contactNumber": "Contact number is invalid",
-        "contactNumberLength": "Contact number is too long",
-        "characterLength": "Entry must be less than 50 characters",
-        "owner": "Contact owner is required"
+        "invalidEmail": "Invalid email address",
+        "emailLength": "Email is too long",
+        "contactNumber": "Invalid contact number",
+        "owner": "Owner is required"
       },
       "contactToastMessages": {
         "successTitle": "Contact updated successfully",

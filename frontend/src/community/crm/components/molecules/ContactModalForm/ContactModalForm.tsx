@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import SearchableDropdown, {
   SearchableDropdownItem
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
-import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { isValidEmail } from "~community/common/regex/regexPatterns";
@@ -19,6 +18,11 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
+import {
+  CONTACT_EMAIL_MAX_LENGTH,
+  CONTACT_NAME_MAX_LENGTH,
+  CONTACT_NUMBER_MAX_LENGTH
+} from "~community/crm/constants/contactConstants";
 import {
   CrmContactFormValues,
   CrmOwner
@@ -142,7 +146,7 @@ const ContactModalForm = ({
         placeholder={translateContactText(["placeholders", "name"])}
         onChange={handleChange}
         aria-label={translateContactText(["ariaLabels", "name"])}
-        maxLength={characterLengths.NAME_LENGTH}
+        maxLength={CONTACT_NAME_MAX_LENGTH}
         required
         fullWidth
       />
@@ -156,6 +160,7 @@ const ContactModalForm = ({
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
         aria-label={translateContactText(["ariaLabels", "email"])}
+        maxLength={CONTACT_EMAIL_MAX_LENGTH}
         required
         fullWidth
       />
@@ -216,7 +221,7 @@ const ContactModalForm = ({
         placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
         aria-label={translateContactText(["ariaLabels", "contactNumber"])}
-        maxLength={characterLengths.PHONE_NUMBER_LENGTH_MAX}
+        maxLength={CONTACT_NUMBER_MAX_LENGTH}
         fullWidth
       />
 
