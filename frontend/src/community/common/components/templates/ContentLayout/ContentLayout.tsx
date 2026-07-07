@@ -21,6 +21,7 @@ import VersionUpgradeBanner from "~community/common/components/molecules/Version
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { contentLayoutTestId } from "~community/common/constants/testIds";
+import { Modules } from "~community/common/enums/CommonEnums";
 import {
   MediaQueries,
   useMediaQuery
@@ -42,6 +43,7 @@ import {
 } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import { shouldUseDefaultTheme } from "~enterprise/common/utils/commonUtil";
+import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
 import { useCheckUserLimit } from "~enterprise/people/api/CheckUserLimitApi";
 import UserLimitBanner from "~enterprise/people/components/molecules/UserLimitBanner/UserLimitBanner";
 import { useUserLimitStore } from "~enterprise/people/store/userLimitStore";
@@ -90,6 +92,7 @@ interface Props {
   };
   isCloseButton?: boolean;
   breadcrumbs?: BreadcrumbItem[];
+  module?: Modules;
 }
 
 const ContentLayout = ({
@@ -121,7 +124,8 @@ const ContentLayout = ({
   ariaDescribedBy,
   showBackButtonTooltip = true,
   isCloseButton = false,
-  breadcrumbs = []
+  breadcrumbs = [],
+  module
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
@@ -389,6 +393,7 @@ const ContentLayout = ({
         {children}
         <QuickSetupContainer />
         <SubscriptionEndedModalController />
+        {module === Modules.CRM && <CrmLimitModalController />}
       </Stack>
     </>
   );

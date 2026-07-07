@@ -1,5 +1,4 @@
 import {
-  InfiniteData,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -20,14 +19,15 @@ import {
 } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
+  CrmContact,
   CrmContactCreatePayload,
-  CrmContactDetailResponseType,
   CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
   CrmOwner,
   CrmOwnersResponseType,
   EditContactPayload
 } from "~community/crm/types/CommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 interface ContactMetricsSearchParams {
   page: number;
@@ -73,18 +73,6 @@ export const useGetContactMetrics = (
   });
 };
 
-export const useGetSelectedContactById = (selectedContactId: number) => {
-  const queryClient = useQueryClient();
-
-  const contacts = queryClient
-    .getQueriesData<InfiniteData<CrmContactMetricsResponseType>>({
-      queryKey: contactQueryKeys.ALL
-    })
-    .flatMap(([, data]) => data?.pages.flatMap((page) => page.items) ?? []);
-
-  return contacts.find((contact) => contact.id === selectedContactId);
-};
-
 export const useGetCrmCompanies = (size: number) => {
   return useQuery({
     queryKey: companyQueryKeys.CRM_COMPANIES(size),
@@ -115,6 +103,9 @@ export const useCreateNewContact = (
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       onSuccess();
     },
@@ -220,9 +211,7 @@ export const useGetCrmOwners = (
   });
 };
 
-const fetchContactById = async (
-  id: number
-): Promise<CrmContactDetailResponseType> => {
+const fetchContactById = async (id: number): Promise<CrmContact> => {
   const response = await authFetch.get(contactEndpoints.CONTACT_BY_ID(id));
   return response?.data?.results?.[0];
 };
@@ -230,7 +219,7 @@ const fetchContactById = async (
 export const useGetContactById = (
   id: number,
   enabled = true
-): UseQueryResult<CrmContactDetailResponseType> => {
+): UseQueryResult<CrmContact> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_BY_ID(id),
     queryFn: () => fetchContactById(id),
@@ -262,6 +251,9 @@ export const useDeleteContact = (
       });
       queryClient.invalidateQueries({
         queryKey: crmDealQueryKeys.ALL
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       onSuccess();
     },

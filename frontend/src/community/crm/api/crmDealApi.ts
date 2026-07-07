@@ -6,18 +6,21 @@ import {
   useQuery,
   useQueryClient
 } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmCreateDealPayload,
+  CrmDealCreateResponseType,
+  CrmDealDetailResponseType,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
   CrmDealStageCreatePayload,
   CrmDealStageReorderItem,
   CrmDealStageType,
-  CrmDealStageUpdatePayload,
-  CrmDealType
+  CrmDealStageUpdatePayload
 } from "~community/crm/types/CommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
 import { crmDealQueryKeys } from "./utils/QueryKeys";
@@ -62,21 +65,24 @@ export const useGetDealStages = (
 
 const createDeal = async (
   payload: CrmCreateDealPayload
-): Promise<CrmDealType> => {
+): Promise<CrmDealCreateResponseType> => {
   const response = await authFetch.post(crmDealEndpoints.CREATE_DEAL, payload);
   return response?.data?.results?.[0];
 };
 
 export const useCreateDeal = (
-  onSuccess: () => void,
-  onError: (error: unknown) => void
+  onSuccess: (createdDeal: CrmDealCreateResponseType) => void,
+  onError: (error: AxiosError) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createDeal,
-    onSuccess: () => {
+    onSuccess: (createdDeal) => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
-      onSuccess();
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess(createdDeal);
     },
     onError
   });
@@ -107,6 +113,23 @@ export const useGetDealLookup = (
   });
 };
 
+const fetchDealById = async (
+  id: number
+): Promise<CrmDealDetailResponseType> => {
+  const response = await authFetch.get(crmDealEndpoints.GET_DEAL_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealById = (
+  id: number
+): UseQueryResult<CrmDealDetailResponseType> => {
+  return useQuery({
+    queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
+    queryFn: () => fetchDealById(id),
+    refetchOnWindowFocus: false
+  });
+};
+
 const createDealStage = async (
   payload: CrmDealStageCreatePayload
 ): Promise<CrmDealStageType> => {
@@ -126,6 +149,9 @@ export const useCreateDealStage = (
     mutationFn: createDealStage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError
@@ -196,6 +222,9 @@ export const useDeleteDealStage = (
     mutationFn: deleteDealStage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError

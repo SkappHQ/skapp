@@ -20,6 +20,7 @@ import {
 } from "~community/crm/constants/companyConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 import {
   formatPhoneNumber,
@@ -44,12 +45,10 @@ export const CompanyTable: FC = () => {
     isFetching
   } = useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
-  const { setSelectedCompany, setIsCrmSidePanelOpen } = useCrmStore(
-    (store) => ({
-      setSelectedCompany: store.setSelectedCompany,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-    })
-  );
+  const { setSelectedCompany, openCrmSidePanel } = useCrmStore((store) => ({
+    setSelectedCompany: store.setSelectedCompany,
+    openCrmSidePanel: store.openCrmSidePanel
+  }));
 
   const companies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
@@ -65,6 +64,7 @@ export const CompanyTable: FC = () => {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
       key: "name",
+      className: "truncate",
       width: "25%"
     },
     {
@@ -202,7 +202,7 @@ export const CompanyTable: FC = () => {
         }}
         onRowClick={(row) => {
           setSelectedCompany(row);
-          setIsCrmSidePanelOpen(true);
+          openCrmSidePanel(CrmSidePanelTypes.COMPANY_SIDE_PANEL);
         }}
       />
     </div>

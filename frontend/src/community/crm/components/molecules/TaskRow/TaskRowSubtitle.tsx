@@ -35,7 +35,8 @@ const TaskRowSubtitle: FC<Props> = ({
           }
         >
           {translateText([dueDateStatus.textKey], {
-            date: dueDateStatus.dateValue ?? ""
+            date: dueDateStatus.dateValue ?? "",
+            count: dueDateStatus.dayCount ?? 0
           })}
         </span>
       )}

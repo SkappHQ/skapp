@@ -1,57 +1,82 @@
-import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  closestCorners,
+  useSensor,
+  useSensors
+} from "@dnd-kit/core";
 import { FC } from "react";
 
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
+import { DRAG_ACTIVATION_DISTANCE } from "~community/crm/constants/boardConstants";
+import { useBoardData } from "~community/crm/hooks/useBoardData";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
-import type { CrmDealStageType } from "~community/crm/types/CommonTypes";
-
-import { MOCK_DEALS, MOCK_STAGES } from "./mockData";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 interface DealsKanbanBoardProps {
   searchKeyword?: string;
 }
 
-const DealsKanbanBoard: FC<DealsKanbanBoardProps> = () => {
-  const stages: CrmDealStageType[] = MOCK_STAGES;
+const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
+  searchKeyword = ""
+}) => {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: DRAG_ACTIVATION_DISTANCE }
+    }),
+    useSensor(KeyboardSensor)
+  );
+
+  const { boardStages, isLoading } = useBoardData({
+    searchKeyword
+  });
 
   const {
     stageMap,
     activeDeal,
     overStageId,
-    sensors,
     handleDragStart,
     handleDragOver,
-    handleDragEnd,
-    handleDragCancel
-  } = useKanbanDrag({ stages, dealsByStage: MOCK_DEALS });
+    handleDragEnd
+  } = useKanbanDrag();
+
+  const handleAddDeal = (stageId: number) => {
+    const { setPreselectedStageId, openCrmSidePanel } = useCrmStore.getState();
+    setPreselectedStageId(stageId);
+    openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
+  };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full overflow-hidden">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
       >
-        <div className="flex h-160 items-stretch gap-4 overflow-x-auto py-2">
-          {stages.map((stage) => {
-            const deals =
-              stageMap.find((s) => s.stageId === stage.id)?.deals ?? [];
+        <div className="flex items-stretch gap-4 h-full overflow-x-auto py-2">
+          {boardStages.map((stage) => {
+            const stageDeals = stageMap.find((s) => s.stageId === stage.id);
+            const deals = stageDeals?.deals ?? [];
 
             return (
               <DealStageLane
                 key={stage.id}
                 stage={stage}
                 deals={deals}
-                isLoading={false}
-                hasNextPage={false}
+                isLoading={isLoading}
+                currentPage={stageDeals?.currentPage ?? 0}
+                hasNextPage={stageDeals?.hasNextPage ?? false}
+                totalCount={stageDeals?.totalCount ?? 0}
                 isOver={overStageId === stage.id}
+                searchKeyword={searchKeyword}
                 onDealClick={() => {}}
-                onAddDeal={() => {}}
-                onLoadMore={() => {}}
+                onAddDeal={handleAddDeal}
               />
             );
           })}
