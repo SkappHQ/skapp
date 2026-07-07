@@ -4,7 +4,7 @@ import {
   MeetingFilledIcon,
   PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
-import { ComponentType, ReactElement, createElement } from "react";
+import { ComponentType, ReactElement, SVGProps, createElement } from "react";
 
 import {
   convertUTCStringToLocalDateTime,
@@ -60,27 +60,33 @@ export const getDueDateStatus = (
   };
 };
 
-const TASK_TYPE_ICON_MAP: Record<string, ComponentType> = {
+const TASK_TYPE_ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   email: EmailFilledIcon,
   call: PhoneFilledIcon,
   meeting: MeetingFilledIcon,
   other: ChecklistVerificationFilledIcon
 };
 
-export const getTaskTypeIcon = (typeName: string): ReactElement => {
+export const getTaskTypeIcon = (
+  typeName: string,
+  size = 20
+): ReactElement => {
   return createElement(
     TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ??
-      ChecklistVerificationFilledIcon
+      ChecklistVerificationFilledIcon,
+    { width: size, height: size }
   );
 };
 
+
 export const getPriorityConfig = (
   priority: CrmPriorityEnum
-): { icon: ReactElement; bgColor: string } => {
+): { icon: ReactElement; bgColor: string; textColor: string } => {
   const option = PRIORITY_OPTIONS.find((o) => o.value === priority)!;
   return {
     icon: createElement(option.IconComponent),
-    bgColor: option.backgroundColor
+    bgColor: option.backgroundColor,
+    textColor: option.textColor
   };
 };
 
@@ -165,6 +171,12 @@ export const getChangedTaskFields = (
 
   return changedFields;
 };
+
+export const mergeTaskUpdate = (
+  tasks: CrmTaskDetailType[],
+  update: Partial<CrmTaskDetailType>
+): CrmTaskDetailType[] =>
+  tasks.map((task) => (task.id === update.id ? { ...task, ...update } : task));
 
 export const getTaskGroups = (
   tasks: CrmTaskDetailType[],

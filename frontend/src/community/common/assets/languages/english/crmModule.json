@@ -522,7 +522,24 @@
     "sidePanel": {
       "deleteTask": "Delete task",
       "editTask": "Edit task",
-      "kebabMenuAriaLabel": "Task actions"
+      "kebabMenuAriaLabel": "Task actions",
+      "notes": "Notes",
+      "noNotes": "No notes added",
+      "dealsTitle": "Deals",
+      "relatedTasksTitle": "Related Tasks",
+      "markAsDone": "Mark as Done",
+      "statusDone": "Done",
+      "assignedTo": "Assigned To",
+      "priority": "Priority",
+      "closingDate": "Closing Date",
+      "noClosingDate": "No closing date",
+      "contactName": "Contact",
+      "noContact": "No contact linked",
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
     },
     "deleteTaskModal": {
       "title": "Delete Task",

@@ -18,6 +18,7 @@ interface ActionTypes {
   setSelectedTaskId: (taskId: number | null) => void;
   setTasks: (tasks: CrmTaskDetailType[]) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
+  updateTask: (task: Partial<CrmTaskDetailType>) => void;
   openCrmSidePanel: (type: CrmSidePanelTypes) => void;
   pushCrmSidePanel: (type: CrmSidePanelTypes) => void;
   popCrmSidePanel: () => void;
