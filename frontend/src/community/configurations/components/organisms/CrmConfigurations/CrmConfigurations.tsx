@@ -183,7 +183,7 @@ const CrmConfigurations = () => {
             {translateText(["dealsSection", "dealPipelineStatusesTitle"])}
           </h2>
           <ButtonV2
-            variant="tertiary"
+            variant="primary"
             onClick={handleAddStage}
             icon={<PlusIcon />}
             iconPosition="end"
