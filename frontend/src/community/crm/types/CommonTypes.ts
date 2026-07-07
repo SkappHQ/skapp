@@ -291,8 +291,7 @@ export interface CrmDealDetailResponseType {
   contact: CrmContactLookup;
 }
 
-export interface CrmDealEditPayload {
-  id: number;
+export interface CrmDealEditFields {
   name?: string;
   description?: string | null;
   stageId?: number;

@@ -12,7 +12,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
 import { useEditDeal, useGetDealById } from "~community/crm/api/crmDealApi";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import { CrmDealEditPayload } from "~community/crm/types/CommonTypes";
+import { CrmDealEditFields } from "~community/crm/types/CommonTypes";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
 import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
@@ -72,8 +72,8 @@ const DealSidePanel: FC = () => {
     }
   );
 
-  const handleEditDeal = (payload: Omit<CrmDealEditPayload, "id">): void => {
-    editDeal({ id: selectedDealId!, ...payload });
+  const updateDeal = (fields: CrmDealEditFields): void => {
+    editDeal({ id: selectedDealId!, fields });
   };
 
   const {
@@ -148,13 +148,13 @@ const DealSidePanel: FC = () => {
           <div className="flex flex-col gap-6">
             <DealTitleSection
               name={deal?.name ?? ""}
-              onSave={(name) => handleEditDeal({ name })}
+              onSave={(name) => updateDeal({ name })}
             />
             <div className="flex gap-6 items-start">
               <div className="flex-1 flex flex-col gap-6 min-w-0">
                 <DealDescriptionSection
                   description={deal?.description ?? ""}
-                  onSave={(description) => handleEditDeal({ description })}
+                  onSave={(description) => updateDeal({ description })}
                 />
                 <div className="flex flex-col gap-3">
                   <h2 className="h2">{translateText(["tasks"])}</h2>
@@ -170,7 +170,15 @@ const DealSidePanel: FC = () => {
               <DealPropertiesSidebar
                 deal={deal!}
                 isOpen={isOpen}
-                onEditDeal={handleEditDeal}
+                onStageChange={(stageId) => updateDeal({ stageId })}
+                onAmountChange={(amount) => updateDeal({ amount })}
+                onPriorityChange={(priority) => updateDeal({ priority })}
+                onOwnerChange={(owner) =>
+                  updateDeal({ ownerId: owner.employeeId })
+                }
+                onContactChange={(contact) =>
+                  updateDeal({ contactId: contact.id })
+                }
               />
             </div>
           </div>

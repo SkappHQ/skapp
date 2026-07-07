@@ -7,6 +7,7 @@ import {
 import { FC, KeyboardEventHandler, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { validateDealName } from "~community/crm/utils/dealValidations";
 
 interface DealTitleSectionProps {
   name: string;
@@ -18,15 +19,27 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedTitle, setEditedTitle] = useState<string>("");
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const handleClick = () => {
     setIsEditing(true);
     setEditedTitle(name);
+    setError(undefined);
+  };
+
+  const handleChange = (value: string) => {
+    setEditedTitle(value);
+    setError(validateDealName(value, translateText));
   };
 
   const handleSave = () => {
+    const validationError = validateDealName(editedTitle, translateText);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     const trimmedTitle = editedTitle.trim();
-    if (trimmedTitle && trimmedTitle !== name) {
+    if (trimmedTitle !== name) {
       onSave(trimmedTitle);
     }
     setIsEditing(false);
@@ -34,6 +47,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
 
   const handleDiscard = () => {
     setEditedTitle(name);
+    setError(undefined);
     setIsEditing(false);
   };
 
@@ -57,9 +71,11 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
         <div className="flex-1 min-w-0 p-1">
           <InputField
             value={editedTitle}
-            onChange={(e) => setEditedTitle(e.target.value)}
+            onChange={(e) => handleChange(e.target.value)}
             onKeyDown={handleInputKeyDown}
             className="w-full"
+            state={error ? "error" : "default"}
+            errorMessage={error}
             autoFocus
           />
         </div>

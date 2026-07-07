@@ -13,7 +13,7 @@ import {
   CrmCreateDealPayload,
   CrmDealCreateResponseType,
   CrmDealDetailResponseType,
-  CrmDealEditPayload,
+  CrmDealEditFields,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
   CrmDealStageCreatePayload,
@@ -133,11 +133,14 @@ export const useGetDealById = (
 
 const editDeal = async ({
   id,
-  ...payload
-}: CrmDealEditPayload): Promise<CrmDealDetailResponseType> => {
+  fields
+}: {
+  id: number;
+  fields: CrmDealEditFields;
+}): Promise<CrmDealDetailResponseType> => {
   const response = await authFetch.patch(
     crmDealEndpoints.EDIT_DEAL(id),
-    payload
+    fields
   );
   return response?.data?.results?.[0];
 };

@@ -22,6 +22,7 @@ interface PropertyFieldProps {
   min?: number;
   max?: number;
   errorMessage?: string;
+  validate?: (value: string) => string | undefined;
   onChange?: (value: string) => void;
   onSave?: (value: string) => void;
 }
@@ -34,6 +35,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
   min,
   max,
   errorMessage,
+  validate,
   onChange,
   onSave
 }) => {
@@ -42,11 +44,36 @@ const PropertyField: FC<PropertyFieldProps> = ({
     placeholder ?? translateText(["placeholders", "none"]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>(value);
+  const [validationError, setValidationError] = useState<string | undefined>(
+    undefined
+  );
   const inputRef = useRef<HTMLDivElement>(null);
+
+  const displayedError = validationError ?? errorMessage;
 
   useEffect(() => {
     setInputValue(value);
   }, [value]);
+
+  // Commits the current input via onSave/onChange, unless it fails validation.
+  // Returns true when the value was committed (and editing can close).
+  const commit = (nextValue: string): boolean => {
+    if (validate) {
+      const error = validate(nextValue);
+      if (error) {
+        setValidationError(error);
+        return false;
+      }
+    }
+    setValidationError(undefined);
+    if (onSave) {
+      onSave(nextValue);
+      setInputValue(value);
+    } else if (onChange) {
+      onChange(nextValue);
+    }
+    return true;
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -55,13 +82,9 @@ const PropertyField: FC<PropertyFieldProps> = ({
         !inputRef.current.contains(event.target as Node) &&
         isEditing
       ) {
-        if (onSave) {
-          onSave(inputValue);
-          setInputValue(value);
-        } else if (onChange) {
-          onChange(inputValue);
+        if (commit(inputValue)) {
+          setIsEditing(false);
         }
-        setIsEditing(false);
       }
     };
 
@@ -78,24 +101,25 @@ const PropertyField: FC<PropertyFieldProps> = ({
     if (!isEditing) {
       setIsEditing(true);
       setInputValue(value);
+      setValidationError(undefined);
     }
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    const nextValue = e.target.value;
+    setInputValue(nextValue);
+    if (validate) {
+      setValidationError(validate(nextValue));
+    }
     if (onChange) {
-      onChange(e.target.value);
+      onChange(nextValue);
     }
   };
 
   const handleSave = () => {
-    if (onSave) {
-      onSave(inputValue);
-      setInputValue(value);
-    } else if (onChange) {
-      onChange(inputValue);
+    if (commit(inputValue)) {
+      setIsEditing(false);
     }
-    setIsEditing(false);
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -104,6 +128,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
     } else if (e.key === "Escape") {
       setIsEditing(false);
       setInputValue(value);
+      setValidationError(undefined);
     }
   };
 
@@ -114,7 +139,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
   const displayValue = inputValue || resolvedPlaceholder;
 
   return (
-    <div className="self-stretch h-9 flex justify-start items-center">
+    <div className="self-stretch min-h-9 flex justify-start items-center">
       <div className="w-28 flex justify-start items-center gap-2 flex-shrink-0">
         <div className="text-black subtitle3">{label}</div>
       </div>
@@ -132,6 +157,8 @@ const PropertyField: FC<PropertyFieldProps> = ({
               type={inputType}
               min={min}
               max={max}
+              state={displayedError ? "error" : "default"}
+              errorMessage={displayedError}
               autoFocus
             />
           </div>

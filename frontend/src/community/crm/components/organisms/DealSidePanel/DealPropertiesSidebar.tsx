@@ -20,20 +20,28 @@ import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages"
 import {
   CrmContactLookup,
   CrmDealDetailResponseType,
-  CrmDealEditPayload,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { validateDealAmount } from "~community/crm/utils/dealValidations";
 
 interface DealPropertiesSidebarProps {
   deal: CrmDealDetailResponseType;
   isOpen?: boolean;
-  onEditDeal: (payload: Omit<CrmDealEditPayload, "id">) => void;
+  onStageChange: (stageId: number) => void;
+  onAmountChange: (amount: string) => void;
+  onPriorityChange: (priority: CrmPriorityEnum) => void;
+  onOwnerChange: (owner: CrmOwner) => void;
+  onContactChange: (contact: CrmContactLookup) => void;
 }
 
 const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   deal,
   isOpen,
-  onEditDeal
+  onStageChange,
+  onAmountChange,
+  onPriorityChange,
+  onOwnerChange,
+  onContactChange
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
@@ -89,7 +97,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           value={selectedStageId}
           onChange={(v) => {
             setSelectedStageId(v);
-            onEditDeal({ stageId: Number(v) });
+            onStageChange(Number(v));
           }}
           variant="primary"
           className="rounded-lg"
@@ -104,10 +112,11 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           label={translateText(["value"])}
           value={amount}
           placeholder={translateText(["placeholders", "none"])}
+          validate={(value) => validateDealAmount(value, translateText)}
           onChange={setAmount}
           onSave={(value) => {
             setAmount(value);
-            onEditDeal({ amount: value });
+            onAmountChange(value);
           }}
         />
 
@@ -116,7 +125,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
             value={priority}
             onChange={(value) => {
               setPriority(value);
-              onEditDeal({ priority: value });
+              onPriorityChange(value);
             }}
           />
         </PropertyRow>
@@ -127,7 +136,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
               selectedUser={selectedOwner}
               onChange={(owner) => {
                 setSelectedOwner(owner);
-                if (owner) onEditDeal({ ownerId: owner.employeeId });
+                if (owner) onOwnerChange(owner);
               }}
               placeholder={translateText(["placeholders", "none"])}
               searchPlaceholder={translateText(["placeholders", "ownerSearch"])}
@@ -143,7 +152,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
               selectedContact={selectedContact}
               onChange={(contact) => {
                 setSelectedContact(contact);
-                if (contact) onEditDeal({ contactId: contact.id });
+                if (contact) onContactChange(contact);
               }}
               onSearch={setContactSearchTerm}
               placeholder={translateText(["placeholders", "none"])}

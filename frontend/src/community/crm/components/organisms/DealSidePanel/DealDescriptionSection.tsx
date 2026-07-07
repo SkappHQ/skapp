@@ -2,6 +2,7 @@ import { ButtonV2, TextArea } from "@rootcodelabs/skapp-ui";
 import { FC, KeyboardEventHandler, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { validateDealDescription } from "~community/crm/utils/dealValidations";
 
 interface DealDescriptionSectionProps {
   description: string | null;
@@ -18,13 +19,28 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedDescription, setEditedDescription] = useState<string>("");
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const handleClick = () => {
     setIsEditing(true);
     setEditedDescription(description ?? "");
+    setError(undefined);
+  };
+
+  const handleChange = (value: string) => {
+    setEditedDescription(value);
+    setError(validateDealDescription(value, translateText));
   };
 
   const handleSave = () => {
+    const validationError = validateDealDescription(
+      editedDescription,
+      translateText
+    );
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     const trimmedDescription = editedDescription.trim();
     if (trimmedDescription !== (description ?? "").trim()) {
       onSave(trimmedDescription);
@@ -34,6 +50,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
 
   const handleDiscard = () => {
     setEditedDescription(description ?? "");
+    setError(undefined);
     setIsEditing(false);
   };
 
@@ -53,9 +70,11 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
         <div className="flex flex-col gap-3">
           <TextArea
             value={editedDescription}
-            onChange={(e) => setEditedDescription(e.target.value)}
+            onChange={(e) => handleChange(e.target.value)}
             className="w-full body2"
             rows={4}
+            state={error ? "error" : "default"}
+            errorMessage={error}
             autoFocus
           />
           <div className="flex gap-2 justify-end">
