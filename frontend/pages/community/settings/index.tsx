@@ -74,11 +74,19 @@ const Settings: NextPage = () => {
 
   // Google Workspace OAuth always redirects the browser back to
   // /settings?google=connected (backend-hardcoded). Bounce straight to the
-  // Directory import review screen instead of showing anything here.
+  // Directory import review screen instead of showing anything here. On
+  // failure (denied consent or a failed token exchange) the backend instead
+  // sends back ?google=error — forward that flag to the Directory page so
+  // the failure toast shows up where the admin actually lands, not here.
   useEffect(() => {
     if (!router.isReady) return;
     if (router.query.google === "connected") {
       router.replace(ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW);
+    } else if (router.query.google === "error") {
+      router.replace({
+        pathname: ROUTES.PEOPLE.DIRECTORY,
+        query: { google: "error" }
+      });
     }
   }, [router, router.isReady, router.query.google]);
 

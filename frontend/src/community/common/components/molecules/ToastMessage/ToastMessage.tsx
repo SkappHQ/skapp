@@ -4,6 +4,7 @@ import { JSX, SyntheticEvent, useMemo } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { ToastProps } from "~community/common/types/ToastTypes";
 
@@ -22,6 +23,20 @@ const ToastMessage = ({
 }: ToastProps): JSX.Element => {
   const theme = useTheme();
   const classes = styles(theme);
+  const { setToastMessage } = useToast();
+
+  // Several call sites render their own ToastMessage instance and never
+  // populate the `onClose` field when calling setToastMessage, leaving the
+  // close button wired to nothing. Fall back to closing via the shared
+  // toast context directly so the button always works regardless of
+  // whether the caller remembered to wire up onClose.
+  const handleClose = (): void => {
+    if (onClose) {
+      onClose();
+    } else {
+      setToastMessage((prev) => ({ ...prev, open: false }));
+    }
+  };
 
   const { bgColor, color } = useMemo(() => {
     switch (toastType) {
@@ -79,7 +94,7 @@ const ToastMessage = ({
         if (reason === "clickaway") {
           return;
         }
-        onClose?.();
+        handleClose();
       }}
       anchorOrigin={{ vertical: "top", horizontal: "right" }}
       sx={{
@@ -109,12 +124,12 @@ const ToastMessage = ({
           </Box>
 
           {/* Close Button */}
-          <Box aria-hidden={true}>
+          <Box>
             <IconButton
               aria-label="close"
               color="inherit"
               size="small"
-              onClick={onClose}
+              onClick={handleClose}
               sx={isIcon ? classes.iconBoxStyle : { display: "none" }}
             >
               <Icon name={IconName.CLOSE_ICON} />

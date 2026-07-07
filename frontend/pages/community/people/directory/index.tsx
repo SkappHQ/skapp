@@ -1,10 +1,14 @@
 import { Box } from "@mui/material";
 import { NextPage } from "next";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import ROUTES from "~community/common/constants/routes";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import GoogleWorkspaceSyncBanner from "~community/people/components/molecules/GoogleWorkspaceSyncBanner/GoogleWorkspaceSyncBanner";
 import DirectoryPopupController from "~community/people/components/organisms/DirectoryPopupController/DirectoryPopupController";
@@ -13,7 +17,10 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 
 const Directory: NextPage = () => {
+  const router = useRouter();
   const translateText = useTranslator("peopleModule");
+  const translatePeople = useTranslator("peopleModule", "peoples");
+  const { setToastMessage } = useToast();
   const { user } = useAuth();
 
   const isAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
@@ -35,6 +42,26 @@ const Directory: NextPage = () => {
     setIsPendingInvitationListOpen(false);
     resetEmployeeDataParams();
   }, []);
+
+  // Forwarded from the Settings OAuth-callback shim when the Google
+  // Workspace connection attempt failed — surface it here, where the admin
+  // actually lands, then strip the query param so it doesn't re-fire on
+  // refresh.
+  useEffect(() => {
+    if (!router.isReady || router.query.google !== "error") return;
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translatePeople(["googleWorkspaceImport", "connectErrorTitle"]),
+      description: translatePeople([
+        "googleWorkspaceImport",
+        "connectCallbackErrorDescription"
+      ]),
+      autoHideDuration: null,
+      onClose: () => setToastMessage((prev) => ({ ...prev, open: false }))
+    });
+    router.replace(ROUTES.PEOPLE.DIRECTORY, undefined, { shallow: true });
+  }, [router, router.isReady, router.query.google, setToastMessage, translatePeople]);
 
   return (
     <>
