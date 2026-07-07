@@ -61,11 +61,7 @@ const ConnectGoogleWorkspaceModal = (): JSX.Element => {
 
   return (
     <Stack sx={{ gap: "1.25rem", alignItems: "center", textAlign: "center" }}>
-      <Icon name={IconName.GOOGLE_ICON} width="40" height="40" />
-
-      <Typography variant="h3">
-        {translateText(["googleWorkspaceImport", "connectTitle"])}
-      </Typography>
+      <Icon name={IconName.GOOGLE_ICON} width="48" height="48" />
 
       <Typography
         variant="body2"
@@ -79,15 +75,25 @@ const ConnectGoogleWorkspaceModal = (): JSX.Element => {
         sx={{
           width: "100%",
           gap: "0.5rem",
-          alignItems: "flex-start",
+          alignItems: "center",
           textAlign: "left",
-          backgroundColor: theme.palette.primary.light,
+          backgroundColor: theme.palette.secondary.main,
           borderRadius: "8px",
-          padding: "0.75rem 1rem"
+          padding: "0.5rem 1rem"
         }}
       >
-        <Icon name={IconName.INFO_ICON} />
-        <Typography variant="body2">
+        <Box
+          sx={{
+            display: "flex",
+            "& svg path": { fill: theme.palette.primary.dark }
+          }}
+        >
+          <Icon name={IconName.WARNING_SIGN_ICON} />
+        </Box>
+        <Typography
+          variant="body2"
+          sx={{ color: theme.palette.primary.dark }}
+        >
           {translateText([
             "googleWorkspaceImport",
             "connectPrivacyNotice"
@@ -97,10 +103,10 @@ const ConnectGoogleWorkspaceModal = (): JSX.Element => {
 
       <Stack sx={{ width: "100%", gap: "0.5rem", textAlign: "left" }}>
         <Typography
-          variant="caption"
+          variant="body2"
           sx={{
-            fontWeight: 600,
-            letterSpacing: "0.04em",
+            fontWeight: 400,
+            fontSize: "13px",
             color: theme.palette.text.secondary
           }}
         >
@@ -112,7 +118,7 @@ const ConnectGoogleWorkspaceModal = (): JSX.Element => {
             direction="row"
             sx={{ gap: "0.5rem", alignItems: "center" }}
           >
-            <Icon name={IconName.CHECK_ICON} />
+            <Icon name={IconName.SUCCESS_TICK_ICON} width="16" height="16" />
             <Typography variant="body2">{item}</Typography>
           </Stack>
         ))}
@@ -124,10 +130,12 @@ const ConnectGoogleWorkspaceModal = (): JSX.Element => {
       >
         <Box sx={{ flex: 1 }} />
         <ButtonV2
-          variant="secondary"
+          variant="tertiary"
           size="md"
           onClick={handleCancel}
           disabled={isConnecting}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
         >
           {translateText(["cancelButton"])}
         </ButtonV2>
@@ -136,7 +144,6 @@ const ConnectGoogleWorkspaceModal = (): JSX.Element => {
           size="md"
           isLoading={isConnecting}
           onClick={handleContinueWithGoogle}
-          icon={<Icon name={IconName.GOOGLE_ICON} width="16" height="16" />}
         >
           {translateText(["googleWorkspaceImport", "continueWithGoogle"])}
         </ButtonV2>

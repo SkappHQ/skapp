@@ -37,15 +37,18 @@ const OptionCard = ({
           onClick();
         }
       }}
-      className="cursor-pointer"
+      className="cursor-pointer import-option-card"
       style={{
-        flex: 1,
+        width: "379.5px",
+        height: "368px",
         display: "flex",
         flexDirection: "column",
+        justifyContent: "center",
         alignItems: "center",
         textAlign: "center",
-        gap: "0.75rem",
-        padding: "1.75rem 1.25rem"
+        gap: "32px",
+        padding: "4px 0",
+        borderRadius: "12px"
       }}
     >
       <Box
@@ -53,21 +56,28 @@ const OptionCard = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: 44,
-          height: 44
+          width: 64,
+          height: 64
         }}
       >
         {icon}
       </Box>
-      <Typography variant="body1" sx={{ fontWeight: 600 }}>
-        {title}
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{ color: theme.palette.text.secondary }}
+      <Stack
+        sx={{ gap: "1rem", alignItems: "center", width: "292px", height: "80px" }}
       >
-        {description}
-      </Typography>
+        <Typography
+          variant="body1"
+          sx={{ fontWeight: 500, lineHeight: "16px" }}
+        >
+          {title}
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{ color: theme.palette.text.secondary, lineHeight: "150%" }}
+        >
+          {description}
+        </Typography>
+      </Stack>
     </Card>
   );
 };
@@ -100,16 +110,15 @@ const UploadTypeSelectModal = (): JSX.Element => {
   };
 
   return (
-    <Stack sx={{ gap: "1.25rem" }}>
-      <Typography
-        variant="body2"
-        sx={{ color: (theme) => theme.palette.text.secondary }}
-      >
-        {translateText(["googleWorkspaceImport", "chooserSubtitle"])}
-      </Typography>
-      <Stack direction="row" sx={{ gap: "1rem" }}>
+    <Stack direction="row" sx={{ gap: "1rem" }}>
         <OptionCard
-          icon={<Icon name={IconName.FILE_UPLOAD_ICON} />}
+          icon={
+            <Icon
+              name={IconName.UPLOAD_DOCUMENT_ICON}
+              width="64"
+              height="64"
+            />
+          }
           title={translateText(["googleWorkspaceImport", "bulkUploadTitle"])}
           description={translateText([
             "googleWorkspaceImport",
@@ -118,7 +127,13 @@ const UploadTypeSelectModal = (): JSX.Element => {
           onClick={handleBulkUploadSelect}
         />
         <OptionCard
-          icon={<Icon name={IconName.GOOGLE_ICON} width="28" height="28" />}
+          icon={
+            <Icon
+              name={IconName.GOOGLE_ICON}
+              width="64"
+              height="64"
+            />
+          }
           title={translateText(["googleWorkspaceImport", "googleTitle"])}
           description={translateText([
             "googleWorkspaceImport",
@@ -126,7 +141,6 @@ const UploadTypeSelectModal = (): JSX.Element => {
           ])}
           onClick={handleGoogleWorkspaceSelect}
         />
-      </Stack>
     </Stack>
   );
 };

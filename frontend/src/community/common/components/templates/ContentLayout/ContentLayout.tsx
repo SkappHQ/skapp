@@ -56,6 +56,7 @@ interface Props {
   dividerStyles?: SxProps;
   children: JSX.Element;
   secondaryBtnText?: string;
+  secondaryBtnClassName?: string;
   primaryButtonText?: string | boolean;
   primaryBtnIconName?: IconName;
   secondaryBtnIconName?: IconName;
@@ -100,6 +101,7 @@ const ContentLayout = ({
   children,
   primaryButtonText,
   secondaryBtnText,
+  secondaryBtnClassName = "",
   primaryBtnIconName = IconName.ADD_ICON,
   secondaryBtnIconName = IconName.ADD_ICON,
   secondaryBtnIconFill,
@@ -341,7 +343,7 @@ const ContentLayout = ({
                 onClick={onSecondaryButtonClick}
                 data-testid={contentLayoutTestId.buttons.secondaryButton}
                 id={id?.secondaryBtn}
-                className={getBlinkClass(shouldBlink?.secondaryBtn ?? false)}
+                className={`${getBlinkClass(shouldBlink?.secondaryBtn ?? false)} ${secondaryBtnClassName}`}
                 icon={
                   secondaryBtnIconName ? (
                     <Icon

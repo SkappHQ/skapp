@@ -68,6 +68,7 @@ const ROUTES = {
     USER_ACCOUNT: "/user-account",
     EDIT: (id: any) => `/people/directory/edit/${id}`,
     ADD: "/people/directory/add",
+    GOOGLE_IMPORT_SYNCING: "/people/directory/import-google/syncing",
     GOOGLE_IMPORT_REVIEW: "/people/directory/import-google/review",
     SYNC_CHANGES: "/people/directory/sync-changes"
   },

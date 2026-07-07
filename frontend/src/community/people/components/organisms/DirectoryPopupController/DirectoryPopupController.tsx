@@ -1,4 +1,4 @@
-import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { LargeModal, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
 
 import { BulkSummaryFlows } from "~community/common/constants/stringConstants";
@@ -59,7 +59,7 @@ const DirectoryPopupController = () => {
       case DirectoryModalTypes.UNSAVED_CHANGES:
         return translatedTexts(["unsavedModalTitle"]);
       case DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE:
-        return "";
+        return translatedTexts(["googleWorkspaceImport", "connectTitle"]);
       default:
         return "";
     }
@@ -122,6 +122,19 @@ const DirectoryPopupController = () => {
       )}
     </>
   );
+
+  if (directoryModalType === DirectoryModalTypes.UPLOAD_TYPE_SELECT) {
+    return (
+      <LargeModal
+        id="import-people-modal"
+        isOpen={isDirectoryModalOpen}
+        onClose={onClose}
+        modalHeader={getModalTitle()}
+        className="import-chooser-modal w-[831px] h-[468px]"
+        content={modalContent}
+      />
+    );
+  }
 
   return (
     <SmallModal
