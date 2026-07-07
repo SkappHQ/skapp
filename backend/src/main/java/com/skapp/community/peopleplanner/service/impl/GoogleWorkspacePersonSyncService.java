@@ -865,50 +865,6 @@ public class GoogleWorkspacePersonSyncService implements ExternalPersonSyncServi
         return isNew;
     }
 
-    // -------------------------------------------------------------------------
-    // sendInviteEmailsToNewUsers()
-    // -------------------------------------------------------------------------
-    private void sendInviteEmailsToNewUsers(List<String> newUserEmails) {
-        if (newUserEmails == null || newUserEmails.isEmpty()) {
-            log.info("sendInviteEmailsToNewUsers: no new users to invite.");
-            return;
-        }
-
-        Optional<OrganizationConfig> emailConfig = organizationConfigDao
-                .findOrganizationConfigByOrganizationConfigType(
-                        OrganizationConfigType.EMAIL_CONFIGS.name());
-
-        if (emailConfig.isEmpty()) {
-            log.error("sendInviteEmailsToNewUsers: SMTP not configured — " +
-                    "Fix: POST /api/v1/org/email-server");
-            return;
-        }
-
-        log.info("sendInviteEmailsToNewUsers: sending invites to {} new user(s).", newUserEmails.size());
-
-        for (String email : newUserEmails) {
-            try {
-                userDao.findByEmail(email).ifPresentOrElse(
-                        user -> {
-                            Employee employee = employeeDao.findEmployeeByEmail(email);
-                            if (employee == null) {
-                                log.warn("Skipping {} — employee record not found.", email);
-                                return;
-                            }
-                            user.setEmployee(employee);
-                            sendGoogleSyncInvitationEmail(user);
-                            log.info("Invite sent to {}.", email);
-                        },
-                        () -> log.warn("User not found for {}.", email)
-                );
-            } catch (Exception e) {
-                log.error("Failed to send invite to {}: {}", email, e.getMessage());
-            }
-        }
-
-        log.info("sendInviteEmailsToNewUsers: done.");
-    }
-
     private void sendGoogleSyncInvitationEmail(User user) {
         PeopleEmailDynamicFields fields = new PeopleEmailDynamicFields();
         fields.setEmployeeOrManagerName(user.getEmployee().getFirstName() + " " + user.getEmployee().getLastName());

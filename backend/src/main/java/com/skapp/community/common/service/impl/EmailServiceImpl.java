@@ -264,7 +264,8 @@ public class EmailServiceImpl implements EmailService {
 		BeanMap beanMap = BeanMap.create(data);
 		for (Object entry : beanMap.entrySet()) {
 			Map.Entry<?, ?> mapEntry = (Map.Entry<?, ?>) entry;
-			placeholders.put(mapEntry.getKey().toString(), String.valueOf(mapEntry.getValue()));
+			placeholders.put(mapEntry.getKey().toString(),
+					mapEntry.getValue() == null ? "" : String.valueOf(mapEntry.getValue()));
 		}
 		return placeholders;
 	}
