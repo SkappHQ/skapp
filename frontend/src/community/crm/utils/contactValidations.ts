@@ -26,8 +26,7 @@ export const addContactValidations = (translator: TranslatorFunctionType) =>
       .trim()
       .max(CONTACT_EMAIL_MAX_LENGTH, translator(["validations", "emailLength"]))
       .matches(isValidEmail(), {
-        message: translator(["validations", "invalidEmail"]),
-        excludeEmptyString: true
+        message: translator(["validations", "invalidEmail"])
       })
       .required(translator(["validations", "email"])),
     contactNumber: Yup.string()
