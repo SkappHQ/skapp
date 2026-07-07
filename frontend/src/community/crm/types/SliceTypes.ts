@@ -35,6 +35,7 @@ export interface CrmTaskSliceTypes extends Pick<
   | "tasks"
   | "setTasks"
   | "getTaskById"
+  | "updateTask"
 > {}
 
 export interface CrmDealSliceTypes extends Pick<
